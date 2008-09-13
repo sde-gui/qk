@@ -104,7 +104,8 @@
       <item action="EncodingMenu"/>
       <separator/>
       <item action="ToggleBookmark"/>
-      <item action="BookmarksMenu"/>
+      <item action="PreviousBookmark"/>
+      <item action="NextBookmark"/>
       <separator/>
       <placeholder name="UserMenu"/>
       <separator/>

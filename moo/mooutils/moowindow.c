@@ -171,6 +171,8 @@ enum {
     PROP_TOOLBAR_UI_NAME,
     PROP_ID,
     PROP_UI_XML,
+    PROP_MENUBAR,
+    PROP_TOOLBAR,
     PROP_ACTIONS,
     PROP_TOOLBAR_VISIBLE,
     PROP_MENUBAR_VISIBLE,
@@ -350,6 +352,14 @@ moo_window_class_init (MooWindowClass *klass)
     g_object_class_install_property (gobject_class, PROP_UI_XML,
         g_param_spec_object ("ui-xml", "ui-xml", "ui-xml",
                              MOO_TYPE_UI_XML, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+    g_object_class_install_property (gobject_class, PROP_TOOLBAR,
+        g_param_spec_object ("toolbar", "toolbar", "toolbar",
+                             GTK_TYPE_TOOLBAR, G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class, PROP_MENUBAR,
+        g_param_spec_object ("menubar", "menubar", "menubar",
+                             GTK_TYPE_MENU, G_PARAM_READABLE));
 
     g_object_class_install_property (gobject_class, PROP_TOOLBAR_VISIBLE,
         g_param_spec_boolean ("toolbar-visible", "toolbar-visible", "toolbar-visible",
@@ -887,6 +897,14 @@ moo_window_get_property (GObject      *object,
             g_value_set_object (value, window->priv->ui_xml);
             break;
 
+        case PROP_MENUBAR:
+            g_value_set_object (value, window->menubar);
+            break;
+
+        case PROP_TOOLBAR:
+            g_value_set_object (value, window->toolbar);
+            break;
+
         case PROP_ACTIONS:
             g_value_set_object (value, moo_window_get_actions (window));
             break;
@@ -988,6 +1006,8 @@ moo_window_update_toolbar (MooWindow *window)
 
     style = get_toolbar_style (window);
     gtk_toolbar_set_style (GTK_TOOLBAR (MOO_WINDOW(window)->toolbar), style);
+
+    g_object_notify (G_OBJECT (window), "toolbar");
 }
 
 
@@ -1035,6 +1055,8 @@ moo_window_update_menubar (MooWindow *window)
 
     gtk_box_pack_start (GTK_BOX (window->priv->menubar_holder),
                         window->menubar, FALSE, FALSE, 0);
+
+    g_object_notify (G_OBJECT (window), "menubar");
 }
 
 

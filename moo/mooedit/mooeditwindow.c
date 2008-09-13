@@ -52,8 +52,6 @@
 #include "mooedit/mootextprint.h"
 #endif
 
-#define ENABLE_BOOKMARKS
-
 #define ACTIVE_DOC moo_edit_window_get_active_doc
 
 #define LANG_ACTION_ID "LanguageMenu"
@@ -226,19 +224,14 @@ static void action_previous_tab                 (MooEditWindow      *window);
 static void action_next_tab                     (MooEditWindow      *window);
 static void action_switch_to_tab                (MooEditWindow      *window,
                                                  guint               n);
-#ifdef ENABLE_BOOKMARKS
+
 static void action_toggle_bookmark              (MooEditWindow      *window);
 static void action_next_bookmark                (MooEditWindow      *window);
 static void action_prev_bookmark                (MooEditWindow      *window);
 static GtkAction *create_goto_bookmark_action   (MooWindow          *window,
                                                  gpointer            data);
-static GtkAction *create_bookmarks_menu_action  (MooWindow          *window,
-                                                 gpointer            data);
-#endif
-#if 0
-static void action_next_ph                      (MooEditWindow      *window);
-static void action_prev_ph                      (MooEditWindow      *window);
-#endif
+static void connect_document_menu               (MooWindow          *window);
+
 static void action_find_now_f                   (MooEditWindow      *window);
 static void action_find_now_b                   (MooEditWindow      *window);
 static void action_abort_jobs                   (MooEditWindow      *window);
@@ -580,7 +573,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
         g_free (action_id);
     }
 
-#ifdef ENABLE_BOOKMARKS
     for (i = 1; i < 10; ++i)
     {
         char *action_id = g_strdup_printf (MOO_EDIT_GOTO_BOOKMARK_ACTION "%u", i);
@@ -590,10 +582,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                             NULL);
         g_free (action_id);
     }
-
-    moo_window_class_new_action_custom (window_class, "BookmarksMenu", NULL,
-                                        create_bookmarks_menu_action,
-                                        NULL, NULL);
 
     moo_window_class_new_action (window_class, "ToggleBookmark", NULL,
                                  "display-name", _("Toggle Bookmark"),
@@ -610,7 +598,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "default-accel", MOO_EDIT_ACCEL_NEXT_BOOKMARK,
                                  "connect-accel", TRUE,
                                  "closure-callback", action_next_bookmark,
-                                 "condition::visible", "has-open-document",
                                  NULL);
 
     moo_window_class_new_action (window_class, "PreviousBookmark", NULL,
@@ -619,29 +606,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "default-accel", MOO_EDIT_ACCEL_PREV_BOOKMARK,
                                  "connect-accel", TRUE,
                                  "closure-callback", action_prev_bookmark,
-                                 "condition::visible", "has-open-document",
                                  NULL);
-#endif
-
-#if 0
-    moo_window_class_new_action (window_class, "NextPlaceholder", NULL,
-                                 "display-name", "Next Placeholder",
-                                 "label", "Next Placeholder",
-                                 "tooltip", "Go to next placeholder",
-                                 "stock-id", GTK_STOCK_GO_FORWARD,
-                                 "closure-callback", action_next_ph,
-                                 "condition::visible", "has-open-document",
-                                 NULL);
-
-    moo_window_class_new_action (window_class, "PrevPlaceholder", NULL,
-                                 "display-name", "Previous Placeholder",
-                                 "label", "Previous Placeholder",
-                                 "tooltip", "Go to previous placeholder",
-                                 "stock-id", GTK_STOCK_GO_BACK,
-                                 "closure-callback", action_prev_ph,
-                                 "condition::visible", "has-open-document",
-                                 NULL);
-#endif
 
     moo_window_class_new_action (window_class, "Comment", NULL,
                                  /* action */
@@ -939,6 +904,8 @@ moo_edit_window_constructor (GType                  type,
     g_signal_connect (window, "realize", G_CALLBACK (update_window_title), NULL);
     g_signal_connect (window, "notify::ui-xml",
                       G_CALLBACK (moo_edit_window_update_doc_list), NULL);
+    g_signal_connect (window, "notify::menubar",
+                      G_CALLBACK (connect_document_menu), NULL);
 
     edit_changed (window, NULL);
     moo_edit_window_check_actions (window);
@@ -1403,7 +1370,6 @@ action_abort_jobs (MooEditWindow *window)
 }
 
 
-#ifdef ENABLE_BOOKMARKS
 static void
 action_toggle_bookmark (MooEditWindow *window)
 {
@@ -1554,156 +1520,91 @@ create_bookmark_item (MooEditWindow   *window,
 }
 
 static void
-populate_bookmarks (MooEditWindow *window,
-                    GtkWidget     *menu)
+populate_bookmark_menu (MooEditWindow *window,
+                        GtkWidget     *menu,
+                        GtkWidget     *next_bk_item)
 {
     GtkAction *pn;
     MooEdit *doc;
     GtkWidget *item;
     const GSList *bookmarks;
+    GList *children, *l;
+    int pos;
+
+    children = g_list_copy (GTK_MENU_SHELL (menu)->children);
+    pos = g_list_index (children, next_bk_item);
+    g_return_if_fail (pos >= 0);
+
+    for (l = g_list_nth (children, pos + 1); l != NULL; l = l->next)
+    {
+        if (g_object_get_data (l->data, "moo-bookmark-menu-item"))
+            gtk_container_remove (GTK_CONTAINER (menu), l->data);
+        else
+            break;
+    }
+
+    g_list_free (children);
+
 
     doc = ACTIVE_DOC (window);
-    g_return_if_fail (doc != NULL);
-
-    bookmarks = moo_edit_list_bookmarks (doc);
+    bookmarks = doc ? moo_edit_list_bookmarks (doc) : NULL;
 
     pn = moo_window_get_action (MOO_WINDOW (window), "PreviousBookmark");
-    item = gtk_action_create_menu_item (pn);
-    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-    g_object_set (pn, "sensitive", bookmarks != NULL, NULL);
-
+    gtk_action_set_sensitive (pn, bookmarks != NULL);
     pn = moo_window_get_action (MOO_WINDOW (window), "NextBookmark");
-    item = gtk_action_create_menu_item (pn);
-    gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-    g_object_set (pn, "sensitive", bookmarks != NULL, NULL);
+    gtk_action_set_sensitive (pn, bookmarks != NULL);
 
     if (bookmarks)
     {
         item = gtk_separator_menu_item_new ();
-        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+        gtk_widget_show (item);
+        g_object_set_data (G_OBJECT (item), "moo-bookmark-menu-item", GINT_TO_POINTER (TRUE));
+        gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, ++pos);
     }
 
     while (bookmarks)
     {
         item = create_bookmark_item (window, doc, bookmarks->data);
-        gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
+        gtk_widget_show (item);
+        g_object_set_data (G_OBJECT (item), "moo-bookmark-menu-item", GINT_TO_POINTER (TRUE));
+        gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, ++pos);
         bookmarks = bookmarks->next;
     }
-
-    gtk_widget_show_all (menu);
-}
-
-static gboolean
-erase_bookmarks_menu (GtkMenuItem *bk_item)
-{
-    if (g_object_get_data (G_OBJECT (bk_item), "moo-bookmarks-populated"))
-    {
-        GtkWidget *menu = gtk_menu_item_get_submenu (bk_item);
-
-        if (menu)
-            gtk_container_foreach (GTK_CONTAINER (menu),
-                                   (GtkCallback) gtk_widget_destroy,
-                                   NULL);
-    }
-
-    g_object_set_data (G_OBJECT (bk_item),
-                       "moo-bookmarks-populated",
-                       GINT_TO_POINTER (FALSE));
-    g_object_unref (bk_item);
-
-    return FALSE;
 }
 
 static void
-bookmarks_toplevel_hide (GtkWidget   *toplevel,
-                         GtkMenuItem *bk_item)
+doc_item_selected (MooWindow   *window,
+                   GtkMenuItem *doc_item)
 {
-    moo_idle_add ((GSourceFunc) erase_bookmarks_menu, g_object_ref (bk_item));
-    g_signal_handlers_disconnect_by_func (toplevel,
-                                          (gpointer) bookmarks_toplevel_hide,
-                                          bk_item);
-}
-
-static void
-bookmarks_item_selected (GtkMenuItem   *bk_item,
-                         MooEditWindow *window)
-{
-    if (!g_object_get_data (G_OBJECT (bk_item), "moo-bookmarks-populated"))
-    {
-        GtkWidget *menu;
-
-        menu = gtk_menu_item_get_submenu (bk_item);
-        g_return_if_fail (menu != NULL);
-
-        populate_bookmarks (window, menu);
-        g_object_set_data (G_OBJECT (bk_item), "moo-bookmarks-populated",
-                           GINT_TO_POINTER (TRUE));
-
-        menu = gtk_widget_get_parent (GTK_WIDGET (bk_item));
-
-        if (GTK_IS_MENU (menu))
-            g_signal_connect (GTK_MENU (menu)->toplevel, "hide",
-                              G_CALLBACK (bookmarks_toplevel_hide), bk_item);
-        else
-            g_critical ("%s: oops", G_STRLOC);
-    }
-}
-
-static void
-connect_bookmarks_item (GtkAction     *action,
-                        GtkWidget     *widget)
-{
-    MooEditWindow *window;
     GtkWidget *menu;
+    GtkWidget *next_bk_item;
 
-    g_return_if_fail (GTK_IS_MENU_ITEM (widget));
+    menu = gtk_menu_item_get_submenu (doc_item);
+    next_bk_item = moo_ui_xml_get_widget (moo_window_get_ui_xml (window),
+                                          window->menubar,
+                                          "Editor/Menubar/Document/NextBookmark");
+    g_return_if_fail (menu != NULL && next_bk_item != NULL);
 
-    window = _moo_action_get_window (action);
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-
-    menu = gtk_menu_new ();
-    gtk_menu_item_set_submenu (GTK_MENU_ITEM (widget), menu);
-    g_signal_connect (widget, "select", G_CALLBACK (bookmarks_item_selected), window);
+    populate_bookmark_menu (MOO_EDIT_WINDOW (window), menu, next_bk_item);
 }
-
-static GtkAction *
-create_bookmarks_menu_action (MooWindow *window,
-                              G_GNUC_UNUSED gpointer data)
-{
-    GtkAction *action;
-
-    action = g_object_new (MOO_TYPE_ACTION,
-                           "name", "BookmarksMenu",
-                           "label", _("Bookmarks"),
-                           "no-accel", TRUE,
-                           NULL);
-
-    g_signal_connect (action, "connect-proxy", G_CALLBACK (connect_bookmarks_item), NULL);
-    moo_bind_bool_property (action, "sensitive", window, "has-open-document", FALSE);
-
-    return action;
-}
-#endif
-
-
-#if 0
-static void
-action_next_ph (MooEditWindow *window)
-{
-    MooEdit *doc = ACTIVE_DOC (window);
-    g_return_if_fail (doc != NULL);
-    moo_text_view_next_placeholder (MOO_TEXT_VIEW (doc));
-}
-
 
 static void
-action_prev_ph (MooEditWindow *window)
+connect_document_menu (MooWindow *window)
 {
-    MooEdit *doc = ACTIVE_DOC (window);
-    g_return_if_fail (doc != NULL);
-    moo_text_view_prev_placeholder (MOO_TEXT_VIEW (doc));
+    GtkWidget *doc_item;
+
+    if (!window->menubar)
+        return;
+
+    doc_item = moo_ui_xml_get_widget (moo_window_get_ui_xml (window),
+                                      window->menubar,
+                                      "Editor/Menubar/Document");
+    g_return_if_fail (doc_item != NULL);
+
+    g_signal_connect_swapped (doc_item, "select",
+                              G_CALLBACK (doc_item_selected),
+                              window);
 }
-#endif
 
 
 #ifdef ENABLE_PRINTING
