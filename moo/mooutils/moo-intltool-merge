@@ -38,7 +38,7 @@ case "$src" in
   *.xml.in)
     do_xml
     ;;
-  *.desktop.in)
+  *.desktop.in|*.ini.in)
     do_desktop
     ;;
   *)
