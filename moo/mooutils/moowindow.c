@@ -249,6 +249,7 @@ moo_window_class_init (MooWindowClass *klass)
                                  "display-name", _("Show Menubar"),
                                  "label", _("Show Menubar"),
                                  "condition::active", "menubar-visible",
+                                 "connect-accel", TRUE,
                                  NULL);
 
     moo_window_class_new_action (klass, "ShowStatusbar", NULL,
