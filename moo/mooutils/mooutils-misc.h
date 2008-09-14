@@ -67,6 +67,7 @@ gboolean    moo_save_user_data_file         (const char     *basename,
                                              const char     *content,
                                              gssize          len,
                                              GError        **error);
+char       *moo_get_user_cache_dir          (void);
 char       *moo_get_user_cache_file         (const char     *basename);
 gboolean    moo_save_user_cache_file        (const char     *basename,
                                              const char     *content,

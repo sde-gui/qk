@@ -1154,7 +1154,7 @@ moo_get_prgname (void)
     if (!name)
     {
         g_critical ("%s: program name not set", G_STRLOC);
-        name = "ggap";
+        name = "medit";
     }
 
     return name;
@@ -1273,7 +1273,7 @@ moo_cleanup (void)
 }
 
 
-static char *
+char *
 moo_get_user_cache_dir (void)
 {
     return g_build_filename (g_get_user_cache_dir (), moo_get_prgname (), NULL);
