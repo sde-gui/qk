@@ -51,6 +51,7 @@ gboolean         _moo_edit_save_file            (MooEdit        *edit,
 gboolean         _moo_edit_save_file_copy       (MooEdit        *edit,
                                                  const char     *file,
                                                  const char     *encoding,
+                                                 MooEditSaveFlags flags,
                                                  GError        **error);
 
 

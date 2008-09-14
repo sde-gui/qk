@@ -27,9 +27,6 @@
 #include <unistd.h>
 #endif
 
-/* Keep in sync with gio */
-#define BACKUP_EXTENSION "~"
-
 /************************************************************************/
 /* MooFileReader
  */
@@ -559,7 +556,7 @@ test_moo_file_writer (void)
     dir = moo_test_get_working_dir ();
     my_dir = g_build_filename (dir, "cfg-writer", NULL);
     filename = g_build_filename (my_dir, "configfile", NULL);
-    bak_filename = g_strdup_printf ("%s" BACKUP_EXTENSION, filename);
+    bak_filename = g_strdup_printf ("%s~", filename);
 
     writer = moo_config_writer_new (filename, TRUE, &error);
     TEST_ASSERT_MSG (writer != NULL,

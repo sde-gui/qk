@@ -80,6 +80,7 @@ static gboolean moo_edit_save_local         (MooEdit        *edit,
 static gboolean moo_edit_save_copy_local    (MooEdit        *edit,
                                              const char     *filename,
                                              const char     *encoding,
+                                             MooEditSaveFlags flags,
                                              GError        **error);
 static char    *_moo_edit_filename_to_utf8  (const char     *filename);
 static void     _moo_edit_start_file_watch  (MooEdit        *edit);
@@ -173,6 +174,7 @@ gboolean
 _moo_edit_save_file_copy (MooEdit        *edit,
                           const char     *filename,
                           const char     *encoding,
+                          MooEditSaveFlags flags,
                           GError        **error)
 {
     char *filename_copy, *encoding_copy;
@@ -184,7 +186,7 @@ _moo_edit_save_file_copy (MooEdit        *edit,
     filename_copy = g_strdup (filename);
     encoding_copy = g_strdup (normalize_encoding (encoding, TRUE));
 
-    result = moo_edit_save_copy_local (edit, filename_copy, encoding_copy, error);
+    result = moo_edit_save_copy_local (edit, filename_copy, encoding_copy, flags, error);
 
     g_free (filename_copy);
     g_free (encoding_copy);
@@ -733,22 +735,24 @@ moo_edit_reload_local (MooEdit    *edit,
 #define DEFAULT_LE_TYPE MOO_EDIT_LINE_END_UNIX
 #endif
 
-static gboolean do_write                (MooEdit        *edit,
-                                         const char     *file,
-                                         const char     *encoding,
-                                         GError        **error);
+static gboolean do_write (MooEdit           *edit,
+                          const char        *file,
+                          const char        *encoding,
+                          MooEditSaveFlags   flags,
+                          GError           **error);
 
 
 static gboolean
 do_save_local (MooEdit        *edit,
                const char     *filename,
                const char     *encoding,
+               MooEditSaveFlags flags,
                GError        **error,
                gboolean       *retval)
 {
     *retval = TRUE;
 
-    if (!do_write (edit, filename, encoding, error))
+    if (!do_write (edit, filename, encoding, flags, error))
     {
         if ((*error)->domain != G_CONVERT_ERROR ||
             _moo_encodings_equal (encoding, MOO_ENCODING_UTF8))
@@ -759,7 +763,7 @@ do_save_local (MooEdit        *edit,
 
         g_clear_error (error);
 
-        if (!do_write (edit, filename, MOO_ENCODING_UTF8, error))
+        if (!do_write (edit, filename, MOO_ENCODING_UTF8, flags, error))
         {
             *retval = FALSE;
             return FALSE;
@@ -785,7 +789,7 @@ moo_edit_save_local (MooEdit        *edit,
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
     g_return_val_if_fail (filename && filename[0], FALSE);
 
-    if (do_save_local (edit, filename, encoding, error, &result))
+    if (do_save_local (edit, filename, encoding, flags, error, &result))
     {
         edit->priv->status = 0;
         _moo_edit_set_filename (edit, filename,
@@ -802,72 +806,84 @@ static gboolean
 moo_edit_save_copy_local (MooEdit        *edit,
                           const char     *filename,
                           const char     *encoding,
+                          MooEditSaveFlags flags,
                           GError        **error)
 {
     gboolean result;
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
     g_return_val_if_fail (filename && filename[0], FALSE);
-    do_save_local (edit, filename, encoding, error, &result);
+    do_save_local (edit, filename, encoding, flags, error, &result);
     return result;
 }
 
 
 static gboolean
-do_write (MooEdit        *edit,
-          const char     *filename,
-          const char     *encoding,
-          GError        **error)
+prepare_conversion (const char  *encoding,
+                    GIConv      *converterp,
+                    GError     **error)
 {
-    int fd = -1;
-    GIOChannel *file;
-    GIOStatus status;
+    GIConv converter;
+
+    converter = g_iconv_open (encoding, "UTF-8");
+
+    if (converter == (GIConv) -1)
+    {
+        int err = errno;
+        if (err == EINVAL)
+            g_set_error (error, G_CONVERT_ERROR, G_CONVERT_ERROR_NO_CONVERSION,
+                         D_("Conversion from character set '%s' to '%s' is not supported", "glib20"),
+                         "UTF-8", encoding);
+        else
+            g_set_error (error, G_CONVERT_ERROR, G_CONVERT_ERROR_FAILED,
+                         D_("Could not open converter from '%s' to '%s': %s", "glib20"),
+                         "UTF-8", encoding, g_strerror (err));
+        return FALSE;
+    }
+
+    *converterp = converter;
+    return TRUE;
+}
+
+static gboolean
+convert_with_iconv (GIConv       converter,
+                    const char  *src,
+                    gssize       src_len,
+                    char       **result,
+                    gsize       *result_len,
+                    GError     **error)
+{
+    gsize bytes_read;
+    *result = g_convert_with_iconv (src, src_len, converter,
+                                    &bytes_read, result_len,
+                                    error);
+    return *result != NULL;
+}
+
+static gboolean
+do_write (MooEdit           *edit,
+          const char        *filename,
+          const char        *encoding,
+          MooEditSaveFlags   flags,
+          GError           **error)
+{
     GtkTextIter line_start;
     GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
     MooEditLineEndType le_type = DEFAULT_LE_TYPE;
+    MooFileWriter *writer;
+    MooFileWriterFlags writer_flags;
+    GIConv converter = NULL;
+    char *freeme_le = NULL;
     const char *le = "\n";
-    gssize le_len = 1;
-    mode_t mode;
+    gsize le_len = 1;
+    gboolean success = FALSE;
 
     g_return_val_if_fail (filename != NULL, FALSE);
 
     if (encoding && (!g_ascii_strcasecmp (encoding, "UTF-8") || !g_ascii_strcasecmp (encoding, "UTF8")))
         encoding = NULL;
 
-#ifdef __WIN32__
-    mode = S_IRUSR | S_IWUSR;
-#else
-    if (edit->priv->mode_set)
-        mode = (edit->priv->mode & (S_IRWXU | S_IRWXG | S_IRWXO)) | S_IRUSR | S_IWUSR;
-    else
-        mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-#endif
-
-    errno = 0;
-    fd = g_open (filename, O_BINARY | O_WRONLY | O_CREAT | O_TRUNC, mode);
-
-    if (fd == -1)
-    {
-        int err = errno;
-        g_set_error (error, G_FILE_ERROR,
-                     g_file_error_from_errno (err),
-                     "%s", g_strerror (err));
-        return FALSE;
-    }
-
-#ifndef __WIN32__
-    file = g_io_channel_unix_new (fd);
-#else
-    file = g_io_channel_win32_new_fd (fd);
-#endif
-
-    g_io_channel_set_close_on_unref (file, TRUE);
-
-    if (encoding && g_io_channel_set_encoding (file, encoding, error) != G_IO_STATUS_NORMAL)
-    {
-        g_io_channel_shutdown (file, TRUE, NULL);
-        g_io_channel_unref (file);
-        return FALSE;
-    }
+    if (encoding && !prepare_conversion (encoding, &converter, error))
+        goto out;
 
     switch (edit->priv->line_end_type)
     {
@@ -890,83 +906,91 @@ do_write (MooEdit        *edit,
     {
         case MOO_EDIT_LINE_END_UNIX:
             le = "\n";
-            le_len = 1;
             break;
         case MOO_EDIT_LINE_END_WIN32:
             le = "\r\n";
-            le_len = 2;
             break;
         case MOO_EDIT_LINE_END_MAC:
             le = "\r";
-            le_len = 1;
             break;
         case MOO_EDIT_LINE_END_MIX:
         case MOO_EDIT_LINE_END_NONE:
             g_assert_not_reached ();
     }
 
+    if (converter)
+    {
+        if (!convert_with_iconv (converter, le, -1, &freeme_le, &le_len, error))
+            goto out;
+        le = freeme_le;
+    }
+
+    writer_flags = (flags & MOO_EDIT_SAVE_BACKUP) ? MOO_FILE_WRITER_SAVE_BACKUP : 0;
+    if (!(writer = moo_file_writer_new (filename, writer_flags, error)))
+        goto out;
+
     gtk_text_buffer_get_start_iter (buffer, &line_start);
 
     do
     {
-        gsize written;
         GtkTextIter line_end = line_start;
 
         if (!gtk_text_iter_ends_line (&line_start))
         {
             char *line;
-            gssize len = -1;
+            gsize len;
 
             gtk_text_iter_forward_to_line_end (&line_end);
             line = gtk_text_buffer_get_slice (buffer, &line_start, &line_end, TRUE);
+            len = strlen (line);
 
-            status = g_io_channel_write_chars (file, line, len, &written, error);
+            if (converter)
+            {
+                char *tmp;
+
+                if (!convert_with_iconv (converter, line, len, &tmp, &len, error))
+                {
+                    /* XXX */
+                    moo_file_writer_close (writer, NULL);
+                    g_free (line);
+                    goto out;
+                }
+
+                g_free (line);
+                line = tmp;
+            }
+
+            success = moo_file_writer_write (writer, line, len);
+
             g_free (line);
 
-            /* XXX */
-            if (status != G_IO_STATUS_NORMAL)
+            if (!success)
             {
-                g_io_channel_shutdown (file, TRUE, NULL);
-                g_io_channel_unref (file);
-                return FALSE;
+                moo_file_writer_close (writer, error);
+                goto out;
             }
         }
 
         if (!gtk_text_iter_is_end (&line_end))
         {
-            status = g_io_channel_write_chars (file, le, le_len, &written, error);
+            success = moo_file_writer_write (writer, le, le_len);
 
-            if (written < (gsize)le_len || status != G_IO_STATUS_NORMAL)
+            if (!success)
             {
-                g_io_channel_shutdown (file, TRUE, NULL);
-                g_io_channel_unref (file);
-                return FALSE;
+                moo_file_writer_close (writer, error);
+                goto out;
             }
         }
     }
     while (gtk_text_iter_forward_line (&line_start));
 
-    /* glib #320668 */
-    status = g_io_channel_flush (file, error);
+    success = moo_file_writer_close (writer, error);
 
-    if (status != G_IO_STATUS_NORMAL)
-    {
-        g_io_channel_shutdown (file, FALSE, NULL);
-        g_io_channel_unref (file);
-        return FALSE;
-    }
-
-    status = g_io_channel_shutdown (file, TRUE, error);
-
-    if (status != G_IO_STATUS_NORMAL)
-    {
-        g_io_channel_unref (file);
-        return FALSE;
-    }
-
-    g_io_channel_unref (file);
-    g_clear_error (error);
-    return TRUE;
+out:
+    g_free (freeme_le);
+    if (converter)
+        g_iconv_close (converter);
+    return success;
 }
 
 

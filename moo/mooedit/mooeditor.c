@@ -2427,7 +2427,9 @@ moo_editor_save_copy (MooEditor      *editor,
     info = window_list_find_doc (editor, doc);
     g_return_val_if_fail (info != NULL, FALSE);
 
-    return _moo_edit_save_file_copy (doc, filename, encoding, error);
+    return _moo_edit_save_file_copy (doc, filename, encoding,
+                                     moo_editor_get_save_flags (editor),
+                                     error);
 }
 
 
