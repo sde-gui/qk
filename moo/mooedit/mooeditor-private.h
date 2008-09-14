@@ -21,9 +21,12 @@
 #define MOO_EDITOR_PRIVATE_H
 
 #include "mooedit/mooeditor.h"
+#include "mooutils/mdhistorymgr.h"
 
 G_BEGIN_DECLS
 
+
+MdHistoryMgr    *_moo_editor_get_history_mgr    (MooEditor      *editor);
 
 void             _moo_edit_window_insert_doc    (MooEditWindow  *window,
                                                  MooEdit        *doc,

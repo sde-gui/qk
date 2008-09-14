@@ -2001,6 +2001,8 @@ static void
 test_suite_cleanup (G_GNUC_UNUSED gpointer data)
 {
     GError *error = NULL;
+    char *recent_file;
+    MooEditor *editor;
 
     if (!_moo_remove_dir (test_data.working_dir, TRUE, &error))
     {
@@ -2012,8 +2014,16 @@ test_suite_cleanup (G_GNUC_UNUSED gpointer data)
     g_free (test_data.working_dir);
     test_data.working_dir = NULL;
 
-    moo_editor_close_all (moo_editor_instance (), FALSE, FALSE);
+    editor = moo_editor_instance ();
+    moo_editor_close_all (editor, FALSE, FALSE);
+    recent_file = _md_history_mgr_get_filename (_moo_editor_get_history_mgr (editor));
     g_object_unref (moo_editor_instance ());
+
+    if (!g_file_test (recent_file, G_FILE_TEST_EXISTS))
+        g_critical ("recent file %s does not exist", recent_file);
+
+    _moo_unlink (recent_file);
+    g_free (recent_file);
 }
 
 void

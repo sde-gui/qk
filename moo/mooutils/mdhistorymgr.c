@@ -317,6 +317,13 @@ get_filename (MdHistoryMgr *mgr)
     return mgr->priv->filename;
 }
 
+char *
+_md_history_mgr_get_filename (MdHistoryMgr *mgr)
+{
+    g_return_val_if_fail (MD_IS_HISTORY_MGR (mgr), NULL);
+    return g_strdup (get_filename (mgr));
+}
+
 
 /*****************************************************************/
 /* Loading and saving
@@ -844,7 +851,7 @@ md_history_mgr_save (MdHistoryMgr *mgr)
         return;
     }
 
-    if ((writer = moo_text_writer_new (filename, FALSE, &error)))
+    if ((writer = moo_config_writer_new (filename, FALSE, &error)))
     {
         GString *string;
         GList *l;

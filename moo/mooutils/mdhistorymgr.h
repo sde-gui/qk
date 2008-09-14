@@ -84,5 +84,7 @@ void            md_history_item_foreach         (MdHistoryItem  *item,
                                                  GDataForeachFunc func,
                                                  gpointer        user_data);
 
+char          *_md_history_mgr_get_filename     (MdHistoryMgr   *mgr);
+
 
 #endif /* MD_HISTORY_MGR_H */

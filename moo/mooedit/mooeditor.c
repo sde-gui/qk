@@ -27,7 +27,6 @@
 #include "medit-ui.h"
 #include "mooutils/moomenuaction.h"
 #include "marshals.h"
-#include "mooutils/mdhistorymgr.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooutils-gobject.h"
@@ -841,6 +840,13 @@ window_list_find_file (MooEditor  *editor,
     return NULL;
 }
 
+
+MdHistoryMgr *
+_moo_editor_get_history_mgr (MooEditor *editor)
+{
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    return editor->priv->history;
+}
 
 static void
 add_recent_file (MooEditor  *editor,

@@ -5,7 +5,7 @@
   <configuration name="debug">
    <build_dir>build/debug</build_dir>
    <configure>
-    <args>--enable-debug --enable-all-warnings --enable-project --prefix=${PREFIX:-/usr/local}</args>
+    <args>--enable-debug --enable-all-warnings --enable-project --enable-unit-tests --prefix=${PREFIX:-/usr/local}</args>
     <vars>
      <var name="CC">gcc-4.2</var>
      <var name="CFLAGS">-g</var>
