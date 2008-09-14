@@ -585,7 +585,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 
     moo_window_class_new_action (window_class, "ToggleBookmark", NULL,
                                  "display-name", _("Toggle Bookmark"),
-                                 "label", _("Toggle Bookmark"),
+                                 "label", _("Toggle _Bookmark"),
                                  "stock-id", MOO_STOCK_EDIT_BOOKMARK,
                                  "default-accel", MOO_EDIT_ACCEL_BOOKMARK,
                                  "closure-callback", action_toggle_bookmark,
@@ -594,7 +594,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 
     moo_window_class_new_action (window_class, "NextBookmark", NULL,
                                  "display-name", _("Next Bookmark"),
-                                 "label", _("Next Bookmark"),
+                                 "label", _("_Next Bookmark"),
                                  "default-accel", MOO_EDIT_ACCEL_NEXT_BOOKMARK,
                                  "connect-accel", TRUE,
                                  "closure-callback", action_next_bookmark,
@@ -602,7 +602,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 
     moo_window_class_new_action (window_class, "PreviousBookmark", NULL,
                                  "display-name", _("Previous Bookmark"),
-                                 "label", _("Previous Bookmark"),
+                                 "label", _("_Previous Bookmark"),
                                  "default-accel", MOO_EDIT_ACCEL_PREV_BOOKMARK,
                                  "connect-accel", TRUE,
                                  "closure-callback", action_prev_bookmark,
