@@ -20,6 +20,7 @@
 #include "mooutils/mooaccelprefs.h"
 #include "mooutils/mooaccel.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/moocompat.h"
 #include "marshals.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooactionfactory.h"

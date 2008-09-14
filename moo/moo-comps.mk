@@ -29,6 +29,14 @@ if MOO_BUILD_UTILS
 moo_app_ldadd += $(top_builddir)/moo/mooutils/libmooutils.a
 endif
 
+if MOO_BUILD_PCRE
+moo_app_ldadd += $(top_builddir)/moo/mooutils/pcre/libpcre.la
+endif
+
+if !GLIB_2_16
+moo_app_ldadd += $(top_builddir)/moo/mooutils/newgtk/libnewgtk.la
+endif
+
 moo_app_ldadd += $(MOO_LIBS)
 
 endif

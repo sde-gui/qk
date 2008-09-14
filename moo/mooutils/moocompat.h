@@ -95,20 +95,6 @@ void gtk_widget_modify_cursor (GtkWidget *widget,
 #endif /* !GTK_CHECK_VERSION(2,10,0) */
 
 
-#if !GLIB_CHECK_VERSION(2,14,0)
-
-G_END_DECLS
-#include <stdarg.h>
-G_BEGIN_DECLS
-
-#define g_string_append_vprintf _moo_g_string_append_vprintf
-void g_string_append_vprintf (GString    *string,
-                              const char *format,
-                              va_list     args);
-
-#endif /* !GLIB_CHECK_VERSION(2,14,0) */
-
-
 #if !GLIB_CHECK_VERSION(2,16,0)
 
 #define g_dpgettext _moo_compat_g_dpgettext

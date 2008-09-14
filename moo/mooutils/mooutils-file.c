@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <glib/gstdio.h>
+#include <glib/gmappedfile.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -539,8 +540,18 @@ moo_string_writer_printf (MooFileWriter *fwriter,
                           const char    *fmt,
                           va_list        args)
 {
+    char *buf;
+    gint len;
     MooStringWriter *writer = (MooStringWriter*) fwriter;
-    g_string_append_vprintf (writer->string, fmt, args);
+
+    len = g_vasprintf (&buf, fmt, args);
+
+    if (len >= 0)
+    {
+        g_string_append_len (writer->string, buf, len);
+        g_free (buf);
+    }
+
     return TRUE;
 }
 

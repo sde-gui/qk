@@ -75,10 +75,11 @@ AM_CONDITIONAL(GDK_QUARTZ, $GDK_QUARTZ)
 
 MOO_USE_GIO=false
 if test "x$GLIB_2_16" = xyes; then
-  PKG_CHECK_MODULES(GIO,[gio-2.0],[
-    MOO_USE_GIO=true
-    MOO_CHECK_VERSION(GIO, gio-2.0, [16, 18])
-  ],[:])
+  MOO_USE_GIO=true
+  MOO_CHECK_VERSION(GIO, gio-2.0, [16, 18])
+else
+  AM_CONDITIONAL(GIO_2_16, false)
+  AM_CONDITIONAL(GIO_2_18, false)
 fi
 AM_CONDITIONAL([MOO_USE_GIO], [$MOO_USE_GIO])
 if $MOO_USE_GIO; then

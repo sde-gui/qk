@@ -18,6 +18,20 @@
 
 #include <glib-object.h>
 
+#if !GLIB_CHECK_VERSION(2,14,0)
+inline static gboolean
+g_once_init_enter (volatile gsize *value_location)
+{
+    return *value_location == 0;
+}
+
+inline static void
+g_once_init_leave (volatile gsize *value_location,
+                   gsize           initialization_value)
+{
+    *value_location = initialization_value;
+}
+#endif
 
 #if !GLIB_CHECK_VERSION(2,12,0)
 #define _MOO_REGISTER_TYPE(TypeName,type_name,TYPE_PARENT,flags)                            \

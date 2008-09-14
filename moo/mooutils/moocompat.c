@@ -757,9 +757,6 @@ gtk_widget_modify_cursor (GtkWidget *widget,
                           GdkColor  *primary,
                           GdkColor  *secondary)
 {
-    char *rc_string;
-    char *widget_name;
-
     g_return_if_fail (GTK_IS_WIDGET (widget));
     g_return_if_fail (!primary || secondary);
 
@@ -773,30 +770,6 @@ gtk_widget_modify_cursor (GtkWidget *widget,
 }
 
 #endif /* !GTK_CHECK_VERSION(2,12,0) */
-
-
-#if !GLIB_CHECK_VERSION(2,14,0)
-
-void
-g_string_append_vprintf (GString    *string,
-                         const char *format,
-                         va_list     args)
-{
-    char *buf;
-    int len;
-
-    g_return_if_fail (string != NULL);
-    g_return_if_fail (format != NULL);
-
-    len = g_vasprintf (&buf, format, args);
-
-    if (len > 0)
-        g_string_append_len (string, buf, len);
-
-    g_free (buf);
-}
-
-#endif /* !GLIB_CHECK_VERSION(2,14,0) */
 
 
 #if !GLIB_CHECK_VERSION(2,16,0)

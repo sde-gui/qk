@@ -71,4 +71,6 @@ sed -e 's/#include \"gtksourcecontextengine.h\"/#include \"gtksourcecontextengin
     -e 's/g_slice_new/moo_new/g'												  \
     -e 's/g_slice_free/moo_free/g'												  \
 																  \
+    -e 's/\"paragraph-background-set\", FALSE,//g'										  \
+																  \
     $custom_cmd "$1" || exit $?

@@ -1573,6 +1573,7 @@
 
 ;; From moo/mooedit/mootextpopup.h
 
+(ifndef pygtk-2.6
 (define-function moo_text_popup_new
   (c-name "moo_text_popup_new")
   (is-constructor-of "MooTextPopup")
@@ -1580,6 +1581,7 @@
   (properties
     '("doc" (optional))
   )
+)
 )
 
 (define-method set_doc
@@ -1651,7 +1653,7 @@
 (define-method set_position
   (of-object "MooTextPopup")
   (c-name "moo_text_popup_set_position")
-  (return-type "void")
+  (return-type "none")
   (parameters
     '("const-GtkTextIter*" "iter")
   )
@@ -1669,7 +1671,7 @@
 (define-method select
   (of-object "MooTextPopup")
   (c-name "moo_text_popup_select")
-  (return-type "void")
+  (return-type "none")
   (parameters
     '("GtkTreeIter*" "iter")
   )

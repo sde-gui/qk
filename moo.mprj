@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="2.0" type="C" name="moo">
- <active>debug</active>
+ <active>gtk-2.6</active>
  <configurations>
   <configuration name="debug">
    <build_dir>build/debug</build_dir>
