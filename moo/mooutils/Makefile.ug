@@ -131,7 +131,9 @@ mooutils_sources =			\
 	mooutils-debug.h		\
 	mooutils-enums.c		\
 	mooutils-enums.h		\
+	mooutils-file.c			\
 	mooutils-file.h			\
+	mooutils-file-private.h		\
 	mooutils-fli.c			\
 	mooutils-fs.c			\
 	mooutils-fs.h			\

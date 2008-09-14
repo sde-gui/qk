@@ -1294,7 +1294,7 @@ save_file (const char    *file,
         return TRUE;
     }
 
-    if ((writer = moo_text_writer_new (file, FALSE, error)))
+    if ((writer = moo_config_writer_new (file, FALSE, error)))
     {
         moo_markup_write_pretty (xml, writer, 2);
         return moo_file_writer_close (writer, error);

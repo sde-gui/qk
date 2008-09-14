@@ -1246,7 +1246,7 @@ moo_app_write_session (MooApp *app)
         return;
     }
 
-    if ((writer = moo_text_writer_new (filename, FALSE, &error)))
+    if ((writer = moo_config_writer_new (filename, FALSE, &error)))
     {
         moo_markup_write_pretty (app->priv->session, writer, 1);
         moo_file_writer_close (writer, &error);

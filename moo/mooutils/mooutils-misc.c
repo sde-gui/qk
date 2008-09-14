@@ -1599,7 +1599,7 @@ save_config_file (const char     *dir,
     g_return_val_if_fail (filename != NULL, FALSE);
     g_return_val_if_fail (content != NULL, FALSE);
 
-    if (!(writer = moo_text_writer_new (filename, TRUE, error)))
+    if (!(writer = moo_config_writer_new (filename, TRUE, error)))
         return FALSE;
 
     moo_file_writer_write (writer, content, len);

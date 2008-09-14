@@ -36,10 +36,17 @@ void            moo_file_reader_close           (MooFileReader  *reader);
 
 typedef struct MooFileWriter MooFileWriter;
 
+typedef enum /*< flags >*/
+{
+    MOO_FILE_WRITER_SAVE_BACKUP = 1 << 0,
+    MOO_FILE_WRITER_TEXT_MODE   = 1 << 1,
+    MOO_FILE_WRITER_LAZY        = 1 << 2
+} MooFileWriterFlags;
+
 MooFileWriter  *moo_file_writer_new             (const char     *filename,
-                                                 gboolean        save_backup,
+                                                 MooFileWriterFlags flags,
                                                  GError        **error);
-MooFileWriter  *moo_text_writer_new             (const char     *filename,
+MooFileWriter  *moo_config_writer_new           (const char     *filename,
                                                  gboolean        save_backup,
                                                  GError        **error);
 MooFileWriter  *moo_string_writer_new           (void);
