@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <glib/gstdio.h>
 #include <glib/gmappedfile.h>
+#include <gio/gio.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -229,119 +230,69 @@ moo_file_writer_close (MooFileWriter  *writer,
 
 struct MooLocalFileWriter {
     MooFileWriter base;
-
-    FILE *file;
-    char *filename;
-    char *temp_filename;
+    GFile *file;
+    GOutputStream *stream;
     MooFileWriterFlags flags;
     GError *error;
 };
 
 MOO_DEFINE_TYPE_STATIC (MooLocalFileWriter, moo_local_file_writer, MOO_TYPE_FILE_WRITER)
 
-static gboolean
-same_content (const char *filename1,
-              const char *filename2)
-{
-    GMappedFile *file1, *file2;
-    char *content1, *content2;
-    gsize len;
-    gboolean equal = FALSE;
-
-    file1 = g_mapped_file_new (filename1, FALSE, NULL);
-    file2 = g_mapped_file_new (filename2, FALSE, NULL);
-
-    if (!file1 || !file2 ||
-        g_mapped_file_get_length (file1) != g_mapped_file_get_length (file2))
-            goto out;
-
-    len = g_mapped_file_get_length (file1);
-    content1 = g_mapped_file_get_contents (file1);
-    content2 = g_mapped_file_get_contents (file2);
-
-    if (memcmp (content1, content2, len) == 0)
-        equal = TRUE;
-
-out:
-    if (file1)
-        g_mapped_file_free (file1);
-    if (file2)
-        g_mapped_file_free (file2);
-    return equal;
-}
-
 static MooFileWriter *
 moo_local_file_writer_new (const char          *filename,
                            MooFileWriterFlags   flags,
                            GError             **error)
 {
-    int fd;
-    FILE *file;
-    char *temp_filename = NULL;
-    char *dirname = NULL;
     MooLocalFileWriter *writer = NULL;
+    GFile *file = NULL;
+    GFileOutputStream *stream = NULL;
 
     g_return_val_if_fail (filename != NULL, NULL);
 
-    dirname = g_path_get_dirname (filename);
-
-    if ((flags & MOO_FILE_WRITER_CONFIG_MODE) &&
-        _moo_mkdir_with_parents (dirname) != 0)
+    if (flags & MOO_FILE_WRITER_CONFIG_MODE)
     {
-        int err = errno;
-        char *display_name = g_filename_display_name (dirname);
-        g_set_error (error, G_FILE_ERROR,
-                     g_file_error_from_errno (err),
-                     _("Could not create folder %s: %s"),
-                     display_name, g_strerror (err));
-        g_free (display_name);
-        goto out;
+        char *dirname;
+
+        dirname = g_path_get_dirname (filename);
+
+        if (_moo_mkdir_with_parents (dirname) != 0)
+        {
+            int err = errno;
+            char *display_name = g_filename_display_name (dirname);
+            g_set_error (error, G_FILE_ERROR,
+                         g_file_error_from_errno (err),
+                         _("Could not create folder %s: %s"),
+                         display_name, g_strerror (err));
+            g_free (display_name);
+            g_free (dirname);
+            goto error;
+        }
+
+        g_free (dirname);
     }
 
-    temp_filename = g_strdup_printf ("%s" G_DIR_SEPARATOR_S ".tmp-XXXXXX", dirname);
-    errno = 0;
-    fd = g_mkstemp (temp_filename);
+    file = g_file_new_for_path (filename);
+    stream = g_file_replace (file, NULL,
+                             (flags & MOO_FILE_WRITER_SAVE_BACKUP) != 0,
+                             G_FILE_CREATE_NONE,
+                             NULL, error);
 
-    if (fd == -1)
-    {
-        int err = errno;
-        char *display_name = g_filename_display_name (temp_filename);
-        g_set_error (error, G_FILE_ERROR,
-                     g_file_error_from_errno (err),
-                     _("Could not create temporary file %s: %s"),
-                     display_name, g_strerror (err));
-        g_free (display_name);
-        goto out;
-    }
-
-    close (fd);
-
-    if (!(file = g_fopen (temp_filename,
-                          (flags & MOO_FILE_WRITER_TEXT_MODE) ? "w" : "wb")))
-    {
-        int err = errno;
-        char *display_name = g_filename_display_name (temp_filename);
-        g_set_error (error, G_FILE_ERROR,
-                     g_file_error_from_errno (err),
-                     _("Could not create temporary file %s: %s"),
-                     display_name, g_strerror (err));
-        g_free (display_name);
-        g_unlink (temp_filename);
-        goto out;
-    }
+    if (!stream)
+        goto error;
 
     writer = g_object_new (MOO_TYPE_LOCAL_FILE_WRITER, NULL);
     writer->file = file;
-    writer->temp_filename = temp_filename;
-    temp_filename = NULL;
-    writer->filename = g_strdup (filename);
-    writer->error = NULL;
+    writer->stream = G_OUTPUT_STREAM (stream);
     writer->flags = flags;
 
-out:
-    g_free (temp_filename);
-    g_free (dirname);
     return MOO_FILE_WRITER (writer);
+
+error:
+    if (file)
+        g_object_unref (file);
+    if (stream)
+        g_object_unref (stream);
+    return NULL;
 }
 
 MooFileWriter *
@@ -364,7 +315,7 @@ moo_config_writer_new (const char  *filename,
     g_return_val_if_fail (filename != NULL, NULL);
     g_return_val_if_fail (!error || !*error, NULL);
 
-    flags = MOO_FILE_WRITER_TEXT_MODE | MOO_FILE_WRITER_CONFIG_MODE;
+    flags = MOO_FILE_WRITER_CONFIG_MODE;
     if (save_backup)
         flags |= MOO_FILE_WRITER_SAVE_BACKUP;
 
@@ -378,31 +329,17 @@ moo_local_file_writer_write (MooFileWriter *fwriter,
                              gsize          len)
 {
     MooLocalFileWriter *writer = (MooLocalFileWriter*) fwriter;
+    gsize bytes_written;
 
     if (writer->error)
         return FALSE;
 
-    while (len > 0)
-    {
-        gsize written;
+    /* XXX text mode when MOO_FILE_WRITER_CONFIG_MODE! */
 
-        errno = 0;
-        written = fwrite (data, 1, len, writer->file);
-
-        if (written < len && ferror (writer->file))
-        {
-            int err = errno;
-            g_set_error (&writer->error, G_FILE_ERROR,
-                         g_file_error_from_errno (err),
-                         "%s", g_strerror (err));
-            break;
-        }
-
-        len -= written;
-        data += written;
-    }
-
-    return writer->error == NULL;
+    return g_output_stream_write_all (writer->stream,
+                                      data, len,
+                                      &bytes_written, NULL,
+                                      &writer->error);
 }
 
 G_GNUC_PRINTF (2, 0)
@@ -412,21 +349,17 @@ moo_local_file_writer_printf (MooFileWriter *fwriter,
                               va_list        args)
 {
     MooLocalFileWriter *writer = (MooLocalFileWriter*) fwriter;
+    char *text;
+    gboolean retval;
 
     if (writer->error)
         return FALSE;
 
-    errno = 0;
+    text = g_strdup_vprintf (fmt, args);
+    retval = moo_local_file_writer_write (fwriter, text, strlen (text));
+    g_free (text);
 
-    if (vfprintf (writer->file, fmt, args) < 0)
-    {
-        int err = errno;
-        g_set_error (&writer->error, G_FILE_ERROR,
-                     g_file_error_from_errno (err),
-                     "%s", g_strerror (err));
-    }
-
-    return writer->error == NULL;
+    return retval;
 }
 
 static gboolean
@@ -436,53 +369,16 @@ moo_local_file_writer_close (MooFileWriter *fwriter,
     MooLocalFileWriter *writer = (MooLocalFileWriter*) fwriter;
     gboolean retval;
 
+    g_return_val_if_fail (writer->stream != NULL, FALSE);
+
     if (!writer->error)
     {
-        errno = 0;
-
-        if (fclose (writer->file) != 0)
-        {
-            int err = errno;
-            g_set_error (&writer->error, G_FILE_ERROR,
-                         g_file_error_from_errno (err),
-                         "%s", g_strerror (err));
-        }
-
+        g_output_stream_close (writer->stream, NULL, &writer->error);
+        g_object_unref (writer->stream);
+        g_object_unref (writer->file);
+        writer->stream = NULL;
         writer->file = NULL;
     }
-
-    if (!writer->error &&
-        (!(writer->flags & MOO_FILE_WRITER_CONFIG_MODE) ||
-         !same_content (writer->filename, writer->temp_filename)))
-    {
-        if (writer->flags & MOO_FILE_WRITER_SAVE_BACKUP)
-        {
-            char *bak_file;
-
-            bak_file = g_strdup_printf ("%s" BACKUP_EXTENSION, writer->filename);
-
-            if (g_file_test (writer->filename, G_FILE_TEST_EXISTS))
-            {
-                g_unlink (bak_file);
-                _moo_rename_file (writer->filename, bak_file, NULL);
-            }
-
-            g_free (bak_file);
-        }
-
-#ifdef __WIN32__
-        _moo_unlink (writer->filename);
-#endif
-        _moo_rename_file (writer->temp_filename,
-                          writer->filename,
-                          &writer->error);
-    }
-
-    g_unlink (writer->temp_filename);
-    g_free (writer->temp_filename);
-    g_free (writer->filename);
-    writer->temp_filename = NULL;
-    writer->filename = NULL;
 
     retval = writer->error == NULL;
 
@@ -507,8 +403,7 @@ static void
 moo_local_file_writer_init (MooLocalFileWriter *writer)
 {
     writer->file = NULL;
-    writer->temp_filename = NULL;
-    writer->filename = NULL;
+    writer->stream = NULL;
     writer->error = NULL;
 }
 
@@ -605,6 +500,37 @@ moo_string_writer_get_string (MooFileWriter *fwriter,
 #ifdef MOO_ENABLE_UNIT_TESTS
 
 #include <mooutils/mooutils-tests.h>
+
+static gboolean
+same_content (const char *filename1,
+              const char *filename2)
+{
+    GMappedFile *file1, *file2;
+    char *content1, *content2;
+    gsize len;
+    gboolean equal = FALSE;
+
+    file1 = g_mapped_file_new (filename1, FALSE, NULL);
+    file2 = g_mapped_file_new (filename2, FALSE, NULL);
+
+    if (!file1 || !file2 ||
+        g_mapped_file_get_length (file1) != g_mapped_file_get_length (file2))
+            goto out;
+
+    len = g_mapped_file_get_length (file1);
+    content1 = g_mapped_file_get_contents (file1);
+    content2 = g_mapped_file_get_contents (file2);
+
+    if (memcmp (content1, content2, len) == 0)
+        equal = TRUE;
+
+out:
+    if (file1)
+        g_mapped_file_free (file1);
+    if (file2)
+        g_mapped_file_free (file2);
+    return equal;
+}
 
 static gboolean
 check_file_contents (const char *filename,

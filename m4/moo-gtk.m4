@@ -80,6 +80,36 @@ if test "x$GLIB_2_16" = xyes; then
 else
   AM_CONDITIONAL(GIO_2_16, false)
   AM_CONDITIONAL(GIO_2_18, false)
+
+  # check for header files
+  AC_CHECK_HEADERS([dirent.h float.h limits.h pwd.h grp.h sys/param.h sys/poll.h sys/resource.h])
+  AC_CHECK_HEADERS([sys/time.h sys/times.h sys/wait.h unistd.h values.h])
+  AC_CHECK_HEADERS([sys/select.h sys/types.h stdint.h sched.h malloc.h])
+  AC_CHECK_HEADERS([sys/vfs.h sys/mount.h sys/vmount.h sys/statfs.h sys/statvfs.h])
+  AC_CHECK_HEADERS([mntent.h sys/mnttab.h sys/vfstab.h sys/mntctl.h sys/sysctl.h fstab.h])
+
+  # check for structure fields
+  AC_CHECK_MEMBERS([struct stat.st_mtimensec, struct stat.st_mtim.tv_nsec, struct stat.st_atimensec, struct stat.st_atim.tv_nsec, struct stat.st_ctimensec, struct stat.st_ctim.tv_nsec])
+  AC_CHECK_MEMBERS([struct stat.st_blksize, struct stat.st_blocks, struct statfs.f_fstypename, struct statfs.f_bavail],,, [#include <sys/types.h>
+  #include <sys/stat.h>
+  #include <unistd.h>
+  #ifdef HAVE_SYS_STATFS_H
+  #include <sys/statfs.h>
+  #endif
+  #ifdef HAVE_SYS_PARAM_H
+  #include <sys/param.h>
+  #endif
+  #ifdef HAVE_SYS_MOUNT_H
+  #include <sys/mount.h>
+  #endif])
+  # struct statvfs.f_basetype is available on Solaris but not for Linux.
+  AC_CHECK_MEMBERS([struct statvfs.f_basetype],,, [#include <sys/statvfs.h>])
+
+  # Check for some functions
+  AC_CHECK_FUNCS(lstat strerror strsignal memmove vsnprintf stpcpy strcasecmp strncasecmp poll getcwd vasprintf setenv unsetenv getc_unlocked readlink symlink fdwalk)
+  AC_CHECK_FUNCS(chown lchown fchmod fchown link statvfs statfs utimes getgrgid getpwuid)
+  AC_CHECK_FUNCS(getmntent_r setmntent endmntent hasmntopt getmntinfo)
+
 fi
 AM_CONDITIONAL([MOO_USE_GIO], [$MOO_USE_GIO])
 if $MOO_USE_GIO; then

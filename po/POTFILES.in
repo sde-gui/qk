@@ -55,6 +55,7 @@ moo/moopython/plugins/terminal.py
 moo/mooutils/glade/mooaccelprefs.glade
 moo/mooutils/glade/moologwindow.glade
 moo/mooutils/mooaccelprefs.c
+moo/mooutils/mooutils-file.c
 moo/mooutils/moodialogs.c
 moo/mooutils/mooencodings.c
 moo/mooutils/mooencodings-data.h
