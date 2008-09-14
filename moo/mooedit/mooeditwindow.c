@@ -57,6 +57,8 @@
 #define LANG_ACTION_ID "LanguageMenu"
 #define STOP_ACTION_ID "StopJob"
 
+#define DOCUMENT_ACTION "SwitchToTab"
+
 #define DEFAULT_TITLE_FORMAT        "%a - %f%s"
 #define DEFAULT_TITLE_FORMAT_NO_DOC "%a"
 
@@ -89,10 +91,6 @@ struct MooEditWindowPrivate {
 
     char *title_format;
     char *title_format_no_doc;
-
-    MooUiXml *xml;
-    guint doc_list_merge_id;
-    guint doc_list_update_idle;
 
     GSList *stop_clients;
     GSList *jobs; /* Job* */
@@ -186,7 +184,10 @@ static GtkAction *create_lang_action            (MooEditWindow      *window);
 static void     create_paned                    (MooEditWindow      *window);
 static gboolean save_paned_config               (MooEditWindow      *window);
 
+static void     moo_edit_window_connect_menubar (MooWindow          *window);
 static void     moo_edit_window_update_doc_list (MooEditWindow      *window);
+static void     window_menu_item_selected       (MooWindow          *window,
+                                                 GtkMenuItem        *item);
 
 static void     notebook_drag_data_recv         (GtkWidget          *widget,
                                                  GdkDragContext     *context,
@@ -230,7 +231,6 @@ static void action_next_bookmark                (MooEditWindow      *window);
 static void action_prev_bookmark                (MooEditWindow      *window);
 static GtkAction *create_goto_bookmark_action   (MooWindow          *window,
                                                  gpointer            data);
-static void connect_document_menu               (MooWindow          *window);
 
 static void action_find_now_f                   (MooEditWindow      *window);
 static void action_find_now_b                   (MooEditWindow      *window);
@@ -558,7 +558,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 
     for (i = 1; i < 10; ++i)
     {
-        char *action_id = g_strdup_printf ("SwitchToTab%u", i);
+        char *action_id = g_strdup_printf (DOCUMENT_ACTION "%u", i);
         char *accel = g_strdup_printf (MOO_EDIT_ACCEL_SWITCH_TO_TAB "%u", i);
         _moo_window_class_new_action_callback (window_class, action_id, NULL,
                                                G_CALLBACK (action_switch_to_tab),
@@ -737,29 +737,10 @@ moo_edit_window_destroy (GtkObject *object)
         window->priv->save_params_idle = 0;
     }
 
-    if (window->priv->doc_list_merge_id)
-    {
-        moo_ui_xml_remove_ui (window->priv->xml,
-                              window->priv->doc_list_merge_id);
-        window->priv->doc_list_merge_id = 0;
-    }
-
-    if (window->priv->doc_list_update_idle)
-    {
-        g_source_remove (window->priv->doc_list_update_idle);
-        window->priv->doc_list_update_idle = 0;
-    }
-
     if (window->priv->statusbar_idle)
     {
         g_source_remove (window->priv->statusbar_idle);
         window->priv->statusbar_idle = 0;
-    }
-
-    if (window->priv->xml)
-    {
-        g_object_unref (window->priv->xml);
-        window->priv->xml = NULL;
     }
 
     if (window->priv->stop_clients || window->priv->jobs)
@@ -902,10 +883,8 @@ moo_edit_window_constructor (GType                  type,
     create_statusbar (window);
 
     g_signal_connect (window, "realize", G_CALLBACK (update_window_title), NULL);
-    g_signal_connect (window, "notify::ui-xml",
-                      G_CALLBACK (moo_edit_window_update_doc_list), NULL);
     g_signal_connect (window, "notify::menubar",
-                      G_CALLBACK (connect_document_menu), NULL);
+                      G_CALLBACK (moo_edit_window_connect_menubar), NULL);
 
     edit_changed (window, NULL);
     moo_edit_window_check_actions (window);
@@ -1588,10 +1567,12 @@ doc_item_selected (MooWindow   *window,
     populate_bookmark_menu (MOO_EDIT_WINDOW (window), menu, next_bk_item);
 }
 
+
 static void
-connect_document_menu (MooWindow *window)
+moo_edit_window_connect_menubar (MooWindow *window)
 {
     GtkWidget *doc_item;
+    GtkWidget *win_item;
 
     if (!window->menubar)
         return;
@@ -1600,9 +1581,16 @@ connect_document_menu (MooWindow *window)
                                       window->menubar,
                                       "Editor/Menubar/Document");
     g_return_if_fail (doc_item != NULL);
-
     g_signal_connect_swapped (doc_item, "select",
                               G_CALLBACK (doc_item_selected),
+                              window);
+
+    win_item = moo_ui_xml_get_widget (moo_window_get_ui_xml (window),
+                                      window->menubar,
+                                      "Editor/Menubar/Window");
+    g_return_if_fail (win_item != NULL);
+    g_signal_connect_swapped (win_item, "select",
+                              G_CALLBACK (window_menu_item_selected),
                               window);
 }
 
@@ -3546,151 +3534,122 @@ moo_edit_window_present_output (MooEditWindow *window)
 /* Doc list
  */
 
-static void
-doc_list_action_toggled (gpointer       action,
-                         MooEditWindow *window)
-{
-    MooEdit *doc;
-
-    if (window->priv->doc_list_update_idle ||
-        !gtk_toggle_action_get_active (action))
-            return;
-
-    doc = g_object_get_data (action, "moo-edit");
-    g_return_if_fail (MOO_IS_EDIT (doc));
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-
-    if (doc != ACTIVE_DOC (window))
-        moo_edit_window_set_active_doc (window, doc);
-}
-
-
 static int
-compare_doc_list_actions (gpointer a1,
-                          gpointer a2)
+compare_docs_for_menu (MooEdit *doc1,
+                       MooEdit *doc2)
 {
-    MooEdit *d1, *d2;
+    char *k1, *k2;
     int result;
 
-    d1 = g_object_get_data (a1, "moo-edit");
-    d2 = g_object_get_data (a2, "moo-edit");
-    g_return_val_if_fail (d1 && d2, -1);
+    k1 = g_utf8_collate_key_for_filename (moo_edit_get_display_basename (doc1), -1);
+    k2 = g_utf8_collate_key_for_filename (moo_edit_get_display_basename (doc2), -1);
 
-    result = strcmp (moo_edit_get_display_basename (d1),
-                     moo_edit_get_display_basename (d2));
+    result = strcmp (k1, k2);
 
     if (!result)
     {
-        MooEditWindow *window = moo_edit_get_window (d1);
-        result = get_page_num (window, d1) - get_page_num (window, d2);
+        MooEditWindow *window = moo_edit_get_window (doc1);
+        result = get_page_num (window, doc1) - get_page_num (window, doc2);
     }
 
+    g_free (k2);
+    g_free (k1);
     return result;
 }
 
-
-static gboolean
-do_update_doc_list (MooEditWindow *window)
+static void
+doc_menu_item_activated (MooEdit *doc)
 {
-    MooUiXml *xml;
-    GSList *actions = NULL, *docs;
-    GSList *group = NULL;
-    MooUINode *ph;
-    gpointer active_doc;
+    MooEditWindow *window;
 
-    active_doc = ACTIVE_DOC (window);
+    window = moo_edit_get_window (doc);
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
-    xml = moo_window_get_ui_xml (MOO_WINDOW (window));
-    g_return_val_if_fail (xml != NULL, FALSE);
+    moo_edit_window_set_active_doc (window, doc);
+}
 
-    if (xml != window->priv->xml)
+static void
+populate_window_menu (MooEditWindow *window,
+                      GtkWidget     *menu,
+                      GtkWidget     *no_docs_item)
+{
+    MooEdit *active_doc;
+    GSList *docs;
+    GList *children, *l;
+    int pos;
+    GtkWidget *item;
+
+    children = g_list_copy (GTK_MENU_SHELL (menu)->children);
+    pos = g_list_index (children, no_docs_item);
+    g_return_if_fail (pos >= 0);
+
+    for (l = g_list_nth (children, pos + 1); l != NULL; l = l->next)
     {
-        if (window->priv->xml)
-        {
-            if (window->priv->doc_list_merge_id)
-                moo_ui_xml_remove_ui (window->priv->xml,
-                                      window->priv->doc_list_merge_id);
-            g_object_unref (window->priv->xml);
-        }
-
-        window->priv->xml = g_object_ref (xml);
-    }
-    else if (window->priv->doc_list_merge_id)
-    {
-        moo_ui_xml_remove_ui (xml, window->priv->doc_list_merge_id);
+        if (g_object_get_data (l->data, "moo-document-menu-item"))
+            gtk_container_remove (GTK_CONTAINER (menu), l->data);
+        else
+            break;
     }
 
-    window->priv->doc_list_merge_id = 0;
+    g_list_free (children);
 
-    ph = moo_ui_xml_find_placeholder (xml, "DocList");
-    g_return_val_if_fail (ph != NULL, FALSE);
 
     docs = moo_edit_window_list_docs (window);
 
     if (!docs)
-        goto out;
+        return;
+
+    item = gtk_separator_menu_item_new ();
+    g_object_set_data (G_OBJECT (item), "moo-document-menu-item", GINT_TO_POINTER (TRUE));
+    gtk_widget_show (item);
+    gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, ++pos);
+
+    docs = g_slist_sort (docs, (GCompareFunc) compare_docs_for_menu);
+    active_doc = ACTIVE_DOC (window);
 
     while (docs)
     {
-        GtkRadioAction *action;
-        gpointer doc = docs->data;
+        int idx;
+        MooEdit *doc = docs->data;
 
-        action = g_object_get_data (doc, "moo-doc-list-action");
+        idx = get_page_num (window, doc);
 
-        if (action)
+        item = gtk_check_menu_item_new_with_label (moo_edit_get_display_basename (doc));
+        _moo_widget_set_tooltip (item, moo_edit_get_display_name (doc));
+        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), doc == active_doc);
+        gtk_check_menu_item_set_draw_as_radio (GTK_CHECK_MENU_ITEM (item), TRUE);
+        g_object_set_data (G_OBJECT (item), "moo-document-menu-item", GINT_TO_POINTER (TRUE));
+        gtk_widget_show (item);
+        gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, ++pos);
+        g_signal_connect_swapped (item, "activate", G_CALLBACK (doc_menu_item_activated), doc);
+
+        if (idx < 9)
         {
-            g_object_set (action,
-                          "label", moo_edit_get_display_basename (doc),
-                          "tooltip", moo_edit_get_display_name (doc),
-                          NULL);
+            char *action_name = g_strdup_printf (DOCUMENT_ACTION "%u", idx + 1);
+            GtkAction *action = moo_window_get_action (MOO_WINDOW (window), action_name);
+            gtk_menu_item_set_accel_path (GTK_MENU_ITEM (item),
+                                          gtk_action_get_accel_path (action));
+            g_free (action_name);
         }
-        else
-        {
-            GtkActionGroup *action_group;
-            char *name = g_strdup_printf ("MooEdit-%p", doc);
-            action = g_object_new (MOO_TYPE_RADIO_ACTION ,
-                                   "name", name,
-                                   "label", moo_edit_get_display_basename (doc),
-                                   "tooltip", moo_edit_get_display_name (doc),
-                                   "use-underline", FALSE,
-                                   NULL);
-            g_object_set_data_full (doc, "moo-doc-list-action", action, g_object_unref);
-            g_object_set_data (G_OBJECT (action), "moo-edit", doc);
-            _moo_action_set_no_accel (action, TRUE);
-            g_signal_connect (action, "toggled", G_CALLBACK (doc_list_action_toggled), window);
-            action_group = moo_action_collection_get_group (moo_window_get_actions (MOO_WINDOW (window)), NULL);
-            gtk_action_group_add_action (action_group, GTK_ACTION (action));
-            g_free (name);
-        }
-
-        gtk_radio_action_set_group (action, group);
-        group = gtk_radio_action_get_group (action);
-        actions = g_slist_prepend (actions, action);
 
         docs = g_slist_delete_link (docs, docs);
     }
+}
 
-    window->priv->doc_list_merge_id = moo_ui_xml_new_merge_id (xml);
-    actions = g_slist_sort (actions, (GCompareFunc) compare_doc_list_actions);
+static void
+window_menu_item_selected (MooWindow   *window,
+                           GtkMenuItem *win_item)
+{
+    GtkWidget *menu;
+    GtkWidget *no_docs_item;
 
-    while (actions)
-    {
-        gpointer action = actions->data;
-        gpointer doc = g_object_get_data (G_OBJECT (action), "moo-edit");
-        char *markup = g_markup_printf_escaped ("<item action=\"%s\"/>",
-                                                gtk_action_get_name (action));
+    menu = gtk_menu_item_get_submenu (win_item);
+    no_docs_item = moo_ui_xml_get_widget (moo_window_get_ui_xml (window),
+                                          window->menubar,
+                                          "Editor/Menubar/Window/NoDocuments");
+    g_return_if_fail (menu != NULL && no_docs_item != NULL);
 
-        moo_ui_xml_insert (xml, window->priv->doc_list_merge_id, ph, -1, markup);
-        gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action),
-                                      doc == active_doc);
-
-        g_free (markup);
-        actions = g_slist_delete_link (actions, actions);
-    }
-
-out:
-    window->priv->doc_list_update_idle = 0;
-    return FALSE;
+    populate_window_menu (MOO_EDIT_WINDOW (window), menu, no_docs_item);
 }
 
 
@@ -3698,12 +3657,6 @@ static void
 moo_edit_window_update_doc_list (MooEditWindow *window)
 {
     MooEdit *doc;
-
-    if (!window->priv->doc_list_update_idle)
-        window->priv->doc_list_update_idle =
-                moo_idle_add_full (G_PRIORITY_HIGH,
-                                   (GSourceFunc) do_update_doc_list,
-                                   window, NULL);
 
     if (!window->priv->history_blocked &&
         (doc = ACTIVE_DOC (window)))

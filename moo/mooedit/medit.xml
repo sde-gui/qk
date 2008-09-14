@@ -128,7 +128,6 @@
       <item action="NextTab"/>
       <separator/>
       <item action="NoDocuments"/>
-      <placeholder name="DocList"/>
       <separator/>
     </item>
 
