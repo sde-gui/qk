@@ -41,6 +41,8 @@ if [ -d po ]; then
   glib-gettextize --force --copy || exit $?
   echo intltoolize --automake --force --copy
   intltoolize --automake --force --copy || exit $?
+  echo rm -f intltool-extract.in intltool-merge.in intltool-update.in
+  rm -f intltool-extract.in intltool-merge.in intltool-update.in
 fi
 
 if [ -d po-gsv ] ; then
