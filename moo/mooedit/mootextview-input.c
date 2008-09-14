@@ -1,5 +1,5 @@
 /*
- *   mooeditinput.c
+ *   mootextview-input.c
  *
  *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
  *
@@ -21,18 +21,6 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooaccel.h"
 #include <gdk/gdkkeysyms.h>
-
-
-static GtkWidgetClass *
-parent_class (void)
-{
-    static gpointer textview_class = NULL;
-
-    if (!textview_class)
-        textview_class = GTK_WIDGET_CLASS (gtk_type_class (GTK_TYPE_TEXT_VIEW));
-
-    return GTK_WIDGET_CLASS (textview_class);
-}
 
 
 static gboolean
@@ -317,7 +305,10 @@ _moo_text_view_move_cursor_call_parent (GtkTextView        *text_view,
     if (view->priv->overwrite_mode)
         gtk_text_view_set_cursor_visible (text_view, TRUE);
 #endif
-    GTK_TEXT_VIEW_CLASS (parent_class())->move_cursor (text_view, step, count, extend_selection);
+
+    GTK_TEXT_VIEW_CLASS (_moo_text_view_parent_class)->
+        move_cursor (text_view, step, count, extend_selection);
+
 #if !GTK_CHECK_VERSION(2,12,0)
     if (view->priv->overwrite_mode)
         gtk_text_view_set_cursor_visible (text_view, FALSE);
@@ -371,11 +362,16 @@ _moo_text_view_page_horizontally (GtkTextView *text_view,
                                   gboolean     extend_selection)
 {
     MooTextView *view = MOO_TEXT_VIEW (text_view);
+
     if (view->priv->overwrite_mode)
         gtk_text_view_set_cursor_visible (text_view, TRUE);
-    GTK_TEXT_VIEW_CLASS (parent_class())->page_horizontally (text_view, count, extend_selection);
+
+    GTK_TEXT_VIEW_CLASS (_moo_text_view_parent_class)->
+        page_horizontally (text_view, count, extend_selection);
+
     if (view->priv->overwrite_mode)
         gtk_text_view_set_cursor_visible (text_view, FALSE);
+
     _moo_text_view_pend_cursor_blink (view);
 }
 #endif
@@ -393,7 +389,8 @@ _moo_text_view_delete_from_cursor (GtkTextView        *text_view,
 
     if (type != GTK_DELETE_WORD_ENDS)
     {
-        GTK_TEXT_VIEW_CLASS (parent_class())->delete_from_cursor (text_view, type, count);
+        GTK_TEXT_VIEW_CLASS (_moo_text_view_parent_class)->
+            delete_from_cursor (text_view, type, count);
         return;
     }
 
@@ -742,7 +739,8 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
         }
         else if (event->button == 2 || event->button == 3)
         {
-            return parent_class()->button_press_event (widget, event);
+            return GTK_WIDGET_CLASS (_moo_text_view_parent_class)->
+                        button_press_event (widget, event);
         }
         else
         {
@@ -1258,7 +1256,8 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
 
     view->priv->in_key_press = TRUE;
     gtk_text_buffer_begin_user_action (buffer);
-    handled = parent_class()->key_press_event (widget, event);
+    handled = GTK_WIDGET_CLASS (_moo_text_view_parent_class)->
+                    key_press_event (widget, event);
     gtk_text_buffer_end_user_action (buffer);
     view->priv->in_key_press = FALSE;
 

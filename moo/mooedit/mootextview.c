@@ -215,7 +215,7 @@ enum {
 };
 
 static guint signals[LAST_SIGNAL];
-
+gpointer _moo_text_view_parent_class = NULL;
 
 enum {
     PROP_0,
@@ -258,15 +258,15 @@ G_DEFINE_TYPE_WITH_CODE (MooTextView, moo_text_view, GTK_TYPE_TEXT_VIEW,
 
 static void moo_text_view_class_init (MooTextViewClass *klass)
 {
-    gpointer ref_class;
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
     GtkTextViewClass *text_view_class = GTK_TEXT_VIEW_CLASS (klass);
     GtkBindingSet *binding_set;
 
-    ref_class = g_type_class_ref (MOO_TYPE_INDENTER);
-    g_type_class_unref (ref_class);
+    _moo_text_view_parent_class = moo_text_view_parent_class;
+    g_type_class_unref (g_type_class_ref (MOO_TYPE_INDENTER));
+    g_type_class_add_private (klass, sizeof (MooTextViewPrivate));
 
     gobject_class->set_property = moo_text_view_set_property;
     gobject_class->get_property = moo_text_view_get_property;
@@ -313,8 +313,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     klass->redo = moo_text_view_redo;
     klass->char_inserted = moo_text_view_char_inserted;
     klass->apply_style_scheme = moo_text_view_apply_style_scheme;
-
-    g_type_class_add_private (klass, sizeof (MooTextViewPrivate));
 
     g_object_class_install_property (gobject_class,
                                      PROP_BUFFER,

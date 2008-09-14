@@ -64,6 +64,7 @@ int         _moo_text_view_get_line_height      (MooTextView        *view);
 void        _moo_text_view_set_line_numbers_font (MooTextView       *view,
                                                  const char         *name);
 
+extern gpointer _moo_text_view_parent_class;
 
 typedef enum {
     MOO_TEXT_VIEW_DRAG_NONE = 0,

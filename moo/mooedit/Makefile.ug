@@ -43,7 +43,6 @@ libmooedit_SOURCES_ =			\
 	mooeditfiltersettings.c		\
 	mooeditfiltersettings.h		\
 	mooedit.h			\
-	mooeditinput.c			\
 	mooedit-lua-api.c		\
 	mooedit-lua.c			\
 	mooedit-lua.h			\
@@ -101,6 +100,7 @@ libmooedit_SOURCES_ =			\
 	mootextstylescheme.h		\
 	mootextview.c			\
 	mootextview.h			\
+	mootextview-input.c		\
 	mootextview-private.h		\
 	moousertools.c			\
 	moousertools.h			\
