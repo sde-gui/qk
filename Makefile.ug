@@ -27,9 +27,6 @@ endif
 if MOO_ENABLE_TESTS
 SUBDIRS += tests
 else
-if MOO_ENABLE_UNIT_TESTS
-SUBDIRS += tests
-endif
 endif
 
 moo-config-dirs.h: moo-config-dirs.h.stamp

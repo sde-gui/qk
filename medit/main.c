@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include "mem-debug.h"
+#include "run-tests.h"
 
 typedef MooApp MeditApp;
 typedef MooAppClass MeditAppClass;
@@ -432,6 +433,15 @@ medit_main (int argc, char *argv[])
 int
 main (int argc, char *argv[])
 {
+#ifdef MOO_ENABLE_UNIT_TESTS
+    if (argc > 1 && strcmp (argv[1], "--ut") == 0)
+    {
+        memmove (argv + 1, argv + 2, (argc - 1) * sizeof (char*));
+        argc -= 1;
+        return unit_tests_main (argc, argv);
+    }
+    else
+#endif
     return medit_main (argc, argv);
 }
 

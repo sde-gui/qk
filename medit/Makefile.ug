@@ -10,7 +10,7 @@ MODULE = medit
 bin_PROGRAMS = medit
 
 EXTRA_DIST += main.c
-medit_SOURCES = mem-debug.h
+medit_SOURCES = mem-debug.h run-tests.h
 nodist_medit_SOURCES =
 
 medit_SOURCES += main.c
@@ -63,3 +63,16 @@ install-data-hook:
 uninstall-hook:
 	@if echo "Updating icon cache" && $(update_icon_cache); then echo "Done."; else echo "Failed."; fi
 endif
+
+if MOO_ENABLE_UNIT_TESTS
+AM_CFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
+AM_CXXFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
+endif
+
+EXTRA_DIST +=			\
+	data/gobject.lua	\
+	data/textview.lua	\
+	data/mooedit.lua	\
+	data/testustring.lua	\
+	data/testunicode.lua	\
+	data/lua/munit.lua

@@ -1,8 +1,11 @@
+#ifdef MOO_ENABLE_UNIT_TESTS
+
 #include <mooedit/mooedit-tests.h>
 #include <moolua/moolua-tests.h>
 #include <mooutils/mooutils-tests.h>
 #include <gtk/gtk.h>
 #include <stdio.h>
+#include "mem-debug.h"
 
 static void
 add_tests (void)
@@ -24,8 +27,8 @@ add_tests (void)
     moo_test_editor ();
 }
 
-int
-main (int argc, char *argv[])
+static int
+unit_tests_main (int argc, char *argv[])
 {
     const char *data_dir;
     GOptionContext *ctx;
@@ -39,7 +42,9 @@ main (int argc, char *argv[])
         { NULL, 0, 0, 0, NULL, NULL, NULL }
     };
 
+    init_mem_stuff ();
     g_thread_init (NULL);
+    g_set_prgname ("run-tests");
 
 #ifdef __WIN32__
     data_dir = "test-data";
@@ -83,3 +88,5 @@ main (int argc, char *argv[])
 
     return moo_test_get_result () ? 0 : 1;
 }
+
+#endif /* MOO_ENABLE_UNIT_TESTS */

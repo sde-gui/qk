@@ -13,6 +13,9 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef MOO_MEM_DEBUG_H
+#define MOO_MEM_DEBUG_H
+
 #undef DEBUG_MEMORY
 
 #ifndef DEBUG_MEMORY
@@ -90,3 +93,5 @@ init_mem_stuff (void)
     }
 }
 #endif
+
+#endif /* MOO_MEM_DEBUG_H */
