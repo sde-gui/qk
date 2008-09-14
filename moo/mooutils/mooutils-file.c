@@ -284,7 +284,8 @@ moo_local_file_writer_new (const char          *filename,
 
     dirname = g_path_get_dirname (filename);
 
-    if (_moo_mkdir_with_parents (dirname) != 0)
+    if ((flags & MOO_FILE_WRITER_CONFIG_MODE) &&
+        _moo_mkdir_with_parents (dirname) != 0)
     {
         int err = errno;
         char *display_name = g_filename_display_name (dirname);
@@ -296,7 +297,7 @@ moo_local_file_writer_new (const char          *filename,
         goto out;
     }
 
-    temp_filename = g_strdup_printf ("%s" G_DIR_SEPARATOR_S ".cfg-tmp-XXXXXX", dirname);
+    temp_filename = g_strdup_printf ("%s" G_DIR_SEPARATOR_S ".tmp-XXXXXX", dirname);
     errno = 0;
     fd = g_mkstemp (temp_filename);
 
@@ -362,7 +363,7 @@ moo_config_writer_new (const char  *filename,
     g_return_val_if_fail (filename != NULL, NULL);
     g_return_val_if_fail (!error || !*error, NULL);
 
-    flags = MOO_FILE_WRITER_TEXT_MODE | MOO_FILE_WRITER_LAZY;
+    flags = MOO_FILE_WRITER_TEXT_MODE | MOO_FILE_WRITER_CONFIG_MODE;
     if (save_backup)
         flags |= MOO_FILE_WRITER_SAVE_BACKUP;
 
@@ -450,7 +451,7 @@ moo_local_file_writer_close (MooFileWriter *fwriter,
     }
 
     if (!writer->error &&
-        (!(writer->flags & MOO_FILE_WRITER_LAZY) ||
+        (!(writer->flags & MOO_FILE_WRITER_CONFIG_MODE) ||
          !same_content (writer->filename, writer->temp_filename)))
     {
         if (writer->flags & MOO_FILE_WRITER_SAVE_BACKUP)
