@@ -78,14 +78,10 @@ if MOO_OS_MINGW
 libs += -lwsock32
 endif
 
-if MOO_ENABLE_TESTS
-export_flags = -export-symbols-regex ".*"
-else
 if MOO_DEBUG_ENABLED # && !MOO_ENABLE_TESTS
 export_flags = -export-symbols-regex ".*"
 else # !MOO_DEBUG_ENABLED && !MOO_ENABLE_TESTS
 export_flags = -export-symbols-regex "^(moo_|_moo_|md_).*"
-endif
 endif
 
 libmoo_la_LIBADD = $(libs) $(MOO_LIBS)

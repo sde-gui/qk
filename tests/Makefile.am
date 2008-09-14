@@ -25,7 +25,7 @@ endif
 
 all-tests: $(EXTRA_PROGRAMS)
 
-EXTRA_DIST +=		\
+EXTRA_DIST =		\
 	pyapp.py.in
 
 BUILT_SOURCES = pyapp.py

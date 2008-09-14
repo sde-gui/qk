@@ -12,7 +12,7 @@ EXTRA_DIST +=			\
 @MOO_PO_SUBDIRS_RULE2@
 BUILT_SOURCES += po-subdirs-stamp po-subdirs-stamp-2
 
-DIST_SUBDIRS = moo medit tests po po-gsv doc
+DIST_SUBDIRS = moo medit po po-gsv doc
 
 if MOO_ENABLE_NLS
 po_subdirs = po po-gsv
@@ -22,11 +22,6 @@ if MOO_BUILD_MEDIT
 SUBDIRS = . $(po_subdirs) doc moo medit
 else
 SUBDIRS = . $(po_subdirs) doc moo
-endif
-
-if MOO_ENABLE_TESTS
-SUBDIRS += tests
-else
 endif
 
 moo-config-dirs.h: moo-config-dirs.h.stamp
@@ -68,8 +63,8 @@ win-test-stuff:
 	$(MAKE) all
 	mkdir -p test-stuff/test-data
 	cp moo/.libs/libmoo.dll test-stuff/
-	cp -r $(srcdir)/tests/data/* test-stuff/test-data/
-	cp tests/.libs/run-tests.exe test-stuff/
+	cp -r $(srcdir)/medit/data/* test-stuff/test-data/
+	cp medit/.libs/medit.exe test-stuff/
 
 include dist/win32/Makefile.incl
 include dist/mac/Makefile.incl

@@ -17,18 +17,6 @@ MOO_DEBUG_ENABLED="no"
 MOO_DEBUG_CFLAGS=
 MOO_DEBUG_CXXFLAGS=
 
-AC_ARG_ENABLE(tests,
-  AC_HELP_STRING([--enable-tests],[build test programs (default = NO)]),[
-  if test "x$enable_tests" = "xno"; then
-    MOO_ENABLE_TESTS="no"
-  else
-    MOO_ENABLE_TESTS="yes"
-  fi
-  ],[
-  MOO_ENABLE_TESTS="no"
-])
-AM_CONDITIONAL(MOO_ENABLE_TESTS, test x$MOO_ENABLE_TESTS = "xyes")
-
 AC_ARG_ENABLE(unit-tests,
   AC_HELP_STRING([--enable-unit-tests],[build unit tests (default = NO)]),[
   if test "x$enable_unit_tests" = "xno"; then
@@ -110,10 +98,6 @@ fi
 MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS $_moo_debug_flags"
 MOO_DEBUG_CXXFLAGS="$MOO_DEBUG_CXXFLAGS $_moo_debug_flags"
 
-if test "x$MOO_ENABLE_TESTS" = "xyes"; then
-  MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS -DMOO_ENABLE_TESTS"
-  MOO_DEBUG_CXXFLAGS="$MOO_DEBUG_CXXFLAGS -DMOO_ENABLE_TESTS"
-fi
 if test "x$MOO_ENABLE_UNIT_TESTS" = "xyes"; then
   MOO_DEBUG_CFLAGS="$MOO_DEBUG_CFLAGS -DMOO_ENABLE_UNIT_TESTS"
   MOO_DEBUG_CXXFLAGS="$MOO_DEBUG_CXXFLAGS -DMOO_ENABLE_UNIT_TESTS"
