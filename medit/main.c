@@ -62,6 +62,7 @@ static struct MeditOpts {
     const char *project;
     gboolean project_mode;
     int line;
+    const char *encoding;
     const char *log_file;
     gboolean log_window;
     const char *exec_string;
@@ -126,6 +127,9 @@ static GOptionEntry medit_options[] = {
     { "line", 'l', 0, G_OPTION_ARG_INT, &medit_opts.line,
             /* help message for command line option --line=LINE */ N_("Open file and position cursor on line LINE"),
             /* "LINE" part in --line=LINE */ N_("LINE") },
+    { "encoding", 'e', 0, G_OPTION_ARG_STRING, &medit_opts.encoding,
+            /* help message for command line option --encoding=ENCODING */ N_("Use provided character encoding"),
+            /* "ENCODING" part in --encoding=ENCODING */ N_("ENCODING") },
     { "log-window", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.log_window,
             "Show debug output", NULL },
     { "log-file", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_FILENAME, &medit_opts.log_file,
@@ -357,7 +361,7 @@ medit_main (int argc, char *argv[])
 
     if (name)
     {
-        if (moo_app_send_files (medit_opts.files, medit_opts.line, stamp, name, options))
+        if (moo_app_send_files (medit_opts.files, medit_opts.encoding, medit_opts.line, stamp, name, options))
             exit (0);
 
         if (!medit_opts.app_name)
@@ -368,7 +372,7 @@ medit_main (int argc, char *argv[])
     }
 
     if (!new_instance && !medit_opts.app_name &&
-         moo_app_send_files (medit_opts.files, medit_opts.line, stamp, NULL, options))
+         moo_app_send_files (medit_opts.files, medit_opts.encoding, medit_opts.line, stamp, NULL, options))
     {
         notify_startup_complete ();
         exit (0);
@@ -418,7 +422,7 @@ medit_main (int argc, char *argv[])
         moo_editor_new_window (editor);
 
     if (medit_opts.files && *medit_opts.files)
-        moo_app_open_files (app, medit_opts.files, medit_opts.line, stamp, options);
+        moo_app_open_files (app, medit_opts.files, medit_opts.encoding, medit_opts.line, stamp, options);
 
     g_option_context_free (ctx);
 

@@ -2512,6 +2512,7 @@ _moo_edit_uri_to_filename (const char *uri,
 void
 _moo_editor_open_file (MooEditor  *editor,
                        const char *filename,
+                       const char *encoding,
                        guint       line,
                        guint       options)
 {
@@ -2548,7 +2549,7 @@ _moo_editor_open_file (MooEditor  *editor,
             window = moo_editor_new_window (editor);
     }
 
-    doc = moo_editor_new_file (editor, window, NULL, filename, NULL);
+    doc = moo_editor_new_file (editor, window, NULL, filename, encoding);
     g_return_if_fail (doc != NULL);
 
     moo_editor_set_active_doc (editor, doc);

@@ -38,6 +38,9 @@ use existing instance with process id //PID//.
 use instance name //NAME//. If an instance with this name is already running,
 then it will send files given on the command line to that instance and exit.
 
+: **-e**, **--encoding** //ENCODING//
+use provided character encoding to open the file
+
 : **-l**, **--line** //LINE//
 open file and position cursor on line //LINE//. Alternatively
 line number may be specified with filename, e.g.

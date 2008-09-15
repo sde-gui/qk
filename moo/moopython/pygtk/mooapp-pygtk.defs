@@ -84,6 +84,7 @@
   (return-type "gboolean")
   (parameters
     '("strv" "files")
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
     '("int" "line" (default "-1"))
     '("guint32" "stamp" (default "0"))
     '("const-char*" "pid" (null-ok) (default "NULL"))

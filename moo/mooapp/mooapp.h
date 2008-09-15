@@ -90,12 +90,14 @@ gboolean         moo_app_send_msg               (const char *pid,
                                                  const char *data,
                                                  int         len);
 gboolean         moo_app_send_files             (char      **files,
+                                                 const char *encoding,
                                                  guint32     line,
                                                  guint32     stamp,
                                                  const char *pid,
                                                  guint       options);
 void             moo_app_open_files             (MooApp     *app,
                                                  char      **files,
+                                                 const char *encoding,
                                                  guint32     line,
                                                  guint32     stamp,
                                                  guint       options);

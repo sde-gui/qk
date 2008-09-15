@@ -166,6 +166,7 @@ char           *_moo_edit_uri_to_filename   (const char     *uri,
                                              guint          *options);
 void            _moo_editor_open_file       (MooEditor      *editor,
                                              const char     *filename,
+                                             const char     *encoding,
                                              guint           line,
                                              guint           options);
 

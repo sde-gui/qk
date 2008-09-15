@@ -760,6 +760,7 @@ moo_app_send_msg (const char *pid,
 
 gboolean
 moo_app_send_files (char      **files,
+                    const char *encoding,
                     guint32     line,
                     guint32     stamp,
                     const char *pid,
@@ -773,9 +774,28 @@ moo_app_send_files (char      **files,
                   files ? g_strv_length (files) : 0u,
                   pid ? pid : "NONE");
 
+    if (encoding && strlen (encoding) > 16)
+    {
+        g_critical ("invalid encoding %s", encoding);
+        encoding = NULL;
+    }
+
+    if (encoding && !encoding[0])
+        encoding = NULL;
+
     msg = g_string_new (NULL);
 
-    g_string_append_printf (msg, "%s%08x%08x", CMD_OPEN_URIS, stamp, 0u);
+    g_string_append_printf (msg, "%s%08x%08x",
+                            encoding ? CMD_OPEN_URIS2 : CMD_OPEN_URIS,
+                            stamp, 0u);
+
+    if (encoding)
+    {
+        int len = strlen (encoding);
+        g_string_append_len (msg, encoding, len);
+        while (len++ < 16)
+            g_string_append_c (msg, ' ');
+    }
 
     for (p = files; p && *p; ++p)
     {
@@ -1128,6 +1148,7 @@ moo_app_set_ui_xml (MooApp     *app,
 static void
 moo_app_new_file (MooApp       *app,
                   const char   *filename,
+                  const char   *encoding,
                   guint32       line,
                   guint         options)
 {
@@ -1167,7 +1188,7 @@ moo_app_new_file (MooApp       *app,
                 *colon = 0;
             }
 
-            _moo_editor_open_file (editor, norm_name, line, options);
+            _moo_editor_open_file (editor, norm_name, encoding, line, options);
         }
 
         g_free (norm_name);
@@ -1333,7 +1354,8 @@ moo_app_present (MooApp *app)
 
 static void
 moo_app_open_uris (MooApp     *app,
-                   const char *data)
+                   const char *data,
+                   gboolean    has_encoding)
 {
 #ifdef MOO_BUILD_EDIT
     char **uris;
@@ -1341,6 +1363,9 @@ moo_app_open_uris (MooApp     *app,
     char *stamp_string;
     char *line_string;
     guint32 line;
+    char *encoding = NULL;
+
+    g_return_if_fail (strlen (data) > (has_encoding ? 32 : 16));
 
     stamp_string = g_strndup (data, 8);
     stamp = strtoul (stamp_string, NULL, 16);
@@ -1351,6 +1376,17 @@ moo_app_open_uris (MooApp     *app,
         line = 0;
 
     data += 16;
+
+    if (has_encoding)
+    {
+        char *p;
+        encoding = g_strndup (data, 16);
+        p = strchr (encoding, ' ');
+        if (p)
+            *p = 0;
+        data += 16;
+    }
+
     uris = g_strsplit (data, "\r\n", 0);
 
     if (uris && *uris)
@@ -1371,18 +1407,19 @@ moo_app_open_uris (MooApp     *app,
                 line = line_here;
 
             if (filename)
-                moo_app_new_file (app, filename, line, options);
+                moo_app_new_file (app, filename, encoding, line, options);
 
             g_free (filename);
         }
     }
     else
     {
-        moo_app_new_file (app, NULL, 0, 0);
+        moo_app_new_file (app, NULL, encoding, 0, 0);
     }
 
     moo_editor_present (app->priv->editor, stamp);
 
+    g_free (encoding);
     g_strfreev (uris);
     g_free (stamp_string);
 #endif /* MOO_BUILD_EDIT */
@@ -1391,6 +1428,7 @@ moo_app_open_uris (MooApp     *app,
 void
 moo_app_open_files (MooApp     *app,
                     char      **files,
+                    const char *encoding,
                     guint32     line,
                     guint32     stamp,
                     guint       options)
@@ -1404,9 +1442,9 @@ moo_app_open_files (MooApp     *app,
     for (p = files; p && *p; ++p)
     {
         if (p == files && line > 0)
-            moo_app_new_file (app, *p, line, options);
+            moo_app_new_file (app, *p, encoding, line, options);
         else
-            moo_app_new_file (app, *p, 0, options);
+            moo_app_new_file (app, *p, encoding, 0, options);
     }
 
     moo_editor_present (app->priv->editor, stamp);
@@ -1448,10 +1486,13 @@ moo_app_exec_cmd_real (MooApp             *app,
             break;
 
         case MOO_APP_CMD_OPEN_FILE:
-            moo_app_new_file (app, data, 0, 0);
+            moo_app_new_file (app, data, NULL, 0, 0);
             break;
         case MOO_APP_CMD_OPEN_URIS:
-            moo_app_open_uris (app, data);
+            moo_app_open_uris (app, data, FALSE);
+            break;
+        case MOO_APP_CMD_OPEN_URIS2:
+            moo_app_open_uris (app, data, TRUE);
             break;
         case MOO_APP_CMD_QUIT:
             moo_app_quit (app);
