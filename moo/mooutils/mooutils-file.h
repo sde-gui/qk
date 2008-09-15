@@ -16,7 +16,7 @@
 #ifndef MOO_UTILS_FILE_H
 #define MOO_UTILS_FILE_H
 
-#include <glib-object.h>
+#include <gio/gio.h>
 
 G_BEGIN_DECLS
 
@@ -43,6 +43,9 @@ typedef enum /*< flags >*/
 } MooFileWriterFlags;
 
 MooFileWriter  *moo_file_writer_new             (const char     *filename,
+                                                 MooFileWriterFlags flags,
+                                                 GError        **error);
+MooFileWriter  *moo_file_writer_new_for_file    (GFile          *file,
                                                  MooFileWriterFlags flags,
                                                  GError        **error);
 MooFileWriter  *moo_config_writer_new           (const char     *filename,

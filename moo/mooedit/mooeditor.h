@@ -90,6 +90,8 @@ MooEdit         *moo_editor_open_uri        (MooEditor      *editor,
 
 MooEdit         *moo_editor_get_doc         (MooEditor      *editor,
                                              const char     *filename);
+MooEdit         *moo_editor_get_doc_for_uri (MooEditor      *editor,
+                                             const char     *uri);
 
 MooEdit         *moo_editor_get_active_doc  (MooEditor      *editor);
 MooEditWindow   *moo_editor_get_active_window (MooEditor    *editor);

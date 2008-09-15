@@ -80,7 +80,7 @@ _moo_edit_open_dialog (GtkWidget *widget,
     g_return_val_if_fail (filenames != NULL, NULL);
 
     for (p = filenames; *p != NULL; ++p)
-        infos = g_slist_prepend (infos, moo_edit_file_info_new (*p, encoding));
+        infos = g_slist_prepend (infos, moo_edit_file_info_new_path (*p, encoding));
     infos = g_slist_reverse (infos);
 
     new_start = g_path_get_dirname (filenames[0]);
@@ -143,7 +143,7 @@ _moo_edit_save_as_dialog (MooEdit    *edit,
     encoding = moo_file_dialog_get_encoding (dialog);
     filename = moo_file_dialog_get_filename (dialog);
     g_return_val_if_fail (filename != NULL, NULL);
-    file_info = moo_edit_file_info_new (filename, encoding);
+    file_info = moo_edit_file_info_new_path (filename, encoding);
 
     new_start = g_path_get_dirname (filename);
     moo_prefs_set_filename (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), new_start);
@@ -399,50 +399,41 @@ _moo_edit_save_multiple_changes_dialog (GSList  *docs,
  */
 
 void
-_moo_edit_save_error_dialog (GtkWidget      *widget,
-                             const char     *filename,
-                             GError         *error)
+_moo_edit_save_error_dialog (GtkWidget *widget,
+                             GFile     *file,
+                             GError    *error)
 {
-    char *filename_utf8, *msg = NULL;
+    char *filename, *msg = NULL;
 
-    g_return_if_fail (filename != NULL);
+    filename = _moo_file_get_display_name (file);
 
-    filename_utf8 = g_filename_to_utf8 (filename, -1, NULL, NULL, NULL);
-
-    if (!filename_utf8)
-        g_critical ("%s: could not convert filename '%s' to utf8", G_STRLOC, filename);
-
-    if (filename_utf8)
+    if (filename)
         /* Could not save file foo.txt */
-        msg = g_strdup_printf (_("Could not save file\n%s"), filename_utf8);
+        msg = g_strdup_printf (_("Could not save file\n%s"), filename);
     else
         msg = g_strdup (_("Could not save file"));
 
     moo_error_dialog (widget, msg, error ? error->message : NULL);
 
     g_free (msg);
-    g_free (filename_utf8);
+    g_free (filename);
 }
 
 void
 _moo_edit_save_error_enc_dialog (GtkWidget  *widget,
-                                 const char *filename,
+                                 GFile      *file,
                                  const char *encoding)
 {
-    char *filename_utf8, *msg = NULL;
+    char *filename, *msg = NULL;
     char *secondary;
 
-    g_return_if_fail (filename != NULL);
     g_return_if_fail (encoding != NULL);
 
-    filename_utf8 = g_filename_to_utf8 (filename, -1, NULL, NULL, NULL);
+    filename = _moo_file_get_display_name (file);
 
-    if (!filename_utf8)
-        g_critical ("%s: could not convert filename '%s' to utf8", G_STRLOC, filename);
-
-    if (filename_utf8)
+    if (filename)
         /* Error saving file foo.txt */
-        msg = g_strdup_printf (_("Error saving file\n%s"), filename_utf8);
+        msg = g_strdup_printf (_("Error saving file\n%s"), filename);
     else
         msg = g_strdup (_("Error saving file"));
 
@@ -454,29 +445,24 @@ _moo_edit_save_error_enc_dialog (GtkWidget  *widget,
 
     g_free (msg);
     g_free (secondary);
-    g_free (filename_utf8);
+    g_free (filename);
 }
 
 
 void
-_moo_edit_open_error_dialog (GtkWidget      *widget,
-                             const char     *filename,
-                             const char     *encoding,
-                             GError         *error)
+_moo_edit_open_error_dialog (GtkWidget  *widget,
+                             GFile      *file,
+                             const char *encoding,
+                             GError     *error)
 {
-    char *filename_utf8, *msg = NULL;
+    char *filename, *msg = NULL;
     char *secondary;
 
-    g_return_if_fail (filename != NULL);
+    filename = _moo_file_get_display_name (file);
 
-    filename_utf8 = g_filename_to_utf8 (filename, -1, NULL, NULL, NULL);
-
-    if (!filename_utf8)
-        g_critical ("%s: could not convert filename '%s' to utf8", G_STRLOC, filename);
-
-    if (filename_utf8)
+    if (filename)
         /* Could not open file foo.txt */
-        msg = g_strdup_printf (_("Could not open file\n%s"), filename_utf8);
+        msg = g_strdup_printf (_("Could not open file\n%s"), filename);
     else
         msg = g_strdup (_("Could not open file"));
 
@@ -501,7 +487,7 @@ _moo_edit_open_error_dialog (GtkWidget      *widget,
 
     g_free (msg);
     g_free (secondary);
-    g_free (filename_utf8);
+    g_free (filename);
 }
 
 

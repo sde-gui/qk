@@ -21,6 +21,7 @@
 #define MOO_EDIT_FILE_OPS_H
 
 #include "mooedit/mooedit.h"
+#include <gio/gio.h>
 
 G_BEGIN_DECLS
 
@@ -32,27 +33,33 @@ typedef enum {
 } MooEditSaveFlags;
 
 #define MOO_EDIT_FILE_ERROR (_moo_edit_file_error_quark ())
-#define MOO_EDIT_FILE_ERROR_ENCODING 0
+enum {
+    MOO_EDIT_FILE_ERROR_ENCODING,
+    MOO_EDIT_FILE_ERROR_FAILED,
+    MOO_EDIT_FILE_ERROR_NOT_IMPLEMENTED
+};
 
 GQuark           _moo_edit_file_error_quark     (void) G_GNUC_CONST;
 
 gboolean         _moo_edit_load_file            (MooEdit        *edit,
-                                                 const char     *file,
+                                                 GFile          *file,
                                                  const char     *encoding,
                                                  GError        **error);
 gboolean         _moo_edit_reload_file          (MooEdit        *edit,
                                                  const char     *encoding,
                                                  GError        **error);
 gboolean         _moo_edit_save_file            (MooEdit        *edit,
-                                                 const char     *file,
+                                                 GFile          *file,
                                                  const char     *encoding,
                                                  MooEditSaveFlags flags,
                                                  GError        **error);
 gboolean         _moo_edit_save_file_copy       (MooEdit        *edit,
-                                                 const char     *file,
+                                                 GFile          *file,
                                                  const char     *encoding,
                                                  MooEditSaveFlags flags,
                                                  GError        **error);
+
+char            *_moo_file_get_display_name     (GFile          *file);
 
 
 G_END_DECLS

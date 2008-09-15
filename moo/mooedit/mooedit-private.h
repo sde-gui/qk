@@ -24,16 +24,9 @@
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootextview.h"
 #include "mooutils/mdhistorymgr.h"
-#include <sys/types.h>
+#include <gio/gio.h>
 
 G_BEGIN_DECLS
-
-#if defined(__WIN32__) && !defined(__GNUC__)
-typedef unsigned short mode_t;
-#define S_IRUSR S_IREAD
-#define S_IWUSR S_IWRITE
-#endif
-
 
 #define PROGRESS_TIMEOUT    100
 #define PROGRESS_WIDTH      300
@@ -99,8 +92,10 @@ void        _moo_edit_apply_prefs               (MooEdit        *edit);
 /* File operations
  */
 
-void         _moo_edit_set_filename             (MooEdit        *edit,
-                                                 const char     *file,
+GFile       *_moo_edit_get_file                 (MooEdit        *edit);
+
+void         _moo_edit_set_file                 (MooEdit        *edit,
+                                                 GFile          *file,
                                                  const char     *encoding);
 void         _moo_edit_set_encoding             (MooEdit        *edit,
                                                  const char     *encoding);
@@ -125,10 +120,10 @@ GdkPixbuf   *_moo_edit_get_icon                 (MooEdit        *edit,
                                                  GtkWidget      *widget,
                                                  GtkIconSize     size);
 
-#define MOO_EDIT_IS_UNTITLED(edit) (!(edit)->priv->filename)
+#define MOO_EDIT_IS_UNTITLED(edit) (!(edit)->priv->file)
 
 struct MooEditFileInfo {
-    char *filename;
+    GFile *file;
     char *encoding;
 };
 
@@ -149,6 +144,7 @@ struct MooEditPrivate {
     /***********************************************************************/
     /* Document
      */
+    GFile *file;
     char *filename;
     char *display_filename;
     char *display_basename;
@@ -161,9 +157,6 @@ struct MooEditPrivate {
     gulong focus_in_handler_id;
     gboolean modified_on_disk;
     gboolean deleted_from_disk;
-
-    mode_t mode;
-    guint mode_set : 1;
 
     /***********************************************************************/
     /* Progress dialog and stuff

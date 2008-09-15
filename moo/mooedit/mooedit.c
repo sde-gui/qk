@@ -298,7 +298,7 @@ moo_edit_constructor (GType                  type,
                               G_CALLBACK (modified_changed_cb),
                               edit);
 
-    _moo_edit_set_filename (edit, NULL, NULL);
+    _moo_edit_set_file (edit, NULL, NULL);
 
     buffer = get_buffer (edit);
     g_signal_connect_swapped (buffer, "line-mark-moved",
@@ -317,6 +317,8 @@ moo_edit_finalize (GObject *object)
 {
     MooEdit *edit = MOO_EDIT (object);
 
+    if (edit->priv->file)
+        g_object_unref (edit->priv->file);
     g_free (edit->priv->filename);
     g_free (edit->priv->display_filename);
     g_free (edit->priv->display_basename);
@@ -608,20 +610,36 @@ moo_edit_focus_out (GtkWidget     *widget,
 }
 
 
-MooEditFileInfo *
-moo_edit_file_info_new (const char *filename,
+static MooEditFileInfo *
+moo_edit_file_info_new (GFile      *file,
                         const char *encoding)
 {
-    MooEditFileInfo *info = g_new0 (MooEditFileInfo, 1);
-    info->filename = g_strdup (filename);
+    MooEditFileInfo *info = moo_new (MooEditFileInfo);
+    info->file = file;
     info->encoding = g_strdup (encoding);
     return info;
 }
 
 MooEditFileInfo *
+moo_edit_file_info_new_path (const char *path,
+                             const char *encoding)
+{
+    g_return_val_if_fail (path != NULL, NULL);
+    return moo_edit_file_info_new (g_file_new_for_path (path), encoding);
+}
+
+MooEditFileInfo *
+moo_edit_file_info_new_uri (const char *uri,
+                            const char *encoding)
+{
+    g_return_val_if_fail (uri != NULL, NULL);
+    return moo_edit_file_info_new (g_file_new_for_uri (uri), encoding);
+}
+
+MooEditFileInfo *
 moo_edit_file_info_copy (MooEditFileInfo *info)
 {
-    return info ? moo_edit_file_info_new (info->filename, info->encoding) : NULL;
+    return info ? moo_edit_file_info_new (g_object_ref (info->file), info->encoding) : NULL;
 }
 
 void
@@ -630,11 +648,18 @@ moo_edit_file_info_free (MooEditFileInfo *info)
     if (info)
     {
         g_free (info->encoding);
-        g_free (info->filename);
-        g_free (info);
+        g_object_unref (info->file);
+        moo_free (MooEditFileInfo, info);
     }
 }
 
+
+GFile *
+_moo_edit_get_file (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    return edit->priv->file ? g_file_dup (edit->priv->file) : NULL;
+}
 
 char *
 moo_edit_get_filename (MooEdit *edit)
@@ -661,11 +686,7 @@ char *
 moo_edit_get_uri (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-
-    if (edit->priv->filename)
-        return g_filename_to_uri (edit->priv->filename, NULL, NULL);
-    else
-        return NULL;
+    return edit->priv->file ? g_file_get_uri (edit->priv->file) : NULL;
 }
 
 const char *
@@ -1880,6 +1901,7 @@ _moo_edit_set_state (MooEdit        *edit,
 
 static struct {
     char *working_dir;
+    char *encodings_dir;
 } test_data;
 
 #ifdef __WIN32__
@@ -1978,6 +2000,91 @@ test_basic (void)
     g_free (filename);
 }
 
+#define TEST_ASSERT_SAME_FILE_CONTENT(filename1, filename2)             \
+{                                                                       \
+    char *contents1__ = NULL;                                           \
+    char *contents2__ = NULL;                                           \
+    g_file_get_contents (filename1, &contents1__, NULL, NULL);          \
+    g_file_get_contents (filename2, &contents2__, NULL, NULL);          \
+    if (!contents1__)                                                   \
+        moo_test_assert_msg (FALSE, __FILE__, __LINE__,                 \
+                             "could not open file %s",                  \
+                             filename1);                                \
+    if (!contents2__)                                                   \
+        moo_test_assert_msg (FALSE, __FILE__, __LINE__,                 \
+                             "could not open file %s",                  \
+                             filename2);                                \
+    if (contents1__ && contents2__)                                     \
+    {                                                                   \
+        gboolean equal = strcmp (contents1__, contents2__) == 0;        \
+        TEST_ASSERT_MSG (equal, "contents of %s and %s differ",         \
+                         filename1, filename2);                         \
+    }                                                                   \
+    g_free (contents2__);                                               \
+    g_free (contents1__);                                               \
+}
+
+static void
+test_encodings_1 (const char *name,
+                  const char *working_dir)
+{
+    char *filename;
+    char *filename2;
+    char *encoding;
+    const char *dot;
+    MooEditor *editor;
+    MooEdit *doc;
+
+    if ((dot = strchr (name, '.')))
+        encoding = g_strndup (name, dot - name);
+    else
+        encoding = g_strdup (name);
+
+    filename = g_build_filename (test_data.encodings_dir, name, NULL);
+    filename2 = g_build_filename (working_dir, name, NULL);
+
+    editor = moo_editor_instance ();
+    doc = moo_editor_open_file (editor, NULL, NULL, filename, encoding);
+    TEST_ASSERT (doc != NULL);
+
+    if (doc)
+    {
+        TEST_ASSERT (moo_edit_save_as (doc, filename2, NULL, NULL));
+        TEST_ASSERT_SAME_FILE_CONTENT (filename2, filename);
+        TEST_ASSERT (moo_edit_close (doc, TRUE));
+    }
+
+    g_free (encoding);
+    g_free (filename2);
+    g_free (filename);
+}
+
+static void
+test_encodings (void)
+{
+    GDir *dir;
+    const char *name;
+    char *working_dir;
+
+    dir = g_dir_open (test_data.encodings_dir, 0, NULL);
+
+    if (!dir)
+    {
+        g_critical ("could not open encodings dir");
+        TEST_ASSERT (FALSE);
+        return;
+    }
+
+    working_dir = g_build_filename (test_data.working_dir, "encodings", NULL);
+    _moo_mkdir_with_parents (working_dir);
+
+    while ((name = g_dir_read_name (dir)))
+        test_encodings_1 (name, working_dir);
+
+    g_free (working_dir);
+    g_dir_close (dir);
+}
+
 static gboolean
 test_suite_init (G_GNUC_UNUSED gpointer data)
 {
@@ -1990,6 +2097,8 @@ test_suite_init (G_GNUC_UNUSED gpointer data)
 
     test_data.working_dir = g_build_filename (moo_test_get_working_dir (),
                                               "editor-work", NULL);
+    test_data.encodings_dir = g_build_filename (moo_test_get_data_dir (),
+                                                "encodings", NULL);
 
     if (_moo_mkdir_with_parents (test_data.working_dir) != 0)
     {
@@ -2012,16 +2121,18 @@ test_suite_cleanup (G_GNUC_UNUSED gpointer data)
     char *cache_dir;
     MooEditor *editor;
 
-    if (!_moo_remove_dir (test_data.working_dir, TRUE, &error))
-    {
-        g_critical ("could not remove directory '%s': %s",
-                    test_data.working_dir, error->message);
-        g_error_free (error);
-        error = NULL;
-    }
+//     if (!_moo_remove_dir (test_data.working_dir, TRUE, &error))
+//     {
+//         g_critical ("could not remove directory '%s': %s",
+//                     test_data.working_dir, error->message);
+//         g_error_free (error);
+//         error = NULL;
+//     }
 
     g_free (test_data.working_dir);
+    g_free (test_data.encodings_dir);
     test_data.working_dir = NULL;
+    test_data.encodings_dir = NULL;
 
     editor = moo_editor_instance ();
     moo_editor_close_all (editor, FALSE, FALSE);
@@ -2052,6 +2163,7 @@ moo_test_editor (void)
                                               test_suite_cleanup,
                                               NULL);
     moo_test_suite_add_test (suite, "basic", (MooTestFunc) test_basic, NULL);
+    moo_test_suite_add_test (suite, "encodings", (MooTestFunc) test_encodings, NULL);
 }
 
 #endif

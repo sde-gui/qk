@@ -236,23 +236,25 @@ struct MooLocalFileWriter {
 MOO_DEFINE_TYPE_STATIC (MooLocalFileWriter, moo_local_file_writer, MOO_TYPE_FILE_WRITER)
 
 static MooFileWriter *
-moo_local_file_writer_new (const char          *filename,
+moo_local_file_writer_new (GFile               *file,
                            MooFileWriterFlags   flags,
                            GError             **error)
 {
     MooLocalFileWriter *writer = NULL;
-    GFile *file = NULL;
     GFileOutputStream *stream = NULL;
+    GFile *file_copy = NULL;
 
-    g_return_val_if_fail (filename != NULL, NULL);
+    g_return_val_if_fail (G_IS_FILE (file), NULL);
 
     if (flags & MOO_FILE_WRITER_CONFIG_MODE)
     {
         char *dirname;
+        char *filename;
 
-        dirname = g_path_get_dirname (filename);
+        filename = g_file_get_path (file);
+        dirname = filename ? g_path_get_dirname (filename) : NULL;
 
-        if (_moo_mkdir_with_parents (dirname) != 0)
+        if (dirname && _moo_mkdir_with_parents (dirname) != 0)
         {
             int err = errno;
             char *display_name = g_filename_display_name (dirname);
@@ -266,10 +268,11 @@ moo_local_file_writer_new (const char          *filename,
         }
 
         g_free (dirname);
+        g_free (filename);
     }
 
-    file = g_file_new_for_path (filename);
-    stream = g_file_replace (file, NULL,
+    file_copy = g_file_dup (file);
+    stream = g_file_replace (file_copy, NULL,
                              (flags & MOO_FILE_WRITER_SAVE_BACKUP) != 0,
                              G_FILE_CREATE_NONE,
                              NULL, error);
@@ -278,15 +281,15 @@ moo_local_file_writer_new (const char          *filename,
         goto error;
 
     writer = g_object_new (MOO_TYPE_LOCAL_FILE_WRITER, NULL);
-    writer->file = file;
+    writer->file = file_copy;
     writer->stream = G_OUTPUT_STREAM (stream);
     writer->flags = flags;
 
     return MOO_FILE_WRITER (writer);
 
 error:
-    if (file)
-        g_object_unref (file);
+    if (file_copy)
+        g_object_unref (file_copy);
     if (stream)
         g_object_unref (stream);
     return NULL;
@@ -297,9 +300,27 @@ moo_file_writer_new (const char          *filename,
                      MooFileWriterFlags   flags,
                      GError             **error)
 {
+    GFile *file;
+    MooFileWriter *writer;
+
     g_return_val_if_fail (filename != NULL, NULL);
     g_return_val_if_fail (!error || !*error, NULL);
-    return moo_local_file_writer_new (filename, flags, error);
+
+    file = g_file_new_for_path (filename);
+    writer = moo_local_file_writer_new (file, flags, error);
+
+    g_object_unref (file);
+    return writer;
+}
+
+MooFileWriter *
+moo_file_writer_new_for_file (GFile               *file,
+                              MooFileWriterFlags   flags,
+                              GError             **error)
+{
+    g_return_val_if_fail (G_IS_FILE (file), NULL);
+    g_return_val_if_fail (!error || !*error, NULL);
+    return moo_local_file_writer_new (file, flags, error);
 }
 
 MooFileWriter *
@@ -370,7 +391,9 @@ moo_local_file_writer_close (MooFileWriter *fwriter,
 
     if (!writer->error)
     {
-        g_output_stream_close (writer->stream, NULL, &writer->error);
+        g_output_stream_flush (writer->stream, NULL, &writer->error);
+        g_output_stream_close (writer->stream, NULL,
+                               writer->error ? NULL : &writer->error);
         g_object_unref (writer->stream);
         g_object_unref (writer->file);
         writer->stream = NULL;

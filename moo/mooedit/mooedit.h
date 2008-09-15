@@ -126,7 +126,9 @@ void             moo_edit_comment               (MooEdit        *edit);
 void             moo_edit_uncomment             (MooEdit        *edit);
 
 typedef struct MooEditFileInfo MooEditFileInfo;
-MooEditFileInfo *moo_edit_file_info_new         (const char         *filename,
+MooEditFileInfo *moo_edit_file_info_new_path    (const char         *path,
+                                                 const char         *encoding);
+MooEditFileInfo *moo_edit_file_info_new_uri     (const char         *uri,
                                                  const char         *encoding);
 MooEditFileInfo *moo_edit_file_info_copy        (MooEditFileInfo    *info);
 void             moo_edit_file_info_free        (MooEditFileInfo    *info);

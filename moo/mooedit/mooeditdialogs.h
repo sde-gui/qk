@@ -18,6 +18,7 @@
 
 #include "mooutils/moodialogs.h"
 #include "mooedit/mooedit.h"
+#include <gio/gio.h>
 
 G_BEGIN_DECLS
 
@@ -37,13 +38,13 @@ gboolean         _moo_edit_reload_modified_dialog   (MooEdit        *edit);
 gboolean         _moo_edit_overwrite_modified_dialog (MooEdit        *edit);
 
 void             _moo_edit_save_error_dialog        (GtkWidget      *widget,
-                                                     const char     *filename,
+                                                     GFile          *file,
                                                      GError         *error);
 void             _moo_edit_save_error_enc_dialog    (GtkWidget      *widget,
-                                                     const char     *filename,
+                                                     GFile          *file,
                                                      const char     *encoding);
 void             _moo_edit_open_error_dialog        (GtkWidget      *widget,
-                                                     const char     *filename,
+                                                     GFile          *file,
                                                      const char     *encoding,
                                                      GError         *error);
 void             _moo_edit_reload_error_dialog      (MooEdit        *doc,

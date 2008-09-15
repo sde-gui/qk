@@ -75,6 +75,7 @@ unit_tests_main (int argc, char *argv[])
 
     add_tests ();
     moo_test_run_tests (argv[1], data_dir, opts);
+
     moo_test_cleanup ();
 
 #ifdef __WIN32__
