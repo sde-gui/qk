@@ -130,6 +130,8 @@ MOO_DEFINE_ATOM (GTK_TREE_MODEL_ROW, tree_model_row)
 
 #define FILE_LIST_ROW_QUARK (file_list_row_quark ())
 MOO_DEFINE_QUARK_STATIC (moo-file-list-plugin-model-row, file_list_row_quark)
+#define FILE_LIST_QUARK (file_list_quark ())
+MOO_DEFINE_QUARK_STATIC (moo-file-list-plugin, file_list_quark)
 
 static GType         item_get_type              (void) G_GNUC_CONST;
 static Item         *item_ref                   (Item           *item);
@@ -639,6 +641,15 @@ disconnect_doc (FileList *list,
     g_object_unref (doc);
 }
 
+static GtkTreeRowReference *
+get_doc_row (FileList *list, MooEdit *doc)
+{
+    GtkTreeRowReference *row = g_object_get_qdata (G_OBJECT (doc), FILE_LIST_ROW_QUARK);
+    if (row && g_object_get_qdata (G_OBJECT (doc), FILE_LIST_QUARK) != list->plugin)
+        row = NULL;
+    return row;
+}
+
 static void
 file_list_add_doc (FileList *list,
                    MooEdit  *doc,
@@ -650,7 +661,7 @@ file_list_add_doc (FileList *list,
     GtkTreeRowReference *row;
     GtkTreePath *path;
 
-    DEBUG_ASSERT (!new || g_object_get_qdata (G_OBJECT (doc), FILE_LIST_ROW_QUARK) == NULL);
+    DEBUG_ASSERT (!new || !get_doc_row (list, doc));
     DEBUG_ASSERT (new == !g_slist_find (list->docs, doc));
 
     uri = moo_edit_get_uri (doc);
@@ -672,6 +683,7 @@ file_list_add_doc (FileList *list,
     row = gtk_tree_row_reference_new (GTK_TREE_MODEL (list), path);
     g_object_set_qdata_full (G_OBJECT (doc), FILE_LIST_ROW_QUARK, row,
                              (GDestroyNotify) gtk_tree_row_reference_free);
+    g_object_set_qdata (G_OBJECT (doc), FILE_LIST_QUARK, list->plugin);
 
     if (new)
         connect_doc (list, doc);
@@ -688,7 +700,7 @@ doc_get_list_iter (FileList    *list,
     GtkTreeRowReference *row;
     GtkTreePath *path;
 
-    row = g_object_get_qdata (G_OBJECT (doc), FILE_LIST_ROW_QUARK);
+    row = get_doc_row (list, doc);
 
     if (!row || !gtk_tree_row_reference_valid (row))
         return FALSE;
@@ -759,7 +771,12 @@ file_list_remove_doc (FileList *list,
             file_set_doc (FILE_ITEM (item), NULL);
     }
 
-    g_object_set_qdata (G_OBJECT (doc), FILE_LIST_ROW_QUARK, NULL);
+    if (get_doc_row (list, doc))
+    {
+        g_object_set_qdata (G_OBJECT (doc), FILE_LIST_ROW_QUARK, NULL);
+        g_object_set_qdata (G_OBJECT (doc), FILE_LIST_QUARK, NULL);
+    }
+
     disconnect_doc (list, doc);
 }
 
@@ -817,7 +834,12 @@ file_list_shutdown (FileList *list)
             file_set_doc (FILE_ITEM (item), NULL);
         }
 
-        g_object_set_qdata (G_OBJECT (doc), FILE_LIST_ROW_QUARK, NULL);
+        if (get_doc_row (list, doc))
+        {
+            g_object_set_qdata (G_OBJECT (doc), FILE_LIST_ROW_QUARK, NULL);
+            g_object_set_qdata (G_OBJECT (doc), FILE_LIST_QUARK, NULL);
+        }
+
         disconnect_doc (list, doc);
     }
 }
