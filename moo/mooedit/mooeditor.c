@@ -132,6 +132,9 @@ static DocList      *find_modified              (DocList        *docs);
 static void          add_new_window_action      (void);
 static void          remove_new_window_action   (void);
 
+static GObject      *moo_editor_constructor     (GType           type,
+                                                 guint           n_props,
+                                                 GObjectConstructParam *props);
 static void          moo_editor_finalize        (GObject        *object);
 static void          moo_editor_set_property    (GObject        *object,
                                                  guint           prop_id,
@@ -190,6 +193,7 @@ moo_editor_class_init (MooEditorClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     G_GNUC_UNUSED MooWindowClass *edit_window_class;
 
+    gobject_class->constructor = moo_editor_constructor;
     gobject_class->finalize = moo_editor_finalize;
     gobject_class->set_property = moo_editor_set_property;
     gobject_class->get_property = moo_editor_get_property;
@@ -260,6 +264,18 @@ static void
 moo_editor_init (MooEditor *editor)
 {
     editor->priv = G_TYPE_INSTANCE_GET_PRIVATE (editor, MOO_TYPE_EDITOR, MooEditorPrivate);
+}
+
+static GObject *
+moo_editor_constructor (GType                  type,
+                        guint                  n_props,
+                        GObjectConstructParam *props)
+{
+    MooEditor *editor;
+    GObject *object;
+
+    object = G_OBJECT_CLASS (moo_editor_parent_class)->constructor (type, n_props, props);
+    editor = MOO_EDITOR (object);
 
     _moo_stock_init ();
 
@@ -286,6 +302,8 @@ moo_editor_init (MooEditor *editor)
 
     _moo_edit_filter_settings_load ();
     moo_editor_apply_prefs (editor);
+
+    return object;
 }
 
 
@@ -1530,7 +1548,7 @@ do_close_doc (MooEditor *editor,
 
     window_info_remove (info, doc);
 
-    if ((uri = moo_edit_get_uri (doc)))
+    if (!is_embedded (editor) && (uri = moo_edit_get_uri (doc)))
     {
         MdHistoryItem *item;
         int line;
