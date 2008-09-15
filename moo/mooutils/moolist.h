@@ -66,6 +66,13 @@ list_type##_remove (ListType *list, const ElmType *data)                \
 }                                                                       \
                                                                         \
 inline static ListType *                                                \
+list_type##_delete_link (ListType *list, ListType *link)                \
+{                                                                       \
+    return (ListType*)                                                  \
+        g_slist_delete_link ((GSList*)list, (GSList*)link);             \
+}                                                                       \
+                                                                        \
+inline static ListType *                                                \
 list_type##_find (ListType *list, const ElmType *data)                  \
 {                                                                       \
     return (ListType*) g_slist_find ((GSList*) list, data);             \
