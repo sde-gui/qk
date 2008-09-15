@@ -1303,7 +1303,7 @@ moo_get_user_data_dir (void)
 }
 
 void
-_moo_set_user_data_dir (const char *path)
+moo_set_user_data_dir (const char *path)
 {
     G_LOCK (moo_user_data_dir);
 
@@ -1391,9 +1391,10 @@ add_dir_list_from_env (GPtrArray  *list,
 }
 
 
-char **
-moo_get_data_dirs (MooDataDirType type,
-                   guint         *n_dirs)
+static char **
+moo_get_data_dirs_real (MooDataDirType   type,
+                        char           **add,
+                        guint           *n_dirs)
 {
     static char **moo_data_dirs[2];
     static guint n_data_dirs[2];
@@ -1402,6 +1403,9 @@ moo_get_data_dirs (MooDataDirType type,
     g_return_val_if_fail (type < 2, NULL);
 
     G_LOCK (moo_data_dirs);
+
+    if (add && moo_data_dirs[type])
+        g_critical ("moo_add_data_dirs() called too late, ignored");
 
     if (!moo_data_dirs[type])
     {
@@ -1418,6 +1422,9 @@ moo_get_data_dirs (MooDataDirType type,
         env[1] = type == MOO_DATA_SHARE ? g_getenv ("MOO_DATA_DIRS") : g_getenv ("MOO_LIB_DIRS");
 
         g_ptr_array_add (all_dirs, moo_get_user_data_dir ());
+
+        while (add && *add)
+            g_ptr_array_add (all_dirs, g_strdup (*add++));
 
         /* environment variables override everything */
         if (env[0] || env[1])
@@ -1490,6 +1497,19 @@ moo_get_data_dirs (MooDataDirType type,
         *n_dirs = n_data_dirs[type];
 
     return g_strdupv (moo_data_dirs[type]);
+}
+
+char **
+moo_get_data_dirs (MooDataDirType type,
+                   guint         *n_dirs)
+{
+    return moo_get_data_dirs_real (type, NULL, n_dirs);
+}
+
+void
+moo_add_data_dirs (char **dirs)
+{
+    g_strfreev (moo_get_data_dirs_real (MOO_DATA_SHARE, dirs, NULL));
 }
 
 

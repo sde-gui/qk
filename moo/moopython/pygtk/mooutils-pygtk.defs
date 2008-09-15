@@ -2256,6 +2256,14 @@
   )
 )
 
+(define-function set_user_data_dir
+  (c-name "moo_set_user_data_dir")
+  (return-type "none")
+  (parameters
+    '("const-char*" "path")
+  )
+)
+
 (define-function get_user_data_dir
   (c-name "moo_get_user_data_dir")
   (return-type "char*")
@@ -2277,6 +2285,14 @@
     '("const-char*" "content")
     '("gssize" "len" (null-ok) (default "-1"))
     '("GError**" "error")
+  )
+)
+
+(define-function add_data_dirs
+  (c-name "moo_add_data_dirs")
+  (return-type "none")
+  (parameters
+    '("strv" "dirs")
   )
 )
 

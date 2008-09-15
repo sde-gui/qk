@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <medit-project version="2.0" type="C" name="moo">
- <active>debug</active>
+ <active>pida</active>
  <configurations>
   <configuration name="debug">
    <build_dir>build/debug</build_dir>
@@ -39,6 +39,16 @@
     <vars>
      <var name="CFLAGS">-O2 -g</var>
      <var name="OBJCFLAGS">-O2 -g</var>
+    </vars>
+   </configure>
+  </configuration>
+  <configuration name="pida">
+   <build_dir>build/pida</build_dir>
+   <configure>
+    <args>--enable-debug --enable-all-warnings --enable-moo-module --disable-medit</args>
+    <vars>
+     <var name="CC">gcc-4.2</var>
+     <var name="CFLAGS">-g</var>
     </vars>
    </configure>
   </configuration>

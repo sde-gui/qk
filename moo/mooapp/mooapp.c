@@ -1542,7 +1542,7 @@ try_move_user_data_dir (const char *old_dir,
         if (!_moo_rename_file (old_dir, new_dir, &error))
         {
             g_critical ("%s: %s", G_STRLOC, error->message);
-            _moo_set_user_data_dir (old_dir);
+            moo_set_user_data_dir (old_dir);
         }
     }
 }
