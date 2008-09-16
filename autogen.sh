@@ -37,9 +37,6 @@ if grep AC_PROG_LIBTOOL configure.ac > /dev/null; then
 fi
 
 if [ -d po ]; then
-  echo glib-gettextize --force --copy
-  glib-gettextize --force --copy || exit $?
-
   if [ -d intltool ]; then
     for f in intltool-extract.in intltool-merge.in intltool-update.in; do
       echo "rm -f $f && ln -s intltool/intltool/$f $f"
