@@ -31,7 +31,7 @@ if [ -f Makefile.ug ]; then
   $UGLY || exit $?
 fi
 
-if grep AC_PROG_LIBTOOL configure.ac; then
+if grep AC_PROG_LIBTOOL configure.ac > /dev/null; then
   echo $LIBTOOLIZE --automake --copy --force
   $LIBTOOLIZE --automake --copy --force || exit $?
 fi
