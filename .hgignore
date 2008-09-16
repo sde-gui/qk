@@ -28,18 +28,10 @@ intltool-update.in
 ltmain.sh
 missing
 mkinstalldirs
-po-gsv/Makefile.in.in
-po-gsv/dist
-po-gsv/missing
-po-gsv/notexist
-po-gsv/pot
-po/Makefile.in.in
-po/dist
-po/missing
-po/notexist
-po/pot
 
 syntax: regexp
+
+^po(-gsv)?/(Makefile\.in\.in|dist|missing|notexist|pot|intltool-update)$
 
 ^Makefile\.am
 ^medit/Makefile\.am

@@ -7,26 +7,6 @@ AC_DEFUN_ONCE([MOO_AC_PO_GSV],[
   IT_PO_SUBDIR([po-gsv])
 ])
 
-# _MOO_AC_PROG_INTLTOOL(min-version,if-found,if-not-found)
-AC_DEFUN([_MOO_AC_PROG_INTLTOOL],[
-  INTLTOOL_REQUIRED_VERSION_AS_INT=`echo $1 | awk -F. '{ print $ 1 * 1000 + $ 2 * 100 + $ 3; }'`
-  INTLTOOL_APPLIED_VERSION=`intltool-update --version 2>/dev/null | head -1 | cut -d" " -f3`
-  [INTLTOOL_APPLIED_VERSION_AS_INT=`echo $INTLTOOL_APPLIED_VERSION | awk -F. '{ print $ 1 * 1000 + $ 2 * 100 + $ 3; }'`
-  ]
-  if test "$INTLTOOL_APPLIED_VERSION_AS_INT" -ge "$INTLTOOL_REQUIRED_VERSION_AS_INT"; then
-    $2
-    :
-  else
-    AC_MSG_CHECKING([for intltool >= $1])
-    if test "x$INTLTOOL_APPLIED_VERSION" = "x"; then
-      AC_MSG_RESULT([not found])
-    else
-      AC_MSG_RESULT([$INTLTOOL_APPLIED_VERSION found])
-    fi
-    $3
-  fi
-])
-
 AC_DEFUN_ONCE([MOO_AC_I18N],[
   AC_REQUIRE([MOO_AC_CHECK_OS])
 
@@ -40,7 +20,7 @@ AC_DEFUN_ONCE([MOO_AC_I18N],[
     _moo_enable_nls=no
   ],[
     AC_ARG_ENABLE(nls,
-      AC_HELP_STRING(--disable-nls, [do not try to use gettext and friends]),
+      AC_HELP_STRING(--disable-nls, [do not try to use intltool and gettext]),
       [_moo_enable_nls=$enable_nls],[:])
   ])
 
@@ -57,15 +37,8 @@ AC_DEFUN_ONCE([MOO_AC_I18N],[
     MOO_PO_SUBDIRS_RULE='po-subdirs-stamp: ; echo dummy > po-subdirs-stamp'
     MOO_PO_SUBDIRS_RULE2='po-subdirs-stamp-2: ; echo dummy > po-subdirs-stamp-2'
   ],[
-    if test "x$_moo_enable_nls" != xno; then
-      _MOO_AC_PROG_INTLTOOL([0.40],[],[
-        _moo_enable_nls=no
-        AC_MSG_WARN([intltool version 0.40 or newer not found, native language support will be disabled])
-      ])
-    fi
-
     if test "x$_moo_enable_nls" = xyes; then
-      AC_PROG_INTLTOOL([0.40])
+      AC_PROG_INTLTOOL([0.37])
       AM_GLIB_GNU_GETTEXT
 
       # these two are copied from intltool, need them under different name to use with --disable-nls

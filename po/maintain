@@ -1,15 +1,37 @@
 #!/bin/sh
 
-for f in pot dist; do if test ! -e $f; then ln -s maintain $f; fi; done
+INTLTOOL_UPDATE_IN=../intltool/intltool/intltool-update.in
+INTLTOOL_UPDATE=./intltool-update
+GETTEXT_PACKAGE=moo
+
+case `pwd` in
+  */po-gsv)
+    GETTEXT_PACKAGE=moo-gsv
+    ;;
+esac
+
+do_or_die() {
+  echo "$*"
+  "$@" || exit 1
+}
+
+if [ ! -x $INTLTOOL_UPDATE -o $INTLTOOL_UPDATE_IN -nt $INTLTOOL_UPDATE ]; then
+  echo "sed -e 's,@INTLTOOL_PERL@,/usr/bin/env perl,g' $INTLTOOL_UPDATE_IN > $INTLTOOL_UPDATE.tmp"
+  sed -e 's,@INTLTOOL_PERL@,/usr/bin/env perl,g' $INTLTOOL_UPDATE_IN > $INTLTOOL_UPDATE.tmp || exit 1
+  do_or_die mv $INTLTOOL_UPDATE.tmp $INTLTOOL_UPDATE
+  do_or_die chmod +x $INTLTOOL_UPDATE
+fi
+
+for f in pot dist; do if [ ! -e $f ]; then ln -s maintain $f; fi; done
 
 dist () {
   if [ -n "$1" ]; then
-    exec intltool-update --gettext-package=moo -d "$@"
+    echo "$INTLTOOL_UPDATE --gettext-package=$GETTEXT_PACKAGE -d $*"
+    exec $INTLTOOL_UPDATE --gettext-package=$GETTEXT_PACKAGE -d "$@"
   fi
 
   for f in *.po; do
-    echo "intltool-update --gettext-package=moo -d `basename $f .po`"
-    intltool-update --gettext-package=moo -d `basename $f .po` || exit 1
+    do_or_die $INTLTOOL_UPDATE --gettext-package=$GETTEXT_PACKAGE -d `basename $f .po`
   done
 
   exit 0
@@ -17,14 +39,15 @@ dist () {
 
 case `basename $0` in
   pot)
-    args="--gettext-package=moo -p"
+    args="--gettext-package=$GETTEXT_PACKAGE -p"
     ;;
   dist)
     dist "$@"
     ;;
   *)
-    args="--gettext-package=moo -m"
+    args="--gettext-package=$GETTEXT_PACKAGE -m"
     ;;
 esac
 
-exec intltool-update $args "$@"
+echo "$INTLTOOL_UPDATE $args $*"
+exec $INTLTOOL_UPDATE $args "$@"

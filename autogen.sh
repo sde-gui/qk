@@ -9,7 +9,7 @@ srcdir=`cd $rel_srcdir && pwd`
 echo "srcdir="$srcdir
 
 aclocal_extra=
-for d in m4 moo/m4 ugly/m4; do
+for d in m4 moo/m4 ugly/m4 intltool/aclocal; do
   if [ -d $rel_srcdir/$d ]; then
     aclocal_extra="$aclocal_extra -I $d"
   fi
@@ -39,10 +39,20 @@ fi
 if [ -d po ]; then
   echo glib-gettextize --force --copy
   glib-gettextize --force --copy || exit $?
-  echo intltoolize --automake --force --copy
-  intltoolize --automake --force --copy || exit $?
-  echo rm -f intltool-extract.in intltool-merge.in intltool-update.in
-  rm -f intltool-extract.in intltool-merge.in intltool-update.in
+
+  if [ -d intltool ]; then
+    for f in intltool-extract.in intltool-merge.in intltool-update.in; do
+      echo "rm -f $f && ln -s intltool/intltool/$f $f"
+      rm -f $f || exit $?
+      ln -s intltool/intltool/$f $f || exit $?
+    done
+    echo "rm -f po/Makefile.in.in && cp intltool/intltool/Makefile.in.in po/Makefile.in.in"
+    rm -f po/Makefile.in.in || exit $?
+    cp intltool/intltool/Makefile.in.in po/Makefile.in.in || exit $?
+  else
+    echo intltoolize --automake --force --copy
+    intltoolize --automake --force --copy || exit $?
+  fi
 fi
 
 if [ -d po-gsv ] ; then
