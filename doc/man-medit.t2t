@@ -46,37 +46,40 @@ open file and position cursor on line //LINE//. Alternatively
 line number may be specified with filename, e.g.
   medit foo.txt:12
 
+: **-r**, **--reload**
+automatically reload opened file if it was modified on disk by another program.
+
 : **-w**, **--new-window**
-open file in a new window
+open file in a new window.
 
 : **-t**, **--new-tab**
-open file in a new tab
+open file in a new tab.
 
 : **--log-file** //FILE//
-write debug output into //FILE//. This option is only useful on Windows
+write debug output into //FILE//. This option is only useful on Windows.
 
 : **--log-window**
-show debug output in a log window. This option is only useful on Windows
+show debug output in a log window. This option is only useful on Windows.
 
 : **--debug** //DOMAINS//
 enable debug output for //DOMAINS// (if **medit** was compiled with
---enable-debug option)
+--enable-debug option).
 
 : **--exec** //STRING//
-execute python code in //STRING// in an existing instance
+execute python code in //STRING// in an existing instance.
 
 : **--exec-file** //FILE//
-execute python file //FILE// in an existing instance
+execute python file //FILE// in an existing instance.
 
 : **-h**, **--help**
-show summary of options
+show summary of options.
 
 : **-v**, **--version**
-show program version
+show program version.
 
 : //FILES//
 list of files to open. Filenames may include line numbers after colon,
-e.g. /tmp/file.txt:200. Trailing colon is ignored
+e.g. /tmp/file.txt:200. Trailing colon is ignored.
 
 
 = ENVIRONMENT VARIABLES =

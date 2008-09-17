@@ -84,7 +84,7 @@ static struct {
 
 static volatile int signal_received;
 
-struct _MooAppPrivate {
+struct MooAppPrivate {
     MooEditor  *editor;
     char       *rc_files[2];
 
@@ -134,7 +134,7 @@ static gboolean moo_app_init_real       (MooApp             *app);
 static int      moo_app_run_real        (MooApp             *app);
 static void     moo_app_quit_real       (MooApp             *app);
 static gboolean moo_app_try_quit_real   (MooApp             *app);
-static void     moo_app_exec_cmd_real   (MooApp             *app,
+static void     moo_app_exec_cmd        (MooApp             *app,
                                          char                cmd,
                                          const char         *data,
                                          guint               len);
@@ -154,6 +154,9 @@ static void     moo_app_install_cleanup (void);
 static void     moo_app_cleanup         (void);
 
 static void     start_input             (MooApp             *app);
+
+static void     moo_app_cmd_open_files  (MooApp             *app,
+                                         const char         *data);
 
 
 static GObjectClass *moo_app_parent_class;
@@ -200,7 +203,6 @@ enum {
     QUIT,
     TRY_QUIT,
     PREFS_DIALOG,
-    EXEC_CMD,
     LOAD_SESSION,
     SAVE_SESSION,
     LAST_SIGNAL
@@ -227,7 +229,6 @@ moo_app_class_init (MooAppClass *klass)
     klass->quit = moo_app_quit_real;
     klass->try_quit = moo_app_try_quit_real;
     klass->prefs_dialog = moo_app_create_prefs_dialog;
-    klass->exec_cmd = moo_app_exec_cmd_real;
     klass->load_session = moo_app_load_session_real;
     klass->save_session = moo_app_save_session_real;
 
@@ -303,18 +304,6 @@ moo_app_class_init (MooAppClass *klass)
                           NULL, NULL,
                           _moo_marshal_OBJECT__VOID,
                           MOO_TYPE_PREFS_DIALOG, 0);
-
-    signals[EXEC_CMD] =
-            g_signal_new ("exec-cmd",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooAppClass, exec_cmd),
-                          NULL, NULL,
-                          _moo_marshal_VOID__CHAR_STRING_UINT,
-                          G_TYPE_NONE, 3,
-                          G_TYPE_CHAR,
-                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
-                          G_TYPE_UINT);
 
     signals[LOAD_SESSION] =
             g_signal_new ("load-session",
@@ -496,57 +485,44 @@ moo_app_get_instance (void)
 }
 
 
-static gboolean
-moo_app_python_run_file (MooApp      *app,
-                         const char  *filename)
+static void
+run_python_file (MooApp     *app,
+                 const char *filename)
 {
     FILE *file;
     MooPyObject *res;
 
-    g_return_val_if_fail (MOO_IS_APP (app), FALSE);
-    g_return_val_if_fail (filename != NULL, FALSE);
-    g_return_val_if_fail (moo_python_running (), FALSE);
+    g_return_if_fail (MOO_IS_APP (app));
+    g_return_if_fail (filename != NULL);
+    g_return_if_fail (moo_python_running ());
 
     file = _moo_fopen (filename, "rb");
-    g_return_val_if_fail (file != NULL, FALSE);
+    g_return_if_fail (file != NULL);
 
     res = moo_python_run_file (file, filename, NULL, NULL);
 
     fclose (file);
 
     if (res)
-    {
         moo_Py_DECREF (res);
-        return TRUE;
-    }
     else
-    {
         moo_PyErr_Print ();
-        return FALSE;
-    }
 }
 
-
-static gboolean
-run_python_string (const char *string)
+static void
+run_python_script (const char *string)
 {
     MooPyObject *res;
 
-    g_return_val_if_fail (string != NULL, FALSE);
-    g_return_val_if_fail (moo_python_running (), FALSE);
+    g_return_if_fail (string != NULL);
+    g_return_if_fail (moo_python_running ());
 
     res = moo_python_run_simple_string (string);
 
     if (res)
-    {
         moo_Py_DECREF (res);
-        return TRUE;
-    }
     else
-    {
         moo_PyErr_Print ();
-        return FALSE;
-    }
 }
 
 
@@ -730,7 +706,7 @@ input_callback (char        cmd,
     g_return_if_fail (MOO_IS_APP (app));
     g_return_if_fail (data != NULL);
 
-    g_signal_emit (app, signals[EXEC_CMD], 0, cmd, data, len);
+    moo_app_exec_cmd (app, cmd, data, len);
 }
 
 static void
@@ -741,13 +717,6 @@ start_input (MooApp *app)
                               TRUE, input_callback, app);
 }
 
-const char *
-moo_app_get_input_pipe_name (void)
-{
-    return _moo_app_input_get_path ();
-}
-
-
 gboolean
 moo_app_send_msg (const char *pid,
                   const char *data,
@@ -755,86 +724,6 @@ moo_app_send_msg (const char *pid,
 {
     g_return_val_if_fail (data != NULL, FALSE);
     return _moo_app_input_send_msg (pid, data, len);
-}
-
-
-gboolean
-moo_app_send_files (char      **files,
-                    const char *encoding,
-                    guint32     line,
-                    guint32     stamp,
-                    const char *pid,
-                    guint       options)
-{
-    gboolean result;
-    GString *msg;
-    char **p;
-
-    _moo_message ("moo_app_send_files: got %u files to pid %s",
-                  files ? g_strv_length (files) : 0u,
-                  pid ? pid : "NONE");
-
-    if (encoding && strlen (encoding) > 16)
-    {
-        g_critical ("invalid encoding %s", encoding);
-        encoding = NULL;
-    }
-
-    if (encoding && !encoding[0])
-        encoding = NULL;
-
-    msg = g_string_new (NULL);
-
-    g_string_append_printf (msg, "%s%08x%08x",
-                            encoding ? CMD_OPEN_URIS2 : CMD_OPEN_URIS,
-                            stamp, 0u);
-
-    if (encoding)
-    {
-        int len = strlen (encoding);
-        g_string_append_len (msg, encoding, len);
-        while (len++ < 16)
-            g_string_append_c (msg, ' ');
-    }
-
-    for (p = files; p && *p; ++p)
-    {
-        char *freeme = NULL, *uri;
-        const char *basename, *filename;
-
-        basename = *p;
-
-        if (g_path_is_absolute (basename))
-        {
-            filename = basename;
-        }
-        else
-        {
-            char *dir = g_get_current_dir ();
-            freeme = g_build_filename (dir, basename, NULL);
-            filename = freeme;
-            g_free (dir);
-        }
-
-        if (p != files)
-            line = 0;
-
-        uri = _moo_edit_filename_to_uri (filename, line, options);
-
-        if (uri)
-        {
-            g_string_append (msg, uri);
-            g_string_append (msg, "\r\n");
-        }
-
-        g_free (freeme);
-        g_free (uri);
-    }
-
-    result = moo_app_send_msg (pid, msg->str, msg->len);
-
-    g_string_free (msg, TRUE);
-    return result;
 }
 
 
@@ -1145,66 +1034,6 @@ moo_app_set_ui_xml (MooApp     *app,
 }
 
 
-static void
-moo_app_new_file (MooApp       *app,
-                  const char   *filename,
-                  const char   *encoding,
-                  guint32       line,
-                  guint         options)
-{
-#ifdef MOO_BUILD_EDIT
-    MooEditor *editor = moo_app_get_editor (app);
-
-    g_return_if_fail (editor != NULL);
-
-    if (filename)
-    {
-        char *norm_name = _moo_normalize_file_path (filename);
-
-        /* Normal case, like 'medit /foo/ *', ignore directories here;
-         * usual errors will be handled in editor code. */
-        if (g_str_has_suffix (filename, "/") ||
-            g_file_test (norm_name, G_FILE_TEST_IS_DIR))
-        {
-            _moo_message ("%s: %s is a directory", G_STRLOC, norm_name);
-        }
-        else
-        {
-            char *colon;
-
-            if ((colon = strrchr (norm_name, ':')) &&
-                colon != norm_name &&
-                strspn (colon + 1, "0123456789") == strlen (colon + 1) &&
-                !g_file_test (norm_name, G_FILE_TEST_EXISTS))
-            {
-                if (colon[1])
-                {
-                    errno = 0;
-                    line = strtol (colon + 1, NULL, 10);
-                    if (errno)
-                        line = 0;
-                }
-
-                *colon = 0;
-            }
-
-            _moo_editor_open_file (editor, norm_name, encoding, line, options);
-        }
-
-        g_free (norm_name);
-    }
-    else
-    {
-        MooEdit *doc;
-
-        doc = moo_editor_get_active_doc (editor);
-
-        if (!doc || !moo_edit_is_empty (doc))
-            moo_editor_new_doc (editor, NULL);
-    }
-#endif /* MOO_BUILD_EDIT */
-}
-
 
 static void
 moo_app_load_session_real (MooApp        *app,
@@ -1337,118 +1166,124 @@ moo_app_load_session (MooApp *app)
 }
 
 
-static void
-moo_app_present (MooApp *app)
-{
-    gpointer window = NULL;
+// static void
+// moo_app_present (MooApp *app)
+// {
+//     gpointer window = NULL;
+//
+// #ifdef MOO_BUILD_EDIT
+//     if (!window && app->priv->editor)
+//         window = moo_editor_get_active_window (app->priv->editor);
+// #endif /* MOO_BUILD_EDIT */
+//
+//     if (window)
+//         moo_window_present (window, 0);
+// }
 
-#ifdef MOO_BUILD_EDIT
-    if (!window && app->priv->editor)
-        window = moo_editor_get_active_window (app->priv->editor);
-#endif /* MOO_BUILD_EDIT */
 
-    if (window)
-        moo_window_present (window, 0);
-}
-
-
-static void
-moo_app_open_uris (MooApp     *app,
-                   const char *data,
-                   gboolean    has_encoding)
-{
-#ifdef MOO_BUILD_EDIT
-    char **uris;
-    guint32 stamp;
-    char *stamp_string;
-    char *line_string;
-    guint32 line;
-    char *encoding = NULL;
-
-    g_return_if_fail (strlen (data) > (has_encoding ? 32 : 16));
-
-    stamp_string = g_strndup (data, 8);
-    stamp = strtoul (stamp_string, NULL, 16);
-    line_string = g_strndup (data + 8, 8);
-    line = strtoul (line_string, NULL, 16);
-
-    if (line > G_MAXINT)
-        line = 0;
-
-    data += 16;
-
-    if (has_encoding)
-    {
-        char *p;
-        encoding = g_strndup (data, 16);
-        p = strchr (encoding, ' ');
-        if (p)
-            *p = 0;
-        data += 16;
-    }
-
-    uris = g_strsplit (data, "\r\n", 0);
-
-    if (uris && *uris)
-    {
-        char **p;
-
-        for (p = uris; p && *p && **p; ++p)
-        {
-            guint line_here = 0;
-            guint options = 0;
-            char *filename;
-
-            filename = _moo_edit_uri_to_filename (*p, &line_here, &options);
-
-            if (p != uris)
-                line = 0;
-            if (line_here)
-                line = line_here;
-
-            if (filename)
-                moo_app_new_file (app, filename, encoding, line, options);
-
-            g_free (filename);
-        }
-    }
-    else
-    {
-        moo_app_new_file (app, NULL, encoding, 0, 0);
-    }
-
-    moo_editor_present (app->priv->editor, stamp);
-
-    g_free (encoding);
-    g_strfreev (uris);
-    g_free (stamp_string);
-#endif /* MOO_BUILD_EDIT */
-}
+// static void
+// moo_app_open_uris (MooApp     *app,
+//                    const char *data,
+//                    gboolean    has_encoding)
+// {
+// #ifdef MOO_BUILD_EDIT
+//     char **uris;
+//     guint32 stamp;
+//     char *stamp_string;
+//     char *line_string;
+//     guint32 line;
+//     char *encoding = NULL;
+//
+//     g_return_if_fail (strlen (data) > (has_encoding ? 32 : 16));
+//
+//     stamp_string = g_strndup (data, 8);
+//     stamp = strtoul (stamp_string, NULL, 16);
+//     line_string = g_strndup (data + 8, 8);
+//     line = strtoul (line_string, NULL, 16);
+//
+//     if (line > G_MAXINT)
+//         line = 0;
+//
+//     data += 16;
+//
+//     if (has_encoding)
+//     {
+//         char *p;
+//         encoding = g_strndup (data, 16);
+//         p = strchr (encoding, ' ');
+//         if (p)
+//             *p = 0;
+//         data += 16;
+//     }
+//
+//     uris = g_strsplit (data, "\r\n", 0);
+//
+//     if (uris && *uris)
+//     {
+//         char **p;
+//
+//         for (p = uris; p && *p && **p; ++p)
+//         {
+//             guint line_here = 0;
+//             guint options = 0;
+//             char *filename;
+//
+//             filename = _moo_edit_uri_to_filename (*p, &line_here, &options);
+//
+//             if (p != uris)
+//                 line = 0;
+//             if (line_here)
+//                 line = line_here;
+//
+//             if (filename)
+//                 moo_app_new_file (app, filename, encoding, line, options);
+//
+//             g_free (filename);
+//         }
+//     }
+//     else
+//     {
+//         moo_app_new_file (app, NULL, encoding, 0, 0);
+//     }
+//
+//     moo_editor_present (app->priv->editor, stamp);
+//
+//     g_free (encoding);
+//     g_strfreev (uris);
+//     g_free (stamp_string);
+// #endif /* MOO_BUILD_EDIT */
+// }
 
 void
-moo_app_open_files (MooApp     *app,
-                    char      **files,
-                    const char *encoding,
-                    guint32     line,
-                    guint32     stamp,
-                    guint       options)
+moo_app_open_files (MooApp         *app,
+                    MooAppFileInfo *files,
+                    int             n_files,
+                    guint32         stamp)
 {
-#ifdef MOO_BUILD_EDIT
-    char **p;
+    int i;
 
-    if (line > G_MAXINT)
-        line = 0;
+    g_return_if_fail (MOO_IS_APP (app));
 
-    for (p = files; p && *p; ++p)
+    if (!n_files)
     {
-        if (p == files && line > 0)
-            moo_app_new_file (app, *p, encoding, line, options);
-        else
-            moo_app_new_file (app, *p, encoding, 0, options);
+        MooEdit *doc;
+
+        doc = moo_editor_get_active_doc (app->priv->editor);
+
+        if (!doc || !moo_edit_is_empty (doc))
+            moo_editor_new_doc (app->priv->editor, NULL);
+
+        return;
     }
 
+    for (i = 0; i < n_files; ++i)
+        _moo_editor_open_uri (app->priv->editor,
+                              files[i].uri,
+                              files[i].encoding,
+                              files[i].line,
+                              files[i].options);
+
     moo_editor_present (app->priv->editor, stamp);
-#endif /* MOO_BUILD_EDIT */
 }
 
 
@@ -1457,18 +1292,18 @@ get_cmd_code (char cmd)
 {
     guint i;
 
-    for (i = 1; i < MOO_APP_CMD_LAST; ++i)
+    for (i = 1; i < CMD_LAST; ++i)
         if (cmd == moo_app_cmd_chars[i])
             return i;
 
-    return MOO_APP_CMD_ZERO;
+    g_return_val_if_reached (0);
 }
 
 static void
-moo_app_exec_cmd_real (MooApp             *app,
-                       char                cmd,
-                       const char         *data,
-                       G_GNUC_UNUSED guint len)
+moo_app_exec_cmd (MooApp             *app,
+                  char                cmd,
+                  const char         *data,
+                  G_GNUC_UNUSED guint len)
 {
     MooAppCmdCode code;
 
@@ -1478,35 +1313,25 @@ moo_app_exec_cmd_real (MooApp             *app,
 
     switch (code)
     {
-        case MOO_APP_CMD_PYTHON_STRING:
-            run_python_string (data);
+        case CMD_PYTHON_SCRIPT:
+            run_python_script (data);
             break;
-        case MOO_APP_CMD_PYTHON_FILE:
-            moo_app_python_run_file (app, data);
+        case CMD_PYTHON_FILE:
+            run_python_file (app, data);
             break;
+//         case CMD_LUA_SCRIPT:
+//             run_lua_script (data);
+//             break;
+//         case CMD_LUA_FILE:
+//             run_lua_file (app, data);
+//             break;
 
-        case MOO_APP_CMD_OPEN_FILE:
-            moo_app_new_file (app, data, NULL, 0, 0);
-            break;
-        case MOO_APP_CMD_OPEN_URIS:
-            moo_app_open_uris (app, data, FALSE);
-            break;
-        case MOO_APP_CMD_OPEN_URIS2:
-            moo_app_open_uris (app, data, TRUE);
-            break;
-        case MOO_APP_CMD_QUIT:
-            moo_app_quit (app);
-            break;
-        case MOO_APP_CMD_DIE:
-            MOO_APP_GET_CLASS(app)->quit (app);
-            break;
-
-        case MOO_APP_CMD_PRESENT:
-            moo_app_present (app);
+        case CMD_OPEN_FILES:
+            moo_app_cmd_open_files (app, data);
             break;
 
         default:
-            g_warning ("%s: got unknown command %c", G_STRLOC, cmd);
+            g_warning ("%s: got unknown command %c %d", G_STRLOC, cmd, code);
     }
 }
 
@@ -1763,4 +1588,157 @@ moo_app_save_prefs (MooApp *app)
             g_error_free (error);
         }
     }
+}
+
+
+#define MOO_APP_CMD_VERSION "1.0"
+
+static gboolean
+moo_app_parse_files (const char      *data,
+                     guint32         *stamp,
+                     MooAppFileInfo **filesp,
+                     int             *n_files)
+{
+    GArray *files = NULL;
+    MooMarkupDoc *xml;
+    MooMarkupNode *root;
+    MooMarkupNode *node;
+    const char *version;
+
+    xml = moo_markup_parse_memory (data, -1, NULL);
+    g_return_val_if_fail (xml != NULL, FALSE);
+
+    if (!(root = moo_markup_get_root_element (xml, "moo-app-open-files")) ||
+        !(version = moo_markup_get_prop (root, "version")) ||
+        strcmp (version, MOO_APP_CMD_VERSION) != 0)
+    {
+        g_warning ("%s: invalid markup", G_STRFUNC);
+        moo_markup_doc_unref (xml);
+        return FALSE;
+    }
+
+    *stamp = moo_markup_get_int_prop (root, "stamp", 0);
+
+    for (node = root->children; node != NULL; node = node->next)
+    {
+        const char *uri;
+        const char *encoding;
+        MooAppFileInfo file = {0};
+
+        if (!MOO_MARKUP_IS_ELEMENT (node))
+            continue;
+
+        if (strcmp (node->name, "file") != 0 ||
+            !(uri = moo_markup_get_content (node)) ||
+            !uri[0])
+        {
+            g_critical ("%s: oops", G_STRFUNC);
+            continue;
+        }
+
+        file.uri = g_strdup (uri);
+        encoding = moo_markup_get_prop (node, "encoding");
+        if (encoding && encoding[0])
+            file.encoding = g_strdup (encoding);
+
+        file.line = moo_markup_get_int_prop (node, "line", 0);
+        if (moo_markup_get_bool_prop (node, "new-window", FALSE))
+            file.options |= MOO_EDIT_OPEN_NEW_WINDOW;
+        if (moo_markup_get_bool_prop (node, "new-tab", FALSE))
+            file.options |= MOO_EDIT_OPEN_NEW_TAB;
+        if (moo_markup_get_bool_prop (node, "reload", FALSE))
+            file.options |= MOO_EDIT_OPEN_RELOAD;
+
+        if (!files)
+            files = g_array_new (FALSE, FALSE, sizeof (MooAppFileInfo));
+        g_array_append_val (files, file);
+    }
+
+    if (files)
+    {
+        *n_files = files->len;
+        *filesp = (MooAppFileInfo *) g_array_free (files, FALSE);
+    }
+
+    moo_markup_doc_unref (xml);
+    return TRUE;
+}
+
+static void
+moo_app_cmd_open_files (MooApp     *app,
+                        const char *data)
+{
+    MooAppFileInfo *files = NULL;
+    int n_files = 0;
+    int i;
+    guint32 stamp;
+
+    if (moo_app_parse_files (data, &stamp, &files, &n_files))
+        moo_app_open_files (app, files, n_files, stamp);
+
+    for (i = 0; i < n_files; ++i)
+    {
+        g_free (files[i].uri);
+        g_free (files[i].encoding);
+    }
+
+    g_free (files);
+}
+
+G_GNUC_PRINTF(2, 3) static void
+append_escaped (GString *str, const char *format, ...)
+{
+    va_list args;
+    char *escaped;
+
+    va_start (args, format);
+
+    escaped = g_markup_vprintf_escaped (format, args);
+    g_string_append (str, escaped);
+    g_free (escaped);
+
+    va_end (args);
+}
+
+gboolean
+moo_app_send_files (MooAppFileInfo *files,
+                    int             n_files,
+                    guint32         stamp,
+                    const char     *pid)
+{
+    gboolean result;
+    GString *msg;
+    int i;
+
+#if 0
+    _moo_message ("moo_app_send_files: got %d files to pid %s",
+                  n_files, pid ? pid : "NONE");
+#endif
+
+    msg = g_string_new (NULL);
+    g_string_append_printf (msg, "%s<moo-app-open-files version=\"%s\" stamp=\"%u\">",
+                            CMD_OPEN_FILES_S, MOO_APP_CMD_VERSION, stamp);
+
+    for (i = 0; i < n_files; ++i)
+    {
+        g_string_append (msg, "<file");
+        if (files[i].encoding)
+            g_string_append_printf (msg, " encoding=\"%s\"", files[i].encoding);
+        if (files[i].line)
+            g_string_append_printf (msg, " line=\"%u\"", (guint) files[i].line);
+        if (files[i].options & MOO_EDIT_OPEN_NEW_WINDOW)
+            g_string_append_printf (msg, " new-window=\"true\"");
+        if (files[i].options & MOO_EDIT_OPEN_NEW_TAB)
+            g_string_append_printf (msg, " new-tab=\"true\"");
+        if (files[i].options & MOO_EDIT_OPEN_RELOAD)
+            g_string_append_printf (msg, " reload=\"true\"");
+        append_escaped (msg, ">%s</file>", files[i].uri);
+    }
+
+    g_string_append (msg, "</moo-app-open-files>");
+
+    result = moo_app_send_msg (pid, msg->str, msg->len);
+
+    g_string_free (msg, TRUE);
+    return result;
 }

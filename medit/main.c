@@ -29,6 +29,29 @@
 #include "mem-debug.h"
 #include "run-tests.h"
 
+static struct MeditOpts {
+    int use_session;
+    int pid;
+    gboolean new_app;
+    const char *app_name;
+    gboolean new_window;
+    gboolean new_tab;
+    gboolean reload;
+    const char *project;
+    gboolean project_mode;
+    int line;
+    const char *encoding;
+    const char *log_file;
+    gboolean log_window;
+    const char *exec_string;
+    const char *exec_file;
+    char **files;
+    gboolean show_version;
+    const char *debug;
+} medit_opts = { -1, -1 };
+
+#include "parse.h"
+
 typedef MooApp MeditApp;
 typedef MooAppClass MeditAppClass;
 MOO_DEFINE_TYPE_STATIC (MeditApp, medit_app, MOO_TYPE_APP)
@@ -51,26 +74,6 @@ static void
 medit_app_init (G_GNUC_UNUSED MooApp *app)
 {
 }
-
-static struct MeditOpts {
-    int use_session;
-    int pid;
-    gboolean new_app;
-    const char *app_name;
-    gboolean new_window;
-    gboolean new_tab;
-    const char *project;
-    gboolean project_mode;
-    int line;
-    const char *encoding;
-    const char *log_file;
-    gboolean log_window;
-    const char *exec_string;
-    const char *exec_file;
-    char **files;
-    gboolean show_version;
-    const char *debug;
-} medit_opts = { -1, -1 };
 
 static gboolean
 parse_use_session (const char *option_name,
@@ -130,6 +133,8 @@ static GOptionEntry medit_options[] = {
     { "encoding", 'e', 0, G_OPTION_ARG_STRING, &medit_opts.encoding,
             /* help message for command line option --encoding=ENCODING */ N_("Use provided character encoding"),
             /* "ENCODING" part in --encoding=ENCODING */ N_("ENCODING") },
+    { "reload", 'r', 0, G_OPTION_ARG_NONE, &medit_opts.reload,
+            /* help message for command line option --reload */ N_("Automatically reload file if it was modified on disk"), NULL },
     { "log-window", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.log_window,
             "Show debug output", NULL },
     { "log-file", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_FILENAME, &medit_opts.log_file,
@@ -306,8 +311,9 @@ medit_main (int argc, char *argv[])
     guint32 stamp;
     const char *name = NULL;
     char pid_buf[32];
-    guint options = 0;
     GOptionContext *ctx;
+    MooAppFileInfo *files;
+    int n_files;
 
     init_mem_stuff ();
     g_thread_init (NULL);
@@ -330,11 +336,6 @@ medit_main (int argc, char *argv[])
 
     run_input = !medit_opts.new_app || medit_opts.app_name ||
                  medit_opts.use_session == 1 || medit_opts.project_mode;
-
-    if (medit_opts.new_window)
-        options |= MOO_EDIT_OPEN_NEW_WINDOW;
-    if (medit_opts.new_tab)
-        options |= MOO_EDIT_OPEN_NEW_TAB;
 
     if (medit_opts.pid > 0)
     {
@@ -359,9 +360,11 @@ medit_main (int argc, char *argv[])
         exit (0);
     }
 
+    parse_files (&files, &n_files);
+
     if (name)
     {
-        if (moo_app_send_files (medit_opts.files, medit_opts.encoding, medit_opts.line, stamp, name, options))
+        if (moo_app_send_files (files, n_files, stamp, name))
             exit (0);
 
         if (!medit_opts.app_name)
@@ -372,7 +375,7 @@ medit_main (int argc, char *argv[])
     }
 
     if (!new_instance && !medit_opts.app_name &&
-         moo_app_send_files (medit_opts.files, medit_opts.encoding, medit_opts.line, stamp, NULL, options))
+         moo_app_send_files (files, n_files, stamp, NULL))
     {
         notify_startup_complete ();
         exit (0);
@@ -421,9 +424,10 @@ medit_main (int argc, char *argv[])
     if (!moo_editor_get_active_window (editor))
         moo_editor_new_window (editor);
 
-    if (medit_opts.files && *medit_opts.files)
-        moo_app_open_files (app, medit_opts.files, medit_opts.encoding, medit_opts.line, stamp, options);
+    if (files)
+        moo_app_open_files (app, files, n_files, stamp);
 
+    free_files (files, n_files);
     g_option_context_free (ctx);
 
     retval = moo_app_run (app);

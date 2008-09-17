@@ -46,7 +46,7 @@
 #include "mooutils-thread.h"
 #include "mooutils-debug.h"
 
-MOO_DEBUG_INIT(input, TRUE)
+MOO_DEBUG_INIT(input, FALSE)
 
 #define MAX_BUFFER_SIZE 4096
 #define IPC_MAGIC_CHAR 'I'
@@ -1030,11 +1030,7 @@ event_callback (GList        *events,
         if (c != 0)
             g_string_append_c (ch->buffer, c);
         else
-        {
-            gdk_threads_enter ();
             commit (&ch->buffer);
-            gdk_threads_leave ();
-        }
 
         events = events->next;
     }

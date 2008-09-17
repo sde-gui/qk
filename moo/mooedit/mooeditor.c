@@ -1890,6 +1890,59 @@ out:
 }
 
 
+static MooEdit *
+moo_editor_new_uri (MooEditor     *editor,
+                    MooEditWindow *window,
+                    GtkWidget     *parent,
+                    const char    *uri,
+                    const char    *encoding)
+{
+    MooEdit *doc;
+    char *path;
+    GFile *file;
+
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), NULL);
+    g_return_val_if_fail (!parent || GTK_IS_WIDGET (parent), NULL);
+
+    if (!uri)
+        return moo_editor_open_uri (editor, window, parent, NULL, NULL);
+
+    file = g_file_new_for_uri (uri);
+    path = g_file_is_native (file) ? g_file_get_path (file) : NULL;
+
+    if (path && g_file_test (path, G_FILE_TEST_EXISTS))
+    {
+        g_free (path);
+        g_object_unref (file);
+        return moo_editor_open_uri (editor, window, parent,
+                                    uri, encoding);
+    }
+
+    if (!window)
+        window = moo_editor_get_active_window (editor);
+
+    if (window)
+    {
+        doc = moo_edit_window_get_active_doc (window);
+
+        if (!doc || !moo_edit_is_empty (doc))
+            doc = NULL;
+    }
+
+    if (!doc)
+        doc = moo_editor_new_doc (editor, window);
+
+    doc->priv->status = MOO_EDIT_NEW;
+    _moo_edit_set_file (doc, file, encoding);
+    moo_editor_set_active_doc (editor, doc);
+    gtk_widget_grab_focus (GTK_WIDGET (doc));
+
+    g_free (path);
+    g_object_unref (file);
+    return doc;
+}
+
 MooEdit *
 moo_editor_new_file (MooEditor      *editor,
                      MooEditWindow  *window,
@@ -2390,139 +2443,20 @@ moo_editor_apply_prefs (MooEditor *editor)
 }
 
 
-char *
-_moo_edit_filename_to_uri (const char *filename,
-                           guint       line,
-                           guint       options)
-{
-    GString *string;
-    char *uri;
-    GError *error = NULL;
-
-    g_return_val_if_fail (filename != NULL, NULL);
-
-    if (!(uri = g_filename_to_uri (filename, NULL, &error)))
-    {
-        g_warning ("%s: could not convert filename to URI: %s",
-                   G_STRLOC, error->message);
-        g_error_free (error);
-        return NULL;
-    }
-
-    if (!line && !options)
-        return uri;
-
-    string = g_string_new (uri);
-    g_string_append (string, "?");
-
-    if (line > 0)
-        g_string_append_printf (string, "line=%u;", line);
-
-    if (options)
-    {
-        g_string_append (string, "options=");
-        if (options & MOO_EDIT_OPEN_NEW_WINDOW)
-            g_string_append (string, "new-window");
-        if (options & MOO_EDIT_OPEN_NEW_TAB)
-            g_string_append (string, "new-tab");
-        g_string_append (string, ";");
-    }
-
-    g_free (uri);
-    return g_string_free (string, FALSE);
-}
-
-static void
-parse_options (const char *optstring,
-               guint      *line,
-               guint      *options)
-{
-    char **p, **comps;
-
-    comps = g_strsplit (optstring, ";", 0);
-
-    for (p = comps; p && *p; ++p)
-    {
-        if (!strncmp (*p, "line=", strlen ("line=")))
-        {
-            /* doesn't matter if there is an error */
-            *line = strtoul (*p + strlen ("line="), NULL, 10);
-        }
-        else if (!strncmp (*p, "options=", strlen ("options=")))
-        {
-            char **opts, **op;
-            opts = g_strsplit (*p + strlen ("options="), ",", 0);
-            for (op = opts; op && *op; ++op)
-            {
-                if (!strcmp (*op, "new-window"))
-                    *options |= MOO_EDIT_OPEN_NEW_WINDOW;
-                else if (!strcmp (*op, "new-tab"))
-                    *options |= MOO_EDIT_OPEN_NEW_TAB;
-            }
-            g_strfreev (opts);
-        }
-    }
-
-    g_strfreev (comps);
-}
-
-char *
-_moo_edit_uri_to_filename (const char *uri,
-                           guint      *line,
-                           guint      *options)
-{
-    const char *question_mark;
-    const char *optstring = NULL;
-    char *freeme = NULL;
-    char *filename;
-    GError *error = NULL;
-
-    g_return_val_if_fail (uri != NULL, NULL);
-    g_return_val_if_fail (line != NULL, NULL);
-    g_return_val_if_fail (options != NULL, NULL);
-
-    *line = 0;
-    *options = 0;
-
-    question_mark = strchr (uri, '?');
-
-    if (question_mark && question_mark > uri)
-    {
-        freeme = g_strndup (uri, question_mark - uri);
-        optstring = question_mark + 1;
-        uri = freeme;
-    }
-
-    if (!(filename = g_filename_from_uri (uri, NULL, &error)))
-    {
-        g_warning ("%s: could not convert URI to filename: %s",
-                   G_STRLOC, error->message);
-        g_error_free (error);
-        g_free (freeme);
-        return NULL;
-    }
-
-    if (optstring)
-        parse_options (optstring, line, options);
-
-    g_free (freeme);
-    return filename;
-}
-
 void
-_moo_editor_open_file (MooEditor  *editor,
-                       const char *filename,
-                       const char *encoding,
-                       guint       line,
-                       guint       options)
+_moo_editor_open_uri (MooEditor  *editor,
+                      const char *uri,
+                      const char *encoding,
+                      guint       line,
+                      guint       options)
 {
     MooEdit *doc;
     MooEditWindow *window;
 
     g_return_if_fail (MOO_IS_EDITOR (editor));
-    g_return_if_fail (filename != NULL);
+    g_return_if_fail (uri != NULL);
 
-    doc = moo_editor_get_doc (editor, filename);
+    doc = moo_editor_get_doc_for_uri (editor, uri);
 
     if (doc)
     {
@@ -2530,6 +2464,10 @@ _moo_editor_open_file (MooEditor  *editor,
             moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line - 1, 0, FALSE, FALSE);
         moo_editor_set_active_doc (editor, doc);
         gtk_widget_grab_focus (GTK_WIDGET (doc));
+
+        if (options & MOO_EDIT_OPEN_RELOAD)
+            _moo_editor_reload (editor, doc, NULL, NULL);
+
         return;
     }
 
@@ -2549,11 +2487,14 @@ _moo_editor_open_file (MooEditor  *editor,
             window = moo_editor_new_window (editor);
     }
 
-    doc = moo_editor_new_file (editor, window, NULL, filename, encoding);
+    doc = moo_editor_new_uri (editor, window, NULL, uri, encoding);
     g_return_if_fail (doc != NULL);
 
     moo_editor_set_active_doc (editor, doc);
     if (line > 0)
         moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line - 1, 0, FALSE, TRUE);
     gtk_widget_grab_focus (GTK_WIDGET (doc));
+
+    if (options & MOO_EDIT_OPEN_RELOAD)
+        _moo_editor_reload (editor, doc, NULL, NULL);
 }

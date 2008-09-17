@@ -29,17 +29,17 @@ G_BEGIN_DECLS
 #define MOO_APP_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_APP, MooAppClass))
 
 
-typedef struct _MooApp              MooApp;
-typedef struct _MooAppPrivate       MooAppPrivate;
-typedef struct _MooAppClass         MooAppClass;
+typedef struct MooApp        MooApp;
+typedef struct MooAppPrivate MooAppPrivate;
+typedef struct MooAppClass   MooAppClass;
 
-struct _MooApp
+struct MooApp
 {
     GObject          parent;
     MooAppPrivate   *priv;
 };
 
-struct _MooAppClass
+struct MooAppClass
 {
     GObjectClass parent_class;
 
@@ -50,11 +50,6 @@ struct _MooAppClass
     gboolean    (*try_quit)     (MooApp         *app);
 
     GtkWidget*  (*prefs_dialog) (MooApp         *app);
-
-    void        (*exec_cmd)     (MooApp         *app,
-                                 char            cmd,
-                                 const char     *data,
-                                 guint           len);
 
     void        (*load_session) (MooApp         *app,
                                  MooMarkupNode  *xml);
@@ -89,22 +84,22 @@ void             moo_app_set_ui_xml             (MooApp     *app,
 gboolean         moo_app_send_msg               (const char *pid,
                                                  const char *data,
                                                  int         len);
-gboolean         moo_app_send_files             (char      **files,
-                                                 const char *encoding,
-                                                 guint32     line,
-                                                 guint32     stamp,
-                                                 const char *pid,
-                                                 guint       options);
-void             moo_app_open_files             (MooApp     *app,
-                                                 char      **files,
-                                                 const char *encoding,
-                                                 guint32     line,
-                                                 guint32     stamp,
-                                                 guint       options);
 
-void             moo_app_reload_python_plugins  (void);
+typedef struct {
+    char *uri;
+    char *encoding;
+    guint line : 24; /* 0 means unset */
+    guint options : 7;
+} MooAppFileInfo;
 
-const char      *moo_app_get_input_pipe_name    (void);
+gboolean         moo_app_send_files             (MooAppFileInfo *files,
+                                                 int             n_files,
+                                                 guint32         stamp,
+                                                 const char     *pid);
+void             moo_app_open_files             (MooApp         *app,
+                                                 MooAppFileInfo *files,
+                                                 int             n_files,
+                                                 guint32         stamp);
 
 
 G_END_DECLS

@@ -79,18 +79,18 @@
   )
 )
 
-(define-function send_files
-  (c-name "moo_app_send_files")
-  (return-type "gboolean")
-  (parameters
-    '("strv" "files")
-    '("const-char*" "encoding" (null-ok) (default "NULL"))
-    '("int" "line" (default "-1"))
-    '("guint32" "stamp" (default "0"))
-    '("const-char*" "pid" (null-ok) (default "NULL"))
-    '("guint" "options" (default "0"))
-  )
-)
+; (define-function send_files
+;   (c-name "moo_app_send_files")
+;   (return-type "gboolean")
+;   (parameters
+;     '("strv" "files")
+;     '("const-char*" "encoding" (null-ok) (default "NULL"))
+;     '("int" "line" (default "-1"))
+;     '("guint32" "stamp" (default "0"))
+;     '("const-char*" "pid" (null-ok) (default "NULL"))
+;     '("guint" "options" (default "0"))
+;   )
+; )
 
 (define-function text_view_set_markup
   (c-name "moo_text_view_set_markup")

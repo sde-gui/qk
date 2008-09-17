@@ -13,10 +13,6 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_APP_COMPILATION
-#error "This file may not be used"
-#endif
-
 #ifndef MOO_APP_PRIVATE_H
 #define MOO_APP_PRIVATE_H
 
@@ -24,58 +20,31 @@
 
 G_BEGIN_DECLS
 
-
 typedef enum
 {
-    MOO_APP_CMD_ZERO = 0,
-    MOO_APP_CMD_PYTHON_STRING,
-    MOO_APP_CMD_PYTHON_FILE,
-    MOO_APP_CMD_SCRIPT,
-    MOO_APP_CMD_OPEN_FILE,
-    MOO_APP_CMD_OPEN_URIS,
-    /* XXX pathetic! */
-    MOO_APP_CMD_OPEN_URIS2,
-    MOO_APP_CMD_QUIT,
-    MOO_APP_CMD_DIE,
-    MOO_APP_CMD_PRESENT,
-    MOO_APP_CMD_LAST
+    CMD_PYTHON_SCRIPT = 1,
+    CMD_PYTHON_FILE,
+    CMD_LUA_SCRIPT,
+    CMD_LUA_FILE,
+    CMD_OPEN_FILES,
+    CMD_LAST
 } MooAppCmdCode;
 
-
-#if defined(WANT_MOO_APP_CMD_STRINGS) || defined(WANT_MOO_APP_CMD_CHARS)
-
-#define CMD_ZERO            "\0"
-#define CMD_PYTHON_STRING   "p"
-#define CMD_PYTHON_FILE     "P"
-#define CMD_SCRIPT          "s"
-#define CMD_OPEN_FILE       "f"
-#define CMD_OPEN_URIS       "u"
-#define CMD_OPEN_URIS2      "U"
-#define CMD_QUIT            "q"
-#define CMD_DIE             "d"
-#define CMD_PRESENT         "r"
-
-#endif
-
-#ifdef WANT_MOO_APP_CMD_CHARS
+/* I is taken by the IPC thing */
+#define CMD_PYTHON_SCRIPT_S "p"
+#define CMD_PYTHON_FILE_S   "P"
+#define CMD_LUA_SCRIPT_S    "l"
+#define CMD_LUA_FILE_S      "L"
+#define CMD_OPEN_FILES_S    "F"
 
 static const char *moo_app_cmd_chars =
-    CMD_ZERO
-    CMD_PYTHON_STRING
-    CMD_PYTHON_FILE
-    CMD_SCRIPT
-    CMD_OPEN_FILE
-    CMD_OPEN_URIS
-    CMD_OPEN_URIS2
-    CMD_QUIT
-    CMD_DIE
-    CMD_PRESENT
+    "\0"
+    CMD_PYTHON_SCRIPT_S
+    CMD_PYTHON_FILE_S
+    CMD_LUA_SCRIPT_S
+    CMD_LUA_FILE_S
+    CMD_OPEN_FILES_S
 ;
-
-#endif /* WANT_MOO_APP_CMD_CHARS */
-
-
-GtkWidget       *_moo_app_create_prefs_dialog   (MooApp     *app);
 
 
 G_END_DECLS

@@ -76,3 +76,5 @@ EXTRA_DIST +=			\
 	data/testustring.lua	\
 	data/testunicode.lua	\
 	data/lua/munit.lua
+
+parse.lo: main.o

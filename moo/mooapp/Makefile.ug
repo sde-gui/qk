@@ -32,3 +32,5 @@ mooapp-credits.h: ../../THANKS $(top_srcdir)/ugly/xml2h.sh
 
 MODULE = libmooapp
 UGLY_LIBS =
+
+mooapp-private.lo: mooapp.o

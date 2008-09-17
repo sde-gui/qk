@@ -45,46 +45,50 @@ line number may be specified with filename, e.g.
 medit foo.txt:12
 
 .TP
+\fB\-r\fR, \fB\-\-reload\fR
+automatically reload opened file if it was modified on disk by another program.
+
+.TP
 \fB\-w\fR, \fB\-\-new\-window\fR
-open file in a new window
+open file in a new window.
 
 .TP
 \fB\-t\fR, \fB\-\-new\-tab\fR
-open file in a new tab
+open file in a new tab.
 
 .TP
 \fB\-\-log\-file\fR \fIFILE\fR
-write debug output into \fIFILE\fR. This option is only useful on Windows
+write debug output into \fIFILE\fR. This option is only useful on Windows.
 
 .TP
 \fB\-\-log\-window\fR
-show debug output in a log window. This option is only useful on Windows
+show debug output in a log window. This option is only useful on Windows.
 
 .TP
 \fB\-\-debug\fR \fIDOMAINS\fR
 enable debug output for \fIDOMAINS\fR (if \fBmedit\fR was compiled with
-\-\-enable\-debug option)
+\-\-enable\-debug option).
 
 .TP
 \fB\-\-exec\fR \fISTRING\fR
-execute python code in \fISTRING\fR in an existing instance
+execute python code in \fISTRING\fR in an existing instance.
 
 .TP
 \fB\-\-exec\-file\fR \fIFILE\fR
-execute python file \fIFILE\fR in an existing instance
+execute python file \fIFILE\fR in an existing instance.
 
 .TP
 \fB\-h\fR, \fB\-\-help\fR
-show summary of options
+show summary of options.
 
 .TP
 \fB\-v\fR, \fB\-\-version\fR
-show program version
+show program version.
 
 .TP
 \fIFILES\fR
 list of files to open. Filenames may include line numbers after colon,
-e.g. /tmp/file.txt:200. Trailing colon is ignored
+e.g. /tmp/file.txt:200. Trailing colon is ignored.
 
 .SH ENVIRONMENT VARIABLES
 .TP
