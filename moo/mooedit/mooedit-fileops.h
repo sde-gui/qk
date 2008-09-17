@@ -60,6 +60,7 @@ gboolean         _moo_edit_save_file_copy       (MooEdit        *edit,
                                                  GError        **error);
 
 char            *_moo_file_get_display_name     (GFile          *file);
+char            *_moo_file_get_display_basename (GFile          *file);
 
 
 G_END_DECLS

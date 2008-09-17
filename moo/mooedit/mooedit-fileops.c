@@ -1172,48 +1172,35 @@ _moo_edit_get_default_encoding (void)
 char *
 _moo_file_get_display_name (GFile *file)
 {
+    g_return_val_if_fail (G_IS_FILE (file), NULL);
+    return g_file_get_parse_name (file);
+}
+
+char *
+_moo_file_get_display_basename (GFile *file)
+{
     char *name;
-    char *filename;
+    const char *slash;
 
     g_return_val_if_fail (G_IS_FILE (file), NULL);
 
-    if ((filename = g_file_get_path (file)))
-    {
-        name = g_filename_display_name (filename);
-        g_free (filename);
-    }
-    else
-    {
-        name = g_file_get_uri (file);
-    }
+    name = _moo_file_get_display_name (file);
+    g_return_val_if_fail (name != NULL, NULL);
 
-    if (!name)
-    {
-        g_critical ("%s: oops", G_STRFUNC);
-        name = g_strdup ("<UNKNOWN>");
-    }
-
-    return name;
-}
-
-static char *
-get_basename (const char *filename)
-{
-    const char *slash;
-    slash = strrchr (filename, '/');
+    slash = strrchr (name, '/');
 
 #ifdef G_OS_WIN32
     {
-        const char *backslash = strrchr (filename, '\\');
+        const char *backslash = strrchr (name, '\\');
         if (backslash && (!slash || backslash > slash))
             slash = backslash;
     }
 #endif
 
     if (slash)
-        return g_strdup (slash + 1);
-    else
-        return g_strdup (filename);
+        memmove (name, slash + 1, strlen (slash + 1) + 1);
+
+    return name;
 }
 
 
@@ -1253,7 +1240,7 @@ _moo_edit_set_file (MooEdit    *edit,
         edit->priv->file = g_file_dup (file);
         edit->priv->filename = g_file_get_path (file);
         edit->priv->display_filename = _moo_file_get_display_name (file);
-        edit->priv->display_basename = get_basename (edit->priv->display_filename);
+        edit->priv->display_basename = _moo_file_get_display_basename (file);
     }
 
     if (!encoding)
