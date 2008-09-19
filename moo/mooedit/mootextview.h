@@ -60,7 +60,7 @@ struct _MooTextViewClass
 
     gboolean (* char_inserted)      (MooTextView    *view,
                                      GtkTextIter    *where, /* points to position after the char */
-                                     guint           character); /* gunichar */
+                                     const char     *character); /* single character as string */
 
     gboolean (* line_mark_clicked)  (MooTextView    *view,
                                      int             line);

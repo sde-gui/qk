@@ -269,7 +269,7 @@ moo_edit_init (MooEdit *edit)
 
     edit->priv->actions = moo_action_collection_new ("MooEdit", "MooEdit");
 
-    indent = moo_indenter_new (edit, NULL);
+    indent = moo_indenter_new (edit);
     moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indent);
     g_object_unref (indent);
 }

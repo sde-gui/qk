@@ -35,7 +35,7 @@ static void     moo_indenter_get_property   (GObject        *object,
                                              GParamSpec     *pspec);
 
 static void     character_default           (MooIndenter    *indenter,
-                                             gunichar        inserted_char,
+                                             const char     *inserted_char,
                                              GtkTextIter    *where);
 static void     config_changed_default      (MooIndenter    *indenter,
                                              guint           setting_id,
@@ -132,9 +132,9 @@ moo_indenter_class_init (MooIndenterClass *klass)
                           G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
                           G_STRUCT_OFFSET (MooIndenterClass, character),
                           NULL, NULL,
-                          _moo_marshal_VOID__UINT_BOXED,
-                          G_TYPE_NONE, 1,
-                          G_TYPE_UINT,
+                          _moo_marshal_VOID__STRING_BOXED,
+                          G_TYPE_NONE, 2,
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE,
                           GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE);
 }
 
@@ -274,18 +274,17 @@ config_notify (MooIndenter *indenter,
 
 
 void
-moo_indenter_character (MooIndenter    *indenter,
-                        gunichar        inserted_char,
-                        GtkTextIter    *where)
+moo_indenter_character (MooIndenter *indenter,
+                        const char  *inserted_char,
+                        GtkTextIter *where)
 {
     g_return_if_fail (MOO_IS_INDENTER (indenter));
     MOO_INDENTER_GET_CLASS(indenter)->character (indenter, inserted_char, where);
 }
 
 
-MooIndenter*
-moo_indenter_new (gpointer      doc,
-                  G_GNUC_UNUSED const char *name)
+MooIndenter *
+moo_indenter_new (gpointer doc)
 {
     g_return_val_if_fail (!doc || MOO_IS_EDIT (doc), NULL);
     return g_object_new (MOO_TYPE_INDENTER, "doc", doc, NULL);
@@ -391,16 +390,18 @@ compute_line_offset (GtkTextIter    *dest,
 
 
 static void
-character_default (MooIndenter    *indenter,
-                   gunichar        inserted_char,
-                   GtkTextIter    *where)
+character_default (MooIndenter *indenter,
+                   const char  *inserted_char,
+                   GtkTextIter *where)
 {
     char *indent_string = NULL;
     GtkTextBuffer *buffer = gtk_text_iter_get_buffer (where);
     guint offset;
     GtkTextIter iter;
 
-    if (inserted_char != '\n')
+    g_return_if_fail (inserted_char != NULL);
+
+    if (*inserted_char != '\n')
         return;
 
     iter = *where;

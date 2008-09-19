@@ -137,7 +137,7 @@ static void     insert_text_cb              (MooTextView        *view,
                                              gint                len);
 static gboolean moo_text_view_char_inserted (MooTextView        *view,
                                              GtkTextIter        *where,
-                                             guint               character);
+                                             const char         *character);
 static void     moo_text_view_delete_selection (MooTextView     *view);
 
 static void     set_manage_clipboard        (MooTextView        *view,
@@ -622,10 +622,10 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooTextViewClass, char_inserted),
                           g_signal_accumulator_true_handled, NULL,
-                          _moo_marshal_BOOLEAN__BOXED_UINT,
+                          _moo_marshal_BOOLEAN__BOXED_STRING,
                           G_TYPE_BOOLEAN, 2,
                           GTK_TYPE_TEXT_ITER | G_SIGNAL_TYPE_STATIC_SCOPE,
-                          G_TYPE_UINT);
+                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
 
     signals[CURSOR_MOVED] =
             g_signal_new ("cursor-moved",
@@ -859,6 +859,8 @@ moo_text_view_finalize (GObject *object)
 
     for (i = 0; i < MOO_TEXT_VIEW_N_COLORS; ++i)
         g_free (view->priv->colors[i]);
+
+    g_free (view->priv->char_inserted);
 
     G_OBJECT_CLASS (moo_text_view_parent_class)->finalize (object);
 }
@@ -1368,7 +1370,7 @@ insert_text_cb (MooTextView        *view,
     if (view->priv->in_key_press && g_utf8_strlen (text, len) == 1)
     {
         view->priv->in_key_press = FALSE;
-        view->priv->char_inserted = g_utf8_get_char (text);
+        view->priv->char_inserted = g_strdup (text);
         view->priv->char_inserted_offset = gtk_text_iter_get_offset (iter);
     }
 }
@@ -1386,18 +1388,19 @@ _moo_text_view_check_char_inserted (MooTextView *view)
                                             view->priv->char_inserted_offset);
 
         g_signal_emit (view, signals[CHAR_INSERTED], 0,
-                       &iter, (guint) view->priv->char_inserted,
+                       &iter, view->priv->char_inserted,
                        &result);
 
-        view->priv->char_inserted = 0;
+        g_free (view->priv->char_inserted);
+        view->priv->char_inserted = NULL;
     }
 }
 
 
 static gboolean
-moo_text_view_char_inserted (MooTextView    *view,
-                             GtkTextIter    *where,
-                             guint           character)
+moo_text_view_char_inserted (MooTextView *view,
+                             GtkTextIter *where,
+                             const char  *character)
 {
     if (view->priv->indenter)
     {

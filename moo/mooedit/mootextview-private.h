@@ -169,7 +169,7 @@ struct _MooTextViewPrivate {
     /* key press handler sets this flag in order to distinguish typed in
        characters in buffer's insert-text signal */
     gboolean in_key_press;
-    gunichar char_inserted;
+    char *char_inserted;
     int char_inserted_offset;
 
     gunichar *word_chars;

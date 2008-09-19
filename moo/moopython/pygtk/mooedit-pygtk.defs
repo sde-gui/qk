@@ -553,14 +553,15 @@
 
 ;; From mooindenter.h
 
+(ifndef pygtk-2.6
 (define-function moo_indenter_new
   (c-name "moo_indenter_new")
   (is-constructor-of "MooIndenter")
   (return-type "MooIndenter*")
-  (parameters
-    '("MooEdit*" "doc")
-    '("const-char*" "name")
+  (properties
+    '("doc")
   )
+)
 )
 
 (define-method make_space
@@ -578,7 +579,7 @@
   (c-name "moo_indenter_character")
   (return-type "none")
   (parameters
-    '("gunichar" "inserted_char")
+    '("const-char*" "inserted_char")
     '("GtkTextIter*" "where")
   )
 )
@@ -601,6 +602,24 @@
     '("guint" "first_line")
     '("guint" "last_line")
     '("int" "direction")
+  )
+)
+
+(define-virtual config_changed
+  (of-object "MooIndenter")
+  (return-type "none")
+  (parameters
+    '("guint" "setting_id")
+    '("GParamSpec*" "pspec")
+  )
+)
+
+(define-virtual character
+  (of-object "MooIndenter")
+  (return-type "none")
+  (parameters
+    '("const-char*" "inserted_char")
+    '("GtkTextIter*" "where")
   )
 )
 

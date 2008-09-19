@@ -50,22 +50,21 @@ struct _MooIndenterClass
                                  guint           setting_id,
                                  GParamSpec     *pspec);
     void    (*character)        (MooIndenter    *indenter,
-                                 gunichar        inserted_char,
+                                 const char     *inserted_char,
                                  GtkTextIter    *where);
 };
 
 
 GType        moo_indenter_get_type              (void) G_GNUC_CONST;
 
-MooIndenter *moo_indenter_new                   (gpointer        doc,
-                                                 const char     *name);
+MooIndenter *moo_indenter_new                   (gpointer        doc);
 
 char        *moo_indenter_make_space            (MooIndenter    *indenter,
                                                  guint           len,
                                                  guint           start);
 
 void         moo_indenter_character             (MooIndenter    *indenter,
-                                                 gunichar        inserted_char,
+                                                 const char     *inserted_char,
                                                  GtkTextIter    *where);
 void         moo_indenter_tab                   (MooIndenter    *indenter,
                                                  GtkTextBuffer  *buffer);
