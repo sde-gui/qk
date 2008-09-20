@@ -31,7 +31,9 @@
 
 G_BEGIN_DECLS
 
+#if !GLIB_CHECK_VERSION(2,14,0)
 typedef gint64 goffset;
+#endif
 
 typedef struct _GAppLaunchContext             GAppLaunchContext;
 typedef struct _GAppInfo                      GAppInfo; /* Dummy typedef */
