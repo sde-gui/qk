@@ -264,7 +264,7 @@ class CConfig(SimpleConfig):
 
 factory_template = """\
 <?xml version="1.0" encoding="UTF-8"?>
-<medit-project version="1.0" type="C" name="%(project_name)s">
+<medit-project version="2.0" type="C" name="%(project_name)s">
  <active>debug</active>
  <configurations>
   <debug>

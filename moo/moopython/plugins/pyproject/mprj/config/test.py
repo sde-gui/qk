@@ -297,7 +297,7 @@ class TestConfig(unittest.TestCase):
                 'stuff' : Dict(str)
             }
 
-        f = File("""<medit-project version="1.0" name="Foo" type="Simple">
+        f = File("""<medit-project version="2.0" name="Foo" type="Simple">
                       <variables>
                         <foo>bar</foo>
                       </variables>
