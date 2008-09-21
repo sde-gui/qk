@@ -64,6 +64,10 @@ unit_tests_main (int argc, char *argv[])
         exit (EXIT_FAILURE);
     }
 
+#if !GLIB_CHECK_VERSION(2,8,0)
+    g_set_prgname ("run-tests");
+#endif
+
     if (argc > 2)
     {
         g_printerr ("invalid arguments\n");

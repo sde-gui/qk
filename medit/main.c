@@ -321,6 +321,10 @@ medit_main (int argc, char *argv[])
 
     ctx = parse_args (argc, argv);
 
+#if !GLIB_CHECK_VERSION(2,8,0)
+    g_set_prgname ("medit");
+#endif
+
     stamp = get_time_stamp ();
 
 #if 0
