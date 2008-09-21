@@ -378,8 +378,6 @@ moo_app_constructor (GType           type,
     object = moo_app_parent_class->constructor (type, n_params, params);
     app = MOO_APP (object);
 
-    g_set_prgname (MOO_APP_SHORT_NAME);
-
 #if defined(HAVE_SIGNAL) && defined(SIGINT)
     setup_signals (sigint_handler);
 #endif
