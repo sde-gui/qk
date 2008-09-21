@@ -1129,7 +1129,9 @@ ipc_callback (GObject    *obj,
         return;
     }
 
+#if 0
     g_print ("%s: got data: %.*s\n", G_STRLOC, (int) len, data);
+#endif
 
     if (parse_update_item (xml, &item, &type))
     {
@@ -1840,6 +1842,8 @@ md_history_item_get_icon (MdHistoryItem *item)
         display_name = uri_get_display_name (item->uri);
         /* XXX */
         moo_file_icon_for_file (item->icon, display_name);
+
+        g_free (display_name);
     }
 
     return item->icon;
