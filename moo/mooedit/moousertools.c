@@ -225,21 +225,6 @@ check_sensitive_func (GtkAction      *gtkaction,
 }
 
 
-static char *
-get_name (const char *label)
-{
-    char *underscore, *name;
-
-    name = g_strdup (label);
-    underscore = strchr (name, '_');
-
-    if (underscore)
-        memmove (underscore, underscore + 1, strlen (underscore + 1) + 1);
-
-    return name;
-}
-
-
 static gboolean
 check_info (MooUserToolInfo *info,
             MooUserToolType  type)
@@ -281,12 +266,93 @@ check_info (MooUserToolInfo *info,
 }
 
 static void
+parse_name (MooUserToolInfo  *info,
+            char            **name,
+            char            **label,
+            char            **ui_path,
+            MooUiXml         *ui_xml,
+            guint             merge_id)
+{
+    char *ph;
+    char *prefix;
+    char *underscore;
+    const char *slash;
+
+    g_return_if_fail (info->name != NULL);
+
+    *name = g_strdup (info->name);
+    if ((underscore = strchr (*name, '_')))
+        memmove (underscore, underscore + 1, strlen (underscore + 1) + 1);
+
+    if (info->type == MOO_USER_TOOL_CONTEXT)
+    {
+        if (info->position == MOO_USER_TOOL_POS_START)
+            *ui_path = g_strdup ("Editor/Popup/PopupStart");
+        else
+            *ui_path = g_strdup ("Editor/Popup/PopupEnd");
+
+        return;
+    }
+
+    ph = g_strdup_printf ("Editor/Menubar/%s/UserMenu",
+                          info->menu ? info->menu : "Tools");
+
+    if (!(slash = strrchr (info->name, '/')))
+    {
+        *label = g_strdup (info->name);
+        *ui_path = ph;
+        return;
+    }
+
+    *label = g_strdup (slash + 1);
+    prefix = g_strndup (info->name, slash - info->name);
+    *ui_path = g_strdup_printf ("%s/%s", ph, prefix);
+
+    if (!moo_ui_xml_get_node (ui_xml, *ui_path))
+    {
+        MooUINode *parent;
+        GString *markup;
+        char **comps, **p;
+        int i;
+
+        parent = moo_ui_xml_get_node (ui_xml, ph);
+        g_return_if_fail (parent != NULL);
+
+        comps = g_strsplit (prefix, "/", 0);
+        markup = g_string_new (NULL);
+
+        for (p = comps, i = 0; p && *p; ++p)
+        {
+            if (**p)
+            {
+                char *tmp = g_markup_printf_escaped ("<item name=\"%s\" label=\"%s\">", *p, *p);
+                g_string_append (markup, tmp);
+                ++i;
+            }
+        }
+
+        while (i--)
+            g_string_append (markup, "</item>");
+
+        moo_ui_xml_insert (ui_xml, merge_id, parent, -1, markup->str);
+
+        g_strfreev (comps);
+        g_string_free (markup, TRUE);
+    }
+
+    g_free (prefix);
+    g_free (ph);
+}
+
+static void
 load_tool (MooUserToolInfo *info)
 {
     ToolInfo *tool_info;
     gpointer klass = NULL;
     MooCommand *cmd;
-    char *name;
+    char *name = NULL;
+    char *label = NULL;
+    char *ui_path = NULL;
 
     g_return_if_fail (info != NULL);
     g_return_if_fail (info->file != NULL);
@@ -318,7 +384,8 @@ load_tool (MooUserToolInfo *info)
         return;
     }
 
-    name = get_name (info->name);
+    tool_info = tools_store_add (info->type, info->id);
+    parse_name (info, &name, &label, &ui_path, tool_info->xml, tool_info->merge_id);
 
     switch (info->type)
     {
@@ -331,7 +398,7 @@ load_tool (MooUserToolInfo *info)
             moo_window_class_new_action (klass, info->id, "Tools",
                                          "action-type::", MOO_TYPE_TOOL_ACTION,
                                          "display-name", name,
-                                         "label", info->name,
+                                         "label", label,
                                          "default-accel", info->accel,
                                          "command", cmd,
                                          NULL);
@@ -348,7 +415,7 @@ load_tool (MooUserToolInfo *info)
             moo_edit_class_new_action (klass, info->id,
                                        "action-type::", MOO_TYPE_TOOL_ACTION,
                                        "display-name", name,
-                                       "label", info->name,
+                                       "label", label,
                                        "default-accel", info->accel,
                                        "command", cmd,
                                        "file-filter", info->filter,
@@ -356,39 +423,19 @@ load_tool (MooUserToolInfo *info)
             break;
     }
 
-    tool_info = tools_store_add (info->type, info->id);
-
     if (tool_info->xml)
     {
-        const char *ui_path;
-        char *freeme = NULL;
         char *markup;
-
         markup = g_markup_printf_escaped ("<item action=\"%s\"/>", info->id);
-
-        if (info->type == MOO_USER_TOOL_CONTEXT)
-        {
-            if (info->position == MOO_USER_TOOL_POS_START)
-                ui_path = "Editor/Popup/PopupStart";
-            else
-                ui_path = "Editor/Popup/PopupEnd";
-        }
-        else
-        {
-            freeme = g_strdup_printf ("Editor/Menubar/%s/UserMenu",
-                                      info->menu ? info->menu : "Tools");
-            ui_path = freeme;
-        }
-
         moo_ui_xml_insert_markup (tool_info->xml,
                                   tool_info->merge_id,
                                   ui_path, -1, markup);
-
         g_free (markup);
-        g_free (freeme);
     }
 
     g_free (name);
+    g_free (ui_path);
+    g_free (label);
     g_object_unref (cmd);
 }
 
