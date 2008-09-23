@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-09-14 12:57-0500\n"
+"POT-Creation-Date: 2008-09-23 17:02-0500\n"
 "PO-Revision-Date: 2008-02-04 21:47+0100\n"
 "Last-Translator: Christian Dywan <christian@twotoasts.de>\n"
 "MIME-Version: 1.0\n"
@@ -15,96 +15,111 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n>1;\n"
 
 #. error message for wrong commmand line
-#: ../medit/main.c:94
+#: ../medit/main.c:98
 #, c-format
 msgid "Invalid value '%s' for option %s"
-msgstr ""
+msgstr "Ungültiger Wert «%s» für Option %s"
 
 #. help message for command line option --new-app
-#: ../medit/main.c:101
+#: ../medit/main.c:105
 msgid "Run new instance of application"
-msgstr ""
+msgstr "Eine neue Instanz der Anwendung starten"
 
 #. help message for command line option --use-session
-#: ../medit/main.c:107
+#: ../medit/main.c:111
 msgid "Load and save session"
-msgstr ""
+msgstr "Sitzung laden und speichern"
 
 #. help message for command line option --pid=PID
-#: ../medit/main.c:113
+#: ../medit/main.c:117
 msgid "Use existing instance with process id PID"
-msgstr ""
+msgstr "Eine vorhandene Instanz mit der Prozesskennung PID benutzen"
 
 #. "PID" part in "--pid=PID"
-#: ../medit/main.c:114
+#: ../medit/main.c:118
 msgid "PID"
-msgstr ""
+msgstr "PID"
 
 #. help message for command line option --app-name=NAME
-#: ../medit/main.c:116
+#: ../medit/main.c:120
 msgid "Set instance name to NAME if it's not already running"
-msgstr ""
+msgstr "Namen der Instanz auf NAME setzen wenn sie noch nicht läuft"
 
 #. "NAME" part in "--app-name=NAME"
-#: ../medit/main.c:117
+#: ../medit/main.c:121
 msgid "NAME"
-msgstr ""
+msgstr "NAME"
 
 #. help message for command line option --new-window
-#: ../medit/main.c:119
+#: ../medit/main.c:123
 msgid "Open file(s) in a new window"
-msgstr ""
+msgstr "Datei(en) in einem neuen Fenster öffnen"
 
 #. help message for command line option --new-tab
-#: ../medit/main.c:121
+#: ../medit/main.c:125
 msgid "Open file(s) in a new tab"
-msgstr ""
+msgstr "Datei(en) in einem neuen Reiter öffnen"
 
 #. help message for command line option --line=LINE
-#: ../medit/main.c:127
+#: ../medit/main.c:131
 msgid "Open file and position cursor on line LINE"
-msgstr ""
+msgstr "Datei öffnen und Schreibmarke in Zeile ZEILE setzen"
 
 #. "LINE" part in --line=LINE
-#: ../medit/main.c:128
+#: ../medit/main.c:132
 msgid "LINE"
+msgstr "ZEILE"
+
+#. help message for command line option --encoding=ENCODING
+#: ../medit/main.c:134
+msgid "Use provided character encoding"
+msgstr ""
+
+#. "ENCODING" part in --encoding=ENCODING
+#: ../medit/main.c:135
+msgid "ENCODING"
+msgstr ""
+
+#. help message for command line option --reload
+#: ../medit/main.c:137
+msgid "Automatically reload file if it was modified on disk"
 msgstr ""
 
 #. help message for command line option --exec CODE
-#: ../medit/main.c:136
+#: ../medit/main.c:145
 msgid "Execute python code in an existing instance"
-msgstr ""
+msgstr "Python-Quelltext in einer vorhandenen Instanz ausführen"
 
 #. "CODE" part in --exec CODE
-#: ../medit/main.c:137
+#: ../medit/main.c:146
 msgid "CODE"
-msgstr ""
+msgstr "QUELLTEXT"
 
 #. help message for command line option --exec-file FILE
-#: ../medit/main.c:139
+#: ../medit/main.c:148
 msgid "Execute python file in an existing instance"
-msgstr ""
+msgstr "Eine Python-Datei in einer vorhandenen Instanz ausführen"
 
 #. "FILE" part in --exec-file FILE
-#: ../medit/main.c:140
+#: ../medit/main.c:149
 msgid "FILE"
-msgstr ""
+msgstr "DATEI"
 
 #. help message for command line option --version
-#: ../medit/main.c:142
+#: ../medit/main.c:151
 msgid "Show version information and exit"
-msgstr ""
+msgstr "Versionsinformationen anzeigen und beenden"
 
 #. "FILES" part in "medit [OPTION...] [FILES]"
-#: ../medit/main.c:144
+#: ../medit/main.c:153
 msgid "FILES"
-msgstr ""
+msgstr "DATEIEN"
 
 #. error message for wrong commmand line
-#: ../medit/main.c:160 ../medit/main.c:168
+#: ../medit/main.c:169 ../medit/main.c:177
 #, c-format
 msgid "%s and %s options may not be used simultaneously\n"
-msgstr ""
+msgstr "Die Optionen %s und %s können nicht gleichzeitig benutzt werden\n"
 
 #: ../medit/medit.desktop.in.h:1
 msgid "Text editor"
@@ -168,15 +183,15 @@ msgstr ""
 "christian@twotoasts.de&gt;</a>"
 
 #. Prefs dialog title, like "medit Preferences"
-#: ../moo/mooapp/mooapp.c:1509
+#: ../moo/mooapp/mooapp.c:1373
 #, c-format
 msgid "%s Preferences"
-msgstr ""
+msgstr "%s Einstellungen"
 
 #. Output filter for shell commands
 #: ../moo/mooedit/filters.xml.h:2
 msgid "Filter|Bison"
-msgstr ""
+msgstr "Bison"
 
 #. Output filter for shell commands
 #: ../moo/mooedit/filters.xml.h:4
@@ -186,12 +201,12 @@ msgstr "Standard"
 #. Output filter for shell commands
 #: ../moo/mooedit/filters.xml.h:6
 msgid "Filter|LaTeX"
-msgstr ""
+msgstr "LaTeX"
 
 #. Output filter for shell commands
 #: ../moo/mooedit/filters.xml.h:8
 msgid "Filter|Make"
-msgstr ""
+msgstr "Make"
 
 #. Output filter for shell commands
 #: ../moo/mooedit/filters.xml.h:10
@@ -201,7 +216,7 @@ msgstr "Keiner"
 #. Output filter for shell commands
 #: ../moo/mooedit/filters.xml.h:12
 msgid "Filter|Python"
-msgstr ""
+msgstr "Python"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:1
 msgid "<b>Default language</b>"
@@ -264,8 +279,8 @@ msgid ""
 "Comma-separated list of encodings to try when opening a file. 'LOCALE' means "
 "current locale encoding."
 msgstr ""
-"Komma-getrennte Liste von Kodierungen, die beim Öffnen einer Datei "
-"ausprobiert werden. 'LOCALE' bedeutet Kodierung der aktuellen Lokalisierung."
+"Komma-getrennte Liste von Zeichensätzen, die beim Öffnen einer Datei "
+"ausprobiert werden. »LOCALE« bedeutet Zeichensatz der aktuellen Lokalisierung."
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:16
 msgid "Do not split words"
@@ -298,11 +313,11 @@ msgstr "Zeilenumbrüche aktivieren"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:24
 msgid "Encoding for new files:"
-msgstr "Kodierung für neue Dateien:"
+msgstr "Zeichensatz für neue Dateien:"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:25
 msgid "Encodings to autodetect:"
-msgstr "Automatisch erkannte Kodierungen:"
+msgstr "Automatisch erkannte Zeichensätze:"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:26
 msgid "Ensure trailing newline"
@@ -331,7 +346,7 @@ msgstr "Falsch platzierte Klammern hervorheben"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:32
 msgid "Indent width:"
-msgstr ""
+msgstr "Einzugsbreite:"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:33
 msgid "Language:"
@@ -348,7 +363,7 @@ msgstr "Mimetypen:"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:36
 msgid "Open and Save As dialogs show current document folder"
-msgstr ""
+msgstr "Öffnen- und Speichern unter-Dialoge zeigen aktuellen Ordner"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:37
 #: ../moo/mooedit/glade/moousertools.glade.h:9
@@ -381,7 +396,7 @@ msgstr "Mit Tabtaste einrücken"
 
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:44
 msgid "Tab width:"
-msgstr ""
+msgstr "Tabulatorbreite:"
 
 #. Part of the phrase "Draw right margin at column [XX]"
 #: ../moo/mooedit/glade/mooeditprefs.glade.h:46
@@ -614,12 +629,12 @@ msgstr "Werkzeugmenü"
 #. menu item label
 #: ../moo/mooedit/medit.xml.h:2
 msgid "Pa_nes"
-msgstr ""
+msgstr "_Leisten"
 
 #. menu item label
 #: ../moo/mooedit/medit.xml.h:4
 msgid "_Document"
-msgstr "_Dokument"
+msgstr "D_okument"
 
 #. menu item label
 #: ../moo/mooedit/medit.xml.h:6
@@ -655,7 +670,7 @@ msgstr "Keine, asynchron"
 
 #: ../moo/mooedit/moocommand-exe.c:88
 msgid "Output|Console"
-msgstr ""
+msgstr "Konsole"
 
 #: ../moo/mooedit/moocommand-exe.c:90
 msgid "Output|Output pane"
@@ -709,7 +724,7 @@ msgstr[1] ""
 "speichern?"
 
 #. Could not save file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:417
+#: ../moo/mooedit/mooeditdialogs.c:412
 #, c-format
 msgid ""
 "Could not save file\n"
@@ -718,12 +733,12 @@ msgstr ""
 "Datei konnte nicht gespeichert werden\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:419
+#: ../moo/mooedit/mooeditdialogs.c:414
 msgid "Could not save file"
 msgstr "Datei konnte nicht gespeichert werden"
 
 #. Error saving file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:445
+#: ../moo/mooedit/mooeditdialogs.c:436
 #, c-format
 msgid ""
 "Error saving file\n"
@@ -732,21 +747,21 @@ msgstr ""
 "Fehler beim Speichern der Datei\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:447
+#: ../moo/mooedit/mooeditdialogs.c:438
 msgid "Error saving file"
 msgstr "Fehler beim Speichern der Datei"
 
-#: ../moo/mooedit/mooeditdialogs.c:449
+#: ../moo/mooedit/mooeditdialogs.c:440
 #, c-format
 msgid ""
 "Could not convert file to requested character encoding %s. File was saved in "
 "UTF-8 encoding."
 msgstr ""
-"Datei konnte nicht in gewählte Zeichenkodierung konvertiert werden. Datei "
-"wurde in UTF-8 kodiert gespeichert."
+"Datei konnte nicht in gewählten Zeichensatz konvertiert werden. Datei wurde "
+"in UTF-8 kodiert gespeichert."
 
 #. Could not open file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:479
+#: ../moo/mooedit/mooeditdialogs.c:465
 #, c-format
 msgid ""
 "Could not open file\n"
@@ -755,31 +770,31 @@ msgstr ""
 "Datei konnte nicht geöffnet werden\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:481
+#: ../moo/mooedit/mooeditdialogs.c:467
 msgid "Could not open file"
 msgstr "Datei konnte nicht geöffnet werden"
 
-#: ../moo/mooedit/mooeditdialogs.c:487
+#: ../moo/mooedit/mooeditdialogs.c:473
 #, c-format
 msgid ""
 "Could not open file using character encoding %s. The file may be binary or "
 "encoding may be specified incorrectly."
 msgstr ""
-"Datei konnte nicht mit Zeichenkodierung %s geöffnet werden. Die Datei ist "
-"evtl. binär oder die Kodierung wurde falsch angegeben."
+"Datei konnte nicht mit Zeichensatz %s geöffnet werden. Die Datei ist evtl. "
+"binär oder der Zeichensatz wurde falsch angegeben."
 
-#: ../moo/mooedit/mooeditdialogs.c:491
+#: ../moo/mooedit/mooeditdialogs.c:477
 #, c-format
 msgid ""
 "Could not detect file character encoding. Please make sure the file is not "
 "binary and try to select encoding in the Open dialog."
 msgstr ""
-"Zeichenkodierung der Datei wurde nicht erkannt. Bitte stellen Sie sicher, "
-"dass die Datei nicht binär ist und versuchen Sie, eine Kodierung im Öffnen-"
-"Dialog zu wählen."
+"Der Zeichensatz der Datei wurde nicht erkannt. Bitte stellen Sie sicher, "
+"dass die Datei nicht binär ist und versuchen Sie, einen Zeichensatz im "
+"Öffnen-Dialog zu wählen."
 
 #. Could not reload file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:526
+#: ../moo/mooedit/mooeditdialogs.c:512
 #, c-format
 msgid ""
 "Could not reload file\n"
@@ -788,38 +803,38 @@ msgstr ""
 "Datei konnte nicht neu geladen werden\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:586
+#: ../moo/mooedit/mooeditdialogs.c:572
 #, c-format
 msgid "Discard changes in file '%s'?"
-msgstr "Änderunge an Datei '%s' verwerfen?"
+msgstr "Änderungen an Datei »%s« verwerfen?"
 
-#: ../moo/mooedit/mooeditdialogs.c:588
+#: ../moo/mooedit/mooeditdialogs.c:574
 msgid "If you reload the document, changes will be discarded"
 msgstr "Wenn Sie das Dokument neu laden werden alle Änderungen zurückgesetzt"
 
-#: ../moo/mooedit/mooeditdialogs.c:589 ../moo/mooedit/mooeditwindow.c:376
+#: ../moo/mooedit/mooeditdialogs.c:575 ../moo/mooedit/mooeditwindow.c:376
 msgid "_Reload"
 msgstr "Neu _laden"
 
-#: ../moo/mooedit/mooeditdialogs.c:610
+#: ../moo/mooedit/mooeditdialogs.c:596
 #, c-format
 msgid "Overwrite modified file '%s'?"
-msgstr "Veränderte Datei '%s' überschreiben?"
+msgstr "Veränderte Datei »%s« überschreiben?"
 
-#: ../moo/mooedit/mooeditdialogs.c:611
+#: ../moo/mooedit/mooeditdialogs.c:597
 #, c-format
 msgid ""
 "File '%s' was modified on disk by another process. If you save it, changes "
 "on disk will be lost."
 msgstr ""
-"Der Inhalt der Datei '%s' auf dem Datenträger wurde von einem anderen "
-"Prozess geändert. Beim Speichern gehen alle Änderungen verloren."
+"Der Inhalt der Datei »%s« auf dem Datenträger wurde von einem anderen Prozess "
+"geändert. Beim Speichern gehen alle Änderungen verloren."
 
-#: ../moo/mooedit/mooeditdialogs.c:613
+#: ../moo/mooedit/mooeditdialogs.c:599
 msgid "Over_write"
 msgstr "Ü_berschreiben"
 
-#: ../moo/mooedit/mooeditdialogs.c:634
+#: ../moo/mooedit/mooeditdialogs.c:620
 msgid ""
 "Beginning of document reached.\n"
 "Continue from the end?"
@@ -827,7 +842,7 @@ msgstr ""
 "Anfang des Dokuments erreicht.\n"
 "Vom Ende an weitermachen?"
 
-#: ../moo/mooedit/mooeditdialogs.c:637
+#: ../moo/mooedit/mooeditdialogs.c:623
 msgid ""
 "End of document reached.\n"
 "Continue from the beginning?"
@@ -842,33 +857,33 @@ msgstr ""
 #. You want to add common preferred non-UTF8 encodings used in your locale.
 #. Do not remove ISO_8859-15 and ISO_8859-1, instead leave them at the end,
 #. these are common source files encodings.
-#: ../moo/mooedit/mooedit-fileops.c:240
+#: ../moo/mooedit/mooedit-fileops.c:217
 msgid "encodings_list"
 msgstr "encodings_list"
 
-#: ../moo/mooedit/mooedit-fileops.c:1244
+#: ../moo/mooedit/mooedit-fileops.c:1174
 #: ../moo/mooedit/plugins/moofileselector.c:518
 msgid "Untitled"
 msgstr "Unbenannt"
 
-#: ../moo/mooedit/mooedit-fileops.c:1246
+#: ../moo/mooedit/mooedit-fileops.c:1176
 #, c-format
 msgid "Untitled %d"
 msgstr "Unbenannt %d"
 
-#: ../moo/mooedit/mooeditor.c:249
+#: ../moo/mooedit/mooeditor.c:227
 msgid "Open Recent Files Dialog"
 msgstr "Dialog Zuletzt verwendete Dateien"
 
-#: ../moo/mooedit/mooeditor.c:250
+#: ../moo/mooedit/mooeditor.c:228
 msgid "Open Recent|_More..."
 msgstr "_Mehr..."
 
-#: ../moo/mooedit/mooeditor.c:536
+#: ../moo/mooedit/mooeditor.c:525
 msgid "Open new editor window"
 msgstr "Neues Editorfenster öffnen"
 
-#: ../moo/mooedit/mooeditor.c:934
+#: ../moo/mooedit/mooeditor.c:735
 msgid "Open Recent"
 msgstr "Zuletzt verwendete öffnen"
 
@@ -1040,7 +1055,7 @@ msgstr "Lesezeichen umschalten"
 
 #: ../moo/mooedit/mooeditwindow.c:588
 msgid "Toggle _Bookmark"
-msgstr ""
+msgstr "_Lesezeichen umschalten"
 
 #: ../moo/mooedit/mooeditwindow.c:596
 msgid "Next Bookmark"
@@ -1048,7 +1063,7 @@ msgstr "Nächstes Lesezeichen"
 
 #: ../moo/mooedit/mooeditwindow.c:597
 msgid "_Next Bookmark"
-msgstr ""
+msgstr "_Nächstes Lesezeichen"
 
 #: ../moo/mooedit/mooeditwindow.c:604
 msgid "Previous Bookmark"
@@ -1056,7 +1071,7 @@ msgstr "Voheriges Lesezeichen"
 
 #: ../moo/mooedit/mooeditwindow.c:605
 msgid "_Previous Bookmark"
-msgstr ""
+msgstr "_Voheriges Lesezeichen"
 
 #. action
 #: ../moo/mooedit/mooeditwindow.c:613 ../moo/mooedit/mooeditwindow.c:614
@@ -1143,11 +1158,11 @@ msgstr "%s [geändert]"
 
 #: ../moo/mooedit/mooeditwindow.c:1171
 msgid "Reopen Using Encoding"
-msgstr "Mit Kodierung neu öffnen"
+msgstr "Mit Zeichensatz neu öffnen"
 
 #: ../moo/mooedit/mooeditwindow.c:1221
 msgid "_Encoding"
-msgstr "_Kodierung"
+msgstr "_Zeichensatz"
 
 #: ../moo/mooedit/mooeditwindow.c:2819
 #, c-format
@@ -1175,11 +1190,11 @@ msgstr "_Sprache"
 #. Menu item in the Language menu
 #: ../moo/mooedit/mooeditwindow.c:2963
 msgid "Language|None"
-msgstr ""
+msgstr "Keine"
 
 #: ../moo/mooedit/mooplugin.c:1448
 msgid "Plugins"
-msgstr ""
+msgstr "Zusatzmodule"
 
 #: ../moo/mooedit/mootextfind.c:474
 msgid "No search term entered"
@@ -1204,7 +1219,7 @@ msgstr "Muster nicht gefunden: %s"
 #: ../moo/mooedit/mootextfind.c:875
 #, c-format
 msgid "Found single instance of pattern '%s'"
-msgstr "Einmaliges Vorkommen des Musters '%s' gefunden"
+msgstr "Einmaliges Vorkommen des Musters »%s« gefunden"
 
 #: ../moo/mooedit/mootextfind.c:1081
 msgid "No replacement made"
@@ -1217,7 +1232,7 @@ msgid_plural "%u replacements made"
 msgstr[0] "%u Fund ersetzt"
 msgstr[1] "%u Funde ersetzt"
 
-#: ../moo/mooedit/moousertools.c:329 ../moo/mooedit/moousertools-prefs.c:411
+#: ../moo/mooedit/moousertools.c:396 ../moo/mooedit/moousertools-prefs.c:411
 msgid "Tools"
 msgstr "Werkzeuge"
 
@@ -1225,25 +1240,25 @@ msgstr "Werkzeuge"
 msgid "New Command"
 msgstr "Neuer Befehl"
 
-#: ../moo/mooedit/plugins/moofilelist.c:2333
-#: ../moo/mooedit/plugins/moofilelist.c:2334
-#: ../moo/mooedit/plugins/moofilelist.c:2391
+#: ../moo/mooedit/plugins/moofilelist.c:2355
+#: ../moo/mooedit/plugins/moofilelist.c:2356
+#: ../moo/mooedit/plugins/moofilelist.c:2413
 msgid "File List"
-msgstr ""
+msgstr "Dateiliste"
 
-#: ../moo/mooedit/plugins/moofilelist.c:2391
+#: ../moo/mooedit/plugins/moofilelist.c:2413
 msgid "List of files"
-msgstr ""
+msgstr "Liste von Dateien"
 
 #: ../moo/mooedit/plugins/moofileselector.c:396
 #, c-format
 msgid "Create file in folder '%s':"
-msgstr "Datei in Ordner '%s' erstellen:"
+msgstr "Datei in Ordner »%s« erstellen:"
 
 #: ../moo/mooedit/plugins/moofileselector.c:451
 #, c-format
 msgid "Could not create file '%s'"
-msgstr "Datei '%s' konnte nicht erstellt werden"
+msgstr "Datei »%s« konnte nicht erstellt werden"
 
 #: ../moo/mooedit/plugins/moofileselector.c:452
 #: ../moo/mooedit/plugins/moofileselector.c:812
@@ -1252,13 +1267,13 @@ msgid ""
 "Could not convert '%s' to filename encoding. Please consider simpler name, "
 "such as foo.blah or blah.foo"
 msgstr ""
-"'%s' konnte nicht als Dateiname kodiert werden. Erwägen Sie einen "
-"einfacheren Namen wie foo.bla oder bla.foo"
+"»%s« konnte nicht als Dateiname kodiert werden. Erwägen Sie einen einfacheren "
+"Namen wie foo.bla oder bla.foo"
 
 #: ../moo/mooedit/plugins/moofileselector.c:467
 #, c-format
 msgid "File '%s' already exists"
-msgstr "Datei '%s' existiert bereits"
+msgstr "Datei »%s« existiert bereits"
 
 #: ../moo/mooedit/plugins/moofileselector.c:608
 msgid "Go to current document directory"
@@ -1280,7 +1295,7 @@ msgstr "Dateiauswahl"
 #: ../moo/mooedit/plugins/moofileselector.c:811
 #, c-format
 msgid "Could not save file as '%s'"
-msgstr "Datei konnte nicht unter '%s' gespeichert werden"
+msgstr "Datei konnte nicht unter »%s« gespeichert werden"
 
 #: ../moo/mooedit/plugins/moofileselector.c:894
 #: ../moo/mooedit/plugins/moofileselector.c:919
@@ -1375,7 +1390,7 @@ msgstr "Semikolon-getrennte Liste von Dateifiltern, z.B. '*.txt;foo.*;*bar*'"
 msgid ""
 "Semicolon-separated list of mime types, e.g. 'text/*;application/x-glade'"
 msgstr ""
-"Semikolon-getrennte Liste von Mimetypen, z.B. 'text/*;application/x-glade'"
+"Semikolon-getrennte Liste von Mimetypen, z.B. »text/*;application/x-glade«"
 
 #: ../moo/mooedit/plugins/moofileselector-prefs.glade.h:14
 #, no-c-format
@@ -1383,8 +1398,8 @@ msgid ""
 "Shell command to open the file: '%f' is replaced with file path, e.g. "
 "'foobar %f'"
 msgstr ""
-"Kommandozeilenbefehl zum öffnen der Datei: '%f' wird durch den Dateipfad "
-"ersetzt, z.B. 'foobar %f'"
+"Kommandozeilenbefehl zum Öffnen der Datei: »%f« wird durch den Dateipfad "
+"ersetzt, z.B. »foobar %f«"
 
 #: ../moo/mooedit/plugins/moofind.c:186
 msgid "Search Results"
@@ -1499,7 +1514,7 @@ msgstr "Löschen..."
 
 #: ../moo/moofileview/moofileview.c:1170 ../moo/moofileview/moofileview.c:3279
 msgid "Delete selected files"
-msgstr ""
+msgstr "Markierte Datein löschen"
 
 #: ../moo/moofileview/moofileview.c:1180 ../moo/moofileview/moofileview.c:1181
 msgid "Show Hidden Files"
@@ -1515,7 +1530,7 @@ msgstr "Sortieren mit Groß-/ Kleinschreibung"
 
 #: ../moo/moofileview/moofileview.c:1203 ../moo/moofileview/moofileview.c:1204
 msgid "Show Folders First"
-msgstr ""
+msgstr "Ordner zuerst anzeigen"
 
 #: ../moo/moofileview/moofileview.c:1220 ../moo/moofileview/moofileview.c:1221
 #: ../moo/moofileview/moofileview.xml.h:1
@@ -1533,52 +1548,52 @@ msgstr "Filter"
 #: ../moo/moofileview/moofileview.c:3122
 #, c-format
 msgid "Move folder %s to Trash?"
-msgstr ""
+msgstr "Den Ordner %s in den Papierkorb verschieben?"
 
 #: ../moo/moofileview/moofileview.c:3125
 #, c-format
 msgid "Move file %s to Trash?"
-msgstr ""
+msgstr "Die Datei %s in den Papierkorb verschieben?"
 
 #: ../moo/moofileview/moofileview.c:3130
 msgid "Move selected files to Trash?"
-msgstr ""
+msgstr "Markierte Dateien in den Papierkorb verschieben?"
 
 #: ../moo/moofileview/moofileview.c:3138
 #, c-format
 msgid "Delete folder %s and all its content?"
-msgstr ""
+msgstr "Den Ordner %s und seinen gesamten Inhalt löschen?"
 
 #: ../moo/moofileview/moofileview.c:3141
 #, c-format
 msgid "Delete file %s?"
-msgstr ""
+msgstr "Die Datei %s löschen?"
 
 #: ../moo/moofileview/moofileview.c:3146
 msgid "Delete selected files?"
-msgstr ""
+msgstr "Markierte Dateien löschen?"
 
 #: ../moo/moofileview/moofileview.c:3208
 #, c-format
 msgid "Could not delete folder %s"
-msgstr ""
+msgstr "Der Ordner %s konnte nicht gelöscht werden"
 
 #: ../moo/moofileview/moofileview.c:3211
 #, c-format
 msgid "Could not delete file %s"
-msgstr ""
+msgstr "Die Datei %s konnte nicht gelöscht werden"
 
 #: ../moo/moofileview/moofileview.c:3272
 msgid "Move to Trash..."
-msgstr ""
+msgstr "In den Papierkorb verschieben..."
 
 #: ../moo/moofileview/moofileview.c:3273
 msgid "Move selected files to Trash"
-msgstr ""
+msgstr "Markierte Dateien in den Papierkorb verschieben"
 
 #: ../moo/moofileview/moofileview-tools.c:291
 msgid "Open with|Default Application"
-msgstr ""
+msgstr "Standardanwendung"
 
 #: ../moo/moofileview/moofileview.xml.h:2
 msgid "Open _With"
@@ -1611,43 +1626,43 @@ msgstr "Konsole"
 
 #: ../moo/moopython/plugins/terminal.py:224
 msgid "Default"
-msgstr ""
+msgstr "Standard"
 
 #: ../moo/moopython/plugins/terminal.py:225
 msgid "Black on White"
-msgstr ""
+msgstr "Schwarz auf Weiß"
 
 #: ../moo/moopython/plugins/terminal.py:228
 msgid "Black on Light Yellow"
-msgstr ""
+msgstr "Schwarz auf Hellgelb"
 
 #: ../moo/moopython/plugins/terminal.py:231
 msgid "Marble"
-msgstr ""
+msgstr "Marmor"
 
 #: ../moo/moopython/plugins/terminal.py:234
 msgid "Green on Black"
-msgstr ""
+msgstr "Grün auf Schwarz"
 
 #: ../moo/moopython/plugins/terminal.py:237
 msgid "Paper, Light"
-msgstr ""
+msgstr "Papier, hell"
 
 #: ../moo/moopython/plugins/terminal.py:240
 msgid "Paper"
-msgstr ""
+msgstr "Papier"
 
 #: ../moo/moopython/plugins/terminal.py:243
 msgid "Linux Colors"
-msgstr ""
+msgstr "Linuxfarben"
 
 #: ../moo/moopython/plugins/terminal.py:246
 msgid "VIM Colors"
-msgstr ""
+msgstr "VIM-Farben"
 
 #: ../moo/moopython/plugins/terminal.py:249
 msgid "White on Black"
-msgstr ""
+msgstr "Weiß auf Schwarz"
 
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:1
 msgid "Default key:"
@@ -1676,16 +1691,16 @@ msgstr "Keine"
 msgid "Configure Shortcuts"
 msgstr "Tastenkürzel einstellen"
 
-#: ../moo/mooutils/mooutils-file.c:97
+#: ../moo/mooutils/mooutils-file.c:102
 #, c-format
 msgid "Could not open %s: %s"
-msgstr ""
+msgstr "%s konnte nicht geöffnet werden: %s"
 
-#: ../moo/mooutils/mooutils-file.c:261 ../moo/mooutils/mooutils-fs.c:280
+#: ../moo/mooutils/mooutils-file.c:317 ../moo/mooutils/mooutils-fs.c:280
 #: ../moo/mooutils/mooutils-fs.c:299 ../moo/mooutils/mooutils-fs.c:315
 #, c-format
 msgid "Could not create folder %s: %s"
-msgstr ""
+msgstr "Ordner %s konnte nicht erstellt werden: %s"
 
 #: ../moo/mooutils/moodialogs.c:348
 #, c-format
@@ -1723,7 +1738,7 @@ msgstr "Andere"
 
 #: ../moo/mooutils/mooencodings.c:820
 msgid "Charact_er encoding:"
-msgstr "Zeichen_kodierung:"
+msgstr "_Zeichensatz:"
 
 #: ../moo/mooutils/mooencodings-data.h:27
 msgid "West European"
@@ -1877,7 +1892,7 @@ msgstr "Georgisch"
 #: ../moo/mooutils/mooencodings-data.h:104
 #: ../moo/mooutils/mooencodings-data.h:120
 msgid "Cyrillic/Ukrainian"
-msgstr "Kyrillisch/Ukrainisch"
+msgstr "Kyrillisch/ Ukrainisch"
 
 #: ../moo/mooutils/mooencodings-data.h:108
 msgid "Croatian"
@@ -1915,7 +1930,7 @@ msgstr "Thai"
 
 #: ../moo/mooutils/moofiltermgr.c:546
 msgid "_Show:"
-msgstr ""
+msgstr "_Anzeigen:"
 
 #: ../moo/mooutils/moofontsel.c:502
 msgid "Show only fixed width fonts"
@@ -1928,7 +1943,7 @@ msgstr "Hilfedateien nicht gefunden"
 #: ../moo/mooutils/moohelp.c:219
 #, c-format
 msgid "File '%s' is missing in the directory '%s'"
-msgstr "Die Datei '%s' fehlt im Ordner '%s'"
+msgstr "Die Datei »%s« fehlt im Ordner »%s«"
 
 #: ../moo/mooutils/moohelp.c:222
 msgid "Could not find help file"
@@ -1987,25 +2002,25 @@ msgstr "Neues _Fenster"
 #: ../moo/mooutils/mooutils-fs.c:120
 #, c-format
 msgid "Could not run 'rm' command: %s"
-msgstr ""
+msgstr "Befehl »rm« konnte nicht ausgeführt werden: %s"
 
 #. This is error message in file selector when rm
 #. fails to delete a file or folder
 #: ../moo/mooutils/mooutils-fs.c:138
 #, c-format
 msgid "'rm' command failed: %s"
-msgstr ""
+msgstr "Befehl »rm« schlug fehl: %s"
 
 #: ../moo/mooutils/mooutils-fs.c:188 ../moo/mooutils/mooutils-fs.c:208
 #: ../moo/mooutils/mooutils-fs.c:235
 #, c-format
 msgid "Could not remove %s: %s"
-msgstr ""
+msgstr "%s konnte nicht entfernt werden: %s"
 
 #: ../moo/mooutils/mooutils-fs.c:344
 #, c-format
 msgid "Could not rename file %s to %s: %s"
-msgstr ""
+msgstr "%s konnte nicht zu %s umbenannt werden: %s"
 
 #: ../moo/mooutils/moowindow.c:234
 msgid "Configure _Shortcuts..."
@@ -2019,27 +2034,27 @@ msgstr "Werkzeugleiste anzeigen"
 msgid "Show Menubar"
 msgstr "Menüleiste anzeigen"
 
-#: ../moo/mooutils/moowindow.c:256 ../moo/mooutils/moowindow.c:257
+#: ../moo/mooutils/moowindow.c:257 ../moo/mooutils/moowindow.c:258
 msgid "Show Statusbar"
-msgstr ""
+msgstr "Statusleiste anzeigen"
 
-#: ../moo/mooutils/moowindow.c:1156
+#: ../moo/mooutils/moowindow.c:1157
 msgid "_Icons Only"
 msgstr "Nur _Symbole"
 
-#: ../moo/mooutils/moowindow.c:1157
+#: ../moo/mooutils/moowindow.c:1158
 msgid "_Labels Only"
 msgstr "Nur _Text"
 
-#: ../moo/mooutils/moowindow.c:1158
-msgid "Labels _Below Icons"
-msgstr ""
-
 #: ../moo/mooutils/moowindow.c:1159
-msgid "Labels Be_side Icons"
-msgstr ""
+msgid "Labels _Below Icons"
+msgstr "Text _unter Symbolen"
 
-#: ../moo/mooutils/moowindow.c:1169
+#: ../moo/mooutils/moowindow.c:1160
+msgid "Labels Be_side Icons"
+msgstr "Text _neben Symbolen"
+
+#: ../moo/mooutils/moowindow.c:1170
 msgid "Toolbar _Style"
 msgstr "Werkzeugleistenstil"
 
@@ -2053,43 +2068,4 @@ msgstr "Pythonunterstützung"
 
 #: ../moo/moopython/plugins/terminal.ini.in.in.h:2
 msgid "Terminal plugin"
-msgstr "Konsolenplugin"
-
-#~ msgid "medit"
-#~ msgstr "medit"
-
-#~ msgid "Dialog title|System Info"
-#~ msgstr "Systeminfo"
-
-#~ msgid "System Info"
-#~ msgstr "Systeminfo"
-
-#~ msgid "Use default theme font"
-#~ msgstr "Voreingestellte Themenschriftart verwenden"
-
-#~ msgid "Loading and saving"
-#~ msgstr "Laden und speichern"
-
-#~ msgid "Languages and files"
-#~ msgstr "Sprache und Dateien"
-
-#~ msgid "medit is a text editor"
-#~ msgstr "medit ist ein Texteditor"
-
-#~ msgid "DPatch"
-#~ msgstr "DPatch"
-
-#~ msgid "GAP source file"
-#~ msgstr "GAP-Quelldatei"
-
-#~ msgid "Show File Selector"
-#~ msgstr "Dateiauswahl anzeigen"
-
-#~ msgid "Show file selector"
-#~ msgstr "Dateiauswahl anzeigen"
-
-#~ msgid "Show Terminal"
-#~ msgstr "Konsole anzeigen"
-
-#~ msgid "Icons _and Labels"
-#~ msgstr "Symbole _und Text"
+msgstr "Konsolenzusatzmodul"
