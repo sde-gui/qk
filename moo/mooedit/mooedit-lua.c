@@ -17,6 +17,7 @@
 #include "mooedit/mooedit-lua.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/moocommand-exe.h"
+#include "mooedit/moousertools.h"
 #include "mooutils/moohistorycombo.h"
 #include <string.h>
 #include <glib/gprintf.h>
@@ -1186,6 +1187,14 @@ cfunc_run_sync (lua_State *L)
     return 2;
 }
 
+static int
+cfunc_reload_user_tools (lua_State *L)
+{
+    parse_args (L, "_medit.reload_user_tools", "");
+    _moo_edit_load_user_tools ();
+    return 0;
+}
+
 static void
 add_medit_api (lua_State *L)
 {
@@ -1194,6 +1203,7 @@ add_medit_api (lua_State *L)
         {"run_in_pane", cfunc_run_in_pane},
         {"run_async", cfunc_run_async},
         {"run_sync", cfunc_run_sync},
+        {"reload_user_tools", cfunc_reload_user_tools},
         {NULL, NULL}
     };
 
