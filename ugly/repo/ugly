@@ -277,7 +277,8 @@ if [ -z "$1" ]; then
 elif [ "$1" = "--stamp" ]; then
   shift
   generate_ugly_stamp "$@"
-  exit 0
+  top_srcdir=.
+  input=`find_input .`
 else
   top_srcdir="$1"
   input="$2/Makefile.ug"

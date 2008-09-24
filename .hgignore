@@ -28,6 +28,7 @@ intltool-update.in
 ltmain.sh
 missing
 mkinstalldirs
+m4/ugly-stamp.m4
 
 syntax: regexp
 
