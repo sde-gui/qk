@@ -233,6 +233,8 @@ _EOFEOF
   if [ "$subdir" = . ]; then
     cat ugly/repo/bdist-top.mk >> $out_tmp
     cat ugly/repo/ugly-top.mk >> $out_tmp
+  else
+    cat ugly/repo/ugly-sub.mk >> $out_tmp
   fi
 
   cat >> $out_tmp << _EOFEOF
@@ -246,9 +248,36 @@ _EOFEOF
   mv $out_tmp $out || exit $?
 }
 
+ugly_stamp=m4/ugly-stamp.m4
+
+generate_ugly_stamp() {
+  out_tmp="$ugly_stamp.tmp"
+  echo "AC_DEFUN([UGLY_FAKE_FUN],[" > $out_tmp || exit 1
+  for arg; do
+    if [ ! -f "$arg" ]; then
+      echo "OOPS" >&2
+    elif [ ! "$arg" -ef "$ugly_stamp" ]; then
+      md5=`md5sum "$arg" | awk '{ print $1; }'`
+      name=`basename "$arg"`
+      echo "$md5 $name" >> $out_tmp
+    fi
+  done
+  echo "])" >> $out_tmp
+  echo >> $out_tmp
+  echo "AC_DEFUN([UGLY_STAMP],[])" >> $out_tmp
+  mv $out_tmp $ugly_stamp || exit 1
+}
+
 if [ -z "$1" ]; then
+  if [ ! -f "$ugly_stamp" ]; then
+    generate_ugly_stamp
+  fi
   top_srcdir=.
   input=`find_input .`
+elif [ "$1" = "--stamp" ]; then
+  shift
+  generate_ugly_stamp "$@"
+  exit 0
 else
   top_srcdir="$1"
   input="$2/Makefile.ug"

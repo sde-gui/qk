@@ -1,0 +1,3 @@
+AC_DEFUN([UGLY_STUFF],[
+  UGLY_STAMP
+])

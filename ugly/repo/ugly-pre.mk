@@ -17,7 +17,10 @@ UGLY_DEPS =					\
 	$(UGLY)					\
 	$(top_srcdir)/ugly/repo/ugly-pre.mk	\
 	$(top_srcdir)/ugly/repo/ugly-post.mk	\
+	$(top_srcdir)/ugly/repo/ugly-sub.mk	\
 	$(top_srcdir)/ugly/repo/bdist.mk
+
+UGLY_STAMP_DEPS = $(filter-out $(top_srcdir)/m4/ugly-stamp.m4,$(am__aclocal_m4_deps))
 
 BUILT_SOURCES += ugly-pre-build-stamp
 UGLY_PRE_BUILD_TARGETS =

@@ -33,6 +33,7 @@ MOO_AM_MK
 
 # AM_CONDITIONAL([MOO_USE_CPP],[test x$MOO_ENABLE_PROJECT = xyes])
 
+UGLY_STUFF
 
 ################################################################################
 #  Created files
