@@ -108,6 +108,13 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
     fi
   done
 
+  for gv in 14; do
+    eval "var=\$GTK_2_$gv"
+    if test "x$var" != xyes; then
+      MOO_CFLAGS="-I$moo_srcdir/mooutils/newgtk/gtk-2.$gv $MOO_CFLAGS"
+    fi
+  done
+
   MOO_WIN32_CFLAGS=
   if test "x$MOO_OS_MINGW" = xyes; then
     MOO_CFLAGS="$MOO_CFLAGS -DWIN32_LEAN_AND_MEAN -DUNICODE"
