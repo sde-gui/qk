@@ -33,10 +33,7 @@
 #include <unistd.h>
 #endif
 #include <gtk/gtk.h>
-
-#if GLIB_CHECK_VERSION(2,6,0)
-# include <glib/gstdio.h>
-#endif
+#include <glib/gstdio.h>
 
 #define COLUMN_BOOKMARK MOO_BOOKMARK_MGR_COLUMN_BOOKMARK
 

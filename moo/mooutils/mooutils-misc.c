@@ -782,9 +782,7 @@ set_print_funcs (GLogFunc   log_func,
     set (NULL);
 #undef set
 
-#if GLIB_CHECK_VERSION(2,6,0)
     g_log_set_default_handler (log_func, NULL);
-#endif /* GLIB_CHECK_VERSION(2,6,0) */
 }
 
 
