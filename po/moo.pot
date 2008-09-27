@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-09-23 17:02-0500\n"
+"POT-Creation-Date: 2008-09-27 17:45-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -832,16 +832,16 @@ msgstr ""
 #. You want to add common preferred non-UTF8 encodings used in your locale.
 #. Do not remove ISO_8859-15 and ISO_8859-1, instead leave them at the end,
 #. these are common source files encodings.
-#: ../moo/mooedit/mooedit-fileops.c:217
+#: ../moo/mooedit/mooedit-fileops.c:232
 msgid "encodings_list"
 msgstr ""
 
-#: ../moo/mooedit/mooedit-fileops.c:1174
+#: ../moo/mooedit/mooedit-fileops.c:1231
 #: ../moo/mooedit/plugins/moofileselector.c:518
 msgid "Untitled"
 msgstr ""
 
-#: ../moo/mooedit/mooedit-fileops.c:1176
+#: ../moo/mooedit/mooedit-fileops.c:1233
 #, c-format
 msgid "Untitled %d"
 msgstr ""
@@ -1661,12 +1661,12 @@ msgstr ""
 msgid "Configure Shortcuts"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-file.c:102
+#: ../moo/mooutils/mooutils-file.c:97
 #, c-format
 msgid "Could not open %s: %s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-file.c:317 ../moo/mooutils/mooutils-fs.c:280
+#: ../moo/mooutils/mooutils-file.c:263 ../moo/mooutils/mooutils-fs.c:280
 #: ../moo/mooutils/mooutils-fs.c:299 ../moo/mooutils/mooutils-fs.c:315
 #, c-format
 msgid "Could not create folder %s: %s"
