@@ -20,6 +20,6 @@ $(top_srcdir)/m4/ugly-stamp.m4: $(UGLY_STAMP_DEPS)
 	  dir=`dirname $$file`; dir=`cd $$dir && pwd`; \
 	  files="$$files $$dir/`basename $$file`"; \
 	done && \
-	cd $(srcdir) && $(SHELL) $(UGLY) --stamp $$files
+	cd $(srcdir) && $(SHELL) ./ugly/ugly --stamp $$files
 
 # end ugly-top.mk
