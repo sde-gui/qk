@@ -21,6 +21,7 @@
 #include "mooutils/moohelp.h"
 #include "mooutils/moofiltermgr.h"
 #include "mooutils/mooutils-enums.h"
+#include "mooutils/mooi18n.h"
 #include "marshals.h"
 #include <gtk/gtk.h>
 #include <string.h>
