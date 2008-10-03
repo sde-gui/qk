@@ -631,7 +631,7 @@ moo_file_dialog_run (MooFileDialog *dialog)
                         !g_file_test (filename, G_FILE_TEST_IS_REGULAR))
                     {
                         moo_error_dialog (filechooser,
-                                          "Choosen file is not a regular file",
+                                          _("Selected file is not a regular file"),
                                           NULL);
                         g_free (filename);
                         g_free (uri);
