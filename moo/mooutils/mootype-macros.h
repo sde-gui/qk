@@ -20,16 +20,30 @@
 
 #if !GLIB_CHECK_VERSION(2,14,0)
 inline static gboolean
-g_once_init_enter (volatile gsize *value_location)
+_moo_once_init_enter (volatile gsize *value_location)
 {
     return *value_location == 0;
 }
 
 inline static void
-g_once_init_leave (volatile gsize *value_location,
-                   gsize           initialization_value)
+_moo_once_init_leave (volatile gsize *value_location,
+                      gsize           initialization_value)
 {
     *value_location = initialization_value;
+}
+#elif !GLIB_CHECK_VERSION(2,16,0)
+inline static gboolean
+_moo_once_init_enter (volatile gsize *value_location)
+{
+    return g_once_init_enter ((volatile gpointer*) value_location);
+}
+
+inline static void
+_moo_once_init_leave (volatile gsize *value_location,
+                      gsize           initialization_value)
+{
+    g_once_init_leave ((volatile gpointer*) value_location,
+                       (gpointer) initialization_value);
 }
 #endif
 
@@ -81,12 +95,12 @@ type_name##_get_type (void)                                                     
 {                                                                                           \
     static volatile gsize g_define_type_id__volatile;                                       \
                                                                                             \
-    if (g_once_init_enter (&g_define_type_id__volatile))                                    \
+    if (_moo_once_init_enter (&g_define_type_id__volatile))                                 \
     {                                                                                       \
         GType g_define_type_id;                                                             \
         _MOO_REGISTER_TYPE(TypeName,type_name,TYPE_PARENT,0)                                \
         code                                                                                \
-        g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);                  \
+        _moo_once_init_leave (&g_define_type_id__volatile, g_define_type_id);               \
     }                                                                                       \
                                                                                             \
     return g_define_type_id__volatile;                                                      \
@@ -100,13 +114,13 @@ type_name##_get_type (void)                                                     
 {                                                                                           \
     static volatile gsize g_define_type_id__volatile;                                       \
                                                                                             \
-    if (g_once_init_enter (&g_define_type_id__volatile))                                    \
+    if (_moo_once_init_enter (&g_define_type_id__volatile))                                 \
     {                                                                                       \
         GType g_define_type_id =                                                            \
             g_boxed_type_register_static (#TypeName,                                        \
                                           (GBoxedCopyFunc) copy_func,                       \
                                           (GBoxedFreeFunc) free_func);                      \
-        g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);                  \
+        _moo_once_init_leave (&g_define_type_id__volatile, g_define_type_id);               \
     }                                                                                       \
                                                                                             \
     return g_define_type_id__volatile;                                                      \
@@ -139,10 +153,10 @@ GType type_name##_get_type (void)                                               
 {                                                                                           \
     static volatile gsize g_define_type_id__volatile;                                       \
                                                                                             \
-    if (g_once_init_enter (&g_define_type_id__volatile))                                    \
+    if (_moo_once_init_enter (&g_define_type_id__volatile))                                 \
     {                                                                                       \
         GType g_define_type_id = g_pointer_type_register_static (#TypeName);                \
-        g_once_init_leave (&g_define_type_id__volatile, g_define_type_id);                  \
+        _moo_once_init_leave (&g_define_type_id__volatile, g_define_type_id);               \
     }                                                                                       \
                                                                                             \
     return g_define_type_id__volatile;                                                      \
@@ -153,10 +167,10 @@ GType type_name##_get_type (void)                                               
 {                                                                                           \
     static volatile gsize q_volatile;                                                       \
                                                                                             \
-    if (g_once_init_enter (&q_volatile))                                                    \
+    if (_moo_once_init_enter (&q_volatile))                                                 \
     {                                                                                       \
         GQuark q = g_quark_from_static_string (#QuarkName);                                 \
-        g_once_init_leave (&q_volatile, q);                                                 \
+        _moo_once_init_leave (&q_volatile, q);                                              \
     }                                                                                       \
                                                                                             \
     return q_volatile;                                                                      \
