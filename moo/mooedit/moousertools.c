@@ -291,6 +291,8 @@ parse_name (MooUserToolInfo  *info,
         else
             *ui_path = g_strdup ("Editor/Popup/PopupEnd");
 
+        *label = g_strdup (name);
+
         return;
     }
 
