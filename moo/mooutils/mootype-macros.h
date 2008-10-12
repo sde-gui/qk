@@ -45,6 +45,9 @@ _moo_once_init_leave (volatile gsize *value_location,
     g_once_init_leave ((volatile gpointer*) value_location,
                        (gpointer) initialization_value);
 }
+#else
+#define _moo_once_init_enter g_once_init_enter
+#define _moo_once_init_leave g_once_init_leave
 #endif
 
 #if !GLIB_CHECK_VERSION(2,12,0)
