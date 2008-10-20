@@ -44,6 +44,7 @@ headers
 #include "mooedit/mootextiter.h"
 #include "mooedit/mootextstylescheme.h"
 #include "mooedit/mootextview.h"
+#include "mooedit/moolinemark.h"
 #include "mooedit/mootextpopup.h"
 #include "mooedit/mootextcompletion.h"
 #include "mooedit/mooedit-enums.h"
@@ -349,6 +350,43 @@ _wrap_moo_text_search_backward (G_GNUC_UNUSED PyObject *self, PyObject *args)
     {
         return_None;
     }
+}
+%%
+override moo_text_buffer_get_line_marks_at_line varargs
+static PyObject *
+_wrap_moo_text_buffer_get_line_marks_at_line (PyGObject *self, PyObject *args)
+{
+    GSList *list;
+    PyObject *result;
+    int line;
+
+    if (!PyArg_ParseTuple (args, "i", &line))
+        return NULL;
+
+    list = moo_text_buffer_get_line_marks_at_line (MOO_TEXT_BUFFER (pygobject_get (self)), line);
+    result = _moo_object_slist_to_pyobject (list);
+
+    g_slist_free (list);
+    return result;
+}
+%%
+override moo_text_buffer_get_line_marks_in_range varargs
+static PyObject *
+_wrap_moo_text_buffer_get_line_marks_in_range (PyGObject *self, PyObject *args)
+{
+    GSList *list;
+    PyObject *result;
+    int start, end;
+
+
+    if (!PyArg_ParseTuple (args, "ii", &start, &end))
+        return NULL;
+
+    list = moo_text_buffer_get_line_marks_in_range (MOO_TEXT_BUFFER (pygobject_get (self)), start, end);
+    result = _moo_object_slist_to_pyobject (list);
+
+    g_slist_free (list);
+    return result;
 }
 %%
 override moo_edit_class_add_action varargs

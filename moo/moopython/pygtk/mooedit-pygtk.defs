@@ -902,15 +902,25 @@
   )
 )
 
-; (define-method get_line_marks_in_range
-;   (of-object "MooTextBuffer")
-;   (c-name "moo_text_buffer_get_line_marks_in_range")
-;   (return-type "GSList*")
-;   (parameters
-;     '("int" "first_line")
-;     '("int" "last_line")
-;   )
-; )
+(define-method get_line_marks_in_range
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_get_line_marks_in_range")
+  (return-type "GSList*")
+  (parameters
+    '("int" "first_line")
+    '("int" "last_line")
+  )
+)
+
+(define-method get_line_marks_at_line
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_get_line_marks_at_line")
+  (return-type "GSList*")
+  (parameters
+    '("int" "line")
+  )
+)
+
 
 (define-method add_fold
   (of-object "MooTextBuffer")
@@ -930,6 +940,25 @@
     '("MooFold*" "fold")
   )
 )
+
+(define-method get_fold_at_line
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_get_fold_at_line")
+  (return-type "MooFold*")
+  (parameters
+    '("int" "line")
+  )
+)
+
+(define-method toggle_fold
+  (of-object "MooTextBuffer")
+  (c-name "moo_text_buffer_toggle_fold")
+  (return-type "none")
+  (parameters
+    '("MooFold*" "fold")
+  )
+)
+
 
 
 ;; From mootextiter.h
