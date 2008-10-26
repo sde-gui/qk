@@ -1573,7 +1573,7 @@ load_doc_session (MooEditor     *editor,
                   MooMarkupNode *elm,
                   gboolean       file_is_uri)
 {
-    const char *uri;
+    const char *uri = NULL;
     const char *encoding;
     char *freeme = NULL;
     MooEdit *doc = NULL;
