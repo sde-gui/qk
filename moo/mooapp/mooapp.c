@@ -1615,7 +1615,7 @@ moo_app_parse_files (const char      *data,
         return FALSE;
     }
 
-    *stamp = moo_markup_get_int_prop (root, "stamp", 0);
+    *stamp = moo_markup_uint_prop (root, "stamp", 0);
 
     for (node = root->children; node != NULL; node = node->next)
     {
@@ -1639,12 +1639,12 @@ moo_app_parse_files (const char      *data,
         if (encoding && encoding[0])
             file.encoding = g_strdup (encoding);
 
-        file.line = moo_markup_get_int_prop (node, "line", 0);
-        if (moo_markup_get_bool_prop (node, "new-window", FALSE))
+        file.line = moo_markup_int_prop (node, "line", 0);
+        if (moo_markup_bool_prop (node, "new-window", FALSE))
             file.options |= MOO_EDIT_OPEN_NEW_WINDOW;
-        if (moo_markup_get_bool_prop (node, "new-tab", FALSE))
+        if (moo_markup_bool_prop (node, "new-tab", FALSE))
             file.options |= MOO_EDIT_OPEN_NEW_TAB;
-        if (moo_markup_get_bool_prop (node, "reload", FALSE))
+        if (moo_markup_bool_prop (node, "reload", FALSE))
             file.options |= MOO_EDIT_OPEN_RELOAD;
 
         if (!files)
