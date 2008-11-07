@@ -25,11 +25,14 @@
 #define WANT_CHECKS 0
 #endif
 
+static void     moo_fold_get_property       (GObject    *object,
+                                             guint       prop_id,
+                                             GValue     *value,
+                                             GParamSpec *pspec);
 static void     moo_fold_finalize           (GObject    *object);
 static void     moo_fold_free_recursively   (MooFold    *fold);
 
 static int      _moo_fold_get_end           (MooFold    *fold);
-
 
 enum {
     PROP_0,
@@ -43,18 +46,8 @@ enum {
     PROP_COLLAPSED
 };
 
-
 /* MOO_TYPE_FOLD */
 G_DEFINE_TYPE (MooFold, moo_fold, G_TYPE_OBJECT)
-
-static void     moo_fold_set_property   (GObject        *object,
-                                         guint           prop_id,
-                                         const GValue   *value,
-                                         GParamSpec     *pspec);
-static void     moo_fold_get_property  (GObject        *object,
-                                        guint           prop_id,
-                                        GValue         *value,
-                                        GParamSpec     *pspec);
 
 static void
 moo_fold_class_init (MooFoldClass *klass)
@@ -63,7 +56,6 @@ moo_fold_class_init (MooFoldClass *klass)
 
     gobject_class->finalize = moo_fold_finalize;
 
-    gobject_class->set_property = moo_fold_set_property;
     gobject_class->get_property = moo_fold_get_property;
 
     g_object_class_install_property (gobject_class,
@@ -121,7 +113,7 @@ moo_fold_class_init (MooFoldClass *klass)
                                              "Children Number",
                                              "Number of children",
                                              0, G_MAXINT, 0,
-                                             G_PARAM_READWRITE));
+                                             G_PARAM_READABLE));
 
 
     g_object_class_install_property (gobject_class,
@@ -172,7 +164,7 @@ moo_fold_get_property (GObject        *object,
             break;
 
         case PROP_COLLAPSED:
-            g_value_set_object (value, fold->collapsed);
+            g_value_set_boolean (value, fold->collapsed);
             break;
 
         default:
@@ -180,23 +172,6 @@ moo_fold_get_property (GObject        *object,
             break;
     }
 }
-
-static void
-moo_fold_set_property (GObject        *object,
-                            guint           prop_id,
-                            const GValue   *value,
-                            GParamSpec     *pspec)
-{
-    //MooFold *fold = MOO_FOLD (object);
-
-    switch (prop_id)
-    {
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-            break;
-    }
-}
-
 
 
 static void
