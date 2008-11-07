@@ -744,6 +744,22 @@ _moo_value_convert_to_int (const GValue *val,
     return FALSE;
 }
 
+static gboolean
+_moo_value_convert_to_uint (const GValue *val,
+                            guint        *dest)
+{
+    GValue result = {0};
+
+    g_value_init (&result, G_TYPE_UINT);
+
+    if (_moo_value_convert (val, &result))
+    {
+        *dest = g_value_get_uint (&result);
+        return TRUE;
+    }
+
+    return FALSE;
+}
 
 double
 _moo_value_convert_to_double (const GValue *val)
@@ -854,6 +870,28 @@ _moo_convert_string_to_int (const char *string,
     return int_val;
 }
 
+guint
+_moo_convert_string_to_uint (const char *string,
+                             guint       default_val)
+{
+    guint int_val = default_val;
+
+    if (string && string[0])
+    {
+        GValue str_val = {0};
+
+        g_value_init (&str_val, G_TYPE_STRING);
+        g_value_set_static_string (&str_val, string);
+
+        if (!_moo_value_convert_to_uint (&str_val, &int_val))
+            g_warning ("%s: could not convert string '%s' to uint",
+                       G_STRFUNC, string);
+
+        g_value_unset (&str_val);
+    }
+
+    return int_val;
+}
 
 gboolean
 _moo_convert_string_to_bool (const char *string,
@@ -891,7 +929,7 @@ _moo_convert_bool_to_string (gboolean value)
 }
 
 
-const char*
+const char *
 _moo_convert_int_to_string (int value)
 {
     GValue int_val = {0};

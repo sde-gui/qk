@@ -1657,7 +1657,7 @@ load_window_session (MooEditor     *editor,
 
             doc = load_doc_session (editor, window, node, file_is_uri);
 
-            if (doc && moo_markup_get_bool_prop (node, "active", FALSE))
+            if (doc && moo_markup_bool_prop (node, "active", FALSE))
                 active_doc = doc;
         }
     }
@@ -1732,7 +1732,7 @@ _moo_editor_load_session (MooEditor     *editor,
 
             window = load_window_session (editor, node, !old_format);
 
-            if (window && moo_markup_get_bool_prop (node, "active", FALSE))
+            if (window && moo_markup_bool_prop (node, "active", FALSE))
                 active_window = window;
         }
 

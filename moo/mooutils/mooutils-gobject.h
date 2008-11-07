@@ -61,6 +61,8 @@ gboolean        _moo_convert_string_to_bool (const char     *string,
                                              gboolean        default_val);
 int             _moo_convert_string_to_int  (const char     *string,
                                              int             default_val);
+guint           _moo_convert_string_to_uint (const char     *string,
+                                             guint           default_val);
 const char     *_moo_convert_bool_to_string (gboolean        value);
 const char     *_moo_convert_int_to_string  (int             value);
 

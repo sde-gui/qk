@@ -822,9 +822,9 @@ moo_markup_set_prop (MooMarkupNode      *elm,
 
 
 int
-moo_markup_get_int_prop (MooMarkupNode      *node,
-                         const char         *prop_name,
-                         int                 default_val)
+moo_markup_int_prop (MooMarkupNode *node,
+                     const char    *prop_name,
+                     int            default_val)
 {
     g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node), default_val);
     g_return_val_if_fail (prop_name != NULL, default_val);
@@ -832,21 +832,21 @@ moo_markup_get_int_prop (MooMarkupNode      *node,
                                        default_val);
 }
 
-
-void
-moo_markup_set_int_prop (MooMarkupNode      *node,
-                         const char         *prop_name,
-                         int                 val)
+guint
+moo_markup_uint_prop (MooMarkupNode *node,
+                      const char    *prop_name,
+                      guint          default_val)
 {
-    moo_markup_set_prop (node, prop_name,
-                         _moo_convert_int_to_string (val));
+    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node), default_val);
+    g_return_val_if_fail (prop_name != NULL, default_val);
+    return _moo_convert_string_to_uint (moo_markup_get_prop (node, prop_name),
+                                        default_val);
 }
 
-
 gboolean
-moo_markup_get_bool_prop (MooMarkupNode      *node,
-                          const char         *prop_name,
-                          gboolean            default_val)
+moo_markup_bool_prop (MooMarkupNode *node,
+                      const char    *prop_name,
+                      gboolean       default_val)
 {
     g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (node), default_val);
     g_return_val_if_fail (prop_name != NULL, default_val);
@@ -856,9 +856,9 @@ moo_markup_get_bool_prop (MooMarkupNode      *node,
 
 
 void
-moo_markup_set_bool_prop (MooMarkupNode      *node,
-                          const char         *prop_name,
-                          gboolean            val)
+moo_markup_set_bool_prop (MooMarkupNode *node,
+                          const char    *prop_name,
+                          gboolean       val)
 {
     moo_markup_set_prop (node, prop_name,
                          _moo_convert_bool_to_string (val));

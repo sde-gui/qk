@@ -179,13 +179,13 @@ void                moo_markup_set_prop             (MooMarkupNode      *node,
                                                      const char         *prop_name,
                                                      const char         *val);
 
-int                 moo_markup_get_int_prop         (MooMarkupNode      *node,
+int                 moo_markup_int_prop             (MooMarkupNode      *node,
                                                      const char         *prop_name,
                                                      int                 default_val);
-void                moo_markup_set_int_prop         (MooMarkupNode      *node,
+guint               moo_markup_uint_prop            (MooMarkupNode      *node,
                                                      const char         *prop_name,
-                                                     int                 val);
-gboolean            moo_markup_get_bool_prop        (MooMarkupNode      *node,
+                                                     guint               default_val);
+gboolean            moo_markup_bool_prop            (MooMarkupNode      *node,
                                                      const char         *prop_name,
                                                      gboolean            default_val);
 void                moo_markup_set_bool_prop        (MooMarkupNode      *node,
