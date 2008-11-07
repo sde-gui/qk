@@ -1364,8 +1364,7 @@ create_pane_window (MooPane *pane)
                       G_CALLBACK (pane_window_configure), pane);
 }
 
-/* XXX gtk_widget_reparent() doesn't work here for some reasons */
-/* shouldn't it work now, as I fixed GTK_NO_WINDOW flag? */
+/* FIXME use gtk_widget_reparent(), it does work now */
 static void
 reparent (GtkWidget *widget,
           GtkWidget *old_container,
