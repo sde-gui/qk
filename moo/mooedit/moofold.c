@@ -30,9 +30,30 @@ static void     moo_fold_free_recursively   (MooFold    *fold);
 static int      _moo_fold_get_end           (MooFold    *fold);
 
 
+enum {
+    PROP_0,
+    PROP_PARENT,
+    PROP_NEXT,
+    PROP_PREV,
+    PROP_CHILDREN,
+    PROP_N_CHILDREN,
+    PROP_MARK_START,
+    PROP_MARK_END,
+    PROP_COLLAPSED
+};
+
+
 /* MOO_TYPE_FOLD */
 G_DEFINE_TYPE (MooFold, moo_fold, G_TYPE_OBJECT)
 
+static void     moo_fold_set_property   (GObject        *object,
+                                         guint           prop_id,
+                                         const GValue   *value,
+                                         GParamSpec     *pspec);
+static void     moo_fold_get_property  (GObject        *object,
+                                        guint           prop_id,
+                                        GValue         *value,
+                                        GParamSpec     *pspec);
 
 static void
 moo_fold_class_init (MooFoldClass *klass)
@@ -40,7 +61,141 @@ moo_fold_class_init (MooFoldClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
     gobject_class->finalize = moo_fold_finalize;
+
+    gobject_class->set_property = moo_fold_set_property;
+    gobject_class->get_property = moo_fold_get_property;
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_PARENT,
+                                     g_param_spec_object ("parent",
+                                             "parent",
+                                             "parent",
+                                             MOO_TYPE_FOLD,
+                                             G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_NEXT,
+                                     g_param_spec_object ("next",
+                                             "next",
+                                             "next",
+                                             MOO_TYPE_FOLD,
+                                             G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_PREV,
+                                     g_param_spec_object ("previous",
+                                             "previous",
+                                             "previous",
+                                             MOO_TYPE_FOLD,
+                                             G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_MARK_START,
+                                     g_param_spec_object ("mark_start",
+                                             "Start Marker",
+                                             "Marker of the start Marker",
+                                             MOO_TYPE_LINE_MARK,
+                                             G_PARAM_READABLE));
+
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_MARK_END,
+                                     g_param_spec_object ("mark_end",
+                                             "End Marker",
+                                             "Marker of the end Marker",
+                                             MOO_TYPE_LINE_MARK,
+                                             G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_CHILDREN,
+                                     g_param_spec_object ("children",
+                                             "Children",
+                                             "Children ordered by Line",
+                                             MOO_TYPE_FOLD,
+                                             G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_N_CHILDREN,
+                                     g_param_spec_int ("n_children",
+                                             "Children Number",
+                                             "Number of children",
+                                             0, G_MAXINT, 0,
+                                             G_PARAM_READWRITE));
+
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_COLLAPSED,
+                                     g_param_spec_boolean ("collapsed",
+                                             "Fold Collapsed",
+                                             "True if the fold is collapsed",
+                                             FALSE,
+                                             G_PARAM_READABLE));
 }
+
+static void
+moo_fold_get_property (GObject        *object,
+                            guint           prop_id,
+                            GValue         *value,
+                            GParamSpec     *pspec)
+{
+    MooFold *fold = MOO_FOLD (object);
+
+    switch (prop_id)
+    {
+        case PROP_PARENT:
+            g_value_set_object (value, fold->parent);
+            break;
+
+        case PROP_NEXT:
+            g_value_set_object (value, fold->next);
+            break;
+
+        case PROP_PREV:
+            g_value_set_object (value, fold->prev);
+            break;
+
+        case PROP_MARK_START:
+            g_value_set_object (value, fold->start);
+            break;
+
+        case PROP_CHILDREN:
+            g_value_set_object (value, fold->children);
+            break;
+
+        case PROP_N_CHILDREN:
+            g_value_set_int (value, fold->n_children);
+            break;
+
+        case PROP_MARK_END:
+            g_value_set_object (value, fold->end);
+            break;
+
+        case PROP_COLLAPSED:
+            g_value_set_object (value, fold->collapsed);
+            break;
+
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
+}
+
+static void
+moo_fold_set_property (GObject        *object,
+                            guint           prop_id,
+                            const GValue   *value,
+                            GParamSpec     *pspec)
+{
+    //MooFold *fold = MOO_FOLD (object);
+
+    switch (prop_id)
+    {
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+            break;
+    }
+}
+
 
 
 static void

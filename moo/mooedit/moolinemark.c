@@ -80,7 +80,8 @@ enum {
     PROP_PIXBUF,
     PROP_STOCK_ID,
     PROP_MARKUP,
-    PROP_VISIBLE
+    PROP_VISIBLE,
+    PROP_FOLD
 };
 
 
@@ -154,6 +155,14 @@ moo_line_mark_class_init (MooLineMarkClass *klass)
                                              "stock-id",
                                              NULL,
                                              G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_FOLD,
+                                     g_param_spec_object ("fold",
+                                             "fold",
+                                             "fold",
+                                             MOO_TYPE_FOLD,
+                                             G_PARAM_READABLE));
 
     signals[CHANGED] =
             g_signal_new ("changed",
@@ -273,6 +282,10 @@ moo_line_mark_get_property (GObject        *object,
 
         case PROP_STOCK_ID:
             g_value_set_string (value, mark->priv->stock_id);
+            break;
+
+        case PROP_FOLD:
+            g_value_set_object (value, mark->priv->fold);
             break;
 
         default:
