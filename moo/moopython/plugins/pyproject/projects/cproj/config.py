@@ -267,7 +267,7 @@ factory_template = """\
 <medit-project version="2.0" type="C" name="%(project_name)s">
  <active>debug</active>
  <configurations>
-  <debug>
+  <configuration name="debug">
    <build_dir>build/debug</build_dir>
    <configure>
     <args>--enable-debug</args>
@@ -276,8 +276,8 @@ factory_template = """\
      <var name="CXXFLAGS">-g</var>
     </vars>
    </configure>
-  </debug>
-  <optimized>
+  </configuration>
+  <configuration name="optimized">
    <build_dir>build/optimized</build_dir>
    <configure>
     <vars>
@@ -285,7 +285,7 @@ factory_template = """\
      <var name="CXXFLAGS">-g -O2</var>
     </vars>
    </configure>
-  </optimized>
+  </configuration>
  </configurations>
 </medit-project>
 """
@@ -307,7 +307,7 @@ _sample_file = """
         <args>--g-fatal-warnings</args>
       </run>
       <configurations>
-        <debug>
+        <configuration name="debug">
           <configure>
             <args>--enable-debug=full --enable-all-gcc-warnings</args>
             <vars>
@@ -315,8 +315,8 @@ _sample_file = """
             </vars>
           </configure>
           <build_dir>build/debug</build_dir>
-        </debug>
-        <optimized>
+        </configuration>
+        <configuration name="optimized">
           <configure>
             <args>--enable-all-gcc-warnings</args>
             <vars>
@@ -324,7 +324,7 @@ _sample_file = """
             </vars>
           </configure>
           <build_dir>build/optimized</build_dir>
-        </optimized>
+        </configuration>
       </configurations>
       <active>debug</active>
     </medit-project>
