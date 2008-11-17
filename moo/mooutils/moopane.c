@@ -1358,6 +1358,8 @@ create_pane_window (MooPane *pane)
     g_object_set_data (G_OBJECT (pane->window), "moo-pane", pane);
     g_object_set_data (G_OBJECT (pane->keep_on_top_button), "moo-pane", pane);
 
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (pane->keep_on_top_button),
+                                  pane->params->keep_on_top);
     g_signal_connect (pane->keep_on_top_button, "toggled",
                       G_CALLBACK (keep_on_top_button_toggled), pane);
     g_signal_connect (pane->window, "configure-event",
