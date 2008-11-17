@@ -16,6 +16,7 @@ langs2 =				\
 	langs/diff.lang			\
 	langs/d.lang			\
 	langs/docbook.lang		\
+	langs/dot.lang			\
 	langs/dpatch.lang		\
 	langs/dtd.lang			\
 	langs/eiffel.lang		\
@@ -64,6 +65,7 @@ langs2 =				\
 	langs/verilog.lang		\
 	langs/vhdl.lang			\
 	langs/xml.lang			\
+	langs/xslt.lang			\
 	langs/yacc.lang
 
 langs1 =				\
