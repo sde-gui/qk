@@ -10,7 +10,7 @@ MODULE = medit
 bin_PROGRAMS = medit
 
 EXTRA_DIST += main.c
-medit_SOURCES = mem-debug.h run-tests.h
+medit_SOURCES = mem-debug.h run-tests.h parse.h
 nodist_medit_SOURCES =
 
 medit_SOURCES += main.c
