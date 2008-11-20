@@ -41,7 +41,7 @@
     <style id="include"            _name="Include"    map-to="def:keyword"/>
     <style id="common-commands"    _name="Command"    map-to="def:keyword"/>
     <style id="command"            _name="Command"    map-to="def:keyword"/>
-    <style id="verbatim"           _name="Verbatim"   map-to="def:comment"/>
+    <style id="verbatim"           _name="Verbatim"   map-to="def:keyword"/>
   </styles>
 
   <definitions>
@@ -199,14 +199,6 @@
                 <context id="comment" style-ref="comment">
                     <start>%</start>
                     <end>$</end>
-                    <include>
-                        <context ref="def:in-comment"/>
-                    </include>
-                </context>
-
-                <context id="verbatim-comment" style-ref="comment">
-                    <start>\\begin\{comment\}</start>
-                    <end>\\end\{comment\}</end>
                     <include>
                         <context ref="def:in-comment"/>
                     </include>
