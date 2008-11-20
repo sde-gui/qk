@@ -803,6 +803,8 @@ get_contents (MooEdit *edit)
             len = strlen (line);
 
             g_string_append_len (contents, line, len);
+
+            g_free (line);
         }
 
         if (!gtk_text_iter_is_end (&line_end))
