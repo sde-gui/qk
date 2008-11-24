@@ -4,13 +4,13 @@
 
 EXTRA_DIST += $(PCH_HEADER)
 
-ugly_base_compile_c = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+# ugly_base_compile_c = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 ugly_base_compile_cxx = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-ugly_base_compile_objc = $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS)
+# ugly_base_compile_objc = $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS)
 
-COMPILE = $(ugly_base_compile_c)
+# COMPILE = $(ugly_base_compile_c)
 CXXCOMPILE = $(ugly_base_compile_cxx)
-OBJCCOMPILE = $(ugly_base_compile_objc)
+# OBJCCOMPILE = $(ugly_base_compile_objc)
 
 if MOO_ENABLE_PCH
 
@@ -18,15 +18,17 @@ BUILT_SOURCES += $(ugly_pch_files)
 CLEANFILES += $(ugly_pch_files)
 
 ugly_pch_name = precompiled-header-name
-ugly_pch_files = $(ugly_pch_name)-c.gch $(ugly_pch_name)-c++.gch
+ugly_pch_files =
+# ugly_pch_files += $(ugly_pch_name)-c.gch
+ugly_pch_files += $(ugly_pch_name)-c++.gch
 ugly_pch_mk = $(top_srcdir)/ugly/pch.mk
 
-$(ugly_pch_name)-c.gch: $(PCH_HEADER) $(ugly_pch_mk)
-	$(ugly_base_compile_c) -x c-header -c $< -o $@
+# $(ugly_pch_name)-c.gch: $(PCH_HEADER) $(ugly_pch_mk)
+# 	$(ugly_base_compile_c) -x c-header -c $< -o $@
 $(ugly_pch_name)-c++.gch: $(PCH_HEADER) $(ugly_pch_mk)
 	$(ugly_base_compile_cxx) -x c++-header -c $< -o $@
 
-COMPILE += -include $(ugly_pch_name)-c -Winvalid-pch
+# COMPILE += -include $(ugly_pch_name)-c -Winvalid-pch
 CXXCOMPILE += -include $(ugly_pch_name)-c++ -Winvalid-pch
 
 endif
