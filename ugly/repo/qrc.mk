@@ -19,3 +19,18 @@ EXTRA_DIST += $(RESOURCES) $(QT_QRC_DEPS)
 BUILT_SOURCES += $(ugly_qrc_cpp)
 CLEANFILES += $(ugly_qrc_cpp)
 nodist_@MODULE@_SOURCES += $(ugly_qrc_cpp)
+
+dist-hook:
+	copyfile() { \
+	  dest="$(distdir)/`dirname $$1`"; \
+	  test -f $(distdir)/$(subdir)/$$1 || { \
+	    $(MKDIR_P) "$$dest" || exit 1; \
+	    echo cp -p "$(srcdir)/$$1" "$$dest/"; \
+	    cp -p "$(srcdir)/$$1" "$$dest/" || exit 1; \
+	  }; \
+	} ; \
+	for qrc in $(RESOURCES); do \
+	  for f in `grep '<file' < $(srcdir)/$$qrc | sed -e 's%<file.*>\(.*\)</file>%\1%'`; do \
+	    copyfile $$f; \
+	  done; \
+	done

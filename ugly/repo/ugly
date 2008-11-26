@@ -52,6 +52,11 @@ extract_var() {
   echo "$value"
 }
 
+extract_vars() {
+  # extract_vars Makefile
+  grep -E '^[A-Za-z0-9_]+[ \t]*=' $1 | sed 's/^\([a-zA-Z0-9_]*\)[ \t]*=[ \t]*\(.*\)/export \1='"'"'\2'"'"'/g'
+}
+
 extract_meta_var() {
   current_func=extract_meta_var
   # extract_meta_var Makefile NAME
@@ -68,7 +73,20 @@ write_mk() {
   echo ""
   echo "# begin $1"
   echo ""
-  cat ugly/$1 | sed 's/@MODULE@/'$2'/g'
+
+  case "`extract_meta_var ugly/$1 UGLY_MK_TYPE`" in
+    sh)
+      MODULE="$2" /bin/sh -c ". $global_vars && /bin/sh ugly/$1"
+      ;;
+    "")
+      cat ugly/$1 | sed 's/@MODULE@/'$2'/g'
+      ;;
+    *)
+      echo "oops"
+      exit 1
+      ;;
+  esac
+
   echo ""
   echo 'UGLY_DEPS += $(top_srcdir)/ugly/'$1
   echo 'EXTRA_DIST += $(top_srcdir)/ugly/'$1
@@ -107,6 +125,9 @@ do_makefile() {
   out_pp=`dirname $out`/.`basename $out`.pp#
 
   preprocess $infile $out_pp
+
+  global_vars=`dirname $out`/.globalvars
+  extract_vars $out_pp > $global_vars
 
   modname=`extract_var $out_pp MODULE | sed 's/\./_/g'`
   debug "processing $infile, output: $out, subdir: $subdir, topdir: $rel_topdir, module: $modname"
@@ -152,6 +173,22 @@ do_makefile() {
         done
       fi
     fi
+  done
+
+  for file_mk in $want_mk; do
+    debug "writing code for $file_mk"
+
+    vars=`extract_meta_var ugly/$file_mk UGLY_MK_VARS`
+    debug "extra vars: $vars"
+    for var in $vars; do
+      eval "var_written=\$var_${var}_written"
+      if [ "$var_written" = "true" ]; then
+        continue
+      fi
+      debug_v writing "$var"
+      eval "var_${var}_written=true"
+      echo "$var =" >> $out_tmp
+    done
   done
 
   for mod in $all_modnames; do
@@ -245,6 +282,7 @@ _EOFEOF
 _EOFEOF
 
   rm -f $out_pp
+  rm -f $global_vars
   mv $out_tmp $out || exit $?
 }
 
