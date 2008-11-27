@@ -277,6 +277,7 @@ push_appdir_to_path (void)
 #endif
 }
 
+#ifdef MOO_ENABLE_PROJECT
 static void
 project_mode (const char *file)
 {
@@ -299,6 +300,7 @@ project_mode (const char *file)
 
     moo_plugin_set_enabled (plugin, TRUE);
 }
+#endif
 
 static int
 medit_main (int argc, char *argv[])
