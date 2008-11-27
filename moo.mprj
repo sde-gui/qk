@@ -64,7 +64,7 @@
   </configuration>
  </configurations>
  <run>
-  <args>--app-name foobar</args>
+  <args>--app-name foobar --project-mode</args>
   <exe>medit/medit</exe>
   <vars>
    <var name="LANGUAGE">ru</var>

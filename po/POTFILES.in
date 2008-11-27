@@ -59,6 +59,7 @@ moo/mooutils/mooutils-file.c
 moo/mooutils/moodialogs.c
 moo/mooutils/mooencodings.c
 moo/mooutils/mooencodings-data.h
+moo/mooutils/moofiledialog.c
 moo/mooutils/moofiltermgr.c
 moo/mooutils/moofontsel.c
 moo/mooutils/moohelp.c
