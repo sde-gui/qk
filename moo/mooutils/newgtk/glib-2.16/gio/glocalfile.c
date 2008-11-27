@@ -932,9 +932,9 @@ g_local_file_query_filesystem_info (GFile         *file,
   guint64 block_size;
   const char *fstype;
 #ifdef USE_STATFS
-  struct statfs statfs_buffer;
+  struct statfs statfs_buffer = {0};
 #elif defined(USE_STATVFS)
-  struct statvfs statfs_buffer;
+  struct statvfs statfs_buffer = {0};
 #endif
 #endif
   GFileAttributeMatcher *attribute_matcher;
