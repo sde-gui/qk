@@ -196,11 +196,15 @@ gboolean    _moo_regex_escape               (const char *string,
 #define moo_new                 g_slice_new
 #define moo_new0                g_slice_new0
 #define moo_free                g_slice_free
-#define moo_slice_dup           g_slice_dup
 #else
 #define moo_new(type)           g_new (type, 1)
 #define moo_new0(type)          g_new0 (type, 1)
 #define moo_free(type,mem)      g_free (mem)
+#endif
+
+#if GLIB_CHECK_VERSION(2,14,0)
+#define moo_slice_dup           g_slice_dup
+#else
 #define moo_slice_dup(type,mem) ((type*) g_memdup (mem, sizeof (type)))
 #endif
 
