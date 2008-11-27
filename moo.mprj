@@ -14,6 +14,12 @@
     </vars>
    </configure>
   </configuration>
+  <configuration name="gtk-2.10">
+   <build_dir>/home/muntyan/projects/gtk-2.10/moo</build_dir>
+   <configure>
+    <args>--configure-manually</args>
+   </configure>
+  </configuration>
   <configuration name="gtk-2.6">
    <build_dir>/home/muntyan/projects/gtk-2.6/moo</build_dir>
    <configure>

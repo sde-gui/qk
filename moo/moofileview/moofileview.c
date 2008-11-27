@@ -3448,12 +3448,11 @@ do_popup (MooFileView    *fileview,
                                      fileview->priv->actions,
                                      NULL);
     MOO_OBJECT_REF_SINK (menu);
-#ifdef MOO_USE_GIO
+
     g_signal_connect_swapped (menu, "alternate-toggled",
                               G_CALLBACK (update_delete_action),
                               fileview);
     update_delete_action (fileview, NULL);
-#endif
 
     _moo_file_view_tools_check (fileview);
     g_signal_emit (fileview, signals[POPULATE_POPUP], 0, files, menu);

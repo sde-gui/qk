@@ -73,9 +73,7 @@ AM_CONDITIONAL(GDK_X11, $GDK_X11)
 AM_CONDITIONAL(GDK_WIN32, $GDK_WIN32)
 AM_CONDITIONAL(GDK_QUARTZ, $GDK_QUARTZ)
 
-MOO_USE_GIO=false
 if test "x$GLIB_2_16" = xyes; then
-  MOO_USE_GIO=true
   MOO_CHECK_VERSION(GIO, gio-2.0, [16, 18])
 else
   AM_CONDITIONAL(GIO_2_16, false)
@@ -109,10 +107,5 @@ else
   AC_CHECK_FUNCS(lstat strerror strsignal memmove vsnprintf stpcpy strcasecmp strncasecmp poll getcwd vasprintf setenv unsetenv getc_unlocked readlink symlink fdwalk)
   AC_CHECK_FUNCS(chown lchown fchmod fchown link statvfs statfs utimes getgrgid getpwuid)
   AC_CHECK_FUNCS(getmntent_r setmntent endmntent hasmntopt getmntinfo)
-
-fi
-AM_CONDITIONAL([MOO_USE_GIO], [$MOO_USE_GIO])
-if $MOO_USE_GIO; then
-  AC_DEFINE([MOO_USE_GIO], [1], [Use GIO library])
 fi
 ])

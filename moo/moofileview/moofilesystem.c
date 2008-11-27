@@ -21,6 +21,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-mem.h"
 #include "marshals.h"
+#include <gio/gio.h>
 #include <errno.h>
 #include <stdio.h>
 #ifndef __WIN32__
@@ -29,10 +30,6 @@
 #include <windows.h>
 #include <io.h>
 #include <shellapi.h>
-#endif
-
-#ifdef MOO_USE_GIO
-#include <gio/gio.h>
 #endif
 
 #if 0 && MOO_DEBUG_ENABLED
@@ -740,21 +737,12 @@ delete_file (G_GNUC_UNUSED MooFileSystem *fs,
     g_return_val_if_fail (!error || !*error, FALSE);
 
     if (flags & MOO_DELETE_TO_TRASH)
-#if !defined(MOO_USE_GIO)
-    {
-        g_set_error (error, MOO_FILE_ERROR,
-                     MOO_FILE_ERROR_NOT_IMPLEMENTED,
-                     "Moving files to trash is not implemented");
-        return FALSE;
-    }
-#else
     {
         GFile *file = g_file_new_for_path (path);
         gboolean retval = g_file_trash (file, NULL, error);
         g_object_unref (file);
         return retval;
     }
-#endif
 
 #if defined(__WIN32__) && 0
     return delete_file_win32 (path, (flags & MOO_DELETE_RECURSIVE) != 0, error);
