@@ -324,5 +324,5 @@ fi
 
 cd $top_srcdir
 for f in $input; do
-  do_makefile "$f"
+  ( do_makefile "$f" )
 done
