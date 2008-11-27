@@ -11,7 +11,7 @@
 ugly_moc_wrapper = $(top_srcdir)/ugly/moc-wrapper
 
 all-classes-moc.cpp.stamp: $(MOC_HDRS) Makefile $(ugly_moc_wrapper)
-	$(ugly_moc_wrapper) $(QT_MOC) $(srcdir) all-classes-moc.cpp $(MOC_HDRS) && echo stamp > $@
+	$(ugly_moc_wrapper) "$(QT_MOC) $(MOC_FLAGS)" $(srcdir) all-classes-moc.cpp $(MOC_HDRS) && echo stamp > $@
 
 ugly_moc_sources = all-classes-moc.cpp
 ugly_moc_stamps = all-classes-moc.cpp.stamp
