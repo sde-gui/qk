@@ -23,10 +23,12 @@ nodist_@MODULE@_SOURCES += $(ugly_qrc_cpp)
 dist-hook:
 	copyfile() { \
 	  dest="$(distdir)/`dirname $$1`"; \
-	  test -f $(distdir)/$(subdir)/$$1 || { \
-	    $(MKDIR_P) "$$dest" || exit 1; \
-	    echo cp -p "$(srcdir)/$$1" "$$dest/"; \
-	    cp -p "$(srcdir)/$$1" "$$dest/" || exit 1; \
+	  test -f $(distdir)/$$1 || { \
+	    if test -f $(srcdir)/$$1; then \
+	      $(MKDIR_P) "$$dest" || exit 1; \
+	      echo cp -p "$(srcdir)/$$1" "$$dest/"; \
+	      cp -p "$(srcdir)/$$1" "$$dest/" || exit 1; \
+	    fi; \
 	  }; \
 	} ; \
 	for qrc in $(RESOURCES); do \
