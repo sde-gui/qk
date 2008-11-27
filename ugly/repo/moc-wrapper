@@ -16,7 +16,7 @@ for arg do
   moc_args="$moc_args -f$arg"
 done
 
-(cat $cat_args | "$moc" $moc_args -o $output.tmp) || exit 1
+(cat $cat_args | $moc $moc_args -o $output.tmp) || exit 1
 (sed 's/\*\* Created: [^*]*$/** Created: today/' $output.tmp > $output.tmp2) || exit 1
 (cmp -s $output.tmp2 $output || mv $output.tmp2 $output) || exit 1
 rm -f $output.tmp $output.tmp2
