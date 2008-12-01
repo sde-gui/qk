@@ -284,13 +284,16 @@ forward_chars_with_skipping (GtkTextIter *iter,
 			   UTF8 characters (e.g. accented characters) which 
 			   g_utf8_normalize() performs */
 			gchar *normal;
+			gchar *casefold;
 			gchar buffer[6];
 			gint buffer_len;
 
 			buffer_len = g_unichar_to_utf8 (gtk_text_iter_get_char (iter), buffer);
-			normal = g_utf8_normalize (buffer, buffer_len, G_NORMALIZE_NFD);
+			casefold = g_utf8_casefold (buffer, buffer_len);
+			normal = g_utf8_normalize (casefold, -1, G_NORMALIZE_NFD);
 			i -= (g_utf8_strlen (normal, -1) - 1);
 			g_free (normal);
+			g_free (casefold);
 		}
 
 		gtk_text_iter_forward_char (iter);
