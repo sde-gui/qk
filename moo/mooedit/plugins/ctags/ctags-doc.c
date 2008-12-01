@@ -317,6 +317,7 @@ _moo_ctags_language_find_for_name (const char *lang_name)
             { "c", "--language-force=c -I G_BEGIN_DECLS,G_END_DECLS", process_list_c },
             { "c++", " --language-force=c++ -I G_BEGIN_DECLS,G_END_DECLS", process_list_c },
             { "python", "--language-force=python", process_list_python },
+            { "vala", "--language-force=\"C#\"", process_list_c },
         };
 
         langs_hash = g_hash_table_new (g_str_hash, g_str_equal);
@@ -324,6 +325,7 @@ _moo_ctags_language_find_for_name (const char *lang_name)
         g_hash_table_insert (langs_hash, (char*) "cpp", &langs[1]);
         g_hash_table_insert (langs_hash, (char*) "chdr", &langs[1]);
         g_hash_table_insert (langs_hash, (char*) "python", &langs[2]);
+        g_hash_table_insert (langs_hash, (char*) "vala", &langs[3]);
     }
 
     return g_hash_table_lookup (langs_hash, lang_name);
