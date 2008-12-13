@@ -654,7 +654,8 @@ read_input (G_GNUC_UNUSED GIOChannel *source,
     return TRUE;
 
 remove:
-    conn->ch->connections = g_slist_remove (conn->ch->connections, conn);
+    if (conn->ch)
+        conn->ch->connections = g_slist_remove (conn->ch->connections, conn);
     connection_free (conn);
     return FALSE;
 }
