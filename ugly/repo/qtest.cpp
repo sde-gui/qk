@@ -2,6 +2,14 @@
 #include <moo/unit-tests.h>
 #include <QtCore>
 
+#ifndef UnitTestMainClass
+#error "`UnitTestMainClass' not defined"
+#endif
+
+#ifndef UnitTestAppClass
+#define UnitTestAppClass QApplication
+#endif
+
 namespace moo {
 namespace test {
 
@@ -19,7 +27,7 @@ public:
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    UnitTestAppClass app(argc, argv);
     moo::test::Tester t;
     return t.exec(argc, argv);
 }

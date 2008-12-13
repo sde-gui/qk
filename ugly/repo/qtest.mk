@@ -28,7 +28,7 @@ CLEANFILES += $(QTESTS:=-test.cpp) $(QTESTS:=-test.moc)
 	sed -e 's/@test@/$*/g' $(ugly_qtest_cpp) > $*-test.cpp.tmp && mv $*-test.cpp.tmp $*-test.cpp
 
 %-test.moc: %-t.h
-	$(ugly_moc_wrapper) $(QT_MOC) $(srcdir) $*-test.moc $*-t.h
+	$(QT_MOC) -o$*-test.moc.tmp $(srcdir)/$*-t.h && mv $*-test.moc.tmp $*-test.moc
 
 EOFEOF
 
