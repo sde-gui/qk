@@ -40,7 +40,7 @@ moo-config-dirs.h.stamp: Makefile
 BUILT_SOURCES += moo-config-dirs.h.stamp
 CLEANFILES += moo-config-dirs.h.stamp moo-config-dirs.h
 
-ACLOCAL_AMFLAGS = -I m4 -I ugly/m4
+ACLOCAL_AMFLAGS = -I m4 -I ugly/m4 -I intltool/aclocal
 
 DISTCLEANFILES +=		\
 	configargs.h		\
