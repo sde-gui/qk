@@ -1893,8 +1893,6 @@ selection_changed (MooTextView   *view,
                                       G_N_ELEMENTS (targets),
                                       clipboard_get_selection,
                                       NULL, G_OBJECT (view));
-    else
-        clear_primary (view);
 }
 
 
@@ -1956,7 +1954,8 @@ clear_clipboard (G_GNUC_UNUSED GtkClipboard *clipboard,
 
 static void
 moo_text_view_cut_or_copy (GtkTextView *text_view,
-                           gboolean     delete)
+                           gboolean     delete,
+                           GdkAtom      clipboard_type)
 {
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
@@ -1970,7 +1969,7 @@ moo_text_view_cut_or_copy (GtkTextView *text_view,
         return;
 
     clipboard = gtk_widget_get_clipboard (GTK_WIDGET (text_view),
-                                          GDK_SELECTION_CLIPBOARD);
+                                          clipboard_type);
 
     contents = moo_new0 (MooTextViewClipboard);
     contents->text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
@@ -1998,18 +1997,23 @@ moo_text_view_cut_or_copy (GtkTextView *text_view,
     }
 }
 
+void
+_moo_text_view_ensure_primary (GtkTextView *text_view)
+{
+    moo_text_view_cut_or_copy (text_view, FALSE, GDK_SELECTION_PRIMARY);
+}
 
 static void
 moo_text_view_copy_clipboard (GtkTextView *text_view)
 {
-    moo_text_view_cut_or_copy (text_view, FALSE);
+    moo_text_view_cut_or_copy (text_view, FALSE, GDK_SELECTION_CLIPBOARD);
 }
 
 
 static void
 moo_text_view_cut_clipboard (GtkTextView *text_view)
 {
-    moo_text_view_cut_or_copy (text_view, TRUE);
+    moo_text_view_cut_or_copy (text_view, TRUE, GDK_SELECTION_CLIPBOARD);
 }
 
 

@@ -196,6 +196,14 @@ text_view_reset_im_context (GtkTextView *text_view)
 
 
 static void
+copy_and_place_cursor (GtkTextView       *text_view,
+                       const GtkTextIter *where)
+{
+    _moo_text_view_ensure_primary (text_view);
+    gtk_text_buffer_place_cursor (gtk_text_view_get_buffer (text_view), where);
+}
+
+static void
 move_cursor_to (GtkTextView *text_view,
                 GtkTextIter *where,
                 gboolean     extend_selection)
@@ -210,7 +218,7 @@ move_cursor_to (GtkTextView *text_view,
     if (extend_selection)
         gtk_text_buffer_move_mark (buffer, insert, where);
     else
-        gtk_text_buffer_place_cursor (buffer, where);
+        copy_and_place_cursor (text_view, where);
 
     gtk_text_view_scroll_mark_onscreen (text_view, insert);
 }
@@ -697,7 +705,7 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
                 }
                 else
                 {
-                    gtk_text_buffer_place_cursor (buffer, &iter);
+                    copy_and_place_cursor (text_view, &iter);
                 }
             }
             else
@@ -754,7 +762,7 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
         if (gtk_text_buffer_get_selection_bounds (buffer, NULL, NULL))
         {
             /* it may happen sometimes, if you click fast enough */
-            gtk_text_buffer_place_cursor (buffer, &iter);
+            copy_and_place_cursor (text_view, &iter);
         }
 
         view->priv->dnd.button = GDK_2BUTTON_PRESS;
@@ -814,7 +822,7 @@ _moo_text_view_button_release_event (GtkWidget      *widget,
                 g_return_val_if_reached (FALSE);
             }
             get_start_mark (view, &iter);
-            gtk_text_buffer_place_cursor (gtk_text_view_get_buffer (text_view), &iter);
+            copy_and_place_cursor (text_view, &iter);
             break;
     }
 
@@ -906,7 +914,7 @@ _moo_text_view_motion_event (GtkWidget          *widget,
         if (extend_selection (view, t, &start, &iter))
             select_range (buffer, &start, &iter);
         else
-            gtk_text_buffer_place_cursor (buffer, &iter);
+            copy_and_place_cursor (text_view, &iter);
     }
     else
     {
@@ -1127,7 +1135,7 @@ drag_scroll_timeout_func (MooTextView *view)
         if (extend_selection (view, t, &start, &iter))
             select_range (buffer, &start, &iter);
         else
-            gtk_text_buffer_place_cursor (buffer, &iter);
+            copy_and_place_cursor (text_view, &iter);
     }
     else
     {
@@ -1255,6 +1263,7 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
         return TRUE;
 
     view->priv->in_key_press = TRUE;
+    _moo_text_view_ensure_primary (text_view);
     gtk_text_buffer_begin_user_action (buffer);
     handled = GTK_WIDGET_CLASS (_moo_text_view_parent_class)->
                     key_press_event (widget, event);

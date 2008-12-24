@@ -35,6 +35,7 @@ void        _moo_text_view_move_cursor          (GtkTextView        *text_view,
                                                  GtkMovementStep     step,
                                                  gint                count,
                                                  gboolean            extend_selection);
+void        _moo_text_view_ensure_primary       (GtkTextView        *text_view);
 #if !GTK_CHECK_VERSION(2,12,0)
 void        _moo_text_view_page_horizontally    (GtkTextView        *text_view,
                                                  int                 count,
