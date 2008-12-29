@@ -1,4 +1,3 @@
-#include <glib/gurifuncs.h>
 #include <errno.h>
 
 static gboolean
@@ -121,6 +120,29 @@ parse_uri (const char     *scheme,
     return TRUE;
 }
 
+static char *
+parse_uri_scheme (const char *string)
+{
+    const char *p;
+
+    for (p = string; *p; ++p)
+    {
+        if (*p == ':')
+        {
+            if (p != string)
+                return g_strndup (string, p - string);
+
+            break;
+        }
+
+        if (!(p != string && g_ascii_isalnum (*p)) &&
+            !(p == string && g_ascii_isalpha (*p)))
+                break;
+    }
+
+    return NULL;
+}
+
 static gboolean
 parse_file (const char      *string,
             MooAppFileInfo  *file,
@@ -133,7 +155,7 @@ parse_file (const char      *string,
     if (g_path_is_absolute (string))
         return parse_filename (string, file);
 
-    if ((uri_scheme = g_uri_parse_scheme (string)))
+    if ((uri_scheme = parse_uri_scheme (string)))
     {
         ret = parse_uri (uri_scheme, string, file);
         g_free (uri_scheme);

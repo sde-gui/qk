@@ -15,8 +15,6 @@ glib_2_14_sources =				\
 	glib-2.14/glib/gregex.c
 
 glib_2_16_sources =				\
-	glib-2.16/glib/gurifuncs.c		\
-	glib-2.16/glib/gurifuncs.h		\
 	glib-2.16/gio/gappinfo.c		\
 	glib-2.16/gio/gappinfo.h		\
 	glib-2.16/gio/gasynchelper.c		\
