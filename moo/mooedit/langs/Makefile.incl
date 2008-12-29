@@ -40,6 +40,7 @@ langs2 =				\
 	langs/m4.lang			\
 	langs/makefile.lang		\
 	langs/nemerle.lang		\
+	langs/nsis.lang			\
 	langs/objc.lang			\
 	langs/ocaml.lang		\
 	langs/ocl.lang			\

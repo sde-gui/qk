@@ -366,6 +366,7 @@
       <keyword>WHILE</keyword>
       <keyword>ENDWHILE</keyword>
       <keyword>ELSE</keyword>
+      <keyword>ELSEIF</keyword>
     </context>
 
     <context id="variable" style-ref="variable"
