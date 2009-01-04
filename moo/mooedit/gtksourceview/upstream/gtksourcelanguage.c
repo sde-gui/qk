@@ -22,12 +22,6 @@
 #include <config.h>
 #endif
 
-#include <glib/gstdio.h>
-#include "gtksourceview-i18n.h"
-#include "gtksourcelanguage-private.h"
-#include "gtksourcelanguage.h"
-#include "gtksourceview-marshal.h"
-
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -39,6 +33,11 @@
 #include <fcntl.h>
 
 #include <libxml/xmlreader.h>
+#include <glib/gstdio.h>
+#include "gtksourceview-i18n.h"
+#include "gtksourcelanguage-private.h"
+#include "gtksourcelanguage.h"
+#include "gtksourceview-marshal.h"
 
 #define DEFAULT_SECTION _("Others")
 
@@ -149,7 +148,7 @@ gtk_source_language_get_property (GObject    *object,
 			break;
 
 		case PROP_SECTION:
-			g_value_set_string (value, language->priv->name);
+			g_value_set_string (value, language->priv->section);
 			break;
 
 		case PROP_HIDDEN:
@@ -219,7 +218,7 @@ gtk_source_language_class_init (GtkSourceLanguageClass *klass)
 							      G_PARAM_READABLE));
 
 	g_object_class_install_property (object_class,
-					 PROP_ID,
+					 PROP_NAME,
 					 g_param_spec_string ("name",
 						 	      _("Language name"),
 							      _("Language name"),
@@ -227,7 +226,7 @@ gtk_source_language_class_init (GtkSourceLanguageClass *klass)
 							      G_PARAM_READABLE));
 
 	g_object_class_install_property (object_class,
-					 PROP_ID,
+					 PROP_SECTION,
 					 g_param_spec_string ("section",
 						 	      _("Language section"),
 							      _("Language section"),
@@ -556,7 +555,6 @@ gtk_source_language_get_metadata (GtkSourceLanguage *language,
 
 /**
  * gtk_source_language_get_mime_types:
- *
  * @language: a #GtkSourceLanguage.
  *
  * Returns the mime types associated to this language. This is just
@@ -584,7 +582,6 @@ gtk_source_language_get_mime_types (GtkSourceLanguage *language)
 
 /**
  * gtk_source_language_get_globs:
- *
  * @language: a #GtkSourceLanguage.
  *
  * Returns the globs associated to this language. This is just
@@ -818,7 +815,6 @@ force_styles (GtkSourceLanguage *language)
 
 /**
  * gtk_source_language_get_style_ids:
- *
  * @language: a #GtkSourceLanguage
  *
  * Returns the ids of the styles defined by this @language.
@@ -856,7 +852,6 @@ get_style_info (GtkSourceLanguage *language, const char *style_id)
 
 /**
  * gtk_source_language_get_style_name:
- *
  * @language: a #GtkSourceLanguage
  * @style_id: a style ID
  *
