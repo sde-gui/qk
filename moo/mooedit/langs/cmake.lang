@@ -33,6 +33,9 @@
     <style id="operator" _name="Operator" map-to="def:operator"/>
     <style id="control" _name="Control Keyword" map-to="def:keyword"/>
     <style id="variable" _name="Variable" map-to="makefile:variable"/>
+    <style id="string" _name="String" map-to="def:string"/>
+    <style id="escaped-char" _name="Escaped Character" map-to="def:special-char"/>
+    <style id="property" _name="Property"/>
   </styles>
 
   <definitions>
@@ -49,75 +52,261 @@
       <keyword>ADD_TEST</keyword>
       <keyword>AUX_SOURCE_DIRECTORY</keyword>
       <keyword>BUILD_COMMAND</keyword>
-      <keyword>BUILD_NAME</keyword>
       <keyword>CMAKE_MINIMUM_REQUIRED</keyword>
+      <keyword>CMAKE_POLICY</keyword>
       <keyword>CONFIGURE_FILE</keyword>
       <keyword>CREATE_TEST_SOURCELIST</keyword>
+      <keyword>DEFINE_PROPERTY</keyword>
       <keyword>ENABLE_LANGUAGE</keyword>
       <keyword>ENABLE_TESTING</keyword>
+      <keyword>ENDFUNCTION</keyword>
       <keyword>ENDMACRO</keyword>
       <keyword>EXECUTE_PROCESS</keyword>
-      <keyword>EXEC_PROGRAM</keyword>
-      <keyword>EXPORT_LIBRARY_DEPENDENCIES</keyword>
+      <keyword>EXPORT</keyword>
       <keyword>FILE</keyword>
       <keyword>FIND_FILE</keyword>
       <keyword>FIND_LIBRARY</keyword>
       <keyword>FIND_PACKAGE</keyword>
       <keyword>FIND_PATH</keyword>
       <keyword>FIND_PROGRAM</keyword>
-      <keyword>FLTK_WRAP_UI</keyword>
+      <keyword>FUNCTION</keyword>
       <keyword>GET_CMAKE_PROPERTY</keyword>
       <keyword>GET_DIRECTORY_PROPERTY</keyword>
       <keyword>GET_FILENAME_COMPONENT</keyword>
+      <keyword>GET_PROPERTY</keyword>
       <keyword>GET_SOURCE_FILE_PROPERTY</keyword>
       <keyword>GET_TARGET_PROPERTY</keyword>
       <keyword>GET_TEST_PROPERTY</keyword>
-      <keyword>INCLUDE</keyword>
       <keyword>INCLUDE_DIRECTORIES</keyword>
       <keyword>INCLUDE_EXTERNAL_MSPROJECT</keyword>
+      <keyword>INCLUDE</keyword>
       <keyword>INCLUDE_REGULAR_EXPRESSION</keyword>
       <keyword>INSTALL</keyword>
-      <keyword>INSTALL_FILES</keyword>
-      <keyword>INSTALL_PROGRAMS</keyword>
-      <keyword>INSTALL_TARGETS</keyword>
       <keyword>LINK_DIRECTORIES</keyword>
-      <keyword>LINK_LIBRARIES</keyword>
       <keyword>LIST</keyword>
       <keyword>LOAD_CACHE</keyword>
       <keyword>LOAD_COMMAND</keyword>
       <keyword>MACRO</keyword>
-      <keyword>MAKE_DIRECTORY</keyword>
       <keyword>MARK_AS_ADVANCED</keyword>
       <keyword>MATH</keyword>
       <keyword>MESSAGE</keyword>
       <keyword>OPTION</keyword>
       <keyword>OUTPUT_REQUIRED_FILES</keyword>
       <keyword>PROJECT</keyword>
-      <keyword>QT_WRAP_CPP</keyword>
-      <keyword>QT_WRAP_UI</keyword>
-      <keyword>REMOVE</keyword>
       <keyword>REMOVE_DEFINITIONS</keyword>
+      <keyword>RETURN</keyword>
       <keyword>SEPARATE_ARGUMENTS</keyword>
-      <keyword>SET</keyword>
       <keyword>SET_DIRECTORY_PROPERTIES</keyword>
+      <keyword>SET_PROPERTY</keyword>
       <keyword>SET_SOURCE_FILES_PROPERTIES</keyword>
       <keyword>SET_TARGET_PROPERTIES</keyword>
       <keyword>SET_TESTS_PROPERTIES</keyword>
       <keyword>SITE_NAME</keyword>
       <keyword>SOURCE_GROUP</keyword>
       <keyword>STRING</keyword>
-      <keyword>SUBDIRS</keyword>
-      <keyword>SUBDIR_DEPENDS</keyword>
       <keyword>TARGET_LINK_LIBRARIES</keyword>
       <keyword>TRY_COMPILE</keyword>
       <keyword>TRY_RUN</keyword>
+      <keyword>VARIABLE_WATCH</keyword>
+    </context>
+
+    <context id="other-commands" style-ref="builtin-command">
+      <prefix>(?i)\b</prefix> <!-- case insensitive -->
+      <keyword>ADD_FILE_DEPENDENCIES</keyword>
+      <keyword>CHECK_C_COMPILER_FLAG</keyword>
+      <keyword>CHECK_C_SOURCE_COMPILES</keyword>
+      <keyword>CHECK_C_SOURCE_RUNS</keyword>
+      <keyword>CHECK_CXX_COMPILER_FLAG</keyword>
+      <keyword>CHECK_CXX_SOURCE_COMPILES</keyword>
+      <keyword>CHECK_CXX_SOURCE_RUNS</keyword>
+      <keyword>CHECK_FORTRAN_FUNCTION_EXISTS</keyword>
+      <keyword>CHECK_FUNCTION_EXISTS</keyword>
+      <keyword>CHECK_INCLUDE_FILE</keyword>
+      <keyword>CHECK_INCLUDE_FILE_CXX</keyword>
+      <keyword>CHECK_INCLUDE_FILES</keyword>
+      <keyword>CHECK_LIBRARY_EXISTS</keyword>
+      <keyword>CHECK_STRUCT_HAS_MEMBER</keyword>
+      <keyword>CHECK_SYMBOL_EXISTS</keyword>
+      <keyword>CHECK_TYPE_SIZE</keyword>
+      <keyword>CHECK_VARIABLE_EXISTS</keyword>
+      <keyword>CLEAR_BUNDLE_KEYS</keyword>
+      <keyword>CMAKE_DEPENDENT_OPTION</keyword>
+      <keyword>CMAKE_EXPORT_BUILD_SETTINGS</keyword>
+      <keyword>CMAKE_FORCE_C_COMPILER</keyword>
+      <keyword>CMAKE_FORCE_CXX_COMPILER</keyword>
+      <keyword>CMAKE_IMPORT_BUILD_SETTINGS</keyword>
+      <keyword>COPY_AND_FIXUP_BUNDLE</keyword>
+      <keyword>COPY_RESOLVED_ITEM_INTO_BUNDLE</keyword>
+      <keyword>CPACK_ADD_COMPONENT</keyword>
+      <keyword>CPACK_ADD_COMPONENT_GROUP</keyword>
+      <keyword>CPACK_ADD_INSTALL_TYPE</keyword>
+      <keyword>CPACK_CONFIGURE_DOWNLOADS</keyword>
+      <keyword>FIND_PACKAGE_HANDLE_STANDARD_ARGS</keyword>
+      <keyword>FIND_PACKAGE_MESSAGE</keyword>
+      <keyword>FIXUP_BUNDLE</keyword>
+      <keyword>FIXUP_BUNDLE_ITEM</keyword>
+      <keyword>FLTK_WRAP_UI</keyword>
+      <keyword>GET_BUNDLE_ALL_EXECUTABLES</keyword>
+      <keyword>GET_BUNDLE_AND_EXECUTABLE</keyword>
+      <keyword>GET_BUNDLE_KEYS</keyword>
+      <keyword>GET_BUNDLE_MAIN_EXECUTABLE</keyword>
+      <keyword>GET_DOTAPP_DIR</keyword>
+      <keyword>GET_ITEM_KEY</keyword>
+      <keyword>GETTEXT_CREATE_TRANSLATIONS</keyword>
+      <keyword>KDE3_ADD_DCOP_SKELS</keyword>
+      <keyword>KDE3_ADD_DCOP_STUBS</keyword>
+      <keyword>KDE3_ADD_EXECUTABLE</keyword>
+      <keyword>KDE3_ADD_KCFG_FILES</keyword>
+      <keyword>KDE3_ADD_KDEINIT_EXECUTABLE</keyword>
+      <keyword>KDE3_ADD_KPART</keyword>
+      <keyword>KDE3_ADD_MOC_FILES</keyword>
+      <keyword>KDE3_ADD_UI_FILES</keyword>
+      <keyword>KDE3_AUTOMOC</keyword>
+      <keyword>KDE3_INSTALL_LIBTOOL_FILE</keyword>
+      <keyword>MACRO_OPTIONAL_FIND_PACKAGE</keyword>
+      <keyword>PKG_CHECK_MODULES</keyword>
+      <keyword>PKGCONFIG</keyword>
+      <keyword>PKG_SEARCH_MODULE</keyword>
+      <keyword>PRINT_DISABLED_FEATURES</keyword>
+      <keyword>PRINT_ENABLED_FEATURES</keyword>
+      <keyword>QT4_ADD_DBUS_ADAPTOR</keyword>
+      <keyword>QT4_ADD_DBUS_INTERFACE</keyword>
+      <keyword>QT4_ADD_DBUS_INTERFACES</keyword>
+      <keyword>QT4_ADD_RESOURCES</keyword>
+      <keyword>QT4_ADD_TRANSLATION</keyword>
+      <keyword>QT4_AUTOMOC</keyword>
+      <keyword>QT4_CREATE_TRANSLATION</keyword>
+      <keyword>QT4_GENERATE_DBUS_INTERFACE</keyword>
+      <keyword>QT4_GENERATE_MOC</keyword>
+      <keyword>QT4_WRAP_CPP</keyword>
+      <keyword>QT4_WRAP_UI</keyword>
+      <keyword>QT_WRAP_CPP</keyword>
+      <keyword>QT_WRAP_UI</keyword>
+      <keyword>SET_BUNDLE_KEY_VALUES</keyword>
+      <keyword>SET_FEATURE_INFO</keyword>
+      <keyword>SUBVERSION_WC_INFO</keyword>
+      <keyword>SWIG_ADD_MODULE</keyword>
+      <keyword>SWIG_LINK_LIBRARIES</keyword>
+      <keyword>TEST_BIG_ENDIAN</keyword>
+      <keyword>VERIFY_APP</keyword>
+      <keyword>VERIFY_BUNDLE_PREREQUISITES</keyword>
+      <keyword>VERIFY_BUNDLE_SYMLINKS</keyword>
+    </context>
+
+    <context id="property" style-ref="property">
+      <keyword>ABSTRACT</keyword>
+      <keyword>ADDITIONAL_MAKE_CLEAN_FILES</keyword>
+      <keyword>ALLOW_DUPLICATE_CUSTOM_TARGETS</keyword>
+      <keyword>ARCHIVE_OUTPUT_DIRECTORY</keyword>
+      <keyword>BUILD_WITH_INSTALL_RPATH</keyword>
+      <keyword>CACHE_VARIABLES</keyword>
+      <keyword>CLEAN_DIRECT_OUTPUT</keyword>
+      <keyword>CLEAN_NO_CUSTOM</keyword>
+      <keyword>__CMAKE_DELETE_CACHE_CHANGE_VARS_</keyword>
+      <keyword>COMPILE_DEFINITIONS(_(DEBUG|RELEASE|MINSIZEREL|RELWITHDEBINFO))?</keyword>
+      <keyword>COMPILE_FLAGS</keyword>
+      <keyword>DEBUG_POSTFIX</keyword>
+      <keyword>DEFINE_SYMBOL</keyword>
+      <keyword>DEFINITIONS</keyword>
+      <keyword>DISABLED_FEATURES</keyword>
+      <keyword>ECHOSTRING</keyword>
+      <keyword>ENABLED_FEATURES</keyword>
+      <keyword>ENABLED_LANGUAGES</keyword>
+      <keyword>ENABLE_EXPORTS</keyword>
+      <keyword>EXCLUDE_FROM_ALL</keyword>
+      <keyword>EXTERNAL_OBJECT</keyword>
+      <keyword>FAIL_REGULAR_EXPRESSION</keyword>
+      <keyword>FIND_LIBRARY_USE_LIB64_PATHS</keyword>
+      <keyword>FORTRAN_MODULE_DIRECTORY</keyword>
+      <keyword>FRAMEWORK</keyword>
+      <keyword>GENERATED</keyword>
+      <keyword>GENERATOR_FILE_NAME</keyword>
+      <keyword>GLOBAL_DEPENDS_DEBUG_MODE</keyword>
+      <keyword>HAS_CXX</keyword>
+      <keyword>HEADER_FILE_ONLY</keyword>
+      <keyword>IMPLICIT_DEPENDS_INCLUDE_TRANSFORM</keyword>
+      <keyword>IMPORTED_CONFIGURATIONS</keyword>
+      <keyword>IMPORTED_IMPLIB(_(DEBUG|RELEASE|MINSIZEREL|RELWITHDEBINFO))?</keyword>
+      <keyword>IMPORTED</keyword>
+      <keyword>IMPORTED_LINK_DEPENDENT_LIBRARIES(_(DEBUG|RELEASE|MINSIZEREL|RELWITHDEBINFO))?</keyword>
+      <keyword>IMPORTED_LINK_INTERFACE_LIBRARIES(_(DEBUG|RELEASE|MINSIZEREL|RELWITHDEBINFO))?</keyword>
+      <keyword>IMPORTED_LOCATION(_(DEBUG|RELEASE|MINSIZEREL|RELWITHDEBINFO))?</keyword>
+      <keyword>IMPORTED_SONAME(_(DEBUG|RELEASE|MINSIZEREL|RELWITHDEBINFO))?</keyword>
+      <keyword>IMPORT_PREFIX</keyword>
+      <keyword>IMPORT_SUFFIX</keyword>
+      <keyword>INCLUDE_DIRECTORIES</keyword>
+      <keyword>INCLUDE_REGULAR_EXPRESSION</keyword>
+      <keyword>INSTALL_NAME_DIR</keyword>
+      <keyword>INSTALL_RPATH</keyword>
+      <keyword>INSTALL_RPATH_USE_LINK_PATH</keyword>
+      <keyword>IN_TRY_COMPILE</keyword>
+      <keyword>KEEP_EXTENSION</keyword>
+      <keyword>LANGUAGE</keyword>
+      <keyword>LIBRARY_OUTPUT_DIRECTORY</keyword>
+      <keyword>LINK_DIRECTORIES</keyword>
+      <keyword>LINKER_LANGUAGE</keyword>
+      <keyword>LINK_FLAGS(_(DEBUG|RELEASE|MINSIZEREL|RELWITHDEBINFO))?</keyword>
+      <keyword>LINK_INTERFACE_LIBRARIES(_(DEBUG|RELEASE|MINSIZEREL|RELWITHDEBINFO))?</keyword>
+      <keyword>LINK_SEARCH_END_STATIC</keyword>
+      <keyword>LISTFILE_STACK</keyword>
+      <keyword>LOCATION(_(DEBUG|RELEASE|MINSIZEREL|RELWITHDEBINFO))?</keyword>
+      <keyword>LOCATION</keyword>
+      <keyword>MACOSX_BUNDLE_INFO_PLIST</keyword>
+      <keyword>MACOSX_BUNDLE</keyword>
+      <keyword>MACOSX_FRAMEWORK_INFO_PLIST</keyword>
+      <keyword>MACOSX_PACKAGE_LOCATION</keyword>
+      <keyword>MACROS</keyword>
+      <keyword>MAP_IMPORTED_CONFIG(_(DEBUG|RELEASE|MINSIZEREL|RELWITHDEBINFO))?</keyword>
+      <keyword>MEASUREMENT</keyword>
+      <keyword>OBJECT_DEPENDS</keyword>
+      <keyword>OBJECT_OUTPUTS</keyword>
+      <keyword>OUTPUT_NAME</keyword>
+      <keyword>PACKAGES_FOUND</keyword>
+      <keyword>PACKAGES_NOT_FOUND</keyword>
+      <keyword>PARENT_DIRECTORY</keyword>
+      <keyword>PASS_REGULAR_EXPRESSION</keyword>
+      <keyword>POST_INSTALL_SCRIPT</keyword>
+      <keyword>PREFIX</keyword>
+      <keyword>PRE_INSTALL_SCRIPT</keyword>
+      <keyword>PRIVATE_HEADER</keyword>
+      <keyword>PUBLIC_HEADER</keyword>
+      <keyword>REPORT_UNDEFINED_PROPERTIES</keyword>
+      <keyword>RESOURCE</keyword>
+      <keyword>RUNTIME_OUTPUT_DIRECTORY</keyword>
+      <keyword>SKIP_BUILD_RPATH</keyword>
+      <keyword>SOURCES</keyword>
+      <keyword>SOVERSION</keyword>
+      <keyword>STATIC_LIBRARY_FLAGS</keyword>
+      <keyword>SUFFIX</keyword>
+      <keyword>SYMBOLIC</keyword>
+      <keyword>TARGET_ARCHIVES_MAY_BE_SHARED_LIBS</keyword>
+      <keyword>TARGET_SUPPORTS_SHARED_LIBS</keyword>
+      <keyword>TEST_INCLUDE_FILE</keyword>
+      <keyword>TIMEOUT</keyword>
+      <keyword>VARIABLES</keyword>
+      <keyword>VERSION</keyword>
+      <keyword>WILL_FAIL</keyword>
+      <keyword>WIN32_EXECUTABLE</keyword>
+      <keyword>WRAP_EXCLUDE</keyword>
+      <keyword>XCODE_ATTRIBUTE_[\W+]</keyword>
+    </context>
+
+    <context id="compat-commands" style-ref="builtin-command">
+      <prefix>(?i)\b</prefix> <!-- case insensitive -->
+      <keyword>BUILD_NAME</keyword>
+      <keyword>EXEC_PROGRAM</keyword>
+      <keyword>EXPORT_LIBRARY_DEPENDENCIES</keyword>
+      <keyword>INSTALL_FILES</keyword>
+      <keyword>INSTALL_PROGRAMS</keyword>
+      <keyword>INSTALL_TARGETS</keyword>
+      <keyword>LINK_LIBRARIES</keyword>
+      <keyword>MAKE_DIRECTORY</keyword>
+      <keyword>REMOVE</keyword>
+      <keyword>SUBDIR_DEPENDS</keyword>
+      <keyword>SUBDIRS</keyword>
       <keyword>USE_MANGLED_MESA</keyword>
       <keyword>UTILITY_SOURCE</keyword>
       <keyword>VARIABLE_REQUIRES</keyword>
-      <keyword>VTK_MAKE_INSTANTIATOR</keyword>
-      <keyword>VTK_WRAP_JAVA</keyword>
-      <keyword>VTK_WRAP_PYTHON</keyword>
-      <keyword>VTK_WRAP_TCL</keyword>
       <keyword>WRITE_FILE</keyword>
     </context>
 
@@ -359,19 +548,18 @@
 
     <context id="control" style-ref="control">
       <prefix>(?i)\b</prefix> <!-- case insensitive -->
-      <keyword>IF</keyword>
-      <keyword>ENDIF</keyword>
-      <keyword>FOREACH</keyword>
-      <keyword>ENDFOREACH</keyword>
-      <keyword>WHILE</keyword>
-      <keyword>ENDWHILE</keyword>
-      <keyword>ELSE</keyword>
+      <keyword>BREAK</keyword>
       <keyword>ELSEIF</keyword>
+      <keyword>ELSE</keyword>
+      <keyword>ENDFOREACH</keyword>
+      <keyword>ENDIF</keyword>
+      <keyword>ENDWHILE</keyword>
+      <keyword>FOREACH</keyword>
+      <keyword>IF</keyword>
+      <keyword>WHILE</keyword>
     </context>
 
-    <context id="variable" style-ref="variable"
-             style-inside="true" end-at-line-end="true"
-    >
+    <context id="variable" style-ref="variable" end-at-line-end="true">
       <start>\$\{</start>
       <end>\}</end>
       <include>
@@ -388,12 +576,23 @@
         <context sub-pattern="2" where="start" style-ref="variable"/>
         <context ref="variable"/>
         <context ref="constant"/>
+        <context ref="string"/>
         <context ref="def:shell-like-comment"/>
+      </include>
+    </context>
+
+    <context id="string" style-ref="string">
+      <start>"</start>
+      <end>"</end>
+      <include>
+        <context ref="def:escape"/>
+        <context ref="variable"/>
       </include>
     </context>
 
     <context id="cmake">
       <include>
+        <context ref="string"/>
         <context ref="variable"/>
         <context ref="variable-assignment"/>
         <context ref="def:shell-like-comment"/>
