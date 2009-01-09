@@ -2554,7 +2554,7 @@ update_tab_label (MooEditWindow *window,
     g_return_if_fail (GTK_IS_WIDGET (icon) && GTK_IS_WIDGET (label));
     g_return_if_fail (GTK_IS_WIDGET (evbox));
 
-    _moo_widget_set_tooltip (evbox, moo_edit_get_display_name (doc));
+    _moo_widget_set_tooltip (hbox, moo_edit_get_display_name (doc));
 
     status = moo_edit_get_status (doc);
 
