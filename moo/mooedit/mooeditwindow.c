@@ -2554,6 +2554,8 @@ update_tab_label (MooEditWindow *window,
     g_return_if_fail (GTK_IS_WIDGET (icon) && GTK_IS_WIDGET (label));
     g_return_if_fail (GTK_IS_WIDGET (evbox));
 
+    _moo_widget_set_tooltip (evbox, moo_edit_get_display_name (doc));
+
     status = moo_edit_get_status (doc);
 
     deleted = status & (MOO_EDIT_DELETED | MOO_EDIT_MODIFIED_ON_DISK);
@@ -2564,6 +2566,27 @@ update_tab_label (MooEditWindow *window,
                                   modified ? "*" : "",
                                   moo_edit_get_display_basename (doc));
     gtk_label_set_text (GTK_LABEL (label), label_text);
+
+    {
+        int width, max_width, height;
+        PangoLayout *M = gtk_widget_create_pango_layout (label, "MMMMMMMMMMMMMMMMMMMM");
+        PangoLayout *layout = gtk_widget_create_pango_layout (label, label_text);
+        pango_layout_get_pixel_size (layout, &width, &height);
+        pango_layout_get_pixel_size (M, &max_width, &height);
+
+        if (width > max_width)
+        {
+            gtk_widget_set_size_request (label, max_width, -1);
+            gtk_label_set_ellipsize (GTK_LABEL (label), PANGO_ELLIPSIZE_END);
+        }
+        else
+        {
+            gtk_widget_set_size_request (label, -1, -1);
+            gtk_label_set_ellipsize (GTK_LABEL (label), PANGO_ELLIPSIZE_NONE);
+        }
+
+        g_object_unref (layout);
+    }
 
     pixbuf = _moo_edit_get_icon (doc, icon, GTK_ICON_SIZE_MENU);
     set_tab_icon (icon, pixbuf);
