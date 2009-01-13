@@ -560,7 +560,7 @@
     </context>
 
     <context id="variable" style-ref="variable" end-at-line-end="true">
-      <start>\$\{</start>
+      <start>\$(ENV)?\{</start>
       <end>\}</end>
       <include>
         <context ref="builtin-variable"/>
@@ -569,7 +569,7 @@
     </context>
 
     <context id="variable-assignment">
-      <start>\b((?i)SET)\b\s*\(\s*([\w_][\w\d_]*)</start>
+      <start>\b((?i)SET)\b\s*\(\s*([\w_][\w\d_]*|ENV\{[\w\d_]*\})</start>
       <end>\)</end>
       <include>
         <context sub-pattern="1" where="start" style-ref="builtin-command"/>
