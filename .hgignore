@@ -1,5 +1,6 @@
 syntax: glob
 
+.git/
 build/
 autom4te.cache/
 
@@ -35,17 +36,6 @@ syntax: regexp
 
 ^po(-gsv)?/(Makefile\.in\.in|dist|missing|notexist|pot|intltool-update)$
 
-^Makefile\.am
-^medit/Makefile\.am
-^moo/Makefile\.am
-^moo/mooedit/Makefile\.am
-^moo/mooedit/plugins/Makefile\.am
-^moo/moopython/Makefile\.am
-^moo/moopython/plugins/Makefile\.am
-^moo/moopython/plugins/pyproject/Makefile\.am
-^moo/moofileview/Makefile\.am
-^moo/moolua/Makefile\.am
-^moo/mooapp/Makefile\.am
+Makefile\.am
 ^moo/mooapp/mooapp-credits\.h
-^moo/mooutils/Makefile\.am
 ^moo/mooutils/stock-(moo|medit)\.h
