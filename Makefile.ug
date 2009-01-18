@@ -14,16 +14,16 @@ EXTRA_DIST +=			\
 @MOO_PO_SUBDIRS_RULE2@
 BUILT_SOURCES += po-subdirs-stamp po-subdirs-stamp-2
 
-DIST_SUBDIRS = moo medit po po-gsv doc
+DIST_SUBDIRS = moo medit po po-gsv doc tests
 
 if MOO_ENABLE_NLS
 po_subdirs = po po-gsv
 endif
 
 if MOO_BUILD_MEDIT
-SUBDIRS = . $(po_subdirs) doc moo medit
+SUBDIRS = . $(po_subdirs) doc moo medit tests
 else
-SUBDIRS = . $(po_subdirs) doc moo
+SUBDIRS = . $(po_subdirs) doc moo tests
 endif
 
 moo-config-dirs.h: moo-config-dirs.h.stamp

@@ -53,6 +53,7 @@ moo/mooutils/Makefile
 moo/mooutils/newgtk/Makefile
 moo/mooutils/pcre/Makefile
 medit/Makefile
+tests/Makefile
 po/Makefile.in
 po-gsv/Makefile.in
 ])
