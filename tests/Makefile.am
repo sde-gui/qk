@@ -23,6 +23,7 @@ check_PROGRAMS += testhtml
 endif
 
 EXTRA_DIST = testthreads2.sh
+CLEANFILES = testthreads2-log.txt
 
 all-tests: $(check_PROGRAMS)
 
