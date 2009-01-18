@@ -18,6 +18,7 @@ nobase_plugin_DATA =			\
 	mprj/simple.glade		\
 	mprj/test.py			\
 	mprj/utils.py			\
+	mprj/utils.glade		\
 	mprj/config/_config.py		\
 	mprj/config/_dict.py		\
 	mprj/config/_group.py		\
