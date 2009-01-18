@@ -749,10 +749,7 @@ moo_log_window_insert (MooLogWindow *log,
 static GLogFunc moo_log_func;
 static GPrintFunc moo_print_func;
 static GPrintFunc moo_printerr_func;
-static char *moo_log_file;
-static gboolean moo_log_file_written;
 static gboolean moo_log_handlers_set;
-
 
 static void
 set_print_funcs (GLogFunc   log_func,
@@ -883,12 +880,22 @@ moo_set_log_func_window (gboolean show_now)
  * Write to a file
  */
 
+static char *moo_log_file;
+static gboolean moo_log_file_written;
+GStaticRecMutex moo_log_file_mutex = G_STATIC_REC_MUTEX_INIT;
+
 static void
 print_func_file (const char *string)
 {
     FILE *file;
 
-    g_return_if_fail (moo_log_file != NULL);
+    g_static_rec_mutex_lock (&moo_log_file_mutex);
+
+    if (!moo_log_file)
+    {
+        g_static_rec_mutex_unlock (&moo_log_file_mutex);
+        g_return_if_reached ();
+    }
 
     if (!moo_log_file_written)
     {
@@ -909,6 +916,8 @@ print_func_file (const char *string)
     {
         /* TODO ??? */
     }
+
+    g_static_rec_mutex_unlock (&moo_log_file_mutex);
 }
 
 
@@ -941,9 +950,11 @@ log_func_file (const char       *log_domain,
 void
 moo_set_log_func_file (const char *log_file)
 {
+    g_static_rec_mutex_lock (&moo_log_file_mutex);
     g_free (moo_log_file);
     moo_log_file = g_strdup (log_file);
     set_print_funcs (log_func_file, print_func_file, print_func_file);
+    g_static_rec_mutex_unlock (&moo_log_file_mutex);
 }
 
 
