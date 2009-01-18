@@ -5,6 +5,8 @@
 *~
 Makefile.in
 Makefile.am
+.Makefile.am.*
+.globalvars
 build/
 autom4te.cache/
 .hg/

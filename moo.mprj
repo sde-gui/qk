@@ -58,16 +58,6 @@
     </vars>
    </configure>
   </configuration>
-  <configuration name="test">
-   <build_dir>build/test</build_dir>
-   <configure>
-    <args>--enable-debug=full --enable-all-warnings --prefix=/usr/local/test --disable-nls</args>
-    <vars>
-     <var name="CFLAGS">-g</var>
-     <var name="OBJCFLAGS">-g</var>
-    </vars>
-   </configure>
-  </configuration>
  </configurations>
  <run>
   <args>--app-name foobar</args>
