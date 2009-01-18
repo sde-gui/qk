@@ -52,7 +52,6 @@ moo/moopython/plugins/pyproject/Makefile
 moo/mooutils/Makefile
 moo/mooutils/newgtk/Makefile
 moo/mooutils/pcre/Makefile
-tests/pyapp.py
 medit/Makefile
 po/Makefile.in
 po-gsv/Makefile.in

@@ -25,11 +25,6 @@ endif
 
 all-tests: $(EXTRA_PROGRAMS)
 
-EXTRA_DIST =		\
-	pyapp.py.in
-
-BUILT_SOURCES = pyapp.py
-
 if MOO_BUILD_UTILS
 if !MOO_BUILD_EDIT
 noinst_PROGRAMS += testfileview

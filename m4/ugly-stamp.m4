@@ -19,7 +19,7 @@ d5aeeaa47fa88297cc36e17fbbc47102 moo-lib.m4
 87cb0e8cdecb72d87d7404eb20546f26 moo-python-cross-mingw.m4
 12a5998e546fe6991597af5dc0cebda1 moo-python.m4
 9b1a1ecc886394e26ba9ff62a057d687 moo-xml.m4
-ed7ac7e4a48ca5f08a4516bd79b4ce9c configure.ac
+c22713636d2667f37b298db25d2da3db configure.ac
 ])
 
 AC_DEFUN([UGLY_STAMP],[])
