@@ -74,10 +74,10 @@ static double zoom_factors[ZOOM_LAST] = {
     1.
 };
 
+G_GNUC_UNUSED
 static const char *zoom_factor_names[ZOOM_LAST] = {
     "100%"
 };
-
 
 G_DEFINE_TYPE(MooPrintPreview, _moo_print_preview, GTK_TYPE_DIALOG)
 

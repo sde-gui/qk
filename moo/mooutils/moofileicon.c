@@ -357,7 +357,7 @@ add_arrow (GdkPixbuf     *original,
 
 static GdkPixbuf *
 add_emblem (GdkPixbuf     *original,
-            MooIconEmblem  flags,
+            G_GNUC_UNUSED MooIconEmblem flags,
             GtkIconSize    size)
 {
     g_assert (flags == MOO_ICON_EMBLEM_LINK);

@@ -41,24 +41,6 @@ static MooCommand  *moo_command_lua_new (const char        *code,
 
 
 static void
-set_variable (const char   *name,
-              const GValue *value,
-              gpointer      data)
-{
-#if 0
-    lua_State *L = data;
-    MSContext *ctx = data;
-    MSValue *ms_value;
-
-    ms_value = ms_value_from_gvalue (value);
-    g_return_if_fail (ms_value != NULL);
-
-    [ctx assignVariable:name :ms_value];
-    ms_value_unref (ms_value);
-#endif
-}
-
-static void
 add_path (lua_State *L)
 {
     char **dirs;
@@ -94,8 +76,6 @@ moo_command_lua_run (MooCommand        *cmd_base,
 
     L = create_lua ();
     g_return_if_fail (L != NULL);
-
-    moo_command_context_foreach (ctx, set_variable, L);
 
     if (luaL_loadstring (L, cmd->priv->code) != 0)
     {

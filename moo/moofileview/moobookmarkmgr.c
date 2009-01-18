@@ -927,8 +927,6 @@ static void     path_edited         (GtkCellRenderer    *cell,
                                      BkEditorXml        *xml);
 static void     path_editing_started(GtkCellRenderer    *cell,
                                      GtkCellEditable    *editable);
-static void     path_entry_realize  (GtkWidget          *entry);
-static void     path_entry_unrealize(GtkWidget          *entry);
 
 static void     init_icon_combo     (GtkComboBox        *combo,
                                      BkEditorXml        *xml);
@@ -1330,6 +1328,7 @@ path_editing_started (GtkCellRenderer    *cell,
 }
 
 
+#if 0
 static void
 path_entry_realize (GtkWidget *entry)
 {
@@ -1379,6 +1378,7 @@ path_entry_unrealize (GtkWidget *entry)
                                           NULL);
     g_object_set_data (G_OBJECT (entry), "moo-stupid-entry-workaround", NULL);
 }
+#endif
 
 
 static void combo_icon_data_func    (GtkCellLayout      *cell_layout,

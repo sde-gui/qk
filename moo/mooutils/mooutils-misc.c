@@ -2158,6 +2158,8 @@ moo_atom_uri_list (void)
 
 
 static char *debug_domains;
+void _moo_set_debug (const char *domains);
+gboolean moo_debug_enabled (const char *domain, gboolean def_enabled);
 
 void
 _moo_set_debug (const char *domains)
@@ -2200,6 +2202,7 @@ moo_debug_enabled (const char *domain,
 
 
 #undef _moo_message
+void _moo_message (const char *format, ...) G_GNUC_PRINTF(1,2);
 void G_GNUC_PRINTF(1,2)
 _moo_message (const char *format,
               ...)
