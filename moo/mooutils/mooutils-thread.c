@@ -33,6 +33,7 @@
 #endif
 #endif
 
+MOO_DEBUG_INIT(threads, FALSE)
 
 typedef struct {
     MooEventQueueCallback callback;
@@ -89,7 +90,7 @@ invoke_callback (gpointer  id,
     GList *l;
     QueueClient *client;
 
-    _moo_message ("processing events for id %u", GPOINTER_TO_UINT (id));
+    moo_dmsg ("processing events for id %u", GPOINTER_TO_UINT (id));
     client = get_event_client (GPOINTER_TO_UINT (id));
 
     if (client)
@@ -225,7 +226,7 @@ _moo_event_queue_connect (MooEventQueueCallback callback,
     client->notify = notify;
 
     g_static_mutex_lock (&queue_lock);
-    client->id = queue->last_id++;
+    client->id = ++queue->last_id;
     queue->clients = g_slist_prepend (queue->clients, client);
     g_static_mutex_unlock (&queue_lock);
 
