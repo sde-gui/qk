@@ -142,10 +142,13 @@ uninstall:
 	done
 
 check: all $(GETTEXT_PACKAGE).pot
-	rm -f missing notexist
-	srcdir=$(srcdir) $(INTLTOOL_UPDATE) -m
-	if [ -r missing -o -r notexist ]; then \
-	  exit 1; \
+	# Do not do anything if builddir isn't the same as srcdir
+	if [ -f $(srcdir)/Makefile ]; then \
+	  rm -f missing notexist; \
+	  srcdir=$(srcdir) $(INTLTOOL_UPDATE) -m; \
+	  if [ -r missing -o -r notexist ]; then \
+	    exit 1; \
+	  fi; \
 	fi
 
 mostlyclean:
