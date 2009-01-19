@@ -644,7 +644,7 @@ moo_markup_comment_node_print (MooMarkupNode *node,
         *p = 0;
     }
 
-    g_string_append_printf (str, "<!--%s-->", text->text);
+    g_string_append (str, text->text);
 }
 
 
