@@ -53,6 +53,9 @@ endif
 
 if MOO_USE_PYTHON
 subdirs += moopython
+if MOO_PYTHON_BUILTIN
+libs += moopython/libmoopython.la
+endif
 endif
 
 SUBDIRS = $(subdirs) .
