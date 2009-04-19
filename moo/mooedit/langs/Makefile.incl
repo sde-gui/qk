@@ -2,6 +2,7 @@ languagespecsdir = ${MOO_TEXT_LANG_FILES_DIR}
 
 langs2 =				\
 	langs/ada.lang			\
+	langs/asp.lang			\
 	langs/awk.lang			\
 	langs/boo.lang			\
 	langs/changelog.lang		\
@@ -16,6 +17,7 @@ langs2 =				\
 	langs/diff.lang			\
 	langs/d.lang			\
 	langs/docbook.lang		\
+	langs/dosbatch.lang		\
 	langs/dot.lang			\
 	langs/dpatch.lang		\
 	langs/dtd.lang			\
@@ -50,6 +52,7 @@ langs2 =				\
 	langs/php.lang			\
 	langs/pkgconfig.lang		\
 	langs/po.lang			\
+	langs/prolog.lang		\
 	langs/python-console.lang	\
 	langs/python.lang		\
 	langs/R.lang			\
@@ -75,6 +78,7 @@ langs1 =				\
 styles =				\
 	langs/kate.xml			\
 	langs/classic.xml		\
+	langs/cobalt.xml		\
 	langs/oblivion.xml		\
 	langs/tango.xml
 
