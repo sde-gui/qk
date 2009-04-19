@@ -1,1 +1,328 @@
-repo/ugly
+#! /bin/sh
+
+# DEBUG=yes
+# DEBUG=verbose
+
+print_debug() {
+  if [ -z "$current_func" ]; then
+    echo "$@" > /dev/stderr
+  else
+    echo "$current_func: $@" > /dev/stderr
+  fi
+}
+
+debug_v() {
+  if [ "$DEBUG" = "verbose" ]; then
+    print_debug "$@"
+  fi
+}
+
+debug() {
+  if [ "$DEBUG" = "yes" -o "$DEBUG" = "verbose" ]; then
+    print_debug "$@"
+  fi
+}
+
+find_input() {
+  current_func=find_input
+  debug_v "dir: $1"
+  if [ -f $1/Makefile.ug ]; then
+    echo $1/Makefile.ug
+    for sd in `ls "$1"`; do
+      if [ -d "$1/$sd" ]; then
+        debug_v "going into: $1/$sd"
+        find_input "$1/$sd"
+      fi
+    done
+  fi
+}
+
+preprocess() {
+  # preprocess input output
+  sed -e :a -e '/\\$/N; s/\\\n//; ta' "$1" | sed 's/#.*//' > $2
+}
+
+extract_var() {
+  # extract_var Makefile NAME
+  value=`grep '\b'$2'\b' $1`
+  if [ -n "$value" ]; then
+    value=`echo "$value" | sed 's/'$2'[ ]*=//'`
+  fi
+  value=`echo $value | tr -d " "`
+  echo "$value"
+}
+
+extract_vars() {
+  # extract_vars Makefile
+  grep -E '^[A-Za-z0-9_]+[ \t]*=' $1 | sed 's/^\([a-zA-Z0-9_]*\)[ \t]*=[ \t]*\(.*\)/export \1='"'"'\2'"'"'/g'
+}
+
+extract_meta_var() {
+  current_func=extract_meta_var
+  # extract_meta_var Makefile NAME
+  value=`grep -E '^#[ \t]*\b'$2'\b' $1`
+  if [ -n "$value" ]; then
+    value=`echo "$value" | sed 's/^#[ ]*'$2'[ ]*=//'`
+  fi
+  value=`echo $value | tr -d " "`
+  echo "$value"
+}
+
+write_mk() {
+  # write_mk mk_mod MODULE
+  echo ""
+  echo "# begin $1"
+  echo ""
+
+  case "`extract_meta_var ugly/$1 UGLY_MK_TYPE`" in
+    sh)
+      MODULE="$2" /bin/sh -c ". $global_vars && /bin/sh ugly/$1"
+      ;;
+    "")
+      cat ugly/$1 | sed 's/@MODULE@/'$2'/g'
+      ;;
+    *)
+      echo "oops"
+      exit 1
+      ;;
+  esac
+
+  echo ""
+  echo 'UGLY_DEPS += $(top_srcdir)/ugly/'$1
+  echo 'EXTRA_DIST += $(top_srcdir)/ugly/'$1
+  echo ""
+  echo "# end $1"
+  echo ""
+}
+
+write_ugly_pre_mk() {
+  cat << \_EOFEOF
+#
+# begin ugly stuff
+#
+
+_EOFEOF
+  cat ugly/repo/ugly-pre.mk
+}
+
+do_makefile() {
+  current_func=do_makefile
+
+  infile="$1"
+  subdir=`dirname $infile | sed 's,^\./,,'`
+  outbase=`basename $infile .ug`
+  out=$subdir/$outbase.am
+
+  if [ "$subdir" = . ]; then
+    rel_topdir=.
+    mk_prefix="mk"
+  else
+    rel_topdir=`echo $subdir | sed 's,[^/]*,..,g'`
+    mk_prefix="$rel_topdir/mk"
+  fi
+
+  out_tmp=`dirname $out`/.`basename $out`.tmp
+  out_pp=`dirname $out`/.`basename $out`.pp#
+
+  preprocess $infile $out_pp
+
+  global_vars=`dirname $out`/.globalvars
+  extract_vars $out_pp > $global_vars
+
+  modname=`extract_var $out_pp MODULE | sed 's/\./_/g'`
+  debug "processing $infile, output: $out, subdir: $subdir, topdir: $rel_topdir, module: $modname"
+
+  write_ugly_pre_mk > $out_tmp
+
+  want_mk=
+  all_modnames=
+
+  for file_mk in `cd ugly && ls *.mk 2>/dev/null`; do
+    if [ ! -f ugly/$file_mk ]; then
+      continue
+    fi
+
+    trigger=`extract_meta_var ugly/$file_mk UGLY_MK_TRIGGER`
+    if [ -n "$trigger" ]; then
+      if grep -E "$trigger" $out_pp > /dev/null 2>&1; then
+        debug $out matches $trigger from $file_mk
+        want_mk="$want_mk $file_mk"
+        continue
+      fi
+    fi
+
+    trigger=`extract_meta_var ugly/$file_mk UGLY_MODULE_TRIGGER`
+    if [ -n "$trigger" ]; then
+      if grep -E "$trigger" $out_pp > /dev/null 2>&1; then
+        lines=`grep -E "$trigger" $out_pp 2>/dev/null`
+        for l in $lines; do
+          w=`echo $l | grep -E "$trigger" | tr -d " "`
+          if [ -n "$w" ]; then
+            m=`echo $w | sed 's/\(\w*\)_'$trigger'.*/\1/'`
+            if [ "$m" != "$w" ]; then
+              debug found module $m
+              all_modnames="$all_modnames $m"
+              eval "${m}_written=false"
+              eval "${m}_want_mk=\"\$${m}_want_mk $file_mk\""
+  #             if [ -n "$m" -a "$m" != "$w" ]; then
+  #               debug "$w in $out matches $trigger from $file_mk"
+  #               write_mk $file_mk $m >> $out_tmp
+  #             fi
+            fi
+          fi
+        done
+      fi
+    fi
+  done
+
+  for file_mk in $want_mk; do
+    debug "writing code for $file_mk"
+
+    vars=`extract_meta_var ugly/$file_mk UGLY_MK_VARS`
+    debug "extra vars: $vars"
+    for var in $vars; do
+      eval "var_written=\$var_${var}_written"
+      if [ "$var_written" = "true" ]; then
+        continue
+      fi
+      debug_v writing "$var"
+      eval "var_${var}_written=true"
+      echo "$var =" >> $out_tmp
+    done
+  done
+
+  for mod in $all_modnames; do
+    eval "mod_written=\$${mod}_written"
+    if $mod_written; then
+      continue
+    fi
+
+    debug "writing code for module $mod"
+    eval "${mod}_written=true"
+
+    eval "mod_want_mk=\$${mod}_want_mk"
+    debug "writing variables from $mod_want_mk for module '$mod'"
+
+    mod_vars=
+    for file_mk in $mod_want_mk; do
+      mod_vars="$mod_vars `extract_meta_var ugly/$file_mk UGLY_MODULE_VARS`"
+    done
+    debug "extra vars: $mod_vars"
+    for var in $mod_vars; do
+      eval "mod_var_${var}_written=false"
+    done
+    for var in $mod_vars; do
+      eval "mod_var_written=\$mod_var_${var}_written"
+      if $mod_var_written; then
+        continue
+      fi
+      debug_v writing "${mod}_$var"
+      eval "mod_var_${var}_written=true"
+      echo "${mod}_$var =" >> $out_tmp
+    done
+  done
+
+  cat >> $out_tmp << _EOFEOF
+
+#
+# end ugly stuff
+#
+
+_EOFEOF
+
+  cat $infile >> $out_tmp || exit $?
+
+  cat >> $out_tmp << _EOFEOF
+
+#
+# begin ugly stuff
+#
+
+_EOFEOF
+
+  for file_mk in $want_mk; do
+    write_mk $file_mk $modname >> $out_tmp
+  done
+
+  for mod in $all_modnames; do
+    eval "${mod}_written=false"
+  done
+  for mod in $all_modnames; do
+    eval "mod_written=\$${mod}_written"
+    if $mod_written; then
+      continue
+    fi
+
+    debug "writing $file_mk code for module $mod"
+    eval "${mod}_written=true"
+
+    eval "mod_want_mk=\$${mod}_want_mk"
+    debug "doing $mod_want_mk for module '$mod'"
+
+    for file_mk in $mod_want_mk; do
+      write_mk $file_mk $mod >> $out_tmp
+    done
+  done
+
+  cat ugly/repo/bdist.mk >> $out_tmp
+  cat ugly/repo/ugly-post.mk >> $out_tmp
+
+  if [ "$subdir" = . ]; then
+    cat ugly/repo/bdist-top.mk >> $out_tmp
+    cat ugly/repo/ugly-top.mk >> $out_tmp
+  else
+    cat ugly/repo/ugly-sub.mk >> $out_tmp
+  fi
+
+  cat >> $out_tmp << _EOFEOF
+
+#
+# end ugly stuff
+#
+_EOFEOF
+
+  rm -f $out_pp
+  rm -f $global_vars
+  mv $out_tmp $out || exit $?
+}
+
+ugly_stamp=m4/ugly-stamp.m4
+
+generate_ugly_stamp() {
+  out_tmp="$ugly_stamp.tmp"
+  echo "AC_DEFUN([UGLY_FAKE_FUN],[" > $out_tmp || exit 1
+  for arg; do
+    if [ ! -f "$arg" ]; then
+      echo "OOPS" >&2
+    elif [ ! "$arg" -ef "$ugly_stamp" ]; then
+      md5=`md5sum "$arg" | awk '{ print $1; }'`
+      name=`basename "$arg"`
+      echo "$md5 $name" >> $out_tmp
+    fi
+  done
+  echo "])" >> $out_tmp
+  echo >> $out_tmp
+  echo "AC_DEFUN([UGLY_STAMP],[])" >> $out_tmp
+  mv $out_tmp $ugly_stamp || exit 1
+}
+
+if [ -z "$1" ]; then
+  if [ ! -f "$ugly_stamp" ]; then
+    generate_ugly_stamp
+  fi
+  top_srcdir=.
+  input=`find_input .`
+elif [ "$1" = "--stamp" ]; then
+  shift
+  generate_ugly_stamp "$@"
+  top_srcdir=.
+  input=`find_input .`
+else
+  top_srcdir="$1"
+  input="$2/Makefile.ug"
+fi
+
+cd $top_srcdir
+for f in $input; do
+  ( do_makefile "$f" )
+done

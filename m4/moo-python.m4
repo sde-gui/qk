@@ -38,6 +38,10 @@ Please check your Python installation.])
           PYTHON_INCLUDES=$python_path
       fi
 
+      if test x$MOO_OS_MINGW = xyes; then
+        PYTHON_INCLUDES=`echo "$PYTHON_INCLUDES" | sed 's%\\\\%/%g'`
+      fi
+
       AC_MSG_RESULT([$PYTHON_INCLUDES])
       AC_SUBST([PYTHON_INCLUDES])
   fi
@@ -62,10 +66,21 @@ Please check your Python installation.])
               fi
           fi
 
-          PYTHON_LIBS=`$PYTHON -c "from distutils.sysconfig import *; \
-                                   from string import join; \
-                                   print '-L' + PREFIX + '/lib', \
-                                   '-lpython';"`$py_version
+          if test x$MOO_OS_MINGW = xyes; then
+            PYTHON_LIBS=`$PYTHON -c "from distutils.sysconfig import *; \
+                                     from string import join; \
+                                     print '-L' + PREFIX + '/libs', \
+                                     '-lpython';"`$py_version
+          else
+            PYTHON_LIBS=`$PYTHON -c "from distutils.sysconfig import *; \
+                                     from string import join; \
+                                     print '-L' + PREFIX + '/lib', \
+                                     '-lpython';"`$py_version
+          fi
+      fi
+
+      if test x$MOO_OS_MINGW = xyes; then
+        PYTHON_LIBS=`echo "$PYTHON_LIBS" | sed 's%\\\\%/%g'`
       fi
 
       AC_MSG_RESULT([$PYTHON_LIBS])
@@ -79,10 +94,15 @@ Please check your Python installation.])
       if test "x$PYTHON_EXTRA_LIBS" = "x"; then
           PYTHON_EXTRA_LIBS=`$PYTHON -c "import distutils.sysconfig; \
                                          conf = distutils.sysconfig.get_config_var; \
-                                         print conf('LOCALMODLIBS'), conf('LIBS')"`
+                                         print conf('LOCALMODLIBS') or '', conf('LIBS') or ''"`
           PYTHON_EXTRA_LDFLAGS=`$PYTHON -c "import distutils.sysconfig; \
                                             conf = distutils.sysconfig.get_config_var; \
-                                            print conf('LDFLAGS')"`
+                                            print conf('LDFLAGS') or ''"`
+      fi
+
+      if test x$MOO_OS_MINGW = xyes; then
+        PYTHON_EXTRA_LIBS=`echo "$PYTHON_EXTRA_LIBS" | sed 's%\\\\%/%g'`
+        PYTHON_EXTRA_LDFLAGS=`echo "$PYTHON_EXTRA_LDFLAGS" | sed 's%\\\\%/%g'`
       fi
 
       AC_MSG_CHECKING([Python extra libs])
@@ -106,25 +126,25 @@ Please check your Python installation.])
 # checks python stuff when building for unix
 #
 AC_DEFUN([_MOO_AC_CHECK_PYTHON_UNIX],[
-    AM_PATH_PYTHON([$1],[
-        _MOO_AC_PYTHON_DEVEL([
-            python_found=yes
-        ],[
-            AC_MSG_WARN([Found python interpreter but no development headers or libraries])
-            python_found=no
-        ])
+  AM_PATH_PYTHON([$1],[
+    _MOO_AC_PYTHON_DEVEL([
+      _moo_python_found=yes
     ],[
-        python_found=no
+      AC_MSG_WARN([Found python interpreter but no development headers or libraries])
+      python_found=no
     ])
+  ],[
+    AC_MSG_ERROR([Python interpreter not found but it is required to build medit])
+  ])
 
-    if test x$python_found = xyes; then
-        m4_if([$2],[],[:],[$2])
-    else
-        PYTHON_INCLUDES=""
-        PYTHON_LIBS=""
-        PYTHON_EXTRA_LIBS=""
-        m4_if([$3],[],[:],[$3])
-    fi
+  if test x$python_found = xyes; then
+    m4_if([$2],[],[:],[$2])
+  else
+    PYTHON_INCLUDES=""
+    PYTHON_LIBS=""
+    PYTHON_EXTRA_LIBS=""
+    m4_if([$3],[],[:],[$3])
+  fi
 ])
 
 
@@ -135,7 +155,7 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_UNIX],[
 AC_DEFUN([MOO_AC_CHECK_PYTHON],[
 AC_MSG_NOTICE([checking for headers and libs required to compile python extensions])
   AC_REQUIRE([MOO_AC_CHECK_OS])
-  if test x$MOO_OS_MINGW = xyes; then
+  if test x$MOO_OS_MINGW = xyes -a x$cross_compiling = xyes; then
     MOO_AM_PYTHON_DEVEL_CROSS_MINGW([$2],[$3])
   else
     _MOO_AC_CHECK_PYTHON_UNIX([$1],[$2],[$3])
