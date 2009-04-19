@@ -5,15 +5,42 @@
 # Kind of smoke test.
 
 # Langs covered here:
-# changelog.lang c.lang cpp.lang desktop.lang diff.lang dtd.lang
+# asp.lang changelog.lang c.lang cpp.lang desktop.lang diff.lang dtd.lang
 # gap.lang gtkrc.lang html.lang ini.lang latex.lang m4.lang
-# makefile.lang ms.lang perl.lang po.lang python.lang sh.lang
+# makefile.lang ms.lang perl.lang po.lang prolog.lang python.lang sh.lang
 # texinfo.lang xml.lang yacc.lang libtool.lang pkgconfig.lang
 # objc.lang chdr.lang testv1.lang t2t.lang fortran.lang forth.lang
 # octave.lang
 
 dir="testdir"
 mkdir -p $dir/
+
+cat > $dir/file.prolog <<EOFEOF
+conc([],X,X).
+conc([Car|Cdr], X, [Car|ConcatCdr]):-
+  conc(Cdr, X, ConcatCdr).
+EOFEOF
+
+cat > $dir/file.asp <<EOFEOF
+<html>
+<body>
+
+<%
+dim d
+set d=Server.CreateObject("Scripting.Dictionary")
+d.Add "o", "Orange"
+d.Add "a", "Apple"
+if d.Exists("o")= true then
+    Response.Write("Key exists.")
+else
+    Response.Write("Key does not exist.")
+end if
+set d=nothing
+%>
+
+</body>
+</html>
+EOFEOF
 
 cat > $dir/file.octave <<EOFEOF
 % gtk-source-lang: octave
