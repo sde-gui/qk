@@ -1897,7 +1897,7 @@ moo_editor_new_uri (MooEditor     *editor,
                     const char    *uri,
                     const char    *encoding)
 {
-    MooEdit *doc;
+    MooEdit *doc = NULL;
     char *path;
     GFile *file;
 
