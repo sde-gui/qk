@@ -4,11 +4,6 @@ AC_DEFUN([UGLY_FAKE_FUN],[
 7a7f11d6c077a99463a4fbefe1c09a20 moo-os.m4
 bf3d04c32399bca1bbe75282947e1041 moo-version.m4
 5e18022b42d6f056ef24b748181c848b ugly.m4
-f3434833becc2338bc7ce8ff0a925987 libtool.m4
-152941207b2a2348e1687f6d9430fdd4 ltoptions.m4
-bc2f6032c98896249eadb56177c7d357 ltsugar.m4
-8ad9271cd6f868874ffff4223e2ff0ee ltversion.m4
-13eeb5a2026d18ffe6428827fc7ab406 lt~obsolete.m4
 7e6e4832fed0fed1850ee168e65d9d4f moo-comps.m4
 ab00dc3cc5a6899ecd789fa5d5070abd moo-debug.m4
 d86d9c0fc3a7e74d0cad083d0b7fee15 moo-dirs.m4
