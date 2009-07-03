@@ -11,6 +11,11 @@ AC_CONFIG_HEADERS(config.h)
 MOO_DEFINE_VERSIONS(moo, AC_PACKAGE_VERSION)
 MOO_DEFINE_MODULE_VERSIONS(1,0)
 
+m4_define(_moo_copyright_string,[2004-2009 Yevgen Muntyan <muntyan@tamu.edu>])
+MOO_COPYRIGHT="_moo_copyright_string"
+AC_DEFINE(MOO_COPYRIGHT, ["_moo_copyright_string"], [copyright string])
+AC_SUBST(MOO_COPYRIGHT)
+
 MOO_AC_I18N(moo)
 MOO_AC_PO_GSV
 

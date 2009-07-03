@@ -18,7 +18,7 @@ VS_VERSION_INFO VERSIONINFO
         VALUE "FileDescription", "libmoo bindings for python"
         VALUE "FileVersion", "@MOO_VERSION_UNQUOTED@.0"
         VALUE "InternalName", "moo-mod-@MOO_VERSION_UNQUOTED@"
-        VALUE "LegalCopyright", "(C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>"
+        VALUE "LegalCopyright", "(C) @MOO_COPYRIGHT@"
         VALUE "OriginalFilename", "moo.pyd"
         VALUE "ProductName", "moo.pyd"
         VALUE "ProductVersion", @MOO_VERSION@

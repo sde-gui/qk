@@ -18,7 +18,7 @@ VS_VERSION_INFO VERSIONINFO
         VALUE "FileDescription", "libmoo"
         VALUE "FileVersion", "@MOO_VERSION_UNQUOTED@.0"
         VALUE "InternalName", "libmoo-@MOO_VERSION_UNQUOTED@"
-        VALUE "LegalCopyright", "(C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>"
+        VALUE "LegalCopyright", "(C) @MOO_COPYRIGHT@"
         VALUE "OriginalFilename", "libmoo.dll"
         VALUE "ProductName", "libmoo"
         VALUE "ProductVersion", @MOO_VERSION@

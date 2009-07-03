@@ -1,7 +1,7 @@
 /*
  *   mooapp/mooappabout.c
  *
- *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
+ *   Copyright (C) 2004-2009 by Yevgen Muntyan <muntyan@tamu.edu>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -110,7 +110,7 @@ show_credits (void)
 #else
     /* XXX */
     {
-        buffer = gtk_text_view_get_buffer (gxml->written_by);
+        buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (gxml->written_by));
         gtk_text_buffer_insert_at_cursor (buffer,
                                           "Yevgen Muntyan <muntyan@tamu.edu>", -1);
     }
@@ -135,7 +135,7 @@ license_clicked (void)
 
 
 #define COPYRIGHT_SYMBOL "\302\251"
-static const char copyright[] = COPYRIGHT_SYMBOL " 2004-2008 Yevgen Muntyan";
+static const char copyright[] = COPYRIGHT_SYMBOL " " MOO_COPYRIGHT;
 
 
 static gboolean
