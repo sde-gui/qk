@@ -134,10 +134,6 @@ license_clicked (void)
 }
 
 
-#define COPYRIGHT_SYMBOL "\302\251"
-static const char copyright[] = COPYRIGHT_SYMBOL " " MOO_COPYRIGHT;
-
-
 static gboolean
 about_dialog_key_press (GtkWidget   *dialog,
                         GdkEventKey *event)
@@ -169,14 +165,14 @@ create_about_dialog (void)
     g_object_add_weak_pointer (G_OBJECT (dialog), &about_dialog);
     g_signal_connect (dialog, "delete-event", G_CALLBACK (gtk_widget_hide_on_delete), NULL);
 
-    markup = g_strdup_printf ("<span size=\"xx-large\"><b>%s-%s</b></span>",
-                              MOO_APP_FULL_NAME, MOO_APP_VERSION);
+    markup = g_markup_printf_escaped ("<span size=\"xx-large\"><b>%s-%s</b></span>",
+                                      MOO_APP_FULL_NAME, MOO_APP_VERSION);
     gtk_label_set_markup (gxml->name, markup);
     g_free (markup);
 
     gtk_label_set_text (gxml->description, MOO_APP_DESCRIPTION);
 
-    markup = g_strdup_printf ("<small>%s</small>", copyright);
+    markup = g_markup_printf_escaped ("<small>\302\251 %s</small>", MOO_COPYRIGHT);
     gtk_label_set_markup (gxml->copyright, markup);
     g_free (markup);
 
