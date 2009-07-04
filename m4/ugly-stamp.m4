@@ -7,8 +7,7 @@ bf3d04c32399bca1bbe75282947e1041 moo-version.m4
 7e6e4832fed0fed1850ee168e65d9d4f moo-comps.m4
 ab00dc3cc5a6899ecd789fa5d5070abd moo-debug.m4
 d86d9c0fc3a7e74d0cad083d0b7fee15 moo-dirs.m4
-b565f96116bc6c9837db6eb489c0c172 moo-fam.m4
-3b5f9fe9a72732d13f2483bbcd6c855d moo-flags.m4
+b94f8246a99633b4902a33a33bde0aa3 moo-flags.m4
 aae979a52da05cfabfe337509c845a91 moo-funcs.m4
 cf9fe469f85df08f35c8fed330680b3e moo-gtk.m4
 66b338bc4f134fc00cc0c9dd422fb6b0 moo-i18n.m4
@@ -19,7 +18,7 @@ d5aeeaa47fa88297cc36e17fbbc47102 moo-lib.m4
 87cb0e8cdecb72d87d7404eb20546f26 moo-python-cross-mingw.m4
 bda375dcb0e9befabf652b123ce042ad moo-python.m4
 9b1a1ecc886394e26ba9ff62a057d687 moo-xml.m4
-65286b801f4b3fbf3a078f4fd9857436 configure.ac
+9a6c92ed0fba7a76b866a4b8bf16f4df configure.ac
 ])
 
 AC_DEFUN([UGLY_STAMP],[])

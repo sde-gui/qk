@@ -78,7 +78,6 @@ echo "    OS ...................................... $MOO_OS_NAME"
 echo "    use python .............................. $use_python"
 echo "    use xml ................................. $MOO_USE_XML"
 echo "    build pcre library ...................... $MOO_BUILD_PCRE"
-echo "    use FAM ................................. $MOO_USE_FAM"
 echo
 echo "    prefix .................................. $prefix"
 echo "    editor lang files go to ................. $MOO_TEXT_LANG_FILES_DIR"

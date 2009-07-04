@@ -11,7 +11,6 @@ AC_DEFUN_ONCE([MOO_AC_PRIV_FLAGS],[
   MOO_AC_FLAGS
 
   MOO_AC_FUNCS
-  MOO_AC_FAM
   MOO_AC_XML
   MOO_AC_PCRE
   MOO_AC_PYTHON
@@ -41,12 +40,6 @@ AC_DEFUN_ONCE([MOO_AC_PRIV_FLAGS],[
   fi
 
   MOO_CFLAGS="-I`cd "$srcdir/doc" && pwd` $MOO_CFLAGS"
-
-  if test x$MOO_USE_FAM = xyes; then
-    MOO_CFLAGS="$MOO_CFLAGS $MOO_FAM_CFLAGS"
-    MOO_LIBS="$MOO_LIBS $MOO_FAM_LIBS"
-  fi
-
   MOO_CXXFLAGS="$MOO_CFLAGS"
 
   if $MOO_GCC; then

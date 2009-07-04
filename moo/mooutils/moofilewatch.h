@@ -1,7 +1,7 @@
 /*
  *   moofilewatch.h
  *
- *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
+ *   Copyright (C) 2004-2009 by Yevgen Muntyan <muntyan@tamu.edu>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -13,7 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Files and directory monitor. Uses FAM if present, or stat() otherwise.
+/* Files and directory monitor. Uses stat().
    On win32 does FindFirstChangeNotification and ReadDirectoryChangesW. */
 
 #ifndef MOO_FILE_WATCH_H
