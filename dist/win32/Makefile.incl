@@ -17,7 +17,7 @@ WIN_CLEAN_FILES = $(zip_files) $(installer) $(nsi_files) dist/win32/medit.nsi
 WIN_CLEAN_DIRS = $(win_distdir) $(win_tmp_instdir)
 
 WIN_BIN_ROOT = BIN
-WIN_BIN_COMPS = gtk # xml grep
+WIN_BIN_COMPS = gtk grep # xml
 WIN_PYTHON_BIN_COMPS = python
 
 zip_files = $(zip) $(zip_dir)
