@@ -1043,7 +1043,11 @@ unx_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
     xml = exe_page_xml_new ();
 
     moo_text_view_set_font_from_string (xml->textview, "Monospace");
+#ifndef __WIN32__
     moo_text_view_set_lang_by_id (xml->textview, "sh");
+#else
+    moo_text_view_set_lang_by_id (xml->textview, "dosbatch");
+#endif
 
     init_combo (xml->input, input_names, G_N_ELEMENTS (input_names));
     init_combo (xml->output, output_names, G_N_ELEMENTS (output_names));
