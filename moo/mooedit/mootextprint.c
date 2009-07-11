@@ -1858,7 +1858,9 @@ get_options (PrintWidgetXml *xml)
     if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (xml->line_numbers)))
     {
         GtkSpinButton *btn = xml->line_numbers_step;
-        int step = gtk_spin_button_get_value_as_int (btn);
+        int step;
+        gtk_spin_button_update (btn);
+        step = gtk_spin_button_get_value_as_int (btn);
         if (step < 1)
         {
             step = 1;

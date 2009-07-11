@@ -1363,6 +1363,7 @@ moo_text_view_run_goto_line (GtkTextView *view)
         return;
     }
 
+    gtk_spin_button_update (xml->spin);
     line = gtk_spin_button_get_value (xml->spin) - 1;
     gtk_widget_destroy (GTK_WIDGET (dialog));
 

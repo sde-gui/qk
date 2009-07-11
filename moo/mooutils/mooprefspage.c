@@ -382,6 +382,8 @@ setting_get_value (GtkWidget      *widget,
     {
         GtkSpinButton *spin = GTK_SPIN_BUTTON (widget);
 
+        gtk_spin_button_update (spin);
+
         if (value->g_type == G_TYPE_INT)
         {
             int val = gtk_spin_button_get_value_as_int (spin);
