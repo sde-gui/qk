@@ -818,8 +818,6 @@ log_func_window (const gchar    *log_domain,
                  G_GNUC_UNUSED gpointer dummy)
 {
     char *text;
-    GtkTextTag *tag;
-    MooLogWindow *log;
 
 #ifdef __WIN32__
     if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
@@ -829,23 +827,37 @@ log_func_window (const gchar    *log_domain,
     }
 #endif /* __WIN32__ */
 
+    if (!g_utf8_validate (message, -1, NULL))
+        message = "<corrupted string, invalid UTF8>";
+
     if (log_domain)
         text = g_strdup_printf ("%s: %s\n", log_domain, message);
     else
         text = g_strdup_printf ("%s\n", message);
 
-    log = moo_log_window ();
+    {
+        GtkTextTag *tag;
+        MooLogWindow *log;
 
-    if (flags >= G_LOG_LEVEL_MESSAGE)
-        tag = log->message_tag;
-    else if (flags >= G_LOG_LEVEL_WARNING)
-        tag = log->warning_tag;
-    else
-        tag = log->critical_tag;
+        gdk_threads_enter ();
 
-    moo_log_window_insert (log, text, tag);
-    if (flags <= G_LOG_LEVEL_WARNING)
-        gtk_window_present (GTK_WINDOW (log->window));
+        if ((log = moo_log_window ()))
+        {
+            if (flags >= G_LOG_LEVEL_MESSAGE)
+                tag = log->message_tag;
+            else if (flags >= G_LOG_LEVEL_WARNING)
+                tag = log->warning_tag;
+            else
+                tag = log->critical_tag;
+
+            moo_log_window_insert (log, text, tag);
+            if (flags <= G_LOG_LEVEL_WARNING)
+                gtk_window_present (GTK_WINDOW (log->window));
+        }
+
+        gdk_threads_leave ();
+    }
+
     g_free (text);
 }
 
@@ -853,15 +865,21 @@ log_func_window (const gchar    *log_domain,
 static void
 print_func_window (const char *string)
 {
-    MooLogWindow *log = moo_log_window ();
-    moo_log_window_insert (log, string, NULL);
+    MooLogWindow *log;
+    gdk_threads_enter ();
+    if ((log = moo_log_window ()))
+        moo_log_window_insert (log, string, NULL);
+    gdk_threads_leave ();
 }
 
 static void
 printerr_func_window (const char *string)
 {
-    MooLogWindow *log = moo_log_window ();
-    moo_log_window_insert (log, string, log->warning_tag);
+    MooLogWindow *log;
+    gdk_threads_enter ();
+    if ((log = moo_log_window ()))
+        moo_log_window_insert (log, string, log->warning_tag);
+    gdk_threads_leave ();
 }
 
 
@@ -883,7 +901,7 @@ moo_set_log_func_window (gboolean show_now)
 
 static char *moo_log_file;
 static gboolean moo_log_file_written;
-GStaticRecMutex moo_log_file_mutex = G_STATIC_REC_MUTEX_INIT;
+static GStaticRecMutex moo_log_file_mutex = G_STATIC_REC_MUTEX_INIT;
 
 static void
 print_func_file (const char *string)
