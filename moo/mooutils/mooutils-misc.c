@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
-#include "moo-config-dirs.h"
+#include "config-dirs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-file.h"
@@ -845,6 +844,8 @@ log_func_window (const gchar    *log_domain,
         tag = log->critical_tag;
 
     moo_log_window_insert (log, text, tag);
+    if (flags <= G_LOG_LEVEL_WARNING)
+        gtk_window_present (GTK_WINDOW (log->window));
     g_free (text);
 }
 

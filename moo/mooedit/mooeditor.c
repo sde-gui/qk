@@ -1184,7 +1184,7 @@ close_window_handler (MooEditor     *editor,
     if (busy)
     {
         moo_editor_set_active_doc (editor, busy);
-        doc_list_free (docs);
+        doc_list_free_links (docs);
         return TRUE;
     }
 
@@ -1248,8 +1248,8 @@ close_window_handler (MooEditor     *editor,
         }
     }
 
-    doc_list_free (modified);
-    doc_list_free (docs);
+    doc_list_free_links (modified);
+    doc_list_free_links (docs);
     return !do_close;
 }
 
@@ -1297,7 +1297,7 @@ do_close_window (MooEditor      *editor,
     _moo_window_detach_plugins (window);
     gtk_widget_destroy (GTK_WIDGET (window));
 
-    doc_list_free (list);
+    doc_list_free_links (list);
 }
 
 
@@ -1487,7 +1487,7 @@ close_docs_real (MooEditor      *editor,
             do_close_doc (editor, l->data);
     }
 
-    doc_list_free (modified);
+    doc_list_free_links (modified);
     return do_close;
 }
 
@@ -1777,7 +1777,7 @@ GSList *
 moo_editor_list_windows (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    return window_list_to_gslist (window_list_copy (editor->priv->windows));
+    return window_list_to_gslist (window_list_copy_links (editor->priv->windows));
 }
 
 
@@ -1796,7 +1796,7 @@ moo_editor_list_docs (MooEditor *editor)
         docs = doc_list_concat (list, docs);
     }
 
-    list = doc_list_copy (editor->priv->windowless);
+    list = doc_list_copy_links (editor->priv->windowless);
     list = doc_list_reverse (list);
     docs = doc_list_concat (list, docs);
 
@@ -2297,7 +2297,7 @@ moo_editor_get_doc (MooEditor  *editor,
     {
         DocList *docs = window_list_docs (l->data);
         doc = doc_list_find_filename (docs, filename);
-        doc_list_free (docs);
+        doc_list_free_links (docs);
         if (doc)
             goto out;
     }
@@ -2343,7 +2343,7 @@ moo_editor_get_doc_for_uri (MooEditor  *editor,
     {
         DocList *docs = window_list_docs (l->data);
         doc = doc_list_find_uri (docs, uri);
-        doc_list_free (docs);
+        doc_list_free_links (docs);
         if (doc)
             return doc;
     }

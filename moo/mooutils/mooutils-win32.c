@@ -13,6 +13,15 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef __WIN32__
+#ifndef UNICODE
+#error "UNICODE must be defined on win32"
+#endif
+#ifndef _UNICODE
+#error "_UNICODE must be defined on win32"
+#endif
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -224,10 +233,10 @@ _moo_win32_show_fatal_error (const char *domain,
     "Please report it to " PACKAGE_BUGREPORT " and provide "\
     "steps needed to reproduce this error."
     if (domain)
-        msg = g_strdup_printf ("Fatal " PACKAGE " error:\n---\n%s: %s\n---\n"
+        msg = g_strdup_printf ("Fatal error:\n---\n%s: %s\n---\n"
                 PLEASE_REPORT, domain, logmsg);
     else
-        msg = g_strdup_printf ("Fatal " PACKAGE " error:\n---\n%s\n---\n"
+        msg = g_strdup_printf ("Fatal error:\n---\n%s\n---\n"
                 PLEASE_REPORT, logmsg);
 #undef PLEASE_REPORT
 
@@ -262,7 +271,7 @@ _moo_win32_lame_parse_cmd_line (const char  *cmd_line,
 }
 
 
-#ifndef HAVE_GETTIMEOFDAY
+#ifdef MOO_NEED_GETTIMEOFDAY
 #include <mooutils/moowin32/ms/sys/time.h>
 int
 _moo_win32_gettimeofday (struct timeval *tp,
@@ -286,7 +295,7 @@ _moo_win32_gettimeofday (struct timeval *tp,
 
      return 0;
 }
-#endif /* !HAVE_GETTIMEOFDAY */
+#endif /* MOO_NEED_GETTIMEOFDAY */
 
 
 int

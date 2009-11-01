@@ -40,8 +40,12 @@
 static gpointer about_dialog;
 static gpointer credits_dialog;
 
+#undef MOO_USE_HTML
+#if defined(MOO_USE_XML)
+#define MOO_USE_HTML 1
+#endif
 
-#ifndef MOO_USE_XML
+#ifndef MOO_USE_HTML
 #define MooHtml GtkTextView
 #undef MOO_TYPE_HTML
 #define MOO_TYPE_HTML GTK_TYPE_TEXT_VIEW
@@ -68,7 +72,7 @@ set_translator_credits (CreditsDialogXml *gxml)
         return;
     }
 
-#if defined(MOO_USE_XML) && !defined(__WIN32__)
+#ifdef MOO_USE_HTML
     if (strcmp (credits_markup, "translator-credits-markup") != 0)
         _moo_html_load_memory (GTK_TEXT_VIEW (gxml->translated_by),
                                credits_markup, -1, NULL, NULL);
@@ -94,26 +98,29 @@ show_credits (void)
         return;
     }
 
+#ifdef MOO_USE_HTML
     moo_glade_xml_register_type (MOO_TYPE_HTML);
     gxml = credits_dialog_xml_new ();
+#else
+    gxml = credits_dialog_xml_new_empty ();
+    moo_glade_xml_map_class (gxml->xml, "MooHtml", MOO_TYPE_HTML);
+    credits_dialog_xml_build (gxml);
+#endif
 
     credits_dialog = gxml->CreditsDialog;
     g_return_if_fail (credits_dialog != NULL);
     g_object_add_weak_pointer (G_OBJECT (credits_dialog), &credits_dialog);
     g_signal_connect (credits_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
 
-#if defined(MOO_USE_XML) && !defined(__WIN32__)
+#ifdef MOO_USE_HTML
     _moo_html_load_memory (GTK_TEXT_VIEW (gxml->written_by),
-                           "Yevgen Muntyan <a href=\"mailto://muntyan@tamu.edu\">"
-                                    "&lt;muntyan@tamu.edu&gt;</a>",
+                           "Yevgen Muntyan <a href=\"mailto://" MOO_EMAIL
+                                    "\">&lt;" MOO_EMAIL "&gt;</a>",
                            -1, NULL, NULL);
 #else
-    /* XXX */
-    {
-        buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (gxml->written_by));
-        gtk_text_buffer_insert_at_cursor (buffer,
-                                          "Yevgen Muntyan <muntyan@tamu.edu>", -1);
-    }
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (gxml->written_by));
+    gtk_text_buffer_insert_at_cursor (buffer,
+                                      "Yevgen Muntyan <" MOO_EMAIL ">", -1);
 #endif
 
     set_translator_credits (gxml);
@@ -144,7 +151,15 @@ about_dialog_key_press (GtkWidget   *dialog,
         return TRUE;
     }
 
-    return TRUE;
+    if (event->keyval == GDK_s && (event->state & GDK_CONTROL_MASK))
+    {
+        char *info = moo_app_get_system_info (moo_app_get_instance ());
+        if (info)
+            gtk_clipboard_set_text (gtk_widget_get_clipboard (dialog, GDK_SELECTION_CLIPBOARD), info, -1);
+        g_free (info);
+    }
+
+    return FALSE;
 }
 
 
@@ -214,8 +229,8 @@ char *
 moo_app_get_system_info (MooApp *app)
 {
     GString *text;
-    char *string;
     char **dirs, **p;
+    char *string;
 
     g_return_val_if_fail (MOO_IS_APP (app), NULL);
 
@@ -223,23 +238,9 @@ moo_app_get_system_info (MooApp *app)
 
     g_string_append_printf (text, "%s-%s\n", MOO_APP_FULL_NAME, MOO_APP_VERSION);
 
-#ifdef __WIN32__
-    string = get_windows_name ();
-    g_string_append_printf (text, "OS: %s\n", string ? string : "Win32");
+    string = get_system_name ();
+    g_string_append_printf (text, "OS: %s\n", string);
     g_free (string);
-#else
-    g_string_append (text, "OS: " MOO_OS_NAME "\n");
-
-    if ((string = get_uname ()))
-    {
-        g_string_append_printf (text, "OS details: %s", string);
-
-        if (!*string || string[strlen(string) - 1] != '\n')
-            g_string_append (text, "\n");
-
-        g_free (string);
-    }
-#endif
 
     g_string_append_printf (text, "GTK version: %u.%u.%u\n",
                             gtk_major_version,
@@ -252,6 +253,7 @@ moo_app_get_system_info (MooApp *app)
 
     if (moo_python_running ())
     {
+        char *string;
         g_string_append (text, "Python support: yes\n");
         string = get_python_info ();
         g_string_append_printf (text, "Python: %s\n", string ? string : "None");

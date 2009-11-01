@@ -51,7 +51,7 @@ moo_gettext (const char *string)
 }
 
 const char *
-moo_pgettext (const char *msgctxtid, gsize msgidoffset)
+moo_pgettext (const char *msgctxtid, G_GNUC_UNUSED gsize msgidoffset)
 {
 #ifdef ENABLE_NLS
     g_return_val_if_fail (msgctxtid != NULL, NULL);
@@ -63,7 +63,7 @@ moo_pgettext (const char *msgctxtid, gsize msgidoffset)
 }
 
 const char *
-moo_pgettext2 (const char *context, const char *msgctxtid)
+moo_pgettext2 (G_GNUC_UNUSED const char *context, const char *msgctxtid)
 {
 #ifdef ENABLE_NLS
     char *tmp;
@@ -110,7 +110,7 @@ _moo_gsv_gettext (const char *string)
 }
 
 char *
-_moo_gsv_dgettext (const char *domain, const char *string)
+_moo_gsv_dgettext (G_GNUC_UNUSED const char *domain, const char *string)
 {
 #ifdef ENABLE_NLS
     gchar *tmp;

@@ -20,7 +20,6 @@
 #include "mooedit/mooplugin.h"
 #include "mooedit/mooplugin-loader.h"
 #include "glade/moopluginprefs-gxml.h"
-#include "mooedit/plugins/mooeditplugins.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"
@@ -910,20 +909,6 @@ moo_plugin_get_dirs (void)
 }
 
 
-static void
-moo_plugin_init_builtin (void)
-{
-    _moo_file_selector_plugin_init ();
-    _moo_file_list_plugin_init ();
-    _moo_find_plugin_init ();
-#ifndef __WIN32__
-#ifdef MOO_BUILD_CTAGS
-    _moo_ctags_plugin_init ();
-#endif
-#endif
-}
-
-
 void
 moo_plugin_read_dirs (void)
 {
@@ -941,8 +926,6 @@ moo_plugin_read_dirs (void)
                                  MOO_DATA_LIB, &n_dirs);
     g_strfreev (plugin_store->dirs);
     plugin_store->dirs = _moo_strv_reverse (dirs);
-
-    moo_plugin_init_builtin ();
 
     for (d = plugin_store->dirs; d && *d; ++d)
         moo_plugin_read_dir (*d);

@@ -18,6 +18,7 @@
 
 #include <mooedit/mootextview.h>
 #include <mooedit/mooeditconfig.h>
+#include <mooedit/mooedit-enums.h>
 #include <mooutils/mooprefs.h>
 
 G_BEGIN_DECLS
@@ -31,25 +32,6 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT(object)                 (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_EDIT))
 #define MOO_IS_EDIT_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT))
 #define MOO_EDIT_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT, MooEditClass))
-
-typedef enum /*< flags >*/
-{
-    MOO_EDIT_STATUS_NORMAL      = 0,
-    MOO_EDIT_MODIFIED_ON_DISK   = 1 << 0,
-    MOO_EDIT_DELETED            = 1 << 1,
-    MOO_EDIT_CHANGED_ON_DISK    = MOO_EDIT_MODIFIED_ON_DISK | MOO_EDIT_DELETED,
-    MOO_EDIT_MODIFIED           = 1 << 2,
-    MOO_EDIT_NEW                = 1 << 3,
-    MOO_EDIT_CLEAN              = 1 << 4  /* doesn't prompt if it's closed, even if it's modified*/
-} MooEditStatus;
-
-typedef enum
-{
-    MOO_EDIT_STATE_NORMAL,
-    MOO_EDIT_STATE_LOADING,
-    MOO_EDIT_STATE_SAVING,
-    MOO_EDIT_STATE_PRINTING
-} MooEditState;
 
 #define MOO_EDIT_IS_MODIFIED(edit)  (moo_edit_get_status (edit) & MOO_EDIT_MODIFIED)
 #define MOO_EDIT_IS_CLEAN(edit)     (moo_edit_get_status (edit) & MOO_EDIT_CLEAN)

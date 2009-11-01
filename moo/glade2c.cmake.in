@@ -1,0 +1,16 @@
+INCLUDE(@MOO_SOURCE_DIR@/cmake/utils.cmake)
+
+STRING(REGEX REPLACE "(.*)/[^/]*" "\\1" subdir "${INPUT}")
+IF(subdir)
+  FILE(MAKE_DIRECTORY ${subdir})
+ENDIF(subdir)
+
+MOO_EXEC_OR_DIE("@PYTHON_EXECUTABLE@ @MOO_SOURCE_DIR@/moo/glade2c.py ${SRCDIR}/${INPUT}"
+  COMMAND "@PYTHON_EXECUTABLE@" @MOO_SOURCE_DIR@/moo/glade2c.py ${SRCDIR}/${INPUT}
+  OUTPUT_FILE ${OUTPUT}.tmp
+)
+MOO_COPY_IF_CHANGED(${OUTPUT}.tmp ${OUTPUT})
+
+FILE(WRITE ${OUTPUT}.stamp "stamp")
+
+FILE(REMOVE ${OUTPUT}.tmp)

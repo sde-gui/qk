@@ -86,15 +86,10 @@ const char    *_xdg_get_base_name (const char    *file_name);
 #include <errno.h>
 #include "mooutils/moo-mime.h"
 
-#ifdef G_OS_WIN32
-#define HAVE_MMAP 1
+#if G_BYTE_ORDER != G_LITTLE_ENDIAN && G_BYTE_ORDER != G_BIG_ENDIAN
+#error G_BYTE_ORDER
 #endif
-
-#ifdef __MINGW32__
-#if __MINGW32_MAJOR_VERSION == 3 && __MINGW32_MINOR_VERSION <= 7
-#include "mooutils/moowin32/ms/sys/time.h"
-#endif
-#endif
+#define LITTLE_ENDIAN (G_BYTE_ORDER == G_LITTLE_ENDIAN)
 
 /* make xdgmime use glib */
 #undef malloc

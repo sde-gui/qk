@@ -16,12 +16,14 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-lua.h"
 #include "mooedit/mooeditor.h"
-#include "mooedit/moocommand-exe.h"
-#include "mooedit/moousertools.h"
 #include "mooutils/moohistorycombo.h"
 #include <string.h>
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
+
+#ifndef __WIN32__
+#include "mooedit/moocommand-exe.h"
+#endif
 
 #define VAR_WINDOW       "window"
 #define VAR_DOC          "doc"
@@ -1134,6 +1136,8 @@ zfunc_history_entry (lua_State *L)
 }
 #endif
 
+#ifndef __WIN32__
+
 static int
 cfunc_run_in_pane (lua_State *L)
 {
@@ -1187,23 +1191,18 @@ cfunc_run_sync (lua_State *L)
     return 2;
 }
 
-static int
-cfunc_reload_user_tools (lua_State *L)
-{
-    parse_args (L, "_medit.reload_user_tools", "");
-    _moo_edit_load_user_tools ();
-    return 0;
-}
+#endif /* !__WIN32__ */
 
 static void
 add_medit_api (lua_State *L)
 {
     static const struct luaL_reg meditlib[] = {
         {"open", cfunc_open},
+#ifndef __WIN32__
         {"run_in_pane", cfunc_run_in_pane},
         {"run_async", cfunc_run_async},
         {"run_sync", cfunc_run_sync},
-        {"reload_user_tools", cfunc_reload_user_tools},
+#endif
         {NULL, NULL}
     };
 

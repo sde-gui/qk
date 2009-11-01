@@ -47,6 +47,7 @@
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooeditops.h"
 #include "mooutils/mooatom.h"
+#include "mooutils/moolist.h"
 #include "marshals.h"
 #include "mooutils/mooi18n.h"
 #include <gdk/gdkkeysyms.h>
@@ -92,9 +93,11 @@ typedef struct History History;
 typedef struct Typeahead Typeahead;
 typedef struct Clipboard Clipboard;
 
+MOO_DEFINE_DLIST_FULL(FileList, file_list, MooFile, _moo_file_ref, _moo_file_unref)
+
 struct Clipboard {
     MooFolder *folder;
-    GList *files;
+    FileList *files;
     gboolean cut;
 };
 
@@ -287,7 +290,7 @@ static GtkWidget *create_bookmark_view      (MooFileView    *fileview);
 static GtkWidget *get_view_widget           (MooFileView    *fileview);
 static void     file_view_move_selection    (MooFileView    *fileview,
                                              GtkTreeIter    *filter_iter);
-static GList   *file_view_get_selected_files(MooFileView    *fileview);
+static FileList *file_view_get_selected_files(MooFileView   *fileview);
 
 static void     path_entry_init             (MooFileView    *fileview);
 static void     path_entry_deinit           (MooFileView    *fileview);
@@ -412,10 +415,13 @@ static void     file_list_row_activated     (MooFileView    *fileview,
                                              GtkTreePath    *filter_path);
 
 static Clipboard *clipboard_new             (MooFolder      *folder,
-                                             GList          *files,
+                                             FileList       *files,
                                              gboolean        cut);
 static void     clipboard_free              (Clipboard      *cb);
+
 static void     file_view_clear_clipboard   (MooFileView    *fileview);
+static gboolean file_view_file_is_cut       (MooFileView    *fileview,
+                                             MooFile        *file);
 
 static void     copy_files                  (MooFileView    *fileview,
                                              GList          *filenames,
@@ -1849,14 +1855,18 @@ icon_data_func (G_GNUC_UNUSED GObject *column_or_iconview,
 {
     MooFile *file = NULL;
     GdkPixbuf *pixbuf = NULL;
+    gboolean dim_icon = FALSE;
 
     gtk_tree_model_get (model, iter, COLUMN_FILE, &file, -1);
 
     if (file)
+    {
         pixbuf = _moo_file_get_icon (file, GTK_WIDGET (fileview),
                                      fileview->priv->icon_size);
+        dim_icon = file_view_file_is_cut (fileview, file);
+    }
 
-    g_object_set (cell, "pixbuf", pixbuf, NULL);
+    g_object_set (cell, "pixbuf", pixbuf, "sensitive", !dim_icon, NULL);
     _moo_file_unref (file);
 }
 
@@ -2474,8 +2484,6 @@ enum {
     CB_TARGET_TEXT = 3
 };
 
-#define N_NO_TEXT_TARGETS 2
-
 static GtkTargetEntry clipboard_targets[] = {
     {(char*) "MOO_FILE_VIEW_CLIPBOARD", GTK_TARGET_SAME_APP, CB_TARGET_CLIPBOARD},
     {(char*) "text/uri-list", 0, CB_TARGET_URI_LIST},
@@ -2497,7 +2505,7 @@ moo_file_view_unrealize (GtkWidget *widget)
 
 static Clipboard *
 clipboard_new (MooFolder *folder,
-               GList     *files,
+               FileList  *files,
                gboolean   cut)
 {
     Clipboard *cb;
@@ -2506,13 +2514,11 @@ clipboard_new (MooFolder *folder,
 
     cb = g_new0 (Clipboard, 1);
     cb->folder = g_object_ref (folder);
-    cb->files = g_list_copy (files);
-    g_list_foreach (cb->files, (GFunc) _moo_file_ref, NULL);
+    cb->files = file_list_copy (files);
     cb->cut = cut != 0;
 
     return cb;
 }
-
 
 static void
 clipboard_free (Clipboard *cb)
@@ -2520,8 +2526,7 @@ clipboard_free (Clipboard *cb)
     if (cb)
     {
         g_object_unref (cb->folder);
-        g_list_foreach (cb->files, (GFunc) _moo_file_unref, NULL);
-        g_list_free (cb->files);
+        file_list_free (cb->files);
         g_free (cb);
     }
 }
@@ -2546,6 +2551,23 @@ file_view_clear_clipboard (MooFileView *fileview)
     }
 }
 
+static gboolean
+file_view_file_is_cut (MooFileView *fileview,
+                       MooFile     *file)
+{
+    FileList *l;
+    Clipboard *cb = fileview->priv->clipboard;
+
+    if (!cb || !cb->cut || fileview->priv->current_dir != cb->folder)
+        return FALSE;
+
+    for (l = cb->files; l != NULL; l = l->next)
+        if (strcmp (_moo_file_name (file), _moo_file_name (l->data)) == 0)
+            return TRUE;
+
+    return FALSE;
+}
+
 
 static void
 clear_clipboard_cb (G_GNUC_UNUSED GtkClipboard *clipboard,
@@ -2553,6 +2575,7 @@ clear_clipboard_cb (G_GNUC_UNUSED GtkClipboard *clipboard,
 {
     clipboard_free (fileview->priv->clipboard);
     fileview->priv->clipboard = NULL;
+    gtk_widget_queue_draw (GTK_WIDGET (fileview));
 }
 
 
@@ -2560,11 +2583,11 @@ static void
 set_selection_data_from_clipboard (GtkSelectionData *data,
                                    Clipboard        *cb)
 {
-    GList *l;
+    FileList *l;
     char **uris;
     int n_uris, i;
 
-    n_uris = g_list_length (cb->files);
+    n_uris = file_list_length (cb->files);
     g_return_if_fail (n_uris > 0);
 
     uris = g_new0 (char*, n_uris + 1);
@@ -2581,19 +2604,34 @@ static void
 set_text_from_clipboard (GtkSelectionData *data,
                          Clipboard        *cb)
 {
-    char *path;
-    char *display_path;
+    FileList *l;
+    GString *str;
 
-    g_return_if_fail (g_list_length (cb->files) == 1);
+    str = g_string_new (NULL);
 
-    path = _moo_folder_get_file_path (cb->folder, cb->files->data);
-    g_return_if_fail (path != NULL);
+    for (l = cb->files; l != NULL; l = l->next)
+    {
+        char *path;
+        char *display_path;
 
-    display_path = g_filename_display_name (path);
-    gtk_selection_data_set_text (data, display_path, -1);
+        path = _moo_folder_get_file_path (cb->folder, l->data);
+        g_return_if_fail (path != NULL);
 
-    g_free (display_path);
-    g_free (path);
+        display_path = g_filename_display_name (path);
+        g_return_if_fail (display_path != NULL);
+
+        if (str->len != 0)
+            g_string_append_c (str, '\n');
+
+        g_string_append (str, display_path);
+
+        g_free (display_path);
+        g_free (path);
+    }
+
+    gtk_selection_data_set_text (data, str->str, str->len);
+
+    g_string_free (str, TRUE);
 }
 
 
@@ -2633,7 +2671,7 @@ static void
 file_view_cut_or_copy_clipboard (MooFileView *fileview,
                                  gboolean     cut)
 {
-    GList *files;
+    FileList *files;
     MooFolder *folder;
     gboolean result;
     GtkClipboard *clipboard;
@@ -2655,7 +2693,7 @@ file_view_cut_or_copy_clipboard (MooFileView *fileview,
     clipboard = gtk_widget_get_clipboard (GTK_WIDGET (fileview),
                                           GDK_SELECTION_CLIPBOARD);
     result = gtk_clipboard_set_with_owner (clipboard, clipboard_targets,
-                                           files->next ? N_NO_TEXT_TARGETS : G_N_ELEMENTS (clipboard_targets),
+                                           G_N_ELEMENTS (clipboard_targets),
                                            (GtkClipboardGetFunc) get_clipboard_cb,
                                            (GtkClipboardClearFunc) clear_clipboard_cb,
                                            G_OBJECT (fileview));
@@ -2663,8 +2701,9 @@ file_view_cut_or_copy_clipboard (MooFileView *fileview,
     if (result)
         fileview->priv->clipboard = clipboard_new (folder, files, cut);
 
-    g_list_foreach (files, (GFunc) _moo_file_unref, NULL);
-    g_list_free (files);
+    gtk_widget_queue_draw (GTK_WIDGET (fileview));
+
+    file_list_free (files);
 }
 
 
@@ -2699,7 +2738,8 @@ file_view_paste_clipboard (MooFileView *fileview)
     {
         Clipboard *cb;
         MooFileView *remote;
-        GList *filenames, *l;
+        FileList *l;
+        GList *filenames;
         const char *destdir;
 
         remote = moo_selection_data_get_pointer (data, CLIPBOARD_ATOM);
@@ -3030,7 +3070,8 @@ fileview_set_use_filter (MooFileView    *fileview,
 GList *
 _moo_file_view_get_filenames (MooFileView *fileview)
 {
-    GList *files, *names = NULL;
+    FileList *files;
+    GList *names = NULL;
     MooFolder *folder;
 
     g_return_val_if_fail (MOO_IS_FILE_VIEW (fileview), NULL);
@@ -3044,7 +3085,7 @@ _moo_file_view_get_filenames (MooFileView *fileview)
     {
         names = g_list_prepend (names, _moo_folder_get_file_path (folder, files->data));
         _moo_file_unref (files->data);
-        files = g_list_delete_link (files, files);
+        files = file_list_delete_link (files, files);
     }
 
     return g_list_reverse (names);
@@ -3054,7 +3095,7 @@ _moo_file_view_get_filenames (MooFileView *fileview)
 GList *
 _moo_file_view_get_files (MooFileView *fileview)
 {
-    return file_view_get_selected_files (fileview);
+    return file_list_to_glist (file_view_get_selected_files (fileview));
 }
 
 
@@ -3081,20 +3122,20 @@ prepend_file (GtkTreeModel       *model,
               GtkTreeIter        *iter,
               gpointer            user_data)
 {
-    GList **list = user_data;
+    FileList **list = user_data;
     MooFile *file = NULL;
 
     gtk_tree_model_get (model, iter, COLUMN_FILE, &file, -1);
 
     if (file)
-        *list = g_list_prepend (*list, file);
+        *list = file_list_prepend (*list, file);
 }
 
 /* returned files must be unrefed and list freed */
-static GList *
+static FileList *
 file_view_get_selected_files (MooFileView *fileview)
 {
-    GList *files = NULL;
+    FileList *files = NULL;
     _moo_tree_view_selected_foreach (fileview->priv->view,
                                      prepend_file, &files);
     return files;
@@ -3103,7 +3144,7 @@ file_view_get_selected_files (MooFileView *fileview)
 
 static gboolean
 ask_delete_files (MooFileView *fileview,
-                  GList       *files,
+                  FileList    *files,
                   gboolean     trash)
 {
     gboolean one;
@@ -3175,7 +3216,7 @@ static void
 file_view_do_delete_selected (MooFileView *fileview,
                               gboolean     trash)
 {
-    GList *files, *l;
+    FileList *files, *l;
 
     if (!fileview->priv->current_dir)
         return;
@@ -3224,8 +3265,7 @@ file_view_do_delete_selected (MooFileView *fileview,
         }
     }
 
-    g_list_foreach (files, (GFunc) _moo_file_unref, NULL);
-    g_list_free (files);
+    file_list_free (files);
 }
 
 static void
@@ -3357,7 +3397,7 @@ props_dialog_destroyed (GtkWidget   *dialog,
 static void
 file_view_properties_dialog (MooFileView *fileview)
 {
-    GList *files;
+    FileList *files;
 
     if (!fileview->priv->current_dir)
         return;
@@ -3373,8 +3413,7 @@ file_view_properties_dialog (MooFileView *fileview)
     if (files->next)
     {
         g_print ("many files\n");
-        g_list_foreach (files, (GFunc) _moo_file_unref, NULL);
-        g_list_free (files);
+        file_list_free (files);
         return;
     }
 
@@ -3390,8 +3429,7 @@ file_view_properties_dialog (MooFileView *fileview)
                                      fileview->priv->current_dir);
     gtk_window_present (GTK_WINDOW (fileview->priv->props_dialog));
 
-    g_list_foreach (files, (GFunc) _moo_file_unref, NULL);
-    g_list_free (files);
+    file_list_free (files);
 }
 
 
@@ -3426,7 +3464,8 @@ do_popup (MooFileView    *fileview,
           GList          *selected)
 {
     GtkWidget *menu;
-    GList *files = NULL, *l;
+    FileList *files = NULL;
+    GList *l;
     struct {
         MooFileView *fileview;
         GList *rows;
@@ -3440,7 +3479,7 @@ do_popup (MooFileView    *fileview,
         gtk_tree_model_get (fileview->priv->filter_model, &iter,
                             COLUMN_FILE, &file, -1);
         if (file)
-            files = g_list_prepend (files, file);
+            files = file_list_prepend (files, file);
     }
 
     menu = moo_ui_xml_create_widget (fileview->priv->ui_xml,
@@ -3470,8 +3509,7 @@ do_popup (MooFileView    *fileview,
                         gtk_get_current_event_time ());
 
     g_object_unref (menu);
-    g_list_foreach (files, (GFunc) _moo_file_unref, NULL);
-    g_list_free (files);
+    file_list_free (files);
 }
 
 
@@ -4981,7 +5019,7 @@ icon_drag_begin (MooFileView    *fileview,
                  G_GNUC_UNUSED GdkDragContext *context,
                  G_GNUC_UNUSED MooIconView *iconview)
 {
-    GList *files, *l;
+    FileList *files, *l;
     char **uris;
     guint n_files, i;
     MooFolder *folder;
@@ -4992,7 +5030,7 @@ icon_drag_begin (MooFileView    *fileview,
     files = file_view_get_selected_files (fileview);
     g_return_if_fail (files != NULL);
 
-    n_files = g_list_length (files);
+    n_files = file_list_length (files);
     uris = g_new0 (char*, n_files + 1);
 
     for (l = files, i = 0; l != NULL; i++, l = l->next)
@@ -5006,8 +5044,7 @@ icon_drag_begin (MooFileView    *fileview,
     g_object_set_data_full (G_OBJECT (fileview), "moo-file-view-source-dir",
                             g_object_ref (folder), g_object_unref);
 
-    g_list_foreach (files, (GFunc) _moo_file_unref, NULL);
-    g_list_free (files);
+    file_list_free (files);
 }
 
 
@@ -5630,6 +5667,8 @@ sync_dest_targets (MooFileView *fileview)
 /* Dropping stuff
  */
 
+#ifndef __WIN32__
+
 static void
 run_command_on_files (MooFileView *fileview,
                       GList       *filenames,
@@ -5721,6 +5760,69 @@ link_files (MooFileView *fileview,
     run_command_on_files (fileview, filenames, destdir,
                           args, G_N_ELEMENTS (args));
 }
+
+#endif /* __WIN32__ */
+
+
+#ifdef __WIN32__
+
+static void
+copy_or_move_files (MooFileView *fileview,
+                    GList       *filenames,
+                    const char  *destdir,
+                    gboolean     copy)
+{
+    gboolean single_file;
+
+    g_return_if_fail (filenames != NULL);
+
+    single_file = filenames->next == NULL;
+
+    if (copy)
+        _moo_copy_files_ui (filenames, destdir, GTK_WIDGET (fileview));
+    else
+        _moo_move_files_ui (filenames, destdir, GTK_WIDGET (fileview));
+
+    /* XXX strcmp */
+    if (single_file &&
+        fileview->priv->current_dir &&
+        strcmp (destdir, _moo_folder_get_path (fileview->priv->current_dir)) == 0)
+    {
+        char *basename = g_path_get_basename (filenames->data);
+
+        if (basename)
+            _moo_file_view_select_name (fileview, basename);
+
+        g_free (basename);
+    }
+}
+
+static void
+copy_files (MooFileView *fileview,
+            GList       *filenames,
+            const char  *destdir)
+{
+    copy_or_move_files (fileview, filenames, destdir, TRUE);
+}
+
+
+static void
+move_files (MooFileView *fileview,
+            GList       *filenames,
+            const char  *destdir)
+{
+    copy_or_move_files (fileview, filenames, destdir, FALSE);
+}
+
+static void
+link_files (G_GNUC_UNUSED MooFileView *fileview,
+            G_GNUC_UNUSED GList       *filenames,
+            G_GNUC_UNUSED const char  *destdir)
+{
+    g_return_if_reached ();
+}
+
+#endif /* __WIN32__ */
 
 
 static void

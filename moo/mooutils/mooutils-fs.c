@@ -38,6 +38,8 @@
 #include <windows.h>
 #include <io.h>
 #include <direct.h>
+#include <shellapi.h>
+#include <gdk/gdkwin32.h>
 #endif
 
 #ifndef S_IRWXU
@@ -93,6 +95,111 @@ _moo_save_file_utf8 (const char *name,
     g_io_channel_unref (file);
     return TRUE;
 }
+
+
+#ifdef __WIN32__
+
+static wchar_t *
+filename_to_double_null_terminated_string (const char *filename)
+{
+    long len;
+    gunichar2 *ret;
+
+    ret = g_utf8_to_utf16 (filename, -1, NULL, &len, NULL);
+
+    if (!ret)
+        return NULL;
+
+    ret = g_renew (gunichar2, ret, len + 2);
+    ret[len + 1] = 0;
+
+    return (wchar_t*) ret;
+}
+
+static wchar_t *
+filename_list_to_double_null_terminated_string (GList *filenames)
+{
+    GArray *ret;
+    gunichar2 wzero = 0;
+
+    ret = g_array_new (FALSE, FALSE, sizeof (gunichar2));
+
+    while (filenames)
+    {
+        guint old_len;
+        long len;
+        gunichar2 *wstr;
+
+        wstr = g_utf8_to_utf16 (filenames->data, -1, NULL, &len, NULL);
+        filenames = filenames->next;
+
+        if (!wstr)
+        {
+            g_array_free (ret, TRUE);
+            return NULL;
+        }
+
+        old_len = ret->len;
+        g_array_set_size (ret, old_len + len + 1);
+        memcpy (ret->data + old_len * sizeof (gunichar2), wstr, (len + 1) * sizeof (gunichar2));
+
+        g_free (wstr);
+    }
+
+    g_array_append_val (ret, wzero);
+    return (wchar_t*) g_array_free (ret, FALSE);
+}
+
+static gboolean
+move_or_copy_files_ui (GList      *filenames,
+                       const char *destdir,
+                       gboolean    copy,
+                       GtkWidget  *parent)
+{
+    SHFILEOPSTRUCT shop = {0};
+    gboolean ret;
+    wchar_t *from, *to;
+
+    from = filename_list_to_double_null_terminated_string (filenames);
+    to = filename_to_double_null_terminated_string (destdir);
+
+    if (!from || !to)
+    {
+        g_free (from);
+        g_free (to);
+        return FALSE;
+    }
+
+    shop.hwnd = parent && parent->window ? GDK_WINDOW_HWND (parent->window) : NULL;
+    shop.wFunc = copy ? FO_COPY : FO_MOVE;
+    shop.pFrom = from;
+    shop.pTo = to;
+    shop.fFlags = FOF_ALLOWUNDO;
+
+    ret = SHFileOperation(&shop) == 0 && !shop.fAnyOperationsAborted;
+
+    g_free (from);
+    g_free (to);
+    return ret;
+}
+
+gboolean
+_moo_copy_files_ui (GList      *filenames,
+                    const char *destdir,
+                    GtkWidget  *parent)
+{
+    return move_or_copy_files_ui (filenames, destdir, TRUE, parent);
+}
+
+gboolean
+_moo_move_files_ui (GList      *filenames,
+                    const char *destdir,
+                    GtkWidget  *parent)
+{
+    return move_or_copy_files_ui (filenames, destdir, FALSE, parent);
+}
+
+#endif /* __WIN32__ */
 
 
 #ifndef __WIN32__

@@ -14,7 +14,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms:  nplurals=2; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 "X-Generator: KBabel 1.11.4\n"
 
 #. error message for wrong commmand line
@@ -707,6 +707,7 @@ msgid_plural ""
 "There are %u documents with unsaved changes. Save changes before closing?"
 msgstr[0] "%u neuložené dokumenty. Uložit změny před jejich uzavřením?"
 msgstr[1] "%u neuložených dokumentů. Uložit změny před jejich uzavřením?"
+msgstr[2] "%u neuložených dokumentů. Uložit změny před jejich uzavřením?"
 
 #. Could not save file foo.txt
 #: ../moo/mooedit/mooeditdialogs.c:417
@@ -1215,6 +1216,7 @@ msgid "%u replacement made"
 msgid_plural "%u replacements made"
 msgstr[0] "%u výskyty nahrazeny"
 msgstr[1] "%u výskytů nahrazeny"
+msgstr[2] "%u výskytů nahrazeny"
 
 #: ../moo/mooedit/moousertools.c:329 ../moo/mooedit/moousertools-prefs.c:411
 msgid "Tools"
@@ -1416,6 +1418,7 @@ msgid "*** %u match found ***"
 msgid_plural "*** %u matches found ***"
 msgstr[0] "*** Nalezeny %u shody ***"
 msgstr[1] "*** Nalezeno %u shod ***"
+msgstr[2] "*** Nalezeno %u shod ***"
 
 #: ../moo/mooedit/plugins/moofind.c:1008 ../moo/mooedit/plugins/moofind.c:1033
 #, c-format
@@ -1423,6 +1426,7 @@ msgid "*** %u file found ***"
 msgid_plural "*** %u files found ***"
 msgstr[0] "*** Nalezeny %u soubory ***"
 msgstr[1] "*** Nalezeno %u souborů ***"
+msgstr[2] "*** Nalezeno %u souborů ***"
 
 #: ../moo/mooedit/plugins/moofind.c:1070
 msgid "Finds everything"

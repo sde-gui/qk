@@ -21,6 +21,7 @@
 #include <mooedit/moolang.h>
 #include <mooedit/mootextsearch.h>
 #include <mooedit/mootextstylescheme.h>
+#include <mooedit/mooedit-enums.h>
 
 G_BEGIN_DECLS
 
@@ -36,13 +37,6 @@ G_BEGIN_DECLS
 typedef struct _MooTextView         MooTextView;
 typedef struct _MooTextViewPrivate  MooTextViewPrivate;
 typedef struct _MooTextViewClass    MooTextViewClass;
-
-typedef enum
-{
-    MOO_TEXT_SELECT_CHARS,
-    MOO_TEXT_SELECT_WORDS,
-    MOO_TEXT_SELECT_LINES
-} MooTextSelectionType;
 
 struct _MooTextView
 {

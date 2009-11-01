@@ -17,6 +17,7 @@
 #define MOO_EDIT_CONFIG_H
 
 #include <glib-object.h>
+#include <mooedit/mooedit-enums.h>
 
 #ifndef G_GNUC_NULL_TERMINATED
 #if __GNUC__ >= 4
@@ -39,16 +40,6 @@ G_BEGIN_DECLS
 typedef struct MooEditConfig         MooEditConfig;
 typedef struct MooEditConfigPrivate  MooEditConfigPrivate;
 typedef struct MooEditConfigClass    MooEditConfigClass;
-
-
-typedef enum
-{
-    MOO_EDIT_CONFIG_SOURCE_USER     = 0,
-    MOO_EDIT_CONFIG_SOURCE_FILE     = 10,
-    MOO_EDIT_CONFIG_SOURCE_FILENAME = 20,
-    MOO_EDIT_CONFIG_SOURCE_LANG     = 30,
-    MOO_EDIT_CONFIG_SOURCE_AUTO     = 40
-} MooEditConfigSource;
 
 struct MooEditConfig
 {

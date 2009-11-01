@@ -692,7 +692,7 @@ moo_cmd_abort_real (MooCmd *cmd)
 #ifndef __WIN32__
     kill (-cmd->priv->pid, SIGHUP);
 #else
-    TerminateProcess (cmd->priv->pid, 1);
+    TerminateProcess (cmd->priv->pid, -1);
 #endif
 
     if (cmd->priv->stdout_watch)

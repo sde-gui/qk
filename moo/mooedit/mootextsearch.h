@@ -17,17 +17,10 @@
 #define MOO_TEXT_SEARCH_H
 
 #include <mooedit/mootextiter.h>
+#include <mooedit/mooedit-enums.h>
 
 G_BEGIN_DECLS
 
-
-typedef enum /*< flags >*/
-{
-    MOO_TEXT_SEARCH_CASELESS        = 1 << 0,
-    MOO_TEXT_SEARCH_REGEX           = 1 << 1,
-    MOO_TEXT_SEARCH_WHOLE_WORDS     = 1 << 2,
-    MOO_TEXT_SEARCH_REPL_LITERAL    = 1 << 3
-} MooTextSearchFlags;
 
 gboolean moo_text_search_forward            (const GtkTextIter      *start,
                                              const char             *str,

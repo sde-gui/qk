@@ -21,7 +21,7 @@
 #if defined(MOO_OS_DARWIN)
 #include <crt_externs.h>
 #define environ (*_NSGetEnviron())
-#elif !defined(MOO_OS_MINGW)
+#elif !defined(MOO_OS_WIN32)
 extern char **environ;
 #endif
 

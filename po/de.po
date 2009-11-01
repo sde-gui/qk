@@ -9,6 +9,7 @@ msgstr ""
 "POT-Creation-Date: 2008-09-23 17:02-0500\n"
 "PO-Revision-Date: 2008-02-04 21:47+0100\n"
 "Last-Translator: Christian Dywan <christian@twotoasts.de>\n"
+"Language-Team: Christian Dywan <christian@twotoasts.de>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -750,15 +751,6 @@ msgstr ""
 #: ../moo/mooedit/mooeditdialogs.c:438
 msgid "Error saving file"
 msgstr "Fehler beim Speichern der Datei"
-
-#: ../moo/mooedit/mooeditdialogs.c:440
-#, c-format
-msgid ""
-"Could not convert file to requested character encoding %s. File was saved in "
-"UTF-8 encoding."
-msgstr ""
-"Datei konnte nicht in gewählten Zeichensatz konvertiert werden. Datei wurde "
-"in UTF-8 kodiert gespeichert."
 
 #. Could not open file foo.txt
 #: ../moo/mooedit/mooeditdialogs.c:465
@@ -2069,3 +2061,10 @@ msgstr "Pythonunterstützung"
 #: ../moo/moopython/plugins/terminal.ini.in.in.h:2
 msgid "Terminal plugin"
 msgstr "Konsolenzusatzmodul"
+
+#~ msgid ""
+#~ "Could not convert file to requested character encoding %s. File was saved in "
+#~ "UTF-8 encoding."
+#~ msgstr ""
+#~ "Datei konnte nicht in gewählten Zeichensatz konvertiert werden. Datei wurde "
+#~ "in UTF-8 kodiert gespeichert."

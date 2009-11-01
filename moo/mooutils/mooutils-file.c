@@ -19,6 +19,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooi18n.h"
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
 #include <glib/gstdio.h>
 #include <glib/gmappedfile.h>

@@ -1,6 +1,6 @@
 #include <windows.h>
 
-A ICON MOVEABLE PURE LOADONCALL DISCARDABLE "@top_srcdir@/moo/mooutils/pixmaps/medit.ico"
+A ICON MOVEABLE PURE LOADONCALL DISCARDABLE "@MOO_SOURCE_DIR@/moo/mooutils/pixmaps/medit.ico"
 
 VS_VERSION_INFO VERSIONINFO
   FILEVERSION @MOO_MAJOR_VERSION@,@MOO_MINOR_VERSION@,@MOO_MICRO_VERSION@,0
@@ -19,7 +19,7 @@ VS_VERSION_INFO VERSIONINFO
         VALUE "FileDescription", "medit text editor"
         VALUE "FileVersion", "@MOO_VERSION_UNQUOTED@.0"
         VALUE "InternalName", "medit-@MOO_VERSION_UNQUOTED@"
-        VALUE "LegalCopyright", "(C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>"
+        VALUE "LegalCopyright", "@MOO_COPYRIGHT@"
         VALUE "OriginalFilename", "medit.exe"
         VALUE "ProductName", "medit"
         VALUE "ProductVersion", @MOO_VERSION@

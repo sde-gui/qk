@@ -17,6 +17,7 @@
 #define MOO_EDIT_WINDOW_H
 
 #include <mooedit/mooedit.h>
+#include <mooedit/mooedit-enums.h>
 #include <mooutils/moowindow.h>
 #include <mooutils/moobigpaned.h>
 
@@ -62,13 +63,6 @@ typedef gboolean (*MooActionCheckFunc)              (GtkAction      *action,
                                                      MooEditWindow  *window,
                                                      MooEdit        *doc,
                                                      gpointer        data);
-typedef enum
-{
-    MOO_ACTION_CHECK_SENSITIVE,
-    MOO_ACTION_CHECK_VISIBLE,
-    MOO_ACTION_CHECK_ACTIVE
-} MooActionCheckType;
-
 void         moo_edit_window_set_action_check       (const char     *action_id,
                                                      MooActionCheckType type,
                                                      MooActionCheckFunc func,

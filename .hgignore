@@ -1,7 +1,6 @@
 syntax: glob
 .git/
 build/
-autom4te.cache/
 *-old
 *-old.c
 *.orig
@@ -11,32 +10,11 @@ autom4te.cache/
 *~
 .DS_Store
 Makefile.in
+*-enums.[ch]
 
 .moo.mprj.session
-a.out
-aclocal.m4
-compile
-config.guess
-config.h.in
-config.sub
-configure
-depcomp
-install-sh
-intltool-extract.in
-intltool-merge.in
-intltool-update.in
-ltmain.sh
-missing
-mkinstalldirs
-m4/ugly-stamp.m4
 syntax: regexp
 ^po(-gsv)?/(Makefile\.in\.in|dist|missing|notexist|pot|intltool-update)$
-Makefile\.am
 ^moo/mooapp/mooapp-credits\.h
 ^moo/mooutils/stock-(moo|medit)\.h
 glob:*.tmp
-glob:m4/libtool.m4
-glob:m4/lt~obsolete.m4
-glob:m4/ltsugar.m4
-glob:m4/ltversion.m4
-glob:m4/ltoptions.m4

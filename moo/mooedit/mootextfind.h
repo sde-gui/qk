@@ -18,7 +18,8 @@
 
 #include <gtk/gtktextview.h>
 #include <gtk/gtkdialog.h>
-#include "mooutils/moohistorylist.h"
+#include <mooedit/mooedit-enums.h>
+#include <mooutils/moohistorylist.h>
 #include <glib/gregex.h>
 
 G_BEGIN_DECLS
@@ -34,18 +35,6 @@ G_BEGIN_DECLS
 
 typedef struct _MooFind       MooFind;
 typedef struct _MooFindClass  MooFindClass;
-
-typedef enum /*< flags >*/
-{
-    MOO_FIND_REGEX              = 1 << 0,
-    MOO_FIND_CASELESS           = 1 << 1,
-    MOO_FIND_IN_SELECTED        = 1 << 2,
-    MOO_FIND_BACKWARDS          = 1 << 3,
-    MOO_FIND_WHOLE_WORDS        = 1 << 4,
-    MOO_FIND_FROM_CURSOR        = 1 << 5,
-    MOO_FIND_DONT_PROMPT        = 1 << 6,
-    MOO_FIND_REPL_LITERAL       = 1 << 7
-} MooFindFlags;
 
 struct _MooFind
 {

@@ -437,8 +437,8 @@ _moo_edit_save_error_enc_dialog (GtkWidget  *widget,
     else
         msg = g_strdup (_("Error saving file"));
 
-    secondary = g_strdup_printf (_("Could not convert file to requested character "
-                                   "encoding %s. File was saved in UTF-8 encoding."),
+    secondary = g_strdup_printf (_("Could not convert file to encoding %s. "
+                                   "File was saved in UTF-8 encoding."),
                                  encoding);
 
     moo_error_dialog (widget, msg, secondary);

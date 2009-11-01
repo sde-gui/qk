@@ -1095,6 +1095,21 @@ packing_props_free (PackingProps *props)
 }
 
 
+static GType
+moo_glade_xml_get_type_by_name (MooGladeXML *xml, const char *class_name)
+{
+    GType type;
+
+    g_return_val_if_fail (class_name != NULL, 0);
+
+    type = GPOINTER_TO_SIZE (g_hash_table_lookup (xml->priv->class_to_type, class_name));
+
+    if (!type)
+        type = get_type_by_name (class_name);
+
+	return type;
+}
+
 static Widget*
 widget_new (MooGladeXML    *xml,
             Child          *parent,
@@ -1106,7 +1121,6 @@ widget_new (MooGladeXML    *xml,
     const char *id, *class_name;
     char *freeme = NULL;
     GType type;
-    gboolean ignore_errors = FALSE;
 
     g_return_val_if_fail (NODE_IS_WIDGET (node), NULL);
 
@@ -1133,13 +1147,7 @@ widget_new (MooGladeXML    *xml,
                 id = freeme;
                 class_name = colon + 1;
 
-                type = get_type_by_name (class_name);
-
-                if (!type)
-                {
-                    ignore_errors = FALSE;
-                    type = get_type_by_name (class_name);
-                }
+				type = moo_glade_xml_get_type_by_name (xml, class_name);
 
                 if (!type)
                 {
@@ -1152,14 +1160,7 @@ widget_new (MooGladeXML    *xml,
             {
                 class_name = moo_markup_get_prop (node, "class");
                 g_return_val_if_fail (id != NULL && class_name != NULL, NULL);
-
-                type = GPOINTER_TO_SIZE (g_hash_table_lookup (xml->priv->class_to_type, class_name));
-
-                if (!type)
-                {
-                    ignore_errors = FALSE;
-                    type = get_type_by_name (class_name);
-                }
+                type = moo_glade_xml_get_type_by_name (xml, class_name);
             }
         }
 
@@ -1175,7 +1176,7 @@ widget_new (MooGladeXML    *xml,
 
     props = widget_props_new (node, type,
                               g_hash_table_lookup (xml->priv->props, id),
-                              ignore_errors, xml->priv->translation_domain,
+                              FALSE, xml->priv->translation_domain,
                               error);
     g_return_val_if_fail (props != NULL, NULL);
 

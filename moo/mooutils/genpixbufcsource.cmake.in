@@ -1,0 +1,14 @@
+INCLUDE(@MOO_SOURCE_DIR@/cmake/utils.cmake)
+
+SET(pixbufargs @pixbufargs@)
+
+MOO_EXEC_OR_DIE("@GDK_PIXBUF_CSOURCE_EXECUTABLE@ --static --build-list ${pixbufargs}"
+  COMMAND "@GDK_PIXBUF_CSOURCE_EXECUTABLE@" --static --build-list ${pixbufargs}
+  OUTPUT_FILE @output_full@.tmp
+)
+
+MOO_COPY_IF_CHANGED(@output_full@.tmp @output_full@)
+
+FILE(WRITE @output_full@.stamp "stamp")
+
+FILE(REMOVE @output_full@.tmp)

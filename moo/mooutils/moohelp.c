@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
-#include "moo-config-dirs.h"
+#include "config-dirs.h"
 #include "moohelp.h"
 #include "mooaccel.h"
 #include "mooutils-misc.h"

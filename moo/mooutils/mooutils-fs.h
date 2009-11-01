@@ -17,6 +17,7 @@
 #define MOO_UTILS_FS_H
 
 #include <glib.h>
+#include <gtk/gtkwidget.h>
 
 /* MSVC */
 #if defined(WIN32) && !defined(__GNUC__)
@@ -70,13 +71,20 @@ gboolean        _moo_rename_file            (const char *path,
                                              const char *new_path,
                                              GError    **error);
 
-char          **moo_filenames_from_locale   (char      **files);
-char           *moo_filename_from_locale    (const char *file);
-char          *_moo_filename_to_uri         (const char *file,
+char           **moo_filenames_from_locale  (char      **files);
+char            *moo_filename_from_locale   (const char *file);
+char           *_moo_filename_to_uri        (const char *file,
                                              GError    **error);
 
 char           *_moo_normalize_file_path    (const char *filename);
 gboolean        _moo_path_is_absolute       (const char *path);
+
+gboolean        _moo_copy_files_ui          (GList      *filenames,
+                                             const char *destdir,
+                                             GtkWidget  *parent);
+gboolean        _moo_move_files_ui          (GList      *filenames,
+                                             const char *destdir,
+                                             GtkWidget  *parent);
 
 /*
  * C library and WinAPI functions wrappers analogous to glib/gstdio.h

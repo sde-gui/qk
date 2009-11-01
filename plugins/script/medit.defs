@@ -1,0 +1,95 @@
+;; -%- lang:scheme; indent-width:2; strip:true -%-
+
+(define-class _Global
+
+  (define-property application
+    (read-only)
+    (of-type Application))
+
+  (define-property editor
+    (read-only)
+    (of-type Editor))
+
+  (define-property activeWindow
+    (read-only)
+    (of-type Window))
+
+  (define-property activeDocument
+    (read-only)
+    (of-type Document))
+
+)
+
+(define-class Object
+  (subclass-of _ObjectImpl)
+
+  (define-property objectName
+    (read-only)
+    (of-type string))
+)
+
+(define-class Application
+  (subclass-of Object)
+
+  (define-property activeWindow
+    (read-write)
+    (of-type Window))
+
+  (define-property windows
+    (read-only)
+    (of-type List<Window>))
+)
+
+(define-class Window
+  (subclass-of Object)
+
+  (define-property maximized
+    (read-write)
+    (of-type bool)
+    (get isMaximized))
+
+  (define-property minimized
+    (read-write)
+    (of-type bool)
+    (get isMinimized))
+)
+
+(define-class Editor
+  (subclass-of Object)
+
+  (define-property activeDocument
+    (read-write)
+    (of-type Document))
+
+  (define-property documents
+    (read-only)
+    (of-type List<Document>))
+
+  (define-property activeWindow
+    (read-write)
+    (of-type EditWindow))
+
+  (define-property windows
+    (read-only)
+    (of-type List<EditWindow>))
+)
+
+(define-class EditWindow
+  (subclass-of Window)
+
+  (define-property activeDocument
+    (read-write)
+    (of-type Document))
+
+  (define-property documents
+    (read-only)
+    (of-type List<Document>))
+)
+
+(define-class Document
+  (subclass-of Object)
+
+  (define-property window
+    (read-only)
+    (of-type EditWindow))
+)

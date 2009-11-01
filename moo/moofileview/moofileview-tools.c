@@ -287,8 +287,13 @@ _moo_file_view_tools_load (MooFileView *fileview)
     }
 
     {
-        GtkAction *action;
-        action = tool_action_new (fileview, Q_("Open with|Default Application"), "*", NULL, "xdg-open %f");
+        GtkAction *action = tool_action_new (fileview, Q_("Open with|Default Application"), "*", NULL,
+#ifndef __WIN32__
+                                             "xdg-open %f"
+#else
+                                             "explorer %f"
+#endif
+                                            );
         info->actions = g_slist_prepend (info->actions, action);
     }
 
