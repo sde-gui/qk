@@ -63,17 +63,11 @@ _gtk_source_language_new_from_file (const gchar              *filename,
 	GtkSourceLanguage *lang = NULL;
 	xmlTextReaderPtr reader = NULL;
 	gint ret;
-	gint fd;
 
 	g_return_val_if_fail (filename != NULL, NULL);
 	g_return_val_if_fail (lm != NULL, NULL);
 
-	/*
-	 * Use fd instead of filename so that it's utf8 safe on w32.
-	 */
-	fd = g_open (filename, O_RDONLY, 0);
-	if (fd != -1)
-		reader = xmlReaderForFd (fd, filename, NULL, 0);
+	reader = xmlReaderForFile (filename, NULL, 0);
 
 	if (reader != NULL)
 	{
@@ -101,7 +95,6 @@ _gtk_source_language_new_from_file (const gchar              *filename,
 		}
 
 		xmlFreeTextReader (reader);
-		close (fd);
 
 		if (ret != 0)
 		{
