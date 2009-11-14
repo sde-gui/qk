@@ -33,7 +33,7 @@
                 <child>
                   <widget class="GtkHScale" id="scale">
                     <property name="visible">True</property>
-                    <property name="adjustment">1 1 20 1 10 1</property>
+                    <property name="adjustment">1 1 20 1 10 0</property>
                     <property name="draw_value">False</property>
                   </widget>
                 </child>
@@ -41,7 +41,7 @@
                   <widget class="GtkSpinButton" id="spin">
                     <property name="visible">True</property>
                     <property name="has_focus">True</property>
-                    <property name="adjustment">1 1 20 1 10 10</property>
+                    <property name="adjustment">1 1 20 1 10 0</property>
                     <property name="climb_rate">1</property>
                     <property name="numeric">True</property>
                   </widget>
