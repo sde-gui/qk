@@ -561,7 +561,7 @@
                               <widget class="GtkSpinButton" id="spin_right_margin_offset">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="adjustment">80 1 1000 1 5 5</property>
+                                <property name="adjustment">80 1 1000 1 5 0</property>
                                 <property name="numeric">True</property>
                               </widget>
                               <packing>
@@ -930,7 +930,7 @@
                         <child>
                           <widget class="GtkSpinButton" id="indent_width">
                             <property name="visible">True</property>
-                            <property name="adjustment">4 1 100 1 10 10</property>
+                            <property name="adjustment">4 1 100 1 10 0</property>
                             <property name="climb_rate">1</property>
                             <property name="numeric">True</property>
                           </widget>
@@ -959,7 +959,7 @@
                           <widget class="GtkSpinButton" id="tab_width">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="adjustment">8 1 100 1 10 10</property>
+                            <property name="adjustment">8 1 100 1 10 0</property>
                             <property name="numeric">True</property>
                             <property name="update_policy">GTK_UPDATE_IF_VALID</property>
                           </widget>
