@@ -1118,7 +1118,8 @@ widget_new (MooGladeXML    *xml,
 {
     Widget *widget;
     WidgetProps *props;
-    const char *id, *class_name;
+    const char *id;
+    const char *class_name = NULL;
     char *freeme = NULL;
     GType type;
 

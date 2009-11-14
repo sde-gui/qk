@@ -1,11 +1,9 @@
-INCLUDE(cmake/utils.cmake)
-
+FIND_PACKAGE(MooCmakeUtils)
 
 SET(BINDIR bin CACHE PATH "bin")
 SET(DATADIR share CACHE PATH "share")
 SET(LIBDIR lib CACHE PATH "lib")
 SET(LOCALEDIR ${DATADIR}/locale CACHE PATH "Where mo files go")
-
 
 SET(__MOO_DEFINE_H_FILE__ ${CMAKE_BINARY_DIR}/moo-config.h.in)
 FILE(WRITE ${__MOO_DEFINE_H_FILE__} "")

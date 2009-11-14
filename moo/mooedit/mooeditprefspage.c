@@ -264,13 +264,15 @@ page_view_init_ui (MooPrefsPage *page)
 static void
 page_view_init (MooPrefsPage *page)
 {
-    G_GNUC_UNUSED PrefsViewXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+    PrefsViewXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+    MOO_UNUSED (gxml);
 }
 
 static void
 page_view_apply (MooPrefsPage *page)
 {
-    G_GNUC_UNUSED PrefsViewXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+    PrefsViewXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+    MOO_UNUSED (gxml);
 }
 
 GtkWidget *

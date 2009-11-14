@@ -214,6 +214,7 @@ gboolean    _moo_regex_escape               (const char *string,
 #define MOO_OBJECT_REF_SINK(obj) gtk_object_sink (g_object_ref (obj))
 #endif
 
+#define MOO_UNUSED(x) (void)x;
 
 G_END_DECLS
 

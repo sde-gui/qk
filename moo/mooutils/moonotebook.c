@@ -832,7 +832,9 @@ moo_notebook_size_allocate (GtkWidget     *widget,
     if (nb->priv->tabs_visible)
     {
         int height;
-        GtkRequisition left_req, right_req, arrows_req;
+    	GtkRequisition left_req = {0};
+    	GtkRequisition right_req = {0};
+    	GtkRequisition arrows_req = {0};
 
         /* only reports height needed for tab labels */
         height = labels_get_height_request (nb);
@@ -1203,7 +1205,8 @@ moo_notebook_draw_child_border (MooNotebook    *nb,
     Page *page = nb->priv->current_page;
     int border_width = get_border_width (nb);
     gboolean draw_gap = TRUE;
-    int gap_x, gap_width;
+    int gap_x = 0;
+    int gap_width = 0;
 
     if (!page)
         return;

@@ -1180,7 +1180,9 @@ _moo_app_input_broadcast (const char *header,
                           const char *data,
                           gssize      len)
 {
+#ifdef __GNUC__
 #warning "Implement me"
+#endif
 
     g_return_if_fail (header != NULL);
     g_return_if_fail (data != NULL);

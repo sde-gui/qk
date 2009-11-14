@@ -17,8 +17,5 @@ SET(XDGMIME_SOURCES
 )
 
 MOO_ADD_MOO_CODE_MODULE(xdgmime SUBDIR mooutils/xdgmime)
-IF(MSVC)
-  MOO_ADD_COMPILE_FLAGS(xdgmime "/wd4018")
-ENDIF(MSVC)
 
 # -%- strip:true -%-

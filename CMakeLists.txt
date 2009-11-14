@@ -1,15 +1,15 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(MOO)
 
+SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
+FIND_PACKAGE(MooCmake)
+
 SET(MOO_VERSION 0.9.5)
 SET(MOO_PACKAGE_NAME moo)
-
 SET(MOO_EMAIL "muntyan@muntyan.net")
 SET(MOO_COPYRIGHT "2004-2009 Yevgen Muntyan <${MOO_EMAIL}>")
 SET(PACKAGE_BUGREPORT ${MOO_EMAIL})
 SET(MOO_PACKAGE_VENDOR ${MOO_EMAIL})
-
-INCLUDE(cmake/cmakeplus.cmake)
 
 INCLUDE(cmake/compilers.cmake)
 INCLUDE(cmake/moo.cmake)
@@ -38,4 +38,4 @@ MOO_ADD_MSG_CATALOG(moo po)
 MOO_ADD_MSG_CATALOG(moo-gsv po-gsv)
 
 MOO_CONFIGURE_FILE(config.h.in config.h @ONLY)
-MOO_CONFIGURE_FILE(config-dirs.h.in config-dirs.h @ONLY)
+CONFIGURE_FILE(config-dirs.h.in config-dirs.h @ONLY)

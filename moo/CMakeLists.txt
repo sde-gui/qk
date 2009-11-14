@@ -64,6 +64,9 @@ INCLUDE(mooapp/CMakelists.cmake)
 IF(MOO_BUILD_SHARED_LIB)
   MOO_WIN32_RESOURCE(libmoo.rc.in moo)
 ENDIF(MOO_BUILD_SHARED_LIB)
+IF(WIN32)
+  LIST(APPEND moo_all_sources moo-dll.c)
+ENDIF(WIN32)
 
 MOO_ADD_SOURCE_FILE_SET(moo "")
 

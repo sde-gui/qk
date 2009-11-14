@@ -1,4 +1,4 @@
-INCLUDE(${MOO_SOURCE_DIR}/cmake/utils.cmake)
+INCLUDE(${MOO_SOURCE_DIR}/cmake/modules/FindMooCmakeUtils.cmake)
 
 MOO_EXEC_OR_DIE(glib-genmarshal
   COMMAND ${GLIB_GENMARSHAL_EXECUTABLE} --prefix=_moo_marshal --header ${MOO_SOURCE_DIR}/moo/marshals.list

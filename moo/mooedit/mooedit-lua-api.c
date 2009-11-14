@@ -344,7 +344,7 @@ static const luaL_Reg meths_GtkWidget[] = {
  */
 
 #define GET_TEXT_VIEW(L) GTK_TEXT_VIEW (get_gobject (L, 1, GTK_TYPE_TEXT_VIEW))
-#define GET_BUFFER(L) GtkTextBuffer *buffer = gtk_text_view_get_buffer (GET_TEXT_VIEW (L));
+#define GET_BUFFER(L) GtkTextBuffer *buffer = gtk_text_view_get_buffer (GET_TEXT_VIEW (L))
 
 static void
 push_offset (lua_State *L,

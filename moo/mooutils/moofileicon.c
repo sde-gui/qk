@@ -723,7 +723,7 @@ create_mime_icon (GtkWidget    *widget,
                     moo_dmsg ("used mime type '%s' icon for '%s'", *p, mime_type);
             }
 
-            g_free (parent_types);
+            g_free ((gpointer) parent_types);
             return pixbuf;
         }
         else
@@ -731,7 +731,7 @@ create_mime_icon (GtkWidget    *widget,
             pixbuf = create_mime_icon_type (icon_theme, mime_type, size);
         }
 
-        g_free (parent_types);
+        g_free ((gpointer) parent_types);
     }
 
     if (!pixbuf)

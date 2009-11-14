@@ -18,6 +18,8 @@
 
 #include <gtk/gtkdialog.h>
 
+G_BEGIN_DECLS
+
 #define MOO_HELP_ID_CONTENTS "contents"
 #define MOO_HELP_ID_INDEX    "index"
 
@@ -39,5 +41,7 @@ void        moo_help_set_func_full      (GtkWidget     *widget,
                                          GDestroyNotify notify);
 
 void        moo_help_connect_keys       (GtkWidget     *widget);
+
+G_END_DECLS
 
 #endif /* MOO_HELP_H */

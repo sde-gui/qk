@@ -41,7 +41,7 @@
             <child>
               <widget class="GtkSpinButton" id="spinbutton1">
                 <property name="visible">True</property>
-                <property name="adjustment">0.000000 0.000000 10000.000000 1.000000 10.000000 10.000000</property>
+                <property name="adjustment">0 0 10000 1 10 0</property>
                 <property name="numeric">True</property>
                 <property name="moo_prefs_key">auto_complete_timeout</property>
               </widget>

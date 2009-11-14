@@ -1,4 +1,4 @@
-INCLUDE(@MOO_SOURCE_DIR@/cmake/utils.cmake)
+INCLUDE(@MOO_SOURCE_DIR@/cmake/modules/FindMooCmakeUtils.cmake)
 
 SET(pixbufargs @pixbufargs@)
 

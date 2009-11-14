@@ -18,6 +18,8 @@
 
 #include <gtk/gtk.h>
 
+G_BEGIN_DECLS
+
 
 #define MD_TYPE_HISTORY_MGR             (md_history_mgr_get_type ())
 #define MD_HISTORY_MGR(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), MD_TYPE_HISTORY_MGR, MdHistoryMgr))
@@ -86,5 +88,6 @@ void            md_history_item_foreach         (MdHistoryItem  *item,
 
 char          *_md_history_mgr_get_filename     (MdHistoryMgr   *mgr);
 
+G_END_DECLS
 
 #endif /* MD_HISTORY_MGR_H */

@@ -7,14 +7,17 @@ build/
 *.rej
 *.bak
 *.pyc
+*.tmp
 *~
 .DS_Store
 Makefile.in
 *-enums.[ch]
-
 .moo.mprj.session
+*.ncb
+*.suo
+*.vcproj.*
+
 syntax: regexp
 ^po(-gsv)?/(Makefile\.in\.in|dist|missing|notexist|pot|intltool-update)$
 ^moo/mooapp/mooapp-credits\.h
 ^moo/mooutils/stock-(moo|medit)\.h
-glob:*.tmp
