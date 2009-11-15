@@ -19,7 +19,7 @@
 #include "marshals.h"
 
 
-#ifdef MOO_DEBUG_ENABLED
+#ifdef MOO_DEBUG
 #define WANT_CHECKS 1
 #else
 #define WANT_CHECKS 0

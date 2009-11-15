@@ -22,7 +22,7 @@
 G_BEGIN_DECLS
 
 
-#ifdef MOO_DEBUG_ENABLED
+#ifdef MOO_DEBUG
 
 #define MOO_DEBUG_INIT(domain, def_enabled)                 \
 static const char *moo_debug_domain = "moo-debug-" #domain; \
@@ -72,7 +72,7 @@ moo_dprint (const char *format, ...)                        \
     g_free (string);                                        \
 }
 
-#define MOO_DEBUG(code)                                     \
+#define MOO_DEBUG_CODE(code)                                \
 G_STMT_START {                                              \
     if (_moo_debug_enabled ())                              \
     {                                                       \
@@ -91,12 +91,12 @@ void     _moo_set_debug     (const char *domains);
 #define moo_dmsg(format, args...) G_STMT_START {} G_STMT_END
 #define moo_dprint(format, args...) G_STMT_START {} G_STMT_END
 #define _moo_message(format, args...) G_STMT_START {} G_STMT_END
-#define MOO_DEBUG(whatever) G_STMT_START {} G_STMT_END
+#define MOO_DEBUG_CODE(whatever) G_STMT_START {} G_STMT_END
 
 #else
 
 #define MOO_DEBUG_INIT(domain, def_enabled)
-#define MOO_DEBUG(whatever) G_STMT_START {} G_STMT_END
+#define MOO_DEBUG_CODE(whatever) G_STMT_START {} G_STMT_END
 
 static void moo_dmsg (const char *format, ...) G_GNUC_PRINTF(1,2)
 {

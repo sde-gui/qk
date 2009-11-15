@@ -343,7 +343,7 @@ _moo_file_stat (MooFile    *file,
     {
         if (errno == ENOENT)
         {
-            MOO_DEBUG({
+            MOO_DEBUG_CODE({
                 gchar *display_name = g_filename_display_name (fullname);
                 _moo_message ("%s: file '%s' does not exist",
                               G_STRLOC, display_name);
@@ -353,7 +353,7 @@ _moo_file_stat (MooFile    *file,
         }
         else
         {
-            MOO_DEBUG({
+            MOO_DEBUG_CODE({
                 int save_errno = errno;
                 gchar *display_name = g_filename_display_name (fullname);
                 _moo_message ("%s: error getting information for '%s': %s",
@@ -380,7 +380,7 @@ _moo_file_stat (MooFile    *file,
             {
                 if (errno == ENOENT)
                 {
-                    MOO_DEBUG({
+                    MOO_DEBUG_CODE({
                         gchar *display_name = g_filename_display_name (fullname);
                         _moo_message ("%s: file '%s' is a broken link",
                                       G_STRLOC, display_name);
@@ -390,7 +390,7 @@ _moo_file_stat (MooFile    *file,
                 }
                 else
                 {
-                    MOO_DEBUG({
+                    MOO_DEBUG_CODE({
                         int save_errno = errno;
                         gchar *display_name = g_filename_display_name (fullname);
                         _moo_message ("%s: error getting information for '%s': %s",
@@ -407,7 +407,7 @@ _moo_file_stat (MooFile    *file,
 
             if (len == -1)
             {
-                MOO_DEBUG({
+                MOO_DEBUG_CODE({
                     int save_errno = errno;
                     gchar *display_name = g_filename_display_name (fullname);
                     _moo_message ("%s: error getting link target for '%s': %s",

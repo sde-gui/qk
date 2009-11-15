@@ -11,7 +11,8 @@ SET(MOO_COPYRIGHT "2004-2009 Yevgen Muntyan <${MOO_EMAIL}>")
 SET(PACKAGE_BUGREPORT ${MOO_EMAIL})
 SET(MOO_PACKAGE_VENDOR ${MOO_EMAIL})
 
-INCLUDE(cmake/compilers.cmake)
+INCLUDE(options.cmake)
+
 INCLUDE(cmake/moo.cmake)
 INCLUDE(cmake/dist.cmake)
 INCLUDE(cmake/gtk.cmake)
@@ -37,5 +38,6 @@ ADD_SUBDIRECTORY(medit)
 MOO_ADD_MSG_CATALOG(moo po)
 MOO_ADD_MSG_CATALOG(moo-gsv po-gsv)
 
-MOO_CONFIGURE_FILE(config.h.in config.h @ONLY)
+MOO_WRITE_CONFIG_H(config.h.in config.h @ONLY)
+
 CONFIGURE_FILE(config-dirs.h.in config-dirs.h @ONLY)

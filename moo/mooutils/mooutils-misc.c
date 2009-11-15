@@ -1969,14 +1969,14 @@ _moo_strv_reverse (char **str_array)
 }
 
 
-#if defined(__WIN32__) && !defined(MOO_DEBUG_ENABLED)
+#if defined(__WIN32__) && !defined(MOO_DEBUG)
 static guint saved_win32_error_mode;
 #endif
 
 void
 moo_disable_win32_error_message (void)
 {
-#if defined(__WIN32__) && !defined(MOO_DEBUG_ENABLED)
+#if defined(__WIN32__) && !defined(MOO_DEBUG)
     saved_win32_error_mode = SetErrorMode (SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
 #endif
 }
@@ -1984,7 +1984,7 @@ moo_disable_win32_error_message (void)
 void
 moo_enable_win32_error_message (void)
 {
-#if defined(__WIN32__) && !defined(MOO_DEBUG_ENABLED)
+#if defined(__WIN32__) && !defined(MOO_DEBUG)
     SetErrorMode (saved_win32_error_mode);
 #endif
 }
@@ -2231,7 +2231,7 @@ _moo_message (const char *format,
     if (enabled == -1)
     {
         enabled = moo_debug_enabled ("misc",
-#ifdef MOO_DEBUG_ENABLED
+#ifdef MOO_DEBUG
                                      TRUE);
 #else
                                      FALSE);

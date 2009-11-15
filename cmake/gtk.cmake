@@ -16,13 +16,21 @@ IF(GIO_FOUND)
   LIST(APPEND MOO_DEP_LIBS ${GIO_LIBRARIES})
 ENDIF(GIO_FOUND)
 
+MOO_ADD_COMPILE_DEFINITIONS_RELEASE(-DG_DISABLE_CAST_CHECKS -DG_DISABLE_ASSERT)
+
+IF(WIN32 AND CMAKE_COMPILER_IS_GNUCC)
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mms-bitfields")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mms-bitfields")
+ENDIF(WIN32 AND CMAKE_COMPILER_IS_GNUCC)
+
 # Do not use pkg-config because the official win32 binary
 # is distributed without pc files
-FIND_PACKAGE(LibXml2)
+FIND_PACKAGE(MooLibXml2)
 IF(NOT LIBXML2_FOUND)
-  MESSAGE(FATAL_ERROR "Libxml2 not found")
+  MOO_ERROR("Libxml2 not found")
 ENDIF(NOT LIBXML2_FOUND)
-ADD_DEFINITIONS(-DMOO_USE_XML=1)
+SET(MOO_USE_XML TRUE)
+MOO_DEFINE_H(MOO_USE_XML)
 LIST(APPEND MOO_DEP_LIBS ${LIBXML2_LIBRARIES})
 
 LINK_DIRECTORIES(${GTK_LIBRARY_DIRS} ${XML_LIBRARY_DIRS})
@@ -39,7 +47,6 @@ ELSEIF(_moo_gdk_target STREQUAL win32)
   SET(GDK_WIN32 ON)
 ENDIF(_moo_gdk_target STREQUAL x11)
 
-
 MACRO(_MOO_FIND_PROGRAM_OR_DIE varname progname pkgvar pkgname)
   _MOO_GET_PKG_CONFIG_VARIABLE(_moo_pkg_exec_prefix exec_prefix ${pkgname})
   IF(pkgvar)
@@ -54,7 +61,7 @@ MACRO(_MOO_FIND_PROGRAM_OR_DIE varname progname pkgvar pkgname)
     DOC "Path to ${progname} executable")
   MARK_AS_ADVANCED(${varname})
   IF(NOT ${varname})
-    MESSAGE(FATAL_ERROR "Could not find ${progname} executable")
+    MOO_ERROR("Could not find ${progname} executable")
   ENDIF(NOT ${varname})
 ENDMACRO(_MOO_FIND_PROGRAM_OR_DIE)
 

@@ -383,7 +383,7 @@ _moo_tree_helper_set_modified (MooTreeHelper *helper,
 {
     g_return_if_fail (MOO_IS_TREE_HELPER (helper));
 
-#ifdef MOO_DEBUG_ENABLED
+#ifdef MOO_DEBUG
     if (!helper->modified && modified)
     {
         g_message ("%s: helper modified", G_STRLOC);

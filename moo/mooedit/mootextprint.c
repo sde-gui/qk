@@ -1460,7 +1460,7 @@ moo_print_operation_draw_page (GtkPrintOperation *operation,
     }
 #endif
 
-#if 0 && defined(MOO_DEBUG_ENABLED) && !defined(__WIN32__)
+#if 0 && defined(MOO_DEBUG) && !defined(__WIN32__)
     cairo_save (cr);
     cairo_set_line_width (cr, 1.);
     cairo_set_source_rgb (cr, 1., 0., 0.);

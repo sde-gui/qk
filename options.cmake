@@ -1,0 +1,7 @@
+MOO_OPTION(MOO_DEV_MODE FALSE "Enable developer mode - bunch of checks, warnings, etc.")
+MOO_OPTION(MOO_BUILD_SHARED_LIB ${MOO_OS_WIN32} "Build shared library")
+MOO_OPTION(MOO_BUILD_CTAGS ${MOO_OS_UNIX} "Build Ctags plugin" HIDDEN ${MOO_OS_WIN32} HEADER TRUE)
+MOO_OPTION(MOO_ENABLE_PROJECT FALSE "Build project plugin" HIDDEN TRUE)
+MOO_OPTION(MOO_ENABLE_UNIT_TESTS FALSE "Build unit tests" DEFINE TRUE)
+MOO_OPTION(MOO_ENABLE_GENERATED_FILES ${MOO_OS_UNIX} "Run gtk-update-icon-cache on install")
+MOO_OPTION(MOO_BROKEN_GTK_THEME FALSE "Work around bugs in gtk theme" HEADER TRUE)

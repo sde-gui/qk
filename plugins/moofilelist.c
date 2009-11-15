@@ -27,15 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#undef DEBUG
-#if defined(MOO_DEBUG_ENABLED) && 1
-#define DEBUG
-#endif
-#ifdef DEBUG
 #define DEBUG_ASSERT(expr) g_assert (expr)
-#else
-#define DEBUG_ASSERT(expr) g_assert (expr)
-#endif
 
 #define FILE_LIST_PLUGIN_ID "MooFileList"
 #define WindowPlugin FileListWindowPlugin

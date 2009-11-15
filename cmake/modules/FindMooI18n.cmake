@@ -1,15 +1,10 @@
-SET(ENABLE_NLS 1 CACHE BOOL "Enable i18n")
+MOO_OPTION(ENABLE_NLS TRUE "Enable i18n" HEADER TRUE)
 
 IF(ENABLE_NLS)
   FIND_PACKAGE(Gettext)
   IF(NOT GETTEXT_FOUND)
-    MESSAGE("Gettext has not been found, translations will not be enabled")
-    SET(ENABLE_NLS)
+    MOO_ERROR("Gettext has not been found, translations will not be enabled")
   ENDIF(NOT GETTEXT_FOUND)
-ENDIF(ENABLE_NLS)
-
-IF(ENABLE_NLS)
-  MOO_DEFINE_H(ENABLE_NLS "Enable i18n")
 ENDIF(ENABLE_NLS)
 
 MACRO(MOO_ADD_MSG_CATALOG catalogname dir)

@@ -61,6 +61,8 @@ INCLUDE(moofileview/CMakelists.cmake)
 INCLUDE(mooedit/CMakelists.cmake)
 INCLUDE(mooapp/CMakelists.cmake)
 
+MOO_CHECK_OPTION(MOO_BUILD_SHARED_LIB)
+
 IF(MOO_BUILD_SHARED_LIB)
   MOO_WIN32_RESOURCE(libmoo.rc.in moo)
 ENDIF(MOO_BUILD_SHARED_LIB)

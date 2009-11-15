@@ -28,6 +28,12 @@ ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_BINARY_DIR}/cmake_uni
 # Installation dirs
 #
 
+IF(WIN32)
+  IF(CMAKE_INSTALL_PREFIX STREQUAL "C:/Program Files/MOO")
+    SET(CMAKE_INSTALL_PREFIX "C:/Program Files/medit")
+  ENDIF(CMAKE_INSTALL_PREFIX STREQUAL "C:/Program Files/MOO")
+ENDIF(WIN32)
+
 SET(MOO_DATA_DIR ${DATADIR}/moo CACHE PATH "Where data files go")
 SET(MOO_LIB_DIR ${LIBDIR}/moo CACHE PATH "Where lib files go")
 SET(MOO_PLUGINS_DIR ${MOO_LIB_DIR}/plugins CACHE PATH "Where plugins go")
@@ -41,7 +47,14 @@ FOREACH(name BINDIR DATADIR LIBDIR MOO_DATA_DIR MOO_LIB_DIR MOO_PLUGINS_DIR
 ENDFOREACH(name)
 
 IF(WIN32)
-  SET(MEDIT_LIBRARIES "" CACHE PATH "Where Gtk libraries are located")
+  SET(_MEDIT_LIBRARIES_DFLT)
+  FOREACH(_moo_gtk_dir ${CMAKE_SOURCE_DIR}/../medit-bin-dist)
+    IF(IS_DIRECTORY ${_moo_gtk_dir})
+      SET(_MEDIT_LIBRARIES_DFLT ${_moo_gtk_dir})
+      BREAK()
+    ENDIF(IS_DIRECTORY ${_moo_gtk_dir})
+  ENDFOREACH(_moo_gtk_dir)
+  SET(MEDIT_LIBRARIES ${_MEDIT_LIBRARIES_DFLT} CACHE PATH "Where Gtk libraries are located")
   IF(NOT MEDIT_LIBRARIES)
     MESSAGE(FATAL_ERROR "MEDIT_LIBRARIES variable not set")
   ENDIF(NOT MEDIT_LIBRARIES)
