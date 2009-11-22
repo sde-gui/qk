@@ -129,12 +129,16 @@ MACRO(_MOO_CHECK_COMPILER_FLAGS lang)
   ENDFOREACH(_moo__ccf_flag)
 ENDMACRO(_MOO_CHECK_COMPILER_FLAGS)
 
+SET(_MOO_GCC_FLAGS -Wall -Wextra -fno-strict-aliasing -Wno-missing-field-initializers)
+SET(_MOO_GCC_C_FLAGS)
+SET(_MOO_GCC_CXX_FLAGS -fno-exceptions -std=c++98 -pedantic -Wno-long-long)
+
 IF(CMAKE_COMPILER_IS_GNUCC)
-  _MOO_CHECK_COMPILER_FLAGS(C -Wall -Wextra -fno-strict-aliasing -Wno-missing-field-initializers)
+  _MOO_CHECK_COMPILER_FLAGS(C ${_MOO_GCC_FLAGS} ${_MOO_GCC_C_FLAGS})
 ENDIF(CMAKE_COMPILER_IS_GNUCC)
 
 IF(CMAKE_COMPILER_IS_GNUCXX)
-  _MOO_CHECK_COMPILER_FLAGS(CXX -Wall -Wextra -fno-strict-aliasing -fno-exceptions -std=c++98 -pedantic -Wno-long-long)
+  _MOO_CHECK_COMPILER_FLAGS(CXX ${_MOO_GCC_FLAGS} ${_MOO_GCC_CXX_FLAGS})
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 ###############################################################################
