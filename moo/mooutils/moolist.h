@@ -84,7 +84,13 @@ list_type##_delete_link (ListType *list, ListType *link)                \
 inline static ListType *                                                \
 list_type##_find (ListType *list, const ElmType *data)                  \
 {                                                                       \
-    return (ListType*) g_##glisttype##_find ((GListType*) list, data);  \
+    while (list)                                                        \
+    {                                                                   \
+        if (list->data == data)                                         \
+            return list;                                                \
+        list = list->next;                                              \
+    }                                                                   \
+    return NULL;                                                        \
 }                                                                       \
                                                                         \
 inline static ListType *                                                \
@@ -124,7 +130,9 @@ list_type##_copy (ListType *list)                                       \
 inline static void                                                      \
 list_type##_free (ListType *list)                                       \
 {                                                                       \
-    list_type##_foreach (list, (ListType##Func) elm_free_func, NULL);   \
+    ListType *l;                                                        \
+    for (l = list; l != NULL; l = l->next)                              \
+        elm_free_func (l->data);                                        \
     list_type##_free_links (list);                                      \
 }
 
