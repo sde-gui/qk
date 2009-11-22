@@ -18,10 +18,21 @@
 
 #include <glib-object.h>
 
-#define _MOO_DECLARE_GOBJECT_CLASS(PREFIX,Prefix,prefix,TYPE,Type,type) \
+#define _MOO_DECLARE_GOBJECT_CLASS(Parent,                              \
+                                   PREFIX,Prefix,prefix,                \
+                                   TYPE,Type,type)                      \
                                                                         \
 typedef struct Prefix##Type Prefix##Type;                               \
 typedef struct Prefix##Type##Class Prefix##Type##Class;                 \
+typedef struct Prefix##Type##Private Prefix##Type##Private;             \
+typedef Parent Prefix##Type##_Base;                                     \
+typedef Parent##Class Prefix##Type##_BaseClass;                         \
+                                                                        \
+struct Prefix##Type                                                     \
+{                                                                       \
+    Parent base;                                                        \
+    Prefix##Type##Private *priv;                                        \
+};                                                                      \
                                                                         \
 GType prefix##_##type##_get_type (void) G_GNUC_CONST;                   \
                                                                         \
@@ -63,6 +74,8 @@ PREFIX##_##TYPE##_GET_CLASS(void *object)                               \
                                       Prefix##Type##Class);             \
 }
 
-#define MOO_DECLARE_GOBJECT_CLASS(TYPE,Type,type) _MOO_DECLARE_GOBJECT_CLASS(MOO, Moo, moo, TYPE, Type, type)
+#define MOO_DECLARE_GOBJECT_CLASS(TYPE,Type,type,Parent)                \
+    _MOO_DECLARE_GOBJECT_CLASS(Parent, MOO, Moo, moo, TYPE, Type, type)
 
 #endif /* MOO_TYPE_DECL_MACROS_H */
+/* -%- strip:true -%- */
