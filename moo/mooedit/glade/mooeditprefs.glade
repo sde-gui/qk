@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <glade-interface>
-  <requires-version lib="gtk+" version="2.12"/>
+  <!-- interface-requires gtk+ 2.8 -->
+  <!-- interface-naming-policy toplevel-contextual -->
   <widget class="GtkWindow" id="window4">
     <child>
       <widget class="GtkVBox" id="PrefsFile">
@@ -21,6 +22,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -39,11 +41,14 @@
                           <widget class="GtkLabel" id="label12">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes">Encodings to autodetect:</property>
+                            <property name="label" translatable="yes">Encodings to _autodetect:</property>
+                            <property name="use_underline">True</property>
+                            <property name="mnemonic_widget">entry_encodings</property>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
+                            <property name="position">0</property>
                           </packing>
                         </child>
                         <child>
@@ -56,6 +61,9 @@
                           </packing>
                         </child>
                       </widget>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
                   </widget>
                 </child>
@@ -70,6 +78,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
@@ -86,6 +95,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -104,21 +114,19 @@
                           <widget class="GtkLabel" id="label5">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes">Encoding for new files:</property>
+                            <property name="label" translatable="yes">Encoding for _new files:</property>
+                            <property name="use_underline">True</property>
+                            <property name="mnemonic_widget">encoding_save</property>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
+                            <property name="position">0</property>
                           </packing>
                         </child>
                         <child>
                           <widget class="GtkComboBoxEntry" id="encoding_save">
                             <property name="visible">True</property>
-                            <child internal-child="entry">
-                              <widget class="GtkEntry" id="comboboxentry-entry2">
-                                <property name="visible">True</property>
-                              </widget>
-                            </child>
                           </widget>
                           <packing>
                             <property name="position">1</property>
@@ -128,14 +136,17 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="check_strip">
+                        <property name="label" translatable="yes">Remove trailing _spaces</property>
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Remove trailing spaces</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
+                        <property name="focus_on_click">False</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
@@ -146,10 +157,12 @@
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="check_add_newline">
+                        <property name="label" translatable="yes">Ensure trailing new_line</property>
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Ensure trailing newline</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
+                        <property name="focus_on_click">False</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
@@ -160,10 +173,12 @@
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="check_make_backups">
+                        <property name="label" translatable="yes">Make _backups</property>
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Make backups</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
+                        <property name="focus_on_click">False</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
@@ -202,6 +217,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -214,14 +230,18 @@
                     <property name="spacing">6</property>
                     <child>
                       <widget class="GtkCheckButton" id="check_save_session">
+                        <property name="label" translatable="yes">Enable _session support</property>
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Enable session support</property>
-                        <property name="response_id">0</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="focus_on_click">False</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                   </widget>
@@ -254,6 +274,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -266,15 +287,18 @@
                     <property name="spacing">6</property>
                     <child>
                       <widget class="GtkCheckButton" id="check_open_dialog_follows_doc">
+                        <property name="label" translatable="yes">Open and Save As dialogs show current document _folder</property>
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Open and Save As dialogs show current document folder</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
+                        <property name="focus_on_click">False</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                   </widget>
@@ -316,6 +340,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -328,23 +353,26 @@
                     <property name="spacing">6</property>
                     <child>
                       <widget class="GtkCheckButton" id="enable_wrapping">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">Enable text wrapping</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="dont_split_words">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">Do not split words</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
@@ -366,6 +394,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
@@ -382,6 +411,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -394,23 +424,26 @@
                     <property name="spacing">6</property>
                     <child>
                       <widget class="GtkCheckButton" id="check_enable_highlighting">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">Enable syntax highlighting</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="check_highlight_matching_brackets">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">Highlight matching brackets</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
@@ -421,10 +454,11 @@
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="check_highlight_mismatching_brackets">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">Highlight mismatching brackets</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
@@ -435,10 +469,11 @@
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="check_highlight_current_line">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">Highlight current line</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
@@ -477,6 +512,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -489,23 +525,26 @@
                     <property name="spacing">6</property>
                     <child>
                       <widget class="GtkCheckButton" id="show_line_numbers">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">Show line numbers</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="check_show_tabs">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">Show tabs</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
@@ -516,10 +555,11 @@
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="check_show_trailing_spaces">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">Show trailing spaces</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
@@ -533,14 +573,16 @@
                         <property name="visible">True</property>
                         <child>
                           <widget class="GtkCheckButton" id="draw_rigth_margin">
-                            <property name="visible">True</property>
                             <property name="label" translatable="yes" comments="Part of the phrase &quot;Draw right margin at column [XX]&quot;">Draw right margin</property>
-                            <property name="response_id">0</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="receives_default">False</property>
                             <property name="draw_indicator">True</property>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
+                            <property name="position">0</property>
                           </packing>
                         </child>
                         <child>
@@ -555,6 +597,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
+                                <property name="position">0</property>
                               </packing>
                             </child>
                             <child>
@@ -621,6 +664,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -742,6 +786,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                   </widget>
@@ -757,6 +802,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
@@ -773,6 +819,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -790,6 +837,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                   </widget>
@@ -831,6 +879,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -843,22 +892,25 @@
                     <property name="spacing">6</property>
                     <child>
                       <widget class="GtkCheckButton" id="smarthome">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">Smart Home and End</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
                         <property name="focus_on_click">False</property>
-                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="enable_auto_indent">
                         <property name="visible">True</property>
-                        <property name="response_id">0</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="draw_indicator">True</property>
                         <child>
                           <widget class="GtkLabel" id="label16">
@@ -875,11 +927,12 @@
                     </child>
                     <child>
                       <widget class="GtkCheckButton" id="usespaces">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">Do not use tabs for indentation</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
                         <property name="focus_on_click">False</property>
-                        <property name="response_id">0</property>
                         <property name="draw_indicator">True</property>
                       </widget>
                       <packing>
@@ -891,7 +944,8 @@
                     <child>
                       <widget class="GtkCheckButton" id="backspace_indents">
                         <property name="visible">True</property>
-                        <property name="response_id">0</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="draw_indicator">True</property>
                         <child>
                           <widget class="GtkLabel" id="label17">
@@ -907,7 +961,8 @@
                     <child>
                       <widget class="GtkCheckButton" id="tab_indents">
                         <property name="visible">True</property>
-                        <property name="response_id">0</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="draw_indicator">True</property>
                         <child>
                           <widget class="GtkLabel" id="label18">
@@ -961,7 +1016,7 @@
                             <property name="can_focus">True</property>
                             <property name="adjustment">8 1 100 1 10 0</property>
                             <property name="numeric">True</property>
-                            <property name="update_policy">GTK_UPDATE_IF_VALID</property>
+                            <property name="update_policy">if-valid</property>
                           </widget>
                           <packing>
                             <property name="left_attach">1</property>
@@ -998,6 +1053,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
@@ -1014,6 +1070,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -1071,7 +1128,8 @@
                         <child>
                           <widget class="GtkFontButton" id="fontbutton:MooFontButton">
                             <property name="visible">True</property>
-                            <property name="response_id">0</property>
+                            <property name="can_focus">False</property>
+                            <property name="receives_default">False</property>
                             <property name="use_font">True</property>
                             <property name="use_size">True</property>
                           </widget>
@@ -1084,6 +1142,7 @@
                       </widget>
                       <packing>
                         <property name="expand">False</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                   </widget>
@@ -1125,6 +1184,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
+                <property name="position">0</property>
               </packing>
             </child>
             <child>
@@ -1143,9 +1203,9 @@
                           <widget class="GtkScrolledWindow" id="scrolledwindow1">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                            <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                            <property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
+                            <property name="hscrollbar_policy">automatic</property>
+                            <property name="vscrollbar_policy">automatic</property>
+                            <property name="shadow_type">etched-in</property>
                             <child>
                               <widget class="GtkTreeView" id="filter_treeview">
                                 <property name="width_request">400</property>
@@ -1157,6 +1217,9 @@
                               </widget>
                             </child>
                           </widget>
+                          <packing>
+                            <property name="position">0</property>
+                          </packing>
                         </child>
                         <child>
                           <widget class="GtkHBox" id="hbox4">
@@ -1165,8 +1228,9 @@
                             <child>
                               <widget class="GtkButton" id="new_filter_setting">
                                 <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="receives_default">False</property>
                                 <property name="focus_on_click">False</property>
-                                <property name="response_id">0</property>
                                 <child>
                                   <widget class="GtkImage" id="image1">
                                     <property name="visible">True</property>
@@ -1177,13 +1241,15 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
+                                <property name="position">0</property>
                               </packing>
                             </child>
                             <child>
                               <widget class="GtkButton" id="delete_filter_setting">
                                 <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="receives_default">False</property>
                                 <property name="focus_on_click">False</property>
-                                <property name="response_id">0</property>
                                 <child>
                                   <widget class="GtkImage" id="image2">
                                     <property name="visible">True</property>
@@ -1200,7 +1266,8 @@
                             <child>
                               <widget class="GtkButton" id="filter_setting_down">
                                 <property name="visible">True</property>
-                                <property name="response_id">0</property>
+                                <property name="can_focus">False</property>
+                                <property name="receives_default">False</property>
                                 <child>
                                   <widget class="GtkImage" id="image3">
                                     <property name="visible">True</property>
@@ -1217,7 +1284,8 @@
                             <child>
                               <widget class="GtkButton" id="filter_setting_up">
                                 <property name="visible">True</property>
-                                <property name="response_id">0</property>
+                                <property name="can_focus">False</property>
+                                <property name="receives_default">False</property>
                                 <child>
                                   <widget class="GtkImage" id="image4">
                                     <property name="visible">True</property>
@@ -1239,6 +1307,9 @@
                           </packing>
                         </child>
                       </widget>
+                      <packing>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
                   </widget>
                 </child>
@@ -1248,6 +1319,9 @@
               </packing>
             </child>
           </widget>
+          <packing>
+            <property name="position">0</property>
+          </packing>
         </child>
       </widget>
     </child>
