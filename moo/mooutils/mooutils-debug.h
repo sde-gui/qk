@@ -1,7 +1,7 @@
 /*
  *   mooutils-debug.h
  *
- *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
+ *   Copyright (C) 2004-2009 by Yevgen Muntyan <muntyan@tamu.edu>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -18,11 +18,19 @@
 
 #include <glib.h>
 #include <stdarg.h>
+#include <mooutils/mooutils-macros.h>
 
 G_BEGIN_DECLS
 
+void moo_assert_message (const char *message,
+                         const char *file,
+                         int         line,
+                         int         counter,
+                         const char *func);
 
-#ifdef MOO_DEBUG
+#define moo_assert(cond) _MOO_ASSERT(cond, moo_assert_message)
+
+#ifdef DEBUG
 
 #define MOO_DEBUG_INIT(domain, def_enabled)                 \
 static const char *moo_debug_domain = "moo-debug-" #domain; \
@@ -85,7 +93,7 @@ gboolean moo_debug_enabled  (const char *var,
                              gboolean    def_enabled);
 void     _moo_set_debug     (const char *domains);
 
-#elif defined(__GNUC__)
+#elif defined(MOO_COMPILER_GCC)
 
 #define MOO_DEBUG_INIT(domain, def_enabled)
 #define moo_dmsg(format, args...) G_STMT_START {} G_STMT_END
@@ -93,7 +101,7 @@ void     _moo_set_debug     (const char *domains);
 #define _moo_message(format, args...) G_STMT_START {} G_STMT_END
 #define MOO_DEBUG_CODE(whatever) G_STMT_START {} G_STMT_END
 
-#else
+#else /* not gcc, not DEBUG */
 
 #define MOO_DEBUG_INIT(domain, def_enabled)
 #define MOO_DEBUG_CODE(whatever) G_STMT_START {} G_STMT_END
@@ -112,7 +120,7 @@ static void _moo_message_dummy (const char *format, ...) G_GNUC_PRINTF(1,2)
 
 #define _moo_message _moo_message_dummy
 
-#endif
+#endif  /* gcc or DEBUG */
 
 
 G_END_DECLS

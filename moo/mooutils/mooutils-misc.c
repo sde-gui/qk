@@ -1753,6 +1753,19 @@ _moo_widget_set_tooltip (GtkWidget  *widget,
 }
 
 
+/*******************************************************************************
+ * Asserts
+ */
+
+void
+moo_assert_message(const char *message,
+                   const char *file,
+                   int         line,
+                   int         counter,
+                   const char *func)
+{
+    g_error("file '%s', function '%s', line %d: %s\n", file, func, line, message);
+}
 
 /*******************************************************************************
  * Former eggregex stuff
