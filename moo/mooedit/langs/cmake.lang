@@ -586,7 +586,7 @@
       <match>\\"</match>
     </context>
 
-    <context id="string" style-ref="string">
+    <context id="string" style-ref="string" end-at-line-end="true">
       <start>"</start>
       <end>"</end>
       <include>
