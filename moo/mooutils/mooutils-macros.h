@@ -17,36 +17,27 @@
 #define MOO_UTILS_MACROS_H
 
 #if defined(__GNUC__)
-
-  #undef MOO_COMPILER_MSVC
-
-  #define MOO_COMPILER_GCC 1
-  #define MOO_GCC_VERSION(maj,min) ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
-
+#  undef MOO_COMPILER_MSVC
+#  define MOO_COMPILER_GCC 1
+#  define MOO_GCC_VERSION(maj,min) ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
 #elif defined(_MSC_VER)
-
-  #define MOO_COMPILER_MSVC 1
-
-  #undef MOO_COMPILER_GCC
-  #define MOO_GCC_VERSION(maj,min) (0)
-
+#  define MOO_COMPILER_MSVC 1
+#  undef MOO_COMPILER_GCC
+#  define MOO_GCC_VERSION(maj,min) (0)
 #else /* not gcc, not visual studio */
-
-  #undef MOO_COMPILER_MSVC
-
-  #undef MOO_COMPILER_GCC
-  #define MOO_GCC_VERSION(maj,min) (0)
-
+#  undef MOO_COMPILER_MSVC
+#  undef MOO_COMPILER_GCC
+#  define MOO_GCC_VERSION(maj,min) (0)
 #endif /* gcc or visual studio */
 
 #if defined(MOO_COMPILER_GCC)
-#define MOO_STRFUNC     ((const char*) (__PRETTY_FUNCTION__))
+#  define MOO_STRFUNC ((const char*) (__PRETTY_FUNCTION__))
 #elif defined(MOO_COMPILER_MSVC)
-#define MOO_STRFUNC     ((const char*) (__FUNCTION__))
+#  define MOO_STRFUNC ((const char*) (__FUNCTION__))
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-#define MOO_STRFUNC     ((const char*) (__func__))
+#  define MOO_STRFUNC ((const char*) (__func__))
 #else
-#define MOO_STRFUNC     ((const char*) (""))
+#  define MOO_STRFUNC ((const char*) (""))
 #endif
 
 #ifdef __cplusplus

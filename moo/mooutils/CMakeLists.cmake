@@ -49,6 +49,15 @@ SET(MOOUTILS_SOURCES
   moocombo.h
   moocompat.c
   moocompat.h
+  moocpp.cpp
+  moocpp.h
+  moocpp-cont.h
+  moocpp-gobject.cpp
+  moocpp-gobject.h
+  moocpp-gtk.h
+  moocpp-macros.h
+  moocpp-refptr.h
+  moocpp-types.h
   moodialogs.c
   moodialogs.h
   mooeditops.c
