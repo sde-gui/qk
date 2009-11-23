@@ -69,7 +69,7 @@ moo_file_icon_new (void)
 MooFileIcon *
 moo_file_icon_copy (MooFileIcon *icon)
 {
-    return icon ? moo_slice_dup (MooFileIcon, icon) : NULL;
+    return icon ? moo_obj_dup (MooFileIcon, icon) : NULL;
 }
 
 void

@@ -1758,14 +1758,11 @@ _moo_widget_set_tooltip (GtkWidget  *widget,
  */
 
 void
-moo_assert_message(const char *message,
-                   const char *file,
-                   int         line,
-                   int         counter,
-                   const char *func)
+moo_assert_message (const char *message, const MooCodeLoc *loc)
 {
-    g_error("file '%s', function '%s', line %d: %s\n", file, func, line, message);
+    g_error("file '%s', function '%s', line %d: %s\n", loc->file, loc->func, loc->line, message);
 }
+
 
 /*******************************************************************************
  * Former eggregex stuff
@@ -1979,6 +1976,14 @@ _moo_strv_reverse (char **str_array)
     }
 
     return str_array;
+}
+
+
+gboolean
+_moo_str_equal (const char *s1,
+                const char *s2)
+{
+    return strcmp (s1 ? s1 : "", s2 ? s2 : "") == 0;
 }
 
 

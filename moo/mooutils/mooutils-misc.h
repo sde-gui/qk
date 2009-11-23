@@ -17,7 +17,7 @@
 #define MOO_UTILS_MISC_H
 
 #include <gtk/gtk.h>
-#include <string.h>
+#include <mooutils/mooutils-macros.h>
 
 G_BEGIN_DECLS
 
@@ -128,12 +128,8 @@ char      **moo_splitlines                  (const char     *string);
 
 char     **_moo_strv_reverse                (char          **str_array);
 
-static inline gboolean
-_moo_str_equal (const char *s1,
-                const char *s2)
-{
-    return !strcmp (s1 ? s1 : "", s2 ? s2 : "");
-}
+gboolean   _moo_str_equal                   (const char     *s1,
+                                             const char     *s2);
 
 static inline void
 moo_assign_string (char       **where,
@@ -193,26 +189,45 @@ gboolean    _moo_regex_escape               (const char *string,
 
 
 #if GLIB_CHECK_VERSION(2,10,0)
-#define moo_new                 g_slice_new
-#define moo_new0                g_slice_new0
-#define moo_free                g_slice_free
+# define moo_alloc_block(sz)   g_slice_alloc (sz)
+# define moo_alloc0_block(sz)  g_slice_alloc0 (sz)
+# define moo_free_block(sz,p)  g_slice_free1 (sz, p)
 #else
-#define moo_new(type)           g_new (type, 1)
-#define moo_new0(type)          g_new0 (type, 1)
-#define moo_free(type,mem)      g_free (mem)
+# define moo_alloc_block(sz)   g_malloc (sz)
+# define moo_alloc0_block(sz)  g_malloc0 (sz)
+# define moo_free_block(sz,p)  g_free (p)
 #endif
 
-#if GLIB_CHECK_VERSION(2,14,0)
-#define moo_slice_dup           g_slice_dup
+#ifdef g_slice_dup
+# define moo_dup_block(sz,p)   g_slice_copy (sz, p)
 #else
-#define moo_slice_dup(type,mem) ((type*) g_memdup (mem, sizeof (type)))
+# define moo_dup_block(sz,p)   g_memdup (p, sz)
 #endif
 
+#define moo_new_n(type, n)      ((type*) moo_alloc_block (sizeof (type) * (n)))
+#define moo_new0_n(type, n)     ((type*) moo_alloc0_block (sizeof (type) * (n)))
+#define moo_free_n(type, n, p)  do { type *p__ = p; moo_free_block (sizeof (type) * n, p__); } while (0)
+
+#define moo_new(type)           moo_new_n (type, 1)
+#define moo_new0(type)          moo_new0_n (type, 1)
+#define moo_free(type,p)        moo_free_n (type, 1, p)
+
+#if defined(MOO_COMPILER_GCC)
+#define moo_obj_dup(type,p)     ({ type const *cp__ = p; type *p__ = moo_dup_block (sizeof (type), p); p__; })
+#else
+#define moo_obj_dup(type, p)    ((type*) moo_dup_block (sizeof (type), p))
+#endif
+
+#define MOO_OBJECT_REF_SINK moo_object_ref_sink
+static inline gpointer moo_object_ref_sink (gpointer obj)
+{
 #if GLIB_CHECK_VERSION(2,10,0)
-#define MOO_OBJECT_REF_SINK(obj) (void) g_object_ref_sink (obj)
+    g_object_ref_sink (obj);
 #else
-#define MOO_OBJECT_REF_SINK(obj) gtk_object_sink (g_object_ref (obj))
+    gtk_object_sink (g_object_ref (obj));
 #endif
+    return obj;
+}
 
 #define MOO_UNUSED(x) (void)x;
 

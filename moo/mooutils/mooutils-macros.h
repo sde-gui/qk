@@ -49,26 +49,57 @@
 #define MOO_STRFUNC     ((const char*) (""))
 #endif
 
-#ifdef __COUNTER__
-#define _MOO_CODE_LOCATION_ARGS __FILE__, __LINE__, __COUNTER__
-#else
-#define _MOO_CODE_LOCATION_ARGS __FILE__, __LINE__, 0
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#define _MOO_ASSERT_CHECK(cond, func)                   \
-do {                                                    \
-    if (cond)                                           \
-        ;                                               \
-    else                                                \
-        func("condition failed: " #cond,                \
-             _MOO_CODE_LOCATION_ARGS,                   \
-             MOO_STRFUNC);                              \
+typedef struct MooCodeLoc
+{
+    const char *file;
+    const char *func;
+    int line;
+    int counter;
+} MooCodeLoc;
+
+void moo_assert_message (const char       *message,
+                         const MooCodeLoc *loc);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+#ifdef __COUNTER__
+#define _MOO_COUNTER __COUNTER__
+#else
+#define _MOO_COUNTER 0
+#endif
+
+#define _MOO_ASSERT_MESSAGE(msg)            \
+do {                                        \
+    const MooCodeLoc _moo_loc__ = {         \
+        __FILE__, MOO_STRFUNC,              \
+        __LINE__, _MOO_COUNTER              \
+    };                                      \
+    moo_assert_message (msg, &_moo_loc__);  \
+} while (0)
+
+#define _MOO_ASSERT_CHECK(cond)             \
+do {                                        \
+    if (cond)                               \
+        ;                                   \
+    else                                    \
+        _MOO_ASSERT_MESSAGE (               \
+            "condition failed: " #cond);    \
 } while(0)
 
+#define MOO_VOID_STMT do {} while (0)
+
+#define _MOO_RELEASE_ASSERT _MOO_ASSERT_CHECK
+
 #ifdef DEBUG
-#define _MOO_ASSERT _MOO_ASSERT_CHECK
+#define _MOO_DEBUG_ASSERT _MOO_ASSERT_CHECK
 #else
-#define _MOO_ASSERT(cond, func) do {} while(0)
+#define _MOO_DEBUG_ASSERT(cond) MOO_VOID_STMT
 #endif
 
 #define _MOO_CONCAT_(a, b) a##b
@@ -79,3 +110,4 @@ do {                                                    \
 MOO_STATIC_ASSERT(sizeof(char) == 1, "test");
 
 #endif /* MOO_UTILS_MACROS_H */
+/* -%- strip:true -%- */

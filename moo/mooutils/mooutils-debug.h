@@ -22,13 +22,8 @@
 
 G_BEGIN_DECLS
 
-void moo_assert_message (const char *message,
-                         const char *file,
-                         int         line,
-                         int         counter,
-                         const char *func);
-
-#define moo_assert(cond) _MOO_ASSERT(cond, moo_assert_message)
+#define moo_assert _MOO_DEBUG_ASSERT
+#define moo_release_assert _MOO_RELEASE_ASSERT
 
 #ifdef DEBUG
 
