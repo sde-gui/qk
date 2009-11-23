@@ -30,6 +30,7 @@
 #include "gtktextregion.h"
 
 
+#undef DEBUG
 #undef ENABLE_DEBUG
 /*
 #define ENABLE_DEBUG

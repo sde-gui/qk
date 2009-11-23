@@ -24,6 +24,7 @@
 #include <config.h>
 #endif
 
+#undef DEBUG
 #undef ENABLE_DEBUG
 
 #ifdef ENABLE_DEBUG

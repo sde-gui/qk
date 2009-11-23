@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <string.h>
 
+#undef DEBUG
 #undef ENABLE_DEBUG
 #undef ENABLE_PROFILE
 #undef ENABLE_CHECK_TREE
