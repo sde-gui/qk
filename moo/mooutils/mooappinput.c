@@ -911,7 +911,7 @@ input_channel_get_path (InputChannel *ch)
     return g_strdup (ch->pipe_name);
 }
 
-static const char *
+G_GNUC_UNUSED static const char *
 input_channel_get_name (InputChannel *ch)
 {
     g_return_val_if_fail (ch != NULL, NULL);
@@ -1180,9 +1180,7 @@ _moo_app_input_broadcast (const char *header,
                           const char *data,
                           gssize      len)
 {
-#ifdef __GNUC__
-#warning "Implement me"
-#endif
+    MOO_IMPLEMENT_ME
 
     g_return_if_fail (header != NULL);
     g_return_if_fail (data != NULL);

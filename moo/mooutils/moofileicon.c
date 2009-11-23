@@ -27,7 +27,7 @@
 
 void
 moo_file_icon_for_file (MooFileIcon *icon,
-                        const char  *path)
+                        G_GNUC_UNUSED const char *path)
 {
     const char *mime_type = NULL;
 
@@ -37,9 +37,7 @@ moo_file_icon_for_file (MooFileIcon *icon,
     if (path)
         mime_type = moo_get_mime_type_for_file (path, NULL);
 #else
-#ifdef __GNUC__
-#warning "Implement render_icon_for_path()"
-#endif
+    MOO_IMPLEMENT_ME
 #endif
 
     if (!mime_type || !mime_type[0])

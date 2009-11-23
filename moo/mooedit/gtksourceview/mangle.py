@@ -31,6 +31,10 @@ elif base == 'gtksourcestyle.c':
     print >> output, '#include "mooutils/moocompat.h"'
 elif base == 'gtksourcestylescheme.c':
     print >> output, '#include "mooutils/moocompat.h"'
+elif base == 'gtksourceview-utils.c':
+    print >> output, '#ifdef __GNUC__'
+    print >> output, '#pragma GCC diagnostic ignored "-Wunused-parameter"'
+    print >> output, '#endif'
 
 print >> output, '#line 1 "%s/%s"' % (srcdir, base)
 

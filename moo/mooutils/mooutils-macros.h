@@ -40,6 +40,17 @@
 #  define MOO_STRFUNC ((const char*) (""))
 #endif
 
+#if defined(MOO_COMPILER_GCC)
+#define _MOO_GCC_PRAGMA(x) _Pragma (#x)
+#define MOO_COMPILER_MESSAGE(x)     _MOO_GCC_PRAGMA(message (#x))
+#define MOO_TODO(x)                 _MOO_GCC_PRAGMA(message ("TODO: " #x))
+#define MOO_IMPLEMENT_ME            _MOO_GCC_PRAGMA(message ("IMPLEMENT ME"))
+#else
+#define MOO_COMPILER_MESSAGE(x)
+#define MOO_TODO(x)
+#define MOO_IMPLEMENT_ME
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

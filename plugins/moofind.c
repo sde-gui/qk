@@ -147,7 +147,7 @@ find_in_files_cb (MooEditWindow *window)
 }
 
 
-static void
+G_GNUC_UNUSED static void
 find_file_cb (MooEditWindow *window)
 {
     WindowStuff *stuff;
