@@ -1,4 +1,3 @@
-MOO_OPTION(MOO_DEV_MODE FALSE "Enable developer mode - bunch of checks, warnings, etc.")
 MOO_OPTION(MOO_BUILD_SHARED_LIB ${MOO_OS_WIN32} "Build shared library")
 MOO_OPTION(MOO_BUILD_CTAGS ${MOO_OS_UNIX} "Build Ctags plugin" HIDDEN ${MOO_OS_WIN32} HEADER TRUE)
 MOO_OPTION(MOO_ENABLE_PROJECT FALSE "Build project plugin" HIDDEN TRUE)
