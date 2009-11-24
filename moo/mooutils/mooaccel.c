@@ -548,7 +548,7 @@ parse_mod (const char *string, gssize len)
         mod = GDK_META_MASK;
 #endif
     else if (!strncmp (stripped, "mod", 3) &&
-              1 <= stripped[3] && stripped[3] <= 5 && !stripped[4])
+             '1' <= stripped[3] && stripped[3] <= '5' && !stripped[4])
     {
         switch (stripped[3])
         {
