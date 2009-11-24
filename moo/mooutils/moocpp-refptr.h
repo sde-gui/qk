@@ -21,8 +21,6 @@
 
 namespace moo {
 
-template<class T> class List;
-
 template<class T>
 class RefCounted
 {
@@ -365,7 +363,7 @@ private:
     MOO_DISABLE_COPY_AND_ASSIGN(WeakRefd)
 
 private:
-    List<impl::WeakPtrBase*> m_ptrs;
+    Vector<impl::WeakPtrBase*> m_ptrs;
 };
 
 } // namespace moo

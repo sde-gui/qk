@@ -18,10 +18,23 @@
 
 #include <algorithm>
 #include <vector>
-#include <set>
 #include <mooutils/moocpp-macros.h>
 
 namespace moo {
+
+#ifdef MOO_USE_EXCEPTIONS
+#define MOO_CONTAINER_CHECK(what)       \
+do {                                    \
+    if (what)                           \
+        ;                               \
+    else                                \
+        throw std::runtime_error();     \
+} while (0)
+#else
+#define MOO_CONTAINER_CHECK mCheck
+#endif
+
+namespace util {
 
 template<typename T>
 class CowData
@@ -87,6 +100,7 @@ public:
                 delete data;
             mAssert(m_data->refCount() >= 2);
         }
+        return *this;
     }
 
     ~CowPtr()
@@ -120,26 +134,23 @@ private:
     TData *m_data;
 };
 
-
-template<typename T> class Set;
-template<typename T> class List;
-template<typename T> class Vector;
+} // namespace util
 
 
 template<typename T>
-class List
+class Vector
 {
 private:
     typedef typename std::vector<T> std_vector;
     typedef typename std::vector<T>::iterator std_iterator;
     typedef typename std::vector<T>::const_iterator std_const_iterator;
 
-    struct Impl : public CowData<Impl>
+    struct Impl : public util::CowData<Impl>
     {
         std_vector v;
     };
 
-    CowPtr<Impl> m_impl;
+    util::CowPtr<Impl> m_impl;
 
     std_vector &v() { return m_impl->v; }
     const std_vector &v() const { return m_impl->v; }
@@ -153,9 +164,9 @@ public:
     class iterator
     {
     private:
-        friend class List;
-        typedef List::std_iterator std_iterator;
-        typedef List::std_const_iterator std_const_iterator;
+        friend class Vector;
+        typedef Vector::std_iterator std_iterator;
+        typedef Vector::std_const_iterator std_const_iterator;
 
         std_iterator m_si;
 
@@ -171,9 +182,9 @@ public:
     class const_iterator
     {
     private:
-        friend class List;
-        typedef List::std_iterator std_iterator;
-        typedef List::std_const_iterator std_const_iterator;
+        friend class Vector;
+        typedef Vector::std_iterator std_iterator;
+        typedef Vector::std_const_iterator std_const_iterator;
 
         std_const_iterator m_si;
 
@@ -187,26 +198,12 @@ public:
         const T &operator*() const { return *m_si; }
     };
 
-#ifdef MOO_USE_EXCEPTIONS
-#define _MOO_LIST_CHECK(what)           \
-do {                                    \
-    if (what)                           \
-        ;                               \
-    else                                \
-        throw std::runtime_error();     \
-} while (0)
-#else
-#define _MOO_LIST_CHECK mCheck
-#endif
-
-    inline void checkNonEmpty() { _MOO_LIST_CHECK(!empty()); }
-    inline void checkIndex(int i) { _MOO_LIST_CHECK((i) < size()); }
-    inline void checkIndexE(int i) { _MOO_LIST_CHECK((i) <= size()); }
-
-#undef _MOO_LIST_CHECK
+    inline void checkNonEmpty() const { MOO_CONTAINER_CHECK(!empty()); }
+    inline void checkIndex(int i) const { MOO_CONTAINER_CHECK((i) < size()); }
+    inline void checkIndexE(int i) const { MOO_CONTAINER_CHECK((i) <= size()); }
 
 public:
-    List() {}
+    Vector() {}
 
     iterator begin() { return v().begin(); }
     const_iterator begin() const { return v().begin(); }
@@ -230,7 +227,7 @@ public:
     T &front() { checkNonEmpty(); return first(); }
     const T &front() const { checkNonEmpty(); return first(); }
 
-    List mid(int pos, int length = -1) const;
+    Vector mid(int pos, int length = -1) const;
 
     T value(int i) const { return value(i, T()); }
     T value(int i, const T &defaultValue) const { return i >= 0 && i < size() ? v()[i] : defaultValue; }
@@ -250,7 +247,7 @@ public:
     int size() const { return count(); }
 
     void append(const T &value) { v().push_back(value); }
-    void append(const List &other) { v().insert(v().end(), other.v().begin(), other.v().end()); }
+    void append(const Vector &other) { v().insert(v().end(), other.v().begin(), other.v().end()); }
     void clear() { v().erase(v().begin(), v().end()); }
     iterator erase(iterator pos) { v().erase(pos); }
     iterator erase(iterator begin, iterator end) { v().erase(begin, end);  }
@@ -283,16 +280,13 @@ public:
     T takeFirst() { return takeAt(0); }
     T takeLast() { return takeAt(size() - 1); }
 
-    Set<T> toSet() const;
-    Vector<T> toVector() const;
+    Vector operator+(const Vector &other) const { Vector result = *this; result += other; return result; }
+    Vector &operator+=(const Vector &other) { append(other); return *this; }
+    Vector &operator+=(const T &value) { append(value); return *this; }
+    Vector &operator<<(const Vector &other) { append(other); return *this; }
+    Vector &operator<<(const T &value) { append(value); return *this; }
 
-    List operator+(const List &other) const { List result = *this; result += other; return result; }
-    List &operator+=(const List &other) { append(other); return *this; }
-    List &operator+=(const T &value) { append(value); return *this; }
-    List &operator<<(const List &other) { append(other); return *this; }
-    List &operator<<(const T &value) { append(value); return *this; }
-
-    bool operator==(const List &other) const
+    bool operator==(const Vector &other) const
     {
         if (size() == other.size())
         {
@@ -305,28 +299,8 @@ public:
         }
     }
 
-    bool operator!=(const List &other) const { return !(*this == other); }
+    bool operator!=(const Vector &other) const { return !(*this == other); }
 };
-
-
-template<typename T>
-class Vector : public List<T>
-{
-    Vector(const List<T> &list) : List<T>(list) {}
-    Vector mid(int pos, int length = -1) const { return List<T>::mid(pos, length).toVector(); }
-    Vector operator+(const List<T> &other) const { Vector result = *this; result += other; return result; }
-    Vector &operator+=(const List<T> &other) { append(other); return *this; }
-    Vector &operator+=(const T &value) { append(value); return *this; }
-    Vector &operator<<(const Vector &other) { append(other); return *this; }
-    Vector &operator<<(const T &value) { append(value); return *this; }
-};
-
-
-template<typename T>
-inline Vector<T> List<T>::toVector() const
-{
-    return Vector<T>(*this);
-}
 
 
 } // namespace moo
