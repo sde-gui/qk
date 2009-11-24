@@ -37,6 +37,28 @@ private:
     int m_count;
 };
 
+template<typename T>
+class ValueRestorer
+{
+public:
+    ValueRestorer(T &val)
+        : m_ref(val)
+        , m_val(val)
+    {
+    }
+
+    ~ValueRestorer()
+    {
+        m_ref = m_val;
+    }
+
+    MOO_DISABLE_COPY_AND_ASSIGN(ValueRestorer)
+
+private:
+    T &m_ref;
+    T m_val;
+};
+
 } // namespace moo
 
 #endif /* MOO_CPP_TYPES_H */
