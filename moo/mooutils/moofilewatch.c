@@ -1041,7 +1041,7 @@ fam_thread_add_path (FAMThread  *thr,
 {
     gunichar2 *win_path;
 
-    if (thr->n_events == MAXIMUM_WAIT_OBJECTS)
+    if (thr->n_events >= MAXIMUM_WAIT_OBJECTS)
     {
         g_critical ("%s: too many folders watched", G_STRLOC);
         return;
@@ -1375,7 +1375,7 @@ fam_win32_init (void)
         fam->running = FALSE;
 
         fam->thread_data.n_events = 1;
-        fam->thread_data.events[0] = CreateEvent (NULL, TRUE, FALSE, NULL);;
+        fam->thread_data.events[0] = CreateEvent (NULL, TRUE, FALSE, NULL);
 
         if (!fam->thread_data.events[0])
         {

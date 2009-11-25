@@ -18,6 +18,8 @@ bool RefCount::unref()
     return g_atomic_int_dec_and_test(&m_count) != 0;
 }
 
+#ifdef DEBUG
+
 namespace _test {
 
 #define MOO_CHECK_ERR 0
@@ -65,7 +67,9 @@ inline void func()
 #endif
 }
 
-}
+} // namespace _test
+
+#endif // DEBUG
 
 } // namespace moo
 // -%- strip:true -%-

@@ -40,15 +40,38 @@
 #  define MOO_STRFUNC ((const char*) (""))
 #endif
 
+#if defined(MOO_COMPILER_MSVC)
+#define MOO_MSVC_WARNING_PUSH       __pragma(warning(push))
+#define MOO_MSVC_WARNING_POP        __pragma(warning(push))
+#define MOO_MSVC_WARNING_DISABLE(N) __pragma(warning(disable:N))
+#define MOO_MSVC_WARNING_PUSH_DISABLE(N) MOO_MSVC_WARNING_PUSH MOO_MSVC_WARNING_DISABLE(N)
+#else
+#define MOO_MSVC_WARNING_PUSH
+#define MOO_MSVC_WARNING_POP
+#define MOO_MSVC_WARNING_DISABLE(N)
+#define MOO_MSVC_WARNING_PUSH_DISABLE(N)
+#endif
+
 #if defined(MOO_COMPILER_GCC)
 #define _MOO_GCC_PRAGMA(x) _Pragma (#x)
 #define MOO_COMPILER_MESSAGE(x)     _MOO_GCC_PRAGMA(message (#x))
 #define MOO_TODO(x)                 _MOO_GCC_PRAGMA(message ("TODO: " #x))
 #define MOO_IMPLEMENT_ME            _MOO_GCC_PRAGMA(message ("IMPLEMENT ME"))
+#elif defined(MOO_COMPILER_MSVC)
+#define _MOO_MESSAGE_LOC __FILE__ "(" G_STRINGIFY(__LINE__) ") : "
+#define MOO_COMPILER_MESSAGE(x)     __pragma(message(_MOO_MESSAGE_LOC #x))
+#define MOO_TODO(x)                 __pragma(message(_MOO_MESSAGE_LOC "TODO: " #x))
+#define MOO_IMPLEMENT_ME            __pragma(message(_MOO_MESSAGE_LOC "IMPLEMENT ME: " __FUNCTION__))
 #else
 #define MOO_COMPILER_MESSAGE(x)
 #define MOO_TODO(x)
 #define MOO_IMPLEMENT_ME
+#endif
+
+#if defined(MOO_COMPILER_MSVC)
+#define MOO_NORETURN __declspec(noreturn)
+#else
+#define MOO_NORETURN G_GNUC_NORETURN
 #endif
 
 #ifdef __cplusplus
@@ -106,7 +129,7 @@ do {                                        \
 
 #define _MOO_CONCAT_(a, b) a##b
 #define _MOO_CONCAT(a, b) _MOO_CONCAT_(a, b)
-#define __MOO_STATIC_ASSERT_MACRO(cond, counter) enum { _MOO_CONCAT(_MooStaticAssert_##counter##_, __LINE__) = 1 / ((cond) != 0) }
+#define __MOO_STATIC_ASSERT_MACRO(cond, counter) enum { _MOO_CONCAT(_MooStaticAssert_##counter##_, __LINE__) = 1 / ((cond) ? 1 : 0) }
 #define _MOO_STATIC_ASSERT_MACRO(cond) __MOO_STATIC_ASSERT_MACRO(cond, 0)
 #define MOO_STATIC_ASSERT(cond, message) _MOO_STATIC_ASSERT_MACRO(cond)
 MOO_STATIC_ASSERT(sizeof(char) == 1, "test");

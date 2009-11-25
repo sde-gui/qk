@@ -16,6 +16,8 @@ Makefile.in
 *.ncb
 *.suo
 *.vcproj.*
+vs/Debug/
+vs/Release/
 
 syntax: regexp
 ^po(-gsv)?/(Makefile\.in\.in|dist|missing|notexist|pot|intltool-update)$

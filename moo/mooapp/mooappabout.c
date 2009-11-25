@@ -253,7 +253,6 @@ moo_app_get_system_info (MooApp *app)
 
     if (moo_python_running ())
     {
-        char *string;
         g_string_append (text, "Python support: yes\n");
         string = get_python_info ();
         g_string_append_printf (text, "Python: %s\n", string ? string : "None");

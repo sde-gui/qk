@@ -102,7 +102,11 @@ LIST(APPEND MOOEDIT_SOURCES ${printing_sources})
 MOO_GEN_GXML(mooedit
   glade/mooprintpreview.glade
   glade/moopluginprefs.glade
-  glade/mooeditprefs.glade
+  glade/mooeditprefs-view.glade
+  glade/mooeditprefs-file.glade
+  glade/mooeditprefs-filters.glade
+  glade/mooeditprefs-general.glade
+  glade/mooeditprefs-langs.glade
   glade/mooeditprogress.glade
   glade/mooeditsavemult.glade
   glade/mooprint.glade

@@ -231,7 +231,7 @@ G_STMT_START {                                  \
                          #expr, ")", NULL);     \
         g_printerr ("**\n** %s\n", s);          \
         g_free (s);                             \
-        abort();                                \
+        moo_abort();                            \
     }                                           \
 } G_STMT_END
 

@@ -3352,7 +3352,8 @@ context_remove_child (Context *parent,
 		prev = ptr;
 	}
 
-	g_assert (ptr != NULL);
+        if (!ptr)
+            g_error ("error");
 
 	if (!ptr->fixed)
 	{

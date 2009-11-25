@@ -1216,6 +1216,9 @@ sync_xml (MooPrefsType prefs_type)
         case MOO_PREFS_STATE:
             xml_ptr = &prefs->xml_state;
             break;
+        default:
+            g_return_if_reached ();
+            break;
     }
 
     if (!*xml_ptr)

@@ -28,7 +28,11 @@
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moohelp.h"
-#include "glade/mooeditprefs-gxml.h"
+#include "glade/mooeditprefs-file-gxml.h"
+#include "glade/mooeditprefs-filters-gxml.h"
+#include "glade/mooeditprefs-general-gxml.h"
+#include "glade/mooeditprefs-langs-gxml.h"
+#include "glade/mooeditprefs-view-gxml.h"
 #include "help-sections.h"
 #include <string.h>
 

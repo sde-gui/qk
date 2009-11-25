@@ -560,7 +560,7 @@ _xdg_mime_glob_read_from_file (XdgGlobHash *glob_hash,
 			       const char  *file_name)
 {
   FILE *glob_file;
-  char line[255];
+  char line[256];
 
   glob_file = fopen (file_name, "r");
 
@@ -578,6 +578,7 @@ _xdg_mime_glob_read_from_file (XdgGlobHash *glob_hash,
       if (line[0] == '#')
 	continue;
 
+      line[255] = 0;
       colon = strchr (line, ':');
       if (colon == NULL)
 	continue;

@@ -165,8 +165,8 @@ public:
     {
     private:
         friend class Vector;
-        typedef Vector::std_iterator std_iterator;
-        typedef Vector::std_const_iterator std_const_iterator;
+        typedef typename Vector::std_iterator std_iterator;
+        typedef typename Vector::std_const_iterator std_const_iterator;
 
         std_iterator m_si;
 
@@ -183,8 +183,8 @@ public:
     {
     private:
         friend class Vector;
-        typedef Vector::std_iterator std_iterator;
-        typedef Vector::std_const_iterator std_const_iterator;
+        typedef typename Vector::std_iterator std_iterator;
+        typedef typename Vector::std_const_iterator std_const_iterator;
 
         std_const_iterator m_si;
 

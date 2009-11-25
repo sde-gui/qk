@@ -19,6 +19,7 @@
 #include <glib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <mooutils/mooutils-macros.h>
 
 G_BEGIN_DECLS
 
@@ -51,6 +52,8 @@ void             moo_test_run_tests         (const char         *single_test,
                                              MooTestOptions      opts);
 void             moo_test_cleanup           (void);
 gboolean         moo_test_get_result        (void);
+
+MOO_NORETURN void moo_abort                 (void);
 
 void             moo_test_assert_impl       (gboolean            passed,
                                              const char         *text,

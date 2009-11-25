@@ -57,11 +57,13 @@ typedef struct {
     GIOChannel *io;
 
     GHashTable *data;
+
+    volatile gboolean init;
 } EventQueue;
 
 
 static GStaticMutex queue_lock = G_STATIC_MUTEX_INIT;
-static volatile EventQueue *queue;
+static EventQueue queue;
 
 
 static QueueClient *
@@ -69,9 +71,9 @@ get_event_client (guint id)
 {
     GSList *l;
 
-    g_return_val_if_fail (queue != NULL, NULL);
+    g_return_val_if_fail (queue.init, NULL);
 
-    for (l = queue->clients; l != NULL; l = l->next)
+    for (l = queue.clients; l != NULL; l = l->next)
     {
         QueueClient *s = l->data;
 
@@ -131,8 +133,8 @@ got_data (GIOChannel *io)
     char buf[1];
 
     g_static_mutex_lock (&queue_lock);
-    data = queue->data;
-    queue->data = NULL;
+    data = queue.data;
+    queue.data = NULL;
     g_io_channel_read_chars (io, buf, 1, NULL, NULL);
     g_static_mutex_unlock (&queue_lock);
 
@@ -148,16 +150,16 @@ _moo_event_queue_do_events (guint event_id)
 {
     GQueue *events = NULL;
 
-    g_return_if_fail (queue != NULL);
+    g_return_if_fail (queue.init);
 
     g_static_mutex_lock (&queue_lock);
 
-    if (queue->data)
+    if (queue.data)
     {
-        events = g_hash_table_lookup (queue->data, GUINT_TO_POINTER (event_id));
+        events = g_hash_table_lookup (queue.data, GUINT_TO_POINTER (event_id));
 
         if (events)
-            g_hash_table_remove (queue->data, GUINT_TO_POINTER (event_id));
+            g_hash_table_remove (queue.data, GUINT_TO_POINTER (event_id));
     }
 
     g_static_mutex_unlock (&queue_lock);
@@ -170,9 +172,12 @@ _moo_event_queue_do_events (guint event_id)
 static void
 init_queue (void)
 {
+    if (g_atomic_int_get (&queue.init))
+        return;
+
     g_static_mutex_lock (&queue_lock);
 
-    if (!queue)
+    if (!queue.init)
     {
         int fds[2];
         GSource *source;
@@ -183,25 +188,25 @@ init_queue (void)
             goto out;
         }
 
-        queue = g_new0 (EventQueue, 1);
+        queue.clients = NULL;
 
-        queue->clients = NULL;
-
-        queue->pipe_in = fds[1];
-        queue->pipe_out = fds[0];
+        queue.pipe_in = fds[1];
+        queue.pipe_out = fds[0];
 
 #ifdef __WIN32__
-        queue->io = g_io_channel_win32_new_fd (queue->pipe_out);
+        queue.io = g_io_channel_win32_new_fd (queue.pipe_out);
 #else
-        queue->io = g_io_channel_unix_new (queue->pipe_out);
+        queue.io = g_io_channel_unix_new (queue.pipe_out);
 #endif
 
-        source = g_io_create_watch (queue->io, G_IO_IN);
+        source = g_io_create_watch (queue.io, G_IO_IN);
         g_source_set_callback (source, (GSourceFunc) got_data, NULL, NULL);
         g_source_set_can_recurse (source, TRUE);
         g_source_attach (source, NULL);
 
-        queue->data = NULL;
+        queue.data = NULL;
+
+        queue.init = TRUE;
     }
 
 out:
@@ -226,8 +231,8 @@ _moo_event_queue_connect (MooEventQueueCallback callback,
     client->notify = notify;
 
     g_static_mutex_lock (&queue_lock);
-    client->id = ++queue->last_id;
-    queue->clients = g_slist_prepend (queue->clients, client);
+    client->id = ++queue.last_id;
+    queue.clients = g_slist_prepend (queue.clients, client);
     g_static_mutex_unlock (&queue_lock);
 
     return client->id;
@@ -240,7 +245,7 @@ _moo_event_queue_disconnect (guint event_id)
     QueueClient *client;
 
     g_return_if_fail (event_id != 0);
-    g_return_if_fail (queue != NULL);
+    g_return_if_fail (queue.init);
 
     g_static_mutex_lock (&queue_lock);
 
@@ -249,7 +254,7 @@ _moo_event_queue_disconnect (guint event_id)
     if (!client)
         g_warning ("%s: no client with id %d", G_STRLOC, event_id);
     else
-        queue->clients = g_slist_remove (queue->clients, client);
+        queue.clients = g_slist_remove (queue.clients, client);
 
     g_static_mutex_unlock (&queue_lock);
 
@@ -277,18 +282,18 @@ _moo_event_queue_push (guint          event_id,
 
     g_static_mutex_lock (&queue_lock);
 
-    if (!queue->data)
+    if (!queue.data)
     {
-        write (queue->pipe_in, &c, 1);
-        queue->data = g_hash_table_new (g_direct_hash, g_direct_equal);
+        (void) write (queue.pipe_in, &c, 1);
+        queue.data = g_hash_table_new (g_direct_hash, g_direct_equal);
     }
 
-    events = g_hash_table_lookup (queue->data, GUINT_TO_POINTER (event_id));
+    events = g_hash_table_lookup (queue.data, GUINT_TO_POINTER (event_id));
 
     if (!events)
     {
         events = g_queue_new ();
-        g_hash_table_insert (queue->data, GUINT_TO_POINTER (event_id), events);
+        g_hash_table_insert (queue.data, GUINT_TO_POINTER (event_id), events);
     }
 
     g_queue_push_tail (events, event_data);

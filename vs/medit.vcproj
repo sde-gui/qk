@@ -24,11 +24,11 @@
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake&#x0D;&#x0A;XCOPY medit\medit.exe &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.dll &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;"
-				ReBuildCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake clean all&#x0D;&#x0A;XCOPY medit\medit.exe &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.dll &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;"
+				BuildCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake&#x0D;&#x0A;XCOPY medit\medit.exe &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY medit\medit.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.dll &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;"
+				ReBuildCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake clean all&#x0D;&#x0A;XCOPY medit\medit.exe &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY medit\medit.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.dll &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;"
 				CleanCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake clean&#x0D;&#x0A;"
 				Output="C:\Program Files\medit\bin\medit.exe"
-				PreprocessorDefinitions="WIN32;_DEBUG;__WIN32__;ENABLE_NLS"
+				PreprocessorDefinitions="WIN32;_DEBUG;__WIN32__;ENABLE_NLS;MOO_ENABLE_UNIT_TESTS"
 				IncludeSearchPath="&quot;$(ProjectDir)..\moo&quot;;&quot;$(ProjectDir)..\build\vs-$(ConfigurationName)&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\glib-2.0&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\lib\glib-2.0\include&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\lib\gtk-2.0\include&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\gtk-2.0&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\cairo&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\pango-1.0&quot;;&quot;C:\Qt\vs-2008\4.5.3\include&quot;;&quot;C:\Qt\vs-2008\4.5.3\include\Qt&quot;;&quot;C:\Qt\vs-2008\4.5.3\include\QtCore&quot;"
 				ForcedIncludes=""
 				AssemblySearchPath=""
@@ -44,11 +44,11 @@
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake&#x0D;&#x0A;XCOPY medit\medit.exe &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.dll &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;"
-				ReBuildCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake clean all&#x0D;&#x0A;XCOPY medit\medit.exe &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.dll &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;"
+				BuildCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake&#x0D;&#x0A;XCOPY medit\medit.exe &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY medit\medit.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.dll &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;"
+				ReBuildCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake clean all&#x0D;&#x0A;XCOPY medit\medit.exe &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY medit\medit.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.dll &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;"
 				CleanCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake clean&#x0D;&#x0A;"
 				Output="C:\Program Files\medit\bin\medit.exe"
-				PreprocessorDefinitions="WIN32;NDEBUG;__WIN32__;ENABLE_NLS"
+				PreprocessorDefinitions="WIN32;NDEBUG;__WIN32__;ENABLE_NLS;MOO_ENABLE_UNIT_TESTS"
 				IncludeSearchPath="&quot;$(ProjectDir)..\moo&quot;;&quot;$(ProjectDir)..\build\vs-$(ConfigurationName)&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\glib-2.0&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\lib\glib-2.0\include&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\lib\gtk-2.0\include&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\gtk-2.0&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\cairo&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\pango-1.0&quot;;&quot;C:\Qt\vs-2008\4.5.3\include&quot;;&quot;C:\Qt\vs-2008\4.5.3\include\Qt&quot;;&quot;C:\Qt\vs-2008\4.5.3\include\QtCore&quot;"
 				ForcedIncludes=""
 				AssemblySearchPath=""
@@ -65,6 +65,10 @@
 			>
 			<File
 				RelativePath="..\moo\CMakeLists.txt"
+				>
+			</File>
+			<File
+				RelativePath="..\moo\gendef.py"
 				>
 			</File>
 			<File
@@ -584,6 +588,10 @@
 				</File>
 				<File
 					RelativePath="..\moo\mooutils\mooutils-gobject.h"
+					>
+				</File>
+				<File
+					RelativePath="..\moo\mooutils\mooutils-macros.h"
 					>
 				</File>
 				<File
@@ -1238,6 +1246,70 @@
 						</File>
 					</Filter>
 				</Filter>
+				<Filter
+					Name="glade"
+					>
+					<File
+						RelativePath="..\moo\mooedit\glade\mooeditprefs-file.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\mooeditprefs-filters.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\mooeditprefs-general.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\mooeditprefs-langs.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\mooeditprefs-view.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\mooeditprogress.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\mooeditsavemult.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\moopluginprefs.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\mooprint.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\mooprintpreview.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\mooquicksearch.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\moostatusbar.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\mootextfind-prompt.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\mootextfind.glade"
+						>
+					</File>
+					<File
+						RelativePath="..\moo\mooedit\glade\mootextgotoline.glade"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="moofileview"
@@ -1756,10 +1828,6 @@
 			Name="cmake"
 			>
 			<File
-				RelativePath="..\cmake\compilers.cmake"
-				>
-			</File>
-			<File
 				RelativePath="..\cmake\dist.cmake"
 				>
 			</File>
@@ -1788,6 +1856,10 @@
 				</File>
 				<File
 					RelativePath="..\cmake\modules\FindMooCmakeUtils.cmake"
+					>
+				</File>
+				<File
+					RelativePath="..\cmake\modules\FindMooCompilers.cmake"
 					>
 				</File>
 				<File

@@ -16,6 +16,7 @@
 #include "moo-test-macros.h"
 #include "mooutils/mooutils-fs.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef struct {
     char *text;
@@ -409,4 +410,10 @@ moo_test_load_data_file (const char *basename)
 
     g_free (fullname);
     return contents;
+}
+
+MOO_NORETURN void 
+moo_abort (void)
+{
+    abort ();
 }

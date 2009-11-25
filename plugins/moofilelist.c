@@ -1458,12 +1458,13 @@ uri_is_directory (const char *uri)
 }
 
 static void
-add_row_from_dir_uri (FileList    *list,
-                      const char  *uri,
-                      GtkTreeIter *iter,
-                      GtkTreeIter *parent,
-                      int          index)
+add_row_from_dir_uri (G_GNUC_UNUSED FileList    *list,
+                      G_GNUC_UNUSED const char  *uri,
+                      G_GNUC_UNUSED GtkTreeIter *iter,
+                      G_GNUC_UNUSED GtkTreeIter *parent,
+                      G_GNUC_UNUSED int          index)
 {
+#if 0
     /* TODO read files */
     Group *grp;
     char *basename;
@@ -1477,6 +1478,7 @@ add_row_from_dir_uri (FileList    *list,
 
     item_unref (ITEM (grp));
     g_free (basename);
+#endif
 }
 
 static void
