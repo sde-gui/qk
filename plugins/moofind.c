@@ -25,6 +25,7 @@
 #include "moofileview/moofileentry.h"
 #include "mooedit/moocmdview.h"
 #include "mooedit/mooedit-accels.h"
+#include "mooedit/mootextbuffer.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moohistorycombo.h"
 #include "mooutils/moodialogs.h"
@@ -77,6 +78,8 @@ typedef struct {
     GtkTextTag *error_tag;
     GtkTextTag *message_tag;
     guint match_count;
+    int group_start_line;
+    int group_end_line;
     int cmd;
 } FindWindowPlugin;
 
@@ -186,6 +189,7 @@ ensure_output (WindowStuff *stuff)
                                 _("Search Results"), _("Search Results"));
     stuff->output = g_object_new (MOO_TYPE_CMD_VIEW,
                                   "highlight-current-line", TRUE,
+                                  "enable-folding", TRUE,
                                   NULL);
 
     moo_edit_window_add_stop_client (window, stuff->output);
@@ -655,6 +659,17 @@ file_line_pair_free (FileLinePair *pair)
 }
 
 
+static void
+finish_group(WindowStuff *stuff)
+{
+    if (stuff->group_start_line >= 0 && stuff->group_end_line > stuff->group_start_line)
+        moo_text_buffer_add_fold (MOO_TEXT_BUFFER (gtk_text_view_get_buffer (GTK_TEXT_VIEW (stuff->output))),
+                                  stuff->group_start_line, stuff->group_end_line);
+    stuff->group_start_line = -1;
+    stuff->group_end_line = -1;
+}
+
+
 static gboolean
 process_grep_line (MooLineView *view,
                    const char  *line,
@@ -689,7 +704,7 @@ process_grep_line (MooLineView *view,
     number = g_strndup (p, colon - p);
     p = colon + 1;
 
-    if (!stuff->current_file || strcmp (stuff->current_file, filename))
+    if (!stuff->current_file || strcmp (stuff->current_file, filename) != 0)
     {
         g_free (stuff->current_file);
         stuff->current_file = filename;
@@ -698,6 +713,9 @@ process_grep_line (MooLineView *view,
         moo_line_view_set_data (view, view_line,
                                 file_line_pair_new (filename, -1),
                                 (GDestroyNotify) file_line_pair_free);
+
+        finish_group(stuff);
+        stuff->group_start_line = view_line;
     }
     else
     {
@@ -735,6 +753,7 @@ process_grep_line (MooLineView *view,
     moo_line_view_write (view, ": ", -1, NULL);
     moo_line_view_write (view, p, -1, stuff->match_tag);
     moo_line_view_end_line (view);
+    stuff->group_end_line = view_line;
 
     moo_line_view_set_data (view, view_line,
                             file_line_pair_new (stuff->current_file, line_no),
@@ -906,6 +925,8 @@ execute_grep (const char     *pattern,
     g_free (stuff->current_file);
     stuff->current_file = NULL;
     stuff->match_count = 0;
+    stuff->group_start_line = -1;
+    stuff->group_end_line = -1;
 
     command = g_string_new ("grep -E -r -I -s -H -n");
     if (!case_sensitive)
@@ -941,6 +962,8 @@ execute_find (const char     *pattern,
     g_free (stuff->current_file);
     stuff->current_file = NULL;
     stuff->match_count = 0;
+    stuff->group_start_line = -1;
+    stuff->group_end_line = -1;
 
     command = g_string_new (NULL);
     g_string_printf (command, "find '%s' -type f", dir);
@@ -988,6 +1011,8 @@ command_exit (MooLineView *view,
     g_return_val_if_fail (cmd != 0, FALSE);
 
     stuff->cmd = 0;
+
+    finish_group(stuff);
 
 #ifndef __WIN32__
     if (WIFEXITED (status))
