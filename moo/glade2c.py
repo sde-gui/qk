@@ -134,7 +134,7 @@ _%(xml_struct)s_free (%(XmlStruct)s *xml)
 G_GNUC_UNUSED static %(XmlStruct)s *
 %(xml_struct)s_get (gpointer widget)
 {
-    return g_object_get_data (widget, "moo-generated-glade-xml");
+    return (%(XmlStruct)s*) g_object_get_data (G_OBJECT (widget), "moo-generated-glade-xml");
 }
 
 static gboolean
@@ -224,9 +224,15 @@ G_GNUC_UNUSED static %(XmlStruct)s *
 
     buf = StringIO.StringIO()
     for w in gxml.widgets:
+        name = w.name
+        ct = params.id_map.get(name)
+        if ct is None:
+            class_name = w.class_name
+        else:
+            class_name = ct[0]
         print >> buf, """\
-    xml->%(struct_mem)s = moo_glade_xml_get_widget (xml->xml, "%(glade_name)s");
-    g_return_val_if_fail (xml->%(struct_mem)s != NULL, FALSE);""" % { 'struct_mem': w.name, 'glade_name': w.real_name }
+    xml->%(struct_mem)s = (%(class_name)s*) moo_glade_xml_get_widget (xml->xml, "%(glade_name)s");
+    g_return_val_if_fail (xml->%(struct_mem)s != NULL, FALSE);""" % { 'struct_mem': w.name, 'glade_name': w.real_name, 'class_name': class_name }
     glade_xml_widgets_defs = buf.getvalue()
     buf.close()
 
