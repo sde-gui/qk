@@ -102,13 +102,19 @@ ENDMACRO(MOO_ADD_COMPILER_FLAGS)
 INCLUDE(CheckCCompilerFlag)
 INCLUDE(CheckCXXCompilerFlag)
 
+MACRO(MOO_COMPILER_FLAG_VAR_NAME flag lang var)
+  STRING(REGEX REPLACE "[-=]" "_" _moo_cfvn_name MOO_${lang}FLAG${flag})
+  STRING(REPLACE "+" "x" _moo_cfvn_name ${_moo_cfvn_name})
+  SET(${var} ${_moo_cfvn_name})
+ENDMACRO(MOO_COMPILER_FLAG_VAR_NAME)
+
 MACRO(MOO_CHECK_COMPILER_FLAGS)
   _MOO_GET_COMPILER_CONFIG_ARGS(_moo_ccf_langs "FLAGS" _moo_ccf_bvars _moo_ccf_args ${ARGN})
   FOREACH(_moo_ccf_lang ${_moo_ccf_langs})
     SET(_moo_ccf_good_flags)
     FOREACH(_moo_ccf_flag ${_moo_ccf_args})
-      STRING(REGEX REPLACE "[-=]" "_" _moo_ccf_flag_name MOO_${_moo_ccf_lang}FLAG${_moo_ccf_flag})
-      STRING(REPLACE "+" "x" _moo_ccf_flag_name ${_moo_ccf_flag_name})
+      MOO_COMPILER_FLAG_VAR_NAME(${_moo_ccf_flag} ${_moo_ccf_lang} _moo_ccf_flag_name)
+
       IF("${_moo_ccf_lang}" STREQUAL "C")
         CHECK_C_COMPILER_FLAG("${_moo_ccf_flag}" ${_moo_ccf_flag_name})
       ELSEIF("${_moo_ccf_lang}" STREQUAL "CXX")
@@ -116,6 +122,7 @@ MACRO(MOO_CHECK_COMPILER_FLAGS)
       ELSE("${_moo_ccf_lang}" STREQUAL "C")
         MOO_ERROR("Unknown lang '${lang}'")
       ENDIF("${_moo_ccf_lang}" STREQUAL "C")
+
       IF(${_moo_ccf_flag_name})
         LIST(APPEND _moo_ccf_good_flags "${_moo_ccf_flag}")
       ENDIF(${_moo_ccf_flag_name})
@@ -158,26 +165,29 @@ MOO_ADD_COMPILE_DEFINITIONS(DEBUG -DMOO_DEBUG -DDEBUG -D_DEBUG)
 
 ###########################################################################
 #
-# Exceptions
-#
-
-MOO_OPTION(MOO_ENABLE_EXCEPTIONS FALSE "Enable exceptions in C++ code" HIDDEN TRUE DEFINE TRUE)
-
-
-###########################################################################
-#
 # GCC
 #
 
-MOO_ADD_COMPILER_FLAGS(GCC -Wall -Wextra)
-MOO_CHECK_COMPILER_FLAGS(GCC -fno-strict-aliasing -Wno-missing-field-initializers)
-MOO_ADD_COMPILER_FLAGS(GCC CXX -std=c++98 -pedantic -Wno-long-long)
+# Set this first because it may affect checks below
 IF(MOO_DEV_MODE)
   MOO_ADD_COMPILER_FLAGS(GCC -Werror)
 ENDIF(MOO_DEV_MODE)
-IF(NOT MOO_ENABLE_EXCEPTIONS)
-  MOO_CHECK_COMPILER_FLAGS(GCC CXX -fno-exceptions)
-ENDIF(NOT MOO_ENABLE_EXCEPTIONS)
+
+MOO_ADD_COMPILER_FLAGS(GCC -Wall -Wextra)
+MOO_CHECK_COMPILER_FLAGS(GCC -fexceptions -fno-strict-aliasing -fno-strict-overflow -Wno-missing-field-initializers)
+
+MOO_CHECK_COMPILER_FLAGS(GCC DEBUG -ftrapv)
+
+MOO_ADD_COMPILER_FLAGS(GCC CXX -std=c++98 -pedantic)
+MOO_CHECK_COMPILER_FLAGS(GCC CXX RELEASE -fno-enforce-eh-specs)
+
+IF(MOO_DEV_MODE)
+  MOO_CHECK_COMPILER_FLAGS(GCC CXX -fno-nonansi-builtins -fno-gnu-keywords)
+  MOO_CHECK_COMPILER_FLAGS(GCC CXX
+    -Wctor-dtor-privacy -Wnon-virtual-dtor
+    -Wstrict-null-sentinel -Woverloaded-virtual -Wsign-promo
+  )
+ENDIF(MOO_DEV_MODE)
 
 
 ###############################################################################
@@ -188,21 +198,17 @@ ENDIF(NOT MOO_ENABLE_EXCEPTIONS)
 MOO_ADD_COMPILE_DEFINITIONS(WIN32 -D__WIN32__ -DWIN32_LEAN_AND_MEAN -DUNICODE -D_UNICODE)
 
 MOO_ADD_COMPILER_FLAGS(MSVC /W4 /GS)
-MOO_ADD_COMPILER_FLAGS(MSVC CXX /Zc:wchar_t,forScope /GR)
+MOO_ADD_COMPILER_FLAGS(MSVC CXX /Zc:wchar_t,forScope /GR /EHc /EHsc)
 
 MOO_ADD_COMPILER_FLAGS(MSVC
-	/wd4221 /wd4204 /wd4996 /wd4244 /wd4055 /wd4127 /wd4100
-	/wd4054 /wd4152 /wd4706 /wd4125 /wd4389 /wd4132 /wd4018
+  /wd4221 /wd4204 /wd4996 /wd4244 /wd4055 /wd4127 /wd4100
+  /wd4054 /wd4152 /wd4706 /wd4125 /wd4389 /wd4132 /wd4018
 )
 
 IF(MOO_DEV_MODE)
   MOO_ADD_COMPILER_FLAGS(MSVC /WX)
   MOO_ADD_COMPILER_FLAGS(MSVC DEBUG /RTCsu /RTCc)
 ENDIF(MOO_DEV_MODE)
-
-IF(MOO_ENABLE_EXCEPTIONS)
-  MOO_ADD_COMPILER_FLAGS(MSVC CXX /EHc /EHsc)
-ENDIF(MOO_ENABLE_EXCEPTIONS)
 
 
 ###############################################################################
