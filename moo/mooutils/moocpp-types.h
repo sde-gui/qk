@@ -49,9 +49,9 @@ public:
     CheckedPtr(T *p) : m_p(p) { mooThrowIfFalse(p); }
     CheckedPtr(T *p, const char *msg, const MooCodeLoc &loc) : m_p(p) { if (!p) ExcUnexpected::raise(msg, loc); }
 
-    operator T*() const MOO_NOTHROW { return m_p; }
-    T &operator*() const MOO_NOTHROW { return *m_p; }
-    T *operator->() const MOO_NOTHROW { return m_p; }
+    NOTHROW operator T*() const { return m_p; }
+    T & NOTHROW operator*() const { return *m_p; }
+    T * NOTHROW operator->() const { return m_p; }
 
 private:
     T *m_p;

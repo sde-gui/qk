@@ -143,10 +143,6 @@ IF(MOO_OS_BSD OR MOO_OS_LINUX)
   SET(MOO_OS_UNIX TRUE)
 ENDIF(MOO_OS_BSD OR MOO_OS_LINUX)
 
-FOREACH(_moo_os ${_MOO_KNOWN_PLATFORMS})
-  MOO_DEFINE_H(MOO_OS_${_moo_os})
-ENDFOREACH(_moo_os)
-
 ###########################################################################
 #
 # Installation dirs
@@ -348,7 +344,7 @@ MACRO(MOO_CHECK_OPTION variable)
   ENDIF(NOT DEFINED __MOO_OPTION_SET_${variable})
 ENDMACRO(MOO_CHECK_OPTION)
 
-MOO_OPTION(MOO_DEV_MODE FALSE "Enable developer mode - bunch of checks, warnings, etc.")
+MOO_OPTION(MOO_DEV_MODE FALSE "Enable developer mode - bunch of checks, warnings, etc." DEFINE 1)
 
 FIND_PACKAGE(MooCompilers)
 FIND_PACKAGE(MooCmakeUtils)

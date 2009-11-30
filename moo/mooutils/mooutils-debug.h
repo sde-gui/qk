@@ -88,7 +88,7 @@ gboolean moo_debug_enabled  (const char *var,
                              gboolean    def_enabled);
 void     _moo_set_debug     (const char *domains);
 
-#elif defined(MOO_COMPILER_GCC)
+#elif defined(MOO_CL_GCC)
 
 #define MOO_DEBUG_INIT(domain, def_enabled)
 #define moo_dmsg(format, args...) G_STMT_START {} G_STMT_END

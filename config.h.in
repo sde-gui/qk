@@ -1,3 +1,5 @@
+#include <moo-config.h>
+
 #define MOO_BUILD_APP 1
 #define MOO_BUILD_EDIT 1
 #define MOO_BUILD_LUA 1

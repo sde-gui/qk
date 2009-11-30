@@ -174,17 +174,18 @@ IF(MOO_DEV_MODE)
 ENDIF(MOO_DEV_MODE)
 
 MOO_ADD_COMPILER_FLAGS(GCC -Wall -Wextra)
-MOO_CHECK_COMPILER_FLAGS(GCC -fexceptions -fno-strict-aliasing -fno-strict-overflow -Wno-missing-field-initializers)
+MOO_CHECK_COMPILER_FLAGS(GCC -fexceptions -fno-strict-aliasing -fno-strict-overflow -Wno-missing-field-initializers -Wnonnull)
 
 MOO_CHECK_COMPILER_FLAGS(GCC DEBUG -ftrapv)
 
 MOO_ADD_COMPILER_FLAGS(GCC CXX -std=c++98 -pedantic)
+MOO_CHECK_COMPILER_FLAGS(GCC CXX -fno-rtti)
 MOO_CHECK_COMPILER_FLAGS(GCC CXX RELEASE -fno-enforce-eh-specs)
 
 IF(MOO_DEV_MODE)
   MOO_CHECK_COMPILER_FLAGS(GCC CXX -fno-nonansi-builtins -fno-gnu-keywords)
   MOO_CHECK_COMPILER_FLAGS(GCC CXX
-    -Wctor-dtor-privacy -Wnon-virtual-dtor
+    -Wctor-dtor-privacy -Wnon-virtual-dtor -Wabi
     -Wstrict-null-sentinel -Woverloaded-virtual -Wsign-promo
   )
 ENDIF(MOO_DEV_MODE)

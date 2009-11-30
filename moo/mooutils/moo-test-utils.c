@@ -412,7 +412,7 @@ moo_test_load_data_file (const char *basename)
     return contents;
 }
 
-MOO_NORETURN void 
+NORETURN void
 moo_abort (void)
 {
     abort ();

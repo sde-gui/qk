@@ -26,50 +26,60 @@
 
 #define mooStaticAssert MOO_STATIC_ASSERT
 
-#ifdef DEBUG
-mooStaticAssert(sizeof(char) == 1, "test");
-inline void _moo_dummy_test_func()
-{
-    mooCheck(false);
-    mooAssert(false);
-    mooAssertNotReached();
-    mooCheckNotReached();
-}
-#endif
-
 namespace moo {
 
 template<typename FromClass, typename ToClass>
-inline void checkCanCast()
+inline void MOO_FUNC_DEV_MODE checkCanCast()
 {
     FromClass *p = 0;
     ToClass &q = *p;
     (void) q;
 }
 
-#ifdef DEBUG
+#ifdef MOO_DEV_MODE
 #define mooCheckCanCast(FromClass, ToClass) moo::checkCanCast<FromClass, ToClass>()
 #else // !DEBUG
 #define mooCheckCanCast(FromClass, ToClass) MOO_VOID_STMT
 #endif // !DEBUG
 
+#define MOO_DISABLE_COPY_AND_ASSIGN(Class)          \
+private:                                            \
+    Class(const Class&) MOO_FA_MISSING;             \
+    Class &operator=(const Class&) MOO_FA_MISSING;
+
+#ifdef MOO_DEV_MODE
+
+namespace _test {
+
+mooStaticAssert(sizeof(char) == 1, "test");
+
+inline void __moo_test_func()
+{
+    mooCheck(false);
+    mooAssert(false);
+    mooAssertNotReached();
+    mooCheckNotReached();
+}
+
+class Foo1 {
+public:
+    Foo1() {}
+
+    void meth1() NOTHROW;
+    void NOTHROW meth2() {}
+
+    MOO_DISABLE_COPY_AND_ASSIGN(Foo1)
+};
+
+inline void NOTHROW Foo1::meth1()
+{
+}
+
+} // namespace _test
+
+#endif // MOO_DEV_MODE
+
 } // namespace moo
-
-#define MOO_DISABLE_COPY_AND_ASSIGN(Class)      \
-private:                                        \
-    Class(const Class&);                        \
-    Class &operator=(const Class&);
-
-#define MOO_DO_ONCE_BEGIN                       \
-do {                                            \
-    static bool _moo_beenHere = false;          \
-    if (!_moo_beenHere)                         \
-    {                                           \
-        _moo_beenHere = true;
-
-#define MOO_DO_ONCE_END                         \
-    }                                           \
-} while (0);
 
 #endif /* MOO_CPP_MACROS_H */
 /* -%- strip:true -%- */

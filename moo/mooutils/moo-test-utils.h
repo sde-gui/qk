@@ -53,7 +53,7 @@ void             moo_test_run_tests         (const char         *single_test,
 void             moo_test_cleanup           (void);
 gboolean         moo_test_get_result        (void);
 
-MOO_NORETURN void moo_abort                 (void);
+NORETURN void    moo_abort                  (void);
 
 void             moo_test_assert_impl       (gboolean            passed,
                                              const char         *text,

@@ -67,12 +67,12 @@ type_name##_get_type (void)                                                     
 {                                                                                           \
     static GType g_define_type_id;                                                          \
                                                                                             \
-    MOO_BEGIN_DO_ONCE                                                                       \
+    MOO_DO_ONCE_BEGIN                                                                       \
                                                                                             \
     _MOO_REGISTER_TYPE(TypeName,type_name,TYPE_PARENT,0)                                    \
     code                                                                                    \
                                                                                             \
-    MOO_END_DO_ONCE                                                                         \
+    MOO_DO_ONCE_END                                                                         \
                                                                                             \
     return g_define_type_id;                                                                \
 }
@@ -85,14 +85,14 @@ type_name##_get_type (void)                                                     
 {                                                                                           \
     static GType g_define_type_id;                                                          \
                                                                                             \
-    MOO_BEGIN_DO_ONCE                                                                       \
+    MOO_DO_ONCE_BEGIN                                                                       \
                                                                                             \
     g_define_type_id =                                                                      \
         g_boxed_type_register_static (#TypeName,                                            \
                                       (GBoxedCopyFunc) copy_func,                           \
                                       (GBoxedFreeFunc) free_func);                          \
                                                                                             \
-    MOO_END_DO_ONCE                                                                         \
+    MOO_DO_ONCE_END                                                                         \
                                                                                             \
     return g_define_type_id;                                                                \
 }
@@ -123,9 +123,9 @@ static GType type_name##_get_type (void)                                        
 GType type_name##_get_type (void)                                                           \
 {                                                                                           \
     static GType g_define_type_id;                                                          \
-    MOO_BEGIN_DO_ONCE                                                                       \
+    MOO_DO_ONCE_BEGIN                                                                       \
     g_define_type_id = g_pointer_type_register_static (#TypeName);                          \
-    MOO_END_DO_ONCE                                                                         \
+    MOO_DO_ONCE_END                                                                         \
     return g_define_type_id;                                                                \
 }
 
@@ -133,9 +133,9 @@ GType type_name##_get_type (void)                                               
 #define MOO_DEFINE_QUARK__(QuarkName)                                                       \
 {                                                                                           \
     static GQuark q;                                                                        \
-    MOO_BEGIN_DO_ONCE                                                                       \
+    MOO_DO_ONCE_BEGIN                                                                       \
     q = g_quark_from_static_string (#QuarkName);                                            \
-    MOO_END_DO_ONCE                                                                         \
+    MOO_DO_ONCE_END                                                                         \
     return q;                                                                               \
 }
 

@@ -212,7 +212,7 @@ gboolean    _moo_regex_escape               (const char *string,
 #define moo_new0(type)          moo_new0_n (type, 1)
 #define moo_free(type,p)        moo_free_n (type, 1, p)
 
-#if defined(MOO_COMPILER_GCC)
+#if defined(MOO_CL_GCC)
 #define moo_obj_dup(type,p)     ({ type const *cp__ = p; type *p__ = moo_dup_block (sizeof (type), cp__); p__; })
 #else
 #define moo_obj_dup(type, p)    ((type*) moo_dup_block (sizeof (type), p))
@@ -228,8 +228,6 @@ static inline gpointer moo_object_ref_sink (gpointer obj)
 #endif
     return obj;
 }
-
-#define MOO_UNUSED(x) (void)x;
 
 G_END_DECLS
 

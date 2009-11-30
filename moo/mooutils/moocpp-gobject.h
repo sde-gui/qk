@@ -35,7 +35,7 @@ static void c_type##_init(CType *obj)                           \
     MOO_END_NO_EXCEPTIONS                                       \
 }                                                               \
                                                                 \
-static void c_type##_finalize(GObject *gobj) MOO_NOTHROW        \
+static void NOTHROW c_type##_finalize(GObject *gobj)            \
 {                                                               \
     ImplType *p = G_TYPE_INSTANCE_GET_PRIVATE(gobj,             \
         c_type##_get_type(), ImplType);                         \
@@ -43,7 +43,7 @@ static void c_type##_finalize(GObject *gobj) MOO_NOTHROW        \
     G_OBJECT_CLASS(c_type##_parent_class)->finalize(gobj);      \
 }                                                               \
                                                                 \
-static ImplType *getPriv(CType *obj) MOO_NOTHROW                \
+static ImplType * NOTHROW getPriv(CType *obj)                   \
 {                                                               \
     return G_TYPE_INSTANCE_GET_PRIVATE(obj,                     \
         c_type##_get_type(), ImplType);                         \
@@ -58,21 +58,21 @@ template<typename GObjType>
 class GWeakPtr
 {
 public:
-    GWeakPtr(GObjType *gobj = 0) MOO_NOTHROW : m_p(0) { set(gobj); }
-    ~GWeakPtr() MOO_NOTHROW { unset(); }
+    NOTHROW GWeakPtr(GObjType *gobj = 0) : m_p(0) { set(gobj); }
+    NOTHROW ~GWeakPtr() { unset(); }
 
-    GWeakPtr(const GWeakPtr &wp) MOO_NOTHROW : m_p(0) { set(wp.get()); }
-    GWeakPtr &operator=(const GWeakPtr &wp) MOO_NOTHROW { set(wp.get()); }
-    GWeakPtr &operator=(GObjType *gobj) MOO_NOTHROW { set(gobj); }
+    NOTHROW GWeakPtr(const GWeakPtr &wp) : m_p(0) { set(wp.get()); }
+    GWeakPtr & NOTHROW operator=(const GWeakPtr &wp) { set(wp.get()); }
+    GWeakPtr & NOTHROW operator=(GObjType *gobj) { set(gobj); }
 
-    operator bool () const MOO_NOTHROW { return m_p; }
-    bool operator ! () const MOO_NOTHROW { return !m_p; }
+    NOTHROW operator bool () const { return m_p; }
+    bool NOTHROW operator ! () const { return !m_p; }
 
-    operator GObjType* () const MOO_NOTHROW { return get(); }
+    NOTHROW operator GObjType* () const { return get(); }
     GObjType *operator -> () const { return checkPtr(get()); }
-    GObjType *get() const MOO_NOTHROW { return static_cast<GObjType*>(m_p); }
+    GObjType * NOTHROW get() const { return static_cast<GObjType*>(m_p); }
 
-    void set(GObjType *gobj) MOO_NOTHROW
+    void NOTHROW set(GObjType *gobj)
     {
         if (m_p != gobj)
         {
@@ -83,7 +83,7 @@ public:
         }
     }
 
-    void unset() MOO_NOTHROW
+    void NOTHROW unset()
     {
         if (m_p)
             g_object_remove_weak_pointer(G_OBJECT(m_p), &m_p);

@@ -1154,7 +1154,7 @@ _moo_get_pid_string (void)
 {
     static char *moo_pid_string;
 
-    MOO_BEGIN_DO_ONCE
+    MOO_DO_ONCE_BEGIN
 
 #ifdef __WIN32__
     moo_pid_string = g_strdup_printf ("%ld", GetCurrentProcessId ());
@@ -1162,7 +1162,7 @@ _moo_get_pid_string (void)
     moo_pid_string = g_strdup_printf ("%ld", (long) getpid ());
 #endif
 
-    MOO_END_DO_ONCE
+    MOO_DO_ONCE_END
 
     return moo_pid_string;
 }
@@ -1193,7 +1193,7 @@ moo_tempnam (void)
     static int counter;
     G_LOCK_DEFINE_STATIC (counter);
 
-    MOO_BEGIN_DO_ONCE
+    MOO_DO_ONCE_BEGIN
     {
         char *dirname = NULL;
         const char *short_name;
@@ -1218,7 +1218,7 @@ moo_tempnam (void)
         moo_temp_dir = dirname;
         moo_install_atexit ();
     }
-    MOO_END_DO_ONCE
+    MOO_DO_ONCE_END
 
     g_return_val_if_fail (moo_temp_dir != NULL, NULL);
 

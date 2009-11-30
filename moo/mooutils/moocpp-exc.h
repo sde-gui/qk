@@ -20,27 +20,21 @@
 
 namespace moo {
 
-#if defined(MOO_COMPILER_MSVC)
-#define MOO_NOTHROW __declspec(nothrow)
-#else
-#define MOO_NOTHROW throw()
-#endif
-
 class Exception
 {
 protected:
-    Exception(const char *what, const MooCodeLoc *loc) MOO_NOTHROW
+    NOTHROW Exception(const char *what, const MooCodeLoc *loc)
         : m_what(what ? what : "")
         , m_loc(loc ? *loc : moo_default_code_loc ())
     {
     }
 
-    virtual ~Exception() MOO_NOTHROW
+    virtual NOTHROW ~Exception()
     {
     }
 
 public:
-    const char *what() const MOO_NOTHROW { return m_what; }
+    const char * NOTHROW what() const { return m_what; }
 
 private:
     const char *m_what;
@@ -52,19 +46,19 @@ private:
 class ExcUnexpected : public Exception
 {
 protected:
-    ExcUnexpected(const char *msg, const MooCodeLoc &loc) MOO_NOTHROW
+    NOTHROW ExcUnexpected(const char *msg, const MooCodeLoc &loc)
         : Exception(msg, &loc)
     {
     }
 
-    virtual ~ExcUnexpected() MOO_NOTHROW
+    virtual NOTHROW ~ExcUnexpected()
     {
     }
 
     MOO_DISABLE_COPY_AND_ASSIGN(ExcUnexpected)
 
 public:
-    MOO_NORETURN static void raise(const char *msg, const MooCodeLoc &loc)
+    NORETURN static void raise(const char *msg, const MooCodeLoc &loc)
     {
         moo_assert_message(msg, loc);
         throw ExcUnexpected(msg, loc);
