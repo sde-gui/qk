@@ -1,0 +1,3 @@
+@pushd ${_MOO_BINARY_DIR}\moo
+@${_MOO_BINARY_DIR}\medit\medit.exe -n --log-window
+@popd

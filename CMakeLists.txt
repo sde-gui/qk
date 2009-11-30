@@ -41,3 +41,12 @@ MOO_ADD_MSG_CATALOG(moo-gsv po-gsv)
 MOO_WRITE_CONFIG_H(config.h.in config.h @ONLY)
 
 CONFIGURE_FILE(config-dirs.h.in config-dirs.h @ONLY)
+
+IF(WIN32)
+  GET_FILENAME_COMPONENT(_MOO_SOURCE_DIR ${MOO_SOURCE_DIR} ABSOLUTE)
+  # TO_NATIVE_PATH damn it! Cmake is such a wonderful piece of language...
+  STRING(REPLACE "/" "\\" _MOO_SOURCE_DIR "${_MOO_SOURCE_DIR}")
+  GET_FILENAME_COMPONENT(_MOO_BINARY_DIR ${MOO_BINARY_DIR} ABSOLUTE)
+  STRING(REPLACE "/" "\\" _MOO_BINARY_DIR "${_MOO_BINARY_DIR}")
+  CONFIGURE_FILE(run-medit.in run-medit.bat)
+ENDIF(WIN32)
