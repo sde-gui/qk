@@ -156,7 +156,7 @@ void            _moo_editor_save_session    (MooEditor      *editor,
 enum {
     MOO_EDIT_OPEN_NEW_WINDOW = 1 << 0,
     MOO_EDIT_OPEN_NEW_TAB    = 1 << 1,
-    MOO_EDIT_OPEN_RELOAD     = 1 << 2,
+    MOO_EDIT_OPEN_RELOAD     = 1 << 2
 };
 
 void            _moo_editor_open_uri        (MooEditor      *editor,
