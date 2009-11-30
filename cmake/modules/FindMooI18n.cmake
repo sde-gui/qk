@@ -21,9 +21,6 @@ MACRO(MOO_ADD_MSG_CATALOG catalogname dir)
       ADD_CUSTOM_COMMAND(OUTPUT ${_moo_gmo_file}
                          COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} --check -o ${_moo_gmo_file} ${_moo_po_file}
                          DEPENDS ${_moo_po_file})
-#       ADD_CUSTOM_COMMAND(TARGET translations-${catalogname}
-#                          COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} --check -o ${_moo_gmo_file} ${_moo_po_file}
-#                          DEPENDS ${_moo_po_file})
       INSTALL(FILES ${_moo_gmo_file} DESTINATION ${LOCALEDIR}/${_moo_lang_code}/LC_MESSAGES/ RENAME ${catalogname}.mo)
     ENDFOREACH(_moo_po_file)
     SET_SOURCE_FILES_PROPERTIES(${_moo_gmo_files} PROPERTIES GENERATED 1 EXTERNAL_OBJECT 1)
