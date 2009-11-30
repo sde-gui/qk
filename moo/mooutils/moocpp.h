@@ -22,8 +22,6 @@
 #include <mooutils/moocpp-types.h>
 #include <mooutils/moocpp-refptr.h>
 #include <mooutils/moocpp-cont.h>
-#include <mooutils/moocpp-gobject.h>
-#include <mooutils/moocpp-gtk.h>
 
 #endif /* __cplusplus */
 

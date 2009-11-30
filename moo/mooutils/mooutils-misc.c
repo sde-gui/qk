@@ -20,6 +20,7 @@
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooatom.h"
+#include "mooutils/mooonce.h"
 #include "glade/moologwindow-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gmappedfile.h>
@@ -50,7 +51,6 @@
 
 
 G_LOCK_DEFINE_STATIC (moo_user_data_dir);
-G_LOCK_DEFINE_STATIC (moo_temp_dir);
 static char *moo_app_instance_name;
 static char *moo_user_data_dir;
 static char *moo_temp_dir;
@@ -1152,21 +1152,17 @@ _moo_menu_item_set_label (GtkWidget  *item,
 const char *
 _moo_get_pid_string (void)
 {
-    G_LOCK_DEFINE_STATIC (moo_pid_string);
     static char *moo_pid_string;
 
-    G_LOCK (moo_pid_string);
+    MOO_BEGIN_DO_ONCE
 
-    if (!moo_pid_string)
-    {
 #ifdef __WIN32__
-        moo_pid_string = g_strdup_printf ("%ld", GetCurrentProcessId ());
+    moo_pid_string = g_strdup_printf ("%ld", GetCurrentProcessId ());
 #else
-        moo_pid_string = g_strdup_printf ("%ld", (long) getpid ());
+    moo_pid_string = g_strdup_printf ("%ld", (long) getpid ());
 #endif
-    }
 
-    G_UNLOCK (moo_pid_string);
+    MOO_END_DO_ONCE
 
     return moo_pid_string;
 }
@@ -1197,9 +1193,7 @@ moo_tempnam (void)
     static int counter;
     G_LOCK_DEFINE_STATIC (counter);
 
-    G_LOCK (moo_temp_dir);
-
-    if (!moo_temp_dir)
+    MOO_BEGIN_DO_ONCE
     {
         char *dirname = NULL;
         const char *short_name;
@@ -1224,8 +1218,7 @@ moo_tempnam (void)
         moo_temp_dir = dirname;
         moo_install_atexit ();
     }
-
-    G_UNLOCK (moo_temp_dir);
+    MOO_END_DO_ONCE
 
     g_return_val_if_fail (moo_temp_dir != NULL, NULL);
 
@@ -1758,9 +1751,14 @@ _moo_widget_set_tooltip (GtkWidget  *widget,
  */
 
 void
-moo_assert_message (const char *message, const MooCodeLoc *loc)
+moo_assert_message (const char *message, MooCodeLoc loc)
 {
-    g_error("file '%s', function '%s', line %d: %s\n", loc->file, loc->func, loc->line, message);
+#ifdef DEBUG
+    g_critical("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
+    g_on_error_query(moo_get_prgname());
+#else
+    g_error("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
+#endif
 }
 
 

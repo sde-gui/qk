@@ -18,52 +18,58 @@
 
 #include <mooutils/mooutils-macros.h>
 
-#define mAssert _MOO_DEBUG_ASSERT
-#define mCheck  _MOO_RELEASE_ASSERT
+#define mooAssert _MOO_DEBUG_ASSERT
+#define mooCheck  _MOO_RELEASE_ASSERT
 
-#define mStaticAssert MOO_STATIC_ASSERT
-mStaticAssert(sizeof(char) == 1, "test");
+#define mooAssertNotReached _MOO_DEBUG_ASSERT_NOT_REACHED
+#define mooCheckNotReached  _MOO_RELEASE_ASSERT_NOT_REACHED
+
+#define mooStaticAssert MOO_STATIC_ASSERT
+
+#ifdef DEBUG
+mooStaticAssert(sizeof(char) == 1, "test");
+inline void _moo_dummy_test_func()
+{
+    mooCheck(false);
+    mooAssert(false);
+    mooAssertNotReached();
+    mooCheckNotReached();
+}
+#endif
 
 namespace moo {
-namespace impl {
 
 template<typename FromClass, typename ToClass>
-struct _mCanCast
+inline void checkCanCast()
 {
-    static void check()
-    {
-        FromClass *p = 0;
-        ToClass &q = *p;
-        (void) q;
-    }
-};
+    FromClass *p = 0;
+    ToClass &q = *p;
+    (void) q;
+}
 
-} // namespace impl
+#ifdef DEBUG
+#define mooCheckCanCast(FromClass, ToClass) moo::checkCanCast<FromClass, ToClass>()
+#else // !DEBUG
+#define mooCheckCanCast(FromClass, ToClass) MOO_VOID_STMT
+#endif // !DEBUG
+
 } // namespace moo
 
-#define mCanCast(FromClass, ToClass) moo::impl::_mCanCast<FromClass, ToClass>::check()
-
-#define MOO_DISABLE_COPY_AND_ASSIGN(Class)                      \
-private:                                                        \
-    Class(const Class&);                                        \
+#define MOO_DISABLE_COPY_AND_ASSIGN(Class)      \
+private:                                        \
+    Class(const Class&);                        \
     Class &operator=(const Class&);
 
-#define MOO_IMPLEMENT_POINTER(Class, get_ptr_expr)              \
-    operator Class*() const { return get_ptr_expr; }            \
-    Class &operator*() const { return *(get_ptr_expr); }        \
-    Class *operator->() const { return get_ptr_expr; }
+#define MOO_DO_ONCE_BEGIN                       \
+do {                                            \
+    static bool _moo_beenHere = false;          \
+    if (!_moo_beenHere)                         \
+    {                                           \
+        _moo_beenHere = true;
 
-#define MOO_IMPLEMENT_POINTER_TO_MEM(Class, get_ptr_expr)       \
-    operator Class*() { return get_ptr_expr; }                  \
-    operator const Class*() const { return get_ptr_expr; }      \
-    Class &operator*() { return *(get_ptr_expr); }              \
-    const Class &operator*() const { return *(get_ptr_expr); }  \
-    Class *operator->() { return get_ptr_expr; }                \
-    const Class *operator->() const { return get_ptr_expr; }
-
-#define MOO_IMPLEMENT_BOOL(get_bool_expr)                       \
-    operator bool() const { return get_bool_expr; }             \
-    bool operator !() const { return !(get_bool_expr); }
+#define MOO_DO_ONCE_END                         \
+    }                                           \
+} while (0);
 
 #endif /* MOO_CPP_MACROS_H */
 /* -%- strip:true -%- */

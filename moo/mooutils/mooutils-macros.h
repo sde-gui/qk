@@ -58,7 +58,8 @@
 #define MOO_TODO(x)                 _MOO_GCC_PRAGMA(message ("TODO: " #x))
 #define MOO_IMPLEMENT_ME            _MOO_GCC_PRAGMA(message ("IMPLEMENT ME"))
 #elif defined(MOO_COMPILER_MSVC)
-#define _MOO_MESSAGE_LOC __FILE__ "(" G_STRINGIFY(__LINE__) ") : "
+#define _MOO_MESSAGE_LINE(line) #line
+#define _MOO_MESSAGE_LOC __FILE__ "(" _MOO_MESSAGE_LINE(__LINE__) ") : "
 #define MOO_COMPILER_MESSAGE(x)     __pragma(message(_MOO_MESSAGE_LOC #x))
 #define MOO_TODO(x)                 __pragma(message(_MOO_MESSAGE_LOC "TODO: " #x))
 #define MOO_IMPLEMENT_ME            __pragma(message(_MOO_MESSAGE_LOC "IMPLEMENT ME: " __FUNCTION__))
@@ -70,8 +71,10 @@
 
 #if defined(MOO_COMPILER_MSVC)
 #define MOO_NORETURN __declspec(noreturn)
+#elif defined(__GNUC__)
+#define MOO_NORETURN __attribute__((noreturn))
 #else
-#define MOO_NORETURN G_GNUC_NORETURN
+#define MOO_NORETURN
 #endif
 
 #ifdef __cplusplus
@@ -86,8 +89,28 @@ typedef struct MooCodeLoc
     int counter;
 } MooCodeLoc;
 
-void moo_assert_message (const char       *message,
-                         const MooCodeLoc *loc);
+static inline MooCodeLoc
+moo_default_code_loc (void)
+{
+    MooCodeLoc loc = { "<unknown>", "<unknown>", 0, 0 };
+    return loc;
+}
+
+static inline MooCodeLoc
+moo_make_code_loc (const char *file, const char *func, int line, int counter)
+{
+    MooCodeLoc loc;
+    loc.file = file;
+    loc.func = func;
+    loc.line = line;
+    loc.counter = counter;
+    return loc;
+}
+
+#ifndef DEBUG
+MOO_NORETURN
+#endif
+void moo_assert_message(const char *message, MooCodeLoc loc);
 
 #ifdef __cplusplus
 } // extern "C"
@@ -99,32 +122,33 @@ void moo_assert_message (const char       *message,
 #define _MOO_COUNTER 0
 #endif
 
-#define _MOO_ASSERT_MESSAGE(msg)            \
-do {                                        \
-    const MooCodeLoc _moo_loc__ = {         \
-        __FILE__, MOO_STRFUNC,              \
-        __LINE__, _MOO_COUNTER              \
-    };                                      \
-    moo_assert_message (msg, &_moo_loc__);  \
-} while (0)
+#define MOO_CODE_LOC (moo_make_code_loc (__FILE__, MOO_STRFUNC, __LINE__, _MOO_COUNTER))
 
-#define _MOO_ASSERT_CHECK(cond)             \
+#define _MOO_ASSERT_MESSAGE(msg) moo_assert_message (msg, MOO_CODE_LOC)
+
+#define _MOO_ASSERT_CHECK_MSG(cond, msg)    \
 do {                                        \
     if (cond)                               \
         ;                                   \
     else                                    \
-        _MOO_ASSERT_MESSAGE (               \
-            "condition failed: " #cond);    \
+        _MOO_ASSERT_MESSAGE (msg);          \
 } while(0)
+
+#define _MOO_ASSERT_CHECK(cond)             \
+    _MOO_ASSERT_CHECK_MSG(cond,             \
+        "condition failed: " #cond)
 
 #define MOO_VOID_STMT do {} while (0)
 
 #define _MOO_RELEASE_ASSERT _MOO_ASSERT_CHECK
+#define _MOO_RELEASE_ASSERT_NOT_REACHED() _MOO_ASSERT_MESSAGE ("should not be reached")
 
 #ifdef DEBUG
 #define _MOO_DEBUG_ASSERT _MOO_ASSERT_CHECK
+#define _MOO_DEBUG_ASSERT_NOT_REACHED() _MOO_ASSERT_MESSAGE ("should not be reached")
 #else
 #define _MOO_DEBUG_ASSERT(cond) MOO_VOID_STMT
+#define _MOO_DEBUG_ASSERT_NOT_REACHED() MOO_VOID_STMT
 #endif
 
 #define _MOO_CONCAT_(a, b) a##b
@@ -132,7 +156,18 @@ do {                                        \
 #define __MOO_STATIC_ASSERT_MACRO(cond, counter) enum { _MOO_CONCAT(_MooStaticAssert_##counter##_, __LINE__) = 1 / ((cond) ? 1 : 0) }
 #define _MOO_STATIC_ASSERT_MACRO(cond) __MOO_STATIC_ASSERT_MACRO(cond, 0)
 #define MOO_STATIC_ASSERT(cond, message) _MOO_STATIC_ASSERT_MACRO(cond)
-MOO_STATIC_ASSERT(sizeof(char) == 1, "test");
+
+#ifdef DEBUG
+inline static void _moo_test_asserts_dummy(void *p)
+{
+    MOO_STATIC_ASSERT (sizeof(char) == 1, "test");
+    _MOO_ASSERT_CHECK (p != (void*)0);
+    _MOO_DEBUG_ASSERT (p != (void*)0);
+    _MOO_RELEASE_ASSERT (p != (void*)0);
+    _MOO_RELEASE_ASSERT_NOT_REACHED ();
+    _MOO_DEBUG_ASSERT_NOT_REACHED ();
+}
+#endif
 
 #endif /* MOO_UTILS_MACROS_H */
 /* -%- strip:true -%- */

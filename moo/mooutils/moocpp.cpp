@@ -1,4 +1,4 @@
-#include "moocpp.h"
+#include "moocpp-gtk.h"
 
 namespace moo {
 
@@ -14,7 +14,7 @@ void RefCount::ref()
 
 bool RefCount::unref()
 {
-    mAssert(int(*this) > 0);
+    mooAssert(int(*this) > 0);
     return g_atomic_int_dec_and_test(&m_count) != 0;
 }
 

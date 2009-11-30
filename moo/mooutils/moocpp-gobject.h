@@ -19,8 +19,80 @@
 #include <glib-object.h>
 #include <mooutils/moocpp-macros.h>
 #include <mooutils/moocpp-refptr.h>
+#include <mooutils/moocpp-cont.h>
 
 namespace moo {
+
+#define MOO_DEFINE_GOBJECT_PRIV_CPP(ImplType, CType, c_type)    \
+typedef ImplType _##CType##_ImplType;                           \
+                                                                \
+static void c_type##_init(CType *obj)                           \
+{                                                               \
+    MOO_BEGIN_NO_EXCEPTIONS                                     \
+    ImplType *p = G_TYPE_INSTANCE_GET_PRIVATE(obj,              \
+        c_type##_get_type(), ImplType);                         \
+    new (p) ImplType;                                           \
+    MOO_END_NO_EXCEPTIONS                                       \
+}                                                               \
+                                                                \
+static void c_type##_finalize(GObject *gobj) MOO_NOTHROW        \
+{                                                               \
+    ImplType *p = G_TYPE_INSTANCE_GET_PRIVATE(gobj,             \
+        c_type##_get_type(), ImplType);                         \
+    p->~ImplType();                                             \
+    G_OBJECT_CLASS(c_type##_parent_class)->finalize(gobj);      \
+}                                                               \
+                                                                \
+static ImplType *getPriv(CType *obj) MOO_NOTHROW                \
+{                                                               \
+    return G_TYPE_INSTANCE_GET_PRIVATE(obj,                     \
+        c_type##_get_type(), ImplType);                         \
+}
+
+#define MOO_GOBJECT_PRIV_CPP_CLASS_INIT(CType, c_type)          \
+    G_OBJECT_CLASS(klass)->finalize = c_type##_finalize;        \
+    g_type_class_add_private(klass, sizeof(_##CType##_ImplType))
+
+
+template<typename GObjType>
+class GWeakPtr
+{
+public:
+    GWeakPtr(GObjType *gobj = 0) MOO_NOTHROW : m_p(0) { set(gobj); }
+    ~GWeakPtr() MOO_NOTHROW { unset(); }
+
+    GWeakPtr(const GWeakPtr &wp) MOO_NOTHROW : m_p(0) { set(wp.get()); }
+    GWeakPtr &operator=(const GWeakPtr &wp) MOO_NOTHROW { set(wp.get()); }
+    GWeakPtr &operator=(GObjType *gobj) MOO_NOTHROW { set(gobj); }
+
+    operator bool () const MOO_NOTHROW { return m_p; }
+    bool operator ! () const MOO_NOTHROW { return !m_p; }
+
+    operator GObjType* () const MOO_NOTHROW { return get(); }
+    GObjType *operator -> () const { return checkPtr(get()); }
+    GObjType *get() const MOO_NOTHROW { return static_cast<GObjType*>(m_p); }
+
+    void set(GObjType *gobj) MOO_NOTHROW
+    {
+        if (m_p != gobj)
+        {
+            unset();
+            m_p = gobj;
+            if (m_p)
+                g_object_add_weak_pointer(G_OBJECT(m_p), &m_p);
+        }
+    }
+
+    void unset() MOO_NOTHROW
+    {
+        if (m_p)
+            g_object_remove_weak_pointer(G_OBJECT(m_p), &m_p);
+        m_p = 0;
+    }
+
+private:
+    gpointer m_p;
+};
 
 template<typename GObjType> class GObjectTypeHelper;
 
@@ -53,7 +125,7 @@ GObjTypeParent *down_cast(GObjTypeChild *c)
 {
     typedef typename GObjectTypeHelper<GObjTypeChild>::TCppClass CppClassC;
     typedef typename GObjectTypeHelper<GObjTypeParent>::TCppClass CppClassP;
-    mCanCast(CppClassC, CppClassP);
+    mooCheckCanCast(CppClassC, CppClassP);
     return (GObjTypeParent*) c;
 }
 

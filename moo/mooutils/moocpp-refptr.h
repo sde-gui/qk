@@ -17,7 +17,6 @@
 #define MOO_CPP_REFPTR_H
 
 #include <mooutils/moocpp-types.h>
-#include <mooutils/moocpp-cont.h>
 
 namespace moo {
 
@@ -57,7 +56,7 @@ public:
     void operator() (T *p) { delete p; }
 
     template<class U>
-    operator DeleteObject<U>& () { mCanCast(T, U); return *reinterpret_cast<DeleteObject<U>*>(this); }
+    operator DeleteObject<U>& () { mooCheckCanCast(T, U); return *reinterpret_cast<DeleteObject<U>*>(this); }
 };
 
 } // namespace impl
@@ -69,24 +68,24 @@ public:
     OwningPtr(T *p = 0) : m_p(p) {}
     ~OwningPtr() { unset(); }
 
-    OwningPtr(const OwningPtr &op) : m_p(0) { set(op); }
-    OwningPtr &operator=(const OwningPtr &op) { set(op); }
+    OwningPtr(OwningPtr &op) : m_p(0) { set(op); }
+    OwningPtr &operator=(OwningPtr &op) { set(op); }
 
-    template<class U> OwningPtr(const U &u) : m_p(0) { set(u); }
-    template<class U> OwningPtr &operator=(const U &u) { set(u); return *this; }
+    template<class U> OwningPtr(U &u) : m_p(0) { set(u); }
+    template<class U> OwningPtr &operator=(U &u) { set(u); return *this; }
 
     template<class U, class V>
     operator OwningPtr<U, V>& ()
     {
-        mCanCast(T, U);
-        mCanCast(TDeleter, V);
+        mooCheckCanCast(T, U);
+        mooCheckCanCast(TDeleter, V);
         return *reinterpret_cast<OwningPtr<U, V>*>(this);
     }
 
     template<class U, class V>
     operator const OwningPtr<U, V>& () const
     {
-        return const_cast<OwningPtr*>(this)->operator OwningPtr<U, V>&();
+        return const_cast<OwningPtr&>(this)->operator OwningPtr<U, V>&();
     }
 
     MOO_IMPLEMENT_POINTER(T, m_p)
@@ -105,9 +104,9 @@ public:
     }
 
     template<class U, class V>
-    void set(const OwningPtr<U, V> &op)
+    void set(OwningPtr<U, V> &op)
     {
-        mCanCast(U, T);
+        mooCheckCanCast(U, T);
         T *p = op.steal();
         set(p);
     }
@@ -137,7 +136,7 @@ public:
     static void unref(T *p) { p->unref(); }
 
     template<class U>
-    operator RefUnrefObject<U>& () { mCanCast(T, U); return *reinterpret_cast<RefUnrefObject<U>*>(this); }
+    operator RefUnrefObject<U>& () { mooCheckCanCast(T, U); return *reinterpret_cast<RefUnrefObject<U>*>(this); }
 };
 
 }
@@ -164,8 +163,8 @@ public:
     template<class U, class V>
     operator SharedPtr<U, V>& ()
     {
-        mCanCast(T, U);
-        mCanCast(TRefUnref, V);
+        mooCheckCanCast(T, U);
+        mooCheckCanCast(TRefUnref, V);
         return *reinterpret_cast<SharedPtr<U, V>*>(this);
     }
 
@@ -181,14 +180,14 @@ public:
     template<class U, class V>
     void set(const SharedPtr<U, V> &sp)
     {
-        mCanCast(U, T);
+        mooCheckCanCast(U, T);
         set(sp.get());
     }
 
     template<class U, class V>
     void set(const OwningPtr<U, V> &op)
     {
-        mCanCast(U, T);
+        mooCheckCanCast(U, T);
         set(op.get());
     }
 
@@ -219,151 +218,6 @@ public:
 
 private:
     T *m_p;
-};
-
-namespace impl {
-
-class WeakPtrBase
-{
-public:
-    WeakPtrBase() : m_p(0) {}
-    ~WeakPtrBase() { mAssert(m_p == 0); }
-
-    void unsetPtrNoNotify()
-    {
-        m_p = 0;
-    }
-
-protected:
-    void set(void *p) { m_p = p; }
-
-protected:
-    void *m_p;
-};
-
-} // namespace impl
-
-template<class T>
-class WeakPtr : public impl::WeakPtrBase
-{
-public:
-    WeakPtr(T *p = 0) { set(p); }
-    ~WeakPtr() { unset(); }
-
-    WeakPtr(const WeakPtr &op) { set(op); }
-    WeakPtr &operator=(const WeakPtr &op) { set(op); }
-
-    template<class U> WeakPtr(const U &u) { set(u); }
-    template<class U> WeakPtr &operator=(const U &u) { set(u); return *this; }
-
-    template<class U>
-    operator WeakPtr<U>& ()
-    {
-        mCanCast(T, U);
-        return *reinterpret_cast<WeakPtr<U>*>(this);
-    }
-
-    template<class U>
-    operator const WeakPtr<U>& () const
-    {
-        return const_cast<WeakPtr*>(this)->operator WeakPtr<U>&();
-    }
-
-    MOO_IMPLEMENT_POINTER(T, get())
-    MOO_IMPLEMENT_BOOL(get())
-
-    template<class U>
-    void set(U *u)
-    {
-        T *p = u;
-        T *old = get();
-        if (old != p)
-        {
-            if (old)
-                old->removeWeakPtr(*this);
-            m_p = p;
-            if (p)
-                p->addWeakPtr(*this);
-        }
-    }
-
-    template<class U>
-    void set(const WeakPtr<U> &wp)
-    {
-        mCanCast(U, T);
-        T *p = wp.get();
-        set(p);
-    }
-
-    template<class U, class V>
-    void set(const SharedPtr<U, V> &sp)
-    {
-        mCanCast(U, T);
-        T *p = sp.get();
-        set(p);
-    }
-
-    template<class U, class V>
-    void set(const OwningPtr<U, V> &op)
-    {
-        mCanCast(U, T);
-        T *p = op.get();
-        set(p);
-    }
-
-    void unset()
-    {
-        T *old = get();
-        if (old)
-            old->removeWeakPtr(*this);
-        m_p = 0;
-    }
-
-    T *get() const { return static_cast<T*>(m_p); }
-};
-
-template<class T>
-class WeakRefd
-{
-protected:
-    WeakRefd()
-    {
-    }
-
-    virtual ~WeakRefd()
-    {
-        notify();
-    }
-
-    void notify()
-    {
-        for (int i = 0, c = m_ptrs.size(); i < c; ++i)
-            m_ptrs[i]->unsetPtrNoNotify();
-        m_ptrs.clear();
-    }
-
-public:
-    template<class U>
-    void addWeakPtr(WeakPtr<U> &wp)
-    {
-        mCanCast(U, T);
-        mAssert(!m_ptrs.contains(&wp));
-        m_ptrs.append(&wp);
-    }
-
-    template<class U>
-    void removeWeakPtr(WeakPtr<U> &wp)
-    {
-        mCanCast(U, T);
-        mAssert(m_ptrs.contains(&wp));
-        m_ptrs.removeAll(&wp);
-    }
-
-private:
-    MOO_DISABLE_COPY_AND_ASSIGN(WeakRefd)
-
-private:
-    Vector<impl::WeakPtrBase*> m_ptrs;
 };
 
 } // namespace moo
