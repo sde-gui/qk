@@ -174,7 +174,8 @@ IF(MOO_DEV_MODE)
 ENDIF(MOO_DEV_MODE)
 
 MOO_ADD_COMPILER_FLAGS(GCC -Wall -Wextra)
-MOO_CHECK_COMPILER_FLAGS(GCC -fexceptions -fno-strict-aliasing -fno-strict-overflow -Wno-missing-field-initializers -Wnonnull)
+MOO_CHECK_COMPILER_FLAGS(GCC -fexceptions -fno-strict-aliasing -fno-strict-overflow)
+MOO_CHECK_COMPILER_FLAGS(GCC -Wno-missing-field-initializers -Wno-overlength-strings  -Wno-missing-declarations)
 
 MOO_CHECK_COMPILER_FLAGS(GCC DEBUG -ftrapv)
 
@@ -183,6 +184,10 @@ MOO_CHECK_COMPILER_FLAGS(GCC CXX -fno-rtti)
 MOO_CHECK_COMPILER_FLAGS(GCC CXX RELEASE -fno-enforce-eh-specs)
 
 IF(MOO_DEV_MODE)
+  MOO_CHECK_COMPILER_FLAGS(GCC
+    -Wcast-align -Wlogical-op
+    -Wmissing-format-attribute -Wnested-externs -Wlong-long -Wvla
+    -Wuninitialized -Winit-self)
   MOO_CHECK_COMPILER_FLAGS(GCC CXX -fno-nonansi-builtins -fno-gnu-keywords)
   MOO_CHECK_COMPILER_FLAGS(GCC CXX
     -Wctor-dtor-privacy -Wnon-virtual-dtor -Wabi
@@ -196,7 +201,7 @@ ENDIF(MOO_DEV_MODE)
 # Windows
 #
 
-MOO_ADD_COMPILE_DEFINITIONS(WIN32 -D__WIN32__ -DWIN32_LEAN_AND_MEAN -DUNICODE -D_UNICODE)
+MOO_ADD_COMPILE_DEFINITIONS(WIN32 -D__WIN32__ -DWIN32_LEAN_AND_MEAN -DUNICODE -D_UNICODE -DSTRICT)
 
 MOO_ADD_COMPILER_FLAGS(MSVC /W4 /GS)
 MOO_ADD_COMPILER_FLAGS(MSVC CXX /Zc:wchar_t,forScope /GR /EHc /EHsc)
