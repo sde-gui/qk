@@ -29,6 +29,7 @@
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mootype-macros.h"
+#include "mooutils/mooutils-messages.h"
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -199,6 +200,37 @@ set_encoding_error (GError **error)
 }
 
 
+MooLineEndType
+_moo_edit_get_line_end_type (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), MOO_LE_DEFAULT);
+    return edit->priv->line_end_type;
+}
+
+static void
+moo_edit_set_line_end_type_full (MooEdit        *edit,
+                                 MooLineEndType  le,
+                                 gboolean        quiet)
+{
+    moo_return_if_fail (MOO_IS_EDIT (edit));
+    moo_return_if_fail (le > 0);
+
+    if (edit->priv->line_end_type != le)
+    {
+        edit->priv->line_end_type = le;
+        if (!quiet)
+            g_object_notify (G_OBJECT (edit), "line-end-type");
+    }
+}
+
+void
+_moo_edit_set_line_end_type (MooEdit        *edit,
+                             MooLineEndType  le)
+{
+    moo_edit_set_line_end_type_full (edit, le, FALSE);
+}
+
+
 /***************************************************************************/
 /* File loading
  */
@@ -349,6 +381,7 @@ moo_edit_load_local (MooEdit     *edit,
     gboolean undo;
     LoadResult result = ERROR_FILE;
     char *freeme = NULL;
+    MooLineEndType saved_le;
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
     g_return_val_if_fail (file != NULL, FALSE);
@@ -372,6 +405,8 @@ moo_edit_load_local (MooEdit     *edit,
         moo_text_view_begin_not_undoable_action (view);
 
     moo_text_buffer_begin_non_interactive_action (MOO_TEXT_BUFFER (buffer));
+
+    saved_le = edit->priv->line_end_type;
 
     if (!encoding)
     {
@@ -431,6 +466,8 @@ moo_edit_load_local (MooEdit     *edit,
         edit->priv->status = 0;
         moo_edit_set_modified (edit, FALSE);
         _moo_edit_set_file (edit, file, encoding);
+        if (edit->priv->line_end_type != saved_le)
+            g_object_notify (G_OBJECT (edit), "line-end-type");
         _moo_edit_start_file_watch (edit);
     }
     else
@@ -459,7 +496,7 @@ do_load (MooEdit      *edit,
     GIOChannel *file = NULL;
     GIOStatus status;
     GtkTextBuffer *buffer;
-    MooEditLineEndType le = MOO_EDIT_LINE_END_NONE;
+    MooLineEndType le = edit->priv->line_end_type;
     GString *text = NULL;
     char *line = NULL;
     LoadResult result = ERROR_FILE;
@@ -495,7 +532,7 @@ do_load (MooEdit      *edit,
     {
         gboolean insert_line_term = FALSE;
         gsize len, line_term_pos;
-        MooEditLineEndType le_here = 0;
+        MooLineEndType le_here = 0;
 
         status = g_io_channel_read_line (file, &line, &len, &line_term_pos, error);
 
@@ -533,21 +570,21 @@ do_load (MooEdit      *edit,
                 }
                 else if (!strcmp (line_term, "\r"))
                 {
-                    le_here = MOO_EDIT_LINE_END_MAC;
+                    le_here = MOO_LE_MAC;
                 }
                 else if (!strcmp (line_term, "\n"))
                 {
-                    le_here = MOO_EDIT_LINE_END_UNIX;
+                    le_here = MOO_LE_UNIX;
                 }
                 else if (!strcmp (line_term, "\r\n"))
                 {
-                    le_here = MOO_EDIT_LINE_END_WIN32;
+                    le_here = MOO_LE_WIN32;
                 }
 
                 if (le_here)
                 {
                     if (le && le != le_here)
-                        le = MOO_EDIT_LINE_END_MIX;
+                        le = MOO_LE_MIX;
                     else
                         le = le_here;
                 }
@@ -580,7 +617,14 @@ do_load (MooEdit      *edit,
     if (text->len)
         gtk_text_buffer_insert_at_cursor (buffer, text->str, text->len);
 
-    edit->priv->line_end_type = le;
+    switch (edit->priv->line_end_type)
+    {
+        case MOO_LE_MIX:
+            break;
+        default:
+            moo_edit_set_line_end_type_full (edit, le, TRUE);
+            break;
+    }
 
     g_string_free (text, TRUE);
     g_clear_error (error);
@@ -733,60 +777,13 @@ moo_edit_reload_local (MooEdit    *edit,
 /* File saving
  */
 
-#ifdef G_OS_WIN32
-#define DEFAULT_LE_TYPE MOO_EDIT_LINE_END_WIN32
-#else
-#define DEFAULT_LE_TYPE MOO_EDIT_LINE_END_UNIX
-#endif
-
-static GString *
-get_contents (MooEdit *edit)
+static char *
+get_contents_with_fixed_line_end (GtkTextBuffer *buffer, const char *le, guint le_len)
 {
-    MooEditLineEndType le_type = DEFAULT_LE_TYPE;
-    const char *le = "\n";
-    gsize le_len = 1;
     GtkTextIter line_start;
-    GtkTextBuffer *buffer;
     GString *contents;
 
-    switch (edit->priv->line_end_type)
-    {
-        case MOO_EDIT_LINE_END_NONE:
-            le_type = DEFAULT_LE_TYPE;
-            break;
-
-        case MOO_EDIT_LINE_END_UNIX:
-        case MOO_EDIT_LINE_END_WIN32:
-        case MOO_EDIT_LINE_END_MAC:
-            le_type = edit->priv->line_end_type;
-            break;
-
-        case MOO_EDIT_LINE_END_MIX:
-            edit->priv->line_end_type = le_type = DEFAULT_LE_TYPE;
-            break;
-    }
-
-    switch (le_type)
-    {
-        case MOO_EDIT_LINE_END_UNIX:
-            le = "\n";
-            le_len = 1;
-            break;
-        case MOO_EDIT_LINE_END_WIN32:
-            le = "\r\n";
-            le_len = 2;
-            break;
-        case MOO_EDIT_LINE_END_MAC:
-            le = "\r";
-            le_len = 1;
-            break;
-        case MOO_EDIT_LINE_END_MIX:
-        case MOO_EDIT_LINE_END_NONE:
-            g_assert_not_reached ();
-    }
-
     contents = g_string_new (NULL);
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
     gtk_text_buffer_get_start_iter (buffer, &line_start);
 
     do
@@ -799,7 +796,7 @@ get_contents (MooEdit *edit)
             gsize len;
 
             gtk_text_iter_forward_to_line_end (&line_end);
-            line = gtk_text_buffer_get_slice (buffer, &line_start, &line_end, TRUE);
+            line = gtk_text_buffer_get_text (buffer, &line_start, &line_end, TRUE);
             len = strlen (line);
 
             g_string_append_len (contents, line, len);
@@ -811,6 +808,56 @@ get_contents (MooEdit *edit)
             g_string_append_len (contents, le, le_len);
     }
     while (gtk_text_iter_forward_line (&line_start));
+
+    return g_string_free (contents, FALSE);
+}
+
+static char *
+get_contents (MooEdit *edit)
+{
+    gboolean normalize_le = FALSE;
+    const char *le;
+    gsize le_len;
+    GtkTextBuffer *buffer;
+    char *contents;
+
+    switch (edit->priv->line_end_type)
+    {
+        case MOO_LE_UNIX:
+            normalize_le = TRUE;
+            le = "\n";
+            le_len = 1;
+            break;
+        case MOO_LE_WIN32:
+            normalize_le = TRUE;
+            le = "\r\n";
+            le_len = 2;
+            break;
+        case MOO_LE_MAC:
+            normalize_le = TRUE;
+            le = "\r";
+            le_len = 1;
+            break;
+
+        case MOO_LE_MIX:
+            break;
+
+        default:
+            moo_assert_not_reached ();
+    }
+
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+
+    if (normalize_le)
+    {
+        contents = get_contents_with_fixed_line_end (buffer, le, le_len);
+    }
+    else
+    {
+        GtkTextIter start, end;
+        gtk_text_buffer_get_bounds (buffer, &start, &end);
+        contents = gtk_text_buffer_get_text (buffer, &start, &end, TRUE);
+    }
 
     return contents;
 }
@@ -847,7 +894,7 @@ do_save_local (MooEdit        *edit,
                GError        **error,
                gboolean       *retval)
 {
-    GString *utf8_contents;
+    char *utf8_contents;
     const char *to_save;
     gsize to_save_size;
     GError *encoding_error = NULL;
@@ -858,6 +905,8 @@ do_save_local (MooEdit        *edit,
     *retval = TRUE;
     utf8_contents = get_contents (edit);
 
+    moo_release_assert (utf8_contents != NULL);
+
     if (encoding && (!g_ascii_strcasecmp (encoding, "UTF-8") || !g_ascii_strcasecmp (encoding, "UTF8")))
         encoding = NULL;
 
@@ -865,7 +914,7 @@ do_save_local (MooEdit        *edit,
     {
         gsize bytes_read;
         gsize bytes_written;
-        char *encoded = g_convert (utf8_contents->str, utf8_contents->len,
+        char *encoded = g_convert (utf8_contents, -1,
                                    encoding, "UTF-8",
                                    &bytes_read, &bytes_written,
                                    &encoding_error);
@@ -878,14 +927,14 @@ do_save_local (MooEdit        *edit,
         else
         {
             *retval = FALSE;
-            to_save = utf8_contents->str;
-            to_save_size = utf8_contents->len;
+            to_save = utf8_contents;
+            to_save_size = strlen (utf8_contents);
         }
     }
     else
     {
-        to_save = utf8_contents->str;
-        to_save_size = utf8_contents->len;
+        to_save = utf8_contents;
+        to_save_size = strlen (utf8_contents);
     }
 
     if (!do_write (file, to_save, to_save_size, flags, error))
@@ -900,7 +949,7 @@ do_save_local (MooEdit        *edit,
     }
 
     g_free (freeme);
-    g_string_free (utf8_contents, TRUE);
+    g_free (utf8_contents);
     return success;
 }
 

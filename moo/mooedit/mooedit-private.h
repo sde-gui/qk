@@ -102,6 +102,23 @@ void         _moo_edit_set_encoding             (MooEdit        *edit,
 const char  *_moo_edit_get_default_encoding     (void);
 void         _moo_edit_ensure_newline           (MooEdit        *edit);
 
+/* Keep in sync with line_end_menu_items in mooeditwindow.c */
+typedef enum {
+    MOO_LE_UNIX = 1,
+    MOO_LE_WIN32,
+    MOO_LE_MAC,
+    MOO_LE_MIX,
+#ifdef __WIN32__
+    MOO_LE_DEFAULT = MOO_LE_WIN32
+#else
+    MOO_LE_DEFAULT = MOO_LE_UNIX
+#endif
+} MooLineEndType;
+
+MooLineEndType _moo_edit_get_line_end_type      (MooEdit        *edit);
+void         _moo_edit_set_line_end_type        (MooEdit        *edit,
+                                                 MooLineEndType  le);
+
 void         _moo_edit_stop_file_watch          (MooEdit        *edit);
 
 void         _moo_edit_set_status               (MooEdit        *edit,
@@ -127,14 +144,6 @@ struct MooEditFileInfo {
     char *encoding;
 };
 
-typedef enum {
-    MOO_EDIT_LINE_END_NONE,
-    MOO_EDIT_LINE_END_UNIX,
-    MOO_EDIT_LINE_END_WIN32,
-    MOO_EDIT_LINE_END_MAC,
-    MOO_EDIT_LINE_END_MIX
-} MooEditLineEndType;
-
 struct MooEditPrivate {
     MooEditor *editor;
 
@@ -150,7 +159,7 @@ struct MooEditPrivate {
     char *display_basename;
 
     char *encoding;
-    MooEditLineEndType line_end_type;
+    MooLineEndType line_end_type;
     MooEditStatus status;
 
     guint file_monitor_id;

@@ -218,6 +218,8 @@ moo_edit_action_get_doc
 _moo_get_pid_string
 moo_get_user_data_dir
 moo_text_view_get_cursor_line
+moo_text_buffer_get_type
+moo_text_buffer_add_fold
 _moo_tree_helper_new
 moo_prefs_page_new
 moo_prefs_page_new

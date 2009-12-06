@@ -111,6 +111,7 @@ enum {
     PROP_EDITOR,
     PROP_ENABLE_BOOKMARKS,
     PROP_HAS_COMMENTS,
+    PROP_LINE_END_TYPE,
     PROP_ENCODING
 };
 
@@ -168,6 +169,10 @@ moo_edit_class_init (MooEditClass *klass)
                                              "has-comments",
                                              FALSE,
                                              G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class, PROP_LINE_END_TYPE,
+        g_param_spec_int ("line-end-type", "line-end-type", "line-end-type",
+                          MOO_LE_UNIX, MOO_LE_MIX, MOO_LE_UNIX, G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENCODING,
@@ -268,6 +273,8 @@ moo_edit_init (MooEdit *edit)
     edit->priv = G_TYPE_INSTANCE_GET_PRIVATE (edit, MOO_TYPE_EDIT, MooEditPrivate);
 
     edit->priv->actions = moo_action_collection_new ("MooEdit", "MooEdit");
+
+    edit->priv->line_end_type = MOO_LE_DEFAULT;
 
     indent = moo_indenter_new (edit);
     moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indent);
@@ -529,6 +536,10 @@ moo_edit_set_property (GObject        *object,
             _moo_edit_set_encoding (edit, g_value_get_string (value));
             break;
 
+        case PROP_LINE_END_TYPE:
+            _moo_edit_set_line_end_type (edit, g_value_get_int (value));
+            break;
+
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -560,6 +571,10 @@ moo_edit_get_property (GObject        *object,
 
         case PROP_ENCODING:
             g_value_set_string (value, edit->priv->encoding);
+            break;
+
+        case PROP_LINE_END_TYPE:
+            g_value_set_int (value, edit->priv->line_end_type);
             break;
 
         default:

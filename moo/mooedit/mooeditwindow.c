@@ -149,6 +149,9 @@ static void     edit_filename_changed           (MooEditWindow      *window,
 static void     edit_encoding_changed           (MooEditWindow      *window,
                                                  GParamSpec         *pspec,
                                                  MooEdit            *doc);
+static void     edit_line_end_changed           (MooEditWindow      *window,
+                                                 GParamSpec         *pspec,
+                                                 MooEdit            *doc);
 static void     edit_lang_changed               (MooEditWindow      *window,
                                                  guint               var_id,
                                                  GParamSpec         *pspec,
@@ -217,6 +220,7 @@ static void action_open                         (MooEditWindow      *window);
 static void action_reload                       (MooEditWindow      *window);
 static GtkAction *create_reopen_with_encoding_action (MooEditWindow *window);
 static GtkAction *create_doc_encoding_action    (MooEditWindow      *window);
+static GtkAction *create_doc_line_end_action    (MooEditWindow      *window);
 static void action_save                         (MooEditWindow      *window);
 static void action_save_as                      (MooEditWindow      *window);
 static void action_close_tab                    (MooEditWindow      *window);
@@ -387,6 +391,10 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
 
     moo_window_class_new_action_custom (window_class, "EncodingMenu", NULL,
                                         (MooWindowActionFunc) create_doc_encoding_action,
+                                        NULL, NULL);
+
+    moo_window_class_new_action_custom (window_class, "LineEndMenu", NULL,
+                                        (MooWindowActionFunc) create_doc_line_end_action,
                                         NULL, NULL);
 
     moo_window_class_new_action (window_class, "Save", NULL,
@@ -1228,6 +1236,80 @@ create_doc_encoding_action (MooEditWindow *window)
 }
 
 
+static const char *line_end_menu_items[] = {
+    NULL, /* MOO_LE_NONE */
+    "LineEndWin32", /* MOO_LE_UNIX */
+    "LineEndUnix", /* MOO_LE_WIN32 */
+    "LineEndMac", /* MOO_LE_MAC */
+    "LineEndMix" /* MOO_LE_MIX */
+};
+
+static void
+update_doc_line_end_item (MooEditWindow *window)
+{
+    MooEdit *doc;
+    GtkAction *action;
+    MooLineEndType le;
+
+    if (!(doc = ACTIVE_DOC (window)))
+        return;
+
+    action = moo_window_get_action (MOO_WINDOW (window), "LineEndMenu");
+    g_return_if_fail (action != NULL);
+
+    le = _moo_edit_get_line_end_type (doc);
+    g_return_if_fail (le > 0 && le < G_N_ELEMENTS(line_end_menu_items));
+
+    moo_menu_mgr_set_active (moo_menu_action_get_mgr (MOO_MENU_ACTION (action)),
+                             line_end_menu_items[le], TRUE);
+}
+
+static void
+doc_line_end_item_set_active (MooEditWindow *window, gpointer data)
+{
+    MooEdit *doc;
+
+    doc = ACTIVE_DOC (window);
+    g_return_if_fail (doc != NULL);
+
+    _moo_edit_set_line_end_type (doc, GPOINTER_TO_INT (data));
+}
+
+static GtkAction *
+create_doc_line_end_action (MooEditWindow *window)
+{
+    GtkAction *action;
+    MooMenuMgr *mgr;
+
+    action = moo_menu_action_new ("LineEndMenu", _("Line E_ndings"));
+    mgr = moo_menu_action_get_mgr (MOO_MENU_ACTION (action));
+
+    g_signal_connect_swapped (mgr, "radio-set-active", G_CALLBACK (doc_line_end_item_set_active), window);
+
+    moo_menu_mgr_append (mgr, NULL,
+                         line_end_menu_items[MOO_LE_WIN32],
+                         _("_Windows (CR+LF)"), NULL, MOO_MENU_ITEM_RADIO,
+                         GINT_TO_POINTER (MOO_LE_WIN32), NULL);
+    moo_menu_mgr_insert (mgr, NULL, MOO_OS_WIN32 ? 1 : 0,
+                         line_end_menu_items[MOO_LE_UNIX],
+                         _("_Unix (LF)"), NULL, MOO_MENU_ITEM_RADIO,
+                         GINT_TO_POINTER (MOO_LE_UNIX), NULL);
+    moo_menu_mgr_append (mgr, NULL,
+                         line_end_menu_items[MOO_LE_MAC],
+                         _("_Mac (CR)"), NULL, MOO_MENU_ITEM_RADIO,
+                         GINT_TO_POINTER (MOO_LE_MAC), NULL);
+    moo_menu_mgr_append (mgr, NULL,
+                         line_end_menu_items[MOO_LE_MIX],
+                         _("Mi_xed"), NULL, MOO_MENU_ITEM_RADIO,
+                         GINT_TO_POINTER (MOO_LE_MIX), NULL);
+
+    moo_bind_bool_property (action, "sensitive",
+                            window, "has-open-document", FALSE);
+
+    return action;
+}
+
+
 static void
 action_save (MooEditWindow *window)
 {
@@ -1948,6 +2030,15 @@ edit_encoding_changed (MooEditWindow *window,
 }
 
 static void
+edit_line_end_changed (MooEditWindow *window,
+                       G_GNUC_UNUSED GParamSpec *pspec,
+                       MooEdit       *doc)
+{
+    if (doc == ACTIVE_DOC (window))
+        update_doc_line_end_item (window);
+}
+
+static void
 edit_overwrite_changed (MooEditWindow *window,
                         G_GNUC_UNUSED GParamSpec *pspec,
                         MooEdit       *doc)
@@ -2188,6 +2279,8 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
                               G_CALLBACK (edit_changed), window);
     g_signal_connect_swapped (edit, "notify::encoding",
                               G_CALLBACK (edit_encoding_changed), window);
+    g_signal_connect_swapped (edit, "notify::line-end",
+                              G_CALLBACK (edit_line_end_changed), window);
     g_signal_connect_swapped (edit, "notify::overwrite",
                               G_CALLBACK (edit_overwrite_changed), window);
     g_signal_connect_swapped (edit, "notify::wrap-mode",

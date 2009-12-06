@@ -102,6 +102,7 @@
       <separator/>
       <item action="LanguageMenu"/>
       <item action="EncodingMenu"/>
+      <item action="LineEndMenu"/>
       <separator/>
       <item action="ToggleBookmark"/>
       <item action="PreviousBookmark"/>
