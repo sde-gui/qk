@@ -16,7 +16,7 @@
 #ifndef MOO_CPP_MACROS_H
 #define MOO_CPP_MACROS_H
 
-#include <mooutils/mooutils-macros.h>
+#include <mooutils/mooutils-messages.h>
 
 #define mooAssert _MOO_DEBUG_ASSERT
 #define mooCheck  _MOO_RELEASE_ASSERT
@@ -73,6 +73,12 @@ public:
 
 inline void NOTHROW Foo1::meth1()
 {
+}
+
+inline void __moo_test_func()
+{
+    Foo1 f;
+    f.meth1();
 }
 
 } // namespace _test

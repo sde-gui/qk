@@ -21,6 +21,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooatom.h"
 #include "mooutils/mooonce.h"
+#include "mooutils/mooutils-misc.h"
 #include "glade/moologwindow-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gmappedfile.h>
@@ -55,8 +56,9 @@ static char *moo_app_instance_name;
 static char *moo_user_data_dir;
 static char *moo_temp_dir;
 
-static void     moo_install_atexit      (void);
-static void     moo_remove_tempdir      (void);
+static void         moo_install_atexit      (void);
+static void         moo_remove_tempdir      (void);
+static const char  *moo_get_prgname         (void);
 
 
 #ifdef __WIN32__
@@ -811,6 +813,23 @@ moo_reset_log_func (void)
  * Display log messages in a window
  */
 
+#if !defined(__WIN32__) || !defined(DEBUG)
+
+static void
+on_warning_or_critical_message (G_GNUC_UNUSED const char *message)
+{
+}
+
+#else /* __WIN32__ && DEBUG */
+
+static void
+on_warning_or_critical_message (const char *message)
+{
+    _moo_abort_debug_ignore (MOO_CODE_LOC_UNKNOWN, message);
+}
+
+#endif
+
 static void
 log_func_window (const gchar    *log_domain,
                  GLogLevelFlags  flags,
@@ -834,6 +853,9 @@ log_func_window (const gchar    *log_domain,
         text = g_strdup_printf ("%s: %s\n", log_domain, message);
     else
         text = g_strdup_printf ("%s\n", message);
+
+    if (flags < G_LOG_LEVEL_MESSAGE)
+        on_warning_or_critical_message (text);
 
     {
         GtkTextTag *tag;
@@ -1014,11 +1036,18 @@ moo_set_log_func_silent (void)
 /* Very useful function
  */
 
-void
+void MOO_NORETURN
 moo_segfault (void)
 {
     char *var = (char*) -1;
     var[18] = 8;
+    moo_abort ();
+}
+
+void MOO_NORETURN
+moo_abort (void)
+{
+    abort ();
 }
 
 
@@ -1750,15 +1779,128 @@ _moo_widget_set_tooltip (GtkWidget  *widget,
  * Asserts
  */
 
+#if !defined(__WIN32__)
+
 void
-moo_assert_message (const char *message, MooCodeLoc loc)
+_moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
 {
-#ifdef DEBUG
-    g_critical("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
-    g_on_error_query(moo_get_prgname());
-#else
-    g_error("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
+    if (loc.counter)
+        g_printerr ("In file %s, line %d, function %s:\n%s\n", loc.file, loc.line, loc.func, message);
+    else
+        g_printerr ("%s\n", message);
+    g_on_error_query (moo_get_prgname());
+}
+
+#else /* !__WIN32__ */
+
+static void
+break_into_debugger (void)
+{
+    RaiseException(0, EXCEPTION_NONCONTINUABLE, 0, NULL);
+}
+
+void
+_moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
+{
+    gboolean skip = FALSE;
+    static GHashTable *locs_hash;
+    char *loc_id = NULL;
+
+    if (loc.counter != 0)
+        loc_id = g_strdup_printf ("%s#%d#%d", loc.file, loc.line, loc.counter);
+
+    if (loc_id != NULL)
+    {
+        if (!locs_hash)
+            locs_hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+        if (g_hash_table_lookup (locs_hash, loc_id))
+            skip = TRUE;
+    }
+
+    if (!skip)
+    {
+        int ret;
+
+        if (loc_id != NULL)
+            ret = _moo_win32_message_box (NULL, MB_ABORTRETRYIGNORE, NULL,
+                                          "In file %s, line %d, function %s:\n%s",
+                                          loc.file, loc.line, loc.func, message);
+        else
+            ret = _moo_win32_message_box (NULL, MB_ABORTRETRYIGNORE, NULL,
+                                          "%s", message);
+
+        switch (ret)
+        {
+            case IDABORT:
+                TerminateProcess (GetCurrentProcess (), 1);
+                break;
+
+            case IDRETRY:
+                break_into_debugger ();
+                break;
+
+            case IDIGNORE:
+                break;
+
+            default:
+                moo_abort ();
+                break;
+        }
+    }
+
+    g_free (loc_id);
+}
+
+#endif /* !__WIN32__ */
+
+#ifndef MOO_DEV_MODE
+NORETURN
 #endif
+void
+_moo_assert_message (MooCodeLoc loc, const char *message)
+{
+#ifdef MOO_DEV_MODE
+    _moo_abort_debug_ignore (loc, message);
+#else
+    g_error ("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
+#endif
+}
+
+void
+_moo_log (MooCodeLoc loc, GLogLevelFlags flags, const char *format, ...)
+{
+    va_list args;
+    va_start (args, format);
+    _moo_logv (loc, flags, format, args);
+    va_end (args);
+}
+
+void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_list args)
+{
+#ifdef MOO_DEV_MODE
+    if (flags < G_LOG_LEVEL_MESSAGE)
+    {
+        char *message = g_strdup_vprintf (format, args);
+        _moo_abort_debug_ignore (loc, message);
+        g_free (message);
+    }
+#endif
+    g_logv (G_LOG_DOMAIN, flags, format, args);
+}
+
+void MOO_NORETURN _moo_error (MooCodeLoc loc, const char *format, ...)
+{
+    va_list args;
+    va_start (args, format);
+    _moo_errorv (loc, format, args);
+    va_end (args);
+}
+
+void MOO_NORETURN _moo_errorv (MooCodeLoc loc, const char *format, va_list args)
+{
+    MOO_UNUSED (loc);
+    g_logv (G_LOG_DOMAIN, G_LOG_LEVEL_ERROR, format, args);
+    moo_abort ();
 }
 
 
@@ -2236,11 +2378,10 @@ moo_debug_enabled (const char *domain,
 }
 
 
-#undef _moo_message
-void _moo_message (const char *format, ...) G_GNUC_PRINTF(1,2);
-void G_GNUC_PRINTF(1,2)
-_moo_message (const char *format,
-              ...)
+#undef moo_debug
+void G_GNUC_PRINTF (1,2)
+moo_debug (const char *format,
+           ...)
 {
     static int enabled = -1;
 

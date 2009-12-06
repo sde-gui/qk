@@ -18,12 +18,11 @@
 
 #include <glib.h>
 #include <stdarg.h>
-#include <mooutils/mooutils-macros.h>
+#include <mooutils/mooutils-messages.h>
 
 G_BEGIN_DECLS
 
-#define moo_assert _MOO_DEBUG_ASSERT
-#define moo_release_assert _MOO_RELEASE_ASSERT
+void moo_debug (const char *format, ...) G_GNUC_PRINTF (1,2);
 
 #ifdef DEBUG
 
@@ -83,7 +82,6 @@ G_STMT_START {                                              \
     }                                                       \
 } G_STMT_END
 
-void     _moo_message       (const char *format, ...) G_GNUC_PRINTF (1, 2);
 gboolean moo_debug_enabled  (const char *var,
                              gboolean    def_enabled);
 void     _moo_set_debug     (const char *domains);
@@ -93,7 +91,7 @@ void     _moo_set_debug     (const char *domains);
 #define MOO_DEBUG_INIT(domain, def_enabled)
 #define moo_dmsg(format, args...) G_STMT_START {} G_STMT_END
 #define moo_dprint(format, args...) G_STMT_START {} G_STMT_END
-#define _moo_message(format, args...) G_STMT_START {} G_STMT_END
+#define moo_debug(format, args...) G_STMT_START {} G_STMT_END
 #define MOO_DEBUG_CODE(whatever) G_STMT_START {} G_STMT_END
 
 #else /* not gcc, not DEBUG */
@@ -109,14 +107,15 @@ static void moo_dprint (const char *format, ...) G_GNUC_PRINTF(1,2)
 {
 }
 
-static void _moo_message_dummy (const char *format, ...) G_GNUC_PRINTF(1,2)
+static void moo_debug_dummy (const char *format, ...) G_GNUC_PRINTF(1,2)
 {
 }
 
-#define _moo_message _moo_message_dummy
+#define moo_debug moo_debug_dummy
 
 #endif  /* gcc or DEBUG */
 
+#define _moo_message moo_debug
 
 G_END_DECLS
 

@@ -1342,7 +1342,7 @@ moo_paned_size_allocate (GtkWidget     *widget,
 
     if (GTK_WIDGET_REALIZED (widget))
     {
-        GdkRectangle rect;
+        GdkRectangle rect = { 0 };
 
         if (paned->priv->pane_widget_visible)
         {

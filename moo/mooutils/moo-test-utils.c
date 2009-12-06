@@ -411,9 +411,3 @@ moo_test_load_data_file (const char *basename)
     g_free (fullname);
     return contents;
 }
-
-NORETURN void
-moo_abort (void)
-{
-    abort ();
-}

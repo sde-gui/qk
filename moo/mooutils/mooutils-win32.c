@@ -13,13 +13,20 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef __WIN32__
+#ifndef _WIN32
+#error "This is win32-only file"
+#endif
+#ifndef __WIN32__
+#error "__WIN32__ must be defined on win32"
+#endif
 #ifndef UNICODE
 #error "UNICODE must be defined on win32"
 #endif
 #ifndef _UNICODE
 #error "_UNICODE must be defined on win32"
 #endif
+#ifndef STRICT
+#error "STRICT must be defined on win32"
 #endif
 
 #ifdef HAVE_CONFIG_H
@@ -30,6 +37,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/moowin32/mingw/fnmatch.h"
 #include "mooutils/moowin32/mingw/sys/mman.h"
+#include <gdk/gdkwin32.h>
 #include <windows.h>
 #include <shellapi.h>
 #include <time.h>
@@ -37,6 +45,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <io.h>
+#include <stdarg.h>
 
 #if 0
 #ifdef _MSC_VER
@@ -48,11 +57,11 @@ long _ftol2_sse( double dblSource ) { return _ftol( dblSource ); }
 #endif
 #endif
 
+extern HINSTANCE _moo_hinst_dll;
+
 static const char *
 get_moo_dll_name (void)
 {
-    extern HINSTANCE _moo_hinst_dll;
-
     G_LOCK_DEFINE_STATIC (moo_dll_name);
     static char *moo_dll_name = NULL;
 
@@ -233,17 +242,57 @@ _moo_win32_show_fatal_error (const char *domain,
     "Please report it to " PACKAGE_BUGREPORT " and provide "\
     "steps needed to reproduce this error."
     if (domain)
-        msg = g_strdup_printf ("Fatal error:\n---\n%s: %s\n---\n"
-                PLEASE_REPORT, domain, logmsg);
+        _moo_win32_message_box(NULL, MB_ICONERROR | MB_APPLMODAL | MB_SETFOREGROUND,
+                               "Error", "Fatal error:\n---\n%s: %s\n---\n"
+                               PLEASE_REPORT, domain, logmsg);
     else
-        msg = g_strdup_printf ("Fatal error:\n---\n%s\n---\n"
-                PLEASE_REPORT, logmsg);
+        _moo_win32_message_box(NULL, MB_ICONERROR | MB_APPLMODAL | MB_SETFOREGROUND,
+                               "Error", "Fatal error:\n---\n%s\n---\n"
+                               PLEASE_REPORT, logmsg);
 #undef PLEASE_REPORT
 
-    MessageBoxA (NULL, msg, "Error",
-                 MB_ICONERROR | MB_APPLMODAL | MB_SETFOREGROUND);
-
     g_free (msg);
+}
+
+
+int
+_moo_win32_message_box(GtkWidget      *parent,
+                       guint           type,
+                       const char     *title,
+                       const char     *format,
+                       ...)
+{
+    int ret;
+    char *text = NULL;
+    HWND parenthwnd = NULL;
+    wchar_t *wtitle = NULL;
+    wchar_t *wtext = NULL;
+
+    if (format)
+    {
+        va_list args;
+        va_start (args, format);
+        text = g_strdup_vprintf (format, args);
+        va_end (args);
+    }
+
+    if (parent)
+        parent = gtk_widget_get_toplevel (parent);
+    if (parent)
+        parenthwnd = GDK_WINDOW_HWND (parent->window);
+
+    if (title)
+        wtitle = g_utf8_to_utf16 (title, -1, NULL, NULL, NULL);
+    if (text)
+        wtext = g_utf8_to_utf16 (text, -1, NULL, NULL, NULL);
+
+    ret = MessageBox(parenthwnd, wtext, wtitle, type);
+
+    g_free (wtext);
+    g_free (wtitle);
+    g_free (text);
+
+    return ret;
 }
 
 

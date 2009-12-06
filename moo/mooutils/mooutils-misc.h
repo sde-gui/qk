@@ -17,7 +17,7 @@
 #define MOO_UTILS_MISC_H
 
 #include <gtk/gtk.h>
-#include <mooutils/mooutils-macros.h>
+#include <mooutils/mooutils-messages.h>
 
 G_BEGIN_DECLS
 
@@ -45,7 +45,8 @@ void        moo_set_log_func_file           (const char     *log_file);
 void        moo_set_log_func_silent         (void);
 void        moo_reset_log_func              (void);
 
-void        moo_segfault                    (void);
+void MOO_NORETURN moo_segfault              (void);
+void MOO_NORETURN moo_abort                 (void);
 
 void        moo_disable_win32_error_message (void);
 void        moo_enable_win32_error_message  (void);
@@ -253,6 +254,12 @@ void        _moo_win32_show_fatal_error     (const char     *domain,
 
 char      **_moo_win32_lame_parse_cmd_line  (const char     *cmd_line,
                                              GError        **error);
+
+int         _moo_win32_message_box          (GtkWidget      *parent,
+                                             guint           type,
+                                             const char     *title,
+                                             const char     *format,
+                                             ...) G_GNUC_PRINTF (4, 5);
 
 
 G_END_DECLS

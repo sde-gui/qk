@@ -28,7 +28,7 @@
 				ReBuildCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake clean all&#x0D;&#x0A;XCOPY medit\medit.exe &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY medit\medit.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.dll &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;"
 				CleanCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake clean&#x0D;&#x0A;"
 				Output="C:\Program Files\medit\bin\medit.exe"
-				PreprocessorDefinitions="WIN32;_DEBUG;__WIN32__;ENABLE_NLS;MOO_ENABLE_UNIT_TESTS"
+				PreprocessorDefinitions="WIN32;_DEBUG;__WIN32__;ENABLE_NLS;MOO_ENABLE_UNIT_TESTS;MOO_DEV_MODE"
 				IncludeSearchPath="&quot;$(ProjectDir)..\moo&quot;;&quot;$(ProjectDir)..\build\vs-$(ConfigurationName)&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\glib-2.0&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\lib\glib-2.0\include&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\lib\gtk-2.0\include&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\gtk-2.0&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\cairo&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\pango-1.0&quot;;&quot;C:\Qt\vs-2008\4.5.3\include&quot;;&quot;C:\Qt\vs-2008\4.5.3\include\Qt&quot;;&quot;C:\Qt\vs-2008\4.5.3\include\QtCore&quot;"
 				ForcedIncludes=""
 				AssemblySearchPath=""
@@ -48,7 +48,7 @@
 				ReBuildCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake clean all&#x0D;&#x0A;XCOPY medit\medit.exe &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY medit\medit.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.dll &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;XCOPY moo\moo.pdb &quot;C:\Program Files\medit\bin\&quot; /Y&#x0D;&#x0A;"
 				CleanCommandLine="cd $(ProjectDir)..\build\vs-$(ConfigurationName)&#x0D;&#x0A;nmake clean&#x0D;&#x0A;"
 				Output="C:\Program Files\medit\bin\medit.exe"
-				PreprocessorDefinitions="WIN32;NDEBUG;__WIN32__;ENABLE_NLS;MOO_ENABLE_UNIT_TESTS"
+				PreprocessorDefinitions="WIN32;NDEBUG;__WIN32__;ENABLE_NLS;MOO_ENABLE_UNIT_TESTS;MOO_DEV_MODE"
 				IncludeSearchPath="&quot;$(ProjectDir)..\moo&quot;;&quot;$(ProjectDir)..\build\vs-$(ConfigurationName)&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\glib-2.0&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\lib\glib-2.0\include&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\lib\gtk-2.0\include&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\gtk-2.0&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\cairo&quot;;&quot;C:\Users\muntyan\Projects\gtk-bin\include\pango-1.0&quot;;&quot;C:\Qt\vs-2008\4.5.3\include&quot;;&quot;C:\Qt\vs-2008\4.5.3\include\Qt&quot;;&quot;C:\Qt\vs-2008\4.5.3\include\QtCore&quot;"
 				ForcedIncludes=""
 				AssemblySearchPath=""
@@ -288,6 +288,46 @@
 				</File>
 				<File
 					RelativePath="..\moo\mooutils\moocompat.h"
+					>
+				</File>
+				<File
+					RelativePath="..\moo\mooutils\moocpp-cont.h"
+					>
+				</File>
+				<File
+					RelativePath="..\moo\mooutils\moocpp-exc.h"
+					>
+				</File>
+				<File
+					RelativePath="..\moo\mooutils\moocpp-gobject.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\moo\mooutils\moocpp-gobject.h"
+					>
+				</File>
+				<File
+					RelativePath="..\moo\mooutils\moocpp-gtk.h"
+					>
+				</File>
+				<File
+					RelativePath="..\moo\mooutils\moocpp-macros.h"
+					>
+				</File>
+				<File
+					RelativePath="..\moo\mooutils\moocpp-refptr.h"
+					>
+				</File>
+				<File
+					RelativePath="..\moo\mooutils\moocpp-types.h"
+					>
+				</File>
+				<File
+					RelativePath="..\moo\mooutils\moocpp.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\moo\mooutils\moocpp.h"
 					>
 				</File>
 				<File

@@ -76,11 +76,6 @@
 #  define MOO_FA_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 #  define MOO_FA_MALLOC __attribute__((malloc))
 #  if  MOO_GCC_CHECK_VERSION(3, 3)
-#    define MOO_FA_DEPRECATED __attribute__((deprecated))
-#  else
-#    define MOO_FA_DEPRECATED
-#  endif
-#  if  MOO_GCC_CHECK_VERSION(3, 3)
 #    define MOO_FA_NONNULL(indices) __attribute__((nonnull indices))
 #    define MOO_FA_NOTHROW __attribute__((nothrow))
 #  else
@@ -94,7 +89,6 @@
 #  define MOO_FA_UNUSED
 #  define MOO_FA_WARN_UNUSED_RESULT
 #  define MOO_FA_CONST
-#  define MOO_FA_DEPRECATED
 #  define MOO_FA_NONNULL(indices)
 #  if defined(MOO_CL_MSVC)
 #    define MOO_FA_NORETURN __declspec(noreturn)
@@ -121,13 +115,12 @@
 #if defined(MOO_CL_GCC)
 #  define MOO_VA_CLEANUP(func) __attribute__((cleanup(func)))
 #  define _MOO_VA_CLEANUP_DEFINED 1
-#  define MOO_VA_DEPRECATED __attribute__((deprecated))
-#  define MOO_VA_UNUSED __attribute__((unused))
+#elif defined(MOO_CL_MSVC)
+#  define MOO_VA_CLEANUP(func)
+#  undef _MOO_VA_CLEANUP_DEFINED
 #else /* !MOO_CL_GCC */
 #  define MOO_VA_CLEANUP(func)
 #  undef _MOO_VA_CLEANUP_DEFINED
-#  define MOO_VA_DEPRECATED
-#  define MOO_VA_UNUSED
 #endif /* !MOO_CL_GCC */
 
 #define MOO_VAR_CLEANUP_CHECK(func)
@@ -146,98 +139,16 @@
 #  endif
 #endif
 
-#ifdef __COUNTER__
-#define _MOO_COUNTER __COUNTER__
-#else
-#define _MOO_COUNTER 0
-#endif
-
-#define MOO_CODE_LOC (moo_make_code_loc (__FILE__, MOO_STRFUNC, __LINE__, _MOO_COUNTER))
-
 #define _MOO_STATIC_ASSERT_MACRO(cond) enum { MOO_CONCAT(_MooStaticAssert_, __LINE__) = 1 / ((cond) ? 1 : 0) }
 #define MOO_STATIC_ASSERT(cond, message) _MOO_STATIC_ASSERT_MACRO(cond)
 
-#define _MOO_ASSERT_MESSAGE(msg) moo_assert_message (msg, MOO_CODE_LOC)
-
-#define _MOO_ASSERT_CHECK_MSG(cond, msg)    \
-do {                                        \
-    if (cond)                               \
-        ;                                   \
-    else                                    \
-        _MOO_ASSERT_MESSAGE (msg);          \
-} while(0)
-
-#define _MOO_ASSERT_CHECK(cond)             \
-    _MOO_ASSERT_CHECK_MSG(cond,             \
-        "condition failed: " #cond)
-
-#define MOO_VOID_STMT do {} while (0)
-
-#define _MOO_RELEASE_ASSERT _MOO_ASSERT_CHECK
-#define _MOO_RELEASE_ASSERT_NOT_REACHED() _MOO_ASSERT_MESSAGE ("should not be reached")
-
-#ifdef DEBUG
-#define _MOO_DEBUG_ASSERT _MOO_ASSERT_CHECK
-#define _MOO_DEBUG_ASSERT_NOT_REACHED() _MOO_ASSERT_MESSAGE ("should not be reached")
-#else
-#define _MOO_DEBUG_ASSERT(cond) MOO_VOID_STMT
-#define _MOO_DEBUG_ASSERT_NOT_REACHED() MOO_VOID_STMT
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef struct MooCodeLoc
-{
-    const char *file;
-    const char *func;
-    int line;
-    int counter;
-} MooCodeLoc;
-
-static inline MooCodeLoc
-moo_default_code_loc (void)
-{
-    MooCodeLoc loc = { "<unknown>", "<unknown>", 0, 0 };
-    return loc;
-}
-
-static inline MooCodeLoc
-moo_make_code_loc (const char *file, const char *func, int line, int counter)
-{
-    MooCodeLoc loc;
-    loc.file = file;
-    loc.func = func;
-    loc.line = line;
-    loc.counter = counter;
-    return loc;
-}
-
-#ifndef MOO_DEV_MODE
-NORETURN
-#endif
-void moo_assert_message(const char *message, MooCodeLoc loc);
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
+#ifdef MOO_DEV_MODE
 
 #define __moo_test_func_name MOO_CONCAT(__moo_test_func_, __LINE__)
 #define __moo_test_func __moo_test_func_name
 #define __moo_test_func_a(args) __moo_test_func_name args
 
-#ifdef MOO_DEV_MODE
-
 MOO_STATIC_ASSERT(sizeof(char) == 1, "test");
-
-inline static void __moo_test_func(void)
-{
-    _MOO_RELEASE_ASSERT(0);
-    _MOO_RELEASE_ASSERT_NOT_REACHED();
-    _MOO_DEBUG_ASSERT(0);
-    _MOO_DEBUG_ASSERT_NOT_REACHED();
-}
 
 int __moo_test_func_name(void) MOO_FA_MISSING;
 void __moo_test_func_name(void) MOO_FA_ERROR("test");
@@ -247,8 +158,6 @@ void MOO_FUNC_DEV_MODE __moo_test_func_name(void);
 void __moo_test_func(void);
 void __moo_test_func(void) MOO_FA_WARNING("warning");
 void MOO_FA_WARNING("warning") __moo_test_func(void);
-void __moo_test_func(void) MOO_FA_DEPRECATED;
-void MOO_FA_DEPRECATED __moo_test_func(void);
 void *__moo_test_func(void) MOO_FA_MALLOC;
 void * MOO_FA_MALLOC __moo_test_func(void);
 void * MOO_FA_NONNULL(()) __moo_test_func_a((void *p));
@@ -300,21 +209,9 @@ inline static void __moo_test_func(void)
     MOO_UNUSED(p);
 }
 
-inline static void __moo_test_func_a((MOO_VA_UNUSED MOO_VA_DEPRECATED int var))
-{
-    MOO_VA_UNUSED MOO_VA_DEPRECATED int var2;
-    MOO_VA_UNUSED int MOO_VA_DEPRECATED var3;
-    MOO_VA_UNUSED int var4 MOO_VA_DEPRECATED;
-}
-
-inline static void __moo_test_func(void *p)
+inline static void __moo_test_func(void)
 {
     MOO_STATIC_ASSERT (sizeof(char) == 1, "test");
-    _MOO_ASSERT_CHECK (p != (void*)0);
-    _MOO_DEBUG_ASSERT (p != (void*)0);
-    _MOO_RELEASE_ASSERT (p != (void*)0);
-    _MOO_RELEASE_ASSERT_NOT_REACHED ();
-    _MOO_DEBUG_ASSERT_NOT_REACHED ();
 }
 
 inline static void __moo_test_dummy2(void) NOTHROW;

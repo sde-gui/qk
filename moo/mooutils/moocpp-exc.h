@@ -39,8 +39,6 @@ public:
 private:
     const char *m_what;
     MooCodeLoc m_loc;
-
-    MOO_DISABLE_COPY_AND_ASSIGN(Exception)
 };
 
 class ExcUnexpected : public Exception
@@ -55,12 +53,12 @@ protected:
     {
     }
 
-    MOO_DISABLE_COPY_AND_ASSIGN(ExcUnexpected)
-
 public:
     NORETURN static void raise(const char *msg, const MooCodeLoc &loc)
     {
-        moo_assert_message(msg, loc);
+#ifdef DEBUG
+        _moo_assert_message(loc, msg);
+#endif
         throw ExcUnexpected(msg, loc);
     }
 };

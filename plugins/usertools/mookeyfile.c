@@ -259,7 +259,8 @@ parse_content (Parser         *parser,
     GString *content;
     const char *line;
     guint indent;
-    gsize line_len, next_line;
+    gsize line_len = 0;
+    gsize next_line = 0;
 
     g_assert (parser->len > 0);
 
@@ -316,7 +317,8 @@ parse_item (Parser         *parser,
 {
     while (parser->len)
     {
-        gsize line_len, next_line;
+        gsize line_len = 0;
+        gsize next_line = 0;
         const char *line;
         char *item_name, *key, *val;
 
@@ -371,7 +373,8 @@ find_and_parse_item (Parser *parser)
 {
     while (parser->len)
     {
-        gsize line_len, next_line;
+        gsize line_len = 0;
+        gsize next_line = 0;
         const char *line;
         char *item_name;
         MooKeyFileItem *item;
