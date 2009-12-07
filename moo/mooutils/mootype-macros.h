@@ -51,7 +51,6 @@
 
 #define MOO_DEFINE_TYPE_STATIC_WITH_CODE(TypeName,type_name,TYPE_PARENT,code)               \
                                                                                             \
-static GType    type_name##_get_type (void) G_GNUC_CONST;                                   \
 static void     type_name##_init              (TypeName        *self);                      \
 static void     type_name##_class_init        (TypeName##Class *klass);                     \
 static gpointer type_name##_parent_class = NULL;                                            \
@@ -62,7 +61,7 @@ static void     type_name##_class_intern_init (gpointer klass)                  
     type_name##_class_init ((TypeName##Class*) klass);                                      \
 }                                                                                           \
                                                                                             \
-static GType                                                                                \
+static GType G_GNUC_CONST                                                                   \
 type_name##_get_type (void)                                                                 \
 {                                                                                           \
     static GType g_define_type_id;                                                          \
@@ -108,8 +107,7 @@ GType type_name##_get_type (void)                                               
     MOO_DEFINE_BOXED_TYPE(TypeName,type_name,type_name##_ref,type_name##_unref)
 
 #define MOO_DEFINE_BOXED_TYPE_STATIC(TypeName,type_name,copy_func,free_func)                \
-static GType type_name##_get_type (void) G_GNUC_CONST;                                      \
-static GType type_name##_get_type (void)                                                    \
+static GType G_GNUC_CONST type_name##_get_type (void)                                       \
     MOO_DEFINE_BOXED_TYPE__(TypeName,type_name,copy_func,free_func)
 
 #define MOO_DEFINE_BOXED_TYPE_STATIC_C(TypeName,type_name) \
@@ -144,8 +142,7 @@ GQuark quark_func (void)                                                        
     MOO_DEFINE_QUARK__(QuarkName)
 
 #define MOO_DEFINE_QUARK_STATIC(QuarkName,quark_func)                                       \
-static GQuark quark_func (void) G_GNUC_CONST;                                               \
-static GQuark quark_func (void)                                                             \
+static GQuark G_GNUC_CONST quark_func (void)                                                \
     MOO_DEFINE_QUARK__(QuarkName)
 
 
