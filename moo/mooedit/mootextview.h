@@ -79,6 +79,10 @@ struct _MooTextViewClass
 
     void (*apply_style_scheme)      (MooTextView    *view,
                                      MooTextStyleScheme *scheme);
+
+    MooTextCursor (*get_text_cursor)(MooTextView    *view,
+                                     int             x,  /* buffer coordinates */
+                                     int             y); /* buffer coordinates */
 };
 
 

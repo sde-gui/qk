@@ -16,12 +16,14 @@
 #include "mooedit/moolineview.h"
 #include "marshals.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-messages.h"
 #include "mooutils/moocompat.h"
 #include <gdk/gdkkeysyms.h>
 
 
 struct _MooLineViewPrivate {
     MooData *line_data;
+    GHashTable *cursors;
     gboolean busy;
     gboolean scrolled;
     GtkTextMark *end_mark;
@@ -32,7 +34,6 @@ static void      moo_line_view_finalize         (GObject        *object);
 
 static void      moo_line_view_parent_set       (GtkWidget      *widget,
                                                  GtkWidget      *old_parent);
-static void      moo_line_view_realize          (GtkWidget      *widget);
 static gboolean  moo_line_view_button_release   (GtkWidget      *widget,
                                                  GdkEventButton *event);
 
@@ -42,6 +43,11 @@ static void      moo_line_view_move_cursor      (GtkTextView    *text_view,
                                                  gboolean        extend_selection);
 static void      moo_line_view_populate_popup   (GtkTextView    *text_view,
                                                  GtkMenu        *menu);
+
+static MooTextCursor
+                 moo_line_view_get_text_cursor  (MooTextView    *view,
+                                                 int             x,
+                                                 int             y);
 
 static void      activate                       (MooLineView    *view,
                                                  int             line);
@@ -70,16 +76,18 @@ moo_line_view_class_init (MooLineViewClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkTextViewClass *textview_class = GTK_TEXT_VIEW_CLASS (klass);
+    MooTextViewClass *mootextview_class = MOO_TEXT_VIEW_CLASS (klass);
     GtkBindingSet *binding_set;
 
     gobject_class->finalize = moo_line_view_finalize;
 
-    widget_class->realize = moo_line_view_realize;
     widget_class->button_release_event = moo_line_view_button_release;
     widget_class->parent_set = moo_line_view_parent_set;
 
     textview_class->move_cursor = moo_line_view_move_cursor;
     textview_class->populate_popup = moo_line_view_populate_popup;
+
+    mootextview_class->get_text_cursor = moo_line_view_get_text_cursor;
 
     g_type_class_add_private (klass, sizeof (MooLineViewPrivate));
 
@@ -118,6 +126,7 @@ moo_line_view_init (MooLineView *view)
     view->priv->line_data = _moo_data_new (g_direct_hash,
                                            g_direct_equal,
                                            NULL);
+    view->priv->cursors = g_hash_table_new (g_direct_hash, g_direct_equal);
 
     g_object_set (view,
                   "editable", FALSE,
@@ -134,6 +143,7 @@ moo_line_view_finalize (GObject *object)
     MooLineView *view = MOO_LINE_VIEW (object);
 
     _moo_data_destroy (view->priv->line_data);
+    g_hash_table_destroy (view->priv->cursors);
 
     G_OBJECT_CLASS (moo_line_view_parent_class)->finalize (object);
 }
@@ -175,6 +185,7 @@ moo_line_view_clear (MooLineView *view)
     gtk_text_buffer_delete (buffer, &start, &end);
 
     _moo_data_clear (view->priv->line_data);
+    g_hash_table_remove_all (view->priv->cursors);
 }
 
 
@@ -335,28 +346,57 @@ moo_line_view_move_cursor (GtkTextView    *text_view,
 }
 
 
-static void
-moo_line_view_realize (GtkWidget *widget)
+static MooTextCursor
+moo_line_view_get_text_cursor (MooTextView    *view,
+                               int             x,
+                               int             y)
 {
-    GdkWindow *window;
+    GtkTextIter iter;
+    GtkTextView *text_view;
+    int line_y, line_height;
+    int line;
+    MooTextCursor cursor;
 
-    GTK_WIDGET_CLASS(moo_line_view_parent_class)->realize (widget);
+    if (x < 0 || y < 0)
+        return MOO_TEXT_CURSOR_ARROW;
 
-    window = gtk_text_view_get_window (GTK_TEXT_VIEW (widget),
-                                       GTK_TEXT_WINDOW_TEXT);
-    gdk_window_set_cursor (window, NULL);
+    text_view = GTK_TEXT_VIEW (view);
+
+    gtk_text_view_get_line_at_y (text_view, &iter, y, NULL);
+    gtk_text_view_get_line_yrange (text_view, &iter, &line_y, &line_height);
+
+    if (y >= line_y + line_height)
+        return MOO_TEXT_CURSOR_ARROW;
+
+    line = gtk_text_iter_get_line (&iter);
+    cursor = GPOINTER_TO_INT (g_hash_table_lookup (MOO_LINE_VIEW (view)->priv->cursors, GINT_TO_POINTER (line)));
+
+    return cursor ? cursor : MOO_TEXT_CURSOR_ARROW;
+}
+
+void
+moo_line_view_set_cursor (MooLineView    *view,
+                          int             line,
+                          MooTextCursor   cursor)
+{
+    moo_return_if_fail (MOO_IS_LINE_VIEW (view));
+    moo_return_if_fail (line >= 0 && line < gtk_text_buffer_get_line_count (get_buffer (view)));
+
+    if (cursor)
+        g_hash_table_insert (view->priv->cursors, GINT_TO_POINTER (line), GINT_TO_POINTER (cursor));
+    else
+        g_hash_table_remove (view->priv->cursors, GINT_TO_POINTER (line));
 }
 
 
-/* XXX check line */
 void
 moo_line_view_set_data (MooLineView    *view,
                         int             line,
                         gpointer        data,
                         GDestroyNotify  free_func)
 {
-    g_return_if_fail (MOO_IS_LINE_VIEW (view));
-    g_return_if_fail (line >= 0);
+    moo_return_if_fail (MOO_IS_LINE_VIEW (view));
+    moo_return_if_fail (line >= 0 && line < gtk_text_buffer_get_line_count (get_buffer (view)));
 
     if (data)
         _moo_data_insert_ptr (view->priv->line_data,

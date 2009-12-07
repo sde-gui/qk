@@ -405,8 +405,8 @@ moo_line_mark_get_markup (MooLineMark *mark)
 int
 moo_line_mark_get_line (MooLineMark *mark)
 {
-    g_return_val_if_fail (MOO_IS_LINE_MARK (mark), -1);
-    g_return_val_if_fail (mark->priv->line != NULL, -1);
+    moo_return_val_if_fail (MOO_IS_LINE_MARK (mark), -1);
+    moo_return_val_if_fail (mark->priv->line != NULL, -1);
 
     if (_moo_line_buffer_get_stamp (mark->priv->line_buf) != mark->priv->stamp)
     {

@@ -96,6 +96,9 @@ int         moo_line_view_write_line    (MooLineView    *view,
                                          gssize          len,
                                          GtkTextTag     *tag);
 
+void        moo_line_view_set_cursor    (MooLineView    *view,
+                                         int             line,
+                                         MooTextCursor   cursor);
 
 
 G_END_DECLS

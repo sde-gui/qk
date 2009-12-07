@@ -65,6 +65,10 @@ int         _moo_text_view_get_line_height      (MooTextView        *view);
 void        _moo_text_view_set_line_numbers_font (MooTextView       *view,
                                                  const char         *name);
 
+void        _moo_text_view_update_text_cursor   (MooTextView        *view,
+                                                 int                 x,
+                                                 int                 y);
+
 extern gpointer _moo_text_view_parent_class;
 
 typedef enum {
@@ -114,6 +118,8 @@ struct _MooTextViewPrivate {
     gboolean cursor_visible;
     guint blink_timeout;
 #endif
+
+    MooTextCursor text_cursor;
 
     /***********************************************************************/
     /* Drawing

@@ -31,6 +31,7 @@
 #include "mooutils/mooentry.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooatom.h"
+#include "mooutils/mootype-macros.h"
 #include "glade/mooquicksearch-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gregex.h>
@@ -139,6 +140,11 @@ static gboolean moo_text_view_char_inserted (MooTextView        *view,
                                              GtkTextIter        *where,
                                              const char         *character);
 static void     moo_text_view_delete_selection (MooTextView     *view);
+
+static MooTextCursor moo_text_view_get_text_cursor
+                                            (MooTextView        *view,
+                                             int                 x,
+                                             int                 y);
 
 static void     set_manage_clipboard        (MooTextView        *view,
                                              gboolean            manage);
@@ -313,6 +319,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     klass->redo = moo_text_view_redo;
     klass->char_inserted = moo_text_view_char_inserted;
     klass->apply_style_scheme = moo_text_view_apply_style_scheme;
+    klass->get_text_cursor = moo_text_view_get_text_cursor;
 
     g_object_class_install_property (gobject_class,
                                      PROP_BUFFER,
@@ -1048,6 +1055,15 @@ moo_text_view_undo (MooTextView    *view)
     {
         return FALSE;
     }
+}
+
+
+static MooTextCursor
+moo_text_view_get_text_cursor (G_GNUC_UNUSED MooTextView *view,
+                               G_GNUC_UNUSED int          x,
+                               G_GNUC_UNUSED int          y)
+{
+    return MOO_TEXT_CURSOR_TEXT;
 }
 
 
@@ -2164,6 +2180,8 @@ moo_text_view_realize (GtkWidget *widget)
     }
 
     update_box_tag (view);
+
+    _moo_text_view_update_text_cursor (view, -1, -1);
 }
 
 
@@ -2733,6 +2751,24 @@ moo_text_view_lookup_tag (MooTextView    *view,
     table = gtk_text_buffer_get_tag_table (buffer);
 
     return gtk_text_tag_table_lookup (table, name);
+}
+
+
+MOO_DEFINE_QUARK_STATIC ("moo-text-tag-cursor", cursor_quark)
+
+void
+moo_text_tag_set_cursor (GtkTextTag    *tag,
+                         GdkCursorType  cursor)
+{
+    moo_return_if_fail (GTK_IS_TEXT_TAG (tag));
+    g_object_set_qdata (G_OBJECT (tag), cursor_quark (), GINT_TO_POINTER (cursor));
+}
+
+GdkCursorType
+moo_text_tag_get_cursor (GtkTextTag *tag)
+{
+    moo_return_val_if_fail (GTK_IS_TEXT_TAG (tag), 0);
+    return GPOINTER_TO_INT (g_object_get_qdata (G_OBJECT (tag), cursor_quark ()));
 }
 
 
@@ -3936,7 +3972,12 @@ fold_toggled (MooTextView        *view,
               MooFold            *fold)
 {
     if (view->priv->enable_folding)
-        invalidate_line (view, _moo_fold_get_start (fold), TRUE, TRUE);
+    {
+        if (fold)
+            invalidate_line (view, _moo_fold_get_start (fold), TRUE, TRUE);
+        else
+            gtk_widget_queue_draw (GTK_WIDGET (view));
+    }
 }
 
 

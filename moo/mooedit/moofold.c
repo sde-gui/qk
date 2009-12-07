@@ -639,6 +639,64 @@ _moo_fold_tree_expand (MooFoldTree *tree,
     expand_check_visible (tree, fold);
 }
 
+#define MOO_FOLD_FOREACH_BEGIN(start, iter)             \
+do {                                                    \
+    MooFold *iter = (start);                            \
+    while (iter)                                        \
+    {
+
+#define MOO_FOLD_FOREACH_END(iter)                      \
+        if (iter->children)                             \
+            iter = iter->children;                      \
+        else if (iter->next)                            \
+            iter = iter->next;                          \
+        else                                            \
+        {                                               \
+            while (iter->parent && !iter->parent->next) \
+                iter = iter->parent;                    \
+            iter = iter && iter->parent ?               \
+                iter->parent->next : NULL;              \
+        }                                               \
+    }                                                   \
+} while (0)
+
+gboolean
+_moo_fold_tree_expand_all (MooFoldTree *tree)
+{
+    gboolean ret = FALSE;
+    MooFold *fold_first;
+
+    fold_first = NULL;
+
+    MOO_FOLD_FOREACH_BEGIN(tree->folds, fold)
+    {
+        if (!fold->deleted && fold->collapsed)
+        {
+            if (!fold_first)
+                fold_first = fold;
+            fold->collapsed = FALSE;
+        }
+    }
+    MOO_FOLD_FOREACH_END(fold);
+
+    if (fold_first)
+    {
+        GtkTextIter start, end;
+        GtkTextBuffer *buffer = GTK_TEXT_BUFFER (tree->buffer);
+        int line_first;
+
+        line_first = _moo_fold_get_start (fold_first);
+
+        gtk_text_buffer_get_iter_at_line (buffer, &start, line_first);
+        gtk_text_buffer_get_end_iter (buffer, &end);
+
+        gtk_text_buffer_remove_tag_by_name (buffer, MOO_FOLD_TAG, &start, &end);
+
+        ret = TRUE;
+    }
+
+    return ret;
+}
 
 void
 _moo_fold_tree_collapse (MooFoldTree *tree,
@@ -661,6 +719,57 @@ _moo_fold_tree_collapse (MooFoldTree *tree,
                                       _moo_fold_get_end (fold));
     gtk_text_iter_forward_line (&end);
     gtk_text_buffer_apply_tag_by_name (buffer, MOO_FOLD_TAG, &start, &end);
+}
+
+gboolean
+_moo_fold_tree_collapse_all (MooFoldTree *tree)
+{
+    MooFold *fold;
+    gboolean ret = FALSE;
+
+    for (fold = tree->folds; fold != NULL; fold = fold->next)
+    {
+        if (!fold->collapsed)
+            ret = TRUE;
+        _moo_fold_tree_collapse (tree, fold);
+    }
+
+    return ret;
+}
+
+gboolean
+_moo_fold_tree_toggle (MooFoldTree *tree)
+{
+    gboolean seen_expanded = FALSE;
+    gboolean seen_collapsed = FALSE;
+
+    MOO_FOLD_FOREACH_BEGIN(tree->folds, fold)
+    {
+        if (!fold->deleted)
+        {
+            if (fold->collapsed)
+                seen_collapsed = TRUE;
+            else
+                seen_expanded = TRUE;
+        }
+
+        if (seen_collapsed && seen_expanded)
+            break;
+    }
+    MOO_FOLD_FOREACH_END(fold);
+
+    if (seen_collapsed)
+    {
+        _moo_fold_tree_expand_all (tree);
+        return TRUE;
+    }
+    else if (seen_expanded)
+    {
+        _moo_fold_tree_collapse_all (tree);
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 

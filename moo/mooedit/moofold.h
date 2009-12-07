@@ -76,10 +76,13 @@ GSList      *_moo_fold_tree_get     (MooFoldTree    *tree,
                                      int             first_line,
                                      int             last_line);
 
-void         _moo_fold_tree_expand  (MooFoldTree    *tree,
-                                     MooFold        *fold);
-void         _moo_fold_tree_collapse(MooFoldTree    *tree,
-                                     MooFold        *fold);
+void         _moo_fold_tree_expand          (MooFoldTree    *tree,
+                                             MooFold        *fold);
+void         _moo_fold_tree_collapse        (MooFoldTree    *tree,
+                                             MooFold        *fold);
+gboolean     _moo_fold_tree_toggle          (MooFoldTree    *tree);
+gboolean     _moo_fold_tree_expand_all      (MooFoldTree    *tree);
+gboolean     _moo_fold_tree_collapse_all    (MooFoldTree    *tree);
 
 
 G_END_DECLS

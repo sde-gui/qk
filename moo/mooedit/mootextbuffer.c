@@ -2108,3 +2108,11 @@ moo_text_buffer_toggle_fold (MooTextBuffer *buffer,
 
     g_signal_emit (buffer, signals[FOLD_TOGGLED], 0, fold);
 }
+
+void
+moo_text_buffer_toggle_folds (MooTextBuffer *buffer)
+{
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+    if (_moo_fold_tree_toggle (buffer->priv->fold_tree))
+        g_signal_emit (buffer, signals[FOLD_TOGGLED], 0, NULL);
+}

@@ -55,3 +55,10 @@ enums['MooTextSelectionType'] = [
     [ 'MOO_TEXT_SELECT_WORDS' ],
     [ 'MOO_TEXT_SELECT_LINES' ],
 ]
+
+enums['MooTextCursor'] = [
+    [ 'MOO_TEXT_CURSOR_NONE' ],
+    [ 'MOO_TEXT_CURSOR_TEXT' ],
+    [ 'MOO_TEXT_CURSOR_ARROW' ],
+    [ 'MOO_TEXT_CURSOR_LINK' ],
+]

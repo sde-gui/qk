@@ -113,6 +113,7 @@ MooFold    *moo_text_buffer_get_fold_at_line            (MooTextBuffer      *buf
                                                          int                 line);
 void        moo_text_buffer_toggle_fold                 (MooTextBuffer      *buffer,
                                                          MooFold            *fold);
+void        moo_text_buffer_toggle_folds                (MooTextBuffer      *buffer);
 
 
 G_END_DECLS

@@ -758,6 +758,7 @@ process_grep_line (MooLineView *view,
     moo_line_view_set_data (view, view_line,
                             file_line_pair_new (stuff->current_file, line_no),
                             (GDestroyNotify) file_line_pair_free);
+    moo_line_view_set_cursor (view, view_line, MOO_TEXT_CURSOR_LINK);
     stuff->match_count++;
 
     g_free (number);
@@ -1080,7 +1081,7 @@ output_activate (WindowStuff    *stuff,
 
     line_data = moo_line_view_get_data (MOO_LINE_VIEW (stuff->output), line);
 
-    if (!line_data)
+    if (!line_data || line_data->line < 0)
         return FALSE;
 
     editor = moo_edit_window_get_editor (stuff->window);

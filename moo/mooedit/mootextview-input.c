@@ -455,18 +455,93 @@ clear_drag_stuff (MooTextView *view)
     view->priv->dnd.button = GDK_BUTTON_RELEASE;
 }
 
-/* from gtktextview.c */
-static void
-text_view_unobscure_mouse_cursor (GtkTextView *text_view)
+void
+_moo_text_view_update_text_cursor (MooTextView *view,
+                                   int          x,
+                                   int          y)
 {
-    if (text_view->mouse_cursor_obscured)
+    MooTextCursor tcursor;
+    GdkCursor *cursor = NULL;
+    GtkTextView *text_view = GTK_TEXT_VIEW (view);
+
+    moo_return_if_fail (MOO_IS_TEXT_VIEW (view));
+    moo_return_if_fail (GTK_WIDGET_REALIZED (view));
+    moo_return_if_fail (MOO_TEXT_VIEW_GET_CLASS (view)->get_text_cursor != NULL);
+
+    tcursor = MOO_TEXT_VIEW_GET_CLASS (view)->get_text_cursor (view, x, y);
+
+    if (tcursor == view->priv->text_cursor && !text_view->mouse_cursor_obscured)
+        return;
+
+    switch (tcursor)
     {
-        GdkCursor *cursor =
-            gdk_cursor_new_for_display (gtk_widget_get_display (GTK_WIDGET (text_view)),
-                                        GDK_XTERM);
-        gdk_window_set_cursor (gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT), cursor);
+        case MOO_TEXT_CURSOR_ARROW:
+            break;
+        case MOO_TEXT_CURSOR_TEXT:
+            cursor = gdk_cursor_new_for_display (gtk_widget_get_display (GTK_WIDGET (view)), GDK_XTERM);
+            break;
+        case MOO_TEXT_CURSOR_LINK:
+            cursor = gdk_cursor_new_for_display (gtk_widget_get_display (GTK_WIDGET (view)), GDK_HAND2);
+            break;
+        default:
+            moo_assert_not_reached ();
+            cursor = gdk_cursor_new_for_display (gtk_widget_get_display (GTK_WIDGET (view)), GDK_XTERM);
+            break;
+    }
+
+    gdk_window_set_cursor (gtk_text_view_get_window (text_view, GTK_TEXT_WINDOW_TEXT), cursor);
+
+    text_view->mouse_cursor_obscured = FALSE;
+    view->priv->text_cursor = tcursor;
+
+    if (cursor)
         gdk_cursor_unref (cursor);
-        text_view->mouse_cursor_obscured = FALSE;
+}
+
+static void
+set_invisible_cursor (GdkWindow *window)
+{
+    GdkCursor *cursor;
+    GdkBitmap *empty_bitmap = NULL;
+
+#if !GTK_CHECK_VERSION(2,16,0) || 1
+    GdkColor useless;
+    char invisible_cursor_bits[] = { 0x0 };
+
+    useless.red = useless.green = useless.blue = 0;
+    useless.pixel = 0;
+
+    empty_bitmap =
+            gdk_bitmap_create_from_data (window,
+                                         invisible_cursor_bits,
+                                         1, 1);
+
+    cursor = gdk_cursor_new_from_pixmap (empty_bitmap,
+                                         empty_bitmap,
+                                         &useless,
+                                         &useless, 0, 0);
+#else /* GTK_CHECK_VERSION(2,16,0) */
+    cursor = gdk_cursor_new (GDK_BLANK_CURSOR);
+#endif /* GTK_CHECK_VERSION(2,16,0) */
+
+    gdk_window_set_cursor (window, cursor);
+
+    gdk_cursor_unref (cursor);
+
+    if (empty_bitmap)
+        g_object_unref (empty_bitmap);
+}
+
+static void
+text_view_obscure_mouse_cursor (GtkTextView *text_view)
+{
+    if (!text_view->mouse_cursor_obscured)
+    {
+        GdkWindow *window =
+                gtk_text_view_get_window (text_view,
+                                          GTK_TEXT_WINDOW_TEXT);
+        set_invisible_cursor (window);
+        text_view->mouse_cursor_obscured = TRUE;
     }
 }
 
@@ -483,6 +558,57 @@ left_window_to_line (GtkTextView *text_view,
     return gtk_text_iter_get_line (&iter);
 }
 
+
+static void
+folding_margin_popup_menu (GtkTextView    *text_view,
+                           GdkEventButton *event)
+{
+    MOO_UNUSED (text_view);
+    MOO_UNUSED (event);
+}
+
+static MooFold *
+get_fold_at_mouse (GtkTextView    *text_view,
+                   GdkEventButton *event)
+{
+    int line = left_window_to_line (text_view, event->y);
+    MooTextBuffer *buffer = MOO_TEXT_BUFFER (gtk_text_view_get_buffer (text_view));
+    return moo_text_buffer_get_fold_at_line (buffer, line);
+}
+
+static gboolean
+folding_margin_click (GtkTextView    *text_view,
+                      GdkEventButton *event)
+{
+    MooTextBuffer *buffer = MOO_TEXT_BUFFER (gtk_text_view_get_buffer (text_view));
+
+    if (event->button == 1 && event->type == GDK_BUTTON_PRESS)
+    {
+        MooFold *fold = get_fold_at_mouse (text_view, event);
+
+        if (fold)
+            moo_text_buffer_toggle_fold (buffer, fold);
+
+        return fold != NULL;
+    }
+    else if ((event->button == 1 && event->type == GDK_2BUTTON_PRESS) ||
+             (event->button == 2 && event->type == GDK_BUTTON_PRESS))
+    {
+        MooFold *fold = get_fold_at_mouse (text_view, event);
+
+        if (!fold)
+            moo_text_buffer_toggle_folds (buffer);
+
+        return TRUE;
+    }
+    else if (event->button == 3 && event->type == GDK_BUTTON_PRESS)
+    {
+        folding_margin_popup_menu (text_view, event);
+        return TRUE;
+    }
+
+    return FALSE;
+}
 
 static gboolean
 left_window_click (GtkTextView    *text_view,
@@ -506,22 +632,7 @@ left_window_click (GtkTextView    *text_view,
              event->x >= window_width - view->priv->lm.fold_width &&
              event->x < window_width)
     {
-        MooTextBuffer *buffer = MOO_TEXT_BUFFER (gtk_text_view_get_buffer (text_view));
-        MooFold *fold;
-        int line;
-
-        line = left_window_to_line (text_view, event->y);
-        fold = moo_text_buffer_get_fold_at_line (buffer, line);
-
-        if (fold)
-        {
-            moo_text_buffer_toggle_fold (buffer, fold);
-            return TRUE;
-        }
-        else
-        {
-            return FALSE;
-        }
+        return folding_margin_click (text_view, event);
     }
     else if (view->priv->lm.show_numbers &&
              event->x >= view->priv->lm.icon_width &&
@@ -614,6 +725,40 @@ get_start_mark (MooTextView *view,
     gtk_text_buffer_get_iter_at_mark (buffer, iter, view->priv->dnd.start_mark);
 }
 
+static void
+event_button_to_buffer (GtkTextView    *text_view,
+                        GdkEventButton *event,
+                        int            *x,
+                        int            *y)
+{
+    gtk_text_view_window_to_buffer_coords (text_view,
+                                           gtk_text_view_get_window_type (text_view, event->window),
+                                           event->x, event->y, x, y);
+}
+
+static void
+event_motion_to_buffer (GtkTextView    *text_view,
+                        GdkEventMotion *event,
+                        int            *x,
+                        int            *y)
+{
+    int event_x, event_y;
+
+    if (event->is_hint)
+    {
+        gdk_window_get_pointer (event->window, &event_x, &event_y, NULL);
+    }
+    else
+    {
+        event_x = event->x;
+        event_y = event->y;
+    }
+
+    gtk_text_view_window_to_buffer_coords (text_view,
+                                           gtk_text_view_get_window_type (text_view, event->window),
+                                           event_x, event_y, x, y);
+}
+
 int
 _moo_text_view_button_press_event (GtkWidget          *widget,
                                    GdkEventButton     *event)
@@ -627,7 +772,10 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
     gboolean ret;
 
     text_view = GTK_TEXT_VIEW (widget);
-    text_view_unobscure_mouse_cursor (text_view);
+    view = MOO_TEXT_VIEW (widget);
+
+    event_button_to_buffer (text_view, event, &x, &y);
+    _moo_text_view_update_text_cursor (view, x, y);
 
     switch (gtk_text_view_get_window_type (text_view, event->window))
     {
@@ -652,16 +800,11 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
 
     if (!line_numbers)
     {
-        gtk_text_view_window_to_buffer_coords (text_view, GTK_TEXT_WINDOW_TEXT,
-                                               event->x, event->y, &x, &y);
         gtk_text_view_get_iter_at_location (text_view, &iter, x, y);
     }
     else
     {
-        int line;
-        gtk_text_view_window_to_buffer_coords (text_view, GTK_TEXT_WINDOW_LEFT,
-                                               event->x, event->y, &x, &y);
-        line = left_window_to_line (text_view, event->y);
+        int line = left_window_to_line (text_view, event->y);
         gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
     }
 
@@ -843,27 +986,14 @@ _moo_text_view_motion_event (GtkWidget          *widget,
 {
     GtkTextView *text_view = GTK_TEXT_VIEW (widget);
     MooTextView *view = MOO_TEXT_VIEW (widget);
-    int x, y, event_x, event_y;
+    int x, y;
     GtkTextIter iter;
 
-    text_view_unobscure_mouse_cursor (text_view);
+    event_motion_to_buffer (text_view, event, &x, &y);
+    _moo_text_view_update_text_cursor (view, x, y);
 
     if (!view->priv->dnd.type)
         return FALSE;
-
-    if (event->is_hint)
-    {
-        gdk_window_get_pointer (event->window, &event_x, &event_y, NULL);
-    }
-    else
-    {
-        event_x = event->x;
-        event_y = event->y;
-    }
-
-    gtk_text_view_window_to_buffer_coords (text_view,
-                                           gtk_text_view_get_window_type (text_view, event->window),
-                                           event_x, event_y, &x, &y);
 
     if (view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT_LINES)
     {
@@ -1152,10 +1282,6 @@ drag_scroll_timeout_func (MooTextView *view)
 /* Keyboard
  */
 
-/* these two functions are taken from gtk/gtktextview.c */
-static void text_view_obscure_mouse_cursor (GtkTextView *text_view);
-static void set_invisible_cursor (GdkWindow *window);
-
 static gboolean handle_tab          (MooTextView    *view,
                                      GdkEventKey    *event);
 static gboolean handle_backspace    (MooTextView    *view,
@@ -1274,48 +1400,6 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
     _moo_text_view_pend_cursor_blink (view);
 
     return handled;
-}
-
-
-static void
-text_view_obscure_mouse_cursor (GtkTextView *text_view)
-{
-    if (!text_view->mouse_cursor_obscured)
-    {
-        GdkWindow *window =
-                gtk_text_view_get_window (text_view,
-                                          GTK_TEXT_WINDOW_TEXT);
-        set_invisible_cursor (window);
-        text_view->mouse_cursor_obscured = TRUE;
-    }
-}
-
-
-static void
-set_invisible_cursor (GdkWindow *window)
-{
-    GdkBitmap *empty_bitmap;
-    GdkCursor *cursor;
-    GdkColor useless;
-    char invisible_cursor_bits[] = { 0x0 };
-
-    useless.red = useless.green = useless.blue = 0;
-    useless.pixel = 0;
-
-    empty_bitmap =
-            gdk_bitmap_create_from_data (window,
-                                         invisible_cursor_bits,
-                                         1, 1);
-
-    cursor = gdk_cursor_new_from_pixmap (empty_bitmap,
-                                         empty_bitmap,
-                                         &useless,
-                                         &useless, 0, 0);
-
-    gdk_window_set_cursor (window, cursor);
-
-    gdk_cursor_unref (cursor);
-    g_object_unref (empty_bitmap);
 }
 
 
