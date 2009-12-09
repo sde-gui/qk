@@ -1285,12 +1285,9 @@ sync_pages (MooPrefsDialog *dialog)
                     }
                     else
                     {
-                        MOO_PREFS_PAGE (plugin_page)->auto_apply = FALSE;
-
                         g_object_set_data_full (G_OBJECT (plugin_page), "moo-plugin-id",
                                                 g_strdup (moo_plugin_id (plugin)),
                                                 g_free);
-
                         plugin_pages = g_slist_append (plugin_pages, plugin_page);
                         moo_prefs_dialog_insert_page (dialog, plugin_page, -1);
                     }
@@ -1355,7 +1352,6 @@ prefs_page_apply (MooPrefsPage *page,
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
-    GSList *plugin_pages;
     MooPrefsDialog *dialog;
 
     dialog = g_object_get_data (G_OBJECT (page), "moo-plugin-prefs-dialog");
@@ -1389,15 +1385,6 @@ prefs_page_apply (MooPrefsPage *page,
     while (gtk_tree_model_iter_next (model, &iter));
 
     sync_pages (dialog);
-
-    plugin_pages = g_object_get_data (G_OBJECT (dialog),
-                                      "moo-plugin-prefs-pages");
-
-    while (plugin_pages)
-    {
-        g_signal_emit_by_name (plugin_pages->data, "apply");
-        plugin_pages = plugin_pages->next;
-    }
 }
 
 
