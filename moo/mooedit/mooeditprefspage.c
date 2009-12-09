@@ -184,14 +184,15 @@ page_general_init (MooPrefsPage *page)
 static void
 page_general_apply (MooPrefsPage *page)
 {
-    MooTextStyleScheme *scheme;
     PrefsGeneralXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
+    MooTextStyleScheme *scheme = page_get_scheme (gxml);
 
-    scheme = page_get_scheme (gxml);
-    g_return_if_fail (scheme != NULL);
-    moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME),
-                          moo_text_style_scheme_get_id (scheme));
-    g_object_unref (scheme);
+    if (scheme)
+    {
+        moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME),
+                              moo_text_style_scheme_get_id (scheme));
+        g_object_unref (scheme);
+    }
 }
 
 GtkWidget *
@@ -494,10 +495,7 @@ page_get_scheme (PrefsGeneralXml *gxml)
     MooTextStyleScheme *scheme = NULL;
 
     if (!gtk_combo_box_get_active_iter (gxml->color_scheme_combo, &iter))
-    {
-        g_critical ("%s: oops", G_STRLOC);
         return NULL;
-    }
 
     model = gtk_combo_box_get_model (gxml->color_scheme_combo);
     gtk_tree_model_get (model, &iter, 0, &scheme, -1);
