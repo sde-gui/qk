@@ -143,6 +143,10 @@ do {                                                    \
 #  define moo_message(...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_MESSAGE, __VA_ARGS__)
 #  define moo_critical(...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_CRITICAL, __VA_ARGS__)
 #  define moo_warning(...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_WARNING, __VA_ARGS__)
+#  define moo_error_noloc(...) _moo_error (MOO_CODE_LOC_UNKNOWN, __VA_ARGS__)
+#  define moo_message_noloc(...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_MESSAGE, __VA_ARGS__)
+#  define moo_critical_noloc(...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_CRITICAL, __VA_ARGS__)
+#  define moo_warning_noloc(...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_WARNING, __VA_ARGS__)
 
 #elif defined(G_HAVE_GNUC_VARARGS)
 
@@ -150,6 +154,10 @@ do {                                                    \
 #  define moo_message(format...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_MESSAGE, format)
 #  define moo_critical(format...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_CRITICAL, format)
 #  define moo_warning(format...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_WARNING, format)
+#  define moo_error_noloc(format...) _moo_error (MOO_CODE_LOC_UNKNOWN, format)
+#  define moo_message_noloc(format...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_MESSAGE, format)
+#  define moo_critical_noloc(format...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_CRITICAL, format)
+#  define moo_warning_noloc(format...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_WARNING, format)
 
 #else /* no varargs macros */
 
@@ -180,6 +188,11 @@ _MOO_DEFINE_LOG_FUNC (warning, WARNING)
 _MOO_DEFINE_LOG_FUNC (critical, CRITICAL)
 
 #undef _MOO_DEFINE_LOG_FUNC
+
+#define moo_error_noloc moo_error
+#define moo_message_noloc moo_message
+#define moo_critical_noloc moo_critical
+#define moo_warning_noloc moo_warning
 
 #endif /* varargs macros */
 
