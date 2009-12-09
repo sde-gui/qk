@@ -214,6 +214,7 @@ public:
 
 public:
     Vector() {}
+    Vector(int size) : m_impl(size) {}
 
     template<typename U>
     explicit Vector(const Vector<U> &v)
@@ -323,6 +324,7 @@ public:
     String(const char *str, gsize len) { if (len != 0) s().assign(validateUtf8(str, len), len); }
     String(gsize len, char c) : m_impl(len, validateUtf8(c)) {}
     String(char c) : m_impl(1, validateUtf8(c)) {}
+    static const String &Null() { static String s; return s; }
     ~String() {}
 
     String(const std::string &ss) : m_impl(validateUtf8(ss)) {}
