@@ -29,86 +29,6 @@
 G_BEGIN_DECLS
 
 
-#define TEST_FAILED_MSG(format,...)                                 \
-    moo_test_assert_msg (FALSE, __FILE__, __LINE__,                 \
-                         format, __VA_ARGS__)
-
-#define TEST_FAILED(msg)                                            \
-    moo_test_assert_msg (FALSE, __FILE__, __LINE__,                 \
-                         "%s", msg)
-
-#define TEST_ASSERT_MSG(cond,format,...)                            \
-    moo_test_assert_msg (!!(cond), __FILE__, __LINE__,              \
-                         format, __VA_ARGS__)
-
-#define TEST_ASSERT(cond)                                           \
-    moo_test_assert_impl (!!(cond), (char*) #cond,                  \
-                          __FILE__, __LINE__)
-
-#define TEST_ASSERT_CMP__(Type,actual,expected,cmp,fmt_arg,msg)     \
-G_STMT_START {                                                      \
-    Type actual__ = actual;                                         \
-    Type expected__ = expected;                                     \
-    gboolean passed__ = cmp (actual__, expected__);                 \
-    TEST_ASSERT_MSG (passed__,                                      \
-                     "%s: expected %s, got %s", msg,                \
-                     fmt_arg (expected__),                          \
-                     fmt_arg (actual__));                           \
-} G_STMT_END
-
-#define TEST_ASSERT_CMP(Type,actual,expected,cmp,cmp_sym,fmt_arg)   \
-    TEST_ASSERT_CMP__ (Type, actual, expected, cmp, fmt_arg,        \
-                       #actual " " #cmp_sym " " #expected)          \
-
-#define TEST_ASSERT_CMP_MSG(Type,actual,expected,cmp,               \
-                            fmt_arg,format,...)                     \
-G_STMT_START {                                                      \
-    char *msg__ = g_strdup_printf (format, __VA_ARGS__);            \
-    TEST_ASSERT_CMP__ (Type, actual, expected, cmp, fmt_arg,        \
-                       msg__);                                      \
-    g_free (msg__);                                                 \
-} G_STMT_END
-
-#define TEST_ASSERT_STR_EQ(actual,expected)                         \
-    TEST_ASSERT_CMP (const char *, actual, expected,                \
-                     TEST_STR_EQ, =, TEST_FMT_STR)
-
-#define TEST_ASSERT_STR_NEQ(actual,expected)                        \
-    TEST_ASSERT_CMP (const char *, actual, expected,                \
-                     TEST_STR_NEQ, !=, TEST_FMT_STR)
-
-#define TEST_ASSERT_STR_EQ_MSG(actual,expected,format,...)          \
-    TEST_ASSERT_CMP_MSG (const char *, actual, expected,            \
-                         TEST_STR_EQ, TEST_FMT_STR,                 \
-                         format, __VA_ARGS__)
-
-#define TEST_ASSERT_STRV_EQ(actual,expected)                        \
-    TEST_ASSERT_CMP (char**, actual, expected,                      \
-                     TEST_STRV_EQ, =, TEST_FMT_STRV)
-
-#define TEST_ASSERT_STRV_EQ_MSG(actual,expected,format,...)         \
-    TEST_ASSERT_CMP_MSG (char**, actual, expected,                  \
-                         TEST_STRV_EQ, TEST_FMT_STRV,               \
-                         format, __VA_ARGS__)
-
-#define TEST_ASSERT_INT_EQ(actual,expected)                         \
-    TEST_ASSERT_CMP (int, actual, expected,                         \
-                     TEST_CMP_EQ, =, TEST_FMT_INT)
-
-#define TEST_ASSERT_DBL_EQ(actual,expected)                         \
-    TEST_ASSERT_CMP (double, actual, expected,                      \
-                     TEST_CMP_EQ, =, TEST_FMT_DBL)
-
-#define TEST_CMP_EQ(a,b)    ((a) == (b))
-#define TEST_CMP_NEQ(a,b)   ((a) != (b))
-#define TEST_CMP_LT(a,b)    ((a) < (b))
-#define TEST_CMP_LE(a,b)    ((a) <= (b))
-#define TEST_CMP_GT(a,b)    ((a) > (b))
-#define TEST_CMP_GE(a,b)    ((a) >= (b))
-
-#define TEST_STR_NEQ(s1,s2)  (!TEST_STR_EQ ((s1), (s2)))
-#define TEST_STRV_NEQ(s1,s2) (!TEST_STRV_EQ ((s1), (s2)))
-
 G_GNUC_UNUSED static gboolean
 TEST_STR_EQ (const char *s1, const char *s2)
 {
@@ -228,7 +148,8 @@ G_STMT_START {                                  \
                          ":", lstr, "):",       \
                          G_STRFUNC, ": ",       \
                          "assertion failed: (", \
-                         #expr, ")", NULL);     \
+                         #expr, ")",            \
+                         (char*) NULL);         \
         g_printerr ("**\n** %s\n", s);          \
         g_free (s);                             \
         moo_abort();                            \
@@ -295,10 +216,6 @@ TEST_EXPECT_WARNING_ (int         howmany,
     va_end (args);
 }
 
-#define TEST_EXPECT_WARNING(howmany,fmt,...)            \
-    TEST_EXPECT_WARNING_ (howmany, __LINE__, __FILE__,  \
-                          fmt, __VA_ARGS__)
-
 G_GNUC_UNUSED static void
 TEST_CHECK_WARNING (void)
 {
@@ -325,6 +242,96 @@ TEST_CHECK_WARNING (void)
                        g_log_default_handler, test_warnings_info);
 }
 
+/*
+ * Suppress warnings when GCC is in -pedantic mode and not -std=c99
+ */
+#ifdef __GNUC__
+#pragma GCC system_header
+#endif
+
+#define TEST_FAILED_MSG(format,...)                                 \
+    moo_test_assert_msg (FALSE, __FILE__, __LINE__,                 \
+                         format, __VA_ARGS__)
+
+#define TEST_FAILED(msg)                                            \
+    moo_test_assert_msg (FALSE, __FILE__, __LINE__,                 \
+                         "%s", msg)
+
+#define TEST_ASSERT_MSG(cond,format,...)                            \
+    moo_test_assert_msg (!!(cond), __FILE__, __LINE__,              \
+                         format, __VA_ARGS__)
+
+#define TEST_ASSERT(cond)                                           \
+    moo_test_assert_impl (!!(cond), (char*) #cond,                  \
+                          __FILE__, __LINE__)
+
+#define TEST_ASSERT_CMP__(Type,actual,expected,cmp,fmt_arg,msg)     \
+G_STMT_START {                                                      \
+    Type actual__ = actual;                                         \
+    Type expected__ = expected;                                     \
+    gboolean passed__ = cmp (actual__, expected__);                 \
+    TEST_ASSERT_MSG (passed__,                                      \
+                     "%s: expected %s, got %s", msg,                \
+                     fmt_arg (expected__),                          \
+                     fmt_arg (actual__));                           \
+} G_STMT_END
+
+#define TEST_ASSERT_CMP(Type,actual,expected,cmp,cmp_sym,fmt_arg)   \
+    TEST_ASSERT_CMP__ (Type, actual, expected, cmp, fmt_arg,        \
+                       #actual " " #cmp_sym " " #expected)          \
+
+#define TEST_ASSERT_CMP_MSG(Type,actual,expected,cmp,               \
+                            fmt_arg,format,...)                     \
+G_STMT_START {                                                      \
+    char *msg__ = g_strdup_printf (format, __VA_ARGS__);            \
+    TEST_ASSERT_CMP__ (Type, actual, expected, cmp, fmt_arg,        \
+                       msg__);                                      \
+    g_free (msg__);                                                 \
+} G_STMT_END
+
+#define TEST_ASSERT_STR_EQ(actual,expected)                         \
+    TEST_ASSERT_CMP (const char *, actual, expected,                \
+                     TEST_STR_EQ, =, TEST_FMT_STR)
+
+#define TEST_ASSERT_STR_NEQ(actual,expected)                        \
+    TEST_ASSERT_CMP (const char *, actual, expected,                \
+                     TEST_STR_NEQ, !=, TEST_FMT_STR)
+
+#define TEST_ASSERT_STR_EQ_MSG(actual,expected,format,...)          \
+    TEST_ASSERT_CMP_MSG (const char *, actual, expected,            \
+                         TEST_STR_EQ, TEST_FMT_STR,                 \
+                         format, __VA_ARGS__)
+
+#define TEST_ASSERT_STRV_EQ(actual,expected)                        \
+    TEST_ASSERT_CMP (char**, actual, expected,                      \
+                     TEST_STRV_EQ, =, TEST_FMT_STRV)
+
+#define TEST_ASSERT_STRV_EQ_MSG(actual,expected,format,...)         \
+    TEST_ASSERT_CMP_MSG (char**, actual, expected,                  \
+                         TEST_STRV_EQ, TEST_FMT_STRV,               \
+                         format, __VA_ARGS__)
+
+#define TEST_ASSERT_INT_EQ(actual,expected)                         \
+    TEST_ASSERT_CMP (int, actual, expected,                         \
+                     TEST_CMP_EQ, =, TEST_FMT_INT)
+
+#define TEST_ASSERT_DBL_EQ(actual,expected)                         \
+    TEST_ASSERT_CMP (double, actual, expected,                      \
+                     TEST_CMP_EQ, =, TEST_FMT_DBL)
+
+#define TEST_CMP_EQ(a,b)    ((a) == (b))
+#define TEST_CMP_NEQ(a,b)   ((a) != (b))
+#define TEST_CMP_LT(a,b)    ((a) < (b))
+#define TEST_CMP_LE(a,b)    ((a) <= (b))
+#define TEST_CMP_GT(a,b)    ((a) > (b))
+#define TEST_CMP_GE(a,b)    ((a) >= (b))
+
+#define TEST_STR_NEQ(s1,s2)  (!TEST_STR_EQ ((s1), (s2)))
+#define TEST_STRV_NEQ(s1,s2) (!TEST_STRV_EQ ((s1), (s2)))
+
+#define TEST_EXPECT_WARNING(howmany,fmt,...)            \
+    TEST_EXPECT_WARNING_ (howmany, __LINE__, __FILE__,  \
+                          fmt, __VA_ARGS__)
 
 G_END_DECLS
 
