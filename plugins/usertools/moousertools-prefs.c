@@ -81,11 +81,8 @@ populate_store (GtkListStore   *store,
     {
         MooUserToolInfo *info = list->data;
 
-        if (info->os_type == MOO_USER_TOOL_THIS_OS)
-        {
-            gtk_list_store_append (store, &iter);
-            gtk_list_store_set (store, &iter, COLUMN_INFO, info, -1);
-        }
+        gtk_list_store_append (store, &iter);
+        gtk_list_store_set (store, &iter, COLUMN_INFO, info, -1);
 
         _moo_user_tool_info_unref (info);
         list = g_slist_delete_link (list, list);

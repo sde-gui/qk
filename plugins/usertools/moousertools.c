@@ -367,14 +367,6 @@ load_tool (MooUserToolInfo *info)
     if (!info->enabled)
         return;
 
-#ifdef __WIN32__
-    if (info->os_type != MOO_USER_TOOL_WIN32)
-        return;
-#else
-    if (info->os_type != MOO_USER_TOOL_UNIX)
-        return;
-#endif
-
     g_return_if_fail (MOO_IS_COMMAND_FACTORY (info->cmd_factory));
 
     cmd = moo_command_create (info->cmd_factory->name,
@@ -535,10 +527,7 @@ parse_params (MooUserToolInfo  *info,
         }
         else if (!strcmp (key, KEY_OS))
         {
-            if (!g_ascii_strncasecmp (value, "win", 3))
-                info->os_type = MOO_USER_TOOL_WIN32;
-            else
-                info->os_type = MOO_USER_TOOL_UNIX;
+            /* ignore */
         }
         else if (!strcmp (key, KEY_ACCEL))
         {
@@ -600,7 +589,6 @@ load_file (const char      *filename,
                           strlen (basename + NAME_PREFIX_LEN - suffix_len));
     info->name = g_strdup (info->id);
     info->enabled = TRUE;
-    info->os_type = MOO_USER_TOOL_THIS_OS;
     info->cmd_data = cmd_data;
     info->cmd_factory = cmd_factory;
 
@@ -689,7 +677,6 @@ parse_item (MooKeyFileItem  *item,
             MooUserToolType  type,
             const char      *file)
 {
-    char *os;
     char *position = NULL;
     MooUserToolInfo *info;
     char *langs;
@@ -719,15 +706,6 @@ parse_item (MooKeyFileItem  *item,
 
     if (info->deleted || info->builtin)
         return info;
-
-    os = moo_key_file_item_steal (item, KEY_OS);
-    if (!os || !os[0])
-        info->os_type = MOO_USER_TOOL_THIS_OS;
-    else if (!g_ascii_strncasecmp (os, "win", 3))
-        info->os_type = MOO_USER_TOOL_WIN32;
-    else
-        info->os_type = MOO_USER_TOOL_UNIX;
-    g_free (os);
 
     info->accel = moo_key_file_item_steal (item, KEY_ACCEL);
     info->menu = moo_key_file_item_steal (item, KEY_MENU);
@@ -1008,7 +986,6 @@ info_equal (MooUserToolInfo *info1,
         return FALSE;
 
     return info1->position == info2->position &&
-           info1->os_type == info2->os_type &&
            info1->position == info2->position &&
            info1->position == info2->position &&
            info1->cmd_factory == info2->cmd_factory &&

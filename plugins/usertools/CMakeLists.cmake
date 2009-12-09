@@ -1,4 +1,13 @@
-INSTALL(FILES usertools/context.cfg usertools/menu.cfg usertools/filters.xml DESTINATION ${MOO_DATA_DIR})
+FOREACH(file context.cfg menu.cfg)
+  IF(WIN32)
+    INSTALL(FILES usertools/win32-${file} DESTINATION ${MOO_DATA_DIR} RENAME ${file})
+  ELSE(WIN32)
+    INSTALL(FILES usertools/unix-${file} DESTINATION ${MOO_DATA_DIR} RENAME ${file})
+  ENDIF(WIN32)
+ENDFOREACH(file)
+FOREACH(file filters.xml)
+  INSTALL(FILES usertools/${file} DESTINATION ${MOO_DATA_DIR})
+ENDFOREACH(file)
 
 LIST(APPEND MEDITPLUGINS_SOURCES
   usertools/moousertools.c

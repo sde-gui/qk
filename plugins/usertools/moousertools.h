@@ -35,17 +35,6 @@ typedef enum {
     MOO_USER_TOOL_POS_START
 } MooUserToolPosition;
 
-typedef enum {
-    MOO_USER_TOOL_UNIX,
-    MOO_USER_TOOL_WIN32
-} MooUserToolOSType;
-
-#ifdef G_OS_WIN32
-#define MOO_USER_TOOL_THIS_OS MOO_USER_TOOL_WIN32
-#else
-#define MOO_USER_TOOL_THIS_OS MOO_USER_TOOL_UNIX
-#endif
-
 typedef struct {
     char                *id;
     char                *name;
@@ -54,7 +43,6 @@ typedef struct {
     char                *filter;
     char                *options;
     MooUserToolPosition  position;
-    MooUserToolOSType    os_type;
     MooCommandFactory   *cmd_factory;
     MooCommandData      *cmd_data;
     MooUserToolType      type;
