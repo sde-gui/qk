@@ -58,7 +58,10 @@ do {                                        \
 #define _MOO_DEBUG_ASSERT_NOT_REACHED() MOO_VOID_STMT
 #endif
 
+#define _MOO_DEBUG_SIDE_ASSERT(what) do { gboolean res__ = (what); _MOO_DEBUG_ASSERT(res__); } while (0)
+
 #define moo_assert _MOO_DEBUG_ASSERT
+#define moo_side_assert _MOO_DEBUG_SIDE_ASSERT
 #define moo_release_assert _MOO_RELEASE_ASSERT
 #define moo_assert_not_reached _MOO_DEBUG_ASSERT_NOT_REACHED
 #define moo_release_assert_not_reached _MOO_RELEASE_ASSERT_NOT_REACHED
@@ -103,7 +106,12 @@ void _moo_abort_debug_ignore (MooCodeLoc loc, const char *message);
 
 #ifdef MOO_DEV_MODE
 
-inline static void __moo_test_func_messages (void *p)
+inline static gboolean __moo_test_func_bool (void)
+{
+    return TRUE;
+}
+
+inline static void __moo_test_func (void *p)
 {
     _MOO_ASSERT_CHECK (p != (void*)0);
     _MOO_DEBUG_ASSERT (p != (void*)0);
@@ -112,6 +120,7 @@ inline static void __moo_test_func_messages (void *p)
     _MOO_RELEASE_ASSERT_NOT_REACHED ();
     _MOO_DEBUG_ASSERT (0);
     _MOO_DEBUG_ASSERT_NOT_REACHED ();
+    _MOO_DEBUG_SIDE_ASSERT (__moo_test_func_bool ());
 }
 
 #endif /* MOO_DEV_MODE */

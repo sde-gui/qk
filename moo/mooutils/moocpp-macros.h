@@ -18,8 +18,9 @@
 
 #include <mooutils/mooutils-messages.h>
 
-#define mooAssert _MOO_DEBUG_ASSERT
-#define mooCheck  _MOO_RELEASE_ASSERT
+#define mooAssert           _MOO_DEBUG_ASSERT
+#define mooCheck            _MOO_RELEASE_ASSERT
+#define mooSideAssert       _MOO_DEBUG_SIDE_ASSERT
 
 #define mooAssertNotReached _MOO_DEBUG_ASSERT_NOT_REACHED
 #define mooCheckNotReached  _MOO_RELEASE_ASSERT_NOT_REACHED
@@ -53,12 +54,18 @@ namespace _test {
 
 mooStaticAssert(sizeof(char) == 1, "test");
 
+inline bool __moo_test_func_bool2()
+{
+    return false;
+}
+
 inline void __moo_test_func()
 {
     mooCheck(false);
     mooAssert(false);
     mooAssertNotReached();
     mooCheckNotReached();
+    mooSideAssert(__moo_test_func_bool2());
 }
 
 class Foo1 {
