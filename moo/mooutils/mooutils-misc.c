@@ -1840,12 +1840,17 @@ _moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
                 break;
 
             case IDIGNORE:
+                if (GetKeyState(VK_CONTROL))
+                    skip = TRUE;
                 break;
 
             default:
                 moo_abort ();
                 break;
         }
+
+        if (skip && loc_id)
+            g_hash_table_insert (locs_hash, g_strdup (loc_id), GINT_TO_POINTER (1));
     }
 
     g_free (loc_id);
@@ -1883,6 +1888,7 @@ void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_lis
         char *message = g_strdup_vprintf (format, args);
         _moo_abort_debug_ignore (loc, message);
         g_free (message);
+        flags = G_LOG_LEVEL_MESSAGE;
     }
 #endif
     g_logv (G_LOG_DOMAIN, flags, format, args);
