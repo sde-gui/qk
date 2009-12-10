@@ -1808,6 +1808,8 @@ _moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
 
     if (loc.counter != 0)
         loc_id = g_strdup_printf ("%s#%d#%d", loc.file, loc.line, loc.counter);
+    else
+        loc_id = g_strdup (message);
 
     if (loc_id != NULL)
     {
@@ -1850,7 +1852,10 @@ _moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
         }
 
         if (skip && loc_id)
-            g_hash_table_insert (locs_hash, g_strdup (loc_id), GINT_TO_POINTER (1));
+        {
+            g_hash_table_insert (locs_hash, loc_id, GINT_TO_POINTER (1));
+            loc_id = NULL;
+        }
     }
 
     g_free (loc_id);
