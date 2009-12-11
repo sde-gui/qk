@@ -1842,7 +1842,7 @@ _moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
                 break;
 
             case IDIGNORE:
-                if (GetKeyState(VK_CONTROL))
+                if (GetKeyState(VK_CONTROL) < 0)
                     skip = TRUE;
                 break;
 
