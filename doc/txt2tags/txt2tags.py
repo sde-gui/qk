@@ -3590,7 +3590,7 @@ def doFooter(config):
 	cmdline = 'cmdline: %s %s'%(my_name, string.join(cmdline, ' '))
 	ret.append('')
 	ret.append(doCommentLine(ppgd))
-	ret.append(doCommentLine(cmdline))
+# 	ret.append(doCommentLine(cmdline))
 	ret.append(TAGS['EOD'])
 	return ret
 
