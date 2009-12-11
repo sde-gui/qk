@@ -1805,8 +1805,11 @@ _moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
     gboolean skip = FALSE;
     static GHashTable *locs_hash;
     char *loc_id = NULL;
+    gboolean use_location;
 
-    if (loc.counter != 0)
+    use_location = loc.counter != 0;
+
+    if (use_location)
         loc_id = g_strdup_printf ("%s#%d#%d", loc.file, loc.line, loc.counter);
     else
         loc_id = g_strdup (message);
@@ -1823,7 +1826,7 @@ _moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
     {
         int ret;
 
-        if (loc_id != NULL)
+        if (use_location)
             ret = _moo_win32_message_box (NULL, MB_ABORTRETRYIGNORE, NULL,
                                           "In file %s, line %d, function %s:\n%s",
                                           loc.file, loc.line, loc.func, message);
