@@ -139,6 +139,14 @@ do {                                                    \
 
 #define moo_return_if_fail(cond) moo_return_val_if_fail(cond,;)
 
+#define moo_return_val_if_reached(val)                  \
+do {                                                    \
+    moo_critical("should not be reached");              \
+    return val;                                         \
+} while (0)
+
+#define moo_return_if_reached(cond) moo_return_val_if_reached(;)
+
 /*
  * Suppress warnings when GCC is in -pedantic mode and not -std=c99
  */
@@ -204,6 +212,31 @@ _MOO_DEFINE_LOG_FUNC (critical, CRITICAL)
 #define moo_warning_noloc moo_warning
 
 #endif /* varargs macros */
+
+#ifdef MOO_DEV_MODE
+
+inline static int __moo_test_func (void)
+{
+    moo_return_val_if_fail (FALSE, 4);
+    moo_return_val_if_reached (18);
+    moo_error ("test");
+    moo_warning ("test");
+    moo_critical ("test");
+    moo_message ("test");
+    moo_error_noloc ("test");
+    moo_warning_noloc ("test");
+    moo_critical_noloc ("test");
+    moo_message_noloc ("test");
+    return 7;
+}
+
+inline static void __moo_test_func (void)
+{
+    moo_return_if_fail (FALSE);
+    moo_return_if_reached ();
+}
+
+#endif /* MOO_DEV_MODE */
 
 G_END_DECLS
 
