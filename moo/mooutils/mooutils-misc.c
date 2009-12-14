@@ -1784,7 +1784,7 @@ _moo_widget_set_tooltip (GtkWidget  *widget,
 void
 _moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
 {
-    if (loc.counter)
+    if (moo_code_loc_valid (loc))
         g_printerr ("In file %s, line %d, function %s:\n%s\n", loc.file, loc.line, loc.func, message);
     else
         g_printerr ("%s\n", message);
@@ -1807,7 +1807,7 @@ _moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
     char *loc_id = NULL;
     gboolean use_location;
 
-    use_location = loc.counter != 0;
+    use_location = moo_code_loc_valid (loc);
 
     if (use_location)
         loc_id = g_strdup_printf ("%s#%d#%d", loc.file, loc.line, loc.counter);
@@ -1890,16 +1890,24 @@ _moo_log (MooCodeLoc loc, GLogLevelFlags flags, const char *format, ...)
 
 void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_list args)
 {
+    char *message = g_strdup_vprintf (format, args);
+
 #ifdef MOO_DEV_MODE
     if (flags < G_LOG_LEVEL_MESSAGE)
     {
-        char *message = g_strdup_vprintf (format, args);
         _moo_abort_debug_ignore (loc, message);
-        g_free (message);
         flags = G_LOG_LEVEL_MESSAGE;
     }
 #endif
-    g_logv (G_LOG_DOMAIN, flags, format, args);
+
+    if (moo_code_loc_valid (loc))
+        g_log (G_LOG_DOMAIN, flags,
+               "In file %s, line %d, function %s: %s",
+               loc.file, loc.line, loc.func, message);
+    else
+        g_log (G_LOG_DOMAIN, flags, "%s", message);
+
+    g_free (message);
 }
 
 void MOO_NORETURN _moo_error (MooCodeLoc loc, const char *format, ...)

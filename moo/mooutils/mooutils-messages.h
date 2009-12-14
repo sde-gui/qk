@@ -92,6 +92,12 @@ moo_make_code_loc (const char *file, const char *func, int line, int counter)
     return loc;
 }
 
+static inline gboolean
+moo_code_loc_valid (MooCodeLoc loc)
+{
+    return loc.counter != 0;
+}
+
 void _moo_log (MooCodeLoc loc, GLogLevelFlags flags, const char *format, ...) G_GNUC_PRINTF (3, 4);
 void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_list args);
 void MOO_NORETURN _moo_error (MooCodeLoc loc, const char *format, ...) G_GNUC_PRINTF (2, 3);
