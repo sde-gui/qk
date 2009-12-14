@@ -171,8 +171,8 @@ moo_edit_class_init (MooEditClass *klass)
                                              G_PARAM_READABLE));
 
     g_object_class_install_property (gobject_class, PROP_LINE_END_TYPE,
-        g_param_spec_int ("line-end-type", "line-end-type", "line-end-type",
-                          MOO_LE_UNIX, MOO_LE_MIX, MOO_LE_UNIX, G_PARAM_READWRITE));
+        g_param_spec_enum ("line-end-type", "line-end-type", "line-end-type",
+                           MOO_TYPE_LINE_END_TYPE, MOO_LE_DEFAULT, G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENCODING,
@@ -533,11 +533,11 @@ moo_edit_set_property (GObject        *object,
             break;
 
         case PROP_ENCODING:
-            _moo_edit_set_encoding (edit, g_value_get_string (value));
+            moo_edit_set_encoding (edit, g_value_get_string (value));
             break;
 
         case PROP_LINE_END_TYPE:
-            _moo_edit_set_line_end_type (edit, g_value_get_int (value));
+            moo_edit_set_line_end_type (edit, g_value_get_enum (value));
             break;
 
         default:
@@ -574,7 +574,7 @@ moo_edit_get_property (GObject        *object,
             break;
 
         case PROP_LINE_END_TYPE:
-            g_value_set_int (value, edit->priv->line_end_type);
+            g_value_set_enum (value, edit->priv->line_end_type);
             break;
 
         default:
@@ -712,8 +712,8 @@ moo_edit_get_encoding (MooEdit *edit)
 }
 
 void
-_moo_edit_set_encoding (MooEdit    *edit,
-                        const char *encoding)
+moo_edit_set_encoding (MooEdit    *edit,
+                       const char *encoding)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_return_if_fail (encoding != NULL);

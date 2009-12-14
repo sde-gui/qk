@@ -1,7 +1,7 @@
 /*
  *   mooedit-fileops.c
  *
- *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
+ *   Copyright (C) 2004-2009 by Yevgen Muntyan <muntyan@tamu.edu>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -106,8 +106,8 @@ _moo_edit_load_file (MooEdit      *edit,
     gboolean result;
     GError *error_here = NULL;
 
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    g_return_val_if_fail (G_IS_FILE (file), FALSE);
+    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
 
     encoding_copy = g_strdup (normalize_encoding (encoding, FALSE));
 
@@ -129,7 +129,7 @@ _moo_edit_reload_file (MooEdit    *edit,
     GError *error_here = NULL;
     gboolean result;
 
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
     result = moo_edit_reload_local (edit, encoding, &error_here);
 
@@ -151,8 +151,8 @@ _moo_edit_save_file (MooEdit        *edit,
     char *encoding_copy;
     gboolean result;
 
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    g_return_val_if_fail (G_IS_FILE (file), FALSE);
+    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
 
     encoding_copy = g_strdup (normalize_encoding (encoding, TRUE));
 
@@ -176,8 +176,8 @@ _moo_edit_save_file_copy (MooEdit        *edit,
     char *encoding_copy;
     gboolean result;
 
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    g_return_val_if_fail (G_IS_FILE (file), FALSE);
+    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
 
     encoding_copy = g_strdup (normalize_encoding (encoding, TRUE));
 
@@ -201,9 +201,9 @@ set_encoding_error (GError **error)
 
 
 MooLineEndType
-_moo_edit_get_line_end_type (MooEdit *edit)
+moo_edit_get_line_end_type (MooEdit *edit)
 {
-    g_return_val_if_fail (MOO_IS_EDIT (edit), MOO_LE_DEFAULT);
+    moo_return_val_if_fail (MOO_IS_EDIT (edit), MOO_LE_DEFAULT);
     return edit->priv->line_end_type;
 }
 
@@ -224,9 +224,10 @@ moo_edit_set_line_end_type_full (MooEdit        *edit,
 }
 
 void
-_moo_edit_set_line_end_type (MooEdit        *edit,
-                             MooLineEndType  le)
+moo_edit_set_line_end_type (MooEdit        *edit,
+                            MooLineEndType  le)
 {
+    moo_return_if_fail (MOO_IS_EDIT (edit));
     moo_edit_set_line_end_type_full (edit, le, FALSE);
 }
 
@@ -326,9 +327,9 @@ try_load (MooEdit      *edit,
     gboolean enable_highlight;
     LoadResult result;
 
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    g_return_val_if_fail (G_IS_FILE (file), FALSE);
-    g_return_val_if_fail (encoding && encoding[0], FALSE);
+    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
+    moo_return_val_if_fail (encoding && encoding[0], FALSE);
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
     gtk_text_buffer_set_text (buffer, "", 0);
@@ -383,8 +384,8 @@ moo_edit_load_local (MooEdit     *edit,
     char *freeme = NULL;
     MooLineEndType saved_le;
 
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    g_return_val_if_fail (file != NULL, FALSE);
+    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    moo_return_val_if_fail (file != NULL, FALSE);
 
     if (!check_regular (file, error))
         return FALSE;
@@ -502,8 +503,8 @@ do_load (MooEdit      *edit,
     LoadResult result = ERROR_FILE;
     char *path;
 
-    g_return_val_if_fail (G_IS_FILE (gfile), ERROR_FILE);
-    g_return_val_if_fail (encoding != NULL, ERROR_FILE);
+    moo_return_val_if_fail (G_IS_FILE (gfile), ERROR_FILE);
+    moo_return_val_if_fail (encoding != NULL, ERROR_FILE);
 
     if (!(path = g_file_get_path (gfile)))
     {
@@ -658,7 +659,7 @@ load_binary (MooEdit     *edit,
     GIOStatus status;
     GtkTextBuffer *buffer;
 
-    g_return_val_if_fail (filename != NULL, FALSE);
+    moo_return_val_if_fail (filename != NULL, FALSE);
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
 
@@ -740,7 +741,7 @@ moo_edit_reload_local (MooEdit    *edit,
     GFile *file;
 
     file = _moo_edit_get_file (edit);
-    g_return_val_if_fail (file != NULL, FALSE);
+    moo_return_val_if_fail (file != NULL, FALSE);
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
 
@@ -873,7 +874,7 @@ do_write (GFile             *file,
     MooFileWriterFlags writer_flags;
     gboolean success = FALSE;
 
-    g_return_val_if_fail (G_IS_FILE (file), FALSE);
+    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
 
     writer_flags = (flags & MOO_EDIT_SAVE_BACKUP) ? MOO_FILE_WRITER_SAVE_BACKUP : 0;
 
@@ -963,8 +964,8 @@ moo_edit_save_local (MooEdit        *edit,
 {
     gboolean result;
 
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    g_return_val_if_fail (G_IS_FILE (file), FALSE);
+    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
 
     if (do_save_local (edit, file, encoding, flags, error, &result))
     {
@@ -987,8 +988,8 @@ moo_edit_save_copy_local (MooEdit        *edit,
                           GError        **error)
 {
     gboolean result;
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    g_return_val_if_fail (G_IS_FILE (file), FALSE);
+    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
     do_save_local (edit, file, encoding, flags, error, &result);
     return result;
 }
@@ -1021,10 +1022,10 @@ file_watch_callback (G_GNUC_UNUSED MooFileWatch *watch,
 {
     MooEdit *edit = data;
 
-    g_return_if_fail (MOO_IS_EDIT (data));
-    g_return_if_fail (event->monitor_id == edit->priv->file_monitor_id);
-    g_return_if_fail (edit->priv->filename != NULL);
-    g_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
+    moo_return_if_fail (MOO_IS_EDIT (data));
+    moo_return_if_fail (event->monitor_id == edit->priv->file_monitor_id);
+    moo_return_if_fail (edit->priv->filename != NULL);
+    moo_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
 
     switch (event->code)
     {
@@ -1057,14 +1058,14 @@ _moo_edit_start_file_watch (MooEdit *edit)
     GError *error = NULL;
 
     watch = _moo_editor_get_file_watch (edit->priv->editor);
-    g_return_if_fail (watch != NULL);
+    moo_return_if_fail (watch != NULL);
 
     if (edit->priv->file_monitor_id)
         moo_file_watch_cancel_monitor (watch, edit->priv->file_monitor_id);
     edit->priv->file_monitor_id = 0;
 
-    g_return_if_fail ((edit->priv->status & MOO_EDIT_CHANGED_ON_DISK) == 0);
-    g_return_if_fail (edit->priv->filename != NULL);
+    moo_return_if_fail ((edit->priv->status & MOO_EDIT_CHANGED_ON_DISK) == 0);
+    moo_return_if_fail (edit->priv->filename != NULL);
 
     edit->priv->file_monitor_id =
         moo_file_watch_create_monitor (watch, edit->priv->filename,
@@ -1099,7 +1100,7 @@ _moo_edit_stop_file_watch (MooEdit *edit)
     MooFileWatch *watch;
 
     watch = _moo_editor_get_file_watch (edit->priv->editor);
-    g_return_if_fail (watch != NULL);
+    moo_return_if_fail (watch != NULL);
 
     if (edit->priv->file_monitor_id)
         moo_file_watch_cancel_monitor (watch, edit->priv->file_monitor_id);
@@ -1128,8 +1129,8 @@ check_file_status (MooEdit  *edit,
     if (in_focus_only && !GTK_WIDGET_HAS_FOCUS (edit))
         return;
 
-    g_return_if_fail (edit->priv->filename != NULL);
-    g_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
+    moo_return_if_fail (edit->priv->filename != NULL);
+    moo_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
 
     if (edit->priv->deleted_from_disk)
         file_deleted (edit);
@@ -1141,7 +1142,7 @@ check_file_status (MooEdit  *edit,
 static void
 file_modified_on_disk (MooEdit *edit)
 {
-    g_return_if_fail (edit->priv->filename != NULL);
+    moo_return_if_fail (edit->priv->filename != NULL);
     edit->priv->modified_on_disk = FALSE;
     edit->priv->deleted_from_disk = FALSE;
     _moo_edit_stop_file_watch (edit);
@@ -1152,7 +1153,7 @@ file_modified_on_disk (MooEdit *edit)
 static void
 file_deleted (MooEdit *edit)
 {
-    g_return_if_fail (edit->priv->filename != NULL);
+    moo_return_if_fail (edit->priv->filename != NULL);
     edit->priv->modified_on_disk = FALSE;
     edit->priv->deleted_from_disk = FALSE;
     _moo_edit_stop_file_watch (edit);
@@ -1223,7 +1224,7 @@ _moo_edit_get_default_encoding (void)
 char *
 _moo_file_get_display_name (GFile *file)
 {
-    g_return_val_if_fail (G_IS_FILE (file), NULL);
+    moo_return_val_if_fail (G_IS_FILE (file), NULL);
     return g_file_get_parse_name (file);
 }
 
@@ -1233,10 +1234,10 @@ _moo_file_get_display_basename (GFile *file)
     char *name;
     const char *slash;
 
-    g_return_val_if_fail (G_IS_FILE (file), NULL);
+    moo_return_val_if_fail (G_IS_FILE (file), NULL);
 
     name = _moo_file_get_display_name (file);
-    g_return_val_if_fail (name != NULL, NULL);
+    moo_return_val_if_fail (name != NULL, NULL);
 
     slash = strrchr (name, '/');
 
@@ -1295,9 +1296,9 @@ _moo_edit_set_file (MooEdit    *edit,
     }
 
     if (!encoding)
-        _moo_edit_set_encoding (edit, _moo_edit_get_default_encoding ());
+        moo_edit_set_encoding (edit, _moo_edit_get_default_encoding ());
     else
-        _moo_edit_set_encoding (edit, encoding);
+        moo_edit_set_encoding (edit, encoding);
 
     g_signal_emit_by_name (edit, "filename-changed", edit->priv->filename, NULL);
     moo_edit_status_changed (edit);

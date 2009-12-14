@@ -1217,7 +1217,7 @@ doc_encoding_item_activated (const char *encoding,
     doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
 
-    _moo_edit_set_encoding (doc, encoding);
+    moo_edit_set_encoding (doc, encoding);
 }
 
 static GtkAction *
@@ -1257,7 +1257,7 @@ update_doc_line_end_item (MooEditWindow *window)
     action = moo_window_get_action (MOO_WINDOW (window), "LineEndMenu");
     g_return_if_fail (action != NULL);
 
-    le = _moo_edit_get_line_end_type (doc);
+    le = moo_edit_get_line_end_type (doc);
     g_return_if_fail (le > 0 && le < G_N_ELEMENTS(line_end_menu_items));
 
     moo_menu_mgr_set_active (moo_menu_action_get_mgr (MOO_MENU_ACTION (action)),
@@ -1272,7 +1272,7 @@ doc_line_end_item_set_active (MooEditWindow *window, gpointer data)
     doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
 
-    _moo_edit_set_line_end_type (doc, GPOINTER_TO_INT (data));
+    moo_edit_set_line_end_type (doc, GPOINTER_TO_INT (data));
 }
 
 static GtkAction *
@@ -1281,7 +1281,7 @@ create_doc_line_end_action (MooEditWindow *window)
     GtkAction *action;
     MooMenuMgr *mgr;
 
-    action = moo_menu_action_new ("LineEndMenu", _("Line E_ndings"));
+    action = moo_menu_action_new ("LineEndMenu", _("Line En_dings"));
     mgr = moo_menu_action_get_mgr (MOO_MENU_ACTION (action));
 
     g_signal_connect_swapped (mgr, "radio-set-active", G_CALLBACK (doc_line_end_item_set_active), window);

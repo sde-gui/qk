@@ -32,6 +32,14 @@ enums['MooEditState'] = [
     [ 'MOO_EDIT_STATE_PRINTING' ],
 ]
 
+# Keep in sync with line_end_menu_items in mooeditwindow.c
+enums['MooLineEndType'] = [
+    [ 'MOO_LE_UNIX', '1' ],
+    [ 'MOO_LE_WIN32' ],
+    [ 'MOO_LE_MAC' ],
+    [ 'MOO_LE_MIX' ],
+]
+
 flags['MooFindFlags'] = [
     [ 'MOO_FIND_REGEX',        '1 << 0' ],
     [ 'MOO_FIND_CASELESS',     '1 << 1' ],

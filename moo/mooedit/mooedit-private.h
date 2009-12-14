@@ -97,27 +97,8 @@ GFile       *_moo_edit_get_file                 (MooEdit        *edit);
 void         _moo_edit_set_file                 (MooEdit        *edit,
                                                  GFile          *file,
                                                  const char     *encoding);
-void         _moo_edit_set_encoding             (MooEdit        *edit,
-                                                 const char     *encoding);
 const char  *_moo_edit_get_default_encoding     (void);
 void         _moo_edit_ensure_newline           (MooEdit        *edit);
-
-/* Keep in sync with line_end_menu_items in mooeditwindow.c */
-typedef enum {
-    MOO_LE_UNIX = 1,
-    MOO_LE_WIN32,
-    MOO_LE_MAC,
-    MOO_LE_MIX,
-#ifdef __WIN32__
-    MOO_LE_DEFAULT = MOO_LE_WIN32
-#else
-    MOO_LE_DEFAULT = MOO_LE_UNIX
-#endif
-} MooLineEndType;
-
-MooLineEndType _moo_edit_get_line_end_type      (MooEdit        *edit);
-void         _moo_edit_set_line_end_type        (MooEdit        *edit,
-                                                 MooLineEndType  le);
 
 void         _moo_edit_stop_file_watch          (MooEdit        *edit);
 
