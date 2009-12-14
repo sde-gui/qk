@@ -320,11 +320,16 @@ class String
 {
 public:
     String() {}
-    String(const char *str) { if (str && *str) s() = validateUtf8(str); }
+
+    String(const Pointer<char> &p) { init(p); }
+    String(const char *str) { init(str); }
+
     String(const char *str, gsize len) { if (len != 0) s().assign(validateUtf8(str, len), len); }
     String(gsize len, char c) : m_impl(len, validateUtf8(c)) {}
     String(char c) : m_impl(1, validateUtf8(c)) {}
+
     static const String &Null() { static String s; return s; }
+
     ~String() {}
 
     String(const std::string &ss) : m_impl(validateUtf8(ss)) {}
@@ -358,6 +363,7 @@ public:
 
 private:
     String(const std::string &ss, bool /*nCheck*/) : m_impl(ss) {}
+    void init(const char *str) { if (str && *str) s() = validateUtf8(str); }
 
     static const std::string &validateUtf8(const std::string &ss) { mooThrowIfFalse(g_utf8_validate(ss.c_str(), ss.size(), NULL)); return ss; }
     static std::string &validateUtf8(std::string &ss) { mooThrowIfFalse(g_utf8_validate(ss.c_str(), ss.size(), NULL)); return ss; }

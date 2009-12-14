@@ -59,10 +59,24 @@ public:
     operator DeleteObject<U>& () { mooCheckCanCast(T, U); return *reinterpret_cast<DeleteObject<U>*>(this); }
 };
 
+template<>
+inline void DeleteObject<char>::operator() (char *p) { g_free(p); }
+
 } // namespace impl
 
+template<class T>
+class Pointer
+{
+public:
+    virtual ~Pointer() {}
+
+    virtual T *get() const = 0;
+
+    operator T* () const { return get(); }
+};
+
 template<class T, class TDeleter = impl::DeleteObject<T> >
-class OwningPtr
+class OwningPtr : public Pointer<T>
 {
 public:
     OwningPtr(T *p = 0) : m_p(p) {}
@@ -118,7 +132,7 @@ public:
         TDeleter()(p);
     }
 
-    T *get() const { return m_p; }
+    virtual T *get() const { return m_p; }
     T *steal() { T *p = m_p; m_p = 0; return p; }
 
 private:
@@ -142,7 +156,7 @@ public:
 }
 
 template<class T, class TRefUnref = impl::RefUnrefObject<T> >
-class SharedPtr
+class SharedPtr : public Pointer<T>
 {
 private:
     inline static void ref(T *p) { if (p) TRefUnref::ref(p); }
@@ -213,7 +227,7 @@ public:
         }
     }
 
-    T *get() const { return m_p; }
+    virtual T *get() const { return m_p; }
     T *steal() const { T *p = m_p; m_p = 0; return p; }
 
 private:
