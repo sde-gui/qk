@@ -817,12 +817,17 @@ static char *
 get_contents (MooEdit *edit)
 {
     gboolean normalize_le = FALSE;
-    const char *le;
-    gsize le_len;
+    const char *le = "\n";
+    gsize le_len = 1;
+    MooLineEndType line_end_type;
     GtkTextBuffer *buffer;
     char *contents;
 
-    switch (edit->priv->line_end_type)
+    line_end_type = edit->priv->line_end_type;
+    if (!line_end_type)
+        line_end_type = MOO_LE_DEFAULT;
+
+    switch (line_end_type)
     {
         case MOO_LE_UNIX:
             normalize_le = TRUE;

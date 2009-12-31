@@ -172,7 +172,7 @@ moo_edit_class_init (MooEditClass *klass)
 
     g_object_class_install_property (gobject_class, PROP_LINE_END_TYPE,
         g_param_spec_enum ("line-end-type", "line-end-type", "line-end-type",
-                           MOO_TYPE_LINE_END_TYPE, MOO_LE_DEFAULT, G_PARAM_READWRITE));
+                           MOO_TYPE_LINE_END_TYPE, MOO_LE_NONE, G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENCODING,
@@ -274,7 +274,7 @@ moo_edit_init (MooEdit *edit)
 
     edit->priv->actions = moo_action_collection_new ("MooEdit", "MooEdit");
 
-    edit->priv->line_end_type = MOO_LE_DEFAULT;
+    edit->priv->line_end_type = MOO_LE_NONE;
 
     indent = moo_indenter_new (edit);
     moo_text_view_set_indenter (MOO_TEXT_VIEW (edit), indent);

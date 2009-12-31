@@ -34,7 +34,8 @@ enums['MooEditState'] = [
 
 # Keep in sync with line_end_menu_items in mooeditwindow.c
 enums['MooLineEndType'] = [
-    [ 'MOO_LE_UNIX', '1' ],
+    [ 'MOO_LE_NONE' ],
+    [ 'MOO_LE_UNIX' ],
     [ 'MOO_LE_WIN32' ],
     [ 'MOO_LE_MAC' ],
     [ 'MOO_LE_MIX' ],
