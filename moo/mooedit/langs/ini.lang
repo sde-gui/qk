@@ -39,7 +39,7 @@
 
   <definitions>
     <context id="line-comment" style-ref="comment" end-at-line-end="true">
-      <start>;</start>
+      <start>(?&lt;!\S);</start>
     </context>
     <context id="group" style-ref="keyword">
       <start>^\[</start>

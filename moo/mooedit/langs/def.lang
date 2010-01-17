@@ -212,7 +212,7 @@
 
         <!-- A line comment starting with # -->
         <context id="shell-like-comment" style-ref="comment" end-at-line-end="true">
-          <start>#</start>
+          <start>(?&lt;!\S)#</start>
           <include>
             <context ref="in-comment"/>
           </include>
