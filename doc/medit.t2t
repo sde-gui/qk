@@ -34,6 +34,7 @@ APPNAME APPVERSION Manual
 %!include: prefs.t2t
 %!include: user-tools.t2t
 %!include: prefs-file.t2t
+%!include: regex.t2t
 %!include: license.t2t
 
 

@@ -12,6 +12,8 @@
 #define HELP_SECTION_USER_TOOLS_LUA "user-tools-lua"
 #define HELP_SECTION_USER_TOOLS_SHELL "user-tools-shell"
 #define HELP_SECTION_PREFS_FILE "prefs-file"
+#define HELP_SECTION_REGEX "regex"
+#define HELP_SECTION_REGEX_SEARCH "regex-search"
 #define HELP_SECTION_APP_LICENSE "app-license"
 #define HELP_SECTION_GPL "gpl"
 #define HELP_SECTION_LGPL "lgpl"

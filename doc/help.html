@@ -570,6 +570,21 @@ Default value is "<CODE>%a - %f%s</CODE>" which produces something like "<CODE>m
 </UL>
 
 
+<H2><a name="regex">Regular expressions</a></H2><!-- ##regex## -->
+<P>
+Medit uses regular expressions functionality provided by Glib, which in turn uses
+<A HREF="http://pcre.org/">PCRE</A> library. See <A HREF="http://library.gnome.org/devel/glib/stable/glib-regex-syntax.html">Glib manual</A>
+for complete description of regular expressions syntax.
+</P>
+
+<H3><a name="regex-search">Search</a></H3><!-- ##regex-search## -->
+<P>
+Regular expression searches in a document text are limited to single lines, unless the
+search pattern includes newline. For example, pattern ".*" will match every line in the
+document, pattern ".*\n.*" will match pairs of consecutive lines. This means that it is
+mostly impossible to perform searches for text which spawns multiple lines.
+</P>
+
 <H2><a name="app-license">License</a></H2><!-- ##app-license## -->
 <P>
 medit as a whole is distributed under the terms of the GNU General
