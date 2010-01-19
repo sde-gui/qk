@@ -122,6 +122,10 @@ void        moo_line_reader_init            (MooLineReader  *lr,
 const char *moo_line_reader_get_line        (MooLineReader  *lr,
                                              gsize          *line_len,
                                              gsize          *lt_len);
+gboolean    moo_find_line_end               (const char     *string,
+                                             gssize          len,
+                                             gsize          *le_start,
+                                             gsize          *le_len);
 char      **moo_strnsplit_lines             (const char     *string,
                                              gssize          len,
                                              guint          *n_tokens);

@@ -2120,6 +2120,55 @@ moo_line_reader_get_line (MooLineReader *lr,
 }
 
 
+gboolean
+moo_find_line_end (const char *string,
+                   gssize      len,
+                   gsize      *line_len,
+                   gsize      *lt_len)
+{
+    const char *le, *end;
+    gsize le_len;
+
+    g_return_val_if_fail (string != NULL || len == 0, FALSE);
+
+    if (len < 0)
+        len = strlen (string);
+
+    for (le = string, le_len = 0, end = string + len; le < end && le_len == 0; )
+    {
+        switch (*le)
+        {
+            case '\r':
+                if (le + 1 < end && le[1] == '\n')
+                    le_len = 2;
+                else
+                    le_len = 1;
+                break;
+            case '\n':
+                le_len = 1;
+                break;
+            case '\xe2': /* Unicode paragraph separator "\xe2\x80\xa9" */
+                if (le + 2 < end && le[1] == '\x80' && le[2] == '\xa9')
+                {
+                    le_len = 3;
+                    break;
+                }
+                /* fallthrough */
+            default:
+                le += 1;
+                break;
+        }
+    }
+
+    if (line_len != NULL)
+        *line_len = le - string;
+    if (lt_len != NULL)
+        *lt_len = le_len;
+
+    return le_len != 0;
+}
+
+
 char **
 _moo_strv_reverse (char **str_array)
 {

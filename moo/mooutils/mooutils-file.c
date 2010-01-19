@@ -17,6 +17,7 @@
 #include "mooutils/mooutils-file-private.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/mooi18n.h"
 #include <stdio.h>
 #include <string.h>
@@ -334,7 +335,7 @@ moo_config_writer_new (const char  *filename,
     g_return_val_if_fail (filename != NULL, NULL);
     g_return_val_if_fail (!error || !*error, NULL);
 
-    flags = MOO_FILE_WRITER_CONFIG_MODE;
+    flags = MOO_FILE_WRITER_CONFIG_MODE | MOO_FILE_WRITER_TEXT_MODE;
     if (save_backup)
         flags |= MOO_FILE_WRITER_SAVE_BACKUP;
 
@@ -348,17 +349,51 @@ moo_local_file_writer_write (MooFileWriter *fwriter,
                              gsize          len)
 {
     MooLocalFileWriter *writer = (MooLocalFileWriter*) fwriter;
-    gsize bytes_written;
 
     if (writer->error)
         return FALSE;
 
-    /* XXX text mode when MOO_FILE_WRITER_CONFIG_MODE! */
+    while (len > 0)
+    {
+        gsize chunk_len = len;
+        gsize next_chunk = len;
+        gsize bytes_written;
+#ifdef __WIN32__
+        gboolean need_le = FALSE;
+#endif
 
-    return g_output_stream_write_all (writer->stream,
-                                      data, len,
-                                      &bytes_written, NULL,
-                                      &writer->error);
+#ifdef __WIN32__
+        if (writer->flags & MOO_FILE_WRITER_TEXT_MODE)
+        {
+            gsize le_start, le_len;
+            if (moo_find_line_end (data, len, &le_start, &le_len))
+            {
+                need_le = TRUE;
+                chunk_len = le_start;
+                next_chunk = le_start + le_len;
+            }
+        }
+#endif
+
+        if (!g_output_stream_write_all (writer->stream,
+                                        data, chunk_len,
+                                        &bytes_written, NULL,
+                                        &writer->error))
+            return FALSE;
+
+        data += next_chunk;
+        len -= next_chunk;
+
+#ifdef __WIN32__
+        if (need_le && !g_output_stream_write_all (writer->stream,
+                                                   "\r\n", 2,
+                                                   &bytes_written, NULL,
+                                                   &writer->error))
+            return FALSE;
+#endif
+    }
+
+    return TRUE;
 }
 
 G_GNUC_PRINTF (2, 0)

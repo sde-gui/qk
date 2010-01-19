@@ -39,7 +39,8 @@ typedef struct MooFileWriter MooFileWriter;
 typedef enum /*< flags >*/
 {
     MOO_FILE_WRITER_SAVE_BACKUP = 1 << 0,
-    MOO_FILE_WRITER_CONFIG_MODE = 1 << 1
+    MOO_FILE_WRITER_CONFIG_MODE = 1 << 1,
+    MOO_FILE_WRITER_TEXT_MODE   = 1 << 2
 } MooFileWriterFlags;
 
 MooFileWriter  *moo_file_writer_new             (const char     *filename,
