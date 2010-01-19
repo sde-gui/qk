@@ -521,6 +521,8 @@ set_initial_size (GtkWindow    *window,
 void
 _moo_window_set_remember_size (GtkWindow  *window,
                                const char *prefs_key,
+                               int         default_width,
+                               int         default_height,
                                gboolean    remember_position)
 {
     PositionInfo *pinfo;
@@ -541,8 +543,8 @@ _moo_window_set_remember_size (GtkWindow  *window,
     pinfo->remember_position = remember_position;
 
     moo_prefs_create_key (pinfo->key_maximized, MOO_PREFS_STATE, G_TYPE_BOOLEAN, FALSE);
-    moo_prefs_create_key (pinfo->key_width, MOO_PREFS_STATE, G_TYPE_INT, -1);
-    moo_prefs_create_key (pinfo->key_height, MOO_PREFS_STATE, G_TYPE_INT, -1);
+    moo_prefs_create_key (pinfo->key_width, MOO_PREFS_STATE, G_TYPE_INT, default_width);
+    moo_prefs_create_key (pinfo->key_height, MOO_PREFS_STATE, G_TYPE_INT, default_height);
 
     if (remember_position)
     {

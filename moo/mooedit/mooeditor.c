@@ -753,6 +753,7 @@ action_recent_dialog (MooEditWindow *window)
     gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
     _moo_window_set_remember_size (GTK_WINDOW (dialog),
                                    moo_edit_setting (MOO_EDIT_PREFS_DIALOGS "/recent-files"),
+                                   400, 350,
                                    FALSE);
 
     gtk_dialog_run (GTK_DIALOG (dialog));

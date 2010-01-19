@@ -125,7 +125,7 @@ moo_prefs_dialog_init (MooPrefsDialog *dialog)
     moo_help_set_func (GTK_WIDGET (dialog), moo_prefs_dialog_help);
     moo_help_connect_keys (GTK_WIDGET (dialog));
 
-    _moo_window_set_remember_size (GTK_WINDOW (dialog), "Dialogs/Preferences", FALSE);
+    _moo_window_set_remember_size (GTK_WINDOW (dialog), "Dialogs/Preferences", -1, -1, FALSE);
 
     gtk_window_set_destroy_with_parent (GTK_WINDOW (dialog), TRUE);
 

@@ -411,7 +411,8 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
                             FALSE, FALSE, 0);
 
     if (dialog->priv->size_prefs_key)
-        _moo_window_set_remember_size (GTK_WINDOW (widget), dialog->priv->size_prefs_key, TRUE);
+        _moo_window_set_remember_size (GTK_WINDOW (widget),
+                                       dialog->priv->size_prefs_key, -1, -1, TRUE);
     if (dialog->priv->parent)
         moo_window_set_parent (widget, dialog->priv->parent);
 
