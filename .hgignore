@@ -4,7 +4,7 @@ build/
 autom4te.cache/
 
 *-old
-*-old.*
+*-old.c
 *.orig
 *.rej
 *.bak
