@@ -326,7 +326,7 @@ public:
 
     String(const char *str, gsize len) { if (len != 0) s().assign(validateUtf8(str, len), len); }
     String(gsize len, char c) : m_impl(len, validateUtf8(c)) {}
-    String(char c) : m_impl(1, validateUtf8(c)) {}
+    explicit String(char c) : m_impl(1, validateUtf8(c)) {}
 
     static const String &Null() { static String s; return s; }
 
@@ -348,6 +348,9 @@ public:
     bool operator> (const String &other) const { return s() >  other.s(); }
     bool operator<=(const String &other) const { return s() <= other.s(); }
     bool operator>=(const String &other) const { return s() >= other.s(); }
+
+    bool operator==(const std::string &ss) const { return s() == ss; }
+    bool operator==(const char *p) const { return p ? s() == p : empty(); }
 
     String operator+(const String &other) const { if (!other.empty()) { return String(s() + other.s(), true); } else { return *this; } }
     String operator+(const char *str) const { if (str && *str) return String(s() + validateUtf8(str), true); else return *this; }
@@ -379,9 +382,15 @@ private:
 
 } // namespace moo
 
+inline moo::String operator+(const char *s, const moo::String &ms) { return moo::String(s) + ms; }
 inline moo::String operator+(const std::string &ss, const moo::String &ms) { return moo::String(ss) + ms; }
-inline moo::String operator+(const char *str, const moo::String &ms) { return moo::String(str) + ms; }
-inline moo::String operator+(char c, const moo::String &ms) { return moo::String(c) + ms; }
+
+inline bool operator==(const char *s, const moo::String &ms) { return ms == s; }
+inline bool operator==(const std::string &ss, const moo::String &ms) { return ms == ss; }
+inline bool operator!=(const char *s, const moo::String &ms) { return !(ms == s); }
+inline bool operator!=(const std::string &ss, const moo::String &ms) { return !(ms == ss); }
+inline bool operator!=(const moo::String &ms, const char *s) { return !(ms == s); }
+inline bool operator!=(const moo::String &ms, const std::string &ss) { return !(ms == ss); }
 
 namespace moo {
 
