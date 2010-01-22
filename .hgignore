@@ -18,6 +18,10 @@ Makefile.in
 *.vcproj.*
 vs/Debug/
 vs/Release/
+doc/help/*.html
+doc/help.html
+doc/help-sections.h
+doc/medit.1
 
 syntax: regexp
 ^po(-gsv)?/(Makefile\.in\.in|dist|missing|notexist|pot|intltool-update)$
