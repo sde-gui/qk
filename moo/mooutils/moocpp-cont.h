@@ -69,7 +69,7 @@ struct CowWrapper : public CowData<CowWrapper<T> >
     CowWrapper(const A1 &a1, const A2 &a2) : data(a1, a2) {}
 
     template<typename A1, typename A2, typename A3>
-    CowWrapper(const A1 &a1, const A2 &a2, const A2 &a3) : data(a1, a2, a3) {}
+    CowWrapper(const A1 &a1, const A2 &a2, const A3 &a3) : data(a1, a2, a3) {}
 
     T data;
 };
