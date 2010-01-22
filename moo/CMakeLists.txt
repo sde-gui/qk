@@ -96,7 +96,3 @@ IF(MOO_BUILD_SHARED_LIB)
 ELSE(MOO_BUILD_SHARED_LIB)
   ADD_LIBRARY(moo STATIC ${moo_all_sources})
 ENDIF(MOO_BUILD_SHARED_LIB)
-
-IF(NOT WIN32)
-  INSTALL(PROGRAMS xdg-utils/xdg-open xdg-utils/xdg-email moo-open-html-help DESTINATION ${MOO_DATA_DIR}/scripts)
-ENDIF(NOT WIN32)
