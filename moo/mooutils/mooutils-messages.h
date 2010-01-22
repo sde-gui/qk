@@ -166,10 +166,12 @@ do {                                                    \
 #  define moo_message(...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_MESSAGE, __VA_ARGS__)
 #  define moo_critical(...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_CRITICAL, __VA_ARGS__)
 #  define moo_warning(...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_WARNING, __VA_ARGS__)
+#  define moo_debug(...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_DEBUG, __VA_ARGS__)
 #  define moo_error_noloc(...) _moo_error (MOO_CODE_LOC_UNKNOWN, __VA_ARGS__)
 #  define moo_message_noloc(...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_MESSAGE, __VA_ARGS__)
 #  define moo_critical_noloc(...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_CRITICAL, __VA_ARGS__)
 #  define moo_warning_noloc(...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_WARNING, __VA_ARGS__)
+#  define moo_debug_noloc(...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_DEBUG, __VA_ARGS__)
 
 #elif defined(G_HAVE_GNUC_VARARGS)
 
@@ -177,10 +179,12 @@ do {                                                    \
 #  define moo_message(format...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_MESSAGE, format)
 #  define moo_critical(format...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_CRITICAL, format)
 #  define moo_warning(format...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_WARNING, format)
+#  define moo_debug(format...) _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_DEBUG, format)
 #  define moo_error_noloc(format...) _moo_error (MOO_CODE_LOC_UNKNOWN, format)
 #  define moo_message_noloc(format...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_MESSAGE, format)
 #  define moo_critical_noloc(format...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_CRITICAL, format)
 #  define moo_warning_noloc(format...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_WARNING, format)
+#  define moo_debug_noloc(format...) _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_DEBUG, format)
 
 #else /* no varargs macros */
 
@@ -209,6 +213,7 @@ G_GNUC_PRINTF (1, 2)                        \
 _MOO_DEFINE_LOG_FUNC (message, MESSAGE)
 _MOO_DEFINE_LOG_FUNC (warning, WARNING)
 _MOO_DEFINE_LOG_FUNC (critical, CRITICAL)
+_MOO_DEFINE_LOG_FUNC (debug, DEBUG)
 
 #undef _MOO_DEFINE_LOG_FUNC
 
@@ -216,6 +221,7 @@ _MOO_DEFINE_LOG_FUNC (critical, CRITICAL)
 #define moo_message_noloc moo_message
 #define moo_critical_noloc moo_critical
 #define moo_warning_noloc moo_warning
+#define moo_debug_noloc moo_debug
 
 #endif /* varargs macros */
 
@@ -229,10 +235,12 @@ inline static int __moo_test_func (void)
     moo_warning ("test");
     moo_critical ("test");
     moo_message ("test");
+    moo_debug ("test");
     moo_error_noloc ("test");
     moo_warning_noloc ("test");
     moo_critical_noloc ("test");
     moo_message_noloc ("test");
+    moo_debug_noloc ("test");
     return 7;
 }
 

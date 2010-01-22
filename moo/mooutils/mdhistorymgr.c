@@ -26,6 +26,7 @@
 #include "mooutils/mooutils-thread.h"
 #include "marshals.h"
 #include <stdarg.h>
+#include <string.h>
 
 #define N_MENU_ITEMS 10
 #define MAX_ITEM_NUMBER 5000

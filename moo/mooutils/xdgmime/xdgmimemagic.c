@@ -483,7 +483,7 @@ _xdg_mime_magic_parse_magic_line (FILE              *magic_file,
 	      return XDG_MIME_MAGIC_ERROR;
 	    }
 	  /* FIXME: need to get this defined in a <config.h> style file */
-#if LITTLE_ENDIAN
+#if XDG_LITTLE_ENDIAN
 	  for (i = 0; i < matchlet->value_length; i = i + matchlet->word_size)
 	    {
 	      if (matchlet->word_size == 2)

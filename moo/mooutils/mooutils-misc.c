@@ -1872,7 +1872,7 @@ NORETURN
 void
 _moo_assert_message (MooCodeLoc loc, const char *message)
 {
-#ifdef MOO_DEV_MODE
+#if defined(MOO_DEV_MODE) && !defined(__WIN32__)
     _moo_abort_debug_ignore (loc, message);
 #else
     g_error ("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
@@ -1888,11 +1888,32 @@ _moo_log (MooCodeLoc loc, GLogLevelFlags flags, const char *format, ...)
     va_end (args);
 }
 
+static gboolean
+moo_log_debug_enabled (void)
+{
+    static int enabled = -1;
+
+    if (enabled == -1)
+    {
+        enabled = moo_debug_enabled ("misc",
+#ifdef MOO_DEBUG
+                                     TRUE);
+#else
+                                     FALSE);
+#endif
+    }
+
+    return enabled;
+}
+
 void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_list args)
 {
     char *message = g_strdup_vprintf (format, args);
 
-#ifdef MOO_DEV_MODE
+    if (flags >= G_LOG_LEVEL_DEBUG && !moo_log_debug_enabled ())
+        return;
+
+#if defined(MOO_DEV_MODE) && !defined(__WIN32__)
     if (flags < G_LOG_LEVEL_MESSAGE)
     {
         _moo_abort_debug_ignore (loc, message);
@@ -2446,33 +2467,6 @@ moo_debug_enabled (const char *domain,
 
     g_strfreev (domains);
     return FALSE;
-}
-
-
-#undef moo_debug
-void G_GNUC_PRINTF (1,2)
-moo_debug (const char *format,
-           ...)
-{
-    static int enabled = -1;
-
-    if (enabled == -1)
-    {
-        enabled = moo_debug_enabled ("misc",
-#ifdef MOO_DEBUG
-                                     TRUE);
-#else
-                                     FALSE);
-#endif
-    }
-
-    if (enabled)
-    {
-        va_list args;
-        va_start (args, format);
-        g_logv (G_LOG_DOMAIN "-debug", G_LOG_LEVEL_MESSAGE, format, args);
-        va_end (args);
-    }
 }
 
 

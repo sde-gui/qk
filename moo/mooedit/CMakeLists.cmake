@@ -25,8 +25,6 @@ SET(MOOEDIT_SOURCES
   mooeditconfig.h
   mooeditdialogs.c
   mooeditdialogs.h
-  mooedit-enums.c
-  mooedit-enums.h
   mooedit-fileops.c
   mooedit-fileops.h
   mooeditfiltersettings.c
@@ -124,8 +122,8 @@ MOO_GEN_UIXML(mooedit medit.xml mooedit.xml)
 # AM_CFLAGS_ = -Igtksourceview $(MOO_CFLAGS) $(MOO_WIN32_CFLAGS)
 # AM_CXXFLAGS_ = -Igtksourceview $(MOO_CXXFLAGS) $(MOO_WIN32_CFLAGS)
 
-INCLUDE(mooedit/gtksourceview/CMakelists.cmake)
-INCLUDE(mooedit/langs/CMakelists.cmake)
+INCLUDE(mooedit/gtksourceview/CMakeLists.cmake)
+INCLUDE(mooedit/langs/CMakeLists.cmake)
 
 MOO_ADD_MOO_CODE_MODULE(mooedit)
 

@@ -22,7 +22,27 @@
 #include <gtk/gtk.h>
 
 #ifndef __WIN32__
-#include "mooedit/moocommand-exe.h"
+G_BEGIN_DECLS
+void    _moo_edit_run_in_pane       (const char     *cmd_line,
+                                     const char     *working_dir,
+                                     char          **envp,
+                                     MooEditWindow  *window,
+                                     MooEdit        *doc);
+void    _moo_edit_run_async         (const char     *cmd_line,
+                                     const char     *working_dir,
+                                     char          **envp,
+                                     MooEditWindow  *window,
+                                     MooEdit        *doc);
+void    _moo_edit_run_sync          (const char     *cmd_line,
+                                     const char     *working_dir,
+                                     char          **envp,
+                                     MooEditWindow  *window,
+                                     MooEdit        *doc,
+                                     const char     *input,
+                                     int            *exit_status,
+                                     char          **output,
+                                     char          **output_err);
+G_END_DECLS
 #endif
 
 #define VAR_WINDOW       "window"

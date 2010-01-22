@@ -55,11 +55,11 @@ MACRO(MOO_GEN_UIXML libname)
   ENDFOREACH(uifile)
 ENDMACRO(MOO_GEN_UIXML)
 
-INCLUDE(mooutils/CMakelists.cmake)
-INCLUDE(moolua/CMakelists.cmake)
-INCLUDE(moofileview/CMakelists.cmake)
-INCLUDE(mooedit/CMakelists.cmake)
-INCLUDE(mooapp/CMakelists.cmake)
+INCLUDE(mooutils/CMakeLists.cmake)
+INCLUDE(moolua/CMakeLists.cmake)
+INCLUDE(moofileview/CMakeLists.cmake)
+INCLUDE(mooedit/CMakeLists.cmake)
+INCLUDE(mooapp/CMakeLists.cmake)
 
 MOO_CHECK_OPTION(MOO_BUILD_SHARED_LIB)
 

@@ -1131,6 +1131,10 @@ item_foreach_func (const char *key,
     if (data->error)
         return;
 
+    /* Ignore 'os' for compatibility */
+    if (strcmp (key, "os") == 0)
+	return;
+
     index = find_key (data->factory, key);
 
     if (index < 0)

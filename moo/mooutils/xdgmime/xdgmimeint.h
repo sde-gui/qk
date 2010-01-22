@@ -89,7 +89,7 @@ const char    *_xdg_get_base_name (const char    *file_name);
 #if G_BYTE_ORDER != G_LITTLE_ENDIAN && G_BYTE_ORDER != G_BIG_ENDIAN
 #error G_BYTE_ORDER
 #endif
-#define LITTLE_ENDIAN (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+#define XDG_LITTLE_ENDIAN (G_BYTE_ORDER == G_LITTLE_ENDIAN)
 
 /* make xdgmime use glib */
 #undef malloc

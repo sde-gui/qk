@@ -1,0 +1,22 @@
+MACRO(MOO_INSTALL_DESKTOP_FILE)
+  IF(MOO_OS_FDO)
+    FOREACH(_moo_idf_desktop_file ${ARGN})
+      IF("${_moo_idf_desktop_file}" MATCHES "\\.desktop\\.in$")
+        MOO_MAKE_ABSOLUTE_INPUT_FILE("${_moo_idf_desktop_file}" _moo_idf_desktop_file)
+        GET_FILENAME_COMPONENT(_moo_idf_desktop_file_base "${_moo_idf_desktop_file}" NAME_WE)
+        SET(_moo_idf_desktop_file_real "${_moo_idf_desktop_file_base}.desktop")
+        MOO_MAKE_ABSOLUTE_OUTPUT_FILE("${_moo_idf_desktop_file_real}" _moo_idf_desktop_file_real)
+        ADD_CUSTOM_COMMAND(OUTPUT "${_moo_idf_desktop_file_real}"
+                           COMMAND ${MOO_SOURCE_DIR}/moo/mooutils/moo-intltool-merge "${_moo_idf_desktop_file}" "${_moo_idf_desktop_file_real}"
+                           MAIN_DEPENDENCY "${_moo_idf_desktop_file}")
+        ADD_CUSTOM_TARGET("gen-${_moo_idf_desktop_file_base}.desktop" ALL
+                          DEPENDS "${_moo_idf_desktop_file_real}")
+        INSTALL(FILES "${_moo_idf_desktop_file_real}" DESTINATION "${DESKTOPFILEDIR}")
+      ELSEIF("${_moo_idf_desktop_file}" MATCHES "\\.desktop$")
+        INSTALL(FILES "${_moo_idf_desktop_file}" DESTINATION "${DESKTOPFILEDIR}")
+      ELSE("${_moo_idf_desktop_file}" MATCHES "\\.desktop\\.in$")
+        MOO_ERROR("Don't know what to do with file ${_moo_idf_desktop_file}")
+      ENDIF("${_moo_idf_desktop_file}" MATCHES "\\.desktop\\.in$")
+    ENDFOREACH(_moo_idf_desktop_file)
+  ENDIF(MOO_OS_FDO)
+ENDMACRO(MOO_INSTALL_DESKTOP_FILE)

@@ -22,8 +22,6 @@
 
 G_BEGIN_DECLS
 
-void moo_debug (const char *format, ...) G_GNUC_PRINTF (1,2);
-
 #ifdef DEBUG
 
 #define MOO_DEBUG_INIT(domain, def_enabled)                 \

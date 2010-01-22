@@ -1290,7 +1290,12 @@ create_doc_line_end_action (MooEditWindow *window)
                          line_end_menu_items[MOO_LE_WIN32],
                          _("_Windows (CR+LF)"), NULL, MOO_MENU_ITEM_RADIO,
                          GINT_TO_POINTER (MOO_LE_WIN32), NULL);
-    moo_menu_mgr_insert (mgr, NULL, MOO_OS_WIN32 ? 1 : 0,
+    moo_menu_mgr_insert (mgr, NULL,
+#ifdef MOO_OS_WIN32
+                         1,
+#else
+                         0,
+#endif
                          line_end_menu_items[MOO_LE_UNIX],
                          _("_Unix (LF)"), NULL, MOO_MENU_ITEM_RADIO,
                          GINT_TO_POINTER (MOO_LE_UNIX), NULL);
