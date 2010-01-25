@@ -31,6 +31,8 @@ ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_BINARY_DIR}/cmake_uni
 IF(WIN32)
   IF("${CMAKE_INSTALL_PREFIX}" STREQUAL "C:/Program Files/MOO")
     SET(CMAKE_INSTALL_PREFIX "C:/Program Files/medit")
+  ELSEIF("${CMAKE_INSTALL_PREFIX}" STREQUAL "C:/Program Files (x86)/MOO")
+    SET(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/medit")
   ENDIF("${CMAKE_INSTALL_PREFIX}" STREQUAL "C:/Program Files/MOO")
 ENDIF(WIN32)
 
