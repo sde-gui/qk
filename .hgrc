@@ -1,0 +1,23 @@
+[paths]
+# default = ssh://hg@bitbucket.org/muntyan/moo
+
+[hooks]
+# Reject commits which would introduce windows-style text" files
+pretxncommit.crlf = python:hgext.win32text.forbidcrlf
+
+[extensions]
+hgext.win32text =
+
+[encode]
+# Encode files that don't contain NUL characters.
+** = cleverencode:
+
+[decode]
+# Decode files that don't contain NUL characters.
+** = cleverdecode:
+
+# The following lines cause patch operations to ignore eol types in
+# the input and patch files, and to generate CRLF line endings in the
+# output.
+[patch]
+eol = crlf
