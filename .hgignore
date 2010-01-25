@@ -27,3 +27,4 @@ syntax: regexp
 ^po(-gsv)?/(Makefile\.in\.in|dist|missing|notexist|pot|intltool-update)$
 ^moo/mooapp/mooapp-credits\.h
 ^moo/mooutils/stock-(moo|medit)\.h
+^doc/(man-)?medit\.t2t$
