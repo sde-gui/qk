@@ -325,19 +325,19 @@ try_load (MooEdit      *edit,
 {
     GtkTextBuffer *buffer;
     gboolean enable_highlight;
-    LoadResult result;
+    LoadResult result = ERROR_FILE;
 
-    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
-    moo_return_val_if_fail (encoding && encoding[0], FALSE);
+    moo_return_val_if_fail (MOO_IS_EDIT (edit), result);
+    moo_return_val_if_fail (G_IS_FILE (file), result);
+    moo_return_val_if_fail (encoding && encoding[0], result);
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
     gtk_text_buffer_set_text (buffer, "", 0);
 
-    g_object_get (edit, "enable-highlight", &enable_highlight, NULL);
-    g_object_set (edit, "enable-highlight", FALSE, NULL);
+    g_object_get (edit, "enable-highlight", &enable_highlight, (char*) 0);
+    g_object_set (edit, "enable-highlight", FALSE, (char*) 0);
     result = do_load (edit, file, encoding, error);
-    g_object_set (edit, "enable-highlight", enable_highlight, NULL);
+    g_object_set (edit, "enable-highlight", enable_highlight, (char*) 0);
 
     return result;
 }
@@ -354,7 +354,7 @@ check_regular (GFile   *file,
     if (!g_file_is_native (file))
         return TRUE;
 
-    if (!(info = g_file_query_info (file, G_FILE_ATTRIBUTE_STANDARD_TYPE, 0, NULL, NULL)))
+    if (!(info = g_file_query_info (file, G_FILE_ATTRIBUTE_STANDARD_TYPE, (GFileQueryInfoFlags) 0, NULL, NULL)))
         return TRUE;
 
     type = g_file_info_get_file_type (info);
@@ -418,9 +418,9 @@ moo_edit_load_local (MooEdit     *edit,
 
         while (encodings)
         {
-            char *enc = encodings->data;
+            char *enc;
 
-            enc = encodings->data;
+            enc = (char*) encodings->data;
             encodings = g_slist_delete_link (encodings, encodings);
 
             g_clear_error (error);
@@ -464,7 +464,7 @@ moo_edit_load_local (MooEdit     *edit,
         /* XXX */
         gtk_text_buffer_get_start_iter (buffer, &start);
         gtk_text_buffer_place_cursor (buffer, &start);
-        edit->priv->status = 0;
+        edit->priv->status = (MooEditStatus) 0;
         moo_edit_set_modified (edit, FALSE);
         _moo_edit_set_file (edit, file, encoding);
         if (edit->priv->line_end_type != saved_le)
@@ -533,7 +533,7 @@ do_load (MooEdit      *edit,
     {
         gboolean insert_line_term = FALSE;
         gsize len, line_term_pos;
-        MooLineEndType le_here = 0;
+        MooLineEndType le_here = MOO_LE_NONE;
 
         status = g_io_channel_read_line (file, &line, &len, &line_term_pos, error);
 
@@ -750,20 +750,20 @@ moo_edit_reload_local (MooEdit    *edit,
 
     gtk_text_buffer_get_bounds (buffer, &start, &end);
     gtk_text_buffer_delete (buffer, &start, &end);
-    g_object_get (edit, "enable-highlight", &enable_highlight, NULL);
-    g_object_set (edit, "enable-highlight", FALSE, NULL);
+    g_object_get (edit, "enable-highlight", &enable_highlight, (char*) 0);
+    g_object_set (edit, "enable-highlight", FALSE, (char*) 0);
 
     result = _moo_edit_load_file (edit, file,
                                   encoding ? encoding : edit->priv->encoding,
                                   error);
 
-    g_object_set (edit, "enable-highlight", enable_highlight, NULL);
+    g_object_set (edit, "enable-highlight", enable_highlight, (char*) 0);
     gtk_text_buffer_end_user_action (buffer);
     unblock_buffer_signals (edit);
 
     if (result)
     {
-        edit->priv->status = 0;
+        edit->priv->status = (MooEditStatus) 0;
         moo_edit_set_modified (edit, FALSE);
         _moo_edit_start_file_watch (edit);
         g_clear_error (error);
@@ -881,7 +881,7 @@ do_write (GFile             *file,
 
     moo_return_val_if_fail (G_IS_FILE (file), FALSE);
 
-    writer_flags = (flags & MOO_EDIT_SAVE_BACKUP) ? MOO_FILE_WRITER_SAVE_BACKUP : 0;
+    writer_flags = (flags & MOO_EDIT_SAVE_BACKUP) ? MOO_FILE_WRITER_SAVE_BACKUP : (MooFileWriterFlags) 0;
 
     if ((writer = moo_file_writer_new_for_file (file, writer_flags, error)))
     {
@@ -974,7 +974,7 @@ moo_edit_save_local (MooEdit        *edit,
 
     if (do_save_local (edit, file, encoding, flags, error, &result))
     {
-        edit->priv->status = 0;
+        edit->priv->status = (MooEditStatus) 0;
         _moo_edit_set_file (edit, file,
                            result ? encoding : MOO_ENCODING_UTF8);
         moo_edit_set_modified (edit, FALSE);
@@ -1025,7 +1025,7 @@ file_watch_callback (G_GNUC_UNUSED MooFileWatch *watch,
                      MooFileEvent  *event,
                      gpointer       data)
 {
-    MooEdit *edit = data;
+    MooEdit *edit = MOO_EDIT (data);
 
     moo_return_if_fail (MOO_IS_EDIT (data));
     moo_return_if_fail (event->monitor_id == edit->priv->file_monitor_id);
@@ -1170,7 +1170,7 @@ static void
 add_status (MooEdit        *edit,
             MooEditStatus   s)
 {
-    edit->priv->status |= s;
+    edit->priv->status = (MooEditStatus) (edit->priv->status | s);
     g_signal_emit_by_name (edit, "doc-status-changed", NULL);
 }
 

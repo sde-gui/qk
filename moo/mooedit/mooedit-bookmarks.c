@@ -46,7 +46,7 @@ moo_edit_bookmark_class_init (MooEditBookmarkClass *klass)
 static void
 moo_edit_bookmark_init (MooEditBookmark *bk)
 {
-    g_object_set (bk, "visible", TRUE, NULL);
+    g_object_set (bk, "visible", TRUE, (char*) 0);
 }
 
 
@@ -110,42 +110,42 @@ cmp_bookmarks (MooLineMark *a,
 static gboolean
 update_bookmarks (MooEdit *edit)
 {
-    GSList *deleted, *dup, *old, *new, *l;
+    GSList *deleted, *dup, *old, *new_, *l;
 
     edit->priv->update_bookmarks_idle = 0;
     old = edit->priv->bookmarks;
     edit->priv->bookmarks = NULL;
 
-    for (deleted = NULL, new = NULL, l = old; l != NULL; l = l->next)
+    for (deleted = NULL, new_ = NULL, l = old; l != NULL; l = l->next)
         if (moo_line_mark_get_deleted (MOO_LINE_MARK (l->data)))
             deleted = g_slist_prepend (deleted, l->data);
         else
-            new = g_slist_prepend (new, l->data);
+            new_ = g_slist_prepend (new_, l->data);
 
     g_slist_foreach (deleted, (GFunc) disconnect_bookmark, NULL);
     g_slist_foreach (deleted, (GFunc) g_object_unref, NULL);
     g_slist_free (deleted);
 
-    new = g_slist_sort (new, (GCompareFunc) cmp_bookmarks);
-    old = new;
-    new = NULL;
+    new_ = g_slist_sort (new_, (GCompareFunc) cmp_bookmarks);
+    old = new_;
+    new_ = NULL;
     dup = NULL;
 
     for (l = old; l != NULL; l = l->next)
-        if (new && moo_line_mark_get_line (new->data) == moo_line_mark_get_line (l->data))
+        if (new_ && moo_line_mark_get_line (MOO_LINE_MARK (new_->data)) == moo_line_mark_get_line (MOO_LINE_MARK (l->data)))
             dup = g_slist_prepend (dup, l->data);
         else
-            new = g_slist_prepend (new, l->data);
+            new_ = g_slist_prepend (new_, l->data);
 
     while (dup)
     {
-        disconnect_bookmark (dup->data);
-        moo_text_buffer_delete_line_mark (get_moo_buffer (edit), dup->data);
+        disconnect_bookmark (MOO_EDIT_BOOKMARK (dup->data));
+        moo_text_buffer_delete_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (dup->data));
         g_object_unref (dup->data);
         dup = g_slist_delete_link (dup, dup);
     }
 
-    edit->priv->bookmarks = g_slist_reverse (new);
+    edit->priv->bookmarks = g_slist_reverse (new_);
 
     return FALSE;
 }
@@ -207,7 +207,7 @@ moo_edit_get_bookmark_at_line (MooEdit *edit,
     {
         if (MOO_IS_EDIT_BOOKMARK (l->data) && g_slist_find (edit->priv->bookmarks, l->data))
         {
-            bk = l->data;
+            bk = MOO_EDIT_BOOKMARK (l->data);
             break;
         }
     }
@@ -244,7 +244,7 @@ get_unused_bookmark_no (MooEdit *edit)
 
     while (list)
     {
-        MooEditBookmark *bk = list->data;
+        MooEditBookmark *bk = MOO_EDIT_BOOKMARK (list->data);
         used[bk->no] = 1;
         list = list->next;
     }
@@ -267,9 +267,9 @@ moo_edit_add_bookmark (MooEdit *edit,
     g_return_if_fail (line < get_line_count (edit));
     g_return_if_fail (moo_edit_get_bookmark_at_line (edit, line) == NULL);
 
-    g_object_set (edit, "show-line-marks", TRUE, NULL);
+    g_object_set (edit, "show-line-marks", TRUE, (char*) 0);
 
-    bk = g_object_new (MOO_TYPE_EDIT_BOOKMARK, "background", get_bookmark_color (edit), NULL);
+    bk = MOO_EDIT_BOOKMARK (g_object_new (MOO_TYPE_EDIT_BOOKMARK, "background", get_bookmark_color (edit), (char*) 0));
     moo_text_buffer_add_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bk), line);
     g_object_set_data (G_OBJECT (bk), "moo-edit-bookmark", GINT_TO_POINTER (TRUE));
 
@@ -303,7 +303,7 @@ moo_edit_add_bookmark (MooEdit *edit,
 static void
 disconnect_bookmark (MooEditBookmark *bk)
 {
-    g_object_set_data (G_OBJECT (bk), "moo-edit-bookmark", NULL);
+    g_object_set_data (G_OBJECT (bk), "moo-edit-bookmark", (char*) 0);
 }
 
 
@@ -367,7 +367,7 @@ moo_edit_get_bookmarks_in_range (MooEdit *edit,
 
     for (l = all, range = NULL; l != NULL; l = l->next)
     {
-        int line = moo_line_mark_get_line (l->data);
+        int line = moo_line_mark_get_line (MOO_LINE_MARK (l->data));
 
         if (line < first_line)
             continue;
@@ -394,11 +394,11 @@ _moo_edit_delete_bookmarks (MooEdit *edit,
     {
         while (bookmarks)
         {
-            disconnect_bookmark (bookmarks->data);
+            disconnect_bookmark (MOO_EDIT_BOOKMARK (bookmarks->data));
 
             if (!in_destroy)
                 moo_text_buffer_delete_line_mark (get_moo_buffer (edit),
-                                                  bookmarks->data);
+                                                  MOO_LINE_MARK (bookmarks->data));
 
             g_object_unref (bookmarks->data);
             bookmarks = g_slist_delete_link (bookmarks, bookmarks);
@@ -423,7 +423,7 @@ moo_edit_get_bookmark (MooEdit *edit,
 
     while (list)
     {
-        MooEditBookmark *bk = list->data;
+        MooEditBookmark *bk = MOO_EDIT_BOOKMARK (list->data);
 
         if (bk->no == n)
             return bk;
@@ -507,7 +507,7 @@ _moo_edit_update_bookmarks_style (MooEdit *edit)
     bookmarks = moo_edit_list_bookmarks (edit);
     while (bookmarks)
     {
-        moo_line_mark_set_background (bookmarks->data, color);
+        moo_line_mark_set_background (MOO_LINE_MARK (bookmarks->data), color);
         bookmarks = bookmarks->next;
     }
 }

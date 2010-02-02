@@ -22,6 +22,7 @@
 
 #include "mooedit/mooeditor.h"
 #include "mooutils/mdhistorymgr.h"
+#include "mooutils/moofilewatch.h"
 
 G_BEGIN_DECLS
 
@@ -49,7 +50,7 @@ void             _moo_editor_move_doc           (MooEditor      *editor,
                                                  MooEditWindow  *dest,
                                                  gboolean        focus);
 
-gpointer         _moo_editor_get_file_watch     (MooEditor      *editor);
+MooFileWatch    *_moo_editor_get_file_watch     (MooEditor      *editor);
 void             _moo_editor_reload             (MooEditor      *editor,
                                                  MooEdit        *doc,
                                                  const char     *encoding,

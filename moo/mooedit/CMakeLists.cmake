@@ -21,6 +21,7 @@ SET(MOOEDIT_SOURCES
   mooedit-bookmarks.c
   mooedit-bookmarks.h
   mooedit.c
+  mooedit.h
   mooeditconfig.c
   mooeditconfig.h
   mooeditdialogs.c
@@ -29,7 +30,7 @@ SET(MOOEDIT_SOURCES
   mooedit-fileops.h
   mooeditfiltersettings.c
   mooeditfiltersettings.h
-  mooedit.h
+  mooedit-impl.h
   mooedit-lua-api.c
   mooedit-lua.c
   mooedit-lua.h

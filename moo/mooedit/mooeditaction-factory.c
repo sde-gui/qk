@@ -68,7 +68,8 @@ action_info_new (MooActionFactory  *action,
     g_return_val_if_fail (MOO_IS_ACTION_FACTORY (action), NULL);
 
     info = g_new0 (ActionInfo, 1);
-    info->action = g_object_ref (action);
+    g_object_ref (action);
+    info->action = action;
     info->conditions = g_strdupv (conditions);
 
     return info;
@@ -132,21 +133,21 @@ create_action (const char *action_id,
         action = moo_action_factory_create_action (info->action, edit,
                                                    "closure-object", edit,
                                                    "name", action_id,
-                                                   NULL);
+                                                   (char*) 0);
     else if (g_type_is_a (info->action->action_type, MOO_TYPE_TOGGLE_ACTION))
         action = moo_action_factory_create_action (info->action, edit,
                                                    "toggled-object", edit,
                                                    "name", action_id,
-                                                   NULL);
+                                                   (char*) 0);
     else
         action = moo_action_factory_create_action (info->action, edit,
                                                    "name", action_id,
-                                                   NULL);
+                                                   (char*) 0);
 
     g_return_val_if_fail (action != NULL, NULL);
 
     if (g_type_is_a (info->action->action_type, MOO_TYPE_EDIT_ACTION))
-        g_object_set (action, "doc", edit, NULL);
+        g_object_set (action, "doc", edit, (char*) 0);
     g_object_set_data (G_OBJECT (action), "moo-edit", edit);
 
     if (info->conditions)
@@ -179,6 +180,12 @@ moo_edit_class_new_action (MooEditClass       *klass,
 }
 
 
+static GHashTable *
+get_actions_hash (GType type)
+{
+    return (GHashTable*) g_type_get_qdata (type, MOO_EDIT_ACTIONS_QUARK);
+}
+
 static void
 moo_edit_class_install_action (MooEditClass      *klass,
                                const char        *action_id,
@@ -188,14 +195,14 @@ moo_edit_class_install_action (MooEditClass      *klass,
     GHashTable *actions;
     ActionInfo *info;
     GType type;
-    GSList *l;
+    MooEditList *l;
 
     g_return_if_fail (MOO_IS_EDIT_CLASS (klass));
     g_return_if_fail (MOO_IS_ACTION_FACTORY (factory));
     g_return_if_fail (action_id && action_id[0]);
 
     type = G_OBJECT_CLASS_TYPE (klass);
-    actions = g_type_get_qdata (type, MOO_EDIT_ACTIONS_QUARK);
+    actions = get_actions_hash (type);
 
     if (!actions)
     {
@@ -248,7 +255,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
     name = first_prop_name;
     while (name)
     {
-        GParameter param = {NULL, {0, {{0}, {0}}}};
+        GParameter param = { 0 };
         GParamSpec *pspec;
         char *err = NULL;
 
@@ -279,7 +286,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
                 goto error;
             }
 
-            action_class = g_type_class_ref (action_type);
+            action_class = G_OBJECT_CLASS (g_type_class_ref (action_type));
         }
         else if (!strncmp (name, "condition::", strlen ("condition::")))
         {
@@ -311,7 +318,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
             {
                 if (!action_type)
                     action_type = MOO_TYPE_EDIT_ACTION;
-                action_class = g_type_class_ref (action_type);
+                action_class = G_OBJECT_CLASS (g_type_class_ref (action_type));
             }
 
             pspec = g_object_class_find_property (action_class, name);
@@ -416,8 +423,8 @@ custom_action_factory_func (MooEdit          *edit,
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
 
-    action_id = g_object_get_data (G_OBJECT (factory), "moo-edit-class-action-id");
-    func = g_object_get_data (G_OBJECT (factory), "moo-edit-class-action-func");
+    action_id = (const char *) g_object_get_data (G_OBJECT (factory), "moo-edit-class-action-id");
+    func = (MooEditActionFunc) g_object_get_data (G_OBJECT (factory), "moo-edit-class-action-func");
     func_data = g_object_get_data (G_OBJECT (factory), "moo-edit-class-action-func-data");
 
     g_return_val_if_fail (action_id != NULL, NULL);
@@ -444,7 +451,7 @@ moo_edit_class_new_action_custom (MooEditClass       *klass,
     g_object_set_data (G_OBJECT (action_factory), "moo-edit-class", klass);
     g_object_set_data_full (G_OBJECT (action_factory), "moo-edit-class-action-id",
                             g_strdup (action_id), g_free);
-    g_object_set_data (G_OBJECT (action_factory), "moo-edit-class-action-func", func);
+    g_object_set_data (G_OBJECT (action_factory), "moo-edit-class-action-func", (gpointer) func);
     g_object_set_data_full (G_OBJECT (action_factory), "moo-edit-class-action-func-data",
                             data, notify);
 
@@ -458,9 +465,9 @@ type_action_func (MooEdit  *edit,
                   gpointer  klass)
 {
     GQuark quark = g_quark_from_static_string ("moo-edit-class-action-id");
-    const char *id = g_type_get_qdata (G_TYPE_FROM_CLASS (klass), quark);
-    return g_object_new (G_TYPE_FROM_CLASS (klass),
-                         "doc", edit, "name", id, NULL);
+    const char *id = (const char*) g_type_get_qdata (G_TYPE_FROM_CLASS (klass), quark);
+    return GTK_ACTION (g_object_new (G_TYPE_FROM_CLASS (klass),
+                                     "doc", edit, "name", id, (char*) 0));
 }
 
 
@@ -491,12 +498,12 @@ moo_edit_class_remove_action (MooEditClass *klass,
 {
     GHashTable *actions;
     GType type;
-    GSList *l;
+    MooEditList *l;
 
     g_return_if_fail (MOO_IS_EDIT_CLASS (klass));
 
     type = G_OBJECT_CLASS_TYPE (klass);
-    actions = g_type_get_qdata (type, MOO_EDIT_ACTIONS_QUARK);
+    actions = get_actions_hash (type);
 
     if (actions)
         g_hash_table_remove (actions, action_id);
@@ -556,7 +563,7 @@ _moo_edit_add_class_actions (MooEdit *edit)
     {
         GHashTable *actions;
 
-        actions = g_type_get_qdata (type, MOO_EDIT_ACTIONS_QUARK);
+        actions = get_actions_hash (type);
 
         if (actions)
             g_hash_table_foreach (actions, (GHFunc) add_action, edit);
@@ -576,7 +583,7 @@ create_input_methods_menu_item (GtkAction *action)
     GtkWidget *item, *menu;
     gboolean visible = TRUE;
 
-    edit = g_object_get_data (G_OBJECT (action), "moo-edit");
+    edit = GTK_TEXT_VIEW (g_object_get_data (G_OBJECT (action), "moo-edit"));
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
 
     item = gtk_menu_item_new ();
@@ -590,9 +597,9 @@ create_input_methods_menu_item (GtkAction *action)
 #if GTK_CHECK_VERSION(2, 10, 0)
     g_object_get (gtk_widget_get_settings (GTK_WIDGET (edit)),
                   "gtk-show-input-method-menu", &visible,
-                  NULL);
+                  (char*) 0);
 #endif
-    g_object_set (action, "visible", visible, NULL);
+    g_object_set (action, "visible", visible, (char*) 0);
 
     return item;
 }
@@ -604,7 +611,7 @@ create_special_chars_menu_item (GtkAction *action)
     GtkWidget *item, *menu;
     gboolean visible = TRUE;
 
-    edit = g_object_get_data (G_OBJECT (action), "moo-edit");
+    edit = GTK_TEXT_VIEW (g_object_get_data (G_OBJECT (action), "moo-edit"));
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
 
     item = gtk_menu_item_new ();
@@ -616,9 +623,9 @@ create_special_chars_menu_item (GtkAction *action)
 #if GTK_CHECK_VERSION(2, 10, 0)
     g_object_get (gtk_widget_get_settings (GTK_WIDGET (edit)),
                   "gtk-show-unicode-menu", &visible,
-                  NULL);
+                  (char*) 0);
 #endif
-    g_object_set (action, "visible", visible, NULL);
+    g_object_set (action, "visible", visible, (char*) 0);
 
     return item;
 }
@@ -633,7 +640,7 @@ _moo_edit_class_init_actions (MooEditClass *klass)
                                "stock-id", GTK_STOCK_UNDO,
                                "closure-signal", "undo",
                                "condition::sensitive", "can-undo",
-                               NULL);
+                               (char*) 0);
 
     moo_edit_class_new_action (klass, "Redo",
                                "display-name", GTK_STOCK_REDO,
@@ -642,27 +649,27 @@ _moo_edit_class_init_actions (MooEditClass *klass)
                                "stock-id", GTK_STOCK_REDO,
                                "closure-signal", "redo",
                                "condition::sensitive", "can-redo",
-                               NULL);
+                               (char*) 0);
 
     moo_edit_class_new_action (klass, "Cut",
                                "display-name", GTK_STOCK_CUT,
                                "stock-id", GTK_STOCK_CUT,
                                "closure-signal", "cut-clipboard",
                                "condition::sensitive", "has-selection",
-                               NULL);
+                               (char*) 0);
 
     moo_edit_class_new_action (klass, "Copy",
                                "display-name", GTK_STOCK_COPY,
                                "stock-id", GTK_STOCK_COPY,
                                "closure-signal", "copy-clipboard",
                                "condition::sensitive", "has-selection",
-                               NULL);
+                               (char*) 0);
 
     moo_edit_class_new_action (klass, "Paste",
                                "display-name", GTK_STOCK_PASTE,
                                "stock-id", GTK_STOCK_PASTE,
                                "closure-signal", "paste-clipboard",
-                               NULL);
+                               (char*) 0);
 
     moo_edit_class_new_action (klass, "SelectAll",
                                "display-name", GTK_STOCK_SELECT_ALL,
@@ -671,19 +678,19 @@ _moo_edit_class_init_actions (MooEditClass *klass)
                                "stock-id", GTK_STOCK_SELECT_ALL,
                                "closure-callback", moo_text_view_select_all,
                                "condition::sensitive", "has-text",
-                               NULL);
+                               (char*) 0);
 
     moo_edit_class_new_action (klass, "InputMethods",
                                "action-type::", MOO_TYPE_MENU_ACTION,
                                "label", D_("Input _Methods", "gtk20"),
                                "menu-func", create_input_methods_menu_item,
-                               NULL);
+                               (char*) 0);
 
     moo_edit_class_new_action (klass, "SpecialChars",
                                "action-type::", MOO_TYPE_MENU_ACTION,
                                "label", D_("_Insert Unicode Control Character", "gtk20"),
                                "menu-func", create_special_chars_menu_item,
-                               NULL);
+                               (char*) 0);
 }
 
 
@@ -717,7 +724,7 @@ bidi_menu_item_activate (GtkWidget   *menuitem,
 
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
 
-    entry = g_object_get_data (G_OBJECT (menuitem), "unicode-menu-entry");
+    entry = (struct BidiMenuEntry*) g_object_get_data (G_OBJECT (menuitem), "unicode-menu-entry");
     g_return_if_fail (entry != NULL);
 
     string[g_unichar_to_utf8 (entry->ch, string)] = 0;

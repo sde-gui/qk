@@ -18,7 +18,7 @@
 #endif
 
 #define MOOEDIT_COMPILATION
-#include "mooedit/mooedit-private.h"
+#include "mooedit/mooedit-impl.h"
 #include "mooedit/mooedit-accels.h"
 #include "mooedit/mooeditor-private.h"
 #include "mooedit/mooeditfiltersettings.h"

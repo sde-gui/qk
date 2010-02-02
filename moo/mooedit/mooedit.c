@@ -38,7 +38,7 @@
 #define KEY_LINE "line"
 
 
-GSList *_moo_edit_instances = NULL;
+MooEditList *_moo_edit_instances = NULL;
 
 static GObject *moo_edit_constructor        (GType                  type,
                                              guint                  n_construct_properties,
@@ -152,7 +152,7 @@ moo_edit_class_init (MooEditClass *klass)
                                              "editor",
                                              "editor",
                                              MOO_TYPE_EDITOR,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_BOOKMARKS,
@@ -160,7 +160,7 @@ moo_edit_class_init (MooEditClass *klass)
                                              "enable-bookmarks",
                                              "enable-bookmarks",
                                              TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HAS_COMMENTS,
@@ -172,7 +172,8 @@ moo_edit_class_init (MooEditClass *klass)
 
     g_object_class_install_property (gobject_class, PROP_LINE_END_TYPE,
         g_param_spec_enum ("line-end-type", "line-end-type", "line-end-type",
-                           MOO_TYPE_LINE_END_TYPE, MOO_LE_NONE, G_PARAM_READWRITE));
+                           MOO_TYPE_LINE_END_TYPE, MOO_LE_NONE,
+                           (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENCODING,
@@ -180,12 +181,12 @@ moo_edit_class_init (MooEditClass *klass)
                                              "encoding",
                                              "encoding",
                                              NULL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     signals[CONFIG_NOTIFY] =
             g_signal_new ("config-notify",
                           G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
+                          (GSignalFlags) (G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED),
                           G_STRUCT_OFFSET (MooEditClass, config_notify),
                           NULL, NULL,
                           _moo_marshal_VOID__UINT_POINTER,
@@ -214,7 +215,7 @@ moo_edit_class_init (MooEditClass *klass)
     signals[COMMENT] =
             _moo_signal_new_cb ("comment",
                                 G_OBJECT_CLASS_TYPE (klass),
-                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                                (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
                                 G_CALLBACK (moo_edit_comment),
                                 NULL, NULL,
                                 _moo_marshal_VOID__VOID,
@@ -223,7 +224,7 @@ moo_edit_class_init (MooEditClass *klass)
     signals[UNCOMMENT] =
             _moo_signal_new_cb ("uncomment",
                                 G_OBJECT_CLASS_TYPE (klass),
-                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                                (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
                                 G_CALLBACK (moo_edit_uncomment),
                                 NULL, NULL,
                                 _moo_marshal_VOID__VOID,
@@ -297,7 +298,7 @@ moo_edit_constructor (GType                  type,
     edit = MOO_EDIT (object);
 
     _moo_edit_add_class_actions (edit);
-    _moo_edit_instances = g_slist_prepend (_moo_edit_instances, edit);
+    _moo_edit_instances = moo_edit_list_prepend (_moo_edit_instances, edit);
 
     edit->priv->modified_changed_handler_id =
             g_signal_connect (get_buffer (edit),
@@ -341,7 +342,7 @@ moo_edit_dispose (GObject *object)
 {
     MooEdit *edit = MOO_EDIT (object);
 
-    _moo_edit_instances = g_slist_remove (_moo_edit_instances, edit);
+    _moo_edit_instances = moo_edit_list_remove (_moo_edit_instances, edit);
 
     if (edit->config)
     {
@@ -406,6 +407,17 @@ modified_changed_cb (GtkTextBuffer      *buffer,
 }
 
 
+static void
+modify_status (MooEdit       *edit,
+               MooEditStatus  status,
+               gboolean       add)
+{
+    if (add)
+        edit->priv->status = (MooEditStatus) (edit->priv->status | status);
+    else
+        edit->priv->status = (MooEditStatus) (edit->priv->status & ~status);
+}
+
 void
 moo_edit_set_modified (MooEdit            *edit,
                        gboolean            modified)
@@ -429,10 +441,7 @@ moo_edit_set_modified (MooEdit            *edit,
                                   edit->priv->modified_changed_handler_id);
     }
 
-    if (modified)
-        edit->priv->status |= MOO_EDIT_MODIFIED;
-    else
-        edit->priv->status &= ~MOO_EDIT_MODIFIED;
+    modify_status (edit, MOO_EDIT_MODIFIED, modified);
 
     moo_edit_status_changed (edit);
 }
@@ -443,10 +452,7 @@ moo_edit_set_clean (MooEdit            *edit,
                     gboolean            clean)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
-    if (clean)
-        edit->priv->status |= MOO_EDIT_CLEAN;
-    else
-        edit->priv->status &= ~MOO_EDIT_CLEAN;
+    modify_status (edit, MOO_EDIT_CLEAN, clean);
     moo_edit_status_changed (edit);
 }
 
@@ -467,7 +473,6 @@ moo_edit_status_changed (MooEdit *edit)
 }
 
 
-#if 0
 void
 _moo_edit_set_status (MooEdit        *edit,
                       MooEditStatus   status)
@@ -480,7 +485,6 @@ _moo_edit_set_status (MooEdit        *edit,
         moo_edit_status_changed (edit);
     }
 }
-#endif
 
 
 gboolean
@@ -509,7 +513,7 @@ moo_edit_is_untitled (MooEdit *edit)
 MooEditStatus
 moo_edit_get_status (MooEdit *edit)
 {
-    g_return_val_if_fail (MOO_IS_EDIT (edit), 0);
+    g_return_val_if_fail (MOO_IS_EDIT (edit), (MooEditStatus) 0);
     return edit->priv->status;
 }
 
@@ -525,7 +529,7 @@ moo_edit_set_property (GObject        *object,
     switch (prop_id)
     {
         case PROP_EDITOR:
-            edit->priv->editor = g_value_get_object (value);
+            edit->priv->editor = (MooEditor*) g_value_get_object (value);
             break;
 
         case PROP_ENABLE_BOOKMARKS:
@@ -537,7 +541,7 @@ moo_edit_set_property (GObject        *object,
             break;
 
         case PROP_LINE_END_TYPE:
-            moo_edit_set_line_end_type (edit, g_value_get_enum (value));
+            moo_edit_set_line_end_type (edit, (MooLineEndType) g_value_get_enum (value));
             break;
 
         default:
@@ -654,7 +658,7 @@ moo_edit_file_info_new_uri (const char *uri,
 MooEditFileInfo *
 moo_edit_file_info_copy (MooEditFileInfo *info)
 {
-    return info ? moo_edit_file_info_new (g_object_ref (info->file), info->encoding) : NULL;
+    return info ? moo_edit_file_info_new ((GFile*) g_object_ref (info->file), info->encoding) : NULL;
 }
 
 void
@@ -1085,7 +1089,7 @@ moo_edit_apply_config (MooEdit *edit)
                          "show-line-numbers", &line_numbers,
                          "tab-width", &tab_width,
                          "word-chars", &word_chars,
-                         NULL);
+                         (char*) 0);
 
     gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (edit), wrap_mode);
     moo_text_view_set_show_line_numbers (MOO_TEXT_VIEW (edit), line_numbers);
@@ -1140,7 +1144,7 @@ _moo_edit_update_config_from_global (MooEdit *edit)
 void
 _moo_edit_update_lang_config (void)
 {
-    GSList *l;
+    MooEditList *l;
 
     for (l = _moo_edit_instances; l != NULL; l = l->next)
     {
@@ -1176,7 +1180,7 @@ moo_edit_filename_changed (MooEdit    *edit,
     }
 
     moo_edit_config_set (edit->config, MOO_EDIT_CONFIG_SOURCE_FILENAME,
-                         "lang", lang_id, "indent", NULL, NULL);
+                         "lang", lang_id, "indent", (void*) NULL, (char*) NULL);
 
     if (filter_config)
         moo_edit_config_parse (edit->config, filter_config,
@@ -1477,14 +1481,14 @@ block_uncomment (GtkTextBuffer *buffer,
     }
 
     limit = *end;
-    found = moo_text_search_forward (start, comment_start, 0,
+    found = moo_text_search_forward (start, comment_start, (MooTextSearchFlags) 0,
                                      &start1, &start2,
                                      &limit);
 
     if (!found)
     {
         gtk_text_iter_set_line_offset (&limit, 0);
-        found = gtk_text_iter_backward_search (start, comment_start, 0,
+        found = gtk_text_iter_backward_search (start, comment_start, (GtkTextSearchFlags) 0,
                                                &start1, &start2,
                                                &limit);
     }
@@ -1493,14 +1497,14 @@ block_uncomment (GtkTextBuffer *buffer,
         return;
 
     limit = start2;
-    found = gtk_text_iter_backward_search (end, comment_end, 0,
+    found = gtk_text_iter_backward_search (end, comment_end, (GtkTextSearchFlags) 0,
                                            &end1, &end2, &limit);
 
     if (!found)
     {
         limit = *end;
         iter_to_line_end (&limit);
-        found = moo_text_search_forward (end, comment_end, 0,
+        found = moo_text_search_forward (end, comment_end, (MooTextSearchFlags) 0,
                                          &end1, &end2, &limit);
     }
 
@@ -1716,8 +1720,8 @@ _moo_edit_do_popup (MooEdit        *edit,
     xml = moo_editor_get_doc_ui_xml (edit->priv->editor);
     g_return_if_fail (xml != NULL);
 
-    menu = moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup", edit->priv->actions,
-                                     window ? MOO_WINDOW(window)->accel_group : NULL);
+    menu = (GtkMenu*) moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup", edit->priv->actions,
+                                                window ? MOO_WINDOW(window)->accel_group : NULL);
     g_return_if_fail (menu != NULL);
     MOO_OBJECT_REF_SINK (menu);
 
@@ -2055,8 +2059,8 @@ test_encodings_1 (const char *name,
     else
         encoding = g_strdup (name);
 
-    filename = g_build_filename (test_data.encodings_dir, name, NULL);
-    filename2 = g_build_filename (working_dir, name, NULL);
+    filename = g_build_filename (test_data.encodings_dir, name, (char*)0);
+    filename2 = g_build_filename (working_dir, name, (char*)0);
 
     editor = moo_editor_instance ();
     doc = moo_editor_open_file (editor, NULL, NULL, filename, encoding);
@@ -2090,7 +2094,7 @@ test_encodings (void)
         return;
     }
 
-    working_dir = g_build_filename (test_data.working_dir, "encodings", NULL);
+    working_dir = g_build_filename (test_data.working_dir, "encodings", (char*)0);
     _moo_mkdir_with_parents (working_dir);
 
     while ((name = g_dir_read_name (dir)))
@@ -2111,9 +2115,9 @@ test_suite_init (G_GNUC_UNUSED gpointer data)
     }
 
     test_data.working_dir = g_build_filename (moo_test_get_working_dir (),
-                                              "editor-work", NULL);
+                                              "editor-work", (char*)0);
     test_data.encodings_dir = g_build_filename (moo_test_get_data_dir (),
-                                                "encodings", NULL);
+                                                "encodings", (char*)0);
 
     if (_moo_mkdir_with_parents (test_data.working_dir) != 0)
     {

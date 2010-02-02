@@ -245,7 +245,7 @@ param_array_concatenate (GParameter *props1,
 }
 
 
-gpointer
+GtkAction *
 moo_action_factory_create_action (MooActionFactory   *factory,
                                   gpointer            data,
                                   const char         *prop_name,
@@ -293,7 +293,7 @@ moo_action_factory_create_action (MooActionFactory   *factory,
     _moo_param_array_free (props, n_props);
     _moo_param_array_free (add_props, n_add_props);
 
-    return object;
+    return GTK_ACTION (object);
 }
 
 

@@ -19,7 +19,7 @@
 #include "mooedit/mooedit-fileops.h"
 #include "mooedit/mooplugin.h"
 #include "mooedit/mooeditprefs.h"
-#include "mooedit/mooedit-private.h"
+#include "mooedit/mooedit-impl.h"
 #include "mooedit/mooedit-accels.h"
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditfiltersettings.h"
@@ -30,7 +30,6 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooutils-gobject.h"
-#include "mooutils/moofilewatch.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooi18n.h"
@@ -416,7 +415,7 @@ _moo_editor_set_focused_doc (MooEditor *editor,
 {
     g_return_if_fail (MOO_IS_EDITOR (editor));
     g_return_if_fail (MOO_IS_EDIT (doc));
-    g_return_if_fail (doc->priv->editor == editor);
+    g_return_if_fail (moo_edit_get_editor (doc) == editor);
 
     if (editor->priv->focused_doc != doc)
     {
@@ -431,7 +430,7 @@ _moo_editor_unset_focused_doc (MooEditor *editor,
 {
     g_return_if_fail (MOO_IS_EDITOR (editor));
     g_return_if_fail (MOO_IS_EDIT (doc));
-    g_return_if_fail (doc->priv->editor == editor);
+    g_return_if_fail (moo_edit_get_editor (doc) == editor);
 
     if (editor->priv->focused_doc == doc)
     {
@@ -441,7 +440,7 @@ _moo_editor_unset_focused_doc (MooEditor *editor,
 }
 
 
-gpointer
+MooFileWatch *
 _moo_editor_get_file_watch (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
@@ -890,7 +889,7 @@ _moo_editor_move_doc (MooEditor     *editor,
     int new_pos = -1;
 
     g_return_if_fail (MOO_IS_EDITOR (editor));
-    g_return_if_fail (MOO_IS_EDIT (doc) && doc->priv->editor == editor);
+    g_return_if_fail (MOO_IS_EDIT (doc) && moo_edit_get_editor (doc) == editor);
     g_return_if_fail (!dest || (MOO_IS_EDIT_WINDOW (dest) && moo_edit_window_get_editor (dest) == editor));
 
     if (!dest)
@@ -1934,7 +1933,7 @@ moo_editor_new_uri (MooEditor     *editor,
     if (!doc)
         doc = moo_editor_new_doc (editor, window);
 
-    doc->priv->status = MOO_EDIT_NEW;
+    _moo_edit_set_status (doc, MOO_EDIT_NEW);
     _moo_edit_set_file (doc, file, encoding);
     moo_editor_set_active_doc (editor, doc);
     gtk_widget_grab_focus (GTK_WIDGET (doc));
@@ -1983,7 +1982,7 @@ moo_editor_new_file (MooEditor      *editor,
     if (!doc)
         doc = moo_editor_new_doc (editor, window);
 
-    doc->priv->status = MOO_EDIT_NEW;
+    _moo_edit_set_status (doc, MOO_EDIT_NEW);
     file = g_file_new_for_path (filename);
     _moo_edit_set_file (doc, file, encoding);
     moo_editor_set_active_doc (editor, doc);
@@ -2196,7 +2195,7 @@ _moo_editor_save_as (MooEditor      *editor,
     else
     {
         if (!encoding)
-            encoding = doc->priv->encoding;
+            encoding = moo_edit_get_encoding (doc);
         file_info = moo_edit_file_info_new_path (filename, encoding);
     }
 

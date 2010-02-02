@@ -69,10 +69,10 @@ MooActionFactory   *moo_action_factory_new_a        (GType               object_
                                                      GParameter         *params,
                                                      guint               n_params);
 
-gpointer            moo_action_factory_create_action(MooActionFactory   *factory,
+GtkAction          *moo_action_factory_create_action(MooActionFactory   *factory,
                                                      gpointer            data,
                                                      const char         *additional_prop_name,
-                                                     ...);
+                                                     ...) G_GNUC_NULL_TERMINATED;
 
 
 GtkAction          *moo_action_group_add_action     (GtkActionGroup     *group,

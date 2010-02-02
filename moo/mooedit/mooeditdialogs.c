@@ -15,7 +15,6 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditdialogs.h"
-#include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooedit-fileops.h"
 #include "mooutils/moodialogs.h"

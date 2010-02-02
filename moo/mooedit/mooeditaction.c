@@ -16,7 +16,6 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditaction.h"
 #include "mooedit/mooeditaction-factory.h"
-#include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include <glib/gregex.h>
 #include <string.h>

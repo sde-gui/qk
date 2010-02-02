@@ -15,7 +15,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditprefs.h"
-#include "mooedit/mooedit-private.h"
+#include "mooedit/mooedit-impl.h"
 #include "mooedit/mooedit-fileops.h"
 #include "mooedit/mootextview-private.h"
 #include "mooedit/mooedit-enums.h"

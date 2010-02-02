@@ -181,7 +181,7 @@ MOO_CHECK_COMPILER_FLAGS(GCC -Wno-missing-field-initializers -Wno-overlength-str
 
 MOO_CHECK_COMPILER_FLAGS(GCC DEBUG -ftrapv)
 
-MOO_ADD_COMPILER_FLAGS(GCC CXX -std=c++98 -pedantic)
+MOO_ADD_COMPILER_FLAGS(GCC CXX -std=c++98)
 MOO_CHECK_COMPILER_FLAGS(GCC CXX -fno-rtti)
 MOO_CHECK_COMPILER_FLAGS(GCC CXX RELEASE -fno-enforce-eh-specs)
 
