@@ -47,7 +47,8 @@
 #define MOO_IMPLEMENT_ME            _MOO_GCC_PRAGMA(message ("IMPLEMENT ME"))
 #elif defined(MOO_CL_MSVC)
 #define _MOO_MESSAGE_LINE(line) #line
-#define _MOO_MESSAGE_LOC __FILE__ "(" _MOO_MESSAGE_LINE(__LINE__) ") : "
+#define _MOO_MESSAGE_LINE2(line) _MOO_MESSAGE_LINE(line)
+#define _MOO_MESSAGE_LOC __FILE__ "(" _MOO_MESSAGE_LINE2(__LINE__) ") : "
 #define MOO_COMPILER_MESSAGE(x)     __pragma(message(_MOO_MESSAGE_LOC #x))
 #define MOO_TODO(x)                 __pragma(message(_MOO_MESSAGE_LOC "TODO: " #x))
 #define MOO_IMPLEMENT_ME            __pragma(message(_MOO_MESSAGE_LOC "IMPLEMENT ME: " __FUNCTION__))
@@ -90,7 +91,7 @@
 #  define MOO_FA_WARN_UNUSED_RESULT
 #  define MOO_FA_CONST
 #  define MOO_FA_NONNULL(indices)
-#  if defined(MOO_CL_MSVC)
+#  if defined(MOO_CL_MSVC) && defined(__cplusplus)
 #    define MOO_FA_NORETURN __declspec(noreturn)
 #    define MOO_FA_NOTHROW __declspec(nothrow)
 #  else

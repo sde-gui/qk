@@ -1,5 +1,6 @@
 exports = {}
 exports['base'] = """\
+_moo_log
 moo_set_log_func_file
 moo_set_log_func_file
 moo_set_log_func_window
@@ -20,6 +21,7 @@ moo_line_view_start_line
 moo_line_view_set_data
 moo_line_view_write_line
 moo_line_view_write_line
+moo_line_view_set_cursor
 moo_ui_xml_add_item
 moo_ui_xml_new_merge_id
 moo_ui_xml_new_merge_id
@@ -239,7 +241,6 @@ _moo_tree_helper_update_widgets
 _moo_tree_helper_update_widgets
 moo_markup_get_content
 _moo_tree_helper_set
-_moo_message
 moo_edit_get_status
 _moo_convert_string_to_bool
 moo_line_reader_get_line

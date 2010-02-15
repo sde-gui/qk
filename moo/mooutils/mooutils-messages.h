@@ -151,7 +151,7 @@ do {                                                    \
     return val;                                         \
 } while (0)
 
-#define moo_return_if_reached(cond) moo_return_val_if_reached(;)
+#define moo_return_if_reached() moo_return_val_if_reached(;)
 
 /*
  * Suppress warnings when GCC is in -pedantic mode and not -std=c99
