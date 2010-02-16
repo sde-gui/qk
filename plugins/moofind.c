@@ -189,7 +189,6 @@ ensure_output (WindowStuff *stuff)
                                 _("Search Results"), _("Search Results"));
     stuff->output = g_object_new (MOO_TYPE_CMD_VIEW,
                                   "highlight-current-line", TRUE,
-                                  "enable-folding", TRUE,
                                   NULL);
 
     moo_edit_window_add_stop_client (window, stuff->output);
@@ -662,9 +661,9 @@ file_line_pair_free (FileLinePair *pair)
 static void
 finish_group(WindowStuff *stuff)
 {
-    if (stuff->group_start_line >= 0 && stuff->group_end_line > stuff->group_start_line)
-        moo_text_buffer_add_fold (MOO_TEXT_BUFFER (gtk_text_view_get_buffer (GTK_TEXT_VIEW (stuff->output))),
-                                  stuff->group_start_line, stuff->group_end_line);
+//     if (stuff->group_start_line >= 0 && stuff->group_end_line > stuff->group_start_line)
+//         moo_text_buffer_add_fold (MOO_TEXT_BUFFER (gtk_text_view_get_buffer (GTK_TEXT_VIEW (stuff->output))),
+//                                   stuff->group_start_line, stuff->group_end_line);
     stuff->group_start_line = -1;
     stuff->group_end_line = -1;
 }
