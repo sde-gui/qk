@@ -8,7 +8,11 @@ build/
 *.bak
 *.pyc
 *.tmp
+*.gmo
+*.stamp
+*-gxml.h
 *~
+*.a
 .DS_Store
 Makefile.in
 *-enums.[ch]
@@ -22,6 +26,10 @@ doc/help/*.html
 doc/help.html
 doc/help-sections.h
 doc/medit.1
+CMakeFiles/
+Makefile
+cmake_install.cmake
+moo/mooedit/gtksourceview/*-mangled.*
 
 syntax: regexp
 ^po(-gsv)?/(Makefile\.in\.in|dist|missing|notexist|pot|intltool-update)$

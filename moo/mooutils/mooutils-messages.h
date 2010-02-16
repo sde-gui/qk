@@ -53,12 +53,12 @@ do {                                        \
 #ifdef DEBUG
 #define _MOO_DEBUG_ASSERT _MOO_ASSERT_CHECK
 #define _MOO_DEBUG_ASSERT_NOT_REACHED() _MOO_ASSERT_MESSAGE ("should not be reached")
+#define _MOO_DEBUG_SIDE_ASSERT(what) do { gboolean res__ = (what); _MOO_DEBUG_ASSERT(res__); } while (0)
 #else
 #define _MOO_DEBUG_ASSERT(cond) MOO_VOID_STMT
 #define _MOO_DEBUG_ASSERT_NOT_REACHED() MOO_VOID_STMT
+#define _MOO_DEBUG_SIDE_ASSERT(what) MOO_VOID_STMT
 #endif
-
-#define _MOO_DEBUG_SIDE_ASSERT(what) do { gboolean res__ = (what); _MOO_DEBUG_ASSERT(res__); } while (0)
 
 #define moo_assert _MOO_DEBUG_ASSERT
 #define moo_side_assert _MOO_DEBUG_SIDE_ASSERT

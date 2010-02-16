@@ -80,16 +80,11 @@ G_STMT_START {                                              \
     }                                                       \
 } G_STMT_END
 
-gboolean moo_debug_enabled  (const char *var,
-                             gboolean    def_enabled);
-void     _moo_set_debug     (const char *domains);
-
 #elif defined(MOO_CL_GCC)
 
 #define MOO_DEBUG_INIT(domain, def_enabled)
 #define moo_dmsg(format, args...) G_STMT_START {} G_STMT_END
 #define moo_dprint(format, args...) G_STMT_START {} G_STMT_END
-#define moo_debug(format, args...) G_STMT_START {} G_STMT_END
 #define MOO_DEBUG_CODE(whatever) G_STMT_START {} G_STMT_END
 
 #else /* not gcc, not DEBUG */
@@ -105,15 +100,13 @@ static void moo_dprint (const char *format, ...) G_GNUC_PRINTF(1,2)
 {
 }
 
-static void moo_debug_dummy (const char *format, ...) G_GNUC_PRINTF(1,2)
-{
-}
-
-#define moo_debug moo_debug_dummy
-
 #endif  /* gcc or DEBUG */
 
 #define _moo_message moo_debug
+
+gboolean moo_debug_enabled  (const char *var,
+                             gboolean    def_enabled);
+void     _moo_set_debug     (const char *domains);
 
 G_END_DECLS
 
