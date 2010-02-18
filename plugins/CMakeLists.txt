@@ -25,7 +25,7 @@ ENDIF(MOO_BUILD_CTAGS)
 # fileselector
 #
 
-MOO_GEN_GXML(meditplugins
+MOO_GEN_GXML(
   glade/moofileselector-prefs.glade
   glade/moofileselector.glade
 )
@@ -40,7 +40,7 @@ LIST(APPEND MEDITPLUGINS_SOURCES
 # user tools
 #
 
-INCLUDE(usertools/CMakeLists.cmake)
+ADD_SUBDIRECTORY(usertools)
 
 # ###########################################################################
 # # script
@@ -59,7 +59,7 @@ LIST(APPEND MEDITPLUGINS_SOURCES
   moofind.c
 )
 
-MOO_GEN_GXML(meditplugins
+MOO_GEN_GXML(
   glade/moofind.glade
   glade/moogrep.glade
 )

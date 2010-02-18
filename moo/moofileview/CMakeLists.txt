@@ -32,14 +32,14 @@ SET(MOOFILEVIEW_SOURCES
   mootreeview.h
 )
 
-MOO_GEN_GXML(moofileview
+MOO_GEN_GXML(
   glade/moofileview-drop.glade
   glade/moofileprops.glade
   glade/moocreatefolder.glade
   glade/moobookmark-editor.glade
 )
 
-MOO_GEN_UIXML(moofileview moofileview.xml)
+MOO_GEN_UIXML(moofileview.xml)
 
 MOO_ADD_MOO_CODE_MODULE(moofileview)
 

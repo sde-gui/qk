@@ -169,8 +169,39 @@ SET(LOCALEDIR ${DATADIR}/locale CACHE PATH "Where mo files go")
 
 ###########################################################################
 #
+# Stuff
+#
+
+MACRO(MOO_ADD_GENERATED_FILE stampfile outputfiles)
+  FOREACH(_moo_f ${stampfile} ${outputfiles})
+    GET_FILENAME_COMPONENT(_moo_d ${_moo_f} ABSOLUTE)
+    GET_FILENAME_COMPONENT(_moo_d ${_moo_d} PATH)
+    FILE(MAKE_DIRECTORY ${_moo_d})
+  ENDFOREACH(_moo_f)
+  ADD_CUSTOM_COMMAND(OUTPUT ${stampfile} ${ARGN})
+  MOO_APPEND_DIRECTORY_PROPERTY(MOO_STAMPS ${stampfile})
+  SET_SOURCE_FILES_PROPERTIES(${stampfile} PROPERTIES EXTERNAL_OBJECT 1 GENERATED 1)
+  SET_SOURCE_FILES_PROPERTIES(${outputfiles} PROPERTIES GENERATED 1)
+  MOO_ADD_CLEAN_FILES(${stampfile} ${outputfiles})
+  MOO_APPEND_DIRECTORY_PROPERTY(MOO_BUILT_SOURCES ${stampfile} ${outputfiles})
+ENDMACRO(MOO_ADD_GENERATED_FILE)
+
+###########################################################################
+#
 # Aux macros
 #
+
+MACRO(MOO_APPEND_DIRECTORY_PROPERTY prop)
+  GET_DIRECTORY_PROPERTY(_madp_value ${prop})
+  FOREACH(_moo_arg ${ARGN})
+    LIST(APPEND _madp_value ${_moo_arg})
+  ENDFOREACH(_moo_arg)
+  SET_DIRECTORY_PROPERTIES(PROPERTIES ${prop} "${_madp_value}")
+ENDMACRO(MOO_APPEND_DIRECTORY_PROPERTY)
+
+MACRO(MOO_ADD_CLEAN_FILES)
+  MOO_APPEND_DIRECTORY_PROPERTY(ADDITIONAL_MAKE_CLEAN_FILES ${ARGN})
+ENDMACRO(MOO_ADD_CLEAN_FILES)
 
 # MOO_COLLECT_ARGS(ARG FOO VAR foo ARG BAR VAR bar ARGN ...)
 # caller: SOME_MACRO(FOO foo1 foo2 foo3 BAR bar1)

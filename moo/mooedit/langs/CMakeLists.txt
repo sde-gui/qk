@@ -1,0 +1,88 @@
+SET(LANGS2
+  ada.lang
+  asp.lang
+  awk.lang
+  boo.lang
+  changelog.lang
+  chdr.lang
+  c.lang
+  cmake.lang
+  cpp.lang
+  csharp.lang
+  css.lang
+  def.lang
+  desktop.lang
+  diff.lang
+  d.lang
+  docbook.lang
+  dosbatch.lang
+  dot.lang
+  dpatch.lang
+  dtd.lang
+  eiffel.lang
+  erlang.lang
+  forth.lang
+  fortran.lang
+  gap.lang
+  gtk-doc.lang
+  gtkrc.lang
+  haddock.lang
+  haskell.lang
+  haskell-literate.lang
+  html.lang
+  idl.lang
+  ini.lang
+  java.lang
+  javascript.lang
+  latex.lang
+  libtool.lang
+  lua.lang
+  m4.lang
+  makefile.lang
+  nemerle.lang
+  nsis.lang
+  objc.lang
+  ocaml.lang
+  ocl.lang
+  octave.lang
+  pascal.lang
+  perl.lang
+  php.lang
+  pkgconfig.lang
+  po.lang
+  prolog.lang
+  python-console.lang
+  python.lang
+  R.lang
+  rpmspec.lang
+  ruby.lang
+  scheme.lang
+  sh.lang
+  sql.lang
+  t2t.lang
+  tcl.lang
+  texinfo.lang
+  vala.lang
+  vbnet.lang
+  verilog.lang
+  vhdl.lang
+  xml.lang
+  xslt.lang
+  yacc.lang
+)
+
+SET(LANGS1
+  msil.lang
+)
+
+SET(STYLES
+  kate.xml
+  classic.xml
+  cobalt.xml
+  oblivion.xml
+  tango.xml
+)
+
+INSTALL(FILES language2.rng check.sh ${STYLES} ${LANGS1} ${LANGS2} DESTINATION ${MOO_TEXT_LANG_FILES_DIR})
+
+# -%- strip:true -%-

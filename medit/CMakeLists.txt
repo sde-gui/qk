@@ -7,9 +7,25 @@ IF(MOO_ENABLE_UNIT_TESTS AND NOT WIN32)
 ENDIF(MOO_ENABLE_UNIT_TESTS AND NOT WIN32)
 
 SET(MEDIT_SOURCES mem-debug.h run-tests.h parse.h main.c)
-SET(medit_libs meditplugins moo)
+SET(medit_libs
+  meditplugins
+  moousertools
+  mooapp
+  smclient
+  mooedit
+  gtksourceview
+  moofileview
+  moolua
+  mooutils
+  xdgmime
+  moo
+)
 
-MOO_WIN32_RESOURCE(medit.rc.in medit)
+IF(GLIB_VERSION VERSION_LESS "2.16.0")
+  LIST(APPEND medit_libs newgtk)
+ENDIF(GLIB_VERSION VERSION_LESS "2.16.0")
+
+MOO_WIN32_RESOURCE(medit.rc.in medit MEDIT_SOURCES medit_libs)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
 

@@ -45,7 +45,7 @@ for line in open(input_file):
                  'gtksourcelanguagemanager', 'gtksourcestyle', 'gtksourcestyleschememanager', 'gtksourcestylescheme',
                  'gtksourcestyle-private', 'gtktextregion', 'gtksourceview-utils']:
         line = line.replace('#include "%s.h"' % (name,), '#include "%s-mangled.h"' % (name,))
-        line = line.replace('#include <gtksourceview/%s.h>' % (name,), '#include <gtksourceview/%s-mangled.h>' % (name,))
+        line = line.replace('#include <gtksourceview/%s.h>' % (name,), '#include "%s-mangled.h"' % (name,))
 
     line = line.replace('#include "gtksourcebuffer.h"', '').replace('#include "gtksourceview.h"', '')
 

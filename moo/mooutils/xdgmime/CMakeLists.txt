@@ -16,6 +16,6 @@ SET(XDGMIME_SOURCES
   xdgmimeparent.h
 )
 
-MOO_ADD_MOO_CODE_MODULE(xdgmime SUBDIR mooutils/xdgmime)
+MOO_ADD_MOO_CODE_MODULE(xdgmime)
 
 # -%- strip:true -%-

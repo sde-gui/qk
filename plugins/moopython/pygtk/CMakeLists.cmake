@@ -82,7 +82,7 @@ pygtk/%-mod.h: $(srcdir)/pygtk/%-mod.py $(PY2H)
 
 FOREACH(_moo_comp utils edit app)
   STRING(TOUPPER ${_moo_comp} _moo_COMP)
-  MOO_ADD_GENERATED_FILE(moopygtk
+  MOO_ADD_GENERATED_FILE(
     ${CMAKE_CURRENT_BINARY_DIR}/pygtk/moo${_moo_comp}-pygtk.stamp
     ${CMAKE_CURRENT_BINARY_DIR}/pygtk/moo${_moo_comp}-pygtk.c
     ${MOO_${_moo_COMP}_PYGTK_COMMAND}

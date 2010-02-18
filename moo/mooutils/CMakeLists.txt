@@ -147,7 +147,7 @@ IF(MOO_ENABLE_UNIT_TESTS)
   LIST(APPEND MOOUTILS_SOURCES ${test_sources})
 ENDIF(MOO_ENABLE_UNIT_TESTS)
 
-MOO_GEN_GXML(mooutils
+MOO_GEN_GXML(
   glade/mooaccelprefs.glade
   glade/mooaccelbutton.glade
   glade/moologwindow.glade
@@ -174,7 +174,7 @@ MACRO(MOO_GEN_PIXMAP_FILE output)
   SET(genpixbuf_csource ${CMAKE_CURRENT_BINARY_DIR}/genpixbuf-source-${output}.cmake)
   CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/moo/mooutils/genpixbufcsource.cmake.in ${genpixbuf_csource} @ONLY)
 
-  MOO_ADD_GENERATED_FILE(mooutils
+  MOO_ADD_GENERATED_FILE(
     ${stamp} ${output_full}
     COMMAND ${CMAKE_COMMAND} -P ${genpixbuf_csource}
     DEPENDS ${pixmaps} ${genpixbuf_csource}
@@ -209,11 +209,11 @@ MOO_GEN_PIXMAP_FILE(moofileicon-symlink.h
 )
 
 IF(GLIB_VERSION VERSION_LESS "2.16.0")
-  INCLUDE(mooutils/newgtk/CMakeLists.cmake)
+  ADD_SUBDIRECTORY(newgtk)
 ENDIF(GLIB_VERSION VERSION_LESS "2.16.0")
 
 MOO_ADD_MOO_CODE_MODULE(mooutils)
 
-INCLUDE(mooutils/xdgmime/CMakeLists.cmake)
+ADD_SUBDIRECTORY(xdgmime)
 
 # -%- strip:true -%-

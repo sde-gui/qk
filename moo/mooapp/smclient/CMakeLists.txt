@@ -14,6 +14,6 @@ ELSE(WIN32)
   LIST(APPEND SMCLIENT_SOURCES eggsmclient-xsmp.c eggdesktopfile.h eggdesktopfile.c)
 ENDIF(WIN32)
 
-MOO_ADD_MOO_CODE_MODULE(smclient SUBDIR mooapp/smclient)
+MOO_ADD_MOO_CODE_MODULE(smclient)
 
 # -%- strip:true -%-

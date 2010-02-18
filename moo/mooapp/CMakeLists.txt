@@ -12,13 +12,13 @@ SET(MOOAPP_SOURCES
   moolinklabel.c
 )
 
-MOO_GEN_GXML(mooapp
+MOO_GEN_GXML(
   glade/mooappabout-dialog.glade
   glade/mooappabout-license.glade
   glade/mooappabout-credits.glade
 )
 
-MOO_ADD_GENERATED_FILE(mooapp
+MOO_ADD_GENERATED_FILE(
   ${CMAKE_CURRENT_BINARY_DIR}/mooapp-credits.h.stamp ${CMAKE_CURRENT_BINARY_DIR}/mooapp-credits.h
   COMMAND ${PYTHON_EXECUTABLE} ${MOO_XML2H_PY} ${MOO_SOURCE_DIR}/THANKS ${CMAKE_CURRENT_BINARY_DIR}/mooapp-credits.h MOO_APP_CREDITS
   DEPENDS ${MOO_SOURCE_DIR}/THANKS ${MOO_XML2H_PY}
@@ -28,4 +28,4 @@ MOO_ADD_GENERATED_FILE(mooapp
 
 MOO_ADD_MOO_CODE_MODULE(mooapp)
 
-INCLUDE(mooapp/smclient/CMakeLists.cmake)
+ADD_SUBDIRECTORY(smclient)

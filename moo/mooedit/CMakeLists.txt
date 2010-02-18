@@ -1,4 +1,4 @@
-INSTALL(FILES mooedit/medit.lua DESTINATION ${MOO_DATA_DIR}/lua)
+INSTALL(FILES medit.lua DESTINATION ${MOO_DATA_DIR}/lua)
 
 SET(completion_sources
   moocompletionsimple.c
@@ -98,7 +98,7 @@ SET(printing_sources
 
 LIST(APPEND MOOEDIT_SOURCES ${printing_sources})
 
-MOO_GEN_GXML(mooedit
+MOO_GEN_GXML(
   glade/mooprintpreview.glade
   glade/moopluginprefs.glade
   glade/mooeditprefs-view.glade
@@ -116,16 +116,14 @@ MOO_GEN_GXML(mooedit
   glade/moostatusbar.glade
 )
 
-MOO_GEN_ENUMS(mooedit mooedit mooedit/mooedit-enums-in.py mooedit/mooedit-enums)
+MOO_GEN_ENUMS(mooedit)
 
-MOO_GEN_UIXML(mooedit medit.xml mooedit.xml)
+MOO_GEN_UIXML(medit.xml mooedit.xml)
 
-# AM_CFLAGS_ = -Igtksourceview $(MOO_CFLAGS) $(MOO_WIN32_CFLAGS)
-# AM_CXXFLAGS_ = -Igtksourceview $(MOO_CXXFLAGS) $(MOO_WIN32_CFLAGS)
-
-INCLUDE(mooedit/gtksourceview/CMakeLists.cmake)
-INCLUDE(mooedit/langs/CMakeLists.cmake)
+ADD_SUBDIRECTORY(gtksourceview)
+ADD_SUBDIRECTORY(langs)
 
 MOO_ADD_MOO_CODE_MODULE(mooedit)
+ADD_DEPENDENCIES(mooedit gtksourceview)
 
 # -%- strip:true -%-
