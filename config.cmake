@@ -53,35 +53,6 @@ MACRO(MOO_CHECK_STRUCT_HAS_MEMBER struct field incfile varname)
 ENDMACRO(MOO_CHECK_STRUCT_HAS_MEMBER)
 
 
-IF(NOT GIO_FOUND)
-  INCLUDE_DIRECTORIES(${MOO_SOURCE_DIR}/moo/mooutils/newgtk/glib-2.16)
-
-  MOO_CHECK_HEADERS(dirent.h float.h limits.h pwd.h grp.h sys/param.h sys/poll.h sys/resource.h)
-  MOO_CHECK_HEADERS(sys/time.h sys/times.h sys/wait.h unistd.h values.h)
-  MOO_CHECK_HEADERS(sys/select.h sys/types.h stdint.h sched.h malloc.h)
-  MOO_CHECK_HEADERS(sys/vfs.h sys/mount.h sys/vmount.h sys/statfs.h sys/statvfs.h)
-  MOO_CHECK_HEADERS(mntent.h sys/mnttab.h sys/vfstab.h sys/mntctl.h sys/sysctl.h fstab.h)
-
-  CHECK_STRUCT_HAS_MEMBER("struct stat" st_mtimensec "sys/stat.h" HAVE_STAT_ST_MTIMENSEC)
-  CHECK_STRUCT_HAS_MEMBER("struct stat" st_mtim.tv_nsec "sys/stat.h" HAVE_STAT_ST_MTIM_TV_NSEC)
-  CHECK_STRUCT_HAS_MEMBER("struct stat" st_atimensec "sys/stat.h" HAVE_STAT_ST_ATIMENSEC)
-  CHECK_STRUCT_HAS_MEMBER("struct stat" st_ctimensec "sys/stat.h" HAVE_STAT_ST_CTIMENSEC)
-  CHECK_STRUCT_HAS_MEMBER("struct stat" st_ctim.tv_nsec "sys/stat.h" HAVE_STAT_ST_CTIM_TV_NSEC)
-  CHECK_STRUCT_HAS_MEMBER("struct stat" st_blksize "sys/stat.h" HAVE_STAT_ST_BLKSIZE)
-  CHECK_STRUCT_HAS_MEMBER("struct stat" st_blocks "sys/stat.h" HAVE_STAT_ST_BLOCKS)
-  CHECK_STRUCT_HAS_MEMBER("struct statfs" f_fstypename "sys/statfs.h" HAVE_STATFS_F_FSTYPENAME)
-  CHECK_STRUCT_HAS_MEMBER("struct statfs" f_bavail "sys/statfs.h" HAVE_STATFS_F_BAVAIL)
-
-  # struct statvfs.f_basetype is available on Solaris but not for Linux.
-  CHECK_STRUCT_HAS_MEMBER("struct statvfs" f_basetype sys/statvfs.h HAVE_STATFS_F_BASETYPE)
-
-  # Check for some functions
-  MOO_CHECK_FUNCTIONS(lstat strerror strsignal memmove vsnprintf stpcpy strcasecmp strncasecmp poll getcwd vasprintf setenv unsetenv getc_unlocked readlink symlink fdwalk)
-  MOO_CHECK_FUNCTIONS(chown lchown fchmod fchown link statvfs statfs utimes getgrgid getpwuid)
-  MOO_CHECK_FUNCTIONS(getmntent_r setmntent endmntent hasmntopt getmntinfo)
-ENDIF(NOT GIO_FOUND)
-
-
 # for xdgmime
 MOO_CHECK_FUNCTIONS(getc_unlocked)
 # for GMappedFile and xdgmime
