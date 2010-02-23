@@ -17,9 +17,9 @@ MOO_OPTION(MOO_ENABLE_UNIT_TESTS FALSE "Build unit tests" DEFINE TRUE)
 MOO_OPTION(MOO_ENABLE_GENERATED_FILES ${MOO_OS_UNIX} "Run gtk-update-icon-cache on install")
 MOO_OPTION(MOO_BROKEN_GTK_THEME FALSE "Work around bugs in gtk theme" HEADER TRUE)
 
+INCLUDE(cmake/gtk.cmake)
 INCLUDE(cmake/moo.cmake)
 INCLUDE(cmake/dist.cmake)
-INCLUDE(cmake/gtk.cmake)
 
 MOO_DEFINE_VERSIONS(MOO ${MOO_VERSION})
 SET(MOO_MODULE_MAJOR_VERSION 1)
