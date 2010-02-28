@@ -497,7 +497,7 @@ do_load (MooEdit      *edit,
     GIOChannel *file = NULL;
     GIOStatus status;
     GtkTextBuffer *buffer;
-    MooLineEndType le = edit->priv->line_end_type;
+    MooLineEndType le = MOO_LE_NONE;
     GString *text = NULL;
     char *line = NULL;
     LoadResult result = ERROR_FILE;

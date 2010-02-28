@@ -1238,8 +1238,8 @@ create_doc_encoding_action (MooEditWindow *window)
 
 static const char *line_end_menu_items[] = {
     NULL, /* MOO_LE_NONE */
-    "LineEndWin32", /* MOO_LE_UNIX */
-    "LineEndUnix", /* MOO_LE_WIN32 */
+    "LineEndUnix", /* MOO_LE_UNIX */
+    "LineEndWin32", /* MOO_LE_WIN32 */
     "LineEndMac", /* MOO_LE_MAC */
     "LineEndMix" /* MOO_LE_MIX */
 };
@@ -1258,8 +1258,11 @@ update_doc_line_end_item (MooEditWindow *window)
     g_return_if_fail (action != NULL);
 
     le = moo_edit_get_line_end_type (doc);
+    if (le == MOO_LE_NONE)
+        le = MOO_LE_DEFAULT;
     g_return_if_fail (le > 0 && le < G_N_ELEMENTS(line_end_menu_items));
 
+    g_message ("%s: %s", moo_edit_get_display_basename (doc), line_end_menu_items[le]);
     moo_menu_mgr_set_active (moo_menu_action_get_mgr (MOO_MENU_ACTION (action)),
                              line_end_menu_items[le], TRUE);
 }
@@ -2019,6 +2022,7 @@ edit_changed (MooEditWindow *window,
         update_lang_menu (window);
         update_doc_view_actions (window);
         update_doc_encoding_item (window);
+	update_doc_line_end_item (window);
     }
 
     if (doc)
@@ -2062,6 +2066,25 @@ edit_cursor_moved (MooEditWindow *window,
 }
 
 
+#if GTK_CHECK_VERSION(2,16,0)
+static void
+sync_proxies (GtkAction *action)
+{
+    GSList *l = gtk_action_get_proxies (action);
+    while (l)
+    {
+        gtk_activatable_sync_action_properties (l->data, action);
+        l = l->next;
+    }
+}
+#else
+static void
+sync_proxies (G_GNUC_UNUSED GtkAction *action)
+{
+}
+#endif
+
+
 static void
 edit_wrap_mode_changed (MooEditWindow *window,
                         G_GNUC_UNUSED GParamSpec *pspec,
@@ -2078,6 +2101,9 @@ edit_wrap_mode_changed (MooEditWindow *window,
 
     g_object_get (doc, "wrap-mode", &mode, NULL);
     gtk_toggle_action_set_active (action, mode != GTK_WRAP_NONE);
+
+    /* XXX menu item and action go out of sync for some reason */
+    sync_proxies (action);
 }
 
 
@@ -2097,6 +2123,9 @@ edit_show_line_numbers_changed (MooEditWindow *window,
 
     g_object_get (doc, "show-line-numbers", &show, NULL);
     gtk_toggle_action_set_active (action, show);
+
+    /* XXX menu item and action go out of sync for some reason */
+    sync_proxies (action);
 }
 
 
