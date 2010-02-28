@@ -113,25 +113,25 @@ In addition to these, you can set input and output options for executable files:
 | ``filter``        | the output filter name.
 
 
-=== Python scripts ===[user-tools-python]
-
-If APPNAME is built with Python support, then Python scripts have full access to the program
-internals via builtin ``moo`` module. APPNAME classes extend classes from ``pygtk``,
-in particular the ``moo.edit.Edit`` class representing documents extends the
-``gtk.TextView`` class, and all editing operations can be implemented using
-``pygtk`` API.
-
-Python scripts executed from inside APPNAME have ``LIBDIR/plugins/lib``
-and ``USERDATADIR/plugins/lib`` directories added to ``sys.path``,
-you can place there APPNAME-specific modules to be used from python tools.
-
-Python scripts have the following variables predefined:
-
-| ``doc``       | the current document object. |
-| ``window``    | the current editor window.
-| ``buffer``    | the text buffer (a ``moo.edit.TextBuffer`` instance) of the current document.
-| ``editor``    | the ``moo.edit.Editor`` object representing the text editor. Use its methods to open/close files, switch between documents and windows, etc.
-| ``moo``       | the ``moo`` module, already imported so you can omit ``import moo`` statement in scripts.
+% === Python scripts ===[user-tools-python]
+%
+% If APPNAME is built with Python support, then Python scripts have full access to the program
+% internals via builtin ``moo`` module. APPNAME classes extend classes from ``pygtk``,
+% in particular the ``moo.edit.Edit`` class representing documents extends the
+% ``gtk.TextView`` class, and all editing operations can be implemented using
+% ``pygtk`` API.
+%
+% Python scripts executed from inside APPNAME have ``LIBDIR/plugins/lib``
+% and ``USERDATADIR/plugins/lib`` directories added to ``sys.path``,
+% you can place there APPNAME-specific modules to be used from python tools.
+%
+% Python scripts have the following variables predefined:
+%
+% | ``doc``       | the current document object. |
+% | ``window``    | the current editor window.
+% | ``buffer``    | the text buffer (a ``moo.edit.TextBuffer`` instance) of the current document.
+% | ``editor``    | the ``moo.edit.Editor`` object representing the text editor. Use its methods to open/close files, switch between documents and windows, etc.
+% | ``moo``       | the ``moo`` module, already imported so you can omit ``import moo`` statement in scripts.
 
 
 === Lua scripts ===[user-tools-lua]
