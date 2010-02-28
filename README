@@ -25,7 +25,7 @@ Bug reports and contact
 
 Report bugs and file feature requests in medit bug base at
 http://sourceforge.net/tracker/?group_id=167563&atid=843451 .
-You can also send email to muntyan@tamu.edu if you don't feel like
+You can also send email to emuntyan@sourceforge.net if you don't feel like
 using bug base, or have any questions/comments/beer.
 medit IRC channel is #ggap at irc.freenode.net.
 
@@ -39,21 +39,10 @@ CVS
 
 medit sources are tracked using mercurial, therefore there is no
 CVS or SVN access. You may browse medit repository online at
-http://mooedit.sourceforge.net/hg/moo.
-To check out a copy of medit repository, install mercurial, and do
-hg clone http://mooedit.sourceforge.net/hg/moo
+http://bitbucket.org/muntyan/moo/. To check out a copy of medit
+repository, install mercurial, and do
+hg clone http://bitbucket.org/muntyan/moo/
 This will create a new directory named 'moo' with medit sources inside.
 To update them later on, do
 hg pull; hg update
 in this directory.
-
-
-Why?
-====
-
-If you are wondering why medit is written, there are two answers:
-1) It wasn't a decision to write a text editor. It happened during
-more than one year of GGAP development. And no, there is no usable
-GTK text editor component.
-2) Try it: if you like it, you know why. If you don't like it, ask
-vim/emacs guys why don't they use emacs/vim.
