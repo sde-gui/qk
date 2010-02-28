@@ -370,14 +370,6 @@ static void
 moo_prefs_set_modified (gboolean modified)
 {
     MooPrefs *prefs = instance ();
-
-#ifdef MOO_DEBUG
-    if (modified && !prefs->rc_modified)
-    {
-        g_message ("%s: prefs modified", G_STRLOC);
-    }
-#endif
-
     prefs->rc_modified = modified;
 }
 
