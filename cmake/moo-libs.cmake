@@ -75,7 +75,7 @@ MACRO(MOO_WIN32_RESOURCE rc_in module module_sources module_libs)
       )
       SET_SOURCE_FILES_PROPERTIES(${_moo_res_file} PROPERTIES EXTERNAL_OBJECT 1 GENERATED 1)
       LIST(APPEND ${module_sources} ${_moo_res_file})
-      LIST(APPEND ${module_libs}_libs ${_moo_res_file})
+      LIST(APPEND ${module_libs} ${_moo_res_file})
       # FIXME rebuilding just doesn't work
     ENDIF(MSVC)
   ENDIF(WIN32)
