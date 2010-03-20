@@ -1,3 +1,10 @@
+2010-03-19  Yevgen Muntyan  <emuntyan@sourceforge.net>
+
+    * === Released 0.10.1 ===
+
+    Restored lost ctags plugin. Added simple installation
+    instructions.
+
 2010-02-28  Yevgen Muntyan  <emuntyan@sourceforge.net>
 
     * === Released 0.10.0 ===
