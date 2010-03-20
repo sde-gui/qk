@@ -1,1 +1,23 @@
+medit is built using cmake (http://www.cmake.org/). See
+http://www.cmake.org/cmake/help/runningcmake.html for detailed instructions
+on how to use cmake.
 
+Quick build with default options (you must have cmake installed):
+
+tar xjf medit-x.x.x.tar.bz2
+cd medit-x.x.x
+cmake .
+make
+make install
+
+This will configure, build, and install medit to /usr/local. If you want to
+install it to a different directory, use the following cmake command line:
+
+cmake -DCMAKE_INSTALL_PREFIX=/some/path .
+
+Alternatively, you can run the following command after running cmake:
+
+ccmake .
+
+This will invoke a curses interface for cmake where you can see the list of
+available options and set their values.
