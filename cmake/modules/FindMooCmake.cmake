@@ -166,6 +166,7 @@ SET(DATADIR share CACHE PATH "share")
 SET(DESKTOPFILEDIR ${DATADIR}/applications CACHE PATH "share/applications")
 SET(LIBDIR lib CACHE PATH "lib")
 SET(LOCALEDIR ${DATADIR}/locale CACHE PATH "Where mo files go")
+SET(MANDIR ${DATADIR}/man CACHE PATH "Where man pages go")
 
 ###########################################################################
 #
