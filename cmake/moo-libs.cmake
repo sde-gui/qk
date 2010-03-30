@@ -52,7 +52,7 @@ MACRO(MOO_ADD_LIBRARY libname)
   STRING(TOUPPER ${libname} _mal_mod)
   GET_DIRECTORY_PROPERTY(_mal_stamps MOO_STAMPS)
   GET_DIRECTORY_PROPERTY(_mal_built_sources MOO_BUILT_SOURCES)
-  ADD_LIBRARY(${libname} ${ARGN} ${${_mal_mod}_SOURCES} ${_mal_stamps} ${_mal_built_sources})
+  ADD_LIBRARY(${libname} STATIC ${ARGN} ${${_mal_mod}_SOURCES} ${_mal_stamps} ${_mal_built_sources})
 ENDMACRO(MOO_ADD_LIBRARY)
 
 MACRO(MOO_ADD_MOO_CODE_MODULE)

@@ -64,7 +64,7 @@ MOO_GEN_GXML(
   glade/moogrep.glade
 )
 
-MOO_ADD_LIBRARY(meditplugins STATIC)
+MOO_ADD_LIBRARY(meditplugins)
 
 # ADD_SUBDIRECTORY(moopython)
 
