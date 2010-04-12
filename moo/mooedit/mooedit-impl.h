@@ -118,6 +118,10 @@ GdkPixbuf   *_moo_edit_get_icon                 (MooEdit        *edit,
                                                  GtkWidget      *widget,
                                                  GtkIconSize     size);
 
+char *_moo_edit_normalize_filename_for_comparison (const char *filename);
+char *_moo_edit_normalize_uri_for_comparison (const char *uri);
+
+
 G_END_DECLS
 
 #endif /* MOO_EDIT_IMPL_H */

@@ -75,6 +75,7 @@ GType            moo_edit_file_info_get_type    (void) G_GNUC_CONST;
 
 char            *moo_edit_get_uri               (MooEdit        *edit);
 char            *moo_edit_get_filename          (MooEdit        *edit);
+char            *moo_edit_get_norm_filename     (MooEdit        *edit);
 const char      *moo_edit_get_display_name      (MooEdit        *edit);
 const char      *moo_edit_get_display_basename  (MooEdit        *edit);
 

@@ -1260,6 +1260,25 @@ _moo_file_get_display_basename (GFile *file)
     return name;
 }
 
+char *
+_moo_edit_normalize_filename_for_comparison (const char *filename)
+{
+    moo_return_val_if_fail (filename != NULL, NULL);
+#ifdef __WIN32__
+    /* XXX */
+    char *tmp = g_utf8_normalize (filename, -1, G_NORMALIZE_ALL_COMPOSE);
+    char *ret = g_utf8_strdown (tmp, -1);
+    g_free (tmp);
+    return ret;
+#else
+    return g_strdup (filename);
+#endif
+}
+
+char *_moo_edit_normalize_uri_for_comparison (const char *uri)
+{
+    return _moo_edit_normalize_filename_for_comparison (uri);
+}
 
 void
 _moo_edit_set_file (MooEdit    *edit,
@@ -1267,10 +1286,11 @@ _moo_edit_set_file (MooEdit    *edit,
                     const char *encoding)
 {
     GFile *tmp;
-    char *tmp2, *tmp3, *tmp4;
+    char *tmp2, *tmp3, *tmp4, *tmp5;
 
     tmp = edit->priv->file;
     tmp2 = edit->priv->filename;
+    tmp5 = edit->priv->norm_filename;
     tmp3 = edit->priv->display_filename;
     tmp4 = edit->priv->display_basename;
 
@@ -1283,6 +1303,7 @@ _moo_edit_set_file (MooEdit    *edit,
 
         edit->priv->file = NULL;
         edit->priv->filename = NULL;
+        edit->priv->norm_filename = NULL;
 
         if (n == 1)
             edit->priv->display_filename = g_strdup (_("Untitled"));
@@ -1296,6 +1317,7 @@ _moo_edit_set_file (MooEdit    *edit,
         remove_untitled (NULL, edit);
         edit->priv->file = g_file_dup (file);
         edit->priv->filename = g_file_get_path (file);
+        edit->priv->norm_filename = _moo_edit_normalize_filename_for_comparison (edit->priv->filename);
         edit->priv->display_filename = _moo_file_get_display_name (file);
         edit->priv->display_basename = _moo_file_get_display_basename (file);
     }
@@ -1313,6 +1335,7 @@ _moo_edit_set_file (MooEdit    *edit,
     g_free (tmp2);
     g_free (tmp3);
     g_free (tmp4);
+    g_free (tmp5);
 }
 
 

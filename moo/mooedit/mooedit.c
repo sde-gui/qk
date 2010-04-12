@@ -328,6 +328,7 @@ moo_edit_finalize (GObject *object)
     if (edit->priv->file)
         g_object_unref (edit->priv->file);
     g_free (edit->priv->filename);
+    g_free (edit->priv->norm_filename);
     g_free (edit->priv->display_filename);
     g_free (edit->priv->display_basename);
     g_free (edit->priv->encoding);
@@ -685,6 +686,13 @@ moo_edit_get_filename (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
     return g_strdup (edit->priv->filename);
+}
+
+char *
+moo_edit_get_norm_filename (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    return g_strdup (edit->priv->norm_filename);
 }
 
 const char *

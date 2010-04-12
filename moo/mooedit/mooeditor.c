@@ -2263,7 +2263,7 @@ doc_list_find_filename (DocList    *list,
 {
     while (list)
     {
-        char *tmp = moo_edit_get_filename (list->data);
+        char *tmp = moo_edit_get_norm_filename (list->data);
         /* XXX */
         if (tmp && strcmp (tmp, filename) == 0)
         {
@@ -2280,15 +2280,17 @@ MooEdit *
 moo_editor_get_doc (MooEditor  *editor,
                     const char *filename)
 {
-    char *freeme = NULL;
+    char *freeme1 = NULL;
+    char *freeme2 = NULL;
     MooEdit *doc = NULL;
     WindowList *l;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     g_return_val_if_fail (filename != NULL, NULL);
 
-    freeme = _moo_normalize_file_path (filename);
-    filename = freeme;
+    freeme1 = _moo_normalize_file_path (filename);
+    freeme2 = _moo_edit_normalize_filename_for_comparison (freeme1);
+    filename = freeme2;
 
     if ((doc = doc_list_find_filename (editor->priv->windowless, filename)))
         goto out;
@@ -2303,7 +2305,8 @@ moo_editor_get_doc (MooEditor  *editor,
     }
 
 out:
-    g_free (freeme);
+    g_free (freeme2);
+    g_free (freeme1);
     return doc;
 }
 
@@ -2313,14 +2316,18 @@ doc_list_find_uri (DocList    *list,
 {
     while (list)
     {
-        char *tmp = moo_edit_get_uri (list->data);
+        char *freeme1 = moo_edit_get_uri (list->data);
+        char *freeme2 = _moo_edit_normalize_uri_for_comparison (freeme1);
+        const char *doc_uri = freeme2;
         /* XXX */
-        if (tmp && strcmp (tmp, uri) == 0)
+        if (doc_uri && strcmp (doc_uri, uri) == 0)
         {
-            g_free (tmp);
+            g_free (freeme2);
+            g_free (freeme1);
             return list->data;
         }
-        g_free (tmp);
+        g_free (freeme2);
+        g_free (freeme1);
         list = list->next;
     }
     return NULL;
@@ -2330,14 +2337,18 @@ MooEdit *
 moo_editor_get_doc_for_uri (MooEditor  *editor,
                             const char *uri)
 {
-    MooEdit *doc;
+    MooEdit *doc = NULL;
     WindowList *l;
+    char *freeme = NULL;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     g_return_val_if_fail (uri != NULL, NULL);
 
+    freeme = _moo_edit_normalize_uri_for_comparison (uri);
+    uri = freeme;
+
     if ((doc = doc_list_find_uri (editor->priv->windowless, uri)))
-        return doc;
+        goto out;
 
     for (l = editor->priv->windows; l != NULL; l = l->next)
     {
@@ -2345,10 +2356,12 @@ moo_editor_get_doc_for_uri (MooEditor  *editor,
         doc = doc_list_find_uri (docs, uri);
         doc_list_free_links (docs);
         if (doc)
-            return doc;
+            goto out;
     }
 
-    return NULL;
+out:
+    g_free (freeme);
+    return doc;
 }
 
 

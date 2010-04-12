@@ -37,6 +37,7 @@ struct MooEditPrivate {
      */
     GFile *file;
     char *filename;
+    char *norm_filename;
     char *display_filename;
     char *display_basename;
 

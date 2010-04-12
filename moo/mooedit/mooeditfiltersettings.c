@@ -101,7 +101,11 @@ _moo_edit_filter_new_regex (const char *string)
 
     g_return_val_if_fail (string != NULL, NULL);
 
-    regex = g_regex_new (string, G_REGEX_OPTIMIZE, 0, &error);
+    regex = g_regex_new (string, G_REGEX_OPTIMIZE
+#ifdef __WIN32__
+                                | G_REGEX_CASELESS
+#endif
+                         , 0, &error);
 
     if (!regex)
     {
