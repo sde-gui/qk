@@ -1,3 +1,11 @@
+2010-xx-xx  Yevgen Muntyan  <emuntyan@sourceforge.net>
+
+    * === Released 0.10.2 ===
+
+    Added back man page, fixed compilation on systems where cmake
+    builds dynamic libraries by default. On windows, made medit
+    use case-insensitive filename comparison.
+
 2010-03-19  Yevgen Muntyan  <emuntyan@sourceforge.net>
 
     * === Released 0.10.1 ===
