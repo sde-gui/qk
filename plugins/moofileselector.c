@@ -32,6 +32,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moo-mime.h"
 #include "mooutils/moomenu.h"
+#include "mooutils/moostat.h"
 #include "glade/moofileselector-gxml.h"
 #include "mooutils/moohelp.h"
 #include "mooutils/mooatom.h"
@@ -284,7 +285,7 @@ moo_file_selector_activate (MooFileView    *fileview,
 
     errno = 0;
 
-    if (g_stat (path, &statbuf) != 0)
+    if (moo_stat (path, &statbuf) != 0)
     {
         int err = errno;
         g_warning ("%s: error in stat(%s): %s", G_STRLOC, path, g_strerror (err));

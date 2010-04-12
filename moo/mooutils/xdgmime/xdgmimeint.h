@@ -186,14 +186,14 @@ _xdg_reverse_ucs4 (xdg_unichar_t *source, int len)
 }
 
 #ifdef __WIN32__
-#include <glib/gstdio.h>
+#include <mooutils/moostat.h>
 
 inline static int
 _xdg_mime_stat (const char  *path,
 		struct stat *buf)
 {
   errno = 0;
-  return g_stat (path, buf);
+  return moo_stat (path, buf);
 }
 
 inline static int

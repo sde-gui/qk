@@ -18,7 +18,7 @@
 #endif
 
 #include "mooutils/mooutils-fs.h"
-// #include "mooutils/mooutils-file.h"
+#include "mooutils/moostat.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooutils-mem.h"
 #include "mooutils/mootype-macros.h"
@@ -376,7 +376,7 @@ _moo_create_dir (const char *path,
 
     errno = 0;
 
-    if (g_stat (path, &buf) != 0 && errno != ENOENT)
+    if (moo_stat (path, &buf) != 0 && errno != ENOENT)
     {
         int err_code = errno;
         utf8_path = g_filename_display_name (path);

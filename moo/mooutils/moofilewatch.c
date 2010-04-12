@@ -44,6 +44,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-mem.h"
 #include "mooutils/moofilewatch.h"
+#include "mooutils/moostat.h"
 #include "mooutils/mootype-macros.h"
 #include "marshals.h"
 #include "mooutils/mooutils-thread.h"
@@ -808,7 +809,7 @@ watch_stat_start_monitor (MooFileWatch   *watch,
 
     errno = 0;
 
-    if (g_stat (monitor->filename, &buf) != 0)
+    if (moo_stat (monitor->filename, &buf) != 0)
     {
         int saved_errno = errno;
         g_set_error (error, MOO_FILE_WATCH_ERROR,
@@ -880,7 +881,7 @@ do_stat (MooFileWatch *watch)
         event.filename = monitor->filename;
         event.error = NULL;
 
-        if (g_stat (monitor->filename, &monitor->statbuf) != 0)
+        if (moo_stat (monitor->filename, &monitor->statbuf) != 0)
         {
             if (errno == ENOENT)
             {
@@ -1123,7 +1124,7 @@ fam_thread_check_dir (FAMThread *thr,
 
     errno = 0;
 
-    if (g_stat (thr->watches[idx].path, &buf) != 0 &&
+    if (moo_stat (thr->watches[idx].path, &buf) != 0 &&
         errno == ENOENT)
     {
         fam_thread_event (MOO_FILE_EVENT_DELETED,
@@ -1450,7 +1451,7 @@ watch_win32_start_monitor (MooFileWatch   *watch,
 
     errno = 0;
 
-    if (g_stat (monitor->filename, &buf) != 0)
+    if (moo_stat (monitor->filename, &buf) != 0)
     {
         int saved_errno = errno;
         g_set_error (error, MOO_FILE_WATCH_ERROR,

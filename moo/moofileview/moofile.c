@@ -29,6 +29,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooutils-debug.h"
+#include "mooutils/moostat.h"
 #include "mooutils/moocompat.h"
 #include "marshals.h"
 #include "mooutils/moo-mime.h"
@@ -339,7 +340,7 @@ _moo_file_stat (MooFile    *file,
     if (!file->statbuf)
         file->statbuf = moo_new (struct stat);
 
-    if (g_lstat (fullname, file->statbuf) != 0)
+    if (moo_lstat (fullname, file->statbuf) != 0)
     {
         if (errno == ENOENT)
         {
@@ -376,7 +377,7 @@ _moo_file_stat (MooFile    *file,
             file->info |= MOO_FILE_INFO_IS_LINK;
             errno = 0;
 
-            if (g_stat (fullname, file->statbuf) != 0)
+            if (moo_stat (fullname, file->statbuf) != 0)
             {
                 if (errno == ENOENT)
                 {
