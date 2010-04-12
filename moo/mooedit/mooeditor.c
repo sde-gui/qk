@@ -2317,7 +2317,7 @@ doc_list_find_uri (DocList    *list,
     while (list)
     {
         char *freeme1 = moo_edit_get_uri (list->data);
-        char *freeme2 = _moo_edit_normalize_uri_for_comparison (freeme1);
+        char *freeme2 = freeme1 ? _moo_edit_normalize_uri_for_comparison (freeme1) : NULL;
         const char *doc_uri = freeme2;
         /* XXX */
         if (doc_uri && strcmp (doc_uri, uri) == 0)
