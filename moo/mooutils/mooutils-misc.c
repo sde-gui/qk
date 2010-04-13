@@ -1785,10 +1785,9 @@ void
 _moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
 {
     if (moo_code_loc_valid (loc))
-        g_printerr ("In file %s, line %d, function %s:\n%s\n", loc.file, loc.line, loc.func, message);
+	g_error ("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
     else
-        g_printerr ("%s\n", message);
-    g_on_error_query (moo_get_prgname());
+        g_error ("%s\n", message);
 }
 
 #else /* !__WIN32__ */
