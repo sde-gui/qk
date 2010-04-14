@@ -3,8 +3,10 @@
     * === Released 0.10.2 ===
 
     Added back man page, fixed compilation on systems where cmake
-    builds dynamic libraries by default. On windows, made medit
-    use case-insensitive filename comparison.
+    builds dynamic libraries by default.
+
+    On windows, made medit use case-insensitive filename comparison
+    and fixed scrolling with a Synaptics touchpad.
 
 2010-03-19  Yevgen Muntyan  <emuntyan@sourceforge.net>
 
