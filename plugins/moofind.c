@@ -526,15 +526,14 @@ init_find_dialog (MooEditWindow *window,
 
 
 static char *
-get_directory (GrepXml *xml)
+get_directory (MooHistoryCombo *combo)
 {
-    MooHistoryCombo *combo;
     GtkWidget *entry;
     char *dir;
     char *norm_dir = NULL;
     MooFileEntryCompletion *completion;
 
-    combo = xml->dir_combo;
+    g_return_val_if_fail (combo != NULL, NULL);
     entry = MOO_COMBO (combo)->entry;
 
     completion = g_object_get_data (G_OBJECT (entry), "find-plugin-file-completion");
@@ -569,7 +568,7 @@ do_grep (MooEditWindow  *window,
     pane = moo_edit_window_get_pane (window, FIND_PLUGIN_ID);
     g_return_if_fail (pane != NULL);
 
-    dir = get_directory (stuff->grep_xml);
+    dir = get_directory (stuff->grep_xml->dir_combo);
     g_return_if_fail (dir != NULL);
 
     pattern_combo = stuff->grep_xml->pattern_combo;
@@ -624,7 +623,7 @@ do_find (MooEditWindow  *window,
     skip_entry = MOO_COMBO (skip_combo)->entry;
     skip = gtk_entry_get_text (GTK_ENTRY (skip_entry));
 
-    dir = get_directory (stuff->grep_xml);
+    dir = get_directory (stuff->find_xml->dir_combo);
     g_return_if_fail (dir != NULL);
 
     moo_line_view_clear (MOO_LINE_VIEW (stuff->output));
@@ -1080,7 +1079,7 @@ output_activate (WindowStuff    *stuff,
 
     line_data = moo_line_view_get_data (MOO_LINE_VIEW (stuff->output), line);
 
-    if (!line_data || line_data->line < 0)
+    if (!line_data || (stuff->cmd == CMD_GREP && line_data->line < 0))
         return FALSE;
 
     editor = moo_edit_window_get_editor (stuff->window);
