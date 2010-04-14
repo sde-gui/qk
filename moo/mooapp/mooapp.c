@@ -44,7 +44,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#ifdef GDK_WINDOWING_QUARTZ
+#ifdef MOO_USE_QUARTZ
 #include <ige-mac-dock.h>
 #endif
 
@@ -100,7 +100,7 @@ struct MooAppPrivate {
     const char *default_ui;
     guint       quit_handler_id;
 
-#ifdef GDK_WINDOWING_QUARTZ
+#ifdef MOO_USE_QUARTZ
     IgeMacDock *dock;
 #endif
 };
@@ -630,7 +630,7 @@ moo_app_init_ui (MooApp *app)
 }
 
 
-#ifdef GDK_WINDOWING_QUARTZ
+#ifdef MOO_USE_QUARTZ
 
 static void
 dock_open_documents (MooApp  *app,
@@ -655,12 +655,12 @@ moo_app_init_mac (MooApp *app)
                               G_CALLBACK (dock_quit_activate), app);
 }
 
-#else /* !GDK_WINDOWING_QUARTZ */
+#else /* !MOO_USE_QUARTZ */
 static void
 moo_app_init_mac (G_GNUC_UNUSED MooApp *app)
 {
 }
-#endif
+#endif /* !MOO_USE_QUARTZ */
 
 static gboolean
 moo_app_init_real (MooApp *app)

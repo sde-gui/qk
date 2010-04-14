@@ -41,7 +41,7 @@
 #include <gdk/gdkx.h>
 #endif
 
-#if defined(GDK_WINDOWING_QUARTZ)
+#ifdef MOO_USE_QUARTZ
 #include <gdk/gdkquartz.h>
 #endif
 
@@ -585,7 +585,7 @@ moo_window_present (GtkWindow *window,
 
 #if defined(GDK_WINDOWING_X11)
     present_window_x11 (window, stamp);
-#elif defined(GDK_WINDOWING_QUARTZ)
+#elif defined(MOO_USE_QUARTZ)
     gtk_window_present (window);
     [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 #else
