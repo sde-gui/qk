@@ -110,6 +110,6 @@ ENDIF(WIN32)
 INCLUDE(CPack)
 
 IF(NOT WIN32)
-  CONFIGURE_FILE(${MOO_SOURCE_DIR}/dist/distcheck.in distcheck)
+  CONFIGURE_FILE(${MOO_SOURCE_DIR}/plat/unix/distcheck.in distcheck)
   ADD_CUSTOM_TARGET(distcheck ${MOO_BINARY_DIR}/distcheck)
 ENDIF(NOT WIN32)
