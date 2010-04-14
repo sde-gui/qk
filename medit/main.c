@@ -31,6 +31,10 @@
 #include <errno.h>
 #include "mem-debug.h"
 #include "run-tests.h"
+#ifdef GDK_WINDOWING_WIN32
+#include <gdk/gdkwin32.h>
+#include <windowsx.h>
+#endif
 
 static struct MeditOpts {
     int use_session;
@@ -307,6 +311,134 @@ project_mode (const char *file)
 }
 #endif
 
+#ifdef GDK_WINDOWING_WIN32
+
+static GdkWindow *
+_moo_get_toplevel_window (void)
+{
+    GList *list, *l;
+    GSList *windows = NULL;
+    GtkWidget *top;
+
+    list = gtk_window_list_toplevels ();
+
+    for (l = list; l != NULL; l = l->next)
+        if (GTK_IS_WINDOW (l->data) && GTK_WIDGET(l->data)->window)
+            windows = g_slist_prepend (windows, l->data);
+
+    top = GTK_WIDGET (_moo_get_top_window (windows));
+
+    g_list_free (list);
+    g_slist_free (windows);
+    return top ? top->window : NULL;
+}
+
+static GdkWindow *
+get_youngest_child_at_pointer (GdkWindow       *window,
+                               int             *x,
+                               int             *y,
+                               GdkModifierType *mods)
+{
+    gboolean first_time = TRUE;
+
+    while (TRUE)
+    {
+        int tmp_x, tmp_y;
+        GdkWindow *child_window = gdk_window_get_pointer (window, &tmp_x, &tmp_y, mods);
+
+        if (first_time)
+        {
+            *x = tmp_x;
+            *y = tmp_y;
+        }
+
+        if (!child_window || child_window == window)
+            return window;
+        else
+            window = child_window;
+    }
+}
+
+static gboolean
+fill_scroll_event (GdkEvent  *event,
+                   const MSG *msg)
+{
+    GdkWindow *window, *child_window;
+    int x, y;
+    GdkModifierType mods;
+
+    if (!(window = _moo_get_toplevel_window ()))
+        return FALSE;
+
+    child_window = get_youngest_child_at_pointer (window, &x, &y, &mods);
+
+    if (child_window && child_window != window)
+    {
+        int origin_x, origin_y;
+        int origin_child_x, origin_child_y;
+        gdk_window_get_origin (window, &origin_x, &origin_y);
+        gdk_window_get_origin (child_window, &origin_child_x, &origin_child_y);
+        x -= (origin_child_x - origin_x);
+        y -= (origin_child_y - origin_y);
+        window = child_window;
+    }
+
+    event->type = GDK_SCROLL;
+    event->scroll.window = window;
+    event->scroll.direction = (((short) HIWORD (msg->wParam)) > 0) ? GDK_SCROLL_UP : GDK_SCROLL_DOWN;
+    event->scroll.time = 0;
+    event->scroll.x = x;
+    event->scroll.y = y;
+    event->scroll.x_root = GET_X_LPARAM (msg->lParam);
+    event->scroll.y_root = GET_Y_LPARAM (msg->lParam);
+    event->scroll.state = mods;
+    event->scroll.device = gdk_device_get_core_pointer ();
+
+    return TRUE;
+}
+
+/* Synaptics touchpad is smart: it doesn't generate normal scroll events
+ * for some miraculous reason if the window doesn't have fancy scrolling
+ * window styles; instead it creates its own window to draw neat image
+ * of a scrollbar under the mouse; and sends a scroll event to the gdk
+ * window underneath. Now, gdk is smart too, it checks what window is
+ * under the mouse and does nothing if that window isn't gdk's. That window
+ * isn't gdk's because it's that neat image of a scrollbar. Thank you very
+ * much Synaptics. */
+static GdkFilterReturn
+touchpad_filter_func (GdkXEvent *xevent,
+                      GdkEvent  *event,
+                      G_GNUC_UNUSED gpointer data)
+{
+    const MSG *msg = (MSG*) xevent;
+    wchar_t class_name[256];
+    HWND mouse_hwnd;
+    POINT point;
+
+    if (msg->message != WM_MOUSEWHEEL)
+        return GDK_FILTER_CONTINUE;
+
+    point.x = GET_X_LPARAM (msg->lParam);
+    point.y = GET_Y_LPARAM (msg->lParam);
+
+    if ((mouse_hwnd = WindowFromPoint (point)) == NULL)
+        return GDK_FILTER_CONTINUE;
+
+    if (GetClassName (mouse_hwnd, class_name, G_N_ELEMENTS (class_name)) == 0 ||
+        wcscmp (class_name, L"SynTrackCursorWindowClass") != 0)
+            return GDK_FILTER_CONTINUE;
+
+    return fill_scroll_event (event, msg) ? GDK_FILTER_TRANSLATE : GDK_FILTER_CONTINUE;
+}
+
+static void
+hookup_synaptics_touchpad (void)
+{
+    gdk_window_add_filter (NULL, touchpad_filter_func, NULL);
+}
+
+#endif // GDK_WINDOWING_WIN32
+
 static int
 medit_main (int argc, char *argv[])
 {
@@ -333,6 +465,10 @@ medit_main (int argc, char *argv[])
 #endif
 
     stamp = get_time_stamp ();
+
+#ifdef GDK_WINDOWING_WIN32
+    hookup_synaptics_touchpad ();
+#endif
 
 #if 0
     gdk_window_set_debug_updates (TRUE);
