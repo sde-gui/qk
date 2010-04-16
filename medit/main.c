@@ -314,17 +314,28 @@ project_mode (const char *file)
 #ifdef GDK_WINDOWING_WIN32
 
 static GdkWindow *
-_moo_get_toplevel_window (void)
+_moo_get_toplevel_window_at_pointer (void)
 {
     GList *list, *l;
     GSList *windows = NULL;
     GtkWidget *top;
+    POINT point;
+
+    GetCursorPos (&point);
 
     list = gtk_window_list_toplevels ();
 
     for (l = list; l != NULL; l = l->next)
-        if (GTK_IS_WINDOW (l->data) && GTK_WIDGET(l->data)->window)
-            windows = g_slist_prepend (windows, l->data);
+        if (GTK_IS_WINDOW (l->data) && GTK_WIDGET (l->data)->window)
+            if (gdk_window_get_type (GTK_WIDGET (l->data)->window) == GDK_WINDOW_TOPLEVEL)
+            {
+                GdkWindow *window = GTK_WIDGET (l->data)->window;
+                HWND hwnd = GDK_WINDOW_HWND (window);
+                RECT rect;
+                GetWindowRect(hwnd, &rect);
+                if (PtInRect(&rect, point))
+                    windows = g_slist_prepend (windows, l->data);
+            }
 
     top = GTK_WIDGET (_moo_get_top_window (windows));
 
@@ -333,18 +344,71 @@ _moo_get_toplevel_window (void)
     return top ? top->window : NULL;
 }
 
+// stolen from gdkwindow-win32.c
+static GdkModifierType
+get_current_mask (void)
+{
+    GdkModifierType mask = 0;
+    BYTE kbd[256];
+
+    GetKeyboardState (kbd);
+
+    if (kbd[VK_SHIFT] & 0x80)
+        mask |= GDK_SHIFT_MASK;
+    if (kbd[VK_CAPITAL] & 0x80)
+        mask |= GDK_LOCK_MASK;
+    if (kbd[VK_CONTROL] & 0x80)
+        mask |= GDK_CONTROL_MASK;
+    if (kbd[VK_MENU] & 0x80)
+        mask |= GDK_MOD1_MASK;
+    if (kbd[VK_LBUTTON] & 0x80)
+        mask |= GDK_BUTTON1_MASK;
+    if (kbd[VK_MBUTTON] & 0x80)
+        mask |= GDK_BUTTON2_MASK;
+    if (kbd[VK_RBUTTON] & 0x80)
+        mask |= GDK_BUTTON3_MASK;
+
+    return mask;
+}
+
+// stolen from gdkwindow-win32.c
 static GdkWindow *
-get_youngest_child_at_pointer (GdkWindow       *window,
-                               int             *x,
-                               int             *y,
-                               GdkModifierType *mods)
+get_pointer (GdkWindow *window,
+             gint      *x,
+             gint      *y)
+{
+    POINT point;
+    HWND hwnd, hwndc;
+    GdkWindow *retval = window;
+    GdkWindow *child = NULL;
+
+    hwnd = GDK_WINDOW_HWND (window);
+    GetCursorPos (&point);
+    ScreenToClient (hwnd, &point);
+
+    *x = point.x;
+    *y = point.y;
+
+    hwndc = ChildWindowFromPoint (hwnd, point);
+    if (hwndc != NULL && hwndc != hwnd)
+        child = gdk_win32_handle_table_lookup ((GdkNativeWindow) hwndc);
+    if (child != NULL)
+        retval = child;
+
+    return retval;
+}
+
+static GdkWindow *
+get_youngest_child_at_pointer (GdkWindow *window,
+                               int       *x,
+                               int       *y)
 {
     gboolean first_time = TRUE;
 
     while (TRUE)
     {
         int tmp_x, tmp_y;
-        GdkWindow *child_window = gdk_window_get_pointer (window, &tmp_x, &tmp_y, mods);
+        GdkWindow *child_window = get_pointer (window, &tmp_x, &tmp_y);
 
         if (first_time)
         {
@@ -365,12 +429,11 @@ fill_scroll_event (GdkEvent  *event,
 {
     GdkWindow *window, *child_window;
     int x, y;
-    GdkModifierType mods;
 
-    if (!(window = _moo_get_toplevel_window ()))
+    if (!(window = _moo_get_toplevel_window_at_pointer ()))
         return FALSE;
 
-    child_window = get_youngest_child_at_pointer (window, &x, &y, &mods);
+    child_window = get_youngest_child_at_pointer (window, &x, &y);
 
     if (child_window && child_window != window)
     {
@@ -391,7 +454,7 @@ fill_scroll_event (GdkEvent  *event,
     event->scroll.y = y;
     event->scroll.x_root = GET_X_LPARAM (msg->lParam);
     event->scroll.y_root = GET_Y_LPARAM (msg->lParam);
-    event->scroll.state = mods;
+    event->scroll.state = get_current_mask ();
     event->scroll.device = gdk_device_get_core_pointer ();
 
     return TRUE;
