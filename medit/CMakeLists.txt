@@ -6,9 +6,14 @@ IF(MOO_ENABLE_UNIT_TESTS AND NOT WIN32)
   ADD_DEFINITIONS(-DSRCDIR="${CMAKE_SOURCE_DIR}/medit")
 ENDIF(MOO_ENABLE_UNIT_TESTS AND NOT WIN32)
 
+IF(MOO_ENABLE_PYTHON)
+  SET(moopythonlib moopython)
+ENDIF(MOO_ENABLE_PYTHON)
+
 SET(MEDIT_SOURCES mem-debug.h run-tests.h parse.h main.c)
 SET(medit_libs
   meditplugins
+  ${moopythonlib}
   moousertools
   mooapp
   smclient
@@ -28,6 +33,10 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
 ADD_EXECUTABLE(medit WIN32 ${MEDIT_SOURCES})
 TARGET_LINK_LIBRARIES(medit ${medit_libs} ${MOO_DEP_LIBS})
 INSTALL(TARGETS medit DESTINATION ${BINDIR})
+
+IF(MOO_ENABLE_PYTHON)
+  ADD_DEPENDENCIES(medit python-plugins-ini)
+ENDIF(MOO_ENABLE_PYTHON)
 
 FIND_PACKAGE(MooDesktopFile)
 MOO_INSTALL_DESKTOP_FILE(medit.desktop.in)

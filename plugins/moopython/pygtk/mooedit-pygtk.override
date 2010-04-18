@@ -22,7 +22,6 @@ headers
 #include <pygobject.h>
 #include <pygtk/pygtk.h>
 #include "mooedit/moocmdview.h"
-#include "mooedit/moocommand.h"
 #include "mooedit/mooedit.h"
 #include "mooedit/mooedit-bookmarks.h"
 #include "mooedit/mooedit-enums.h"
@@ -49,6 +48,7 @@ headers
 #include "mooedit/mootextpopup.h"
 #include "mooedit/mootextcompletion.h"
 #include "mooedit/mooedit-enums.h"
+#include "plugins/usertools/moocommand.h"
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 

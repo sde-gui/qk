@@ -16,8 +16,8 @@
 #include <config.h>
 #include "mooapp/mooapp.h"
 #include "mooedit/mooplugin.h"
-#ifdef MOO_PYTHON_BUILTIN
-#include "moopython/moopython-builtin.h"
+#ifdef MOO_ENABLE_PYTHON
+#include "plugins/moopython/moopython-builtin.h"
 #endif
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-fs.h"
@@ -66,11 +66,12 @@ MOO_DEFINE_TYPE_STATIC (MeditApp, medit_app, MOO_TYPE_APP)
 static void
 medit_app_init_plugins (G_GNUC_UNUSED MooApp *app)
 {
-#ifdef MOO_PYTHON_BUILTIN
+#ifdef MOO_ENABLE_PYTHON
     _moo_python_builtin_init ();
 #endif
     moo_plugin_init_builtin ();
     moo_plugin_read_dirs ();
+    _moo_user_tools_plugin_init ();
 }
 
 static void

@@ -12,8 +12,6 @@ import override
 import reversewrapper
 import warnings
 
-pygtk_version = 6
-
 class Coverage(object):
     def __init__(self, name):
         self.name = name
@@ -74,6 +72,8 @@ class FileOutput:
             self.filename = filename
         else:
             self.filename = self.fp.name
+        if sys.platform == 'win32':
+            self.filename = self.filename.replace('\\', '/')
     # handle writing to the file, and keep track of the line number ...
     def write(self, str):
         self.fp.write(str)
@@ -154,7 +154,7 @@ class Wrapper:
 
     getter_tmpl = (
         'static PyObject *\n'
-        '%(funcname)s(PyObject *self, void *closure)\n'
+        '%(funcname)s(PyObject *self, G_GNUC_UNUSED void *closure)\n'
         '{\n'
         '%(varlist)s'
         '    ret = %(field)s;\n'
@@ -181,8 +181,8 @@ class Wrapper:
 
     noconstructor = (
         'static int\n'
-        'pygobject_no_constructor(PyObject *self, PyObject *args, '
-        'PyObject *kwargs)\n'
+        'pygobject_no_constructor(PyObject *self, G_GNUC_UNUSED PyObject *args, '
+        'G_GNUC_UNUSED PyObject *kwargs)\n'
         '{\n'
         '    gchar buf[512];\n'
         '\n'
@@ -195,7 +195,7 @@ class Wrapper:
 
     function_tmpl = (
         'static PyObject *\n'
-        '_wrap_%(cname)s(PyObject *self%(extraparams)s)\n'
+        '_wrap_%(cname)s(G_GNUC_UNUSED PyObject *self%(extraparams)s)\n'
         '{\n'
         '%(varlist)s'
         '%(parseargs)s'
@@ -234,7 +234,7 @@ class Wrapper:
     constructor_tmpl = None
     method_tmpl = None
 
-    def __init__(self, parser, objinfo, overrides, fp=FileOutput(sys.stdout)):
+    def __init__(self, parser, objinfo, overrides, fp):
         self.parser = parser
         self.objinfo = objinfo
         self.overrides = overrides
@@ -397,7 +397,6 @@ class Wrapper:
                 data = self.overrides.override(funcname)
                 self.write_function(funcname, data)
                 self.objinfo.has_new_constructor_api = (
-                    pygtk_version >= 8 and
                     self.objinfo.typecode in
                     self.overrides.newstyle_constructors)
             else:
@@ -405,7 +404,7 @@ class Wrapper:
                 # new-style constructores :P
                 property_based = getattr(self,
                                          'write_property_based_constructor',
-                                         None) and pygtk_version >= 8
+                                         None)
                 if property_based:
                     if (len(constructor.params) == 0 or
                         isinstance(constructor.params[0],
@@ -947,7 +946,7 @@ class GObjectWrapper(Wrapper):
         '%(codeafter)s\n'
         '}\n\n'
         )
-    def __init__(self, parser, objinfo, overrides, fp=FileOutput(sys.stdout)):
+    def __init__(self, parser, objinfo, overrides, fp):
         Wrapper.__init__(self, parser, objinfo, overrides, fp)
         if self.objinfo:
             self.castmacro = string.replace(self.objinfo.typecode,
@@ -986,8 +985,8 @@ class GObjectWrapper(Wrapper):
             ## just like the constructor is inheritted, we should
             # inherit the new API compatibility flag
             self.objinfo.has_new_constructor_api = (
-                pygtk_version >= 8 and parent.has_new_constructor_api)
-        elif self.objinfo.parent == 'GObject' and pygtk_version >= 8:
+                parent.has_new_constructor_api)
+        elif self.objinfo.parent == 'GObject':
             self.objinfo.has_new_constructor_api = True
         return '0'
 
@@ -1328,7 +1327,7 @@ class GPointerWrapper(GBoxedWrapper):
         return substdict
 
 class SourceWriter:
-    def __init__(self, parser, overrides, prefix, fp=FileOutput(sys.stdout)):
+    def __init__(self, parser, overrides, prefix, fp):
         self.parser = parser
         self.overrides = overrides
         self.prefix = prefix
@@ -1656,12 +1655,13 @@ usage = 'usage: codegen.py [-o overridesfile] [-p prefix] defsfile'
 def main(argv):
     o = override.Overrides()
     prefix = 'pygtk'
+    outfile = None
     outfilename = None
     errorfilename = None
     opts, args = getopt.getopt(argv[1:], "o:p:r:t:D:I:",
-                        ["override=", "prefix=", "register=", "outfilename=",
+                        ["override=", "prefix=", "register=", "outfile=", "outfilename=",
                          "load-types=", "errorfilename=", "py_ssize_t-clean", 
-                         "platform=", "pygtk-version="])
+                         "platform="])
     defines = {} # -Dkey[=val] options
     py_ssize_t_clean = False
     for opt, arg in opts:
@@ -1675,17 +1675,14 @@ def main(argv):
             p.startParsing()
             register_types(p)
             del p
+        elif opt == '--outfile':
+            outfile = arg
         elif opt == '--outfilename':
             outfilename = arg
         elif opt == '--errorfilename':
             errorfilename = arg
         elif opt == '--platform':
             sys.platform = arg
-        elif opt == '--pygtk-version':
-            global pygtk_version
-            pygtk_version = int(arg)
-            if pygtk_version < 8:
-                defines['pygtk-2.6'] = '1'
         elif opt in ('-t', '--load-types'):
             globals = {}
             execfile(arg, globals)
@@ -1712,7 +1709,11 @@ def main(argv):
     p.startParsing()
 
     register_types(p)
-    sw = SourceWriter(p, o, prefix, FileOutput(sys.stdout, outfilename))
+    if outfile is None:
+        fp = sys.stdout
+    else:
+        fp = open(outfile, 'w')
+    sw = SourceWriter(p, o, prefix, FileOutput(fp, outfilename))
     sw.write(py_ssize_t_clean)
 
     functions_coverage.printstats()

@@ -20,6 +20,12 @@
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
 #include <string.h>
+#include <stdlib.h>
+#ifdef __WIN32__
+#include <fcntl.h>
+#include <io.h>
+#endif
+#include <glib/gstdio.h>
 
 #include "moopython/moopython-loader.h"
 #include "mooutils/mooutils-misc.h"
@@ -103,20 +109,89 @@ sys_path_add_plugin_dirs (void)
 }
 
 
+/* Python doesn't like \r characters in the text passed to Py_CompileString() */
+static char *
+get_text_contents (const char *path)
+{
+#if 1 && defined(__WIN32__)
+    int fd = -1;
+    GIOChannel *io = NULL;
+    GString *content = NULL;
+    GString *buffer = NULL;
+    gsize terminator_pos;
+    char *contents = NULL;
+    GIOStatus status;
+
+    if ((fd = g_open (path, _O_RDONLY | _O_BINARY, 0)) == -1)
+    {
+        moo_warning ("could not read file '%s'", path);
+        goto out;
+    }
+
+    io = g_io_channel_win32_new_fd (fd);
+    if (!io)
+    {
+        moo_critical ("oops");
+        goto out;
+    }
+
+    content = g_string_new (NULL);
+    buffer = g_string_new (NULL);
+
+    while ((status = g_io_channel_read_line_string (io, buffer, &terminator_pos, NULL)) == G_IO_STATUS_NORMAL)
+    {
+        g_string_append_len (content, buffer->str, terminator_pos);
+        if (buffer->len > terminator_pos)
+            g_string_append_len (content, "\n", 1);
+    }
+
+    if (status == G_IO_STATUS_ERROR)
+    {
+        moo_warning ("error reading file '%s'", path);
+        goto out;
+    }
+
+    contents = g_string_free (content, FALSE);
+    content = NULL;
+
+out:
+    if (content)
+        g_string_free (content, TRUE);
+    if (buffer)
+        g_string_free (buffer, TRUE);
+    if (io)
+    {
+        g_io_channel_shutdown (io, FALSE, NULL);
+        g_io_channel_unref (io);
+    }
+    if (fd != -1)
+        close (fd);
+    return contents;
+#else
+    char *content = NULL;
+    GError *error = NULL;
+    if (!g_file_get_contents (path, &content, NULL, &error))
+    {
+        moo_warning ("could not read file '%s': %s", path, error->message);
+        g_error_free (error);
+        return NULL;
+    }
+    else
+    {
+        return content;
+    }
+#endif
+}
+
 static PyObject *
 do_load_file (const char *path)
 {
     PyObject *mod = NULL;
     PyObject *code;
     char *modname = NULL, *content = NULL;
-    GError *error = NULL;
 
-    if (!g_file_get_contents (path, &content, NULL, &error))
-    {
-        g_warning ("could not read file '%s': %s", path, error->message);
-        g_error_free (error);
+    if (!(content = get_text_contents (path)))
         return NULL;
-    }
 
     modname = g_strdup_printf ("moo_module_%08x", g_random_int ());
     code = Py_CompileString (content, path, Py_file_input);
@@ -160,7 +235,7 @@ do_load_file (const char *path)
             PyErr_Restore(type, value, traceback);
         }
 
-        g_warning ("error when loading file '%s'", path);
+        g_printerr ("error when loading file '%s'", path);
         PyErr_Print ();
         goto out;
     }

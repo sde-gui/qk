@@ -66,6 +66,8 @@ MOO_GEN_GXML(
 
 MOO_ADD_LIBRARY(meditplugins)
 
-# ADD_SUBDIRECTORY(moopython)
+IF(MOO_ENABLE_PYTHON)
+  ADD_SUBDIRECTORY(moopython)
+ENDIF(MOO_ENABLE_PYTHON)
 
 # -%- strip:true -%-

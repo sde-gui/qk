@@ -7,6 +7,30 @@ IF(ENABLE_NLS)
   ENDIF(NOT GETTEXT_FOUND)
 ENDIF(ENABLE_NLS)
 
+MACRO(MOO_TRANSFORM_INI_FILES outvar)
+  FOREACH(_moo_ini_in_in_file ${ARGN})
+    SET(_moo_ini_in_in_file_abs ${CMAKE_CURRENT_SOURCE_DIR}/${_moo_ini_in_in_file})
+    STRING(REPLACE ".ini.in.in" ".ini.in" _moo_ini_in_file ${_moo_ini_in_in_file})
+    SET(_moo_ini_in_file ${CMAKE_CURRENT_BINARY_DIR}/${_moo_ini_in_file})
+    CONFIGURE_FILE(${_moo_ini_in_in_file} ${_moo_ini_in_file})
+    STRING(REPLACE ".ini.in.in" ".ini" _moo_ini_file ${_moo_ini_in_in_file})
+    SET(_moo_ini_file ${_moo_ini_file})
+    LIST(APPEND ${outvar} ${CMAKE_CURRENT_BINARY_DIR}/${_moo_ini_file})
+    IF(ENABLE_NLS)
+      ADD_CUSTOM_COMMAND(OUTPUT ${_moo_ini_file}
+                         COMMAND ${INTLTOOL_MERGE_COMMAND} -d -u -c ${CMAKE_BINARY_DIR}/po/.intltool-merge-cache ${CMAKE_SOURCE_DIR}/po ${_moo_ini_in_file} ${_moo_ini_file}
+                         DEPENDS ${_moo_ini_in_file})
+    ELSE(ENABLE_NLS)
+      ADD_CUSTOM_COMMAND(OUTPUT ${_moo_ini_file}
+                         COMMAND ${MOO_CMAKE_COMMAND} -D MOO_OS_BSD=${MOO_OS_BSD}
+                                                      -D INPUT_FILE=${_moo_ini_in_file}
+                                                      -D OUTPUT_FILE=${_moo_ini_file}
+                                                      -P ${CMAKE_SOURCE_DIR}/moo/mooutils/moo-intltool-merge.cmake
+                         DEPENDS ${_moo_ini_in_file})
+    ENDIF(ENABLE_NLS)
+  ENDFOREACH(_moo_ini_in_in_file)
+ENDMACRO(MOO_TRANSFORM_INI_FILES)
+
 MACRO(MOO_ADD_MSG_CATALOG catalogname dir)
   IF(ENABLE_NLS)
     FILE(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${dir})
@@ -36,13 +60,17 @@ IF(ENABLE_NLS)
         FIND_FILE(${var} ${script})
       ENDIF(NOT "${var}")
     ENDMACRO(_MOO_FIND_INTLTOOL_VAR)
-    _MOO_FIND_INTLTOOL_VAR(INTLTOOL_UPDATE intltool-update)
-    _MOO_FIND_INTLTOOL_VAR(INTLTOOL_EXTRACT intltool-extract)
-    _MOO_FIND_INTLTOOL_VAR(INTLTOOL_MERGE intltool-merge)
-    CONFIGURE_FILE(${MOO_SOURCE_DIR}/plat/win32/intltool-wrapper.bat.in ${MOO_BINARY_DIR}/intltool-wrapper.bat)
-    SET(INTLTOOL_UPDATE_COMMAND ${MOO_BINARY_DIR}/intltool-wrapper.bat)
+    FOREACH(_moo_i18n_tool update extract merge)
+      STRING(TOUPPER ${_moo_i18n_tool} _moo_i18n_TOOL)
+      _MOO_FIND_INTLTOOL_VAR(INTLTOOL_${_moo_i18n_TOOL} intltool-${_moo_i18n_tool})
+      SET(__MOO_INTLTOOL_SCRIPT ${INTLTOOL_${_moo_i18n_TOOL}})
+      CONFIGURE_FILE(${MOO_SOURCE_DIR}/plat/win32/intltool-wrapper.bat.in ${MOO_BINARY_DIR}/intltool-${_moo_i18n_tool}-wrapper.bat)
+      SET(INTLTOOL_${_moo_i18n_TOOL}_COMMAND ${MOO_BINARY_DIR}/intltool-${_moo_i18n_tool}-wrapper.bat)
+    ENDFOREACH(_moo_i18n_tool)
   ELSE(WIN32)
     FIND_PROGRAM(INTLTOOL_UPDATE_COMMAND intltool-update)
+    FIND_PROGRAM(INTLTOOL_MERGE_COMMAND intltool-merge)
+    FIND_PROGRAM(INTLTOOL_EXTRACT_COMMAND intltool-extract)
   ENDIF(WIN32)
 
   SET(MOO_PO_DIR ${MOO_SOURCE_DIR}/po)

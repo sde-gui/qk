@@ -54,7 +54,7 @@ void         _moo_py_init_print_funcs       (void);
 /* avoid strict aliasing warnings */
 #define return_True     return PyBool_FromLong (TRUE)
 #define return_False    return PyBool_FromLong (FALSE)
-#define return_Bool(v)  return PyBool_FromLong ((v) && TRUE)
+#define return_Bool(v)  return PyBool_FromLong ((v) != 0)
 
 #define return_Int(v)   return PyInt_FromLong (v)
 
