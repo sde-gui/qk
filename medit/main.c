@@ -329,7 +329,6 @@ _moo_get_toplevel_window_at_pointer (void)
     for (l = list; l != NULL; l = l->next)
     {
         HWND hwnd;
-        WINDOWPLACEMENT placement = { sizeof placement };
         RECT rect = { 0 };
         GdkWindow *window = GTK_WIDGET (l->data)->window;
 
@@ -337,12 +336,9 @@ _moo_get_toplevel_window_at_pointer (void)
             continue;
 
         hwnd = GDK_WINDOW_HWND (window);
-        GetWindowPlacement(hwnd, &placement);
         GetWindowRect(hwnd, &rect);
-        if (placement.showCmd != SW_SHOWMINIMIZED
-            && placement.showCmd != SW_HIDE
-            && PtInRect(&rect, point))
-                windows = g_slist_prepend (windows, l->data);
+        if (IsWindowVisible(hwnd) && PtInRect(&rect, point))
+            windows = g_slist_prepend (windows, l->data);
     }
 
     top = windows ? GTK_WIDGET (_moo_get_top_window (windows)) : NULL;
