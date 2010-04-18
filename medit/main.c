@@ -390,7 +390,7 @@ get_pointer (GdkWindow *window,
     *x = point.x;
     *y = point.y;
 
-    hwndc = ChildWindowFromPoint (hwnd, point);
+    hwndc = ChildWindowFromPointEx (hwnd, point, CWP_SKIPINVISIBLE);
     if (hwndc != NULL && hwndc != hwnd)
         child = gdk_win32_handle_table_lookup ((GdkNativeWindow) hwndc);
     if (child != NULL)
