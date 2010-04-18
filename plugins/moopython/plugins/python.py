@@ -88,7 +88,8 @@ class Plugin(moo.edit.Plugin):
         console.set_property("highlight-current-line", False)
         editor = moo.edit.editor_instance()
         console.set_lang_by_id("python-console")
-        console.modify_font(pango.FontDescription("Monospace"))
+        font = moo.utils.prefs_get_string("Editor/font") or "Monospace"
+        console.modify_font(pango.FontDescription(font))
 
         swin.add(console)
         window.set_default_size(400,300)
