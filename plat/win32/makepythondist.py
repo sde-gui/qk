@@ -35,12 +35,10 @@ def trim(pythondir):
                              "Win32 Python directory" % (pythondir,)
         return 1
 
-    for d in ('Doc', 'include', 'libs', 'Scripts', 'share', 'tcl'):
+    for d in ('Doc', 'include', 'libs', 'Scripts', 'share', 'tcl', 'Tools'):
         remove_file(make_path(d))
     remove_file(make_path('NEWS.txt'))
     remove_files(pythondir, 'w9xpopen.exe', '*-wininst.log', 'Remove*.exe')
-
-    remove_file(make_path('Tools', 'pynche'))
 
     for f in ('_ctypes_test.pyd', '_testcapi.pyd', '_tkinter.pyd',
               'tcl[0-9]*.dll', 'tclpip[0-9]*.dll', 'tk[0-9]*.dll'):
@@ -99,7 +97,7 @@ def makedist(srcdir, destdir):
     os.mkdir(os.path.join(destdir, 'lib', 'python'))
     copyfiles('*.exe', '*.dll', 'bin')
     copyfiles('*.txt', 'lib\\python')
-    copyfiles('DLLs', 'Tools', 'lib\\python')
+    copyfiles('DLLs', 'lib\\python')
 
     pylib_path = os.path.join(destdir, 'bin', 'Lib')
     pyzip_path = os.path.join(destdir, 'bin', pydll + '.zip')
