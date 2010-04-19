@@ -1,6 +1,6 @@
-diff -r 0ba2c505d055 gettext-runtime/intl/Makefile.in
---- a/gettext-runtime/intl/Makefile.in	Wed Mar 31 21:28:19 2010 -0700
-+++ b/gettext-runtime/intl/Makefile.in	Wed Mar 31 21:45:49 2010 -0700
+diff -r 439dca74c595 gettext-runtime/intl/Makefile.in
+--- a/gettext-runtime/intl/Makefile.in	Sun Apr 18 20:59:03 2010 -0700
++++ b/gettext-runtime/intl/Makefile.in	Sun Apr 18 21:04:03 2010 -0700
 @@ -280,15 +280,11 @@
  # so that they work with the sed-3.02 that is shipped with MSYS. We can use
  # GNU bash's $'\n' syntax to obtain such a newline.
@@ -20,3 +20,36 @@ diff -r 0ba2c505d055 gettext-runtime/intl/Makefile.in
  	  -i $(srcdir)/libintl.rc -o libintl.res --output-format=coff
  
  ref-add.sed: $(srcdir)/ref-add.sin
+diff -r 439dca74c595 gettext-tools/Makefile.in
+--- a/gettext-tools/Makefile.in	Sun Apr 18 20:59:03 2010 -0700
++++ b/gettext-tools/Makefile.in	Sun Apr 18 21:04:03 2010 -0700
+@@ -724,7 +724,7 @@
+ top_srcdir = @top_srcdir@
+ AUTOMAKE_OPTIONS = 1.5 gnu no-dependencies
+ ACLOCAL_AMFLAGS = -I m4 -I ../gettext-runtime/m4 -I ../autoconf-lib-link/m4 -I ../m4 -I gnulib-m4 -I libgettextpo/gnulib-m4
+-SUBDIRS = doc intl gnulib-lib libgrep src libgettextpo po projects styles misc man m4 tests gnulib-tests examples
++SUBDIRS = intl gnulib-lib libgrep src libgettextpo po misc m4
+ 
+ # Allow users to use "gnulib-tool --update".
+ 
+diff -r 439dca74c595 gettext-tools/configure
+--- a/gettext-tools/configure	Sun Apr 18 20:59:03 2010 -0700
++++ b/gettext-tools/configure	Sun Apr 18 21:04:03 2010 -0700
+@@ -1261,7 +1261,7 @@
+ FFLAGS
+ EMACS
+ EMACSLOADPATH'
+-ac_subdirs_all='examples'
++ac_subdirs_all=
+ 
+ # Initialize some variables set by options.
+ ac_init_help=
+@@ -65980,7 +65980,7 @@
+ 
+ EOF
+ 
+-subdirs="$subdirs examples"
++subdirs="$subdirs"
+ 
+ 
+ ac_config_files="$ac_config_files Makefile"
