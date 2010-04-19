@@ -1,0 +1,48 @@
+diff -r 8aa2ae581874 Makefile.in
+--- a/Makefile.in	Mon Mar 29 03:16:03 2010 -0700
++++ b/Makefile.in	Mon Mar 29 03:18:54 2010 -0700
+@@ -401,7 +401,7 @@
+ 	gio-2.0-uninstalled.pc.in gio-unix-2.0-uninstalled.pc.in
+ TEST_PROGS = 
+ AUTOMAKE_OPTIONS = 1.7
+-SUBDIRS = . m4macros glib gmodule gthread gobject gio tests po docs
++SUBDIRS = . m4macros glib gmodule gthread gobject gio po
+ DIST_SUBDIRS = $(SUBDIRS) build
+ bin_SCRIPTS = glib-gettextize
+ AM_CPPFLAGS = \
+diff -r 8aa2ae581874 gio/Makefile.in
+--- a/gio/Makefile.in	Mon Mar 29 03:16:03 2010 -0700
++++ b/gio/Makefile.in	Mon Mar 29 03:18:54 2010 -0700
+@@ -492,7 +492,7 @@
+ TEST_PROGS = 
+ NULL = 
+ SUBDIRS = $(am__append_1) $(am__append_2) $(am__append_6) \
+-	$(am__append_9) . $(am__append_12) tests
++	$(am__append_9) . $(am__append_12)
+ @MS_LIB_AVAILABLE_TRUE@@OS_WIN32_AND_DLL_COMPILATION_TRUE@noinst_DATA = gio-2.0.lib
+ @MS_LIB_AVAILABLE_TRUE@@OS_WIN32_AND_DLL_COMPILATION_TRUE@install_ms_lib_cmd = $(INSTALL) gio-2.0.lib $(DESTDIR)$(libdir)
+ @MS_LIB_AVAILABLE_TRUE@@OS_WIN32_AND_DLL_COMPILATION_TRUE@uninstall_ms_lib_cmd = -rm $(DESTDIR)$(libdir)/gio-2.0.lib
+diff -r 8aa2ae581874 glib/Makefile.in
+--- a/glib/Makefile.in	Mon Mar 29 03:16:03 2010 -0700
++++ b/glib/Makefile.in	Mon Mar 29 03:18:54 2010 -0700
+@@ -486,7 +486,7 @@
+ @ENABLE_REGEX_TRUE@gregex_c = gregex.c
+ @ENABLE_REGEX_FALSE@gregex_h = 
+ @ENABLE_REGEX_TRUE@gregex_h = gregex.h
+-SUBDIRS = libcharset $(PRINTF_SUBDIR) $(MAYBE_PCRE) update-pcre . tests
++SUBDIRS = libcharset $(PRINTF_SUBDIR) $(MAYBE_PCRE) update-pcre .
+ DIST_SUBDIRS = libcharset gnulib pcre update-pcre tests
+ AM_CPPFLAGS = \
+ 	-I$(top_srcdir) 		\
+diff -r 8aa2ae581874 gobject/Makefile.in
+--- a/gobject/Makefile.in	Mon Mar 29 03:16:03 2010 -0700
++++ b/gobject/Makefile.in	Mon Mar 29 03:18:54 2010 -0700
+@@ -416,7 +416,7 @@
+ # GObject - GLib Type, Object, Parameter and Signal Library
+ # Copyright (C) 1997,98,99,2000 Tim Janik and Red Hat, Inc.
+ #
+-SUBDIRS = . tests
++SUBDIRS = .
+ AM_CPPFLAGS = \
+ 	-DG_LOG_DOMAIN=\"GLib-GObject\"		\
+ 	-I$(top_srcdir)				\

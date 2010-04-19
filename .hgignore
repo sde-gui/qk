@@ -1,4 +1,10 @@
 syntax: glob
+plat/win32/gtk-win/jhbuild/
+plat/win32/gtk-win/debug/
+plat/win32/gtk-win/release/
+plat/win32/gtk-win/tarballs/
+plat/win32/gtk-win/*.log
+plat/win32/gtk-win/*~
 .git/
 build/
 *-old

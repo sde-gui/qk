@@ -1,0 +1,57 @@
+diff -r 4c5c554a25a3 main.c
+--- a/main.c	Fri Apr 09 22:52:32 2010 -0700
++++ b/main.c	Fri Apr 09 22:57:53 2010 -0700
+@@ -38,9 +38,9 @@
+ 
+ #ifdef G_OS_WIN32
+ /* No hardcoded paths in the binary, thanks */
+-#undef PKGLIBDIR
++#undef PKG_CONFIG_PC_PATH
+ /* It's OK to leak this, as PKGLIBDIR is invoked only once */
+-#define PKG_CONFIG_PATH g_strconcat (g_win32_get_package_installation_directory (PACKAGE, NULL), "\\lib\\pkgconfig", NULL)
++#define PKG_CONFIG_PC_PATH g_strconcat (g_win32_get_package_installation_directory (NULL, NULL), "\\lib\\pkgconfig", NULL)
+ #endif
+ 
+ static int want_debug_spew = 0;
+@@ -262,8 +262,6 @@
+     { "dont-define-prefix", 0, POPT_ARG_NONE, &dont_define_prefix, 0,
+       "don't try to override the value of prefix for each .pc file found with "
+       "a guesstimated value based on the location of the .pc file" },
+-    { "prefix-variable", 0, POPT_ARG_STRING, &prefix_variable, 0,
+-      "set the name of the variable that pkg-config automatically sets", "PREFIX" },
+     { "msvc-syntax", 0, POPT_ARG_NONE, &msvc_syntax, 0,
+       "output -l and -L flags for the Microsoft compiler (cl)" },
+ #endif
+diff -r 4c5c554a25a3 parse.c
+--- a/parse.c	Fri Apr 09 22:52:32 2010 -0700
++++ b/parse.c	Fri Apr 09 22:57:53 2010 -0700
+@@ -35,7 +35,6 @@
+ 
+ #ifdef G_OS_WIN32
+ int dont_define_prefix = FALSE;
+-char *prefix_variable = "prefix";
+ int msvc_syntax = FALSE;
+ #endif
+ 
+@@ -1002,7 +1001,8 @@
+         pkg->vars = g_hash_table_new (g_str_hash, g_str_equal);
+ 
+ #ifdef G_OS_WIN32
+-      if (!dont_define_prefix && strcmp (tag, prefix_variable) == 0)
++      if (!dont_define_prefix &&
++	  (strcmp (tag, "prefix") == 0 || strcmp (tag, "exec_prefix") == 0))
+ 	{
+ 	  /* This is the prefix variable. Try to guesstimate a value for it
+ 	   * for this package from the location of the .pc file.
+diff -r 4c5c554a25a3 pkg.h
+--- a/pkg.h	Fri Apr 09 22:52:32 2010 -0700
++++ b/pkg.h	Fri Apr 09 22:57:53 2010 -0700
+@@ -129,8 +129,6 @@
+ /* If TRUE, do not automatically define "prefix"  while
+  * parsing each .pc file */
+ extern int dont_define_prefix;
+-/* The name of the variable that acts as prefix, unless it is "prefix" */
+-extern char *prefix_variable;
+ 
+ /* If TRUE, output flags in MSVC syntax. */
+ extern int msvc_syntax;

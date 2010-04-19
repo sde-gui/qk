@@ -1,0 +1,25 @@
+diff -r 285b88e9ad9a configure
+--- a/configure	Sat Apr 03 19:37:16 2010 -0700
++++ b/configure	Sat Apr 03 19:38:17 2010 -0700
+@@ -2391,7 +2391,9 @@
+ test -n "$target_alias" &&
+   test "$program_prefix$program_suffix$program_transform_name" = \
+     NONENONEs,x,x, &&
+-  program_prefix=${target_alias}-
++  program_prefix=NONE
++  # this is caused by using AC_CANONYCAL_SYSTEM instead of AC_CANONICAL_HOST -- muntyan
++  # program_prefix=${target_alias}-
+ 
+ am__api_version='1.11'
+ 
+diff -r 285b88e9ad9a src/glade-3.rc.in
+--- a/src/glade-3.rc.in	Sat Apr 03 19:37:16 2010 -0700
++++ b/src/glade-3.rc.in	Sat Apr 03 19:38:17 2010 -0700
+@@ -1,6 +1,6 @@
+ #include <winver.h>                      
+ 
+-GLADE_ICON		ICON		"../data/icons/glade-3.ico"
++GLADE_ICON		ICON		"@srcdir@/../data/icons/glade-3.ico"
+ 
+ VS_VERSION_INFO VERSIONINFO
+   FILEVERSION     @GLADE_MAJOR_VERSION@,@GLADE_MINOR_VERSION@,@GLADE_MICRO_VERSION@,0

@@ -1,0 +1,12 @@
+diff -r 08e95f500056 Makefile.in
+--- a/Makefile.in	Wed Mar 31 22:49:52 2010 -0700
++++ b/Makefile.in	Wed Mar 31 22:51:00 2010 -0700
+@@ -326,7 +326,7 @@
+ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+-SUBDIRS = pango modules pango-view examples docs tools tests
++SUBDIRS = pango modules pango-view docs tools
+ EXTRA_DIST = \
+ 	autogen.sh		\
+ 	pango.pc.in		\

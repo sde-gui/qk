@@ -1,0 +1,144 @@
+# -*- python -*-
+
+_gtkwindir = os.environ['_GTKWINDIR']
+_gtkwinjhbuilddir = os.path.join(_gtkwindir, 'jhbuildrc')
+
+_gtkwinconfig = os.environ.get('_GTKWINCONFIG')
+if _gtkwinconfig is None:
+    _gtkwinconfig = 'release'
+else:
+    _gtkwinconfig = _gtkwinconfig.lower()
+assert _gtkwinconfig in ['debug', 'release']
+
+_mingw_tool_prefix = '/usr/bin/i586-mingw32msvc-'
+
+moduleset = os.path.join(_gtkwinjhbuilddir, 'gtk.moduleset')
+
+modules = ['medit-gtk-win']
+
+checkoutroot = os.path.join(_gtkwindir, _gtkwinconfig, 'source')
+buildroot = os.path.join(_gtkwindir, _gtkwinconfig, 'build')
+prefix = os.path.join(_gtkwindir, _gtkwinconfig, 'target')
+tarballdir = os.path.join(_gtkwindir, 'tarballs')
+
+os.environ['prefix'] = prefix
+
+os.environ['JHBUILD_PROMPT'] = r'JHBUILD:\w\$ '
+
+_mingw_tools = {
+    'ADDR2LINE': 'addr2line',
+    'AS': 'as',
+    'CC': 'gcc',
+    'CPP': 'cpp',
+    'CPPFILT': 'c++filt',
+    'CXX': 'g++',
+    'DLLTOOL': 'dlltool',
+    'DLLWRAP': 'dllwrap',
+    'GCOV': 'gcov',
+    'LD': 'ld',
+    'NM': 'nm',
+    'OBJCOPY': 'objcopy', 
+    'OBJDUMP': 'objdump',
+    'READELF': 'readelf',
+    'SIZE': 'size',
+    'STRINGS': 'strings', 
+    'WINDRES': 'windres',
+    'RC': 'windres',
+    'AR': 'ar',
+    'RANLIB': 'ranlib', 
+    'STRIP': 'strip',
+}
+
+for _var in _mingw_tools:
+    os.environ[_var] = _mingw_tool_prefix + _mingw_tools[_var]
+
+if _gtkwinconfig == 'debug':
+    _def_cflags = '-gstabs'
+else:
+    _def_cflags = '-O2'
+
+# os.environ['LDFLAGS'] = "-L%s/lib" % (prefix,)
+# os.environ['CPPFLAGS'] = "-I%s/include" % (prefix,)
+# os.environ['CFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
+# os.environ['CXXFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
+# os.environ['OBJCFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
+os.environ['CFLAGS'] = "-mms-bitfields -march=i686 %s" % (_def_cflags,)
+os.environ['CXXFLAGS'] = "-mms-bitfields -march=i686 %s" % (_def_cflags,)
+os.environ['OBJCFLAGS'] = "-mms-bitfields -march=i686 %s" % (_def_cflags,)
+
+os.environ['PKG_CONFIG_LIBDIR'] = "%s/lib/pkgconfig" % (prefix,)
+os.environ['PKG_CONFIG_PATH'] = "%s/lib/pkgconfig" % (prefix,)
+
+os.environ['INSTALL']  = 'install-check'
+
+#Populating autogenargs
+
+_configure_target = 'i586-pc-mingw32msvc'
+_configure_build = 'i686-pc-linux-gnu'
+
+autogenargs  = ' --build=' + _configure_build
+autogenargs += ' --host=' + _configure_target
+autogenargs += ' --target=' + _configure_target
+autogenargs += ' --disable-docs --disable-gtk-doc --disable-scrollkeeper'
+autogenargs += ' --enable-maintainer-mode --enable-shared --disable-static'
+autogenargs += ' --enable-relocatable --disable-glibtest'
+for _var in ['AR', 'RANLIB', 'STRIP', 'AS', 'DLLTOOL', 'OBJDUMP', 'NM', 'WINDRES', 'RC']:
+    autogenargs += ' ' + _var + '="' + os.environ[_var] + '" '
+
+# zlib uses custom configure script which doesn't ignore unknown options
+module_autogenargs['zlib'] = "--static"
+
+module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
+					    + " --disable-java" \
+					    + " --disable-csharp" \
+					    + " --with-included-gettext" \
+					    + " --without-libexpat-prefix" \
+					    + " --without-libxml2-prefix" \
+					    + " --without-libglib-2.0-prefix"
+if _gtkwinconfig == 'debug':
+    module_autogenargs['gettext'] += " CPPFLAGS=-DHAVE_INLINE"
+
+module_autogenargs['libxml2'] = autogenargs + " --without-python" \
+                                            + " --without-zlib"
+
+module_autogenargs['pkgconfig'] = autogenargs \
+                                            + " --with-installed-glib"
+
+_glib_win32_cache = os.path.join(_gtkwinjhbuilddir, 'glib-win32.cache')
+module_autogenargs['glib'] =    autogenargs + " --cache-file=" + _glib_win32_cache \
+                                            + " --with-pcre=internal" \
+					    + " --with-threads=win32" \
+					    + " --disable-fam" \
+					    + " --disable-selinux"
+
+module_autogenargs['cairo'] =   autogenargs + " --without-x" \
+					    + " --disable-ft" \
+					    + " png_REQUIRES=libpng"
+
+module_autogenargs['pango'] =   autogenargs + " --with-included-modules"
+
+module_autogenargs['gtk+-2.16'] = autogenargs \
+                                            + " --without-libjpeg" \
+                                            + " --without-libtiff" \
+					    + " --disable-cups" \
+					    + " --without-libjasper" \
+					    + " --disable-gdiplus" \
+					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
+                                            + " --with-included-immodules" \
+                                            + " --disable-introspection"
+module_autogenargs['gtk+-2.18'] = autogenargs \
+                                            + " --without-libjpeg" \
+                                            + " --without-libtiff" \
+					    + " --disable-cups" \
+					    + " --without-libjasper" \
+					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
+                                            + " --with-included-immodules" \
+                                            + " --disable-introspection"
+module_autogenargs['gtk+-2.20'] = autogenargs \
+                                            + " --without-libjpeg" \
+                                            + " --without-libtiff" \
+					    + " --disable-cups" \
+					    + " --without-libjasper" \
+					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
+                                            + " --with-included-immodules" \
+                                            + " --disable-introspection"

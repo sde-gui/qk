@@ -1,0 +1,45 @@
+diff -r dee419cb923e intltool-extract.in
+--- a/intltool-extract.in	Sat Apr 17 17:42:56 2010 -0700
++++ b/intltool-extract.in	Sat Apr 17 18:39:54 2010 -0700
+@@ -1,4 +1,4 @@
+-#!@INTLTOOL_PERL@ -w 
++#!@INTLTOOL_PERL@
+ # -*- Mode: perl; indent-tabs-mode: nil; c-basic-offset: 4  -*-
+ 
+ #
+diff -r dee419cb923e intltool-merge.in
+--- a/intltool-merge.in	Sat Apr 17 17:42:56 2010 -0700
++++ b/intltool-merge.in	Sat Apr 17 18:39:54 2010 -0700
+@@ -1,4 +1,4 @@
+-#!@INTLTOOL_PERL@ -w
++#!@INTLTOOL_PERL@
+ # -*- Mode: perl; indent-tabs-mode: nil; c-basic-offset: 4  -*-
+ 
+ #
+diff -r dee419cb923e intltool-prepare.in
+--- a/intltool-prepare.in	Sat Apr 17 17:42:56 2010 -0700
++++ b/intltool-prepare.in	Sat Apr 17 18:39:54 2010 -0700
+@@ -1,4 +1,4 @@
+-#!@INTLTOOL_PERL@ -w
++#!@INTLTOOL_PERL@
+ # -*- Mode: perl; indent-tabs-mode: nil; c-basic-offset: 4  -*-
+ 
+ #  Intltool .desktop, .directory Prepare Tool
+diff -r dee419cb923e intltool-update.in
+--- a/intltool-update.in	Sat Apr 17 17:42:56 2010 -0700
++++ b/intltool-update.in	Sat Apr 17 18:39:54 2010 -0700
+@@ -1,4 +1,4 @@
+-#!@INTLTOOL_PERL@ -w
++#!@INTLTOOL_PERL@
+ # -*- Mode: perl; indent-tabs-mode: nil; c-basic-offset: 4  -*-
+ 
+ #
+@@ -287,7 +287,7 @@
+ sub TextFile_DetermineEncoding ($)
+ {
+     my $gettext_code="UTF-8"; # All files are UTF-8 by default
+-    my $filetype=`file $_ | cut -d ' ' -f 2`;
++    my $filetype=`file $_ | cut -d " " -f 2`;
+ 
+     if ($? eq "0")
+     {

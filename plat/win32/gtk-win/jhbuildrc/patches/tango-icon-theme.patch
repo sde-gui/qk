@@ -1,0 +1,29 @@
+diff -r f023abf1ec11 configure
+--- a/configure	Sat Apr 10 18:02:49 2010 -0700
++++ b/configure	Sat Apr 10 18:03:22 2010 -0700
+@@ -6454,25 +6454,6 @@
+ 
+ 
+ if test "x$enable_framing" = "xyes"; then
+-   if test -n "$PKG_CONFIG" && \
+-    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"ImageMagick >= 5.5.7\"") >&5
+-  ($PKG_CONFIG --exists --print-errors "ImageMagick >= 5.5.7") 2>&5
+-  ac_status=$?
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); }; then
+-  enable_framing=yes
+-else
+-  if test -n "$PKG_CONFIG" && \
+-    { (echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"GraphicsMagick >= 1.1\"") >&5
+-  ($PKG_CONFIG --exists --print-errors "GraphicsMagick >= 1.1") 2>&5
+-  ac_status=$?
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); }; then
+-  enable_framing=yes
+-else
+-  enable_framing=no
+-fi
+-fi
+    if test "x$enable_framing" = "xyes"; then
+       # Extract the first word of "convert", so it can be a program name with args.
+ set dummy convert; ac_word=$2
