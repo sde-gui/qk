@@ -456,63 +456,6 @@ moo_python_api_py_arg_parse_tuple (MooPyObject *args,
 }
 
 
-#ifdef __WIN32__
-
-static gboolean
-sys_path_add_dir (const char *dir)
-{
-    PyObject *path;
-    PyObject *add;
-    int result;
-
-    g_return_val_if_fail (dir != NULL, FALSE);
-
-    path = PySys_GetObject ("path");
-
-    if (!path)
-    {
-        PyErr_Print ();
-        return FALSE;
-    }
-
-    if (!PyList_Check (path))
-    {
-        g_critical ("sys.path is not a list");
-        return FALSE;
-    }
-
-    add = PyString_FromString (dir);
-    result = PyList_Insert(path, 1, add);
-    Py_DECREF (add);
-
-    if (result != 0)
-    {
-        PyErr_Print ();
-        return FALSE;
-    }
-
-    return TRUE;
-}
-
-static void
-add_win32_dirs (void)
-{
-    char *top = g_win32_get_package_installation_directory_of_module (NULL);
-    char *dir1 = g_build_filename (top, "lib", "python", "DLLs", NULL);
-    char *dir2 = g_build_filename (top, "lib", "python", "site-packages", NULL);
-    char *dir3 = g_build_filename (top, "lib", "python", "site-packages", "gtk-2.0", NULL);
-    sys_path_add_dir (dir3);
-    sys_path_add_dir (dir2);
-    sys_path_add_dir (dir1);
-    g_free (dir3);
-    g_free (dir2);
-    g_free (dir1);
-    g_free (top);
-}
-
-#endif /* __WIN32__ */
-
-
 static gboolean
 moo_python_api_init (void)
 {
@@ -576,10 +519,6 @@ moo_python_api_init (void)
         PySys_SetArgv (argc, argv);
         _moo_py_init_print_funcs ();
     }
-
-#ifdef __WIN32__
-    add_win32_dirs ();
-#endif
 
     api.py_none = (gpointer) Py_None;
 
