@@ -1,3 +1,9 @@
+2010-04-20  Yevgen Muntyan  <emuntyan@sourceforge.net>
+
+    * === Released 0.10.4 ===
+
+    Brought back Python plugins support.
+
 2010-04-16  Yevgen Muntyan  <emuntyan@sourceforge.net>
 
     * === Released 0.10.3 ===
