@@ -58,3 +58,28 @@ index 4ab415b..fff392f 100644
  
          # ACLOCAL_FLAGS
          aclocaldir = os.path.join(self.prefix, 'share', 'aclocal')
+diff --git a/jhbuild/modtypes/autotools.py b/jhbuild/modtypes/autotools.py
+index 4d95ba1..5a06a00 100644
+--- a/jhbuild/modtypes/autotools.py
++++ b/jhbuild/modtypes/autotools.py
+@@ -126,7 +126,7 @@ class AutogenModule(Package, DownloadableModule):
+             template = self.autogen_template
+         else:
+             template = ("%(srcdir)s/%(autogen-sh)s --prefix %(prefix)s"
+-                        " --libdir %(libdir)s %(autogenargs)s ")
++                        " %(autogenargs)s ")
+ 
+         autogenargs = self.autogenargs + ' ' + self.config.module_autogenargs.get(
+                 self.name, self.config.autogenargs)
+@@ -140,11 +140,6 @@ class AutogenModule(Package, DownloadableModule):
+         else:
+             vars['srcdir'] = '.'
+ 
+-        if buildscript.config.use_lib64:
+-            vars['libdir'] = "'${exec_prefix}/lib64'"
+-        else:
+-            vars['libdir'] = "'${exec_prefix}/lib'"
+-
+         cmd = template % vars
+ 
+         if self.autogen_sh == 'autoreconf':
