@@ -97,7 +97,7 @@ SET(CPACK_RESOURCE_FILE_README ${CMAKE_SOURCE_DIR}/README)
 SET(CPACK_PACKAGE_EXECUTABLES medit medit)
 
 SET(CPACK_SOURCE_PACKAGE_FILE_NAME "medit-${MOO_VERSION}")
-SET(CPACK_SOURCE_IGNORE_FILES "/build/;/[.]hg;/[.]git;/junk/;/vs/;/ugly/;/_build/;/_install/;.*[.]orig$")
+SET(CPACK_SOURCE_IGNORE_FILES "/plat/win32/gtk-win/;/build/;/[.]hg;/[.]git;/junk/;/vs/;/ugly/;/_build/;/_install/;.*[.]orig$")
 
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "medit")
 SET(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "medit")
