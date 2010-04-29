@@ -298,7 +298,11 @@ filter_setting_new (const char *filter,
 
     setting = g_new0 (FilterSetting, 1);
 
-    setting->regex = g_regex_new (filter, G_REGEX_DOTALL | G_REGEX_OPTIMIZE, 0, &error);
+    setting->regex = g_regex_new (filter, G_REGEX_DOTALL | G_REGEX_OPTIMIZE
+#ifdef __WIN32__
+                                          | G_REGEX_CASELESS
+#endif
+                                  , 0, &error);
     setting->config = g_strdup (config);
 
     if (!setting->regex)
