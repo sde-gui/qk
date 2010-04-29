@@ -20,10 +20,12 @@ import gtk
 import moo
 from moo.utils import _
 
-if os.name == 'nt':
+if os.name != 'nt':
+    PYTHON_COMMAND = 'python -u'
+elif sys.exec_prefix:
     PYTHON_COMMAND = '"' + sys.exec_prefix + '\\pythonw.exe" -u'
 else:
-    PYTHON_COMMAND = 'python -u'
+    PYTHON_COMMAND = 'pythonw.exe -u'
 
 PANE_ID = 'PythonOutput'
 
