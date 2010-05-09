@@ -4,13 +4,12 @@ static gboolean
 parse_filename (const char     *filename,
                 MooAppFileInfo *file)
 {
-    const char *colon;
-    char *freeme = NULL;
-    char *norm_filename;
+    char *freeme2 = NULL;
+    char *freeme1 = NULL;
     char *uri;
 
-    norm_filename = _moo_normalize_file_path (filename);
-    filename = norm_filename;
+    freeme1 = _moo_normalize_file_path (filename);
+    filename = freeme1;
 
     if (g_str_has_suffix (filename, "/") ||
 #ifdef G_OS_WIN32
@@ -18,40 +17,64 @@ parse_filename (const char     *filename,
 #endif
         g_file_test (filename, G_FILE_TEST_IS_DIR))
     {
-        g_free (norm_filename);
+        g_free (freeme1);
+        g_free (freeme2);
         return FALSE;
     }
 
-    if ((colon = strrchr (filename, ':')) &&
-        colon != filename &&
-        strspn (colon + 1, "0123456789") == strlen (colon + 1) &&
-        !g_file_test (filename, G_FILE_TEST_EXISTS))
+    if (g_utf8_validate (filename, -1, NULL))
     {
-        if (colon[1])
+        GError *error = NULL;
+        GRegex *re = g_regex_new ("((?P<path>.*):(?P<line>\\d+)?|(?P<path>.*)\\((?P<line>\\d+)\\))$",
+                                  G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES, 0, &error);
+        if (!re)
         {
-            errno = 0;
-            file->line = strtol (colon + 1, NULL, 10);
-            if (errno)
-                file->line = 0;
+            moo_critical ("could not compile regex: %s", error->message);
+            g_error_free (error);
         }
+        else
+        {
+            GMatchInfo *match_info = NULL;
 
-        freeme = g_strndup (filename, colon - filename);
-        filename = freeme;
+            if (g_regex_match (re, filename, 0, &match_info))
+            {
+                char *path = g_match_info_fetch_named (match_info, "path");
+                char *line = g_match_info_fetch_named (match_info, "line");
+                if (path && *path)
+                {
+                    filename = path;
+                    freeme2 = path;
+                    path = NULL;
+                    if (line && *line)
+                    {
+                        errno = 0;
+                        file->line = strtol (line, NULL, 10);
+                        if (errno)
+                            file->line = 0;
+                    }
+                }
+                g_free (line);
+                g_free (path);
+            }
+
+            g_match_info_free (match_info);
+            g_regex_unref (re);
+        }
     }
 
     if (!(uri = g_filename_to_uri (filename, NULL, NULL)))
     {
         g_critical ("could not convert filename to URI");
-        g_free (freeme);
-        g_free (norm_filename);
+        g_free (freeme1);
+        g_free (freeme2);
         return FALSE;
     }
 
     g_free (file->uri);
     file->uri = uri;
 
-    g_free (freeme);
-    g_free (norm_filename);
+    g_free (freeme1);
+    g_free (freeme2);
     return TRUE;
 }
 
