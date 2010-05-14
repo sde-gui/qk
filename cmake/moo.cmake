@@ -1,11 +1,3 @@
-MACRO(MOO_DEFINE_VERSIONS name version)
-  STRING(REGEX REPLACE "([^.]+)[.].*" "\\1" ${name}_MAJOR_VERSION ${version})
-  STRING(REGEX REPLACE "[^.]+[.]([^.]+).*" "\\1" ${name}_MINOR_VERSION ${version})
-  STRING(REGEX REPLACE "[^.]+[.][^.]+[.]([^.]+)" "\\1" ${name}_MICRO_VERSION ${version})
-  SET(${name}_VERSION "\"${version}\"")
-  SET(${name}_VERSION_UNQUOTED "${version}")
-ENDMACRO(MOO_DEFINE_VERSIONS)
-
 FIND_PACKAGE(PythonInterp)
 IF(NOT PYTHONINTERP_FOUND)
   MESSAGE(FATAL_ERROR "Python not found")

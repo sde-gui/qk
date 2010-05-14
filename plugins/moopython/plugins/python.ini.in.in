@@ -8,4 +8,4 @@ id=Python
 _name=Python
 _description=Python support
 author=Yevgen Muntyan <muntyan@tamu.edu>
-version=@MOO_VERSION_UNQUOTED@
+version=@MOO_VERSION@

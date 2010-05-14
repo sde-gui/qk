@@ -8,6 +8,6 @@ id=ProjectManager
 _name=Project Manager
 _description=Project manager
 author=Yevgen Muntyan <muntyan@tamu.edu>
-version=@MOO_VERSION_UNQUOTED@
+version=@MOO_VERSION@
 enabled=false
 visible=false

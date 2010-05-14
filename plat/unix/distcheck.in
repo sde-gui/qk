@@ -7,7 +7,7 @@ docmd() {
 
 top_builddir=`pwd`
 top_testdir=`mktemp --tmpdir -d medit-distcheck-XXXXXXXX`
-package=medit-${MOO_VERSION}
+package=medit-${MOO_PACKAGE_VERSION}
 
 docmd make package_source
 docmd cp $package.tar.bz2 $top_testdir/

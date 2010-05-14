@@ -180,8 +180,8 @@ create_about_dialog (void)
     g_object_add_weak_pointer (G_OBJECT (dialog), &about_dialog);
     g_signal_connect (dialog, "delete-event", G_CALLBACK (gtk_widget_hide_on_delete), NULL);
 
-    markup = g_markup_printf_escaped ("<span size=\"xx-large\"><b>%s-%s</b></span>",
-                                      MOO_APP_FULL_NAME, MOO_APP_VERSION);
+    markup = g_markup_printf_escaped ("<span size=\"xx-large\"><b>%s %s</b></span>",
+                                      MOO_APP_FULL_NAME, MOO_DISPLAY_VERSION);
     gtk_label_set_markup (gxml->name, markup);
     g_free (markup);
 
@@ -236,7 +236,7 @@ moo_app_get_system_info (MooApp *app)
 
     text = g_string_new (NULL);
 
-    g_string_append_printf (text, "%s-%s\n", MOO_APP_FULL_NAME, MOO_APP_VERSION);
+    g_string_append_printf (text, "%s-%s\n", MOO_APP_FULL_NAME, MOO_PACKAGE_VERSION);
 
     string = get_system_name ();
     g_string_append_printf (text, "OS: %s\n", string);

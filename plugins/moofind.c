@@ -16,9 +16,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#ifndef MOO_VERSION
-#define MOO_VERSION NULL
-#endif
 
 #include "mooedit/mooplugin-macro.h"
 #include "mooeditplugins.h"

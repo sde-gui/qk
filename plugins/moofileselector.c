@@ -45,10 +45,6 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-#ifndef MOO_VERSION
-#define MOO_VERSION NULL
-#endif
-
 #define DIR_PREFS MOO_PLUGIN_PREFS_ROOT "/" MOO_FILE_SELECTOR_PLUGIN_ID "/last_dir"
 
 

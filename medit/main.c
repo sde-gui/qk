@@ -169,7 +169,7 @@ post_parse_func (void)
 {
     if (medit_opts.show_version)
     {
-        g_print ("medit " MOO_VERSION "\n");
+        g_print ("medit " MOO_DISPLAY_VERSION "\n");
         exit (0);
     }
 
