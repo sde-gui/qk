@@ -15,6 +15,7 @@
 
 import gtk
 import time
+import locale
 import moo
 
 # List of formats is shamelessly stolen from gedit
@@ -58,9 +59,14 @@ def populate_tree_view(treeview):
     default_fmt = moo.utils.prefs_get_string('Tools/InsertDateAndTime')
 
     for fmt in formats:
-        iter = model.append([time.strftime(fmt, curtime), fmt])
-        if default_fmt == fmt:
-            default_iter = iter
+        try:
+            string = time.strftime(fmt, curtime).decode(locale.getpreferredencoding())
+            if string:
+                iter = model.append([string, fmt])
+                if default_fmt == fmt:
+                    default_iter = iter
+        except:
+            pass
 
     cell = gtk.CellRendererText()
     column = gtk.TreeViewColumn(None, cell, text=0)
