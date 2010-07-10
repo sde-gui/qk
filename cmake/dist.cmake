@@ -44,8 +44,11 @@ SET(MOO_DOC_DIR ${DATADIR}/doc/medit CACHE PATH "Where docs go")
 SET(MOO_HELP_DIR ${MOO_DOC_DIR}/help CACHE PATH "Where html help files go")
 FOREACH(name BINDIR DATADIR LIBDIR MOO_DATA_DIR MOO_LIB_DIR MOO_PLUGINS_DIR
              MOO_TEXT_LANG_FILES_DIR LOCALEDIR MOO_DOC_DIR MOO_HELP_DIR)
-  SET(${name}_ABS ${CMAKE_INSTALL_PREFIX}/${${name}})
-  MARK_AS_ADVANCED(${name})
+  SET(${name}_ABS ${${name}})
+  IF(NOT IS_ABSOLUTE ${${name}})
+    SET(${name}_ABS ${CMAKE_INSTALL_PREFIX}/${${name}})
+  ENDIF(NOT IS_ABSOLUTE ${${name}})
+  MARK_AS_ADVANCED(${name}_ABS)
 ENDFOREACH(name)
 
 IF(WIN32)
