@@ -160,10 +160,8 @@ static void     check_cursor_blink          (MooTextView        *view);
 static void     moo_text_view_draw_cursor   (GtkTextView        *view,
                                              GdkEventExpose     *event);
 #endif
-static void     set_draw_tabs               (MooTextView        *view,
-                                             gboolean            draw);
-static void     set_draw_trailing_spaces    (MooTextView        *view,
-                                             gboolean            draw);
+static void     set_draw_whitespace         (MooTextView        *view,
+                                             MooDrawWhitespaceFlags flags);
 
 static void     buffer_changed              (MooTextView        *view);
 static void     update_left_margin          (MooTextView        *view);
@@ -240,8 +238,7 @@ enum {
     PROP_HIGHLIGHT_MISMATCHING_BRACKETS,
     PROP_CURRENT_LINE_COLOR,
     PROP_TAB_WIDTH,
-    PROP_DRAW_TABS,
-    PROP_DRAW_TRAILING_SPACES,
+    PROP_DRAW_WHITESPACE,
     PROP_HAS_TEXT,
     PROP_HAS_SELECTION,
     PROP_CAN_UNDO,
@@ -394,19 +391,12 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
-                                     PROP_DRAW_TABS,
-                                     g_param_spec_boolean ("draw-tabs",
-                                             "draw-tabs",
-                                             "draw-tabs",
-                                             FALSE,
-                                             G_PARAM_READWRITE));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_DRAW_TRAILING_SPACES,
-                                     g_param_spec_boolean ("draw-trailing-spaces",
-                                             "draw-trailing-spaces",
-                                             "draw-trailing-spaces",
-                                             FALSE,
+                                     PROP_DRAW_WHITESPACE,
+                                     g_param_spec_flags ("draw-whitespace",
+                                             "draw-whitespace",
+                                             "draw-whitespace",
+                                             MOO_TYPE_DRAW_WHITESPACE_FLAGS,
+                                             0,
                                              G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
@@ -1153,11 +1143,8 @@ moo_text_view_set_property (GObject        *object,
             moo_text_view_set_right_margin_color (view, g_value_get_string (value));
             break;
 
-        case PROP_DRAW_TABS:
-            set_draw_tabs (view, g_value_get_boolean (value));
-            break;
-        case PROP_DRAW_TRAILING_SPACES:
-            set_draw_trailing_spaces (view, g_value_get_boolean (value));
+        case PROP_DRAW_WHITESPACE:
+            set_draw_whitespace (view, g_value_get_flags (value));
             break;
 
         case PROP_MANAGE_CLIPBOARD:
@@ -1261,11 +1248,8 @@ moo_text_view_get_property (GObject        *object,
         case PROP_RIGHT_MARGIN_COLOR:
             g_value_set_string (value, view->priv->colors[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN]);
             break;
-        case PROP_DRAW_TABS:
-            g_value_set_boolean (value, view->priv->draw_tabs != 0);
-            break;
-        case PROP_DRAW_TRAILING_SPACES:
-            g_value_set_boolean (value, view->priv->draw_trailing_spaces != 0);
+        case PROP_DRAW_WHITESPACE:
+            g_value_set_flags (value, view->priv->draw_whitespace);
             break;
         case PROP_HAS_TEXT:
             g_value_set_boolean (value, moo_text_view_has_text (view));
@@ -2422,22 +2406,62 @@ draw_tab_at_iter (GtkTextView    *text_view,
                       FALSE, points, 3);
 }
 
-
 static void
-moo_text_view_draw_tabs (GtkTextView       *text_view,
-                         GdkEventExpose    *event,
-                         const GtkTextIter *start,
-                         const GtkTextIter *end)
+moo_text_view_draw_whitespace (GtkTextView       *text_view,
+                               GdkEventExpose    *event,
+                               const GtkTextIter *start,
+                               const GtkTextIter *end)
 {
+    MooTextView *view = MOO_TEXT_VIEW (text_view);
     GtkTextIter iter = *start;
+    GtkTextIter cursor;
+    int cursor_line;
+    int line;
 
-    while (gtk_text_iter_compare (&iter, end) < 0)
+    if (view->priv->draw_whitespace == 0)
+        return;
+
+    line = gtk_text_iter_get_line (&iter);
+    moo_text_view_get_cursor (MOO_TEXT_VIEW (text_view), &cursor);
+    cursor_line = gtk_text_iter_get_line (&cursor);
+    cursor_line = -1; /* FIXME */
+
+    do
     {
-        if (gtk_text_iter_get_char (&iter) == '\t')
-            draw_tab_at_iter (text_view, event, &iter);
-        if (!gtk_text_iter_forward_char (&iter))
-            break;
+        gboolean trailing = TRUE;
+
+        if (!gtk_text_iter_ends_line (&iter))
+            gtk_text_iter_forward_to_line_end (&iter);
+
+        while (!gtk_text_iter_starts_line (&iter))
+        {
+            gunichar c;
+
+            if (line == cursor_line && gtk_text_iter_compare (&iter, &cursor) <= 0)
+                break;
+
+            gtk_text_iter_backward_char (&iter);
+            c = gtk_text_iter_get_char (&iter);
+
+            if (g_unichar_isspace (c))
+            {
+                if ((trailing && (view->priv->draw_whitespace & MOO_DRAW_TRAILING_SPACES) != 0) ||
+                    (c == '\t' && (view->priv->draw_whitespace & MOO_DRAW_TABS) != 0) ||
+                    (c != '\t' && (view->priv->draw_whitespace & MOO_DRAW_SPACES) != 0))
+                        draw_tab_at_iter (text_view, event, &iter);
+            }
+            else if (trailing)
+            {
+                trailing = FALSE;
+                if ((view->priv->draw_whitespace & ~MOO_DRAW_TRAILING_SPACES) == 0)
+                    break;
+            }
+        }
+
+        gtk_text_iter_forward_line (&iter);
+        line += 1;
     }
+    while (gtk_text_iter_compare (&iter, end) < 0);
 }
 
 
@@ -2505,50 +2529,6 @@ moo_text_view_draw_boxes (GtkTextView       *text_view,
 }
 
 
-static void
-moo_text_view_draw_trailing_spaces (GtkTextView       *text_view,
-                                    GdkEventExpose    *event,
-                                    const GtkTextIter *start,
-                                    const GtkTextIter *end)
-{
-    GtkTextIter iter = *start;
-    GtkTextIter cursor;
-    int cursor_line;
-    int line;
-
-    line = gtk_text_iter_get_line (&iter);
-    moo_text_view_get_cursor (MOO_TEXT_VIEW (text_view), &cursor);
-    cursor_line = gtk_text_iter_get_line (&cursor);
-    cursor_line = -1; /* FIXME */
-
-    do
-    {
-        if (!gtk_text_iter_ends_line (&iter))
-            gtk_text_iter_forward_to_line_end (&iter);
-
-        while (!gtk_text_iter_starts_line (&iter))
-        {
-            gunichar c;
-
-            if (line == cursor_line && gtk_text_iter_compare (&iter, &cursor) <= 0)
-                break;
-
-            gtk_text_iter_backward_char (&iter);
-            c = gtk_text_iter_get_char (&iter);
-
-            if (g_unichar_isspace (c))
-                draw_tab_at_iter (text_view, event, &iter);
-            else
-                break;
-        }
-
-        gtk_text_iter_forward_line (&iter);
-        line += 1;
-    }
-    while (gtk_text_iter_compare (&iter, end) < 0);
-}
-
-
 static gboolean
 moo_text_view_expose (GtkWidget      *widget,
                       GdkEventExpose *event)
@@ -2603,13 +2583,10 @@ moo_text_view_expose (GtkWidget      *widget,
         int first_line = gtk_text_iter_get_line (&start);
         int last_line = gtk_text_iter_get_line (&end);
 
-        if (last_line - first_line < 2000)
+        if (last_line - first_line < 1000)
         {
-            if (view->priv->draw_tabs)
-                moo_text_view_draw_tabs (text_view, event, &start, &end);
-
-            if (view->priv->draw_trailing_spaces)
-                moo_text_view_draw_trailing_spaces (text_view, event, &start, &end);
+            if (view->priv->draw_whitespace != 0)
+                moo_text_view_draw_whitespace (text_view, event, &start, &end);
 
             if (has_boxes (view))
                 moo_text_view_draw_boxes (text_view, event, &start, &end);
@@ -2704,33 +2681,16 @@ highlight_updated (GtkTextView       *text_view,
 
 
 static void
-set_draw_tabs (MooTextView    *view,
-               gboolean        draw)
+set_draw_whitespace (MooTextView            *view,
+                     MooDrawWhitespaceFlags  flags)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 
-    if (BOOL_CMP (view->priv->draw_tabs, draw))
+    if (view->priv->draw_whitespace == flags)
         return;
 
-    view->priv->draw_tabs = draw != 0;
-    g_object_notify (G_OBJECT (view), "draw-tabs");
-
-    if (GTK_WIDGET_DRAWABLE (view))
-        gtk_widget_queue_draw (GTK_WIDGET (view));
-}
-
-
-static void
-set_draw_trailing_spaces (MooTextView    *view,
-                          gboolean        draw)
-{
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-
-    if (BOOL_CMP (view->priv->draw_trailing_spaces, draw))
-        return;
-
-    view->priv->draw_trailing_spaces = draw != 0;
-    g_object_notify (G_OBJECT (view), "draw-trailing-spaces");
+    view->priv->draw_whitespace = flags;
+    g_object_notify (G_OBJECT (view), "draw-whitespace");
 
     if (GTK_WIDGET_DRAWABLE (view))
         gtk_widget_queue_draw (GTK_WIDGET (view));

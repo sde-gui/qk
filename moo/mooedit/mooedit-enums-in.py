@@ -71,3 +71,10 @@ enums['MooTextCursor'] = [
     [ 'MOO_TEXT_CURSOR_ARROW' ],
     [ 'MOO_TEXT_CURSOR_LINK' ],
 ]
+
+flags['MooDrawWhitespaceFlags'] = [
+    [ 'MOO_DRAW_NO_WHITESPACE',   '0' ],
+    [ 'MOO_DRAW_SPACES',          '1 << 0' ],
+    [ 'MOO_DRAW_TABS',            '1 << 1' ],
+    [ 'MOO_DRAW_TRAILING_SPACES', '1 << 2' ],
+]

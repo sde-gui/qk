@@ -261,6 +261,7 @@ page_view_init_ui (MooPrefsPage *page)
     BIND_SETTING (check_highlight_current_line, MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE);
     BIND_SETTING (show_line_numbers, MOO_EDIT_PREFS_SHOW_LINE_NUMBERS);
     BIND_SETTING (check_show_tabs, MOO_EDIT_PREFS_SHOW_TABS);
+    BIND_SETTING (check_show_spaces, MOO_EDIT_PREFS_SHOW_SPACES);
     BIND_SETTING (check_show_trailing_spaces, MOO_EDIT_PREFS_SHOW_TRAILING_SPACES);
     BIND_SETTING (draw_rigth_margin, MOO_EDIT_PREFS_DRAW_RIGHT_MARGIN);
     BIND_SETTING (spin_right_margin_offset, MOO_EDIT_PREFS_RIGHT_MARGIN_OFFSET);

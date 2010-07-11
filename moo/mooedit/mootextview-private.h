@@ -131,8 +131,7 @@ struct _MooTextViewPrivate {
     GdkGC *gcs[MOO_TEXT_VIEW_N_COLORS];
     guint right_margin_offset;
     int right_margin_pixel_offset;
-    gboolean draw_tabs;
-    gboolean draw_trailing_spaces;
+    MooDrawWhitespaceFlags draw_whitespace;
     gboolean highlight_matching_brackets;
     gboolean highlight_mismatching_brackets;
 

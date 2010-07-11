@@ -24,6 +24,11 @@
 #include "mooutils/mooencodings.h"
 #include <string.h>
 
+#ifdef __WIN32__
+#define DEFAULT_FONT "Monospace 10"
+#else
+#define DEFAULT_FONT "Monospace"
+#endif
 
 static void _moo_edit_init_prefs (void);
 
@@ -129,8 +134,9 @@ _moo_edit_init_prefs (void)
     NEW_KEY_INT (MOO_EDIT_PREFS_RIGHT_MARGIN_OFFSET, 80);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_LINE_NUMBERS, FALSE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_TABS, FALSE);
+    NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_SPACES, FALSE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_TRAILING_SPACES, FALSE);
-    NEW_KEY_STRING (MOO_EDIT_PREFS_FONT, "Monospace");
+    NEW_KEY_STRING (MOO_EDIT_PREFS_FONT, DEFAULT_FONT);
     NEW_KEY_FLAGS (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS,
                    MOO_TYPE_TEXT_SEARCH_FLAGS,
                    MOO_TEXT_SEARCH_CASELESS);
@@ -191,6 +197,7 @@ _moo_edit_apply_prefs (MooEdit *edit)
 {
     MooLangMgr *mgr;
     MooTextStyleScheme *scheme;
+    MooDrawWhitespaceFlags ws_flags = 0;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
@@ -204,13 +211,19 @@ _moo_edit_apply_prefs (MooEdit *edit)
                   "highlight-current-line", get_bool (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE),
                   "draw-right-margin", get_bool (MOO_EDIT_PREFS_DRAW_RIGHT_MARGIN),
                   "right-margin-offset", get_int (MOO_EDIT_PREFS_RIGHT_MARGIN_OFFSET),
-                  "draw-tabs", get_bool (MOO_EDIT_PREFS_SHOW_TABS),
-                  "draw-trailing-spaces", get_bool (MOO_EDIT_PREFS_SHOW_TRAILING_SPACES),
                   "quick-search-flags", get_flags (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS),
                   "auto-indent", get_bool (MOO_EDIT_PREFS_AUTO_INDENT),
                   "tab-indents", get_bool (MOO_EDIT_PREFS_TAB_INDENTS),
                   "backspace-indents", get_bool (MOO_EDIT_PREFS_BACKSPACE_INDENTS),
                   NULL);
+
+    if (get_bool (MOO_EDIT_PREFS_SHOW_TABS))
+        ws_flags |= MOO_DRAW_TABS;
+    if (get_bool (MOO_EDIT_PREFS_SHOW_SPACES))
+        ws_flags |= MOO_DRAW_SPACES;
+    if (get_bool (MOO_EDIT_PREFS_SHOW_TRAILING_SPACES))
+        ws_flags |= MOO_DRAW_TRAILING_SPACES;
+    g_object_set (edit, "draw-whitespace", ws_flags, NULL);
 
     moo_text_view_set_font_from_string (MOO_TEXT_VIEW (edit),
                                         get_string (MOO_EDIT_PREFS_FONT));

@@ -67,6 +67,7 @@ const char *moo_edit_setting            (const char *setting_name);
 #define MOO_EDIT_PREFS_RIGHT_MARGIN_OFFSET      "right_margin_offset"
 #define MOO_EDIT_PREFS_SHOW_LINE_NUMBERS        "show_line_numbers"
 #define MOO_EDIT_PREFS_SHOW_TABS                "show_tabs"
+#define MOO_EDIT_PREFS_SHOW_SPACES              "show_spaces"
 #define MOO_EDIT_PREFS_SHOW_TRAILING_SPACES     "show_trailing_spaces"
 #define MOO_EDIT_PREFS_FONT                     "font"
 #define MOO_EDIT_PREFS_LINE_NUMBERS_FONT        "line_numbers_font"
