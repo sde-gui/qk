@@ -623,7 +623,8 @@ do_load (MooEdit      *edit,
         case MOO_LE_MIX:
             break;
         default:
-            moo_edit_set_line_end_type_full (edit, le, TRUE);
+            if (le != MOO_LE_NONE)
+                moo_edit_set_line_end_type_full (edit, le, TRUE);
             break;
     }
 
@@ -1286,13 +1287,14 @@ _moo_edit_set_file (MooEdit    *edit,
                     const char *encoding)
 {
     GFile *tmp;
-    char *tmp2, *tmp3, *tmp4, *tmp5;
+    GSList *free_list = NULL;
 
     tmp = edit->priv->file;
-    tmp2 = edit->priv->filename;
-    tmp5 = edit->priv->norm_filename;
-    tmp3 = edit->priv->display_filename;
-    tmp4 = edit->priv->display_basename;
+
+    free_list = g_slist_prepend (free_list, edit->priv->filename);
+    free_list = g_slist_prepend (free_list, edit->priv->norm_filename);
+    free_list = g_slist_prepend (free_list, edit->priv->display_filename);
+    free_list = g_slist_prepend (free_list, edit->priv->display_basename);
 
     if (!UNTITLED_NO)
         UNTITLED_NO = g_hash_table_new (g_direct_hash, g_direct_equal);
@@ -1314,10 +1316,16 @@ _moo_edit_set_file (MooEdit    *edit,
     }
     else
     {
+        char *norm_name_tmp;
+
         remove_untitled (NULL, edit);
         edit->priv->file = g_file_dup (file);
         edit->priv->filename = g_file_get_path (file);
-        edit->priv->norm_filename = _moo_edit_normalize_filename_for_comparison (edit->priv->filename);
+
+        norm_name_tmp = _moo_normalize_file_path (edit->priv->filename);
+        edit->priv->norm_filename = _moo_edit_normalize_filename_for_comparison (norm_name_tmp);
+        free_list = g_slist_prepend (free_list, norm_name_tmp);
+
         edit->priv->display_filename = _moo_file_get_display_name (file);
         edit->priv->display_basename = _moo_file_get_display_basename (file);
     }
@@ -1332,10 +1340,9 @@ _moo_edit_set_file (MooEdit    *edit,
 
     if (tmp)
         g_object_unref (tmp);
-    g_free (tmp2);
-    g_free (tmp3);
-    g_free (tmp4);
-    g_free (tmp5);
+
+    g_slist_foreach (free_list, (GFunc) g_free, NULL);
+    g_slist_free (free_list);
 }
 
 
