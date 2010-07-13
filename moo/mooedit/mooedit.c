@@ -2072,7 +2072,10 @@ test_encodings_1 (const char *name,
 
     editor = moo_editor_instance ();
     doc = moo_editor_open_file (editor, NULL, NULL, filename, encoding);
-    TEST_ASSERT (doc != NULL);
+    TEST_ASSERT_MSG (doc != NULL,
+                     "file '%s', encoding '%s'",
+                     TEST_FMT_STR (filename),
+                     TEST_FMT_STR (encoding));
 
     if (doc)
     {

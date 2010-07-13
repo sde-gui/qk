@@ -1,3 +1,3 @@
 @pushd ${_MOO_BINARY_DIR}\moo
-${_MOO_RUN_HOW}${_MOO_BINARY_DIR}\medit\medit.exe -n --log-window %1 %2 %3 %4 %5 %6 %7 %8 %9
+${_MOO_RUN_HOW}${_MOO_BINARY_DIR}\medit\medit.exe -n --log-window %*
 @popd

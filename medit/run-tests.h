@@ -46,11 +46,7 @@ unit_tests_main (int argc, char *argv[])
     g_thread_init (NULL);
     g_set_prgname ("run-tests");
 
-#ifdef __WIN32__
-    data_dir = "test-data";
-#else
     data_dir = SRCDIR "/data";
-#endif
 
     grp = g_option_group_new ("run-tests", "run-tests", "run-tests", NULL, NULL);
     g_option_group_add_entries (grp, options);
@@ -83,7 +79,7 @@ unit_tests_main (int argc, char *argv[])
     moo_test_cleanup ();
 
 #ifdef __WIN32__
-    if (!g_getenv ("WINESERVER"))
+    if (!g_getenv ("WINESERVER") && !list_only)
     {
         printf ("Done, press Enter...");
         fflush (stdout);
