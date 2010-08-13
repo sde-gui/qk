@@ -160,5 +160,5 @@ _moo_ctags_view_init (MooCtagsView *view)
 GtkWidget *
 _moo_ctags_view_new (void)
 {
-    return g_object_new (MOO_TYPE_CTAGS_VIEW, NULL);
+    return g_object_new (MOO_TYPE_CTAGS_VIEW, (const char*) NULL);
 }

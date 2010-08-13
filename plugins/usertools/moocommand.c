@@ -394,7 +394,7 @@ moo_command_class_init (MooCommandClass *klass)
                                      g_param_spec_flags ("options", "options", "options",
                                                          MOO_TYPE_COMMAND_OPTIONS,
                                                          0,
-                                                         G_PARAM_READWRITE));
+                                                         (GParamFlags) G_PARAM_READWRITE));
 }
 
 
@@ -780,12 +780,12 @@ moo_command_context_class_init (MooCommandContextClass *klass)
     g_object_class_install_property (object_class, CTX_PROP_DOC,
                                      g_param_spec_object ("doc", "doc", "doc",
                                                           GTK_TYPE_TEXT_VIEW,
-                                                          G_PARAM_READWRITE));
+                                                          (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (object_class, CTX_PROP_WINDOW,
                                      g_param_spec_object ("window", "window", "window",
                                                           GTK_TYPE_WINDOW,
-                                                          G_PARAM_READWRITE));
+                                                          (GParamFlags) G_PARAM_READWRITE));
 }
 
 
@@ -842,7 +842,7 @@ moo_command_context_new (gpointer doc,
     return g_object_new (MOO_TYPE_COMMAND_CONTEXT,
                          "doc", doc,
                          "window", window,
-                         NULL);
+                         (const char*) NULL);
 }
 
 

@@ -118,7 +118,7 @@ moo_history_list_class_init (MooHistoryListClass *klass)
                                              "user-id",
                                              "user-id",
                                              NULL,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_MAX_ITEMS,
@@ -128,7 +128,7 @@ moo_history_list_class_init (MooHistoryListClass *klass)
                                              1,
                                              G_MAXUINT,
                                              MAX_NUM_HISTORY_ITEMS,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_EMPTY,
@@ -694,13 +694,11 @@ moo_history_list_new (const char *user_id)
     MooHistoryList *list;
 
     if (user_id && named_lists)
-    {
-        list = g_hash_table_lookup (named_lists, user_id);
-        g_return_val_if_fail (list == NULL, NULL);
-    }
+        g_return_val_if_fail (g_hash_table_lookup (named_lists, user_id) == NULL, NULL);
 
-    list = g_object_new (MOO_TYPE_HISTORY_LIST,
-                         "user-id", user_id, NULL);
+    list = MOO_HISTORY_LIST (g_object_new (MOO_TYPE_HISTORY_LIST,
+                                           "user-id", user_id,
+                                           (const char*) NULL));
     if (user_id)
     {
         add_named_list (user_id, list);
@@ -721,7 +719,7 @@ moo_history_list_get (const char *user_id)
         named_lists = g_hash_table_new_full (g_str_hash, g_str_equal,
                                              g_free, g_object_unref);
 
-    list = g_hash_table_lookup (named_lists, user_id);
+    list = (MooHistoryList*) g_hash_table_lookup (named_lists, user_id);
 
     if (!list)
     {

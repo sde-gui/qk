@@ -317,7 +317,7 @@ get_line_count (MooFoldTree *tree)
 static MooLineMark *
 fold_mark_new (MooFold *fold)
 {
-    MooLineMark *mark = g_object_new (MOO_TYPE_LINE_MARK, NULL);
+    MooLineMark *mark = MOO_LINE_MARK (g_object_new (MOO_TYPE_LINE_MARK, (const char*) NULL));
     _moo_line_mark_set_fold (mark, fold);
     return mark;
 }
@@ -371,7 +371,7 @@ insert_fold (MooFoldTree *tree,
 
             /* old fold is inserted into the new one */
 
-            new_fold = g_object_new (MOO_TYPE_FOLD, NULL);
+            new_fold = MOO_FOLD (g_object_new (MOO_TYPE_FOLD, (const char*) NULL));
             new_fold->deleted = FALSE;
 
             if (parent)
@@ -417,7 +417,7 @@ insert_fold (MooFoldTree *tree,
 
     /* insert new fold before <fold> or in the end if <fold> is NULL */
 
-    new_fold = g_object_new (MOO_TYPE_FOLD, NULL);
+    new_fold = MOO_FOLD (g_object_new (MOO_TYPE_FOLD, (const char*) NULL));
     new_fold->deleted = FALSE;
 
     new_fold->parent = parent;

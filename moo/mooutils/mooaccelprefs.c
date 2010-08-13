@@ -400,7 +400,7 @@ add_row (GtkActionGroup    *group,
     if (!group_name)
         group_name = "";
 
-    row = g_hash_table_lookup (page->groups, group_name);
+    row = (GtkTreeRowReference*) g_hash_table_lookup (page->groups, group_name);
 
     if (row)
     {
@@ -461,12 +461,12 @@ moo_accel_prefs_page_init (MooPrefsPage *prefs_page)
 
     for (i = 0; i < page->actions->len; ++i)
     {
-        GtkActionGroup *group = g_ptr_array_index (page->actions, i);
+        GtkActionGroup *group = (GtkActionGroup*) g_ptr_array_index (page->actions, i);
         GList *list = gtk_action_group_list_actions (group);
 
         while (list)
         {
-            add_row (group, list->data, page);
+            add_row (group, GTK_ACTION (list->data), page);
             list = g_list_delete_link (list, list);
         }
     }
@@ -527,7 +527,7 @@ tree_selection_changed (MooAccelPrefsPage *page)
     block_radio (page);
     block_accel_set (page);
 
-    shortcut = g_hash_table_lookup (page->changed, action);
+    shortcut = (Shortcut*) g_hash_table_lookup (page->changed, action);
 
     if (shortcut)
     {
@@ -676,7 +676,7 @@ shortcut_default_toggled (MooAccelPrefsPage *page)
 
     gtk_tree_path_free (path);
 
-    current_shortcut = g_hash_table_lookup (page->changed, page->current_action);
+    current_shortcut = (Shortcut*) g_hash_table_lookup (page->changed, page->current_action);
 
     if (!current_shortcut)
     {
@@ -732,7 +732,7 @@ shortcut_custom_toggled (MooAccelPrefsPage *page)
 
     gtk_tree_path_free (path);
 
-    shortcut = g_hash_table_lookup (page->changed, page->current_action);
+    shortcut = (Shortcut*) g_hash_table_lookup (page->changed, page->current_action);
 
     if (shortcut)
     {
@@ -776,7 +776,7 @@ _moo_accel_prefs_page_new (MooActionCollection *collection)
     const GSList *groups;
     MooAccelPrefsPage *page;
 
-    page = g_object_new (MOO_TYPE_ACCEL_PREFS_PAGE, NULL);
+    page = MOO_ACCEL_PREFS_PAGE (g_object_new (MOO_TYPE_ACCEL_PREFS_PAGE, (const char*) NULL));
     groups = moo_action_collection_get_groups (collection);
 
     while (groups)
@@ -795,7 +795,8 @@ _moo_accel_prefs_dialog_new (MooActionCollection *collection)
     MooAccelPrefsPage *page;
     GtkWidget *dialog;
 
-    dialog = gtk_dialog_new_with_buttons (_("Configure Shortcuts"), NULL, 0,
+    dialog = gtk_dialog_new_with_buttons (_("Configure Shortcuts"), NULL,
+                                          (GtkDialogFlags) 0,
                                           GTK_STOCK_HELP, GTK_RESPONSE_HELP,
                                           GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                           GTK_STOCK_OK, GTK_RESPONSE_OK,

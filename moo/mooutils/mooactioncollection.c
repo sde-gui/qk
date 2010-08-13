@@ -126,11 +126,11 @@ moo_action_collection_class_init (MooActionCollectionClass *klass)
 
     g_object_class_install_property (object_class, PROP_NAME,
                                      g_param_spec_string ("name", "name", "name",
-                                                          NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                                                          NULL, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 
     g_object_class_install_property (object_class, PROP_DISPLAY_NAME,
                                      g_param_spec_string ("display-name", "display-name", "display-name",
-                                                          NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                                          NULL, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 }
 
 
@@ -138,10 +138,11 @@ MooActionCollection *
 moo_action_collection_new (const char *name,
                            const char *display_name)
 {
-    return g_object_new (MOO_TYPE_ACTION_COLLECTION,
+    return MOO_ACTION_COLLECTION (
+        g_object_new (MOO_TYPE_ACTION_COLLECTION,
                          "name", name,
                          "display-name", display_name,
-                         NULL);
+                         (const char*) NULL));
 }
 
 
@@ -175,7 +176,7 @@ get_group (MooActionCollection *coll,
            const char          *name)
 {
     if (name)
-        return g_hash_table_lookup (coll->priv->groups, name);
+        return GTK_ACTION_GROUP (g_hash_table_lookup (coll->priv->groups, name));
     else
         return GTK_ACTION_GROUP (coll->priv->default_group);
 }
@@ -247,7 +248,7 @@ moo_action_collection_get_action (MooActionCollection *coll,
 
     for (l = coll->priv->groups_list; l != NULL; l = l->next)
     {
-        GtkActionGroup *group = l->data;
+        GtkActionGroup *group = GTK_ACTION_GROUP (l->data);
         GtkAction *action = gtk_action_group_get_action (group, name);
         if (action)
             return action;

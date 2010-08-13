@@ -117,7 +117,7 @@ moo_undo_stack_class_init (MooUndoStackClass *klass)
                                      g_param_spec_pointer ("document",
                                              "document",
                                              "document",
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_CAN_UNDO,
@@ -166,7 +166,7 @@ moo_undo_stack_new (gpointer document)
 {
     return g_object_new (MOO_TYPE_UNDO_STACK,
                          "document", document,
-                         NULL);
+                         (const char*) NULL);
 }
 
 

@@ -157,7 +157,7 @@ moo_font_selection_class_init (MooFontSelectionClass *klass)
                                                         P_("Font name"),
                                                         P_("The X string that represents this font"),
                                                         NULL,
-                                                        G_PARAM_READWRITE));
+                                                        (GParamFlags) G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class,
                                    PROP_PREVIEW_TEXT,
@@ -165,7 +165,7 @@ moo_font_selection_class_init (MooFontSelectionClass *klass)
                                                         P_("Preview text"),
                                                         P_("The text to display in order to demonstrate the selected font"),
                                                         PREVIEW_TEXT,
-                                                        G_PARAM_READWRITE));
+                                                        (GParamFlags) G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class,
                                    PROP_MONOSPACE,
@@ -173,7 +173,7 @@ moo_font_selection_class_init (MooFontSelectionClass *klass)
                                                          P_("monospace"),
                                                          P_("monospace"),
                                                          FALSE,
-                                                         G_PARAM_READWRITE));
+                                                         (GParamFlags) G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class,
                                    PROP_FILTER_VISIBLE,
@@ -181,7 +181,7 @@ moo_font_selection_class_init (MooFontSelectionClass *klass)
                                                          P_("filter-visible"),
                                                          P_("filter-visible"),
                                                          TRUE,
-                                                         G_PARAM_READWRITE));
+                                                         (GParamFlags) G_PARAM_READWRITE));
 }
 
 static void

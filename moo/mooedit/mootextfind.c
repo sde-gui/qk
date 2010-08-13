@@ -118,7 +118,7 @@ moo_find_class_init (MooFindClass *klass)
                                              "replace",
                                              "replace",
                                              TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 }
 
 
@@ -249,7 +249,7 @@ moo_find_finalize (GObject *object)
 static GtkWidget *
 moo_find_new (gboolean replace)
 {
-    return g_object_new (MOO_TYPE_FIND, "replace", replace, NULL);
+    return GTK_WIDGET (g_object_new (MOO_TYPE_FIND, "replace", replace, (const char*) NULL));
 }
 
 

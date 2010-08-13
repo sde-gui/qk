@@ -127,7 +127,7 @@ moo_lang_mgr_class_init (MooLangMgrClass *klass)
 MooLangMgr *
 moo_lang_mgr_new (void)
 {
-    return g_object_new (MOO_TYPE_LANG_MGR, NULL);
+    return MOO_LANG_MGR (g_object_new (MOO_TYPE_LANG_MGR, (const char*) NULL));
 }
 
 MooLangMgr *

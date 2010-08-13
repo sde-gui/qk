@@ -48,6 +48,7 @@
 #include "mooutils/mootype-macros.h"
 #include "marshals.h"
 #include "mooutils/mooutils-thread.h"
+#include "mooutils/moolist.h"
 
 
 #if 1
@@ -91,6 +92,8 @@ struct WatchFuncs {
                                  Monitor        *monitor);
 };
 
+MOO_DEFINE_SLIST(MonitorList, monitor_list, Monitor)
+
 struct _MooFileWatch {
     guint ref_count;
     guint id;
@@ -99,8 +102,8 @@ struct _MooFileWatch {
     FAMConnection fam_connection;
     guint fam_connection_watch;
 #endif
-    GSList      *monitors;
-    GHashTable  *requests;  /* int -> Monitor* */
+    MonitorList *monitors;
+    GHashTable *requests;  /* int -> Monitor* */
     guint alive : 1;
 };
 
@@ -316,7 +319,7 @@ gboolean
 moo_file_watch_close (MooFileWatch   *watch,
                       GError        **error)
 {
-    GSList *monitors;
+    MonitorList *monitors;
 
     g_return_val_if_fail (watch != NULL, FALSE);
 
@@ -335,7 +338,7 @@ moo_file_watch_close (MooFileWatch   *watch,
             watch_funcs.stop_monitor (watch, mon);
 
         monitor_free (mon);
-        monitors = g_slist_delete_link (monitors, monitors);
+        monitors = monitor_list_delete_link (monitors, monitors);
     }
 
     return watch_funcs.shutdown (watch, error);
@@ -374,7 +377,7 @@ moo_file_watch_create_monitor (MooFileWatch   *watch,
     }
 
     monitor->alive = TRUE;
-    watch->monitors = g_slist_prepend (watch->monitors, monitor);
+    watch->monitors = monitor_list_prepend (watch->monitors, monitor);
     g_hash_table_insert (watch->requests, GUINT_TO_POINTER (monitor->id), monitor);
 
     DEBUG_PRINT ("created monitor %d for '%s'", monitor->id, monitor->filename);
@@ -391,11 +394,11 @@ moo_file_watch_cancel_monitor (MooFileWatch *watch,
 
     g_return_if_fail (watch != NULL);
 
-    monitor = g_hash_table_lookup (watch->requests,
-                                   GUINT_TO_POINTER (monitor_id));
+    monitor = (Monitor*) g_hash_table_lookup (watch->requests,
+                                              GUINT_TO_POINTER (monitor_id));
     g_return_if_fail (monitor != NULL);
 
-    watch->monitors = g_slist_remove (watch->monitors, monitor);
+    watch->monitors = monitor_list_remove (watch->monitors, monitor);
     g_hash_table_remove (watch->requests, GUINT_TO_POINTER (monitor->id));
 
     if (monitor->alive)
@@ -842,8 +845,8 @@ watch_stat_start_monitor (MooFileWatch   *watch,
 static gboolean
 do_stat (MooFileWatch *watch)
 {
-    GSList *l;
-    GSList *list = NULL;
+    MonitorList *lm;
+    GSList *list = NULL, *lid;
     GSList *to_remove = NULL;
     gboolean result = TRUE;
 
@@ -854,21 +857,21 @@ do_stat (MooFileWatch *watch)
     if (!watch->monitors)
         goto out;
 
-    for (l = watch->monitors; l != NULL; l = l->next)
+    for (lm = watch->monitors; lm != NULL; lm = lm->next)
     {
-        Monitor *m = l->data;
+        Monitor *m = lm->data;
         list = g_slist_prepend (list, GUINT_TO_POINTER (m->id));
     }
 
     /* Order of list is correct now, watch->monitors is last-added-first */
-    for (l = list; l != NULL; l = l->next)
+    for (lid = list; lid != NULL; lid = lid->next)
     {
         gboolean do_emit = FALSE;
         MooFileEvent event;
         Monitor *monitor;
         time_t old;
 
-        monitor = g_hash_table_lookup (watch->requests, l->data);
+        monitor = (Monitor*) g_hash_table_lookup (watch->requests, lid->data);
 
         if (!monitor || !monitor->alive)
             continue;
@@ -914,9 +917,9 @@ do_stat (MooFileWatch *watch)
             g_error_free (event.error);
     }
 
-    for (l = to_remove; l != NULL; l = l->next)
-        if (g_hash_table_lookup (watch->requests, GUINT_TO_POINTER (l->data)))
-            moo_file_watch_cancel_monitor (watch, GPOINTER_TO_UINT (l->data));
+    for (lid = to_remove; lid != NULL; lid = lid->next)
+        if (g_hash_table_lookup (watch->requests, GUINT_TO_POINTER (lid->data)))
+            moo_file_watch_cancel_monitor (watch, GPOINTER_TO_UINT (lid->data));
 
     g_slist_free (to_remove);
     g_slist_free (list);
@@ -1060,7 +1063,7 @@ fam_thread_add_path (FAMThread  *thr,
     }
 
     thr->events[thr->n_events] =
-        FindFirstChangeNotificationW (win_path, FALSE,
+        FindFirstChangeNotificationW ((const WCHAR*) win_path, FALSE,
                                       FILE_NOTIFY_CHANGE_FILE_NAME |
                                       FILE_NOTIFY_CHANGE_DIR_NAME);
 
@@ -1169,7 +1172,7 @@ fam_thread_do_command (FAMThread *thr)
     DEBUG_PRINT ("fam_thread_do_command start");
 
     g_mutex_lock (thr->lock);
-    while ((cmd = g_async_queue_try_pop (thr->incoming)))
+    while ((cmd = (FAMThreadCommand*) g_async_queue_try_pop (thr->incoming)))
         list = g_slist_prepend (list, cmd);
     ResetEvent (thr->events[0]);
     g_mutex_unlock (thr->lock);
@@ -1178,7 +1181,7 @@ fam_thread_do_command (FAMThread *thr)
 
     while (list)
     {
-        cmd = list->data;
+        cmd = (FAMThreadCommand*) list->data;
 
         switch (cmd->type)
         {
@@ -1265,7 +1268,7 @@ find_watch (guint id)
 
     for (l = fam->watches; l != NULL; l = l->next)
     {
-        MooFileWatch *watch = l->data;
+        MooFileWatch *watch = (MooFileWatch*) l->data;
 
         if (watch->id == id)
             return watch;
@@ -1289,8 +1292,8 @@ do_event (FAMEvent *event)
         return;
     }
 
-    monitor = g_hash_table_lookup (watch->requests,
-                                   GUINT_TO_POINTER (event->request));
+    monitor = (Monitor*)
+        g_hash_table_lookup (watch->requests, GUINT_TO_POINTER (event->request));
 
     if (!monitor)
     {
@@ -1313,7 +1316,7 @@ do_event (FAMEvent *event)
     else
     {
         DEBUG_PRINT ("got event for filename %s", monitor->filename);
-        watch_event.code = event->code;
+        watch_event.code = (MooFileEventCode) event->code;
     }
 
     moo_file_watch_emit_event (watch, &watch_event, monitor);
@@ -1330,15 +1333,15 @@ event_callback (GList *events)
     while (events)
     {
         GList *l;
-        FAMEvent *event = events->data;
+        FAMEvent *event = (FAMEvent*) events->data;
         gboolean found = FALSE;
 
-        event = events->data;
+        event = (FAMEvent*) events->data;
         events = events->next;
 
         for (l = trimmed; l != NULL; l = l->next)
         {
-            FAMEvent *old_event = l->data;
+            FAMEvent *old_event = (FAMEvent*) l->data;
 
             if (old_event->watch_id == event->watch_id &&
                 old_event->request == event->request)
@@ -1360,7 +1363,7 @@ event_callback (GList *events)
 
     while (trimmed)
     {
-        do_event (trimmed->data);
+        do_event ((FAMEvent*) trimmed->data);
         trimmed = g_list_delete_link (trimmed, trimmed);
     }
 }

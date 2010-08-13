@@ -127,7 +127,7 @@ moo_text_completion_init (MooTextCompletion *cmpl)
     cmpl->priv->text_func_data = GINT_TO_POINTER (0);
     cmpl->priv->text_func_data_notify = NULL;
 
-    cmpl->priv->popup = g_object_new (MOO_TYPE_TEXT_POPUP, NULL);
+    cmpl->priv->popup = MOO_TEXT_POPUP (g_object_new (MOO_TYPE_TEXT_POPUP, (const char*) NULL));
 
     cell = gtk_cell_renderer_text_new ();
     gtk_tree_view_column_pack_start (cmpl->priv->popup->column, cell, TRUE);

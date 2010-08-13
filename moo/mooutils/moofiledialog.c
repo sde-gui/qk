@@ -121,12 +121,12 @@ moo_file_dialog_set_property (GObject        *object,
             break;
 
         case PROP_TYPE:
-            dialog->priv->type = g_value_get_enum (value);
+            dialog->priv->type = (MooFileDialogType) g_value_get_enum (value);
             g_object_notify (object, "type");
             break;
 
         case PROP_PARENT:
-            dialog->priv->parent = g_value_get_object (value);
+            dialog->priv->parent = GTK_WIDGET (g_value_get_object (value));
             g_object_notify (object, "parent");
             break;
 
@@ -251,35 +251,38 @@ moo_file_dialog_class_init (MooFileDialogClass *klass)
 
     g_object_class_install_property (gobject_class, PROP_MULTIPLE,
         g_param_spec_boolean ("multiple", "multiple", "multiple",
-                              FALSE, G_PARAM_READWRITE));
+                              FALSE, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_ENABLE_ENCODINGS,
         g_param_spec_boolean ("enable-encodings", "enable-encodings", "enable-encodings",
-                              FALSE, G_PARAM_READWRITE));
+                              FALSE, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_TITLE,
         g_param_spec_string ("title", "title", "title",
-                             NULL, G_PARAM_READWRITE));
+                             NULL, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_CURRENT_FOLDER_URI,
         g_param_spec_string ("current-folder-uri", "current-folder-uri",
-                             "current-folder-uri", NULL, G_PARAM_READWRITE));
+                             "current-folder-uri", NULL,
+                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_NAME,
-        g_param_spec_string ("name", "name", "name", NULL, G_PARAM_READWRITE));
+        g_param_spec_string ("name", "name", "name", NULL,
+                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_PARENT,
         g_param_spec_object ("parent", "parent", "parent",
-                             GTK_TYPE_WIDGET, G_PARAM_READWRITE));
+                             GTK_TYPE_WIDGET,
+                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_TYPE,
         g_param_spec_enum ("type", "type", "type",
                            MOO_TYPE_FILE_DIALOG_TYPE, MOO_FILE_DIALOG_OPEN,
-                           G_PARAM_READWRITE));
+                           (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_FILTER_MGR_ID,
         g_param_spec_string ("filter-mgr-id", "filter-mgr-id", "filter-mgr-id",
-                             NULL, G_PARAM_READWRITE));
+                             NULL, (GParamFlags) G_PARAM_READWRITE));
 }
 
 
@@ -433,7 +436,7 @@ string_slist_to_strv (GSList *list)
     uris = g_new (char*, len + 1);
 
     for (i = 0; i < len; i++, list = list->next)
-        uris[i] = g_strdup (list->data);
+        uris[i] = g_strdup ((const char*) list->data);
 
     uris[i] = NULL;
     return uris;
@@ -452,7 +455,7 @@ uri_list_to_filenames (GSList *list)
     filenames = g_new (char*, len + 1);
 
     for (i = 0; i < len; i++, list = list->next)
-        filenames[i] = g_filename_from_uri (list->data, NULL, NULL); /* XXX check */
+        filenames[i] = g_filename_from_uri ((const char*) list->data, NULL, NULL); /* XXX check */
 
     filenames[i] = NULL;
     return filenames;
@@ -814,14 +817,15 @@ moo_file_dialog_new (MooFileDialogType type,
     if (start_dir)
         start_dir_uri = g_filename_to_uri (start_dir, NULL, NULL);
 
-    dialog = g_object_new (MOO_TYPE_FILE_DIALOG,
+    dialog = MOO_FILE_DIALOG (
+             g_object_new (MOO_TYPE_FILE_DIALOG,
                            "parent", parent,
                            "type", type,
                            "multiple", multiple,
                            "title", title,
                            "current-folder-uri", start_dir_uri,
                            "name", start_name,
-                           NULL);
+                           (const char*) NULL));
 
     g_free (start_dir_uri);
     return dialog;

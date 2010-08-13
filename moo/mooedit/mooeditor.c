@@ -181,23 +181,23 @@ moo_editor_class_init (MooEditorClass *klass)
 
     g_object_class_install_property (gobject_class, PROP_OPEN_SINGLE_FILE_INSTANCE,
         g_param_spec_boolean ("open-single-file-instance", "open-single-file-instance", "open-single-file-instance",
-                              TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                              TRUE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PROP_ALLOW_EMPTY_WINDOW,
         g_param_spec_boolean ("allow-empty-window", "allow-empty-window", "allow-empty-window",
-                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                              FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PROP_SINGLE_WINDOW,
         g_param_spec_boolean ("single-window", "single-window", "single-window",
-                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                              FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PROP_SAVE_BACKUPS,
         g_param_spec_boolean ("save-backups", "save-backups", "save-backups",
-                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                              FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PROP_STRIP_WHITESPACE,
         g_param_spec_boolean ("strip-whitespace", "strip-whitespace", "strip-whitespace",
-                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                              FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PROP_FOCUSED_DOC,
         g_param_spec_object ("focused-doc", "focused-doc", "focused-doc",
@@ -205,7 +205,7 @@ moo_editor_class_init (MooEditorClass *klass)
 
     g_object_class_install_property (gobject_class, PROP_EMBEDDED,
         g_param_spec_boolean ("embedded", "embedded", "embedded",
-                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                              FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     signals[CLOSE_WINDOW] =
             g_signal_new ("close-window",
@@ -263,9 +263,9 @@ moo_editor_constructor (GType                  type,
 
     editor->priv->history = NULL;
     if (!is_embedded (editor))
-        editor->priv->history = g_object_new (MD_TYPE_HISTORY_MGR,
-                                              "name", "Editor",
-                                              NULL);
+        editor->priv->history = MD_HISTORY_MGR (g_object_new (MD_TYPE_HISTORY_MGR,
+                                                              "name", "Editor",
+                                                              (const char*) NULL));
 
     editor->priv->windows = NULL;
     editor->priv->windowless = NULL;
@@ -457,9 +457,9 @@ moo_editor_create_instance (gboolean embedded)
 {
     if (!editor_instance)
     {
-        editor_instance = g_object_new (MOO_TYPE_EDITOR,
-                                        "embedded", embedded,
-                                        NULL);
+        editor_instance = MOO_EDITOR (g_object_new (MOO_TYPE_EDITOR,
+                                                    "embedded", embedded,
+                                                    (const char*) NULL));
         g_object_add_weak_pointer (editor_instance, &editor_instance);
     }
     else
@@ -765,11 +765,11 @@ action_recent_dialog (MooEditWindow *window)
 static MooEditWindow *
 create_window (MooEditor *editor)
 {
-    MooEditWindow *window = g_object_new (get_window_type (editor),
-                                          "editor", editor,
-                                          "ui-xml",
-                                          moo_editor_get_ui_xml (editor),
-                                          NULL);
+    MooEditWindow *window = MOO_EDIT_WINDOW (
+        g_object_new (get_window_type (editor),
+                      "editor", editor,
+                      "ui-xml", moo_editor_get_ui_xml (editor),
+                      (const char*) NULL));
     editor->priv->windows = window_list_append (editor->priv->windows, window);
     _moo_window_attach_plugins (window);
     gtk_widget_show (GTK_WIDGET (window));
@@ -809,7 +809,7 @@ moo_editor_new_window (MooEditor *editor)
 
     if (!test_flag (editor, ALLOW_EMPTY_WINDOW))
     {
-        doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
+        doc = MOO_EDIT (g_object_new (get_doc_type (editor), "editor", editor, (const char*) NULL));
         _moo_edit_window_insert_doc (window, doc, -1);
         moo_editor_add_doc (editor, window, doc);
     }
@@ -830,7 +830,7 @@ moo_editor_create_doc (MooEditor      *editor,
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 
-    doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
+    doc = MOO_EDIT (g_object_new (get_doc_type (editor), "editor", editor, (const char*) NULL));
 
     if (filename)
         file = g_file_new_for_path (filename);
@@ -870,7 +870,7 @@ moo_editor_new_doc (MooEditor      *editor,
 
     g_return_val_if_fail (window != NULL, NULL);
 
-    doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
+    doc = MOO_EDIT (g_object_new (get_doc_type (editor), "editor", editor, (const char*) NULL));
     _moo_edit_window_insert_doc (window, doc, -1);
     moo_editor_add_doc (editor, window, doc);
 
@@ -966,7 +966,7 @@ moo_editor_load_file (MooEditor       *editor,
 
     if (!doc)
     {
-        doc = g_object_new (get_doc_type (editor), "editor", editor, NULL);
+        doc = MOO_EDIT (g_object_new (get_doc_type (editor), "editor", editor, (const char*) NULL));
         MOO_OBJECT_REF_SINK (doc);
         new_doc = TRUE;
     }
@@ -1393,8 +1393,9 @@ moo_editor_close_docs (MooEditor *editor,
             !moo_edit_window_num_docs (window) &&
             !test_flag (editor, ALLOW_EMPTY_WINDOW))
         {
-            MooEdit *doc = g_object_new (get_doc_type (editor),
-                                         "editor", editor, NULL);
+            MooEdit *doc = MOO_EDIT (g_object_new (get_doc_type (editor),
+                                                   "editor", editor,
+                                                   (const char*) NULL));
             _moo_edit_window_insert_doc (window, doc, -1);
             moo_editor_add_doc (editor, window, doc);
         }

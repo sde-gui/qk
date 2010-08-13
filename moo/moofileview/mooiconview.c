@@ -319,7 +319,7 @@ _moo_icon_view_class_init (MooIconViewClass *klass)
                                              "pixbuf-cell",
                                              "pixbuf-cell",
                                              GTK_TYPE_CELL_RENDERER,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_TEXT_CELL,
@@ -327,7 +327,7 @@ _moo_icon_view_class_init (MooIconViewClass *klass)
                                              "text-cell",
                                              "text-cell",
                                              GTK_TYPE_CELL_RENDERER,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_MODEL,
@@ -335,7 +335,7 @@ _moo_icon_view_class_init (MooIconViewClass *klass)
                                              "model",
                                              "model",
                                              GTK_TYPE_TREE_MODEL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     signals[ROW_ACTIVATED] =
             g_signal_new ("row-activated",
@@ -604,9 +604,9 @@ dnd_info_free (DndInfo *info)
 GtkWidget *
 _moo_icon_view_new (GtkTreeModel *model)
 {
-    return g_object_new (MOO_TYPE_ICON_VIEW,
-                         "model", model,
-                         NULL);
+    return GTK_WIDGET (g_object_new (MOO_TYPE_ICON_VIEW,
+                                     "model", model,
+                                     (const char*) NULL));
 }
 
 

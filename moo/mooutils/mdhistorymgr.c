@@ -24,6 +24,7 @@
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-thread.h"
+#include "mooutils/moolist.h"
 #include "marshals.h"
 #include <stdarg.h>
 #include <string.h>
@@ -32,6 +33,9 @@
 #define MAX_ITEM_NUMBER 5000
 
 #define IPC_ID "MdHistoryMgr"
+
+MOO_DEFINE_DLIST(WidgetList, widget_list, GtkWidget)
+MOO_DEFINE_QUEUE(MdHistoryItem, md_history_item)
 
 struct MdHistoryMgrPrivate {
     char *filename;
@@ -42,9 +46,9 @@ struct MdHistoryMgrPrivate {
     guint save_idle;
 
     guint update_widgets_idle;
-    GSList *widgets;
+    WidgetList *widgets;
 
-    GQueue *files;
+    MdHistoryItemQueue *files;
     GHashTable *hash;
     guint loaded : 1;
 };
@@ -138,7 +142,7 @@ md_history_mgr_class_init (MdHistoryMgrClass *klass)
 
     g_object_class_install_property (object_class, PROP_NAME,
         g_param_spec_string ("name", "name", "name",
-                             NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                             NULL, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 
     g_object_class_install_property (object_class, PROP_EMPTY,
         g_param_spec_boolean ("empty", "empty", "empty",
@@ -160,7 +164,7 @@ md_history_mgr_init (MdHistoryMgr *mgr)
     mgr->priv = G_TYPE_INSTANCE_GET_PRIVATE (mgr, MD_TYPE_HISTORY_MGR, MdHistoryMgrPrivate);
     mgr->priv->filename = NULL;
     mgr->priv->basename = NULL;
-    mgr->priv->files = g_queue_new ();
+    mgr->priv->files = md_history_item_queue_new ();
     mgr->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal,
                                              g_free, NULL);
     mgr->priv->loaded = FALSE;
@@ -198,8 +202,8 @@ md_history_mgr_dispose (GObject *object)
 
         if (mgr->priv->files)
         {
-            g_queue_foreach (mgr->priv->files, (GFunc) md_history_item_free, NULL);
-            g_queue_free (mgr->priv->files);
+            md_history_item_queue_foreach (mgr->priv->files, md_history_item_free, NULL);
+            md_history_item_queue_free_links (mgr->priv->files);
             g_hash_table_destroy (mgr->priv->hash);
         }
 
@@ -358,7 +362,7 @@ add_file (MdHistoryMgr  *mgr,
         return;
     }
 
-    g_queue_push_tail (mgr->priv->files, item);
+    md_history_item_queue_push_tail (mgr->priv->files, item);
     g_hash_table_insert (mgr->priv->hash, g_strdup (uri),
                          mgr->priv->files->tail);
 }
@@ -855,7 +859,7 @@ md_history_mgr_save (MdHistoryMgr *mgr)
     if ((writer = moo_config_writer_new (filename, FALSE, &error)))
     {
         GString *string;
-        GList *l;
+        MdHistoryItemList *l;
 
         moo_file_writer_write (writer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", -1);
         moo_file_writer_write (writer, "<" ELM_ROOT " " PROP_VERSION "=\"" PROP_VERSION_VALUE "\">\n", -1);
@@ -945,7 +949,7 @@ md_history_mgr_add_file_real (MdHistoryMgr  *mgr,
                               gboolean       notify)
 {
     const char *uri;
-    GList *link;
+    MdHistoryItemList *link;
     MdHistoryItem *new_item = NULL;
 
     g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
@@ -954,12 +958,12 @@ md_history_mgr_add_file_real (MdHistoryMgr  *mgr,
     ensure_files (mgr);
 
     uri = md_history_item_get_uri (item);
-    link = g_hash_table_lookup (mgr->priv->hash, uri);
+    link = (MdHistoryItemList*) g_hash_table_lookup (mgr->priv->hash, uri);
 
     if (!link)
     {
         MdHistoryItem *copy = md_history_item_copy (item);
-        g_queue_push_head (mgr->priv->files, copy);
+        md_history_item_queue_push_head (mgr->priv->files, copy);
         new_item = copy;
         g_hash_table_insert (mgr->priv->hash, g_strdup (uri),
                              mgr->priv->files->head);
@@ -969,8 +973,8 @@ md_history_mgr_add_file_real (MdHistoryMgr  *mgr,
     {
         MdHistoryItem *tmp = link->data;
 
-        g_queue_unlink (mgr->priv->files, link);
-        g_queue_push_head_link (mgr->priv->files, link);
+        md_history_item_queue_unlink (mgr->priv->files, link);
+        md_history_item_queue_push_head_link (mgr->priv->files, link);
 
         new_item = link->data = md_history_item_copy (item);
 
@@ -1009,7 +1013,7 @@ md_history_mgr_update_file_real (MdHistoryMgr  *mgr,
                                  gboolean       notify)
 {
     const char *uri;
-    GList *link;
+    MdHistoryItemList *link;
 
     g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
     g_return_if_fail (file != NULL);
@@ -1017,7 +1021,7 @@ md_history_mgr_update_file_real (MdHistoryMgr  *mgr,
     ensure_files (mgr);
 
     uri = md_history_item_get_uri (file);
-    link = g_hash_table_lookup (mgr->priv->hash, uri);
+    link = (MdHistoryItemList*) g_hash_table_lookup (mgr->priv->hash, uri);
 
     if (!link)
     {
@@ -1049,14 +1053,14 @@ MdHistoryItem *
 md_history_mgr_find_uri (MdHistoryMgr *mgr,
                          const char   *uri)
 {
-    GList *link;
+    MdHistoryItemList *link;
 
     g_return_val_if_fail (MD_IS_HISTORY_MGR (mgr), NULL);
     g_return_val_if_fail (uri != NULL, NULL);
 
     ensure_files (mgr);
 
-    link = g_hash_table_lookup (mgr->priv->hash, uri);
+    link = (MdHistoryItemList*) g_hash_table_lookup (mgr->priv->hash, uri);
 
     return link ? link->data : NULL;
 }
@@ -1066,7 +1070,7 @@ md_history_mgr_remove_uri_real (MdHistoryMgr *mgr,
                                 const char   *uri,
                                 gboolean      notify)
 {
-    GList *link;
+    MdHistoryItemList *link;
     MdHistoryItem *item;
 
     g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
@@ -1074,7 +1078,7 @@ md_history_mgr_remove_uri_real (MdHistoryMgr *mgr,
 
     ensure_files (mgr);
 
-    link = g_hash_table_lookup (mgr->priv->hash, uri);
+    link = (MdHistoryItemList*) g_hash_table_lookup (mgr->priv->hash, uri);
 
     if (!link)
         return;
@@ -1082,7 +1086,7 @@ md_history_mgr_remove_uri_real (MdHistoryMgr *mgr,
     item = link->data;
 
     g_hash_table_remove (mgr->priv->hash, uri);
-    g_queue_delete_link (mgr->priv->files, link);
+    md_history_item_queue_delete_link (mgr->priv->files, link);
 
     g_signal_emit (mgr, signals[CHANGED], 0);
 
@@ -1210,16 +1214,16 @@ view_destroyed (GtkWidget    *widget,
                 MdHistoryMgr *mgr)
 {
     g_object_set_data (G_OBJECT (widget), "md-history-mgr-callback-data", NULL);
-    mgr->priv->widgets = g_slist_remove (mgr->priv->widgets, widget);
+    mgr->priv->widgets = widget_list_remove (mgr->priv->widgets, widget);
 }
 
 static void
 update_menu (MdHistoryMgr *mgr,
              GtkWidget    *menu)
 {
-    GList *children;
+    WidgetList *children;
 
-    children = gtk_container_get_children (GTK_CONTAINER (menu));
+    children = widget_list_from_glist (gtk_container_get_children (GTK_CONTAINER (menu)));
 
     while (children)
     {
@@ -1228,7 +1232,7 @@ update_menu (MdHistoryMgr *mgr,
         if (g_object_get_data (G_OBJECT (item), "md-history-menu-item-file"))
             gtk_widget_destroy (item);
 
-        children = g_list_delete_link (children, children);
+        children = widget_list_delete_link (children, children);
     }
 
     populate_menu (mgr, menu);
@@ -1258,7 +1262,7 @@ md_history_mgr_create_menu (MdHistoryMgr   *mgr,
                             cb_data, (GDestroyNotify) callback_data_free);
 
     populate_menu (mgr, menu);
-    mgr->priv->widgets = g_slist_prepend (mgr->priv->widgets, menu);
+    mgr->priv->widgets = widget_list_prepend (mgr->priv->widgets, menu);
 
     return menu;
 }
@@ -1273,13 +1277,13 @@ menu_item_activated (GtkWidget *menu_item)
 
     g_return_if_fail (parent != NULL);
 
-    data = g_object_get_data (G_OBJECT (parent), "md-history-mgr-callback-data");
-    item = g_object_get_data (G_OBJECT (menu_item), "md-history-menu-item-file");
+    data = (CallbackData*) g_object_get_data (G_OBJECT (parent), "md-history-mgr-callback-data");
+    item = (MdHistoryItem*) g_object_get_data (G_OBJECT (menu_item), "md-history-menu-item-file");
     g_return_if_fail (data && item);
 
     list = g_slist_prepend (NULL, md_history_item_copy (item));
     data->callback (list, data->data);
-    md_history_item_free (list->data);
+    md_history_item_free ((MdHistoryItem*) list->data);
     g_slist_free (list);
 }
 
@@ -1288,7 +1292,7 @@ populate_menu (MdHistoryMgr *mgr,
                GtkWidget    *menu)
 {
     guint n_items, i;
-    GList *l;
+    MdHistoryItemList *l;
 
     ensure_files (mgr);
 
@@ -1346,10 +1350,10 @@ open_selected (GtkTreeView *tree_view)
     GList *selected;
     GSList *items;
 
-    mgr = g_object_get_data (G_OBJECT (tree_view), "md-history-mgr");
+    mgr = (MdHistoryMgr*) g_object_get_data (G_OBJECT (tree_view), "md-history-mgr");
     g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
 
-    data = g_object_get_data (G_OBJECT (tree_view), "md-history-mgr-callback-data");
+    data = (CallbackData*) g_object_get_data (G_OBJECT (tree_view), "md-history-mgr-callback-data");
     g_return_if_fail (data != NULL);
 
     selection = gtk_tree_view_get_selection (tree_view);
@@ -1359,7 +1363,7 @@ open_selected (GtkTreeView *tree_view)
     {
         char *uri = NULL;
         MdHistoryItem *item;
-        GtkTreePath *path = selected->data;
+        GtkTreePath *path = (GtkTreePath*) selected->data;
 
         gtk_tree_model_get_iter (model, &iter, path);
         gtk_tree_model_get (model, &iter, COLUMN_URI, &uri, -1);
@@ -1422,7 +1426,7 @@ create_tree_view (void)
 #define LOADING_PRIORITY G_PRIORITY_DEFAULT_IDLE
 
 typedef struct {
-    GSList *items;
+    MdHistoryItemList *items;
     guint idle;
     GtkWidget *tree_view;
     GtkListStore *store;
@@ -1441,8 +1445,8 @@ idle_loader_free (IdleLoader *data)
 {
     if (data->idle)
         g_source_remove (data->idle);
-    g_slist_foreach (data->items, (GFunc) md_history_item_free, NULL);
-    g_slist_free (data->items);
+    md_history_item_list_foreach (data->items, (MdHistoryItemListFunc) md_history_item_free, NULL);
+    md_history_item_list_free_links (data->items);
     g_free (data);
 }
 
@@ -1481,7 +1485,7 @@ idle_loader (IdleLoader *data)
     {
         add_entry (data->items->data, data->store, data->tree_view);
         md_history_item_free (data->items->data);
-        data->items = g_slist_delete_link (data->items, data->items);
+        data->items = md_history_item_list_delete_link (data->items, data->items);
     }
 
     if (!data->items)
@@ -1504,7 +1508,7 @@ populate_tree_view (MdHistoryMgr *mgr,
 {
     GtkListStore *store;
     GtkTreeModel *model;
-    GList *l;
+    MdHistoryItemList *l;
     int count;
 
     ensure_files (mgr);
@@ -1527,11 +1531,11 @@ populate_tree_view (MdHistoryMgr *mgr,
 
         while (l != NULL)
         {
-            data->items = g_slist_prepend (data->items, md_history_item_copy (l->data));
+            data->items = md_history_item_list_prepend (data->items, md_history_item_copy (l->data));
             l = l->next;
         }
 
-        data->items = g_slist_reverse (data->items);
+        data->items = md_history_item_list_reverse (data->items);
         data->idle = g_timeout_add_full (LOADING_PRIORITY,
                                          LOADING_TIMEOUT,
                                          (GSourceFunc) idle_loader,
@@ -1581,7 +1585,7 @@ md_history_mgr_create_tree_view (MdHistoryMgr   *mgr,
     populate_tree_view (mgr, tree_view);
     if (mgr->priv->files->head)
         _moo_tree_view_select_first (GTK_TREE_VIEW (tree_view));
-    mgr->priv->widgets = g_slist_prepend (mgr->priv->widgets, tree_view);
+    mgr->priv->widgets = widget_list_prepend (mgr->priv->widgets, tree_view);
 
     return tree_view;
 }
@@ -1641,7 +1645,7 @@ md_history_mgr_create_dialog (MdHistoryMgr   *mgr,
 static gboolean
 do_update_widgets (MdHistoryMgr *mgr)
 {
-    GSList *l;
+    WidgetList *l;
 
     mgr->priv->update_widgets_idle = 0;
 
@@ -1766,7 +1770,7 @@ cmp_data (GQuark      key,
     if (!data->equal)
         return;
 
-    value2 = g_datalist_id_get_data (&data->item->data, key);
+    value2 = (const char*) g_datalist_id_get_data (&data->item->data, key);
     if (!value2 || strcmp (value2, value) != 0)
         data->equal = FALSE;
 }
@@ -1819,7 +1823,7 @@ md_history_item_get (MdHistoryItem *item,
 {
     g_return_val_if_fail (item != NULL, NULL);
     g_return_val_if_fail (key != NULL, NULL);
-    return g_datalist_get_data (&item->data, key);
+    return (const char*) g_datalist_get_data (&item->data, key);
 }
 
 const char *

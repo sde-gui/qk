@@ -89,7 +89,7 @@ position_window (GtkWindow *dialog)
                                           (gpointer) position_window,
                                           NULL);
 
-    coord = g_object_get_data (G_OBJECT (dialog), "moo-coords");
+    coord = (GdkPoint*) g_object_get_data (G_OBJECT (dialog), "moo-coords");
     g_return_if_fail (coord != NULL);
 
     screen = gtk_widget_get_screen (GTK_WIDGET (dialog));
@@ -449,7 +449,7 @@ save_size (GtkWindow *window)
     PositionInfo *pinfo;
     GdkWindowState state;
 
-    pinfo = g_object_get_data (G_OBJECT (window), "moo-position-info");
+    pinfo = (PositionInfo*) g_object_get_data (G_OBJECT (window), "moo-position-info");
     g_return_val_if_fail (pinfo != NULL, FALSE);
 
     pinfo->save_size_idle = 0;
@@ -529,7 +529,7 @@ _moo_window_set_remember_size (GtkWindow  *window,
 
     g_return_if_fail (prefs_key != NULL);
 
-    pinfo = g_object_get_data (G_OBJECT (window), "moo-position-info");
+    pinfo = (PositionInfo*) g_object_get_data (G_OBJECT (window), "moo-position-info");
 
     if (pinfo)
         g_signal_handlers_disconnect_by_func (window, (gpointer) configure_event, pinfo);

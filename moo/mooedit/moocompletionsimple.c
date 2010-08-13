@@ -403,7 +403,7 @@ moo_completion_simple_new (MooCompletionStringFunc string_func,
                            MooCompletionFreeFunc free_func,
                            MooCompletionCmpFunc cmp_func)
 {
-    MooCompletionSimple *cmpl = g_object_new (MOO_TYPE_COMPLETION_SIMPLE, NULL);
+    MooCompletionSimple *cmpl = MOO_COMPLETION_SIMPLE (g_object_new (MOO_TYPE_COMPLETION_SIMPLE, (const char*) NULL));
 
     cmpl->priv->string_func = string_func;
     cmpl->priv->free_func = free_func;

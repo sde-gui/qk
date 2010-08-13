@@ -186,7 +186,7 @@ ensure_output (WindowStuff *stuff)
                                 _("Search Results"), _("Search Results"));
     stuff->output = g_object_new (MOO_TYPE_CMD_VIEW,
                                   "highlight-current-line", TRUE,
-                                  NULL);
+                                  (const char*) NULL);
 
     moo_edit_window_add_stop_client (window, stuff->output);
     g_signal_connect_swapped (stuff->output, "activate",
@@ -326,7 +326,7 @@ setup_file_combo (MooHistoryCombo *hist_combo)
                                "directories-only", TRUE,
                                "case-sensitive", TRUE,
                                "show-hidden", FALSE,
-                               NULL);
+                               (const char*) NULL);
     _moo_file_entry_completion_set_entry (completion, GTK_ENTRY (entry));
     g_object_set_data_full (G_OBJECT (entry), "find-plugin-file-completion",
                             completion, g_object_unref);

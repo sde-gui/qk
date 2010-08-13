@@ -205,7 +205,7 @@ _moo_cmd_new (const char *working_dir,
 
     g_return_val_if_fail (argv && *argv, NULL);
 
-    cmd = g_object_new (MOO_TYPE_CMD, NULL);
+    cmd = g_object_new (MOO_TYPE_CMD, (const char*) NULL);
 
     result = moo_cmd_run_command (cmd, working_dir, argv, envp,
                                   flags, cmd_flags, child_setup,

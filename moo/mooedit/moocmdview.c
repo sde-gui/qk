@@ -203,7 +203,7 @@ moo_cmd_view_destroy (GtkObject *object)
 GtkWidget*
 moo_cmd_view_new (void)
 {
-    return g_object_new (MOO_TYPE_CMD_VIEW, "highlight-current-line", TRUE, NULL);
+    return GTK_WIDGET (g_object_new (MOO_TYPE_CMD_VIEW, "highlight-current-line", TRUE, (const char*) NULL));
 }
 
 

@@ -297,12 +297,12 @@ moo_file_props_dialog_show (GtkWidget *widget)
 }
 
 
-GtkWidget*
+GtkWidget *
 _moo_file_props_dialog_new (GtkWidget *parent)
 {
     GtkWidget *dialog;
 
-    dialog = g_object_new (MOO_TYPE_FILE_PROPS_DIALOG, NULL);
+    dialog = GTK_WIDGET (g_object_new (MOO_TYPE_FILE_PROPS_DIALOG, (const char*) NULL));
 
     moo_window_set_parent (dialog, parent);
 

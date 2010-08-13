@@ -33,7 +33,7 @@ static MooHelpData *moo_help_get_data       (GtkWidget  *widget);
 static MooHelpData *
 moo_help_get_data (GtkWidget *widget)
 {
-    return g_object_get_data (G_OBJECT (widget), "moo-help-data");
+    return (MooHelpData*) g_object_get_data (G_OBJECT (widget), "moo-help-data");
 }
 
 
@@ -41,7 +41,7 @@ static gboolean
 moo_help_callback_id (GtkWidget *widget,
                       gpointer   data)
 {
-    moo_help_open_id (data, widget);
+    moo_help_open_id ((const char*) data, widget);
     return TRUE;
 }
 

@@ -76,7 +76,7 @@ _moo_accel_button_class_init (MooAccelButtonClass *klass)
                                         "accel",
                                         "accel",
                                         NULL,
-                                        G_PARAM_READWRITE));
+                                        (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_TITLE,
@@ -85,7 +85,7 @@ _moo_accel_button_class_init (MooAccelButtonClass *klass)
                                         "title",
                                         "title",
                                         "Choose shortcut",
-                                        G_PARAM_READWRITE));
+                                        (GParamFlags) G_PARAM_READWRITE));
 
     signals[ACCEL_SET] = g_signal_new ("accel-set",
                                        G_TYPE_FROM_CLASS (gobject_class),
@@ -200,7 +200,7 @@ _moo_accel_button_set_accel (MooAccelButton *button,
                              const char     *accel)
 {
     guint accel_key = 0;
-    GdkModifierType accel_mods = 0;
+    GdkModifierType accel_mods = (GdkModifierType) 0;
 
     g_return_val_if_fail (MOO_IS_ACCEL_BUTTON (button), FALSE);
 
@@ -234,7 +234,7 @@ _moo_accel_button_set_accel (MooAccelButton *button,
 
 
 typedef struct {
-    int mods;
+    GdkModifierType mods;
     guint key;
     GtkLabel *label;
     GtkDialog *dialog;
@@ -274,11 +274,11 @@ key_event (GtkWidget    *widget,
     GdkKeymap *keymap;
     guint keyval;
     GdkModifierType consumed_modifiers;
-    GdkModifierType mods;
+    int mods;
 
     keymap = gdk_keymap_get_for_display (gtk_widget_get_display (widget));
     gdk_keymap_translate_keyboard_state (keymap, event->hardware_keycode,
-                                         event->state, event->group,
+                                         (GdkModifierType) event->state, event->group,
                                          NULL, NULL, NULL, &consumed_modifiers);
 
     keyval = gdk_keyval_to_lower (event->keyval);
@@ -287,13 +287,13 @@ key_event (GtkWidget    *widget,
     if (keyval != event->keyval)
         mods |= GDK_SHIFT_MASK;
 
-    if (gtk_accelerator_valid (keyval, mods))
+    if (gtk_accelerator_valid (keyval, (GdkModifierType) mods))
     {
-        char *label = gtk_accelerator_get_label (keyval, mods);
+        char *label = gtk_accelerator_get_label (keyval, (GdkModifierType) mods);
         gtk_label_set_text (s->label, label);
         g_free (label);
         s->key = keyval;
-        s->mods = mods;
+        s->mods = (GdkModifierType) mods;
         add_commit_timeout (s);
     }
     else
@@ -312,7 +312,7 @@ moo_accel_button_clicked (GtkButton *gtkbutton)
     AccelDialogXml *xml;
     GtkWidget *dialog;
     GtkWidget *parent;
-    Stuff s = {0, 0, NULL, NULL, 0};
+    Stuff s = { (GdkModifierType) 0, 0, NULL, NULL, 0 };
     int response;
 
     xml = accel_dialog_xml_new ();

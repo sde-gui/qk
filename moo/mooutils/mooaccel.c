@@ -218,7 +218,7 @@ set_accel (const char *accel_path,
            gboolean    set_gtk)
 {
     guint accel_key = 0;
-    GdkModifierType accel_mods = 0;
+    GdkModifierType accel_mods = (GdkModifierType) 0;
     const char *old_accel;
 
     g_return_if_fail (accel_path != NULL && accel != NULL);
@@ -277,7 +277,7 @@ get_accel (const char *accel_path)
 {
     g_return_val_if_fail (accel_path != NULL, NULL);
     init_accel_map ();
-    return g_hash_table_lookup (moo_accel_map, accel_path);
+    return (const char*) g_hash_table_lookup (moo_accel_map, accel_path);
 }
 
 
@@ -286,7 +286,7 @@ get_default_accel (const char *accel_path)
 {
     g_return_val_if_fail (accel_path != NULL, NULL);
     init_accel_map ();
-    return g_hash_table_lookup (moo_default_accel_map, accel_path);
+    return (const char*) g_hash_table_lookup (moo_default_accel_map, accel_path);
 }
 
 
@@ -332,7 +332,7 @@ _moo_accel_register (const char *accel_path,
     if (default_accel[0])
     {
         guint accel_key = 0;
-        GdkModifierType accel_mods = 0;
+        GdkModifierType accel_mods = (GdkModifierType) 0;
 
         my_gtk_accelerator_parse (default_accel, &accel_key, &accel_mods);
 
@@ -395,7 +395,7 @@ char *
 _moo_get_accel_label (const char *accel)
 {
     guint key = 0;
-    GdkModifierType mods = 0;
+    GdkModifierType mods = (GdkModifierType) 0;
 
     g_return_val_if_fail (accel != NULL, g_strdup (""));
 
@@ -423,7 +423,7 @@ moo_accel_translate_event (GtkWidget       *widget,
     if (keyval)
         *keyval = 0;
     if (mods)
-        *mods = 0;
+        *mods = (GdkModifierType) 0;
 
     if (widget && GTK_WIDGET_REALIZED (widget))
         keymap = gdk_keymap_get_for_display (gtk_widget_get_display (widget));
@@ -431,10 +431,10 @@ moo_accel_translate_event (GtkWidget       *widget,
         keymap = gdk_keymap_get_default ();
 
     gdk_keymap_translate_keyboard_state (keymap, event->hardware_keycode,
-                                         event->state, event->group,
+                                         (GdkModifierType) event->state, event->group,
                                          keyval, NULL, NULL, &consumed);
     if (mods)
-        *mods = event->state & ~consumed & MOO_ACCEL_MODS_MASK;
+        *mods = (GdkModifierType) (event->state & ~consumed & MOO_ACCEL_MODS_MASK);
 }
 
 gboolean
@@ -529,7 +529,7 @@ parse_key (const char *string)
 static GdkModifierType
 parse_mod (const char *string, gssize len)
 {
-    GdkModifierType mod = 0;
+    GdkModifierType mod = (GdkModifierType) 0;
     char *stripped;
 
     stripped = g_strstrip (g_ascii_strdown (string, len));
@@ -576,7 +576,7 @@ my_gtk_accelerator_parse (const char      *accel,
                           GdkModifierType *mods)
 {
     *key = 0;
-    *mods = 0;
+    *mods = (GdkModifierType) 0;
 
     while (*accel == '<')
     {
@@ -586,7 +586,7 @@ my_gtk_accelerator_parse (const char      *accel,
         if (!end || !(m = parse_mod (accel + 1, end - accel - 1)))
             return;
 
-        *mods |= m;
+        *mods = (GdkModifierType) (*mods | m);
         accel = end + 1;
     }
 
@@ -606,7 +606,7 @@ accel_parse_sep (const char     *accel,
 {
     char **pieces;
     guint n_pieces, i;
-    GdkModifierType mod = 0;
+    int mod = 0;
     guint key = 0;
 
     pieces = g_strsplit (accel, sep, 0);
@@ -634,7 +634,7 @@ out:
     if (keyval)
         *keyval = key;
     if (modifiers)
-        *modifiers = mod;
+        *modifiers = (GdkModifierType) mod;
     return key != 0;
 }
 
@@ -646,7 +646,7 @@ _moo_accel_parse (const char      *accel,
 {
     guint key = 0;
     guint len;
-    GdkModifierType mods = 0;
+    GdkModifierType mods = (GdkModifierType) 0;
     char *p;
 
     g_return_val_if_fail (accel && accel[0], FALSE);
@@ -780,7 +780,7 @@ test_moo_accel_register (void)
         const char *second_accel = cases[i].second_accel;
         const char *third_accel = cases[i].third_accel;
         guint key = 0;
-        GdkModifierType mods = 0;
+        GdkModifierType mods = (GdkModifierType) 0;
 
         TEST_EXPECT_WARNING (0, "_moo_accel_register and friends for path %s", path);
 

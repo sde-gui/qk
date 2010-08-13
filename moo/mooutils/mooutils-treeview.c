@@ -768,7 +768,7 @@ _moo_tree_helper_new (GtkWidget *widget,
 
     g_return_val_if_fail (GTK_IS_TREE_VIEW (widget) || GTK_IS_COMBO_BOX (widget), NULL);
 
-    helper = g_object_new (MOO_TYPE_TREE_HELPER, NULL);
+    helper = g_object_new (MOO_TYPE_TREE_HELPER, (const char*) NULL);
     MOO_OBJECT_REF_SINK (helper);
 
     _moo_tree_helper_connect (helper, widget, new_btn, delete_btn, up_btn, down_btn);
@@ -1212,7 +1212,7 @@ _moo_tree_view_setup_expander (GtkTreeView       *tree_view,
                   "level-indentation", LEVEL_INDENTATION,
                   NULL);
 
-    cell = g_object_new (MOO_TYPE_EXPANDER_CELL, NULL);
+    cell = g_object_new (MOO_TYPE_EXPANDER_CELL, (const char*) NULL);
     gtk_tree_view_column_pack_start (column, cell, FALSE);
     gtk_tree_view_column_set_cell_data_func (column, cell,
                                              (GtkTreeCellDataFunc) expander_cell_data_func,

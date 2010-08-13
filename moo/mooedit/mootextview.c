@@ -324,7 +324,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "buffer",
                                              "buffer",
                                              MOO_TYPE_TEXT_BUFFER,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_RIGHT_MARGIN_OFFSET,
@@ -332,7 +332,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "right-margin-offset",
                                              "right-margin-offset",
                                              1, G_MAXUINT, 80,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_DRAW_RIGHT_MARGIN,
@@ -340,7 +340,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "draw-right-margin",
                                              "draw-right-margin",
                                              FALSE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_RIGHT_MARGIN_COLOR,
@@ -348,7 +348,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "right-margin-color",
                                              "right-margin-color",
                                              LIGHT_BLUE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HIGHLIGHT_CURRENT_LINE,
@@ -356,7 +356,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "highlight-current-line",
                                              "highlight-current-line",
                                              FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HIGHLIGHT_MATCHING_BRACKETS,
@@ -364,7 +364,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "highlight-matching-brackets",
                                              "highlight-matching-brackets",
                                              TRUE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HIGHLIGHT_MISMATCHING_BRACKETS,
@@ -372,7 +372,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "highlight-mismatching-brackets",
                                              "highlight-mismatching-brackets",
                                              FALSE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_CURRENT_LINE_COLOR,
@@ -380,7 +380,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "current-line-color",
                                              "current-line-color",
                                              LIGHT_BLUE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_TAB_WIDTH,
@@ -388,7 +388,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "tab-width",
                                              "tab-width",
                                              1, G_MAXUINT, 8,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_DRAW_WHITESPACE,
@@ -397,7 +397,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "draw-whitespace",
                                              MOO_TYPE_DRAW_WHITESPACE_FLAGS,
                                              0,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_INDENTER,
@@ -405,7 +405,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "indenter",
                                              "indenter",
                                              MOO_TYPE_INDENTER,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HAS_TEXT,
@@ -445,7 +445,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "manage-clipboard",
                                              "manage-clipboard",
                                              TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_SMART_HOME_END,
@@ -453,7 +453,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "smart-home-end",
                                              "smart-home-end",
                                              TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_HIGHLIGHT,
@@ -461,7 +461,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "enable-highlight",
                                              "enable-highlight",
                                              TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_SHOW_LINE_NUMBERS,
@@ -469,7 +469,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "show-line-numbers",
                                              "show-line-numbers",
                                              FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_SHOW_LINE_MARKS,
@@ -477,7 +477,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "show-line-marks",
                                              "show-line-marks",
                                              FALSE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_FOLDING,
@@ -485,7 +485,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "enable-folding",
                                              "enable-folding",
                                              FALSE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_QUICK_SEARCH,
@@ -493,7 +493,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "enable-quick-search",
                                              "enable-quick-search",
                                              TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_QUICK_SEARCH_FLAGS,
@@ -502,25 +502,25 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                              "quick-search-flags",
                                              MOO_TYPE_TEXT_SEARCH_FLAGS,
                                              MOO_TEXT_SEARCH_CASELESS,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_AUTO_INDENT,
                                      g_param_spec_boolean ("auto-indent",
                                              "auto-indent", "auto-indent",
-                                             TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             TRUE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_BACKSPACE_INDENTS,
                                      g_param_spec_boolean ("backspace-indents",
                                              "backspace-indents", "backspace-indents",
-                                             FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_TAB_INDENTS,
                                      g_param_spec_boolean ("tab-indents",
                                              "tab-indents", "tab-indents",
-                                             FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     gtk_widget_class_install_style_property (widget_class,
                                              g_param_spec_int ("expander-size",
@@ -739,7 +739,7 @@ moo_text_view_constructor (GType                  type,
 
     if (!view->priv->buffer)
     {
-        view->priv->buffer = g_object_new (view->priv->buffer_type, NULL);
+        view->priv->buffer = GTK_TEXT_BUFFER (g_object_new (view->priv->buffer_type, (const char*) NULL));
         gtk_text_view_set_buffer (GTK_TEXT_VIEW (view), view->priv->buffer);
         g_object_unref (view->priv->buffer);
     }
@@ -866,7 +866,7 @@ moo_text_view_finalize (GObject *object)
 GtkWidget *
 moo_text_view_new (void)
 {
-    return g_object_new (MOO_TYPE_TEXT_VIEW, NULL);
+    return GTK_WIDGET (g_object_new (MOO_TYPE_TEXT_VIEW, (const char*) NULL));
 }
 
 
@@ -1081,14 +1081,14 @@ moo_text_view_set_property (GObject        *object,
 
             if (!buffer)
             {
-                buffer = g_object_new (view->priv->buffer_type, NULL);
+                buffer = GTK_TEXT_BUFFER (g_object_new (view->priv->buffer_type, (const char*) NULL));
             }
             else if (!g_type_is_a (G_OBJECT_TYPE (buffer), view->priv->buffer_type))
             {
                 g_critical ("%s: buffer '%s' is not of type '%s', ignoring it",
                             G_STRLOC, g_type_name (G_OBJECT_TYPE (buffer)),
                             g_type_name (view->priv->buffer_type));
-                buffer = g_object_new (view->priv->buffer_type, NULL);
+                buffer = GTK_TEXT_BUFFER (g_object_new (view->priv->buffer_type, (const char*) NULL));
             }
             else
             {
@@ -4607,8 +4607,8 @@ moo_text_view_insert_box (MooTextView *view,
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     g_return_if_fail (iter != NULL);
 
-    anchor = g_object_new (MOO_TYPE_TEXT_ANCHOR, NULL);
-    box = g_object_new (MOO_TYPE_TEXT_BOX, NULL);
+    anchor = MOO_TEXT_ANCHOR (g_object_new (MOO_TYPE_TEXT_ANCHOR, (const char*) NULL));
+    box = MOO_TEXT_BOX (g_object_new (MOO_TYPE_TEXT_BOX, (const char*) NULL));
     MOO_TEXT_ANCHOR (anchor)->widget = box;
 
     buffer = get_buffer (view);

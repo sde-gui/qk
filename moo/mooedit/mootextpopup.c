@@ -133,7 +133,7 @@ moo_text_popup_class_init (MooTextPopupClass *klass)
                                              "hide-on-activate",
                                              "hide-on-activate",
                                              TRUE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_MAX_LEN,
@@ -141,7 +141,7 @@ moo_text_popup_class_init (MooTextPopupClass *klass)
                                              "max-len",
                                              "max-len",
                                              1, G_MAXINT, MAX_POPUP_LEN,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_POSITION,
@@ -149,7 +149,7 @@ moo_text_popup_class_init (MooTextPopupClass *klass)
                                              "position",
                                              "position",
                                              GTK_TYPE_TEXT_ITER,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_DOC,
@@ -157,7 +157,7 @@ moo_text_popup_class_init (MooTextPopupClass *klass)
                                              "doc",
                                              "doc",
                                              GTK_TYPE_TEXT_VIEW,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_MODEL,
@@ -165,7 +165,7 @@ moo_text_popup_class_init (MooTextPopupClass *klass)
                                              "model",
                                              "model",
                                              GTK_TYPE_TREE_MODEL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     signals[SHOW] =
             g_signal_new ("show",
@@ -979,7 +979,7 @@ MooTextPopup *
 moo_text_popup_new (GtkTextView *doc)
 {
     g_return_val_if_fail (!doc || GTK_IS_TEXT_VIEW (doc), NULL);
-    return g_object_new (MOO_TYPE_TEXT_POPUP, "doc", doc, NULL);
+    return MOO_TEXT_POPUP (g_object_new (MOO_TYPE_TEXT_POPUP, "doc", doc, (const char*) NULL));
 }
 
 

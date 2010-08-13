@@ -243,7 +243,7 @@ moo_plugin_register (const char            *id,
         return FALSE;
     }
 
-    plugin = g_object_new (type, NULL);
+    plugin = MOO_PLUGIN (g_object_new (type, (const char*) NULL));
     plugin->id = g_strdup (id);
     plugin->info = moo_plugin_info_copy ((MooPluginInfo*) info);
     plugin->params = params ? moo_plugin_params_copy ((MooPluginParams*) params) :
@@ -386,7 +386,7 @@ plugin_attach_win (MooPlugin      *plugin,
 
     if (wtype && g_type_is_a (wtype, MOO_TYPE_WIN_PLUGIN))
     {
-        win_plugin = g_object_new (wtype, NULL);
+        win_plugin = MOO_WIN_PLUGIN (g_object_new (wtype, (const char*) NULL));
         g_return_if_fail (win_plugin != NULL);
 
         win_plugin->plugin = plugin;
@@ -487,7 +487,7 @@ plugin_attach_doc (MooPlugin      *plugin,
 
     if (dtype && g_type_is_a (dtype, MOO_TYPE_DOC_PLUGIN))
     {
-        doc_plugin = g_object_new (dtype, NULL);
+        doc_plugin = MOO_DOC_PLUGIN (g_object_new (dtype, (const char*) NULL));
         g_return_if_fail (doc_plugin != NULL);
 
         doc_plugin->plugin = plugin;

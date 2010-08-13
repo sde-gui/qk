@@ -169,7 +169,7 @@ _moo_file_entry_completion_class_init (MooFileEntryCompletionClass *klass)
                                              "enable-completion",
                                              "enable-completion",
                                              TRUE,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_DIRECTORIES_ONLY,
@@ -177,7 +177,7 @@ _moo_file_entry_completion_class_init (MooFileEntryCompletionClass *klass)
                                              "directories-only",
                                              "directories-only",
                                              FALSE,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_SHOW_HIDDEN,
@@ -185,7 +185,7 @@ _moo_file_entry_completion_class_init (MooFileEntryCompletionClass *klass)
                                              "show-hidden",
                                              "show-hidden",
                                              TRUE,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENTRY,
@@ -193,7 +193,7 @@ _moo_file_entry_completion_class_init (MooFileEntryCompletionClass *klass)
                                              "entry",
                                              "entry",
                                              GTK_TYPE_ENTRY,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_CASE_SENSITIVE,
@@ -201,7 +201,7 @@ _moo_file_entry_completion_class_init (MooFileEntryCompletionClass *klass)
                                              "case-sensitive",
                                              "case-sensitive",
                                              CASE_SENSITIVE_DEFAULT,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_CURRENT_DIR,
@@ -209,7 +209,7 @@ _moo_file_entry_completion_class_init (MooFileEntryCompletionClass *klass)
                                              "current-dir",
                                              "current-dir",
                                              NULL,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_FILE_SYSTEM,
@@ -217,7 +217,7 @@ _moo_file_entry_completion_class_init (MooFileEntryCompletionClass *klass)
                                              "file-system",
                                              "file-system",
                                              MOO_TYPE_FILE_SYSTEM,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     signals[FINISHED] =
             _moo_signal_new_cb ("finished",
@@ -1634,7 +1634,7 @@ _moo_file_entry_class_init (MooFileEntryClass *klass)
 static void
 _moo_file_entry_init (G_GNUC_UNUSED MooFileEntry *entry)
 {
-    entry->completion = g_object_new (MOO_TYPE_FILE_ENTRY_COMPLETION, NULL);
+    entry->completion = MOO_FILE_ENTRY_COMPLETION (g_object_new (MOO_TYPE_FILE_ENTRY_COMPLETION, (const char*) NULL));
     entry->completion->priv->managed = TRUE;
     _moo_file_entry_completion_set_entry (entry->completion, GTK_ENTRY (entry));
 }
@@ -1692,10 +1692,10 @@ moo_file_entry_get_property (GObject        *object,
 }
 
 
-GtkWidget*
+GtkWidget *
 _moo_file_entry_new (void)
 {
-    return g_object_new (MOO_TYPE_FILE_ENTRY, NULL);
+    return GTK_WIDGET (g_object_new (MOO_TYPE_FILE_ENTRY, (const char*) NULL));
 }
 
 

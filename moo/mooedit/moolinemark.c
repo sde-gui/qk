@@ -115,7 +115,7 @@ moo_line_mark_class_init (MooLineMarkClass *klass)
                                              "background-gdk",
                                              "background-gdk",
                                              GDK_TYPE_COLOR,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_BACKGROUND_SET,
@@ -123,7 +123,7 @@ moo_line_mark_class_init (MooLineMarkClass *klass)
                                              "background-set",
                                              "background-set",
                                              FALSE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_MARKUP,
@@ -131,7 +131,7 @@ moo_line_mark_class_init (MooLineMarkClass *klass)
                                              "markup",
                                              "markup",
                                              NULL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_VISIBLE,
@@ -139,7 +139,7 @@ moo_line_mark_class_init (MooLineMarkClass *klass)
                                              "visible",
                                              "visible",
                                              FALSE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_PIXBUF,
@@ -147,7 +147,7 @@ moo_line_mark_class_init (MooLineMarkClass *klass)
                                              "pixbuf",
                                              "pixbuf",
                                              GDK_TYPE_PIXBUF,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_STOCK_ID,
@@ -155,7 +155,7 @@ moo_line_mark_class_init (MooLineMarkClass *klass)
                                              "stock-id",
                                              "stock-id",
                                              NULL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_FOLD,

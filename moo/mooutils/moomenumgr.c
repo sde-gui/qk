@@ -16,6 +16,7 @@
 #include "mooutils/moomenumgr.h"
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moolist.h"
 #include <gtk/gtk.h>
 #include <string.h>
 
@@ -38,10 +39,12 @@ typedef struct {
     GDestroyNotify destroy;
 } Menu;
 
+MOO_DEFINE_SLIST(MenuList, menu_list, Menu)
+
 struct _MooMenuMgrPrivate {
     GSList *top_nodes; /* GNode* */
     GHashTable *named_nodes; /* char* -> GNode* */
-    GSList *menus; /* Menu* */
+    MenuList *menus;
     Item *active_item;
     guint use_mnemonic : 1;
     guint show_tooltips : 1;
@@ -183,13 +186,13 @@ moo_menu_mgr_finalize (GObject *object)
     if (mgr->priv->menus)
     {
         g_critical ("%s: oops", G_STRLOC);
-        g_slist_foreach (mgr->priv->menus, (GFunc) menu_free, NULL);
-        g_slist_free (mgr->priv->menus);
+        menu_list_foreach (mgr->priv->menus, (MenuListFunc) menu_free, NULL);
+        menu_list_free_links (mgr->priv->menus);
     }
 
     for (l = mgr->priv->top_nodes; l != NULL; l = l->next)
     {
-        GNode *node = l->data;
+        GNode *node = (GNode*) l->data;
         g_node_traverse (node, G_IN_ORDER, G_TRAVERSE_ALL, -1,
                          (GNodeTraverseFunc) cleanup_node, NULL);
         g_node_destroy (node);
@@ -228,7 +231,7 @@ mgr_insert (MooMenuMgr         *mgr,
             Item               *item)
 {
     GNode *node;
-    GSList *l;
+    MenuList *l;
 
     if (parent_node)
     {
@@ -254,7 +257,7 @@ mgr_insert (MooMenuMgr         *mgr,
 
         if (parent_node)
         {
-            parent_item = g_hash_table_lookup (menu->items, parent_node->data);
+            parent_item = (GtkWidget*) g_hash_table_lookup (menu->items, parent_node->data);
             g_return_val_if_fail (GTK_IS_MENU_ITEM (parent_item), -1);
             menu_shell = menu_item_get_submenu (parent_item);
         }
@@ -289,28 +292,29 @@ static void
 mgr_remove (MooMenuMgr         *mgr,
             GNode              *node)
 {
-    GSList *l, *menus, *menus_to_free = NULL, *items_to_free = NULL;
-    Item *item = node->data;
+    MenuList *lm, *menus, *menus_to_free = NULL;
+    GSList *li, *items_to_free = NULL;
+    Item *item = (Item*) node->data;
 
     g_object_ref (mgr);
     mgr->priv->frozen = TRUE;
 
-    menus = g_slist_copy (mgr->priv->menus);
+    menus = menu_list_copy_links (mgr->priv->menus);
 
-    for (l = menus; l != NULL; l = l->next)
+    for (lm = menus; lm != NULL; lm = lm->next)
     {
-        Menu *menu = l->data;
+        Menu *menu = lm->data;
         GtkWidget *menu_item;
 
-        menu_item = g_hash_table_lookup (menu->items, item);
+        menu_item = (GtkWidget*) g_hash_table_lookup (menu->items, item);
         g_return_if_fail (menu_item != NULL);
 
         gtk_widget_destroy (menu_item);
 
         if (menu_item == menu->top_widget)
         {
-            menus_to_free = g_slist_prepend (menus_to_free, menu);
-            mgr->priv->menus = g_slist_remove (mgr->priv->menus, menu);
+            menus_to_free = menu_list_prepend (menus_to_free, menu);
+            mgr->priv->menus = menu_list_remove (mgr->priv->menus, menu);
         }
     }
 
@@ -319,32 +323,32 @@ mgr_remove (MooMenuMgr         *mgr,
     g_node_destroy (node);
     mgr->priv->top_nodes = g_slist_remove (mgr->priv->top_nodes, node);
 
-    for (l = items_to_free; l != NULL; l = l->next)
+    for (li = items_to_free; li != NULL; li = li->next)
     {
-        Item *child_item = l->data;
+        Item *child_item = (Item*) li->data;
         if (child_item->id)
             g_hash_table_remove (mgr->priv->named_nodes, child_item->id);
     }
 
     mgr->priv->frozen = FALSE;
 
-    for (l = items_to_free; l != NULL; l = l->next)
+    for (li = items_to_free; li != NULL; li = li->next)
     {
-        if (mgr->priv->active_item == l->data)
+        if (mgr->priv->active_item == li->data)
         {
             mgr->priv->active_item_removed = TRUE;
             mgr->priv->active_item = NULL;
         }
 
-        item_free (l->data);
+        item_free ((Item*) li->data);
     }
 
-    for (l = menus_to_free; l != NULL; l = l->next)
-        menu_free (l->data);
+    for (lm = menus_to_free; lm != NULL; lm = lm->next)
+        menu_free (lm->data);
 
     g_slist_free (items_to_free);
-    g_slist_free (menus_to_free);
-    g_slist_free (menus);
+    menu_list_free_links (menus_to_free);
+    menu_list_free_links (menus);
 
     ensure_active_item (mgr);
 
@@ -355,7 +359,7 @@ mgr_remove (MooMenuMgr         *mgr,
 static void
 ensure_active_item (MooMenuMgr         *mgr)
 {
-    GSList *l;
+    MenuList *l;
     gboolean need_signal = FALSE;
 
     if (!mgr->priv->active_item)
@@ -366,8 +370,8 @@ ensure_active_item (MooMenuMgr         *mgr)
         Menu *menu = l->data;
         GtkWidget *menu_item;
 
-        menu_item = g_hash_table_lookup (menu->items,
-                                         mgr->priv->active_item);
+        menu_item = (GtkWidget*) g_hash_table_lookup (menu->items,
+                                                      mgr->priv->active_item);
         g_return_if_fail (GTK_IS_RADIO_MENU_ITEM (menu_item));
 
         if (!gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (menu_item)))
@@ -456,21 +460,21 @@ object_set_data (GObject            *object,
 }
 
 static MooMenuMgr*
-object_get_mgr (GObject            *object)
+object_get_mgr (GObject *object)
 {
-    return g_object_get_data (object, "moo-menu-mgr");
+    return (MooMenuMgr*) g_object_get_data (object, "moo-menu-mgr");
 }
 
 static Menu*
-object_get_menu (GObject            *object)
+object_get_menu (GObject *object)
 {
-    return g_object_get_data (object, "moo-menu-mgr-menu");
+    return (Menu*) g_object_get_data (object, "moo-menu-mgr-menu");
 }
 
 static Item*
-object_get_item (GObject            *object)
+object_get_item (GObject *object)
 {
-    return g_object_get_data (object, "moo-menu-mgr-item");
+    return (Item*) g_object_get_data (object, "moo-menu-mgr-item");
 }
 
 
@@ -516,7 +520,7 @@ moo_menu_mgr_create_item (MooMenuMgr         *mgr,
     g_return_val_if_fail (mgr->priv->top_nodes || label, NULL);
 
     menu = menu_new (user_data, destroy);
-    mgr->priv->menus = g_slist_prepend (mgr->priv->menus, menu);
+    mgr->priv->menus = menu_list_prepend (mgr->priv->menus, menu);
 
     make_item = (label == NULL && mgr->priv->top_nodes && !mgr->priv->top_nodes->next);
 
@@ -528,8 +532,8 @@ moo_menu_mgr_create_item (MooMenuMgr         *mgr,
     }
     else
     {
-        GNode *top_node = mgr->priv->top_nodes->data;
-        Item *item = top_node->data;
+        GNode *top_node = (GNode*) mgr->priv->top_nodes->data;
+        Item *item = (Item*) top_node->data;
         menu->top_widget = menu_item_new (mgr, menu, item);
         menu_shell = menu_item_get_submenu (menu->top_widget);
     }
@@ -543,13 +547,13 @@ moo_menu_mgr_create_item (MooMenuMgr         *mgr,
 
         for (l = mgr->priv->top_nodes; l != NULL; l = l->next)
         {
-            GNode *node = l->data;
+            GNode *node = (GNode*) l->data;
             construct_menus (mgr, menu, node, menu_shell);
         }
     }
     else
     {
-        GNode *top_node = mgr->priv->top_nodes->data;
+        GNode *top_node = (GNode*) mgr->priv->top_nodes->data;
         GNode *node;
 
         for (node = top_node->children; node != NULL; node = node->next)
@@ -558,8 +562,8 @@ moo_menu_mgr_create_item (MooMenuMgr         *mgr,
 
     if (mgr->priv->active_item)
     {
-        GtkCheckMenuItem *active_item = g_hash_table_lookup (menu->items,
-                                                             mgr->priv->active_item);
+        GtkCheckMenuItem *active_item = (GtkCheckMenuItem*)
+            g_hash_table_lookup (menu->items, mgr->priv->active_item);
         gtk_check_menu_item_set_active (active_item, TRUE);
     }
 
@@ -597,7 +601,7 @@ top_widget_destroyed (GtkWidget          *widget)
     g_return_if_fail (MOO_IS_MENU_MGR (mgr));
     g_return_if_fail (menu != NULL && menu->top_widget == widget);
 
-    mgr->priv->menus = g_slist_remove (mgr->priv->menus, menu);
+    mgr->priv->menus = menu_list_remove (mgr->priv->menus, menu);
     menu_free (menu);
 }
 
@@ -615,7 +619,7 @@ construct_menus (MooMenuMgr         *mgr,
     g_return_if_fail (menu != NULL);
     g_return_if_fail (GTK_IS_MENU_SHELL (menu_shell));
 
-    item = node->data;
+    item = (Item*) node->data;
 
     menu_item = menu_item_new (mgr, menu, item);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu_shell), menu_item);
@@ -677,7 +681,7 @@ cleanup_node (GNode              *node,
 
     g_return_val_if_fail (node != NULL, FALSE);
 
-    item = node->data;
+    item = (Item*) node->data;
 
     if (mgr && item->id)
         g_hash_table_remove (mgr->priv->named_nodes, item->id);
@@ -691,7 +695,7 @@ static void
 check_item_toggled (GtkCheckMenuItem   *menu_item,
                     MooMenuMgr         *mgr)
 {
-    GSList *l;
+    MenuList *l;
     gboolean active = gtk_check_menu_item_get_active (menu_item);
     Menu *menu = object_get_menu (G_OBJECT (menu_item));
     Item *item = object_get_item (G_OBJECT (menu_item));
@@ -708,7 +712,7 @@ check_item_toggled (GtkCheckMenuItem   *menu_item,
         if (m == menu)
             continue;
 
-        m_item = g_hash_table_lookup (m->items, item);
+        m_item = (GtkCheckMenuItem*) g_hash_table_lookup (m->items, item);
         g_return_if_fail (m_item != NULL);
 
         g_signal_handlers_block_by_func (m_item, (gpointer) check_item_toggled, mgr);
@@ -724,7 +728,7 @@ static void
 radio_item_toggled (GtkCheckMenuItem   *menu_item,
                     MooMenuMgr         *mgr)
 {
-    GSList *l;
+    MenuList *l;
     Menu *menu = object_get_menu (G_OBJECT (menu_item));
     Item *item = object_get_item (G_OBJECT (menu_item));
 
@@ -752,7 +756,7 @@ radio_item_toggled (GtkCheckMenuItem   *menu_item,
         if (m == menu)
             continue;
 
-        m_item = g_hash_table_lookup (m->items, item);
+        m_item = (GtkCheckMenuItem*) g_hash_table_lookup (m->items, item);
         g_return_if_fail (m_item != NULL);
 
         g_signal_handlers_block_by_func (m_item, (gpointer) radio_item_toggled, mgr);
@@ -772,15 +776,15 @@ moo_menu_mgr_set_active (MooMenuMgr         *mgr,
     GNode *node;
     Item *item;
     GCallback callback;
-    GSList *l;
+    MenuList *l;
 
     g_return_if_fail (MOO_IS_MENU_MGR (mgr));
     g_return_if_fail (item_id != NULL);
 
-    node = g_hash_table_lookup (mgr->priv->named_nodes, item_id);
+    node = (GNode*) g_hash_table_lookup (mgr->priv->named_nodes, item_id);
     g_return_if_fail (node != NULL);
 
-    item = node->data;
+    item = (Item*) node->data;
     g_return_if_fail (item->flags & (MOO_MENU_ITEM_TOGGLE | MOO_MENU_ITEM_RADIO));
     g_return_if_fail (!(item->flags & MOO_MENU_ITEM_RADIO) || active);
 
@@ -803,7 +807,7 @@ moo_menu_mgr_set_active (MooMenuMgr         *mgr,
         GtkCheckMenuItem *m_item;
         Menu *m = l->data;
 
-        m_item = g_hash_table_lookup (m->items, item);
+        m_item = (GtkCheckMenuItem*) g_hash_table_lookup (m->items, item);
         g_return_if_fail (m_item != NULL);
 
         g_signal_handlers_block_by_func (m_item, (gpointer) callback, mgr);
@@ -885,7 +889,7 @@ moo_menu_mgr_insert (MooMenuMgr         *mgr,
 
     if (parent_id)
     {
-        parent_node = g_hash_table_lookup (mgr->priv->named_nodes, parent_id);
+        parent_node = (GNode*) g_hash_table_lookup (mgr->priv->named_nodes, parent_id);
         g_return_val_if_fail (parent_node != NULL, -1);
     }
 
@@ -905,14 +909,14 @@ moo_menu_mgr_remove (MooMenuMgr         *mgr,
 
     if (parent_id)
     {
-        parent_node = g_hash_table_lookup (mgr->priv->named_nodes, parent_id);
+        parent_node = (GNode*) g_hash_table_lookup (mgr->priv->named_nodes, parent_id);
         g_return_if_fail (parent_node != NULL);
     }
 
     if (parent_node)
         node = g_node_nth_child (parent_node, position);
     else
-        node = g_slist_nth_data (mgr->priv->top_nodes, position);
+        node = (GNode*) g_slist_nth_data (mgr->priv->top_nodes, position);
 
     g_return_if_fail (node != NULL);
     mgr_remove (mgr, node);
@@ -982,8 +986,8 @@ moo_menu_mgr_append (MooMenuMgr         *mgr,
 }
 
 
-MooMenuMgr*
+MooMenuMgr *
 moo_menu_mgr_new (void)
 {
-    return g_object_new (MOO_TYPE_MENU_MGR, NULL);
+    return MOO_MENU_MGR (g_object_new (MOO_TYPE_MENU_MGR, (const char*) NULL));
 }

@@ -34,6 +34,7 @@
 #include "mooutils/mooaccelbutton.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mootype-macros.h"
+#include "mooutils/moolist.h"
 #include <gtk/gtk.h>
 #include <string.h>
 #include <errno.h>
@@ -66,14 +67,17 @@ typedef struct _WidgetProps WidgetProps;
 typedef struct _PackingProps PackingProps;
 typedef struct _Child Child;
 
+MOO_DEFINE_SLIST(ChildList, child_list, Child)
+MOO_DEFINE_SLIST(SignalList, signal_list, Signal)
+
 struct _Widget {
     Child *parent_node;
     GtkWidget *widget;
     char *id;
     GType type;
     WidgetProps *props;
-    GSList *children; /* Child* */
-    GSList *signals; /* Signal* */
+    ChildList *children;
+    SignalList *signals;
 };
 
 struct _Signal {
@@ -111,7 +115,7 @@ struct _WidgetProps {
 
     GPtrArray  *custom_props;
 
-    PropMask    mask;
+    guint       mask;
     gboolean    visible;
     int         response_id;
     gboolean    has_default;
@@ -132,7 +136,7 @@ struct _PackingProps {
     GParameter  *params;
     guint        n_params;
 
-    PackPropMask mask;
+    guint        mask;
 };
 
 struct _MooGladeXMLPrivate {
@@ -312,7 +316,7 @@ static void
 set_mnemonics (MooGladeXML    *xml,
                Widget         *node)
 {
-    GSList *l;
+    ChildList *l;
 
     g_return_if_fail (node != NULL);
 
@@ -320,7 +324,7 @@ set_mnemonics (MooGladeXML    *xml,
     {
         GtkWidget *mnemonic;
 
-        mnemonic = moo_glade_xml_get_widget (xml, node->props->mnemonic_widget);
+        mnemonic = GTK_WIDGET (moo_glade_xml_get_widget (xml, node->props->mnemonic_widget));
 
         if (!mnemonic)
             g_warning ("%s: could not find widget '%s'",
@@ -348,7 +352,7 @@ static gboolean
 set_default (MooGladeXML    *xml,
              Widget         *node)
 {
-    GSList *l;
+    ChildList *l;
 
     g_return_val_if_fail (node != NULL, FALSE);
 
@@ -375,7 +379,7 @@ static gboolean
 set_focus (MooGladeXML    *xml,
            Widget         *node)
 {
-    GSList *l;
+    ChildList *l;
 
     g_return_val_if_fail (node != NULL, FALSE);
 
@@ -412,7 +416,7 @@ set_moo_sensitive (MooGladeXML *xml,
         invert = TRUE;
     }
 
-    btn = moo_glade_xml_get_widget (xml, value);
+    btn = GTK_WIDGET (moo_glade_xml_get_widget (xml, value));
     g_return_if_fail (GTK_IS_TOGGLE_BUTTON (btn));
 
     moo_bind_sensitive (btn, widget, invert);
@@ -432,8 +436,8 @@ set_custom_props (MooGladeXML    *xml,
     {
         const char *prop, *value;
 
-        prop = node->props->custom_props->pdata[i];
-        value = node->props->custom_props->pdata[i+1];
+        prop = (const char*) node->props->custom_props->pdata[i];
+        value = (const char*) node->props->custom_props->pdata[i+1];
 
         if (!strcmp (prop, "moo-sensitive"))
         {
@@ -459,7 +463,7 @@ connect_special_signal (MooGladeXML    *xml,
         GtkWidget *btn;
         gboolean invert = FALSE;
 
-        btn = moo_glade_xml_get_widget (xml, signal->handler);
+        btn = GTK_WIDGET (moo_glade_xml_get_widget (xml, signal->handler));
         g_return_val_if_fail (GTK_IS_TOGGLE_BUTTON (btn), FALSE);
 
         if (signal->object)
@@ -484,13 +488,14 @@ static void
 connect_signals (MooGladeXML    *xml,
                  Widget         *node)
 {
-    GSList *l;
+    ChildList *lch;
+    SignalList *lsig;
 
     g_return_if_fail (node != NULL);
 
-    for (l = node->signals; l != NULL; l = l->next)
+    for (lsig = node->signals; lsig != NULL; lsig = lsig->next)
     {
-        Signal *signal = l->data;
+        Signal *signal = lsig->data;
         gboolean connected = FALSE;
         gpointer object = NULL;
 
@@ -540,9 +545,9 @@ connect_signals (MooGladeXML    *xml,
                    G_STRLOC, signal->name, node->id);
     }
 
-    for (l = node->children; l != NULL; l = l->next)
+    for (lch = node->children; lch != NULL; lch = lch->next)
     {
-        Child *child = l->data;
+        Child *child = lch->data;
 
         if (child && child->widget)
             connect_signals (xml, child->widget);
@@ -607,7 +612,7 @@ set_special_props (MooGladeXML    *xml,
             GtkWidget *group_button;
             GSList *group;
 
-            group_button = moo_glade_xml_get_widget (xml, props->radio_group);
+            group_button = GTK_WIDGET (moo_glade_xml_get_widget (xml, props->radio_group));
 
             g_return_if_fail (GTK_IS_RADIO_BUTTON (group_button));
 
@@ -619,7 +624,7 @@ set_special_props (MooGladeXML    *xml,
             GtkWidget *group_item;
             GSList *group;
 
-            group_item = moo_glade_xml_get_widget (xml, props->radio_group);
+            group_item = GTK_WIDGET (moo_glade_xml_get_widget (xml, props->radio_group));
 
             g_return_if_fail (GTK_IS_RADIO_MENU_ITEM (group_item));
 
@@ -648,7 +653,7 @@ moo_glade_xml_create_widget (MooGladeXML *xml,
     if (!widget)
     {
         FuncDataPair *pair;
-        pair = g_hash_table_lookup (xml->priv->id_to_func, node->id);
+        pair = (FuncDataPair*) g_hash_table_lookup (xml->priv->id_to_func, node->id);
         if (pair)
             widget = pair->func (xml, node->id, pair->data);
     }
@@ -725,8 +730,8 @@ moo_glade_xml_create_widget (MooGladeXML *xml,
 
     if (!widget)
     {
-        widget = g_object_newv (type, props->n_params,
-                                props->params);
+        widget = GTK_WIDGET (g_object_newv (type, props->n_params,
+                                            props->params));
     }
     else
     {
@@ -749,7 +754,7 @@ create_children (MooGladeXML  *xml,
                  GtkWidget    *widget,
                  GError      **error)
 {
-    GSList *l;
+    ChildList *l;
 
     for (l = widget_node->children; l != NULL; l = l->next)
     {
@@ -782,7 +787,7 @@ create_child (MooGladeXML    *xml,
         gboolean added = FALSE;
         GtkWidget *real_parent;
 
-        real_parent = moo_glade_xml_get_widget (xml, child->internal_parent_id);
+        real_parent = (GtkWidget*) moo_glade_xml_get_widget (xml, child->internal_parent_id);
 
         if (!real_parent)
         {
@@ -875,7 +880,7 @@ pack_children (MooGladeXML    *xml,
                Widget         *parent_node,
                GtkWidget      *parent_widget)
 {
-    GSList *l;
+    ChildList *l;
 
     g_return_if_fail (parent_node != NULL);
     g_return_if_fail (parent_widget != NULL);
@@ -901,7 +906,7 @@ pack_children (MooGladeXML    *xml,
         else if (GTK_IS_NOTEBOOK (parent_widget) &&
                  (child->props->mask & PACK_PROP_TAB))
         {
-            int index = g_slist_index (parent_node->children, child);
+            int index = g_slist_index (child_list_to_gslist (parent_node->children), child);
 
             if (index <= 0)
             {
@@ -909,7 +914,7 @@ pack_children (MooGladeXML    *xml,
             }
             else
             {
-                Child *page_child = g_slist_nth_data (parent_node->children, index - 1);
+                Child *page_child = (Child*) g_slist_nth_data (child_list_to_gslist (parent_node->children), index - 1);
 
                 if (!page_child->widget || !page_child->widget->widget)
                     g_message ("%s: empty notebook page with non-empty label", G_STRLOC);
@@ -940,7 +945,7 @@ pack_children (MooGladeXML    *xml,
             if (parent && parent->internal_child &&
                 !strcmp (parent->internal_child, "action_area"))
             {
-                GtkWidget *dialog = moo_glade_xml_get_widget (xml, parent->internal_parent_id);
+                GtkWidget *dialog = (GtkWidget*) moo_glade_xml_get_widget (xml, parent->internal_parent_id);
 
                 if (!dialog || !GTK_IS_DIALOG (dialog))
                 {
@@ -1020,13 +1025,13 @@ collect_signals (MooMarkupNode  *node,
             handler = moo_markup_get_prop (elm, "handler");
             object = moo_markup_get_prop (elm, "object");
             g_return_if_fail (name != NULL && handler != NULL);
-            widget->signals = g_slist_prepend (widget->signals,
-                                               signal_new (name, handler, object));
+            widget->signals = signal_list_prepend (widget->signals,
+                                                   signal_new (name, handler, object));
         }
     }
     FOREACH_ELM_END;
 
-    widget->signals = g_slist_reverse (widget->signals);
+    widget->signals = signal_list_reverse (widget->signals);
 }
 
 
@@ -1037,10 +1042,10 @@ widget_free (Widget *widget)
     {
         g_free (widget->id);
         widget_props_free (widget->props);
-        g_slist_foreach (widget->children, (GFunc) child_free, NULL);
-        g_slist_free (widget->children);
-        g_slist_foreach (widget->signals, (GFunc) signal_free, NULL);
-        g_slist_free (widget->signals);
+        child_list_foreach (widget->children, (ChildListFunc) child_free, NULL);
+        child_list_free_links (widget->children);
+        signal_list_foreach (widget->signals, (SignalListFunc) signal_free, NULL);
+        signal_list_free_links (widget->signals);
         g_free (widget);
     }
 }
@@ -1176,7 +1181,7 @@ widget_new (MooGladeXML    *xml,
     }
 
     props = widget_props_new (node, type,
-                              g_hash_table_lookup (xml->priv->props, id),
+                              (GHashTable*) g_hash_table_lookup (xml->priv->props, id),
                               FALSE, xml->priv->translation_domain,
                               error);
     g_return_val_if_fail (props != NULL, NULL);
@@ -1205,12 +1210,12 @@ widget_new (MooGladeXML    *xml,
                 g_return_val_if_fail (child != NULL, NULL);
             }
 
-            widget->children = g_slist_prepend (widget->children, child);
+            widget->children = child_list_prepend (widget->children, child);
         }
     }
     FOREACH_ELM_END;
 
-    widget->children = g_slist_reverse (widget->children);
+    widget->children = child_list_reverse (widget->children);
 
     return widget;
 }
@@ -1496,19 +1501,21 @@ widget_props_add (WidgetProps  *props,
 }
 
 
+typedef struct {
+    WidgetProps *props;
+    GArray *params;
+    GObjectClass *klass;
+    gboolean result;
+    gboolean ignore_errors;
+    GError **error;
+} WidgetPropsAddOneData;
+
 static void
 widget_props_add_one (const char *name,
                       const char *value,
                       gpointer    user_data)
 {
-    struct {
-        WidgetProps *props;
-        GArray *params;
-        GObjectClass *klass;
-        gboolean result;
-        gboolean ignore_errors;
-        GError **error;
-    } *data = user_data;
+    WidgetPropsAddOneData *data = (WidgetPropsAddOneData*) user_data;
 
     if (!data->result)
         return;
@@ -1581,7 +1588,7 @@ widget_props_new (MooMarkupNode  *node,
 
     g_return_val_if_fail (node != NULL, NULL);
 
-    klass = g_type_class_ref (type);
+    klass = G_OBJECT_CLASS (g_type_class_ref (type));
     g_return_val_if_fail (klass != NULL, NULL);
 
     props = g_new0 (WidgetProps, 1);
@@ -1610,14 +1617,7 @@ widget_props_new (MooMarkupNode  *node,
 
     if (add_props)
     {
-        struct {
-            WidgetProps *props;
-            GArray *params;
-            GObjectClass *klass;
-            gboolean result;
-            gboolean ignore_errors;
-            GError **error;
-        } data;
+        WidgetPropsAddOneData data;
 
         data.props = props;
         data.params = params;
@@ -1659,7 +1659,7 @@ packing_props_new (MooMarkupNode  *node,
 
     g_return_val_if_fail (node != NULL, NULL);
 
-    klass = g_type_class_ref (container_type);
+    klass = G_OBJECT_CLASS (g_type_class_ref (container_type));
     g_return_val_if_fail (klass != NULL, NULL);
 
     props = g_new0 (PackingProps, 1);
@@ -1840,9 +1840,9 @@ parse_property (GParamSpec     *param_spec,
     {
         if (!_moo_value_convert_from_string (value, &param->value))
         {
-            const char *typename = g_type_name (param_spec->value_type);
+            const char *type_name = g_type_name (param_spec->value_type);
             g_warning ("%s: can not convert string '%s' to a value of type %s",
-                       G_STRLOC, value, typename ? typename : "<unknown>");
+                       G_STRLOC, value, type_name ? type_name : "<unknown>");
             return FALSE;
         }
     }
@@ -1850,9 +1850,9 @@ parse_property (GParamSpec     *param_spec,
     {
         if (!_moo_value_convert_from_string (value, &param->value))
         {
-            const char *typename = g_type_name (param_spec->value_type);
+            const char *type_name = g_type_name (param_spec->value_type);
             g_warning ("%s: can not convert string '%s' to a value of type %s",
-                       G_STRLOC, value, typename ? typename : "<unknown>");
+                       G_STRLOC, value, type_name ? type_name : "<unknown>");
             return FALSE;
         }
     }
@@ -1877,9 +1877,9 @@ parse_property (GParamSpec     *param_spec,
 
         if (!adjustment)
         {
-            const char *typename = g_type_name (param_spec->value_type);
+            const char *type_name = g_type_name (param_spec->value_type);
             g_warning ("%s: could not convert string '%s' to a value of type %s",
-                       G_STRLOC, value, typename ? typename : "<unknown>");
+                       G_STRLOC, value, type_name ? type_name : "<unknown>");
             return FALSE;
         }
         else
@@ -1896,9 +1896,9 @@ parse_property (GParamSpec     *param_spec,
     }
     else
     {
-        const char *typename = g_type_name (param_spec->value_type);
+        const char *type_name = g_type_name (param_spec->value_type);
         g_warning ("%s: could not convert string '%s' to a value of type %s",
-                   G_STRLOC, value, typename ? typename : "<unknown>");
+                   G_STRLOC, value, type_name ? type_name : "<unknown>");
         return FALSE;
     }
 
@@ -1949,7 +1949,7 @@ parse_adjustment (const char *value)
 
     /* XXX is this correct? */
     if (!value)
-        return g_object_new (GTK_TYPE_ADJUSTMENT, NULL);
+        return GTK_OBJECT (g_object_new (GTK_TYPE_ADJUSTMENT, (const char*) NULL));
 
     pieces = g_strsplit (value, " ", 0);
     g_return_val_if_fail (pieces != NULL, NULL);
@@ -2031,7 +2031,7 @@ moo_glade_xml_set_property (MooGladeXML    *xml,
     g_return_if_fail (MOO_IS_GLADE_XML (xml));
     g_return_if_fail (widget != NULL && prop_name != NULL);
 
-    props = g_hash_table_lookup (xml->priv->props, widget);
+    props = (GHashTable*) g_hash_table_lookup (xml->priv->props, widget);
 
     if (!props && !value)
         return;
@@ -2060,7 +2060,7 @@ moo_glade_xml_set_property (MooGladeXML    *xml,
 MooGladeXML *
 moo_glade_xml_new_empty (const char *domain)
 {
-    MooGladeXML *xml = g_object_new (MOO_TYPE_GLADE_XML, NULL);
+    MooGladeXML *xml = MOO_GLADE_XML (g_object_new (MOO_TYPE_GLADE_XML, (const char*) NULL));
     xml->priv->translation_domain = g_strdup (domain);
     return xml;
 }
@@ -2365,7 +2365,7 @@ moo_glade_xml_get_root (MooGladeXML *xml)
 {
     g_return_val_if_fail (xml != NULL, NULL);
     g_return_val_if_fail (xml->priv->root_id != NULL, NULL);
-    return moo_glade_xml_get_widget (xml, xml->priv->root_id);
+    return (GtkWidget*) moo_glade_xml_get_widget (xml, xml->priv->root_id);
 }
 
 
@@ -2609,14 +2609,15 @@ get_type_by_name (const char *name)
 {
     static GHashTable *types;
     GType type = g_type_from_name (name);
-    GType (*type_func) (void);
+    typedef GType (*TypeFunc) (void);
+    TypeFunc type_func;
 
     if (type)
         return type;
 
     if (!types)
     {
-#define add_type(class_name, func) g_hash_table_insert (types, g_strdup (class_name), func)
+#define add_type(class_name, func) g_hash_table_insert (types, g_strdup (class_name), (gpointer) func)
 
         types = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
@@ -2784,7 +2785,7 @@ get_type_by_name (const char *name)
 #undef add_type
     }
 
-    type_func = g_hash_table_lookup (types, name);
+    type_func = (TypeFunc) g_hash_table_lookup (types, name);
     if (type_func)
         return type_func ();
 

@@ -1293,7 +1293,7 @@ _moo_tool_action_class_init (MooToolActionClass *klass)
     g_object_class_install_property (object_class, PROP_COMMAND,
                                      g_param_spec_object ("command", "command", "command",
                                                           MOO_TYPE_COMMAND,
-                                                          G_PARAM_READWRITE));
+                                                          (GParamFlags) G_PARAM_READWRITE));
 }
 
 

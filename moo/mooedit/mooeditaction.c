@@ -303,7 +303,7 @@ moo_edit_action_class_init (MooEditActionClass *klass)
                                              "doc",
                                              "doc",
                                              MOO_TYPE_EDIT,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_FILE_FILTER,
@@ -319,7 +319,7 @@ moo_edit_action_class_init (MooEditActionClass *klass)
                                              "filter-sensitive",
                                              "filter-sensitive",
                                              NULL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_FILTER_VISIBLE,
@@ -327,7 +327,7 @@ moo_edit_action_class_init (MooEditActionClass *klass)
                                              "filter-visible",
                                              "filter-visible",
                                              NULL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 }
 
 

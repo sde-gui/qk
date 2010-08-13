@@ -90,7 +90,7 @@ lookup_encoding (EncodingsManager *mgr,
     g_return_val_if_fail (name != NULL, NULL);
 
     upper = g_ascii_strup (name, -1);
-    enc = g_hash_table_lookup (mgr->encodings, upper);
+    enc = (Encoding*) g_hash_table_lookup (mgr->encodings, upper);
 
     g_free (upper);
     return enc;
@@ -154,7 +154,7 @@ fill_encoding_group (EncodingGroup *group,
     group->encodings = g_new0 (Encoding*, group->n_encodings);
 
     for (i = 0; encodings != NULL; encodings = encodings->next, ++i)
-        group->encodings[i] = encodings->data;
+        group->encodings[i] = (Encoding*) encodings->data;
 
     qsort (group->encodings, group->n_encodings, sizeof (Encoding*),
            (int(*)(const void *, const void *)) compare_encodings);
@@ -257,7 +257,7 @@ get_enc_mgr (void)
         {
             Encoding *enc;
 
-            enc = g_hash_table_lookup (mgr->encodings, moo_encoding_aliases[i].name);
+            enc = (Encoding*) g_hash_table_lookup (mgr->encodings, moo_encoding_aliases[i].name);
 
             if (!enc)
                 g_critical ("%s: oops %s", G_STRLOC, moo_encoding_aliases[i].name);
@@ -487,7 +487,7 @@ sync_recent_list (GtkTreeStore *store,
 
     while (list)
     {
-        Encoding *enc = list->data;
+        Encoding *enc = (Encoding*) list->data;
         gtk_tree_store_insert (store, &iter, NULL, get_row_recent (store));
         gtk_tree_store_set (store, &iter,
                             COLUMN_DISPLAY, enc->display_name,
@@ -516,7 +516,7 @@ update_menu_idle (EncodingsManager *mgr)
 
     for (l = mgr->menus; l != NULL; l = l->next)
     {
-        MenuData *menu = l->data;
+        MenuData *menu = (MenuData*) l->data;
         sync_recent_menu (menu, FALSE);
     }
 
@@ -537,7 +537,7 @@ enc_mgr_add_used (EncodingsManager *mgr,
 
     for (l = mgr->recent, found_recent = FALSE; l != NULL; l = l->next)
     {
-        Encoding *enc = l->data;
+        Encoding *enc = (Encoding*) l->data;
 
         if (!strcmp (new_enc->name, enc->name))
         {
@@ -705,7 +705,7 @@ setup_combo (GtkComboBox      *combo,
 
     for (l = enc_mgr->recent; l != NULL; l = l->next)
     {
-        Encoding *enc = l->data;
+        Encoding *enc = (Encoding*) l->data;
         gtk_tree_store_append (store, &iter, NULL);
         gtk_tree_store_set (store, &iter,
                             COLUMN_DISPLAY, enc->display_name,
@@ -889,7 +889,7 @@ _moo_encodings_combo_get (GtkWidget *dialog,
 {
     GtkComboBox *combo;
 
-    combo = g_object_get_data (G_OBJECT (dialog), "moo-encodings-combo");
+    combo = GTK_COMBO_BOX (g_object_get_data (G_OBJECT (dialog), "moo-encodings-combo"));
     g_return_val_if_fail (GTK_IS_COMBO_BOX (combo), MOO_ENCODING_UTF8);
 
     return combo_get (combo, save_mode);
@@ -964,7 +964,7 @@ menu_item_activated (GtkWidget *item,
     EncodingsManager *mgr = get_enc_mgr ();
     Encoding *enc;
 
-    enc = g_object_get_data (G_OBJECT (item), "moo-encoding");
+    enc = (Encoding*) g_object_get_data (G_OBJECT (item), "moo-encoding");
     g_return_if_fail (enc != NULL);
 
     menu->func (enc->name, menu->func_data);
@@ -1005,15 +1005,15 @@ sync_recent_menu (MenuData *menu,
 
     children = gtk_container_get_children (GTK_CONTAINER (menu->menu));
     for (l = children; l != NULL; l = l->next)
-        if (g_object_get_data (l->data, "moo-recent-encoding"))
-            gtk_container_remove (GTK_CONTAINER (menu->menu), l->data);
+        if (g_object_get_data (G_OBJECT (l->data), "moo-recent-encoding"))
+            gtk_container_remove (GTK_CONTAINER (menu->menu), GTK_WIDGET (l->data));
     g_list_free (children);
 
     recent_items = g_slist_reverse (g_slist_copy (mgr->recent));
 
     while (recent_items)
     {
-        Encoding *enc = recent_items->data;
+        Encoding *enc = (Encoding*) recent_items->data;
         GtkWidget *item;
 
         if (first_time && !have_separator)
@@ -1040,7 +1040,7 @@ exclude_item (MenuData *menu_data,
 
     for (l = children; l != NULL; l = l->next)
     {
-        GtkWidget *item = l->data;
+        GtkWidget *item = GTK_WIDGET (l->data);
 
         if (g_object_get_data (G_OBJECT (item), "moo-recent-encoding"))
         {
@@ -1048,7 +1048,7 @@ exclude_item (MenuData *menu_data,
 
             if (exclude_enc)
             {
-                Encoding *enc = g_object_get_data (G_OBJECT (item), "moo-encoding");
+                Encoding *enc = (Encoding*) g_object_get_data (G_OBJECT (item), "moo-encoding");
                 visible = exclude_enc != enc;
             }
 
@@ -1142,7 +1142,7 @@ static void
 action_item_activated (const char *encoding,
                        gpointer    data)
 {
-    MooEncodingsMenuAction *action = data;
+    MooEncodingsMenuAction *action = MOO_ENCODINGS_MENU_ACTION (data);
 
     g_return_if_fail (action->func != NULL);
 
@@ -1192,8 +1192,9 @@ _moo_encodings_menu_action_new (const char            *id,
     g_return_val_if_fail (label != NULL, NULL);
     g_return_val_if_fail (func != NULL, NULL);
 
-    action = g_object_new (MOO_TYPE_ENCODINGS_MENU_ACTION,
-                           "name", id, "label", label, NULL);
+    action = MOO_ENCODINGS_MENU_ACTION (g_object_new (MOO_TYPE_ENCODINGS_MENU_ACTION,
+                                                      "name", id, "label", label,
+                                                      (const char*) NULL));
     action->func = func;
     action->func_data = data;
 

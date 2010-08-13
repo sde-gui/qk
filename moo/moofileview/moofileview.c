@@ -532,7 +532,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                              "current-directory",
                                              "current-directory",
                                              NULL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HOME_DIRECTORY,
@@ -540,7 +540,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                              "home-directory",
                                              "home-directory",
                                              NULL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_BOOKMARK_MGR,
@@ -548,7 +548,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                              "bookmark-mgr",
                                              "bookmark-mgr",
                                              MOO_TYPE_BOOKMARK_MGR,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_TYPEAHEAD_CASE_SENSITIVE,
@@ -556,15 +556,15 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                              "typeahead-case-sensitive",
                                              "typeahead-case-sensitive",
                                              TYPEAHEAD_CASE_SENSITIVE_DEFAULT,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     g_object_class_install_property (gobject_class, PROP_SORT_CASE_SENSITIVE,
         g_param_spec_boolean ("sort-case-sensitive", "sort-case-sensitive", "sort-case-sensitive",
-                              0, G_PARAM_READWRITE));
+                              0, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_SORT_FOLDERS_FIRST,
         g_param_spec_boolean ("sort-folders-first", "sort-folders-first", "sort-folders-first",
-                              0, G_PARAM_READWRITE));
+                              0, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_COMPLETION_CASE_SENSITIVE,
@@ -572,7 +572,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                              "completion-case-sensitive",
                                              "completion-case-sensitive",
                                              COMPLETION_CASE_SENSITIVE_DEFAULT,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_SHOW_HIDDEN_FILES,
@@ -580,7 +580,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                              "show-hidden-files",
                                              "show-hidden-files",
                                              FALSE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_SHOW_PARENT_FOLDER,
@@ -588,7 +588,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                              "show-parent-folder",
                                              "show-parent-folder",
                                              FALSE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_VIEW_TYPE,
@@ -597,7 +597,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
                                              "view-type",
                                              MOO_TYPE_FILE_VIEW_TYPE,
                                              MOO_FILE_VIEW_ICON,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     signals[CHDIR] =
             g_signal_new ("chdir",
@@ -897,7 +897,7 @@ moo_file_view_init (MooFileView *fileview)
 
     history_init (fileview);
 
-    fileview->priv->model = g_object_new (MOO_TYPE_FOLDER_MODEL, NULL);
+    fileview->priv->model = g_object_new (MOO_TYPE_FOLDER_MODEL, (const char*) NULL);
     g_signal_connect_swapped (fileview->priv->model, "row-inserted",
                               G_CALLBACK (file_added), fileview);
     fileview->priv->filter_model =

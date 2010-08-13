@@ -259,7 +259,7 @@ moo_ui_xml_init (MooUiXml *xml)
 MooUiXml*
 moo_ui_xml_new (void)
 {
-    return g_object_new (MOO_TYPE_UI_XML, NULL);
+    return g_object_new (MOO_TYPE_UI_XML, (const char*) NULL);
 }
 
 

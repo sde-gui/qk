@@ -371,7 +371,7 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
                                              "Page",
                                              "The index of the current page",
                                              0, G_MAXINT, 0,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_TAB_BORDER,
@@ -387,7 +387,7 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
                                              "Horizontal Tab Border",
                                              "Width of the horizontal border of tab labels",
                                              0, G_MAXUINT, 2,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_TAB_VBORDER,
@@ -395,7 +395,7 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
                                              "Vertical Tab Border",
                                              "Width of the vertical border of tab labels",
                                              0, G_MAXUINT, 2,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_SHOW_TABS,
@@ -403,7 +403,7 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
                                              "Show Tabs",
                                              "Whether tabs should be shown or not",
                                              TRUE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_POPUP,
@@ -411,7 +411,7 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
                                              "Enable Popup",
                                              "If TRUE, pressing the right mouse button on the notebook pops up a menu",
                                              FALSE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HOMOGENEOUS,
@@ -419,7 +419,7 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
                                              "Homogeneous",
                                              "Whether tabs should have homogeneous sizes",
                                              FALSE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_REORDERING,
@@ -427,7 +427,7 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
                                              "enable-reordering",
                                              "enable-reordering",
                                              TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     signals[SWITCH_PAGE] =
             g_signal_new ("moo-switch-page",
@@ -674,7 +674,7 @@ moo_notebook_finalize (GObject *object)
 GtkWidget *
 moo_notebook_new (void)
 {
-    return g_object_new (MOO_TYPE_NOTEBOOK, NULL);
+    return g_object_new (MOO_TYPE_NOTEBOOK, (const char*) NULL);
 }
 
 

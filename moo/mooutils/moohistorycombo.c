@@ -110,7 +110,7 @@ moo_history_combo_class_init (MooHistoryComboClass *klass)
                                              "list",
                                              "list",
                                              MOO_TYPE_HISTORY_LIST,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_SORT_HISTORY,
@@ -118,7 +118,7 @@ moo_history_combo_class_init (MooHistoryComboClass *klass)
                                              "sort-history",
                                              "sort-history",
                                              TRUE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_SORT_COMPLETION,
@@ -126,7 +126,7 @@ moo_history_combo_class_init (MooHistoryComboClass *klass)
                                              "sort-completion",
                                              "sort-completion",
                                              FALSE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_COMPLETION,
@@ -134,7 +134,7 @@ moo_history_combo_class_init (MooHistoryComboClass *klass)
                                              "enable-completion",
                                              "enable-completion",
                                              TRUE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HISTORY_LIST_ID,
@@ -201,7 +201,7 @@ moo_history_combo_set_property (GObject        *object,
     switch (prop_id)
     {
         case PROP_LIST:
-            moo_history_combo_set_list (combo, g_value_get_object (value));
+            moo_history_combo_set_list (combo, MOO_HISTORY_LIST (g_value_get_object (value)));
             break;
 
         case PROP_SORT_HISTORY:
@@ -479,7 +479,7 @@ moo_history_combo_new (const char *user_id)
 {
     MooHistoryCombo *combo;
 
-    combo = g_object_new (MOO_TYPE_HISTORY_COMBO, NULL);
+    combo = MOO_HISTORY_COMBO (g_object_new (MOO_TYPE_HISTORY_COMBO, (const char*) NULL));
 
     if (user_id)
     {

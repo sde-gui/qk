@@ -144,7 +144,7 @@ moo_combo_get_type (void)
             NULL
         };
 
-        type = g_type_register_static (GTK_TYPE_TABLE, "MooCombo", &info, 0);
+        type = g_type_register_static (GTK_TYPE_TABLE, "MooCombo", &info, (GTypeFlags) 0);
         g_type_add_interface_static (type, GTK_TYPE_CELL_LAYOUT, &cell_layout_info);
     }
 
@@ -200,7 +200,7 @@ moo_combo_class_init (MooComboClass *klass)
                                              "Activates default",
                                              "Whether to activate the default widget (such as the default button in a dialog) when Enter is pressed",
                                              FALSE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_USE_BUTTON,
@@ -208,12 +208,12 @@ moo_combo_class_init (MooComboClass *klass)
                                              "use-button",
                                              "use-button",
                                              TRUE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     signals[POPUP] =
             g_signal_new ("popup",
                           G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
                           G_STRUCT_OFFSET (MooComboClass, popup),
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
@@ -222,7 +222,7 @@ moo_combo_class_init (MooComboClass *klass)
     signals[POPDOWN] =
             g_signal_new ("popdown",
                           G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                          (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
                           G_STRUCT_OFFSET (MooComboClass, popdown),
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
@@ -284,8 +284,8 @@ moo_combo_init (MooCombo *combo)
     gtk_widget_show (combo->entry);
     gtk_table_attach (GTK_TABLE (combo), combo->entry,
                       0, 1, 0, 1,
-                      GTK_EXPAND | GTK_FILL,
-                      0, 0, 0);
+                      (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                      (GtkAttachOptions) 0, 0, 0);
     gtk_size_group_add_widget (combo->priv->size_group, combo->entry);
 
     g_signal_connect_swapped (combo->entry, "changed",
@@ -307,7 +307,7 @@ create_arrow_button (MooCombo       *combo)
     gtk_size_group_add_widget (combo->priv->size_group, combo->priv->button);
     gtk_table_attach (GTK_TABLE (combo), combo->priv->button,
                       1, 2, 0, 1,
-                      0, 0, 0, 0);
+                      (GtkAttachOptions) 0, (GtkAttachOptions) 0, 0, 0);
 
     g_signal_connect_swapped (combo->priv->button, "clicked",
                               G_CALLBACK (button_clicked), combo);
@@ -416,10 +416,10 @@ moo_combo_finalize (GObject *object)
 }
 
 
-GtkWidget*
+GtkWidget *
 moo_combo_new (void)
 {
-    return g_object_new (MOO_TYPE_COMBO, NULL);
+    return GTK_WIDGET (g_object_new (MOO_TYPE_COMBO, (const char*) NULL));
 }
 
 
@@ -566,9 +566,9 @@ moo_combo_popup_real (MooCombo *combo)
 
     gtk_grab_add (combo->priv->popup);
     gdk_pointer_grab (combo->priv->popup->window, TRUE,
-                      GDK_BUTTON_PRESS_MASK |
+                      (GdkEventMask) (GDK_BUTTON_PRESS_MASK |
                               GDK_BUTTON_RELEASE_MASK |
-                              GDK_POINTER_MOTION_MASK,
+                              GDK_POINTER_MOTION_MASK),
                       NULL, NULL, GDK_CURRENT_TIME);
 
     g_signal_connect_swapped (combo->entry, "focus-out-event",
@@ -625,16 +625,18 @@ moo_combo_update_popup (MooCombo *combo)
 }
 
 
+typedef struct {
+    MooCombo *combo;
+    int count;
+} CountSeparatorsData;
+
 static gboolean
 count_separators (GtkTreeModel *model,
                   G_GNUC_UNUSED GtkTreePath *path,
                   GtkTreeIter *iter,
                   gpointer user_data)
 {
-    struct {
-        MooCombo *combo;
-        int count;
-    } *data = user_data;
+    CountSeparatorsData *data = (CountSeparatorsData*) user_data;
 
     if (data->combo->priv->row_separator_func (model, iter, data->combo->priv->row_separator_data))
         data->count++;
@@ -670,10 +672,7 @@ resize_popup (MooCombo *combo)
     /* XXX */
     if (combo->priv->row_separator_func)
     {
-        struct {
-            MooCombo *combo;
-            int count;
-        } data;
+        CountSeparatorsData data;
 
         int focus_line_width;
 
@@ -1123,7 +1122,7 @@ default_get_text_func (GtkTreeModel   *model,
                        gpointer        data)
 {
     char *text = NULL;
-    MooCombo *combo = data;
+    MooCombo *combo = MOO_COMBO (data);
     gtk_tree_model_get (model, iter, combo->priv->text_column, &text, -1);
     return text;
 }

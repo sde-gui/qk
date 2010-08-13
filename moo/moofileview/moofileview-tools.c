@@ -170,8 +170,10 @@ tool_action_new (MooFileView *fileview,
     g_return_val_if_fail (command && strstr (command, "%f"), NULL);
 
     name = g_strdup_printf ("moofileview-action-%08x", g_random_int ());
-    action = g_object_new (_moo_file_view_tool_action_get_type (),
-                           "label", label, "name", name, NULL);
+    action = (ToolAction*)
+        g_object_new (_moo_file_view_tool_action_get_type (),
+                      "label", label, "name", name,
+                      (const char*) NULL);
     action->fileview = fileview;
     action->command = g_strdup (command);
 

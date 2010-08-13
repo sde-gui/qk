@@ -89,32 +89,32 @@ moo_indenter_class_init (MooIndenterClass *klass)
 
     settings[SETTING_USE_TABS] = moo_edit_config_install_setting (
         g_param_spec_boolean ("indent-use-tabs", "indent-use-tabs", "indent-use-tabs",
-                              TRUE, G_PARAM_READWRITE));
+                              TRUE, (GParamFlags) G_PARAM_READWRITE));
     moo_edit_config_install_alias ("indent-use-tabs", "use-tabs");
 
     settings[SETTING_INDENT_WIDTH] = moo_edit_config_install_setting (
         g_param_spec_uint ("indent-width", "indent-width", "indent-width",
-                           1, G_MAXUINT, 8, G_PARAM_READWRITE));
+                           1, G_MAXUINT, 8, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_DOC,
         g_param_spec_object ("doc", "doc", "doc",
                              MOO_TYPE_EDIT,
-                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 
     g_object_class_install_property (gobject_class, PROP_TAB_WIDTH,
         g_param_spec_uint ("tab-width", "tab-width", "tab-width",
                            1, G_MAXUINT, 8,
-                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                           (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PROP_USE_TABS,
         g_param_spec_boolean ("use-tabs", "use-tabs", "use-tabs",
                               TRUE,
-                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                              (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PROP_INDENT,
         g_param_spec_uint ("indent", "indent", "indent",
                            1, G_MAXUINT, 8,
-                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                           (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     signals[CONFIG_CHANGED] =
             g_signal_new ("config-changed",
@@ -287,7 +287,7 @@ MooIndenter *
 moo_indenter_new (gpointer doc)
 {
     g_return_val_if_fail (!doc || MOO_IS_EDIT (doc), NULL);
-    return g_object_new (MOO_TYPE_INDENTER, "doc", doc, NULL);
+    return MOO_INDENTER (g_object_new (MOO_TYPE_INDENTER, "doc", doc, (const char*) NULL));
 }
 
 

@@ -314,7 +314,7 @@ _moo_link_label_class_init (MooLinkLabelClass *klass)
                                              "text",
                                              "text",
                                              NULL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (object_class,
                                      PROP_URL,
@@ -322,7 +322,7 @@ _moo_link_label_class_init (MooLinkLabelClass *klass)
                                              "url",
                                              "url",
                                              NULL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     signals[ACTIVATE] =
             g_signal_new ("activate",

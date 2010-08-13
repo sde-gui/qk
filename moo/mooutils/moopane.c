@@ -466,19 +466,19 @@ moo_pane_class_init (MooPaneClass *klass)
 
     g_object_class_install_property (gobject_class, PROP_LABEL,
         g_param_spec_boxed ("label", "label", "label",
-                            MOO_TYPE_PANE_LABEL, G_PARAM_READWRITE));
+                            MOO_TYPE_PANE_LABEL, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_PARAMS,
         g_param_spec_boxed ("params", "params", "params",
-                            MOO_TYPE_PANE_PARAMS, G_PARAM_READWRITE));
+                            MOO_TYPE_PANE_PARAMS, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_DETACHABLE,
         g_param_spec_boolean ("detachable", "detachable", "detachable",
-                              TRUE, G_PARAM_READWRITE));
+                              TRUE, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_REMOVABLE,
         g_param_spec_boolean ("removable", "removable", "removable",
-                              TRUE, G_PARAM_READWRITE));
+                              TRUE, (GParamFlags) G_PARAM_READWRITE));
 
     signals[REMOVE] =
             g_signal_new ("remove",
@@ -1016,7 +1016,7 @@ _moo_pane_new (GtkWidget    *child,
 
     g_return_val_if_fail (GTK_IS_WIDGET (child), NULL);
 
-    pane = g_object_new (MOO_TYPE_PANE, NULL);
+    pane = g_object_new (MOO_TYPE_PANE, (const char*) NULL);
     pane->child = g_object_ref (child);
     gtk_widget_show (pane->child);
     g_object_set_data (G_OBJECT (pane->child), "moo-pane", pane);
@@ -1759,7 +1759,7 @@ _moo_create_small_icon (MooSmallIcon icon)
 
     g_return_val_if_fail (data != NULL, NULL);
 
-    icon_widget = g_object_new (_moo_icon_widget_get_type (), NULL);
+    icon_widget = g_object_new (_moo_icon_widget_get_type (), (const char*) NULL);
     icon_widget->data = data;
     gtk_widget_set_size_request (GTK_WIDGET (icon_widget), 7, 7 /* magic */);
 
@@ -1790,7 +1790,7 @@ _moo_create_arrow_icon (GtkArrowType arrow_type)
             g_return_val_if_reached (NULL);
     }
 
-    icon_widget = g_object_new (_moo_icon_widget_get_type (), NULL);
+    icon_widget = g_object_new (_moo_icon_widget_get_type (), (const char*) NULL);
     icon_widget->type = icon_type;
 
     return GTK_WIDGET (icon_widget);

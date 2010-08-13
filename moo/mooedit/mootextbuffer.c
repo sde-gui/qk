@@ -182,7 +182,7 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                                              "highlight-syntax",
                                              "highlight-syntax",
                                              TRUE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HIGHLIGHT_MATCHING_BRACKETS,
@@ -190,7 +190,7 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                                              "highlight-matching-brackets",
                                              "highlight-matching-brackets",
                                              TRUE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HIGHLIGHT_MISMATCHING_BRACKETS,
@@ -198,7 +198,7 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                                              "highlight-mismatching-brackets",
                                              "highlight-mismatching-brackets",
                                              FALSE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_BRACKET_MATCH_STYLE,
@@ -206,7 +206,7 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                                              "bracket-match-style",
                                              "bracket-match-style",
                                              MOO_TYPE_TEXT_STYLE,
-                                             G_PARAM_CONSTRUCT | G_PARAM_WRITABLE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_WRITABLE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_BRACKET_MISMATCH_STYLE,
@@ -214,7 +214,7 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                                              "bracket-mismatch-style",
                                              "bracket-mismatch-style",
                                              MOO_TYPE_TEXT_STYLE,
-                                             G_PARAM_CONSTRUCT | G_PARAM_WRITABLE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_WRITABLE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HAS_TEXT,
@@ -238,7 +238,7 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                                              "lang",
                                              "lang",
                                              MOO_TYPE_LANG,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     signals[HIGHLIGHT_UPDATED] =
             g_signal_new ("highlight_updated",
@@ -425,11 +425,12 @@ moo_text_buffer_dispose (GObject *object)
 }
 
 
-GtkTextBuffer*
+GtkTextBuffer *
 moo_text_buffer_new (GtkTextTagTable *table)
 {
-    return g_object_new (MOO_TYPE_TEXT_BUFFER,
-                         "tag-table", table, NULL);
+    return GTK_TEXT_BUFFER (g_object_new (MOO_TYPE_TEXT_BUFFER,
+                                          "tag-table", table,
+                                          (const char*) NULL));
 }
 
 

@@ -145,7 +145,7 @@ global_init (void)
     {
         guint i;
 
-        global = g_object_new (MOO_TYPE_EDIT_CONFIG, NULL);
+        global = MOO_EDIT_CONFIG (g_object_new (MOO_TYPE_EDIT_CONFIG, (const char*) NULL));
 
         for (i = 1; i < vars->len; ++i)
         {
@@ -165,7 +165,7 @@ MooEditConfig *
 moo_edit_config_new (void)
 {
     global_init ();
-    return g_object_new (MOO_TYPE_EDIT_CONFIG, NULL);
+    return MOO_EDIT_CONFIG (g_object_new (MOO_TYPE_EDIT_CONFIG, (const char*) NULL));
 }
 
 

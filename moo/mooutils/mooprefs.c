@@ -129,7 +129,7 @@ instance (void)
     static MooPrefs *p = NULL;
 
     if (G_UNLIKELY (!p))
-        p = g_object_new (MOO_TYPE_PREFS, NULL);
+        p = g_object_new (MOO_TYPE_PREFS, (const char*) NULL);
 
     return p;
 }

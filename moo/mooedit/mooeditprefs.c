@@ -51,34 +51,34 @@ _moo_edit_init_config (void)
     _moo_edit_settings[MOO_EDIT_SETTING_LANG] =
         moo_edit_config_install_setting (g_param_spec_string ("lang", "lang", "lang",
                                                               NULL,
-                                                              G_PARAM_READWRITE));
+                                                              (GParamFlags) G_PARAM_READWRITE));
     _moo_edit_settings[MOO_EDIT_SETTING_INDENT] =
         moo_edit_config_install_setting (g_param_spec_string ("indent", "indent", "indent",
                                                               NULL,
-                                                              G_PARAM_READWRITE));
+                                                              (GParamFlags) G_PARAM_READWRITE));
     _moo_edit_settings[MOO_EDIT_SETTING_STRIP] =
         moo_edit_config_install_setting (g_param_spec_boolean ("strip", "strip", "strip",
                                                                FALSE,
-                                                               G_PARAM_READWRITE));
+                                                               (GParamFlags) G_PARAM_READWRITE));
     _moo_edit_settings[MOO_EDIT_SETTING_ADD_NEWLINE] =
         moo_edit_config_install_setting (g_param_spec_boolean ("add-newline", "add-newline", "add-newline",
                                                                FALSE,
-                                                               G_PARAM_READWRITE));
+                                                               (GParamFlags) G_PARAM_READWRITE));
     _moo_edit_settings[MOO_EDIT_SETTING_WRAP_MODE] =
         moo_edit_config_install_setting (g_param_spec_enum ("wrap-mode", "wrap-mode", "wrap-mode",
                                                             GTK_TYPE_WRAP_MODE, GTK_WRAP_NONE,
-                                                            G_PARAM_READWRITE));
+                                                            (GParamFlags) G_PARAM_READWRITE));
     _moo_edit_settings[MOO_EDIT_SETTING_SHOW_LINE_NUMBERS] =
         moo_edit_config_install_setting (g_param_spec_boolean ("show-line-numbers", "show-line-numbers", "show-line-numbers",
                                                                FALSE,
-                                                               G_PARAM_READWRITE));
+                                                               (GParamFlags) G_PARAM_READWRITE));
     _moo_edit_settings[MOO_EDIT_SETTING_TAB_WIDTH] =
         moo_edit_config_install_setting (g_param_spec_uint ("tab-width", "tab-width", "tab-width",
                                                             1, G_MAXUINT, 8,
-                                                            G_PARAM_READWRITE));
+                                                            (GParamFlags) G_PARAM_READWRITE));
     _moo_edit_settings[MOO_EDIT_SETTING_WORD_CHARS] =
         moo_edit_config_install_setting (g_param_spec_string ("word-chars", "word-chars", "word-chars",
-                                                              NULL, G_PARAM_READWRITE));
+                                                              NULL, (GParamFlags) G_PARAM_READWRITE));
 }
 
 

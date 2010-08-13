@@ -89,7 +89,7 @@ _moo_tree_view_class_init (MooTreeViewClass *klass)
                                              "model",
                                              "model",
                                              GTK_TYPE_TREE_MODEL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     signals[BUTTON_PRESS_EVENT] =
             g_signal_new ("button-press-event",
@@ -162,7 +162,7 @@ MooTreeView *
 _moo_tree_view_new (GtkTreeModel *model)
 {
     g_return_val_if_fail (!model || GTK_IS_TREE_MODEL (model), NULL);
-    return g_object_new (MOO_TYPE_TREE_VIEW, "model", model, NULL);
+    return MOO_TREE_VIEW (g_object_new (MOO_TYPE_TREE_VIEW, "model", model, (const char*) NULL));
 }
 
 

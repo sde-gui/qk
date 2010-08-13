@@ -17,6 +17,7 @@
 #include "mooappinput.h"
 #include "mooutils-debug.h"
 #include "mooutils-misc.h"
+#include "moolist.h"
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
@@ -45,6 +46,8 @@ typedef struct {
     guint ref_count : 31;
     guint dead : 1;
 } ClientInfo;
+
+MOO_DEFINE_SLIST(ClientInfoList, client_info_list, ClientInfo)
 
 static ClientInfo *
 client_info_new (GObject        *obj,
@@ -101,11 +104,11 @@ unregister_client (const char *id,
                    GObject    *obj)
 {
     ClientInfo *ci = NULL;
-    GSList *client_list, *l;
+    ClientInfoList *client_list, *l;
 
     moo_dmsg ("%s: removing <%p, %s>", G_STRFUNC, (gpointer) obj, id);
 
-    client_list = g_hash_table_lookup (ipc_data.clients, id);
+    client_list = (ClientInfoList*) g_hash_table_lookup (ipc_data.clients, id);
     for (ci = NULL, l = client_list; !ci && l; l = l->next)
     {
         ci = l->data;
@@ -119,7 +122,7 @@ unregister_client (const char *id,
     }
     else
     {
-        client_list = g_slist_delete_link (client_list, l);
+        client_list = client_info_list_delete_link (client_list, l);
         if (client_list)
             g_hash_table_insert (ipc_data.clients, g_strdup (id), client_list);
         else
@@ -138,7 +141,7 @@ client_died (GSList  *ids,
 
     while (ids)
     {
-        char *id = ids->data;
+        char *id = (char*) ids->data;
 
         unregister_client (id, dead_obj);
 
@@ -153,7 +156,7 @@ moo_ipc_register_client (GObject        *object,
                          MooDataCallback callback)
 {
     GSList *ids;
-    GSList *client_list;
+    ClientInfoList *client_list;
     ClientInfo *info;
 
     g_return_if_fail (G_IS_OBJECT (object));
@@ -167,7 +170,7 @@ moo_ipc_register_client (GObject        *object,
 
     init_clients_table ();
 
-    ids = g_object_get_qdata (object, ipc_data.ids_quark);
+    ids = (GSList*) g_object_get_qdata (object, ipc_data.ids_quark);
     if (g_slist_find_custom (ids, id, (GCompareFunc) strcmp))
     {
         g_critical ("%s: <%p, %s> already registered",
@@ -183,8 +186,8 @@ moo_ipc_register_client (GObject        *object,
 
     info = client_info_new (object, callback);
 
-    client_list = g_hash_table_lookup (ipc_data.clients, id);
-    client_list = g_slist_prepend (client_list, info);
+    client_list = (ClientInfoList*) g_hash_table_lookup (ipc_data.clients, id);
+    client_list = client_info_list_prepend (client_list, info);
     g_hash_table_insert (ipc_data.clients, g_strdup (id), client_list);
 }
 
@@ -199,7 +202,7 @@ moo_ipc_unregister_client (GObject    *object,
 
     init_clients_table ();
 
-    ids = g_object_get_qdata (object, ipc_data.ids_quark);
+    ids = (GSList*) g_object_get_qdata (object, ipc_data.ids_quark);
     if (!(l = g_slist_find_custom (ids, id, (GCompareFunc) strcmp)))
     {
         g_critical ("%s: <%p, %s> not registered",
@@ -255,12 +258,12 @@ dispatch (const char *id,
           const char *data,
           gsize       len)
 {
-    GSList *clients;
+    ClientInfoList *clients;
 
     moo_dmsg ("%s: got data for id '%s': %.*s",
               G_STRFUNC, id, (int) len, data);
 
-    clients = g_hash_table_lookup (ipc_data.clients, id);
+    clients = (ClientInfoList*) g_hash_table_lookup (ipc_data.clients, id);
 
     if (!clients)
     {
@@ -268,8 +271,8 @@ dispatch (const char *id,
         return;
     }
 
-    clients = g_slist_copy (clients);
-    g_slist_foreach (clients, (GFunc) client_info_ref, NULL);
+    clients = client_info_list_copy_links (clients);
+    client_info_list_foreach (clients, (ClientInfoListFunc) client_info_ref, NULL);
     while (clients)
     {
         ClientInfo *ci = clients->data;
@@ -281,7 +284,7 @@ dispatch (const char *id,
         }
 
         client_info_unref (ci);
-        clients = g_slist_delete_link (clients, clients);
+        clients = client_info_list_delete_link (clients, clients);
     }
 }
 

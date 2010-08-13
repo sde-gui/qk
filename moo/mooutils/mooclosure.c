@@ -31,7 +31,7 @@ moo_closure_alloc (gsize size,
     g_return_val_if_fail (size >= sizeof(MooClosure), NULL);
     g_return_val_if_fail (call != NULL, NULL);
 
-    cl = g_malloc0 (size);
+    cl = (MooClosure*) g_malloc0 (size);
     cl->call = call;
     cl->destroy = destroy;
     cl->ref_count = 1;
@@ -204,7 +204,7 @@ moo_closure_signal_new (gpointer    object,
                           moo_closure_signal_call,
                           moo_closure_signal_destroy);
 
-    cl->object = _moo_object_ptr_new (object, (GWeakNotify) object_died, cl);
+    cl->object = _moo_object_ptr_new (G_OBJECT (object), (GWeakNotify) object_died, cl);
     cl->proxy = (gpointer (*) (gpointer)) proxy_func;
     cl->signal = g_strdup (signal);
 
@@ -275,7 +275,7 @@ moo_closure_simple_new (gpointer    object,
     cl = moo_closure_new (MooClosureSimple,
                           moo_closure_simple_call,
                           moo_closure_simple_destroy);
-    cl->object = _moo_object_ptr_new (object,
+    cl->object = _moo_object_ptr_new (G_OBJECT (object),
                                       (GWeakNotify) closure_simple_object_died,
                                       cl);
     cl->callback = (void (*) (gpointer)) callback;

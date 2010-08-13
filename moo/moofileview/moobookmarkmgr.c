@@ -196,10 +196,10 @@ moo_bookmark_mgr_add_separator (MooBookmarkMgr *mgr)
 }
 
 
-MooBookmarkMgr*
+MooBookmarkMgr *
 _moo_bookmark_mgr_new (void)
 {
-    MooBookmarkMgr *mgr = g_object_new (MOO_TYPE_BOOKMARK_MGR, NULL);
+    MooBookmarkMgr *mgr = MOO_BOOKMARK_MGR (g_object_new (MOO_TYPE_BOOKMARK_MGR, (const char*) NULL));
     moo_bookmark_mgr_load (mgr);
     return mgr;
 }
@@ -1000,10 +1000,11 @@ init_editor_dialog (BkEditorXml *xml)
                        "moo-bookmarks-path-column",
                        column);
 
-    completion = g_object_new (MOO_TYPE_FILE_ENTRY_COMPLETION,
-                               "directories-only", TRUE,
-                               "show-hidden", FALSE,
-                               NULL);
+    completion = MOO_FILE_ENTRY_COMPLETION (
+        g_object_new (MOO_TYPE_FILE_ENTRY_COMPLETION,
+                      "directories-only", TRUE,
+                      "show-hidden", FALSE,
+                      (const char*) NULL));
     g_object_set_data_full (G_OBJECT (cell), "moo-file-entry-completion",
                             completion, g_object_unref);
 }

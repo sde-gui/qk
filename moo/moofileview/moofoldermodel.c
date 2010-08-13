@@ -106,7 +106,7 @@ moo_folder_model_class_init (MooFolderModelClass *klass)
                                              "folder",
                                              "folder",
                                              MOO_TYPE_FOLDER,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 }
 
 
@@ -775,7 +775,8 @@ _moo_folder_model_new (MooFolder *folder)
 {
     g_return_val_if_fail (!folder || MOO_IS_FOLDER (folder), NULL);
     return GTK_TREE_MODEL (g_object_new (MOO_TYPE_FOLDER_MODEL,
-                                         "folder", folder, NULL));
+                                         "folder", folder,
+                                         (const char*) NULL));
 }
 
 
@@ -925,12 +926,13 @@ _moo_folder_filter_init (G_GNUC_UNUSED MooFolderFilter *filter)
 }
 
 
-GtkTreeModel*
+GtkTreeModel *
 _moo_folder_filter_new (MooFolderModel *model)
 {
     g_return_val_if_fail (MOO_IS_FOLDER_MODEL (model), NULL);
-    return g_object_new (MOO_TYPE_FOLDER_FILTER,
-                         "child-model", model, NULL);
+    return GTK_TREE_MODEL (g_object_new (MOO_TYPE_FOLDER_FILTER,
+                                         "child-model", model,
+                                         (const char*) NULL));
 }
 
 

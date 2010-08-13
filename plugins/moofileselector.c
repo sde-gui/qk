@@ -157,7 +157,7 @@ _moo_file_selector_class_init (MooFileSelectorClass *klass)
                                              "window",
                                              "window",
                                              MOO_TYPE_EDIT_WINDOW,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     _moo_signal_new_cb ("goto-current-doc-dir",
                         G_OBJECT_CLASS_TYPE (klass),
@@ -1223,7 +1223,7 @@ file_selector_plugin_attach (MooPlugin     *mplugin,
     filesel = g_object_new (MOO_TYPE_FILE_SELECTOR,
                             "bookmark-mgr", plugin->bookmark_mgr,
                             "window", window,
-                            NULL);
+                            (const char*) NULL);
 
     plugin->instances = g_slist_prepend (plugin->instances, filesel);
 }

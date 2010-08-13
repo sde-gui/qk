@@ -278,7 +278,7 @@ _moo_command_display_new (GtkComboBox        *factory_combo,
 {
     MooCommandDisplay *display;
 
-    display = g_object_new (MOO_TYPE_COMMAND_DISPLAY, NULL);
+    display = g_object_new (MOO_TYPE_COMMAND_DISPLAY, (const char*) NULL);
     _moo_tree_helper_connect (MOO_TREE_HELPER (display), treeview,
                               new_btn, delete_btn, up_btn, down_btn);
     init_factory_combo (display, factory_combo, notebook);

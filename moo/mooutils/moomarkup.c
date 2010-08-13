@@ -1312,7 +1312,7 @@ moo_parse_markup_file (const char         *filename,
     if (!(reader = moo_text_reader_new (filename, error)))
         return FALSE;
 
-    ctx = g_markup_parse_context_new (parser, 0, data, NULL);
+    ctx = g_markup_parse_context_new (parser, (GMarkupParseFlags) 0, data, NULL);
 
     while (TRUE)
     {

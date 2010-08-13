@@ -87,11 +87,11 @@ static gboolean moo_entry_get_selection_bounds (GtkEditable     *editable,
 static void     moo_entry_changed           (GtkEditable        *editable);
 
 static void     init_undo_actions           (void);
-static gpointer insert_action_new           (GtkEditable        *editable,
+static MooUndoAction *insert_action_new     (GtkEditable        *editable,
                                              const gchar        *text,
                                              gint                length,
                                              gint               *position);
-static gpointer delete_action_new           (GtkEditable        *editable,
+static MooUndoAction *delete_action_new     (GtkEditable        *editable,
                                              gint                start_pos,
                                              gint                end_pos);
 
@@ -125,7 +125,7 @@ moo_entry_get_type (void)
             (GInterfaceInitFunc) moo_entry_undo_ops_init, NULL, NULL
         };
 
-        type = g_type_register_static (GTK_TYPE_ENTRY, "MooEntry", &info, 0);
+        type = g_type_register_static (GTK_TYPE_ENTRY, "MooEntry", &info, (GTypeFlags) 0);
         g_type_add_interface_static (type, GTK_TYPE_EDITABLE, &editable_info);
         g_type_add_interface_static (type, MOO_TYPE_UNDO_OPS, &undo_ops_info);
     }
@@ -189,7 +189,7 @@ moo_entry_class_init (MooEntryClass *klass)
                                              "enable-undo",
                                              "enable-undo",
                                              TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_UNDO_MENU,
@@ -197,7 +197,7 @@ moo_entry_class_init (MooEntryClass *klass)
                                              "enable-undo-menu",
                                              "enable-undo-menu",
                                              TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_GRAB_SELECTION,
@@ -205,7 +205,7 @@ moo_entry_class_init (MooEntryClass *klass)
                                              "grab-selection",
                                              "grab-selection",
                                              TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_EMPTY,
@@ -221,7 +221,7 @@ moo_entry_class_init (MooEntryClass *klass)
                                              "use-special-chars-menu",
                                              "use-special-chars-menu",
                                              FALSE,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     signals[UNDO] = g_signal_lookup ("undo", GTK_TYPE_ENTRY);
 
@@ -229,7 +229,7 @@ moo_entry_class_init (MooEntryClass *klass)
         signals[UNDO] =
                 g_signal_new ("undo",
                               G_OBJECT_CLASS_TYPE (klass),
-                              G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                              (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
                               G_STRUCT_OFFSET (MooEntryClass, undo),
                               NULL, NULL,
                               _moo_marshal_VOID__VOID,
@@ -241,7 +241,7 @@ moo_entry_class_init (MooEntryClass *klass)
         signals[REDO] =
                 g_signal_new ("redo",
                               G_OBJECT_CLASS_TYPE (klass),
-                              G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                              (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
                               G_STRUCT_OFFSET (MooEntryClass, redo),
                               NULL, NULL,
                               _moo_marshal_VOID__VOID,
@@ -250,7 +250,7 @@ moo_entry_class_init (MooEntryClass *klass)
     signals[DELETE_TO_START] =
             _moo_signal_new_cb ("delete-to-start",
                                 G_OBJECT_CLASS_TYPE (klass),
-                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                                (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
                                 G_CALLBACK (moo_entry_delete_to_start),
                                 NULL, NULL,
                                 _moo_marshal_VOID__VOID,
@@ -261,7 +261,7 @@ moo_entry_class_init (MooEntryClass *klass)
                                   MOO_ACCEL_CTRL_MASK,
                                   "undo", 0);
     gtk_binding_entry_add_signal (binding_set, GDK_z,
-                                  MOO_ACCEL_CTRL_MASK | GDK_SHIFT_MASK,
+                                  (GdkModifierType) (MOO_ACCEL_CTRL_MASK | GDK_SHIFT_MASK),
                                   "redo", 0);
     gtk_binding_entry_add_signal (binding_set, GDK_u,
                                   GDK_CONTROL_MASK,
@@ -465,10 +465,10 @@ moo_entry_undo_ops_init (MooUndoOpsIface *iface)
 }
 
 
-GtkWidget*
+GtkWidget *
 moo_entry_new (void)
 {
-    return g_object_new (MOO_TYPE_ENTRY, NULL);
+    return GTK_WIDGET (g_object_new (MOO_TYPE_ENTRY, (const char*) NULL));
 }
 
 
@@ -500,7 +500,7 @@ special_char_item_activated (GtkWidget *item,
 {
     const char *text;
 
-    text = g_object_get_data (G_OBJECT (item), "moo-entry-special-char");
+    text = (const char*) g_object_get_data (G_OBJECT (item), "moo-entry-special-char");
     g_return_if_fail (text != NULL);
 
     moo_entry_insert_at_cursor (entry, text, -1);
@@ -632,8 +632,8 @@ moo_entry_do_insert_text (GtkEditable        *editable,
     if (length > 0)
     {
         moo_undo_stack_add_action (MOO_ENTRY(editable)->priv->undo_stack,
-                                 INSERT_ACTION_TYPE,
-                                 insert_action_new (editable, text, length, position));
+                                   INSERT_ACTION_TYPE,
+                                   insert_action_new (editable, text, length, position));
         parent_editable_iface->do_insert_text (editable, text, length, position);
         moo_undo_ops_can_undo_changed (G_OBJECT (editable));
     }
@@ -785,7 +785,7 @@ init_undo_actions (void)
 }
 
 
-static gpointer
+static MooUndoAction *
 insert_action_new (G_GNUC_UNUSED GtkEditable *editable,
                    const gchar        *text,
                    gint                length,
@@ -805,11 +805,11 @@ insert_action_new (G_GNUC_UNUSED GtkEditable *editable,
     action->length = length;
     action->chars = g_utf8_strlen (text, length);
 
-    return action;
+    return (MooUndoAction*) action;
 }
 
 
-static gpointer
+static MooUndoAction *
 delete_action_new (GtkEditable        *editable,
                    gint                start_pos,
                    gint                end_pos)
@@ -831,7 +831,7 @@ delete_action_new (GtkEditable        *editable,
     else
         action->forward = FALSE;
 
-    return action;
+    return (MooUndoAction*) action;
 }
 
 

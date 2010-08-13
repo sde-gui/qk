@@ -310,7 +310,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                              "editor",
                                              "editor",
                                              MOO_TYPE_EDITOR,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ACTIVE_DOC,
@@ -318,7 +318,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                              "active-doc",
                                              "active-doc",
                                              MOO_TYPE_EDIT,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     signals[NEW_DOC] =
             g_signal_new ("new-doc",
@@ -878,11 +878,11 @@ moo_edit_window_constructor (GType                  type,
 
     create_paned (window);
 
-    notebook = g_object_new (MOO_TYPE_NOTEBOOK,
-                             "show-tabs", TRUE,
-                             "enable-popup", TRUE,
-                             "enable-reordering", TRUE,
-                             NULL);
+    notebook = GTK_WIDGET (g_object_new (MOO_TYPE_NOTEBOOK,
+                                         "show-tabs", TRUE,
+                                         "enable-popup", TRUE,
+                                         "enable-reordering", TRUE,
+                                         (const char*) NULL));
     gtk_widget_show (notebook);
     moo_big_paned_add_child (window->paned, notebook);
     window->priv->notebook = MOO_NOTEBOOK (notebook);
@@ -1521,8 +1521,9 @@ create_goto_bookmark_action (MooWindow *window,
     name = g_strdup_printf (MOO_EDIT_GOTO_BOOKMARK_ACTION "%u", n);
     accel = g_strdup_printf ("<ctrl>%u", n);
 
-    action = g_object_new (MOO_TYPE_ACTION, "name", name, "default-accel", accel,
-                           "connect-accel", TRUE, "accel-editable", FALSE, NULL);
+    action = GTK_ACTION (g_object_new (MOO_TYPE_ACTION, "name", name, "default-accel", accel,
+                                       "connect-accel", TRUE, "accel-editable", FALSE,
+                                       (const char*) NULL));
     g_signal_connect (action, "activate", G_CALLBACK (goto_bookmark_activated), data);
     moo_bind_bool_property (action, "sensitive", window, "has-open-document", FALSE);
 
@@ -1904,8 +1905,9 @@ notebook_populate_popup (MooNotebook        *notebook,
     if (moo_edit_window_num_docs (window) > 1)
     {
         gtk_menu_shell_append (GTK_MENU_SHELL (menu),
-                               g_object_new (GTK_TYPE_SEPARATOR_MENU_ITEM,
-                                             "visible", TRUE, NULL));
+                               GTK_WIDGET (g_object_new (GTK_TYPE_SEPARATOR_MENU_ITEM,
+                                                         "visible", TRUE,
+                                                         (const char*) NULL)));
 
         item = gtk_menu_item_new_with_label ("Detach");
         gtk_widget_show (item);
@@ -2759,10 +2761,10 @@ create_paned (MooEditWindow *window)
     MooBigPaned *paned;
     const char *config;
 
-    paned = g_object_new (MOO_TYPE_BIG_PANED,
-                          "handle-cursor-type", GDK_FLEUR,
-                          "enable-detaching", TRUE,
-                          NULL);
+    paned = MOO_BIG_PANED (g_object_new (MOO_TYPE_BIG_PANED,
+                                         "handle-cursor-type", GDK_FLEUR,
+                                         "enable-detaching", TRUE,
+                                         (const char*) NULL));
     gtk_widget_show (GTK_WIDGET (paned));
     gtk_box_pack_start (GTK_BOX (MOO_WINDOW(window)->vbox),
                         GTK_WIDGET (paned), TRUE, TRUE, 0);

@@ -18,6 +18,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mootype-macros.h"
+#include "mooutils/moolist.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -48,8 +49,11 @@ typedef struct {
     guint id;
 } EventData;
 
+MOO_DEFINE_SLIST(QueueClientList, queue_client_list, QueueClient)
+MOO_DEFINE_QUEUE(EventData, event_data)
+
 typedef struct {
-    GSList *clients;
+    QueueClientList *clients;
     guint last_id;
 
     int pipe_in;
@@ -69,7 +73,7 @@ static EventQueue queue;
 static QueueClient *
 get_event_client (guint id)
 {
-    GSList *l;
+    QueueClientList *l;
 
     g_return_val_if_fail (queue.init, NULL);
 
@@ -86,10 +90,10 @@ get_event_client (guint id)
 
 
 static void
-invoke_callback (gpointer  id,
-                 GQueue   *events)
+invoke_callback (gpointer        id,
+                 EventDataQueue *events)
 {
-    GList *l;
+    EventDataList *l;
     QueueClient *client;
 
     moo_dmsg ("processing events for id %u", GPOINTER_TO_UINT (id));
@@ -122,7 +126,7 @@ invoke_callback (gpointer  id,
         g_free (data);
     }
 
-    g_queue_free (events);
+    event_data_queue_free_links (events);
 }
 
 
@@ -148,7 +152,7 @@ got_data (GIOChannel *io)
 void
 _moo_event_queue_do_events (guint event_id)
 {
-    GQueue *events = NULL;
+    EventDataQueue *events = NULL;
 
     g_return_if_fail (queue.init);
 
@@ -156,7 +160,7 @@ _moo_event_queue_do_events (guint event_id)
 
     if (queue.data)
     {
-        events = g_hash_table_lookup (queue.data, GUINT_TO_POINTER (event_id));
+        events = (EventDataQueue*) g_hash_table_lookup (queue.data, GUINT_TO_POINTER (event_id));
 
         if (events)
             g_hash_table_remove (queue.data, GUINT_TO_POINTER (event_id));
@@ -235,7 +239,7 @@ _moo_event_queue_connect (MooEventQueueCallback callback,
 
     g_static_mutex_lock (&queue_lock);
     client->id = ++queue.last_id;
-    queue.clients = g_slist_prepend (queue.clients, client);
+    queue.clients = queue_client_list_prepend (queue.clients, client);
     g_static_mutex_unlock (&queue_lock);
 
     return client->id;
@@ -257,7 +261,7 @@ _moo_event_queue_disconnect (guint event_id)
     if (!client)
         g_warning ("%s: no client with id %d", G_STRLOC, event_id);
     else
-        queue.clients = g_slist_remove (queue.clients, client);
+        queue.clients = queue_client_list_remove (queue.clients, client);
 
     g_static_mutex_unlock (&queue_lock);
 
@@ -276,7 +280,7 @@ _moo_event_queue_push (guint          event_id,
 {
     char c = 'd';
     EventData *event_data;
-    GQueue *events;
+    EventDataQueue *events;
 
     event_data = g_new (EventData, 1);
     event_data->data = data;
@@ -291,15 +295,15 @@ _moo_event_queue_push (guint          event_id,
         queue.data = g_hash_table_new (g_direct_hash, g_direct_equal);
     }
 
-    events = g_hash_table_lookup (queue.data, GUINT_TO_POINTER (event_id));
+    events = (EventDataQueue*) g_hash_table_lookup (queue.data, GUINT_TO_POINTER (event_id));
 
     if (!events)
     {
-        events = g_queue_new ();
+        events = event_data_queue_new ();
         g_hash_table_insert (queue.data, GUINT_TO_POINTER (event_id), events);
     }
 
-    g_queue_push_tail (events, event_data);
+    event_data_queue_push_tail (events, event_data);
 
     g_static_mutex_unlock (&queue_lock);
 }
@@ -456,7 +460,7 @@ moo_async_job_new (MooAsyncJobCallback callback,
 
     g_return_val_if_fail (callback != NULL, NULL);
 
-    job = g_object_new (moo_async_job_get_type (), NULL);
+    job = (MooAsyncJob*) g_object_new (moo_async_job_get_type (), (const char*) NULL);
     job->callback = callback;
     job->data = data;
     job->data_notify = data_notify;

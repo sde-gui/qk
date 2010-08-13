@@ -36,34 +36,34 @@ class_init (gpointer g_iface)
 {
     g_object_interface_install_property (g_iface,
         g_param_spec_string ("display-name", "display-name", "display-name",
-                             NULL, G_PARAM_READWRITE));
+                             NULL, (GParamFlags) G_PARAM_READWRITE));
     g_object_interface_install_property (g_iface,
         g_param_spec_string ("default-accel", "default-accel", "default-accel",
-                             NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                             NULL, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
     g_object_interface_install_property (g_iface,
         g_param_spec_boolean ("connect-accel", "connect-accel", "connect-accel",
-                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                              FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
     g_object_interface_install_property (g_iface,
         g_param_spec_boolean ("no-accel", "no-accel", "no-accel",
-                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                              FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
     g_object_interface_install_property (g_iface,
         g_param_spec_boolean ("force-accel-label", "force-accel-label", "force-accel-label",
-                              FALSE, G_PARAM_READWRITE));
+                              FALSE, (GParamFlags) G_PARAM_READWRITE));
     g_object_interface_install_property (g_iface,
         g_param_spec_boolean ("accel-editable", "accel-editable", "accel-editable",
-                              TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                              TRUE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
     g_object_interface_install_property (g_iface,
         g_param_spec_boolean ("dead", "dead", "dead",
-                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                              FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
     g_object_interface_install_property (g_iface,
         g_param_spec_boolean ("active", "active", "active",
-                              TRUE, G_PARAM_WRITABLE));
+                              TRUE, (GParamFlags) G_PARAM_WRITABLE));
     g_object_interface_install_property (g_iface,
         g_param_spec_boolean ("has-submenu", "has-submenu", "has-submenu",
-                              FALSE, G_PARAM_READWRITE));
+                              FALSE, (GParamFlags) G_PARAM_READWRITE));
     g_object_interface_install_property (g_iface,
         g_param_spec_boolean ("use-underline", "use-underline", "use-underline",
-                              TRUE, G_PARAM_READWRITE));
+                              TRUE, (GParamFlags) G_PARAM_READWRITE));
 
     g_signal_new ("connect-proxy",
                   MOO_TYPE_ACTION_BASE,
@@ -88,34 +88,34 @@ _moo_action_base_init_class (GObjectClass *klass)
 {
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_DISPLAY_NAME,
         g_param_spec_string ("display-name", "display-name", "display-name",
-                             NULL, G_PARAM_READWRITE));
+                             NULL, (GParamFlags) G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_DEFAULT_ACCEL,
         g_param_spec_string ("default-accel", "default-accel", "default-accel",
-                             NULL, G_PARAM_READWRITE));
+                             NULL, (GParamFlags) G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_CONNECT_ACCEL,
         g_param_spec_boolean ("connect-accel", "connect-accel", "connect-accel",
-                              FALSE, G_PARAM_READWRITE));
+                              FALSE, (GParamFlags) G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_NO_ACCEL,
         g_param_spec_boolean ("no-accel", "no-accel", "no-accel",
-                              FALSE, G_PARAM_READWRITE));
+                              FALSE, (GParamFlags) G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_ACCEL_EDITABLE,
         g_param_spec_boolean ("accel-editable", "accel-editable", "accel-editable",
-                              TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                              TRUE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_FORCE_ACCEL_LABEL,
         g_param_spec_boolean ("force-accel-label", "force-accel-label", "force-accel-label",
-                              FALSE, G_PARAM_READWRITE));
+                              FALSE, (GParamFlags) G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_DEAD,
         g_param_spec_boolean ("dead", "dead", "dead",
-                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                              FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_ACTIVE,
         g_param_spec_boolean ("active", "active", "active",
                               TRUE, G_PARAM_WRITABLE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_HAS_SUBMENU,
         g_param_spec_boolean ("has-submenu", "has-submenu", "has-submenu",
-                              FALSE, G_PARAM_READWRITE));
+                              FALSE, (GParamFlags) G_PARAM_READWRITE));
     g_object_class_install_property (klass, MOO_ACTION_BASE_PROP_USE_UNDERLINE,
         g_param_spec_boolean ("use-underline", "use-underline", "use-underline",
-                              TRUE, G_PARAM_READWRITE));
+                              TRUE, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_override_property (klass,
                                       MOO_ACTION_BASE_PROP_LABEL,
@@ -148,7 +148,7 @@ moo_action_base_get_type (void)
 
         type = g_type_register_static (G_TYPE_INTERFACE,
                                        "MooActionBase",
-                                       &info,  0);
+                                       &info, (GTypeFlags) 0);
         g_type_interface_add_prerequisite (type, GTK_TYPE_ACTION);
     }
 
@@ -178,14 +178,14 @@ set_string (gpointer    object,
             const char *id,
             const char *data)
 {
-    g_object_set_data_full (object, id, g_strdup (data), g_free);
+    g_object_set_data_full (G_OBJECT (object), id, g_strdup (data), g_free);
 }
 
 static const char *
 get_string (gpointer    object,
             const char *id)
 {
-    return g_object_get_data (object, id);
+    return (const char*) g_object_get_data (G_OBJECT (object), id);
 }
 
 
@@ -194,14 +194,14 @@ set_bool (gpointer    object,
           const char *id,
           gboolean    value)
 {
-    g_object_set_data (object, id, GINT_TO_POINTER (value));
+    g_object_set_data (G_OBJECT (object), id, GINT_TO_POINTER (value));
 }
 
 static gboolean
 get_bool (gpointer    object,
           const char *id)
 {
-    return g_object_get_data (object, id) != NULL;
+    return g_object_get_data (G_OBJECT (object), id) != NULL;
 }
 
 
@@ -237,7 +237,7 @@ _moo_action_get_display_name (gpointer action)
     display_name = get_string (action, "moo-action-display-name");
 
     if (!display_name)
-        display_name = gtk_action_get_name (action);
+        display_name = gtk_action_get_name (GTK_ACTION (action));
 
     return display_name;
 }
@@ -386,12 +386,12 @@ sync_proxies_use_underline (gpointer action,
 {
     GSList *proxies;
 
-    proxies = g_slist_copy (gtk_action_get_proxies (action));
+    proxies = g_slist_copy (gtk_action_get_proxies (GTK_ACTION (action)));
     g_slist_foreach (proxies, (GFunc) g_object_ref, NULL);
 
     while (proxies)
     {
-        proxy_set_use_underline (proxies->data, use_underline);
+        proxy_set_use_underline (GTK_WIDGET (proxies->data), use_underline);
         g_object_unref (proxies->data);
         proxies = g_slist_delete_link (proxies, proxies);
     }
@@ -586,7 +586,7 @@ _moo_action_make_accel_path (gpointer action)
     collection = _moo_action_group_get_collection (MOO_ACTION_GROUP (group));
     g_return_val_if_fail (MOO_IS_ACTION_COLLECTION (collection), NULL);
 
-    name = gtk_action_get_name (action);
+    name = gtk_action_get_name (GTK_ACTION (action));
     group_name = gtk_action_group_get_name (group);
     collection_name = moo_action_collection_get_name (collection);
 
@@ -605,7 +605,7 @@ _moo_action_set_accel_path (gpointer    action,
                             const char *accel_path)
 {
     g_return_if_fail (MOO_IS_ACTION_BASE (action));
-    gtk_action_set_accel_path (action, accel_path);
+    gtk_action_set_accel_path (GTK_ACTION (action), accel_path);
 }
 
 
@@ -613,7 +613,7 @@ const char *
 _moo_action_get_accel_path (gpointer action)
 {
     g_return_val_if_fail (MOO_IS_ACTION_BASE (action), NULL);
-    return gtk_action_get_accel_path (action);
+    return gtk_action_get_accel_path (GTK_ACTION (action));
 }
 
 
@@ -621,7 +621,7 @@ const char *
 _moo_action_get_default_accel (gpointer action)
 {
     g_return_val_if_fail (MOO_IS_ACTION_BASE (action), "");
-    return moo_action_base_get_default_accel (action);
+    return moo_action_base_get_default_accel (MOO_ACTION_BASE (action));
 }
 
 

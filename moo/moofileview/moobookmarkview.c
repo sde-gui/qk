@@ -80,7 +80,7 @@ _moo_bookmark_view_class_init (MooBookmarkViewClass *klass)
                                              "mgr",
                                              "mgr",
                                              MOO_TYPE_BOOKMARK_MGR,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     signals[BOOKMARK_ACTIVATED] =
             g_signal_new ("bookmark-activated",
@@ -187,7 +187,7 @@ GtkWidget *
 _moo_bookmark_view_new (MooBookmarkMgr *mgr)
 {
     g_return_val_if_fail (!mgr || MOO_IS_BOOKMARK_MGR (mgr), NULL);
-    return g_object_new (MOO_TYPE_BOOKMARK_VIEW, "mgr", mgr, NULL);
+    return GTK_WIDGET (g_object_new (MOO_TYPE_BOOKMARK_VIEW, "mgr", mgr, (const char*) NULL));
 }
 
 

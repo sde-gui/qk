@@ -97,11 +97,11 @@ type_name##_get_type (void)                                                 \
             NULL    /* value_table */                                       \
         };                                                                  \
                                                                             \
-        static const GInterfaceInfo iface_info;                             \
+        static const GInterfaceInfo iface_info = {};                        \
                                                                             \
         type = g_type_register_static (TYPE_PARENT,                         \
                                        #TypeName,                           \
-                                       &info, 0);                           \
+                                       &info, (GTypeFlags) 0);              \
         g_type_add_interface_static (type,                                  \
                                      MOO_TYPE_ACTION_BASE,                  \
                                      &iface_info);                          \
@@ -123,11 +123,11 @@ connect_proxy (GtkAction *action,
     GtkActionClass *parent_class;
 
     if (MOO_IS_ACTION (action))
-        parent_class = moo_action_parent_class;
+        parent_class = GTK_ACTION_CLASS (moo_action_parent_class);
     else if (MOO_IS_TOGGLE_ACTION (action))
-        parent_class = moo_toggle_action_parent_class;
+        parent_class = GTK_ACTION_CLASS (moo_toggle_action_parent_class);
     else
-        parent_class = moo_radio_action_parent_class;
+        parent_class = GTK_ACTION_CLASS (moo_radio_action_parent_class);
 
     parent_class->connect_proxy (action, widget);
     g_signal_emit_by_name (action, "connect-proxy", widget);
@@ -142,11 +142,11 @@ disconnect_proxy (GtkAction *action,
     GtkActionClass *parent;
 
     if (MOO_IS_ACTION (action))
-        parent = moo_action_parent_class;
+        parent = GTK_ACTION_CLASS (moo_action_parent_class);
     else if (MOO_IS_TOGGLE_ACTION (action))
-        parent = moo_toggle_action_parent_class;
+        parent = GTK_ACTION_CLASS (moo_toggle_action_parent_class);
     else
-        parent = moo_radio_action_parent_class;
+        parent = GTK_ACTION_CLASS (moo_radio_action_parent_class);
 
     g_signal_emit_by_name (action, "disconnect-proxy", widget);
     parent->disconnect_proxy (action, widget);
@@ -232,9 +232,9 @@ moo_action_constructor (GType                  type,
         else if (!strcmp (name, "closure-signal"))
             closure_signal = g_value_get_string (value);
         else if (!strcmp (name, "closure-callback"))
-            closure_callback = g_value_get_pointer (value);
+            closure_callback = (GCallback) g_value_get_pointer (value);
         else if (!strcmp (name, "closure-proxy-func"))
-            closure_proxy_func = g_value_get_pointer (value);
+            closure_proxy_func = (GCallback) g_value_get_pointer (value);
     }
 
     if (closure_callback || closure_signal)
@@ -278,19 +278,19 @@ moo_action_class_init (MooActionClass *klass)
     g_object_class_install_property (object_class, ACTION_PROP_CLOSURE,
                                      g_param_spec_boxed ("closure", "closure", "closure",
                                                          MOO_TYPE_CLOSURE,
-                                                         G_PARAM_READWRITE));
+                                                         (GParamFlags) G_PARAM_READWRITE));
     g_object_class_install_property (object_class, ACTION_PROP_CLOSURE_OBJECT,
                                      g_param_spec_object ("closure-object", "closure-object", "closure-object",
-                                                          G_TYPE_OBJECT, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+                                                          G_TYPE_OBJECT, (GParamFlags) (G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY)));
     g_object_class_install_property (object_class, ACTION_PROP_CLOSURE_SIGNAL,
                                      g_param_spec_string ("closure-signal", "closure-signal", "closure-signal",
-                                                          NULL, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+                                                          NULL, (GParamFlags) (G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY)));
     g_object_class_install_property (object_class, ACTION_PROP_CLOSURE_CALLBACK,
                                      g_param_spec_pointer ("closure-callback", "closure-callback", "closure-callback",
-                                                           G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+                                                           (GParamFlags) (G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY)));
     g_object_class_install_property (object_class, ACTION_PROP_CLOSURE_PROXY_FUNC,
                                      g_param_spec_pointer ("closure-proxy-func", "closure-proxy-func", "closure-proxy-func",
-                                                           G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+                                                           (GParamFlags) (G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY)));
 }
 
 
@@ -305,7 +305,7 @@ moo_action_set_property (GObject            *object,
     switch (property_id)
     {
         case ACTION_PROP_CLOSURE:
-            _moo_action_set_closure (action, g_value_get_boxed (value));
+            _moo_action_set_closure (action, (MooClosure*) g_value_get_boxed (value));
             break;
 
         case ACTION_PROP_CLOSURE_OBJECT:
@@ -453,7 +453,7 @@ _moo_toggle_action_set_callback (MooToggleAction    *action,
     if (callback)
     {
         if (object)
-            action->priv->ptr = _moo_object_ptr_new (data, NULL, NULL);
+            action->priv->ptr = _moo_object_ptr_new (G_OBJECT (data), NULL, NULL);
         else
             action->priv->data = data;
     }
@@ -478,7 +478,7 @@ moo_toggle_action_constructor (GType                  type,
         GValue *value = props[i].value;
 
         if (!strcmp (name, "toggled-callback"))
-            toggled_callback = g_value_get_pointer (value);
+            toggled_callback = (MooToggleActionCallback) g_value_get_pointer (value);
         else if (!strcmp (name, "toggled-data"))
             toggled_data = g_value_get_pointer (value);
         else if (!strcmp (name, "toggled-object"))
@@ -517,13 +517,13 @@ moo_toggle_action_class_init (MooToggleActionClass *klass)
 
     g_object_class_install_property (object_class, TOGGLE_ACTION_PROP_TOGGLED_CALLBACK,
                                      g_param_spec_pointer ("toggled-callback", "toggled-callback", "toggled-callback",
-                                                           G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+                                                           (GParamFlags) (G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY)));
     g_object_class_install_property (object_class, TOGGLE_ACTION_PROP_TOGGLED_OBJECT,
                                      g_param_spec_object ("toggled-object", "toggled-object", "toggled-object",
-                                                          G_TYPE_OBJECT, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+                                                          G_TYPE_OBJECT, (GParamFlags) (G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY)));
     g_object_class_install_property (object_class, TOGGLE_ACTION_PROP_TOGGLED_DATA,
                                      g_param_spec_pointer ("toggled-data", "toggled-data", "toggled-data",
-                                                           G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+                                                           (GParamFlags) (G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY)));
 }
 
 
@@ -654,7 +654,7 @@ toggle_watch_new (GObject    *master,
     g_return_val_if_fail (GTK_IS_TOGGLE_ACTION (action), NULL);
     g_return_val_if_fail (prop != NULL, NULL);
 
-    klass = g_type_class_peek (G_OBJECT_TYPE (master));
+    klass = G_OBJECT_CLASS (g_type_class_peek (G_OBJECT_TYPE (master)));
     pspec = g_object_class_find_property (klass, prop);
 
     if (!pspec)
@@ -716,7 +716,7 @@ _moo_sync_toggle_action (GtkAction  *action,
     g_return_if_fail (G_IS_OBJECT (master));
     g_return_if_fail (prop != NULL);
 
-    watch = toggle_watch_new (master, prop, action, invert);
+    watch = toggle_watch_new (G_OBJECT (master), prop, action, invert);
     g_return_if_fail (watch != NULL);
 
     prop_changed (watch);
@@ -734,7 +734,7 @@ prop_changed (ToggleWatch *watch)
 
     action = MOO_OBJECT_PTR_GET (watch->parent.target);
     g_assert (GTK_IS_TOGGLE_ACTION (action));
-    active = gtk_toggle_action_get_active (action);
+    active = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
 
     if (!watch->invert)
         equal = !value == !active;
@@ -742,7 +742,7 @@ prop_changed (ToggleWatch *watch)
         equal = !value != !active;
 
     if (!equal)
-        gtk_toggle_action_set_active (action, watch->invert ? !value : value);
+        gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), watch->invert ? !value : value);
 }
 
 
@@ -757,7 +757,7 @@ action_toggled (ToggleWatch *watch)
 
     action = MOO_OBJECT_PTR_GET (watch->parent.target);
     g_assert (GTK_IS_TOGGLE_ACTION (action));
-    active = gtk_toggle_action_get_active (action);
+    active = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
 
     if (!watch->invert)
         equal = !value == !active;

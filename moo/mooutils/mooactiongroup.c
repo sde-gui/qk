@@ -79,7 +79,7 @@ _moo_action_group_new (MooActionCollection *collection,
                        const char          *name,
                        const char          *display_name)
 {
-    MooActionGroup *group = g_object_new (MOO_TYPE_ACTION_GROUP, "name", name, NULL);
+    MooActionGroup *group = MOO_ACTION_GROUP (g_object_new (MOO_TYPE_ACTION_GROUP, "name", name, (const char*) NULL));
     group->display_name = g_strdup (display_name);
     group->collection = collection;
     return group;

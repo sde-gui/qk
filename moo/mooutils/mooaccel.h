@@ -61,7 +61,7 @@ gboolean      moo_accel_check_event         (GtkWidget       *widget,
 #define MOO_ACCEL_CTRL_MASK GDK_CONTROL_MASK
 
 #define MOO_ACCEL_HELP_KEY  GDK_F1
-#define MOO_ACCEL_HELP_MODS 0
+#define MOO_ACCEL_HELP_MODS ((GdkModifierType)0)
 
 #else /* GDK_WINDOWING_QUARTZ */
 

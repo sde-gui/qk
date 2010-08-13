@@ -227,7 +227,7 @@ _moo_command_lua_class_init (MooCommandLuaClass *klass)
 
     g_type_class_add_private (klass, sizeof (MooCommandLuaPrivate));
 
-    factory = g_object_new (_moo_command_factory_lua_get_type (), NULL);
+    factory = g_object_new (_moo_command_factory_lua_get_type (), (const char*) NULL);
     moo_command_factory_register ("lua", _("Lua script"), factory, NULL, ".lua");
     g_object_unref (factory);
 }
@@ -250,7 +250,7 @@ moo_command_lua_new (const char       *code,
 
     g_return_val_if_fail (code != NULL, NULL);
 
-    cmd = g_object_new (MOO_TYPE_COMMAND_LUA, "options", options, NULL);
+    cmd = g_object_new (MOO_TYPE_COMMAND_LUA, "options", options, (const char*) NULL);
     cmd->priv->code = g_strdup (code);
 
     return MOO_COMMAND (cmd);

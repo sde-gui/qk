@@ -126,7 +126,7 @@ collect_valist (GType        type,
 
     g_return_val_if_fail (first_prop_name != NULL, FALSE);
 
-    klass = g_type_class_ref (type);
+    klass = G_OBJECT_CLASS (g_type_class_ref (type));
     g_return_val_if_fail (klass != NULL, FALSE);
 
     props = g_array_new (FALSE, TRUE, sizeof (GParameter));
@@ -194,7 +194,7 @@ moo_action_factory_new_valist (GType       action_type,
 
     g_return_val_if_fail (g_type_is_a (action_type, MOO_TYPE_ACTION_BASE), NULL);
 
-    factory = g_object_new (MOO_TYPE_ACTION_FACTORY, NULL);
+    factory = MOO_ACTION_FACTORY (g_object_new (MOO_TYPE_ACTION_FACTORY, (const char*) NULL));
 
     factory->action_type = action_type;
 
@@ -267,9 +267,9 @@ moo_action_factory_create_action (MooActionFactory   *factory,
     }
 
     if (!prop_name)
-        return g_object_newv (factory->action_type,
-                              factory->n_props,
-                              factory->props);
+        return GTK_ACTION (g_object_newv (factory->action_type,
+                                          factory->n_props,
+                                          factory->props));
 
     va_start (var_args, prop_name);
 
@@ -288,7 +288,7 @@ moo_action_factory_create_action (MooActionFactory   *factory,
                                      n_add_props,
                                      &n_props);
 
-    object = g_object_newv (factory->action_type, n_props, props);
+    object = G_OBJECT (g_object_newv (factory->action_type, n_props, props));
 
     _moo_param_array_free (props, n_props);
     _moo_param_array_free (add_props, n_add_props);
@@ -329,7 +329,7 @@ moo_action_factory_new_a (GType       action_type,
 
     g_return_val_if_fail (g_type_is_a (action_type, MOO_TYPE_ACTION_BASE), NULL);
 
-    klass = g_type_class_ref (action_type);
+    klass = G_OBJECT_CLASS (g_type_class_ref (action_type));
     props = g_array_new (FALSE, TRUE, sizeof (GParameter));
 
     for (i = 0; i < n_params; ++i)
@@ -362,7 +362,7 @@ moo_action_factory_new_a (GType       action_type,
 
     g_type_class_unref (klass);
 
-    factory = g_object_new (MOO_TYPE_ACTION_FACTORY, NULL);
+    factory = MOO_ACTION_FACTORY (g_object_new (MOO_TYPE_ACTION_FACTORY, (const char*) NULL));
     factory->action_type = action_type;
 
     factory->n_props = props->len;
@@ -380,7 +380,7 @@ moo_action_factory_new_func (MooActionFactoryFunc factory_func,
 
     g_return_val_if_fail (factory_func != NULL, NULL);
 
-    factory = g_object_new (MOO_TYPE_ACTION_FACTORY, NULL);
+    factory = MOO_ACTION_FACTORY (g_object_new (MOO_TYPE_ACTION_FACTORY, (const char*) NULL));
     factory->factory_func = factory_func;
     factory->factory_func_data = data;
 

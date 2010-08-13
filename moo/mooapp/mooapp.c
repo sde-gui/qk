@@ -235,7 +235,7 @@ moo_app_class_init (MooAppClass *klass)
                                              "run-input",
                                              "run-input",
                                              TRUE,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_USE_SESSION,
@@ -243,7 +243,7 @@ moo_app_class_init (MooAppClass *klass)
                                              "use-session",
                                              "use-session",
                                              -1, 1, -1,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_INSTANCE_NAME,
@@ -251,11 +251,11 @@ moo_app_class_init (MooAppClass *klass)
                                              "instance-name",
                                              "instance-name",
                                              NULL,
-                                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 
     g_object_class_install_property (gobject_class, PROP_DEFAULT_UI,
         g_param_spec_pointer ("default-ui", "default-ui", "default-ui",
-                              G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+                              (GParamFlags) (G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY)));
 
     signals[INIT] =
             g_signal_new ("init",

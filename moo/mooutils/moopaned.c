@@ -260,37 +260,37 @@ moo_paned_class_init (MooPanedClass *klass)
 
     g_object_class_install_property (gobject_class, PANED_PROP_ACTIVE_PANE,
         g_param_spec_object ("active-pane", "active-pane", "active-pane",
-                             MOO_TYPE_PANE, G_PARAM_READWRITE));
+                             MOO_TYPE_PANE, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PANED_PROP_PANE_POSITION,
         g_param_spec_enum ("pane-position", "pane-position", "pane-position",
                            MOO_TYPE_PANE_POSITION, MOO_PANE_POS_LEFT,
-                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+                           (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 
     g_object_class_install_property (gobject_class, PANED_PROP_CLOSE_PANE_ON_CHILD_FOCUS,
         g_param_spec_boolean ("close-pane-on-child-focus", "close-pane-on-child-focus",
                               "close-pane-on-child-focus",
-                              TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                              TRUE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PANED_PROP_STICKY_PANE,
         g_param_spec_boolean ("sticky-pane", "sticky-pane", "sticky-pane",
-                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                              FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PANED_PROP_ENABLE_HANDLE_DRAG,
         g_param_spec_boolean ("enable-handle-drag", "enable-handle-drag", "enable-handle-drag",
-                              FALSE, G_PARAM_READWRITE));
+                              FALSE, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PANED_PROP_ENABLE_DETACHING,
         g_param_spec_boolean ("enable-detaching", "enable-detaching", "enable-detaching",
-                              FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                              FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PANED_PROP_HANDLE_CURSOR_TYPE,
         g_param_spec_enum ("handle-cursor-type", "handle-cursor-type", "handle-cursor-type",
-                           GDK_TYPE_CURSOR_TYPE, GDK_HAND2, G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                           GDK_TYPE_CURSOR_TYPE, GDK_HAND2, (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     g_object_class_install_property (gobject_class, PANED_PROP_ENABLE_BORDER,
         g_param_spec_boolean ("enable-border", "enable-border", "enable-border",
-                              TRUE, G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                              TRUE, (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     gtk_widget_class_install_style_property (widget_class,
         g_param_spec_int ("handle-size", "handle-size", "handle-size",
@@ -570,7 +570,7 @@ moo_paned_new (MooPanePosition pane_position)
 {
     return GTK_WIDGET (g_object_new (MOO_TYPE_PANED,
                        "pane-position", pane_position,
-                       NULL));
+                       (const char*) NULL));
 }
 
 

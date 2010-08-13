@@ -613,7 +613,7 @@ medit_main (int argc, char *argv[])
                                  "run-input", run_input,
                                  "use-session", medit_opts.use_session,
                                  "instance-name", medit_opts.app_name,
-                                 NULL));
+                                 (const char*) NULL));
 
     if (!moo_app_init (app))
     {

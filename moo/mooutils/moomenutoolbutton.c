@@ -63,10 +63,10 @@ moo_menu_tool_button_destroy (GtkObject *object)
 }
 
 
-GtkWidget*
+GtkWidget *
 moo_menu_tool_button_new (void)
 {
-    return g_object_new (MOO_TYPE_MENU_TOOL_BUTTON, NULL);
+    return GTK_WIDGET (g_object_new (MOO_TYPE_MENU_TOOL_BUTTON, (const char*) NULL));
 }
 
 

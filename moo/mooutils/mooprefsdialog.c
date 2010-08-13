@@ -95,7 +95,7 @@ moo_prefs_dialog_class_init (MooPrefsDialogClass *klass)
                                             "hide_on_delete",
                                             "Hide on delete",
                                             FALSE,
-                                            G_PARAM_READWRITE));
+                                            (GParamFlags) G_PARAM_READWRITE));
 
     prefs_dialog_signals[APPLY] =
         g_signal_new ("apply",
@@ -353,7 +353,8 @@ GtkWidget*
 moo_prefs_dialog_new (const char *title)
 {
     return GTK_WIDGET (g_object_new (MOO_TYPE_PREFS_DIALOG,
-                                     "title", title, NULL));
+                                     "title", title,
+                                     (const char*) NULL));
 }
 
 

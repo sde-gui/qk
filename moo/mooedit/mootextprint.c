@@ -421,7 +421,7 @@ _moo_print_operation_class_init (MooPrintOperationClass *klass)
                                              "doc",
                                              "doc",
                                              GTK_TYPE_TEXT_VIEW,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (object_class,
                                      PROP_BUFFER,
@@ -429,7 +429,7 @@ _moo_print_operation_class_init (MooPrintOperationClass *klass)
                                              "buffer",
                                              "buffer",
                                              GTK_TYPE_TEXT_BUFFER,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (object_class,
                                      PROP_SETTINGS,
@@ -437,7 +437,7 @@ _moo_print_operation_class_init (MooPrintOperationClass *klass)
                                              "settings",
                                              "settings",
                                              MOO_TYPE_PRINT_SETTINGS,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 }
 
 
@@ -1636,10 +1636,10 @@ do_print_operation (GtkTextView            *view,
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
     g_return_if_fail (!exp_filename || action == GTK_PRINT_OPERATION_ACTION_EXPORT);
 
-    op = g_object_new (MOO_TYPE_PRINT_OPERATION,
-                       "doc", view,
-                       "export-filename", exp_filename,
-                       NULL);
+    op = MOO_PRINT_OPERATION (g_object_new (MOO_TYPE_PRINT_OPERATION,
+                                            "doc", view,
+                                            "export-filename", exp_filename,
+                                            (const char*) NULL));
 
     if (!parent)
         parent = GTK_WIDGET (view);

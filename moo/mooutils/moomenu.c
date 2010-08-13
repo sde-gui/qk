@@ -96,5 +96,5 @@ moo_menu_key_release_event (GtkWidget   *widget,
 GtkWidget *
 moo_menu_new (void)
 {
-    return g_object_new (MOO_TYPE_MENU, NULL);
+    return GTK_WIDGET (g_object_new (MOO_TYPE_MENU, (const char*) NULL));
 }

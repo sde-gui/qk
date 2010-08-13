@@ -2187,7 +2187,7 @@ create_treeview (WindowPlugin *plugin)
 static void
 create_model (WindowPlugin *plugin)
 {
-    plugin->list = g_object_new (file_list_get_type (), NULL);
+    plugin->list = g_object_new (file_list_get_type (), (const char*) NULL);
     plugin->list->plugin = plugin;
 
     file_list_load_config (plugin->list, plugin->filename, &plugin->ui_config);

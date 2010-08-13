@@ -338,11 +338,11 @@ moo_window_class_init (MooWindowClass *klass)
 
     g_object_class_install_property (gobject_class, PROP_MENUBAR_UI_NAME,
         g_param_spec_string ("menubar-ui-name", "menubar-ui-name", "menubar-ui-name",
-                             NULL, G_PARAM_READWRITE));
+                             NULL, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_TOOLBAR_UI_NAME,
         g_param_spec_string ("toolbar-ui-name", "toolbar-ui-name", "toolbar-ui-name",
-                             NULL, G_PARAM_READWRITE));
+                             NULL, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_ID,
         g_param_spec_string ("id", "id", "id", NULL, G_PARAM_READABLE));
@@ -353,7 +353,7 @@ moo_window_class_init (MooWindowClass *klass)
 
     g_object_class_install_property (gobject_class, PROP_UI_XML,
         g_param_spec_object ("ui-xml", "ui-xml", "ui-xml",
-                             MOO_TYPE_UI_XML, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                             MOO_TYPE_UI_XML, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PROP_TOOLBAR,
         g_param_spec_object ("toolbar", "toolbar", "toolbar",
@@ -365,15 +365,15 @@ moo_window_class_init (MooWindowClass *klass)
 
     g_object_class_install_property (gobject_class, PROP_TOOLBAR_VISIBLE,
         g_param_spec_boolean ("toolbar-visible", "toolbar-visible", "toolbar-visible",
-                              TRUE, G_PARAM_READWRITE));
+                              TRUE, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_MENUBAR_VISIBLE,
         g_param_spec_boolean ("menubar-visible", "menubar-visible", "menubar-visible",
-                              TRUE, G_PARAM_READWRITE));
+                              TRUE, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class, PROP_STATUSBAR_VISIBLE,
         g_param_spec_boolean ("statusbar-visible", "statusbar-visible", "statusbar-visible",
-                              TRUE, G_PARAM_READWRITE));
+                              TRUE, (GParamFlags) G_PARAM_READWRITE));
 
     INSTALL_PROP (PROP_MEO_CAN_COPY, "can-copy");
     INSTALL_PROP (PROP_MEO_CAN_CUT, "can-cut");
@@ -524,7 +524,7 @@ moo_window_init (MooWindow *window)
     window->status_area = gtk_hbox_new (FALSE, 0);
     window->statusbar = g_object_new (GTK_TYPE_STATUSBAR,
                                       "has-resize-grip", FALSE,
-                                      NULL);
+                                      (const char*) NULL);
     gtk_widget_set_name (GTK_WIDGET (window->statusbar), "no-shadow");
     gtk_box_pack_start (GTK_BOX (window->status_area),
                         GTK_WIDGET (window->statusbar),
@@ -535,7 +535,7 @@ moo_window_init (MooWindow *window)
 #else
                        "has-resize-grip", TRUE,
 #endif
-                       NULL);
+                       (const char*) NULL);
     gtk_widget_set_name (rg, "no-shadow");
     gtk_box_pack_end (GTK_BOX (window->status_area),
                       rg, FALSE, FALSE, 0);

@@ -159,7 +159,7 @@ moo_filter_mgr_finalize (GObject *object)
 MooFilterMgr *
 moo_filter_mgr_new (void)
 {
-    return g_object_new (MOO_TYPE_FILTER_MGR, NULL);
+    return MOO_FILTER_MGR (g_object_new (MOO_TYPE_FILTER_MGR, (const char*) NULL));
 }
 
 MooFilterMgr *
@@ -220,7 +220,7 @@ mgr_get_store (MooFilterMgr   *mgr,
         return mgr->priv->default_store;
     }
 
-    store = g_hash_table_lookup (mgr->priv->named_stores, user_id);
+    store = (FilterStore*) g_hash_table_lookup (mgr->priv->named_stores, user_id);
 
     if (!store && create)
     {
@@ -310,7 +310,7 @@ moo_filter_mgr_get_null_filter (MooFilterMgr *mgr)
 static Filter*
 mgr_get_null_filter (MooFilterMgr *mgr)
 {
-    return g_hash_table_lookup (mgr->priv->filters, ALL_FILES_GLOB);
+    return (Filter*) g_hash_table_lookup (mgr->priv->filters, ALL_FILES_GLOB);
 }
 
 
@@ -434,7 +434,7 @@ mgr_new_filter (MooFilterMgr   *mgr,
     g_return_val_if_fail (description != NULL, NULL);
     g_return_val_if_fail (glob != NULL, NULL);
 
-    filter = g_hash_table_lookup (mgr->priv->filters, glob);
+    filter = (Filter*) g_hash_table_lookup (mgr->priv->filters, glob);
 
     if (!filter)
     {
@@ -458,12 +458,11 @@ dialog_set_filter (MooFilterMgr   *mgr,
                    GtkFileChooser *dialog,
                    Filter         *filter)
 {
-    GtkEntry *entry = g_object_get_data (G_OBJECT (dialog),
-                                         "moo-filter-entry");
+    GtkEntry *entry = GTK_ENTRY (g_object_get_data (G_OBJECT (dialog), "moo-filter-entry"));
     gtk_entry_set_text (entry, filter_get_description (filter));
     gtk_file_chooser_set_filter (dialog, filter_get_gtk_filter (filter));
     mgr_set_last_filter (mgr,
-                         g_object_get_data (G_OBJECT (dialog), "moo-filter-user-id"),
+                         (const char*) g_object_get_data (G_OBJECT (dialog), "moo-filter-user-id"),
                          filter);
 }
 
@@ -476,15 +475,15 @@ filter_entry_activated (GtkEntry       *entry,
     Filter *filter = NULL;
     MooFilterMgr *mgr;
 
-    mgr = g_object_get_data (G_OBJECT (dialog), "moo-filter-mgr");
+    mgr = (MooFilterMgr*) g_object_get_data (G_OBJECT (dialog), "moo-filter-mgr");
     g_return_if_fail (MOO_IS_FILTER_MGR (mgr));
 
     text = gtk_entry_get_text (entry);
 
     if (text && text[0])
         filter = mgr_new_user_filter (mgr, text,
-                                      g_object_get_data (G_OBJECT (dialog),
-                                              "moo-filter-user-id"));
+                                      (const char*) g_object_get_data (G_OBJECT (dialog),
+                                                                       "moo-filter-user-id"));
 
     if (!filter)
         filter = mgr_get_null_filter (mgr);
@@ -505,12 +504,12 @@ combo_changed (GtkComboBox    *combo,
     if (!gtk_combo_box_get_active_iter (combo, &iter))
         return;
 
-    mgr = g_object_get_data (G_OBJECT (dialog), "moo-filter-mgr");
+    mgr = (MooFilterMgr*) g_object_get_data (G_OBJECT (dialog), "moo-filter-mgr");
     g_return_if_fail (MOO_IS_FILTER_MGR (mgr));
 
     store = mgr_get_store (mgr,
-                           g_object_get_data (G_OBJECT (dialog),
-                                              "moo-filter-user-id"),
+                           (const char*) g_object_get_data (G_OBJECT (dialog),
+                                                            "moo-filter-user-id"),
                            FALSE);
     g_return_if_fail (store != NULL);
 
@@ -1074,7 +1073,7 @@ mgr_save_set (MooFilterMgr      *mgr,
 
     for (l = list; l != NULL; l = l->next)
         moo_markup_create_text_element (root, ELEMENT_FILTER,
-                                        filter_get_glob (l->data));
+                                        filter_get_glob ((Filter*) l->data));
 
     g_slist_free (list);
 }
@@ -1107,7 +1106,7 @@ mgr_do_save (MooFilterMgr *mgr)
 
     for (l = user_ids; l != NULL; l = l->next)
     {
-        FilterStore *store = mgr_get_store (mgr, l->data, FALSE);
+        FilterStore *store = mgr_get_store (mgr, (const char*) l->data, FALSE);
         g_return_val_if_fail (!l->data || store != NULL, FALSE);
 
         if (!store)
@@ -1124,14 +1123,14 @@ mgr_do_save (MooFilterMgr *mgr)
             if (l->data)
             {
                 elm = moo_markup_create_element (root, ELEMENT_SET);
-                moo_markup_set_prop (elm, PROP_USER_ID, l->data);
+                moo_markup_set_prop (elm, PROP_USER_ID, (const char*) l->data);
             }
             else
             {
                 elm = moo_markup_create_element (root, ELEMENT_DEFAULT);
             }
 
-            mgr_save_set (mgr, l->data, elm);
+            mgr_save_set (mgr, (const char*) l->data, elm);
         }
     }
 

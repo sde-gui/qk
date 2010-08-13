@@ -259,7 +259,7 @@ _moo_print_preview_new (MooPrintOperation        *op,
     g_return_val_if_fail (MOO_IS_PRINT_OPERATION (op), NULL);
     g_return_val_if_fail (GTK_IS_PRINT_OPERATION_PREVIEW (gtk_preview), NULL);
 
-    preview = g_object_new (MOO_TYPE_PRINT_PREVIEW, NULL);
+    preview = MOO_PRINT_PREVIEW (g_object_new (MOO_TYPE_PRINT_PREVIEW, (const char*) NULL));
     preview->priv->op = g_object_ref (op);
     _moo_print_operation_set_preview (op, preview);
 

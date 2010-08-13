@@ -615,7 +615,7 @@ filter_factory_func (const char *id,
     g_return_val_if_fail (id != NULL, NULL);
     g_return_val_if_fail (!strcmp (info->id, id), NULL);
 
-    filter = g_object_new (MOO_TYPE_OUTPUT_FILTER_REGEX, NULL);
+    filter = g_object_new (MOO_TYPE_OUTPUT_FILTER_REGEX, (const char*) NULL);
     filter->priv->filter = filter_info_ref (info);
     filter->priv->state = info->state;
 

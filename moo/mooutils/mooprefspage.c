@@ -85,19 +85,19 @@ moo_prefs_page_class_init (MooPrefsPageClass *klass)
 
     g_object_class_install_property (gobject_class, PROP_LABEL,
         g_param_spec_string ("label", "label", "Label",
-                             NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                             NULL, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PROP_ICON_STOCK_ID,
         g_param_spec_string ("icon-stock-id", "icon-stock-id", "icon-stock-id",
-                             NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                             NULL, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PROP_ICON,
         g_param_spec_object ("icon", "icon", "Icon",
-                             GDK_TYPE_PIXBUF, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+                             GDK_TYPE_PIXBUF, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
     g_object_class_install_property (gobject_class, PROP_AUTO_APPLY,
         g_param_spec_boolean ("auto-apply", "auto-apply", "auto-apply",
-                              TRUE, G_PARAM_READWRITE));
+                              TRUE, (GParamFlags) G_PARAM_READWRITE));
 
     signals[APPLY] =
         g_signal_new ("apply",
@@ -231,7 +231,7 @@ moo_prefs_page_new (const char *label,
     return g_object_new (MOO_TYPE_PREFS_PAGE,
                          "label", label,
                          "icon-stock-id", icon_stock_id,
-                         NULL);
+                         (const char*) NULL);
 }
 
 

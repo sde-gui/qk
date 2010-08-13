@@ -154,4 +154,116 @@ list_type##_free (ListType *list)                                       \
     MOO_DEFINE_LIST_COPY_FUNC(ListType, list_type, elm_copy_func)       \
     MOO_DEFINE_LIST_FREE_FUNC(ListType, list_type, elm_free_func)
 
+#ifdef __cplusplus
+#define _MOO_DEFINE_QUEUE_FOREACH(Element, element)                     \
+template<typename T> inline static void                                 \
+element##_queue_foreach (Element##Queue *queue,                         \
+                         void (*func) (Element *elm, T *data),          \
+                         T *data)                                       \
+{                                                                       \
+    g_queue_foreach (element##_queue_to_gqueue (queue),                 \
+                     (GFunc) func, data);                               \
+}                                                                       \
+                                                                        \
+inline static void                                                      \
+element##_queue_foreach (Element##Queue *queue,                         \
+                         void (*func) (Element *elm),                   \
+                         void *)                                        \
+{                                                                       \
+    g_queue_foreach (element##_queue_to_gqueue (queue),                 \
+                     (GFunc) func, NULL);                               \
+}
+#else
+#define _MOO_DEFINE_QUEUE_FOREACH(Element, element)                     \
+inline static void                                                      \
+element##_queue_foreach (Element##Queue *queue,                         \
+                         void (*func) (Element *elm, void *data),       \
+                         void *data)                                    \
+{                                                                       \
+    g_queue_foreach (element##_queue_to_gqueue (queue),                 \
+                     (GFunc) func, data);                               \
+}
+#endif
+
+#define MOO_DEFINE_QUEUE(Element, element)                              \
+                                                                        \
+MOO_DEFINE_DLIST(Element##List, element##_list, Element)                \
+                                                                        \
+typedef struct Element##Queue Element##Queue;                           \
+struct Element##Queue {                                                 \
+  Element##List *head;                                                  \
+  Element##List *tail;                                                  \
+  guint length;                                                         \
+};                                                                      \
+                                                                        \
+inline static Element##Queue *                                          \
+element##_queue_from_gqueue (GQueue *queue)                             \
+{                                                                       \
+    return (Element##Queue*) queue;                                     \
+}                                                                       \
+                                                                        \
+inline static GQueue *                                                  \
+element##_queue_to_gqueue (Element##Queue *queue)                       \
+{                                                                       \
+    return (GQueue*) queue;                                             \
+}                                                                       \
+                                                                        \
+inline static Element##Queue *                                          \
+element##_queue_new (void)                                              \
+{                                                                       \
+    return element##_queue_from_gqueue (g_queue_new ());                \
+}                                                                       \
+                                                                        \
+inline static void                                                      \
+element##_queue_free_links (Element##Queue *queue)                      \
+{                                                                       \
+    g_queue_free (element##_queue_to_gqueue (queue));                   \
+}                                                                       \
+                                                                        \
+inline static void                                                      \
+element##_queue_push_head (Element##Queue *queue, Element *elm)         \
+{                                                                       \
+    g_queue_push_head (element##_queue_to_gqueue (queue), elm);         \
+}                                                                       \
+                                                                        \
+inline static void                                                      \
+element##_queue_push_tail (Element##Queue *queue, Element *elm)         \
+{                                                                       \
+    g_queue_push_tail (element##_queue_to_gqueue (queue), elm);         \
+}                                                                       \
+                                                                        \
+inline static void                                                      \
+element##_queue_push_head_link (Element##Queue *queue,                  \
+                                Element##List  *link_)                  \
+{                                                                       \
+    g_queue_push_head_link (element##_queue_to_gqueue (queue),          \
+                            element##_list_to_glist (link_));           \
+}                                                                       \
+                                                                        \
+inline static void                                                      \
+element##_queue_push_tail_link (Element##Queue *queue,                  \
+                                Element##List  *link_)                  \
+{                                                                       \
+    g_queue_push_tail_link (element##_queue_to_gqueue (queue),          \
+                            element##_list_to_glist (link_));           \
+}                                                                       \
+                                                                        \
+inline static void                                                      \
+element##_queue_unlink (Element##Queue *queue,                          \
+                        Element##List  *link_)                          \
+{                                                                       \
+    g_queue_unlink (element##_queue_to_gqueue (queue),                  \
+                    element##_list_to_glist (link_));                   \
+}                                                                       \
+                                                                        \
+inline static void                                                      \
+element##_queue_delete_link (Element##Queue *queue,                     \
+                             Element##List  *link_)                     \
+{                                                                       \
+    g_queue_delete_link (element##_queue_to_gqueue (queue),             \
+                         element##_list_to_glist (link_));              \
+}                                                                       \
+                                                                        \
+_MOO_DEFINE_QUEUE_FOREACH(Element, element)
+
 #endif /* MOO_LIST_H */

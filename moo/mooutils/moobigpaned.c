@@ -45,6 +45,12 @@ typedef struct {
     GHashTable *panes;
 } MooBigPanedConfig;
 
+typedef struct {
+    int        bbox_size;
+    GdkRegion *bbox_region;
+    GdkRegion *def_region;
+} DZ;
+
 struct MooBigPanedPrivate {
     MooPanePosition order[4]; /* inner is paned[order[3]] */
     GtkWidget   *inner;
@@ -58,11 +64,7 @@ struct MooBigPanedPrivate {
     GdkRectangle drop_rect;
     GdkRectangle drop_button_rect;
     GdkWindow   *drop_outline;
-    struct {
-        int        bbox_size;
-        GdkRegion *bbox_region;
-        GdkRegion *def_region;
-    } *dz;
+    DZ *dz;
     GdkRegion    *drop_region;
     guint         drop_region_is_buttons : 1;
 };
@@ -146,7 +148,7 @@ moo_big_paned_class_init (MooBigPanedClass *klass)
                                      g_param_spec_pointer ("pane-order",
                                              "pane-order",
                                              "pane-order",
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_HANDLE_DRAG,
@@ -154,7 +156,7 @@ moo_big_paned_class_init (MooBigPanedClass *klass)
                                              "enable-handle-drag",
                                              "enable-handle-drag",
                                              TRUE,
-                                             G_PARAM_CONSTRUCT | G_PARAM_WRITABLE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_WRITABLE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_DETACHING,
@@ -162,7 +164,7 @@ moo_big_paned_class_init (MooBigPanedClass *klass)
                                              "enable-detaching",
                                              "enable-detaching",
                                              FALSE,
-                                             G_PARAM_CONSTRUCT | G_PARAM_WRITABLE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_WRITABLE)));
 
     g_object_class_install_property (gobject_class,
                                      PROP_HANDLE_CURSOR_TYPE,
@@ -171,7 +173,7 @@ moo_big_paned_class_init (MooBigPanedClass *klass)
                                              "handle-cursor-type",
                                              GDK_TYPE_CURSOR_TYPE,
                                              GDK_HAND2,
-                                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE));
+                                             (GParamFlags) (G_PARAM_CONSTRUCT | G_PARAM_READWRITE)));
 
     signals[CONFIG_CHANGED] =
             g_signal_new ("config-changed",
@@ -207,9 +209,9 @@ moo_big_paned_init (MooBigPaned *paned)
         GtkWidget *child;
 
         paned->paned[i] = child =
-                g_object_new (MOO_TYPE_PANED,
-                              "pane-position", (MooPanePosition) i,
-                              NULL);
+                GTK_WIDGET (g_object_new (MOO_TYPE_PANED,
+                                          "pane-position", (MooPanePosition) i,
+                                          (const char*) NULL));
 
         MOO_OBJECT_REF_SINK (child);
         gtk_widget_show (child);
@@ -271,7 +273,7 @@ void
 moo_big_paned_set_pane_order (MooBigPaned *paned,
                               int         *order)
 {
-    MooPanePosition new_order[4] = {8, 8, 8, 8};
+    MooPanePosition new_order[4];
     int i;
     GtkWidget *child;
 
@@ -280,9 +282,8 @@ moo_big_paned_set_pane_order (MooBigPaned *paned,
 
     for (i = 0; i < 4; ++i)
     {
-        g_return_if_fail (new_order[i] >= 4);
         g_return_if_fail (0 <= order[i] && order[i] < 4);
-        new_order[i] = order[i];
+        new_order[i] = (MooPanePosition) order[i];
     }
 
     g_return_if_fail (check_children_order (paned));
@@ -352,10 +353,10 @@ moo_big_paned_finalize (GObject *object)
 }
 
 
-GtkWidget*
+GtkWidget *
 moo_big_paned_new (void)
 {
-    return g_object_new (MOO_TYPE_BIG_PANED, NULL);
+    return GTK_WIDGET (g_object_new (MOO_TYPE_BIG_PANED, (const char*) NULL));
 }
 
 
@@ -458,7 +459,7 @@ get_pane_config (MooBigPaned     *paned,
 
     g_return_val_if_fail (id != NULL, NULL);
 
-    if (!(params = g_hash_table_lookup (paned->priv->config->panes, id)))
+    if (!(params = (MooPaneParams*) g_hash_table_lookup (paned->priv->config->panes, id)))
         return NULL;
 
     for (pos = 0; pos < 4 && !found; ++pos)
@@ -470,10 +471,10 @@ get_pane_config (MooBigPaned     *paned,
              link != NULL && !found;
              link = link->next)
         {
-            if (strcmp (link->data, id) == 0)
+            if (strcmp ((const char*) link->data, id) == 0)
             {
                 *index = index_here;
-                *position = pos;
+                *position = (MooPanePosition) pos;
                 found = TRUE;
             }
             else if (g_hash_table_lookup (paned->priv->panes, link->data))
@@ -786,7 +787,7 @@ moo_big_paned_lookup_pane (MooBigPaned *paned,
 {
     g_return_val_if_fail (MOO_IS_BIG_PANED (paned), NULL);
     g_return_val_if_fail (pane_id != NULL, NULL);
-    return g_hash_table_lookup (paned->priv->panes, pane_id);
+    return MOO_PANE (g_hash_table_lookup (paned->priv->panes, pane_id));
 }
 
 
@@ -882,7 +883,7 @@ moo_big_paned_set_property (GObject      *object,
     switch (prop_id)
     {
         case PROP_PANE_ORDER:
-            moo_big_paned_set_pane_order (paned, g_value_get_pointer (value));
+            moo_big_paned_set_pane_order (paned, (int*) g_value_get_pointer (value));
             break;
 
         case PROP_ENABLE_HANDLE_DRAG:
@@ -1017,7 +1018,7 @@ get_drop_zones (MooBigPaned *paned)
 
     g_return_if_fail (paned->priv->dz == NULL);
 
-    paned->priv->dz = g_malloc0 (4 * sizeof *paned->priv->dz);
+    paned->priv->dz = g_new0 (DZ, 4);
 
     for (pos = 0; pos < 4; ++pos)
     {
@@ -1250,7 +1251,8 @@ handle_drag_motion (MooPaned       *child,
 
     if (paned->priv->drop_pos >= 0)
     {
-        get_drop_area (paned, child, paned->priv->drop_pos,
+        get_drop_area (paned, child,
+                       (MooPanePosition) paned->priv->drop_pos,
                        paned->priv->drop_button_index,
                        &paned->priv->drop_rect,
                        &paned->priv->drop_button_rect);
@@ -1315,7 +1317,7 @@ handle_drag_end (MooPaned    *child,
         return;
     }
 
-    new_pos = paned->priv->drop_pos;
+    new_pos = (MooPanePosition) paned->priv->drop_pos;
     new_index = paned->priv->drop_button_index;
     cleanup_drag (paned);
 
@@ -1718,7 +1720,7 @@ paned_config_serialize (MooPanedConfig *config,
 
     for (l = config->order; l != NULL; l = l->next)
     {
-        char *id = l->data;
+        char *id = (char*) l->data;
         g_string_append_printf (string, ",%s", id);
     }
 }

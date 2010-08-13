@@ -260,7 +260,7 @@ _moo_folder_mem_usage (MooFolder *folder)
 MooFolder *
 _moo_folder_new_with_impl (MooFolderImpl *impl)
 {
-    MooFolder *folder = g_object_new (MOO_TYPE_FOLDER, NULL);
+    MooFolder *folder = MOO_FOLDER (g_object_new (MOO_TYPE_FOLDER, (const char*) NULL));
     folder->impl = impl;
     impl->proxy = folder;
     g_object_ref (impl->fs);

@@ -45,7 +45,7 @@ moo_file_icon_for_file (MooFileIcon *icon,
 
     icon->mime_type = mime_type;
     icon->type = MOO_ICON_MIME;
-    icon->emblem = 0;
+    icon->emblem = (MooIconEmblem) 0;
 }
 
 GdkPixbuf *
@@ -199,7 +199,7 @@ moo_icon_cache_get_mime (MooIconCache   *cache,
                          MooIconEmblem   flags)
 {
     GdkPixbuf **pixbufs;
-    pixbufs = g_hash_table_lookup (cache->mime_icons, mime);
+    pixbufs = (GdkPixbuf**) g_hash_table_lookup (cache->mime_icons, mime);
     return pixbufs ? pixbufs[flags] : NULL;
 }
 
@@ -249,7 +249,7 @@ moo_icon_cache_set_mime (MooIconCache *cache,
 {
     GdkPixbuf **array;
 
-    array = g_hash_table_lookup (cache->mime_icons, mime);
+    array = (GdkPixbuf**) g_hash_table_lookup (cache->mime_icons, mime);
 
     if (!array)
     {
@@ -288,7 +288,7 @@ moo_icon_cache_get_for_screen (GdkScreen   *screen,
     icon_theme = gtk_icon_theme_get_for_screen (screen);
     g_return_val_if_fail (icon_theme != NULL, NULL);
 
-    hash = g_object_get_data (G_OBJECT (icon_theme), "moo-icon-cache");
+    hash = (GHashTable*) g_object_get_data (G_OBJECT (icon_theme), "moo-icon-cache");
 
     if (!hash)
     {
@@ -298,7 +298,7 @@ moo_icon_cache_get_for_screen (GdkScreen   *screen,
                                 (GDestroyNotify) g_hash_table_destroy);
     }
 
-    cache = g_hash_table_lookup (hash, GINT_TO_POINTER (size));
+    cache = (MooIconCache*) g_hash_table_lookup (hash, GINT_TO_POINTER (size));
 
     if (!cache)
     {
@@ -321,13 +321,13 @@ add_arrow (GdkPixbuf     *original,
     if (!arrow)
     {
         arrow = gdk_pixbuf_new_from_inline (-1, SYMLINK_ARROW, TRUE, NULL);
-        g_return_val_if_fail (arrow != NULL, g_object_ref (original));
+        g_return_val_if_fail (arrow != NULL, GDK_PIXBUF (g_object_ref (original)));
     }
 
     if (!small_arrow)
     {
         small_arrow = gdk_pixbuf_new_from_inline (-1, SYMLINK_ARROW_SMALL, TRUE, NULL);
-        g_return_val_if_fail (arrow != NULL, g_object_ref (original));
+        g_return_val_if_fail (arrow != NULL, GDK_PIXBUF (g_object_ref (original)));
     }
 
     if (size == GTK_ICON_SIZE_MENU)
@@ -336,7 +336,7 @@ add_arrow (GdkPixbuf     *original,
         emblem = arrow;
 
     pixbuf = gdk_pixbuf_copy (original);
-    g_return_val_if_fail (pixbuf != NULL, g_object_ref (original));
+    g_return_val_if_fail (pixbuf != NULL, GDK_PIXBUF (g_object_ref (original)));
 
     gdk_pixbuf_composite (emblem, pixbuf,
                           0,
@@ -776,7 +776,7 @@ moo_file_icon_get_pixbuf (MooFileIcon *icon,
     original = NULL;
 
     if (icon->emblem)
-        original = moo_icon_cache_get (cache, icon->type, mime_type, 0);
+        original = moo_icon_cache_get (cache, icon->type, mime_type, (MooIconEmblem) 0);
 
     if (!original)
     {
@@ -790,7 +790,7 @@ moo_file_icon_get_pixbuf (MooFileIcon *icon,
 
         g_return_val_if_fail (original != NULL, NULL);
 
-        moo_icon_cache_set (cache, icon->type, mime_type, 0, original);
+        moo_icon_cache_set (cache, icon->type, mime_type, (MooIconEmblem) 0, original);
         g_object_unref (original);
     }
 

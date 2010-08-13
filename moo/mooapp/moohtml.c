@@ -209,7 +209,7 @@ _moo_html_tag_class_init (MooHtmlTagClass *klass)
                                              "href",
                                              "href",
                                              NULL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 }
 
 
@@ -305,7 +305,7 @@ _moo_html_class_init (MooHtmlClass *klass)
                                              "title",
                                              "title",
                                              NULL,
-                                             G_PARAM_READWRITE));
+                                             (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (gobject_class,
                                      HTML_PROP_MARKUP,
@@ -988,7 +988,7 @@ moo_html_create_tag (GtkTextView       *view,
         real_attr = *attr;
     }
 
-    tag = g_object_new (MOO_TYPE_HTML_TAG, NULL);
+    tag = g_object_new (MOO_TYPE_HTML_TAG, (const char*) NULL);
     gtk_text_tag_table_add (gtk_text_buffer_get_tag_table (gtk_text_view_get_buffer (view)),
                             GTK_TEXT_TAG (tag));
     g_object_unref (tag);

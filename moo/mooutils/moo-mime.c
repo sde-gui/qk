@@ -38,7 +38,7 @@ mime_type_intern (const char *mime)
     if (G_UNLIKELY (!hash))
         hash = g_hash_table_new (g_str_hash, g_str_equal);
 
-    if (G_UNLIKELY (!(interned = g_hash_table_lookup (hash, mime))))
+    if (G_UNLIKELY (!(interned = (const char*) g_hash_table_lookup (hash, mime))))
     {
         char *copy = g_strdup (mime);
         g_hash_table_insert (hash, copy, copy);
@@ -155,7 +155,7 @@ _moo_get_mime_data_dirs (void)
 
         for (i = 0; i < n_dirs; ++i)
         {
-            data_dirs[i] = dirs->data;
+            data_dirs[i] = (char*) dirs->data;
             dirs = g_slist_delete_link (dirs, dirs);
         }
 
