@@ -202,7 +202,7 @@ md_history_mgr_dispose (GObject *object)
 
         if (mgr->priv->files)
         {
-            md_history_item_queue_foreach (mgr->priv->files, md_history_item_free, NULL);
+            md_history_item_queue_foreach (mgr->priv->files, (MdHistoryItemListFunc) md_history_item_free, NULL);
             md_history_item_queue_free_links (mgr->priv->files);
             g_hash_table_destroy (mgr->priv->hash);
         }

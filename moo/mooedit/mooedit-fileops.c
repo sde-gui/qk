@@ -1,7 +1,7 @@
 /*
  *   mooedit-fileops.c
  *
- *   Copyright (C) 2004-2009 by Yevgen Muntyan <muntyan@tamu.edu>
+ *   Copyright (C) 2004-2010 by Yevgen Muntyan <muntyan@tamu.edu>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -30,6 +30,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooutils-messages.h"
+#include "mooutils/mooutils-fs.h"
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>

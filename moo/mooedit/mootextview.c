@@ -4607,8 +4607,8 @@ moo_text_view_insert_box (MooTextView *view,
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     g_return_if_fail (iter != NULL);
 
-    anchor = MOO_TEXT_ANCHOR (g_object_new (MOO_TYPE_TEXT_ANCHOR, (const char*) NULL));
-    box = MOO_TEXT_BOX (g_object_new (MOO_TYPE_TEXT_BOX, (const char*) NULL));
+    anchor = GTK_TEXT_CHILD_ANCHOR (g_object_new (MOO_TYPE_TEXT_ANCHOR, (const char*) NULL));
+    box = GTK_WIDGET (g_object_new (MOO_TYPE_TEXT_BOX, (const char*) NULL));
     MOO_TEXT_ANCHOR (anchor)->widget = box;
 
     buffer = get_buffer (view);
