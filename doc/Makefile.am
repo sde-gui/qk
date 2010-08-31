@@ -39,6 +39,8 @@ doc: help.stamp
 
 endif
 
+EXTRA_DIST = medit.1 help.html help-sections.h
+
 install-data-local:
 	$(MKDIR_P) $(DESTDIR)$(MOO_HELP_DIR)
 	cd $(srcdir) && $(INSTALL_DATA) help/*.html $(DESTDIR)$(MOO_HELP_DIR)

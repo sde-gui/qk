@@ -12,7 +12,7 @@ libmoousertools_la_SOURCES =	\
 	moousertools.h		\
 	moousertools-prefs.c	\
 	moousertools-prefs.h	\
-	moocommand.cpp		\
+	moocommand.c		\
 	moocommand.h		\
 	moocommand-private.h	\
 	moocommanddisplay.c	\

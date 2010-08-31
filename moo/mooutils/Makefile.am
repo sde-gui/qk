@@ -94,6 +94,7 @@ libmooutils_la_SOURCES =	\
 	moo-mime.h		\
 	moonotebook.c		\
 	moonotebook.h		\
+	mooonce.h		\
 	moopane.c		\
 	moopane.h		\
 	moopaned.c		\
@@ -107,6 +108,7 @@ libmooutils_la_SOURCES =	\
 	moopython.h		\
 	moospawn.c		\
 	moospawn.h		\
+	moostat.h		\
 	moostock.c		\
 	moostock.h		\
 	mootype-macros.h	\
@@ -126,7 +128,9 @@ libmooutils_la_SOURCES =	\
 	mooutils-gobject-private.h \
 	mooutils-gobject.c	\
 	mooutils-gobject.h	\
+	mooutils-macros.h	\
 	mooutils-mem.h		\
+	mooutils-messages.h	\
 	mooutils-misc.c		\
 	mooutils-misc.h		\
 	mooutils-tests.h	\
@@ -150,6 +154,10 @@ libmooutils_la_SOURCES +=	\
 	moo-test-macros.h
 endif
 
+EXTRA_DIST =				\
+	glade/mooaccelprefs.glade	\
+	glade/mooaccelbutton.glade	\
+	glade/moologwindow.glade
 BUILT_SOURCES +=			\
 	glade/mooaccelprefs-gxml.h	\
 	glade/mooaccelbutton-gxml.h	\
@@ -157,6 +165,7 @@ BUILT_SOURCES +=			\
 
 BUILT_SOURCES += stock-moo.h moofileicon-symlink.h
 PIXMAPS = pixmaps/hide.png pixmaps/close.png pixmaps/sticky.png pixmaps/detach.png pixmaps/attach.png pixmaps/keepontop.png pixmaps/medit.png
+EXTRA_DIST += $(PIXMAPS)
 stock-moo.h: $(PIXMAPS)
 	$(GDK_PIXBUF_CSOURCE) --static --build-list \
 		MOO_HIDE_ICON $(srcdir)/pixmaps/hide.png \
@@ -167,6 +176,7 @@ stock-moo.h: $(PIXMAPS)
 		MOO_KEEP_ON_TOP_ICON $(srcdir)/pixmaps/keepontop.png \
 		MEDIT_ICON $(srcdir)/pixmaps/medit.png \
 			> $@.tmp && mv $@.tmp $@
+EXTRA_DIST += pixmaps/symlink.png pixmaps/symlink-small.png
 moofileicon-symlink.h: pixmaps/symlink.png pixmaps/symlink-small.png
 	$(GDK_PIXBUF_CSOURCE) --static --build-list \
 		SYMLINK_ARROW $(srcdir)/pixmaps/symlink.png \

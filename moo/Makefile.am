@@ -16,7 +16,10 @@ libmoo_la_LIBADD =				\
 
 libmoo_la_SOURCES =		\
 	marshals.c		\
-	marshals.h
+	marshals.h		\
+	moo-config.h
+
+EXTRA_DIST = marshals.list
 
 BUILT_SOURCES =			\
 	marshals.stamp		\

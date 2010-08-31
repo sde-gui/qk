@@ -14,7 +14,7 @@ medit_SOURCES =		\
 	parse.h		\
 	main.c
 
-EXTRA_medit_SOURCES =	\
+nodist_EXTRA_medit_SOURCES =	\
 	dummy.cpp
 
 medit_LDADD = ../plugins/libmooeditplugins.la ../moo/libmoo.la $(MOO_LIBS)
@@ -22,6 +22,10 @@ medit_LDFLAGS =
 if MOO_OS_WIN32
 medit_LDFLAGS += -mwindows
 endif
+
+# EXTRA_DIST += medit.desktop.in
+# desktopdir = $(datadir)/applications
+# desktop_DATA = medit.desktop.in
 
 # MOO_WIN32_RESOURCE(medit.rc.in medit MEDIT_SOURCES medit_libs)
 

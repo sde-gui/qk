@@ -80,4 +80,6 @@ langs_DATA =			\
 	langs/language2.rng	\
 	langs/check.sh
 
+EXTRA_DIST += $(langs_DATA)
+
 # -%- strip:true -%-
