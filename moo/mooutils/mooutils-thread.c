@@ -291,7 +291,7 @@ _moo_event_queue_push (guint          event_id,
 
     if (!queue.data)
     {
-        (void) write (queue.pipe_in, &c, 1);
+        seriously_ignore_return_value (write (queue.pipe_in, &c, 1));
         queue.data = g_hash_table_new (g_direct_hash, g_direct_equal);
     }
 

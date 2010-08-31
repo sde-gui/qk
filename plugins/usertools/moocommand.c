@@ -18,9 +18,9 @@
 #endif
 
 #define MOOEDIT_COMPILATION
-#include "usertools/moocommand-private.h"
-#include "usertools/moocommand-lua.h"
-#include "usertools/moooutputfilterregex.h"
+#include "moocommand-private.h"
+#include "lua/moocommand-lua.h"
+#include "moooutputfilterregex.h"
 #include "mooedit/mooeditwindow.h"
 #include "mooedit/mooedit-enums.h"
 #include "mooutils/mooutils-debug.h"
@@ -32,7 +32,7 @@
 #include <stdio.h>
 
 #ifndef __WIN32__
-#include "moocommand-sh.h"
+#include "exe/moocommand-exe.h"
 #endif
 
 #define KEY_TYPE    "type"
@@ -1028,10 +1028,13 @@ get_options_from_file (MooCommandFactory *factory,
     if (fgets (buf, sizeof buf, file) && buf[sizeof buf - 1] != 0)
     {
         int len = strlen (buf);
-        fgets (buf + len, sizeof buf - len, file);
+        seriously_ignore_return_value_p (fgets (buf + len, sizeof buf - len, file));
     }
 
-    get_options_from_contents (factory, cmd_data, buf, options, filename);
+    if (ferror (file))
+        g_warning ("%s: error reading file %s", G_STRFUNC, filename);
+    else
+        get_options_from_contents (factory, cmd_data, buf, options, filename);
 
     fclose (file);
 }
@@ -1139,7 +1142,7 @@ item_foreach_func (const char *key,
 
     if (index < 0)
     {
-        g_warning ("unknown key %s in item %s in file %s",
+        g_warning ("unknown key '%s' in item '%s' in file '%s'",
                    key, data->name, data->filename);
         data->error = TRUE;
         return;
@@ -1356,9 +1359,7 @@ _moo_command_init (void)
 
     if (!been_here)
     {
-#ifdef MOO_BUILD_LUA
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_LUA));
-#endif
 #ifndef __WIN32__
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));
 #endif

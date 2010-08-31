@@ -1,0 +1,10 @@
+if MOO_OS_UNIX
+
+libmoousertools_la_SOURCES +=	\
+	exe/moocommand-exe.c	\
+	exe/moocommand-exe.h
+
+EXTRA_DIST += glade/mooedittools-exe.glade
+BUILT_SOURCES += glade/mooedittools-exe-gxml.h
+
+endif MOO_OS_UNIX

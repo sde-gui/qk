@@ -14,9 +14,10 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "usertools/moousertools.h"
-#include "usertools/moousertools-prefs.h"
-#include "usertools/moocommand-private.h"
+#include "moousertools.h"
+#include "moousertools-prefs.h"
+#include "moocommand-private.h"
+#include "mooeditplugins.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooeditaction.h"
 #include "mooedit/mooeditaction-factory.h"

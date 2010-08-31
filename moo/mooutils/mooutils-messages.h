@@ -103,7 +103,7 @@ void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_lis
 void MOO_NORETURN _moo_error (MooCodeLoc loc, const char *format, ...) G_GNUC_PRINTF (2, 3);
 void MOO_NORETURN _moo_errorv (MooCodeLoc loc, const char *format, va_list args);
 
-#ifndef MOO_DEV_MODE
+#if !defined(MOO_DEV_MODE) && !defined(DEBUG)
 NORETURN
 #endif
 void _moo_assert_message (MooCodeLoc loc, const char *message);

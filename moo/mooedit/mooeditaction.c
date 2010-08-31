@@ -17,6 +17,7 @@
 #include "mooedit/mooeditaction.h"
 #include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mooeditfiltersettings.h"
+#include "mooedit/mooedit-impl.h"
 #include <glib/gregex.h>
 #include <string.h>
 

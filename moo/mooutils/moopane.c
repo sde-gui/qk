@@ -1124,11 +1124,11 @@ _moo_pane_get_button (MooPane *pane)
 void
 _moo_pane_get_handle (MooPane    *pane,
                       GtkWidget **big,
-                      GtkWidget **small)
+                      GtkWidget **small_)
 {
     g_return_if_fail (MOO_IS_PANE (pane));
     *big = pane->handle;
-    *small = pane->small_handle;
+    *small_ = pane->small_handle;
 }
 
 GtkWidget *

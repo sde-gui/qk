@@ -14,8 +14,8 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "usertools/moocommanddisplay.h"
-#include "usertools/moocommand-private.h"
+#include "moocommanddisplay.h"
+#include "moocommand-private.h"
 #include "mooutils/mooutils-misc.h"
 #include <string.h>
 

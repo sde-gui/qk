@@ -48,6 +48,17 @@ void        moo_reset_log_func              (void);
 void MOO_NORETURN moo_segfault              (void);
 void MOO_NORETURN moo_abort                 (void);
 
+static inline void
+seriously_ignore_return_value (G_GNUC_UNUSED int v)
+{
+    /* gcc guys are funny, casting to void is not enough */
+}
+
+static inline void
+seriously_ignore_return_value_p (G_GNUC_UNUSED void *p)
+{
+}
+
 void        moo_disable_win32_error_message (void);
 void        moo_enable_win32_error_message  (void);
 

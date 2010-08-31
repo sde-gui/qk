@@ -20,8 +20,8 @@
 #ifndef MOO_COMMAND_PRIVATE_H
 #define MOO_COMMAND_PRIVATE_H
 
-#include <usertools/mookeyfile.h>
-#include <usertools/moocommand.h>
+#include "mookeyfile.h"
+#include "moocommand.h"
 
 G_BEGIN_DECLS
 

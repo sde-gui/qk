@@ -236,7 +236,7 @@ moo_app_get_system_info (MooApp *app)
 
     text = g_string_new (NULL);
 
-    g_string_append_printf (text, "%s-%s\n", MOO_APP_FULL_NAME, MOO_PACKAGE_VERSION);
+    g_string_append_printf (text, "%s-%s\n", MOO_APP_FULL_NAME, MOO_DISPLAY_VERSION);
 
     string = get_system_name ();
     g_string_append_printf (text, "OS: %s\n", string);

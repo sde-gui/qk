@@ -14,9 +14,9 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "usertools/moooutputfilterregex.h"
-#include "usertools/moocommand.h"
-#include "usertools/mookeyfile.h"
+#include "moooutputfilterregex.h"
+#include "moocommand.h"
+#include "mookeyfile.h"
 #include "mooedit/moocmdview.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/moolangmgr.h"

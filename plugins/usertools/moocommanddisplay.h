@@ -17,7 +17,7 @@
 #define MOO_COMMAND_DISPLAY_H
 
 #include <mooutils/mooutils-treeview.h>
-#include <usertools/moocommand.h>
+#include "moocommand.h"
 #include <gtk/gtkcombobox.h>
 #include <gtk/gtknotebook.h>
 

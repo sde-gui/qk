@@ -13,7 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "usertools/mookeyfile.h"
+#include "mookeyfile.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"

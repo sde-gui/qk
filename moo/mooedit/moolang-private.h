@@ -20,7 +20,7 @@
 #ifndef MOO_LANG_PRIVATE_H
 #define MOO_LANG_PRIVATE_H
 
-#include "mooedit/gtksourceview/gtksourceview-api.h"
+#include "gtksourceview/gtksourceview-api.h"
 #include "mooedit/moolang.h"
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditconfig.h"

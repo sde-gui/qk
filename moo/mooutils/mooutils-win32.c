@@ -62,27 +62,29 @@ extern HINSTANCE _moo_hinst_dll;
 static const char *
 get_moo_dll_name (void)
 {
-    G_LOCK_DEFINE_STATIC (moo_dll_name);
-    static char *moo_dll_name = NULL;
+    return NULL;
 
-    G_LOCK (moo_dll_name);
-
-    if (!moo_dll_name)
-    {
-        char *name = NULL;
-        wchar_t buf[MAX_PATH+1];
-        if (GetModuleFileNameW ((HMODULE) _moo_hinst_dll, buf, G_N_ELEMENTS (buf)))
-            name = g_utf16_to_utf8 (buf, -1, NULL, NULL, NULL);
-        if (name)
-            moo_dll_name = g_path_get_basename (name);
-        if (!moo_dll_name)
-            moo_dll_name = g_strdup ("libmoo.dll");
-        g_free (name);
-    }
-
-    G_UNLOCK (moo_dll_name);
-
-    return moo_dll_name;
+//     G_LOCK_DEFINE_STATIC (moo_dll_name);
+//     static char *moo_dll_name = NULL;
+//
+//     G_LOCK (moo_dll_name);
+//
+//     if (!moo_dll_name)
+//     {
+//         char *name = NULL;
+//         wchar_t buf[MAX_PATH+1];
+//         if (GetModuleFileNameW ((HMODULE) _moo_hinst_dll, buf, G_N_ELEMENTS (buf)))
+//             name = g_utf16_to_utf8 (buf, -1, NULL, NULL, NULL);
+//         if (name)
+//             moo_dll_name = g_path_get_basename (name);
+//         if (!moo_dll_name)
+//             moo_dll_name = g_strdup ("libmoo.dll");
+//         g_free (name);
+//     }
+//
+//     G_UNLOCK (moo_dll_name);
+//
+//     return moo_dll_name;
 }
 
 const char *

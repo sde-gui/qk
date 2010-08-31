@@ -14,7 +14,7 @@
  */
 
 #include "mooutils/moo-mime.h"
-#include "mooutils/xdgmime/xdgmime.h"
+#include "xdgmime/xdgmime.h"
 #include "mooutils/mooutils-fs.h"
 #include <string.h>
 

@@ -1,0 +1,12 @@
+if MOO_BUILD_CTAGS
+libmooeditplugins_la_SOURCES +=	\
+	ctags/readtags.c	\
+	ctags/readtags.h	\
+	ctags/readtags-mangle.h	\
+	ctags/ctags-plugin.c	\
+	ctags/ctags-doc.c	\
+	ctags/ctags-doc.h	\
+	ctags/ctags-view.c	\
+	ctags/ctags-view.h
+AM_CPPFLAGS += -DMOO_BUILD_CTAGS
+endif MOO_BUILD_CTAGS

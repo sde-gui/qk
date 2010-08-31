@@ -114,7 +114,7 @@ GtkWidget      *_moo_pane_get_focus_child   (MooPane        *pane);
 GtkWidget      *_moo_pane_get_button        (MooPane        *pane);
 void            _moo_pane_get_handle        (MooPane        *pane,
                                              GtkWidget     **big,
-                                             GtkWidget     **small);
+                                             GtkWidget     **small_);
 GtkWidget      *_moo_pane_get_window        (MooPane        *pane);
 
 void            _moo_pane_params_changed    (MooPane        *pane);

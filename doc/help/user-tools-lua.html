@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.sf.net">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<title>Lua scripts</title>
+</HEAD>
+<BODY>
+
+<DIV CLASS="header" ID="header">
+
+
+<table width="100%"><tr valign="top">
+	<td width="33%" align="left">Previous: <a href="user-tools-files.html">Storing tools in files</a></td>
+	<td width="33%" align="center">Up: <a href="sect-user-tools.html">User-defined Tools</a></td>
+	<td width="33%" align="right">Next: <a href="user-tools-shell.html">Shell scripts</a></td>
+</tr></table>
+<hr>
+
+<H3>Lua scripts</H3>
+
+<!-- ##user-tools-lua## -->
+<P>
+Lua scripts can use the standard Lua library, <CODE>lfs</CODE> library, and <CODE>medit</CODE> package
+which provides some text editor API. Lua scripts have the following variables and functions available.
+</P>
+<UL>
+<LI><CODE>doc</CODE>: a table with the following fields:
+</UL>
+
+<TABLE ALIGN="center" BORDER="1">
+<TR>
+<TD><CODE>file</CODE></TD>
+<TD>the document file path.</TD>
+</TR>
+<TR>
+<TD><CODE>name</CODE></TD>
+<TD>the document file basename.</TD>
+</TR>
+<TR>
+<TD><CODE>dir</CODE></TD>
+<TD>the document file directory.</TD>
+</TR>
+<TR>
+<TD><CODE>ext</CODE></TD>
+<TD>the document filename extension including the period.</TD>
+</TR>
+<TR>
+<TD><CODE>base</CODE></TD>
+<TD>the document filename without the extension: the basename is always <CODE>base..ext</CODE>.</TD>
+</TR>
+</TABLE>
+
+<UL>
+<LI><CODE>Cut()</CODE>, <CODE>Copy()</CODE>, <CODE>Paste()</CODE>: clipboard operations.
+<LI><CODE>Backspace()</CODE>, <CODE>Delete()</CODE>: corresponding key actions.
+<LI><CODE>Up()</CODE>, <CODE>Down()</CODE>, <CODE>Left()</CODE>, <CODE>Right()</CODE>: move cursor as the arrow keys do.
+<LI><CODE>Selection()</CODE>: returns selected text as a string. Returns <CODE>nil</CODE> when no text is selected.
+<LI><CODE>Select(n)</CODE>: selects <CODE>n</CODE> characters to the right if <CODE>n</CODE> is positive, and <CODE>-n</CODE> characters to the left if it is negative.
+<LI><CODE>Insert(...)</CODE>: inserts text at cursor. Namely, it converts each argument to a string and inserts the result into the document.
+<LI><CODE>NewLine()</CODE>: inserts new line character.
+<P></P>
+The following functions are provided for more advanced text manipulation. Position in the
+document is denoted by the character offset from the beginning of the document, starting
+from 1, so the first character is at position 1. Functions which take or return ranges use pairs of
+offsets, a pair <CODE>start</CODE>, <CODE>end</CODE> denotes range of text from
+<CODE>start</CODE> to <CODE>end</CODE>, <B>not</B> including the character at offset <CODE>end</CODE>. For instance, the
+single-character range consisting of the first character in the document corresponds to the
+pair <CODE>1, 2</CODE>. Non-positive offset denotes the end of the document.
+<P></P>
+<LI><CODE>InsertText(pos, ...)</CODE>: inserts text at the position <CODE>pos</CODE>.
+<LI><CODE>DeleteText(start, end)</CODE>: deletes text in the range <CODE>[start..end)</CODE>.
+<LI><CODE>GetInsert()</CODE>: returns position of the cursor in the document.
+<LI><CODE>GetSelectionBounds()</CODE>: returns positions of the selection start and end. If no text is
+  selected, returns pair <CODE>pos, pos</CODE> where <CODE>pos</CODE> is the cursor position.
+<LI><CODE>GetLine([pos])</CODE>: returns line number of the character at the position <CODE>pos</CODE>. If <CODE>pos</CODE>
+  is not specified, it defaults to the cursor position.
+<LI><CODE>GetPosAtLine(n)</CODE>: returns position at the beginning of the <CODE>n</CODE>-th line.
+<LI><CODE>LineStart([pos])</CODE>: returns the position of the beginning of the line which contains character at <CODE>pos</CODE>.
+  If <CODE>pos</CODE> is not specified, it defaults to the cursor position.
+<LI><CODE>LineEnd([pos])</CODE>: returns the position of the end of the line which contains character at <CODE>pos</CODE>.
+  If <CODE>pos</CODE> is not specified, it defaults to the cursor position.
+<LI><CODE>ForwardLine([pos, [n]])</CODE>: returns the position of the beginning of the next line (or
+  <CODE>n</CODE>-th line if <CODE>n</CODE> is specified). <CODE>pos</CODE> defaults to the cursor position if not
+  specified.
+<LI><CODE>BackwardLine([pos, [n]])</CODE>: returns the position of the beginning of the previous line
+  (or <CODE>n</CODE>-th line backwards if <CODE>n</CODE> is specified). <CODE>pos</CODE> defaults to the cursor position
+  if not specified.
+<LI><CODE>GetText(start, end)</CODE>: returns the text in the <CODE>[start..end)</CODE>. If <CODE>start == end</CODE>, it
+  returns an empty string, not <CODE>nil</CODE>.
+</UL>
+
+
+
+
+<ul>
+
+</ul>
+
+<hr>
+<table width="100%"><tr valign="top">
+	<td width="33%" align="left">Previous: <a href="user-tools-files.html">Storing tools in files</a></td>
+	<td width="33%" align="center">Up: <a href="sect-user-tools.html">User-defined Tools</a></td>
+	<td width="33%" align="right">Next: <a href="user-tools-shell.html">Shell scripts</a></td>
+</tr></table>
+
+</BODY></HTML>
+

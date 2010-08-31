@@ -13,7 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config-dirs.h"
+#include "config.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-file.h"
@@ -1865,14 +1865,16 @@ _moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
 
 #endif /* !__WIN32__ */
 
-#ifndef MOO_DEV_MODE
+#if !defined(MOO_DEV_MODE) && !defined(DEBUG)
 NORETURN
 #endif
 void
 _moo_assert_message (MooCodeLoc loc, const char *message)
 {
-#if defined(MOO_DEV_MODE) && !defined(__WIN32__)
+#if defined(MOO_DEV_MODE) && defined(__WIN32__)
     _moo_abort_debug_ignore (loc, message);
+#elif defined(MOO_DEV_MODE) || defined(DEBUG)
+    g_critical ("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
 #else
     g_error ("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
 #endif

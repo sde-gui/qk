@@ -1,3 +1,0 @@
-@pushd ${_MOO_BINARY_DIR}
-${_MOO_RUN_HOW}${_MOO_BINARY_DIR}\medit\medit.exe --ut %*
-@popd

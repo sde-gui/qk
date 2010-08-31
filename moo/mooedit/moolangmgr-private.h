@@ -22,7 +22,7 @@
 
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditconfig.h"
-#include "mooedit/gtksourceview/gtksourceview-api.h"
+#include "gtksourceview/gtksourceview-api.h"
 
 G_BEGIN_DECLS
 

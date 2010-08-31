@@ -22,7 +22,7 @@ VS_VERSION_INFO VERSIONINFO
         VALUE "LegalCopyright", "@MOO_COPYRIGHT@"
         VALUE "OriginalFilename", "medit.exe"
         VALUE "ProductName", "medit"
-        VALUE "ProductVersion", "@MOO_PACKAGE_VERSION@"
+        VALUE "ProductVersion", "@MOO_DISPLAY_VERSION@"
       END
     END
     BLOCK "VarFileInfo"

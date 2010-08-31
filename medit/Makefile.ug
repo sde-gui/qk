@@ -29,7 +29,7 @@ medit_SOURCES += main.c
 # medit_SOURCES += main.c
 # endif
 
-if MOO_OS_MINGW
+if MOO_OS_WIN32
 medit_LDFLAGS += -mwindows
 endif
 

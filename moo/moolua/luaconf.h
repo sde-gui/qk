@@ -180,7 +180,11 @@
 */
 #if defined(luaall_c)
 #define LUAI_FUNC	static
+#ifndef __cplusplus
 #define LUAI_DATA	/* empty */
+#else
+#define LUAI_DATA	extern
+#endif
 
 #elif defined(__GNUC__) && ((__GNUC__*100 + __GNUC_MINOR__) >= 302) && \
       defined(__ELF__)
@@ -756,6 +760,10 @@ union luai_Cast { double l_d; long l_l; };
 ** Local configuration. You can use this space to add your redefinitions
 ** without modifying the main part of the file.
 */
+
+#ifndef __cplusplus
+#error "This copy of Lua must be used from C++"
+#endif
 
 /* stuff from glib */
 #if     __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 4)

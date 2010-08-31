@@ -24,9 +24,8 @@ moo_plugin_init_builtin (void)
     _moo_file_selector_plugin_init ();
     _moo_file_list_plugin_init ();
     _moo_find_plugin_init ();
-#ifndef __WIN32__
 #ifdef MOO_BUILD_CTAGS
     _moo_ctags_plugin_init ();
 #endif
-#endif
+    _moo_user_tools_plugin_init ();
 }

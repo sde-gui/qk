@@ -13,15 +13,15 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "usertools/moousertools-prefs.h"
-#include "usertools/moousertools.h"
-#include "usertools/moocommand.h"
-#include "usertools/moocommanddisplay.h"
+#include "moousertools-prefs.h"
+#include "moousertools.h"
+#include "moocommand.h"
+#include "moocommanddisplay.h"
 #include "mooutils/mooprefspage.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/moohelp.h"
-#include "usertools/glade/moousertools-gxml.h"
+#include "glade/moousertools-gxml.h"
 #include "help-sections.h"
 #include <string.h>
 

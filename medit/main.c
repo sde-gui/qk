@@ -71,7 +71,6 @@ medit_app_init_plugins (G_GNUC_UNUSED MooApp *app)
 #endif
     moo_plugin_init_builtin ();
     moo_plugin_read_dirs ();
-    _moo_user_tools_plugin_init ();
 }
 
 static void

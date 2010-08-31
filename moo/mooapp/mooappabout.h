@@ -36,7 +36,6 @@
 #include <errno.h>
 #include <gtk/gtk.h>
 
-
 #ifdef __WIN32__
 
 static char *
@@ -84,14 +83,13 @@ get_system_name (void)
             break;
 
         case 6:
-        case 7:
             memset (&ver, 0, sizeof (ver));
             ver.dwOSVersionInfoSize = sizeof (OSVERSIONINFOEXW);
 
             if (!GetVersionExW ((OSVERSIONINFOW*) &ver) || ver.wProductType == VER_NT_WORKSTATION)
-                return ver.dwMajorVersion == 6 ? g_strdup ("Windows Vista") : g_strdup ("Windows 7");
+                return ver.dwMinorVersion == 0 ? g_strdup ("Windows Vista") : g_strdup ("Windows 7");
             else
-                return ver.dwMajorVersion == 6 ? g_strdup ("Windows Server 2008") : g_strdup ("Windows Server 2008 R2");
+                return ver.dwMinorVersion == 0 ? g_strdup ("Windows Server 2008") : g_strdup ("Windows Server 2008 R2");
 
             break;
     }
@@ -99,16 +97,38 @@ get_system_name (void)
     return g_strdup ("Win32");
 }
 
-#else /* __WIN32__ */
+#elif defined(HAVE_SYS_UTSNAME_H)
 
 static char *
 get_system_name (void)
 {
-    return g_strdup (MOO_OS_NAME);
+    struct utsname name;
+
+    if (uname (&name) != 0)
+    {
+        int err = errno;
+        g_critical ("%s: %s", G_STRLOC, g_strerror (err));
+        return g_strdup ("unknown");
+    }
+
+    return g_strdup_printf ("%s %s (%s), %s", name.sysname,
+                            name.release, name.version, name.machine);
 }
 
-#endif /* __WIN32__ */
+#else
 
+static char *
+get_system_name (void)
+{
+    char *string;
+
+    if (g_spawn_command_line_sync ("uname -a", &string, NULL, NULL, NULL))
+        return string;
+    else
+        return g_strdup ("unknown");
+}
+
+#endif
 
 static char *
 get_python_info (void)
@@ -121,3 +141,4 @@ get_python_info (void)
 
 
 #endif /* MOO_APP_ABOUT_H */
+
