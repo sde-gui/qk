@@ -525,9 +525,7 @@ read_langs (MooLangMgr *mgr)
 
     mgr->got_langs = TRUE;
 
-#ifdef MOO_USE_XML
     ids = gtk_source_language_manager_get_language_ids (mgr->lang_mgr);
-#endif
 
     get_lang_info (mgr, MOO_LANG_NONE, TRUE);
 
@@ -759,9 +757,7 @@ moo_lang_mgr_get_sections (MooLangMgr *mgr)
 
     read_langs (mgr);
 
-#ifdef MOO_USE_XML
     ids = gtk_source_language_manager_get_language_ids (mgr->lang_mgr);
-#endif
 
     while (ids && *ids)
     {
@@ -793,9 +789,7 @@ moo_lang_mgr_get_available_langs (MooLangMgr *mgr)
 
     read_langs (mgr);
 
-#ifdef MOO_USE_XML
     ids = gtk_source_language_manager_get_language_ids (mgr->lang_mgr);
-#endif
 
     while (ids && *ids)
     {

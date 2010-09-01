@@ -23,7 +23,6 @@
 #include <string.h>
 #include <errno.h>
 
-#if defined(MOO_USE_XML)
 #include <libxml/HTMLtree.h>
 
 #define DEFAULT_PAR_SPACING 6
@@ -2414,18 +2413,3 @@ process_tr_elm (GtkTextView *view, GtkTextBuffer *buffer, xmlNode *elm,
     process_elm_body (view, buffer, elm, parent, iter);
     moo_html_new_line (view, buffer, iter, parent, FALSE);
 }
-
-#else /* !MOO_USE_XML */
-void
-moo_text_view_set_markup (GtkTextView *view,
-                          const char  *markup)
-{
-    GtkTextBuffer *buffer;
-
-    g_return_if_fail (GTK_IS_TEXT_VIEW (view));
-    g_return_if_fail (markup != NULL);
-
-    buffer = gtk_text_view_get_buffer (view);
-    gtk_text_buffer_set_text (buffer, markup, -1);
-}
-#endif /* MOO_USE_XML */

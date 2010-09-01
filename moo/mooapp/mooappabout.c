@@ -32,18 +32,13 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
-
-#ifdef MOO_USE_XML
 #include <libxml/xmlversion.h>
-#endif
 
 static gpointer about_dialog;
 static gpointer credits_dialog;
 
 #undef MOO_USE_HTML
-#if defined(MOO_USE_XML)
 #define MOO_USE_HTML 1
-#endif
 
 #ifndef MOO_USE_HTML
 #define MooHtml GtkTextView
@@ -263,9 +258,7 @@ moo_app_get_system_info (MooApp *app)
         g_string_append (text, "Python support: no\n");
     }
 
-#ifdef MOO_USE_XML
     g_string_append_printf (text, "libxml2: %s\n", LIBXML_DOTTED_VERSION);
-#endif
 
     g_string_append (text, "Data dirs: ");
     dirs = moo_get_data_dirs (MOO_DATA_SHARE, NULL);
