@@ -10,6 +10,7 @@ AM_CXXFLAGS = $(MOO_CXXFLAGS)
 
 EXTRA_DIST =
 BUILT_SOURCES =
+CLEANFILES =
 
 libmooeditplugins_la_SOURCES =	\
 	moofileselector-prefs.c	\
@@ -27,6 +28,12 @@ EXTRA_DIST +=					\
 	glade/moogrep.glade
 
 BUILT_SOURCES +=				\
+	glade/moofileselector-prefs-gxml.h	\
+	glade/moofileselector-gxml.h		\
+	glade/moofind-gxml.h			\
+	glade/moogrep-gxml.h
+
+CLEANFILES +=					\
 	glade/moofileselector-prefs-gxml.h	\
 	glade/moofileselector-gxml.h		\
 	glade/moofind-gxml.h			\

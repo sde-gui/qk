@@ -5,6 +5,7 @@ AM_CFLAGS = $(MOO_CFLAGS)
 AM_CXXFLAGS = $(MOO_CXXFLAGS)
 
 BUILT_SOURCES =
+CLEANFILES =
 
 libmooutils_la_SOURCES =	\
 	moocpp-types.h		\
@@ -162,8 +163,13 @@ BUILT_SOURCES +=			\
 	glade/mooaccelprefs-gxml.h	\
 	glade/mooaccelbutton-gxml.h	\
 	glade/moologwindow-gxml.h
+CLEANFILES +=				\
+	glade/mooaccelprefs-gxml.h	\
+	glade/mooaccelbutton-gxml.h	\
+	glade/moologwindow-gxml.h
 
 BUILT_SOURCES += stock-moo.h moofileicon-symlink.h
+CLEANFILES += stock-moo.h moofileicon-symlink.h
 PIXMAPS = pixmaps/hide.png pixmaps/close.png pixmaps/sticky.png pixmaps/detach.png pixmaps/attach.png pixmaps/keepontop.png pixmaps/medit.png
 EXTRA_DIST += $(PIXMAPS)
 stock-moo.h: $(PIXMAPS)

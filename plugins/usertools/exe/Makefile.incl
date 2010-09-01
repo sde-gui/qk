@@ -6,5 +6,6 @@ libmoousertools_la_SOURCES +=	\
 
 EXTRA_DIST += glade/mooedittools-exe.glade
 BUILT_SOURCES += glade/mooedittools-exe-gxml.h
+CLEANFILES += glade/mooedittools-exe-gxml.h
 
 endif MOO_OS_UNIX

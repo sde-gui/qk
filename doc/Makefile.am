@@ -1,5 +1,3 @@
-MOO_HELP_FILES_DIR = $(srcdir)/help
-
 if MOO_DEV_MODE
 
 MOO_HELP_T2T_FILES =	\
@@ -26,20 +24,21 @@ help.html: $(MOO_HELP_T2T_FILES)
 	cd $(srcdir) && $(PYTHON) txt2tags/txt2tags.py --outfile=help.html.tmp medit.t2t && \
 		mv help.html.tmp help.html
 
-help.stamp: help.html genhelpsections.py
-	$(MKDIR_P) $(MOO_HELP_FILES_DIR)
-	cd $(MOO_HELP_FILES_DIR) && $(PERL) -I.. ../splity/splity.pl -index ../splity/index-template.html -page ../splity/page-template.html ../help.html
-	echo stamp > $(srcdir)/help.stamp
+help/index.html: help.html
+	$(MKDIR_P) $(srcdir)/help
+	cd $(srcdir)/help && $(PERL) -I.. ../splity/splity.pl -index ../splity/index-template.html -page ../splity/page-template.html ../help.html
+
+help-sections.h: help.html genhelpsections.py
 	cd $(srcdir) && $(PYTHON) genhelpsections.py help.html > help-sections.h.tmp && \
 		( cmp -s help-sections.h.tmp help-sections.h || mv help-sections.h.tmp help-sections.h )
 	rm -f $(srcdir)/help-sections.h.tmp
 
 all-am: doc
-doc: help.stamp
+doc: medit.1 help/index.html help-sections.h
 
 endif
 
-EXTRA_DIST = medit.1 help.html help-sections.h
+EXTRA_DIST = medit.1 help.html help-sections.h help
 
 install-data-local:
 	$(MKDIR_P) $(DESTDIR)$(MOO_HELP_DIR)

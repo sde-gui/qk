@@ -2,6 +2,7 @@ noinst_LTLIBRARIES = libmooapp.la
 
 EXTRA_DIST =
 BUILT_SOURCES =
+CLEANFILES =
 
 AM_CPPFLAGS = $(MOO_CPPFLAGS) -I.. -I$(top_srcdir)/doc
 AM_CFLAGS = $(MOO_CFLAGS)
@@ -24,13 +25,17 @@ EXTRA_DIST +=					\
 	glade/mooappabout-dialog.glade		\
 	glade/mooappabout-license.glade		\
 	glade/mooappabout-credits.glade
-
 BUILT_SOURCES +=				\
+	glade/mooappabout-dialog-gxml.h		\
+	glade/mooappabout-license-gxml.h	\
+	glade/mooappabout-credits-gxml.h
+CLEANFILES +=					\
 	glade/mooappabout-dialog-gxml.h		\
 	glade/mooappabout-license-gxml.h	\
 	glade/mooappabout-credits-gxml.h
 
 BUILT_SOURCES += mooapp-credits.h
+CLEANFILES += mooapp-credits.h
 mooapp-credits.h: $(top_srcdir)/THANKS $(top_srcdir)/tools/xml2h.py
 	$(PYTHON) $(top_srcdir)/tools/xml2h.py $(top_srcdir)/THANKS mooapp-credits.h MOO_APP_CREDITS
 

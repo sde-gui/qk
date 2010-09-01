@@ -17,3 +17,9 @@ EXTRA_DIST +=				\
 	tools/glade2c.py		\
 	tools/rules.mk			\
 	tools/xml2h.py
+
+CLEANFILES = configargs.h
+
+if MOO_DEV_MODE
+DISTCHECK_CONFIGURE_FLAGS = MAKEFLAGS=-j2
+endif

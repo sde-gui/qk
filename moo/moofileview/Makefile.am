@@ -6,6 +6,7 @@ AM_CXXFLAGS = $(MOO_CXXFLAGS)
 
 BUILT_SOURCES =
 EXTRA_DIST =
+CLEANFILES =
 
 libmoofileview_la_SOURCES =	\
 	moobookmarkmgr.c	\
@@ -52,8 +53,15 @@ BUILT_SOURCES +=			\
 	glade/moocreatefolder-gxml.h	\
 	glade/moobookmark-editor-gxml.h
 
-BUILT_SOURCES += moofileview-ui.h
+CLEANFILES +=				\
+	glade/moofileview-drop-gxml.h	\
+	glade/moofileprops-gxml.h	\
+	glade/moocreatefolder-gxml.h	\
+	glade/moobookmark-editor-gxml.h
+
 EXTRA_DIST += moofileview.xml
+BUILT_SOURCES += moofileview-ui.h
+CLEANFILES += moofileview-ui.h
 
 include ../../tools/rules.mk
 

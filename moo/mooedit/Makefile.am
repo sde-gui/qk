@@ -1,6 +1,7 @@
 noinst_LTLIBRARIES = libmooedit.la
 EXTRA_DIST =
 BUILT_SOURCES =
+CLEANFILES =
 
 AM_CPPFLAGS = $(MOO_CPPFLAGS) -I.. -I$(top_srcdir)/doc
 AM_CFLAGS = $(MOO_CFLAGS)
@@ -127,8 +128,26 @@ BUILT_SOURCES +=				\
 	glade/mooquicksearch-gxml.h		\
 	glade/moostatusbar-gxml.h
 
+CLEANFILES +=					\
+	glade/mooprintpreview-gxml.h		\
+	glade/moopluginprefs-gxml.h		\
+	glade/mooeditprefs-view-gxml.h		\
+	glade/mooeditprefs-file-gxml.h		\
+	glade/mooeditprefs-filters-gxml.h	\
+	glade/mooeditprefs-general-gxml.h	\
+	glade/mooeditprefs-langs-gxml.h		\
+	glade/mooeditprogress-gxml.h		\
+	glade/mooeditsavemult-gxml.h		\
+	glade/mooprint-gxml.h			\
+	glade/mootextfind-gxml.h		\
+	glade/mootextfind-prompt-gxml.h		\
+	glade/mootextgotoline-gxml.h		\
+	glade/mooquicksearch-gxml.h		\
+	glade/moostatusbar-gxml.h
+
 EXTRA_DIST += medit.xml mooedit.xml
 BUILT_SOURCES += medit-ui.h mooedit-ui.h
+CLEANFILES += medit-ui.h mooedit-ui.h
 
 include langs/Makefile.incl
 

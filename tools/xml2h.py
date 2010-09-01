@@ -1,5 +1,6 @@
 #! /usr/bin/python
 
+import os
 import sys
 import filecmp
 import shutil
@@ -33,5 +34,6 @@ open(output + '.stamp', 'w').write('stamp\n')
 
 try:
     os.remove(tmp_output)
+    os.remove(output + '.stamp')
 except:
     pass

@@ -6,6 +6,7 @@ AM_CXXFLAGS = $(MOO_CXXFLAGS)
 
 EXTRA_DIST =
 BUILT_SOURCES =
+CLEANFILES =
 
 libmoousertools_la_SOURCES =	\
 	moousertools.c		\
@@ -29,6 +30,7 @@ include exe/Makefile.incl
 
 EXTRA_DIST += glade/moousertools.glade
 BUILT_SOURCES += glade/moousertools-gxml.h
+CLEANFILES += glade/moousertools-gxml.h
 
 include ../../tools/rules.mk
 
