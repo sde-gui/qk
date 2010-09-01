@@ -22,4 +22,8 @@ autom4te.cache/
 aclocal.m4
 *~
 *.orig
-
+*.bak
+*.tmp
+po*/dist
+po*/pot
+config.h.in

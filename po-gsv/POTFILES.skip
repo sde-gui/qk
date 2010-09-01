@@ -1,12 +1,15 @@
 build/
 
+doc/
 medit/
+plugins/
 moo/mooapp/
 moo/mooedit/glade/
 moo/mooedit/plugins/
 moo/moofileview/
 moo/moopython/
 moo/mooutils/
+moo/eggsmclient/
 
 moo/mooedit/filters.xml
 moo/mooedit/medit.xml
@@ -22,18 +25,3 @@ moo/mooedit/mooplugin.c
 moo/mooedit/mootextfind.c
 moo/mooedit/moousertools-prefs.c
 moo/mooedit/moousertools.c
-
-moo/mooedit/gtksourceview/gtksourcecontextengine-mangled.c
-moo/mooedit/gtksourceview/gtksourcelanguage-mangled.c
-moo/mooedit/gtksourceview/gtksourcelanguage-parser-2-mangled.c
-moo/mooedit/gtksourceview/gtksourcelanguagemanager-mangled.c
-moo/mooedit/gtksourceview/gtksourcestyle-mangled.c
-moo/mooedit/gtksourceview/gtksourcestylescheme-mangled.c
-moo/mooedit/gtksourceview/gtksourcestyleschememanager-mangled.c
-moo/mooedit/gtksourceview/gtksourcecontextengine-mangled.c
-moo/mooedit/gtksourceview/gtksourcelanguage-mangled.c
-moo/mooedit/gtksourceview/gtksourcelanguage-parser-2-mangled.c
-moo/mooedit/gtksourceview/gtksourcelanguagemanager-mangled.c
-moo/mooedit/gtksourceview/gtksourcestyle-mangled.c
-moo/mooedit/gtksourceview/gtksourcestylescheme-mangled.c
-moo/mooedit/gtksourceview/gtksourcestyleschememanager-mangled.c

@@ -1,7 +1,5 @@
 #!/bin/sh
 
-INTLTOOL_UPDATE_IN=../intltool/intltool/intltool-update.in
-INTLTOOL_UPDATE=./intltool-update
 GETTEXT_PACKAGE=moo
 
 case `pwd` in
@@ -15,23 +13,16 @@ do_or_die() {
   "$@" || exit 1
 }
 
-if [ ! -x $INTLTOOL_UPDATE -o $INTLTOOL_UPDATE_IN -nt $INTLTOOL_UPDATE ]; then
-  echo "sed -e 's,@INTLTOOL_PERL@,/usr/bin/env perl,g' $INTLTOOL_UPDATE_IN > $INTLTOOL_UPDATE.tmp"
-  sed -e 's,@INTLTOOL_PERL@,/usr/bin/env perl,g' $INTLTOOL_UPDATE_IN > $INTLTOOL_UPDATE.tmp || exit 1
-  do_or_die mv $INTLTOOL_UPDATE.tmp $INTLTOOL_UPDATE
-  do_or_die chmod +x $INTLTOOL_UPDATE
-fi
-
 for f in pot dist; do if [ ! -e $f ]; then ln -s maintain $f; fi; done
 
 dist () {
   if [ -n "$1" ]; then
-    echo "$INTLTOOL_UPDATE --gettext-package=$GETTEXT_PACKAGE -d $*"
-    exec $INTLTOOL_UPDATE --gettext-package=$GETTEXT_PACKAGE -d "$@"
+    echo "intltool-update --gettext-package=$GETTEXT_PACKAGE -d $*"
+    exec intltool-update --gettext-package=$GETTEXT_PACKAGE -d "$@"
   fi
 
   for f in *.po; do
-    do_or_die $INTLTOOL_UPDATE --gettext-package=$GETTEXT_PACKAGE -d `basename $f .po`
+    do_or_die intltool-update --gettext-package=$GETTEXT_PACKAGE -d `basename $f .po`
   done
 
   exit 0
@@ -49,5 +40,5 @@ case `basename $0` in
     ;;
 esac
 
-echo "$INTLTOOL_UPDATE $args $*"
-exec $INTLTOOL_UPDATE $args "$@"
+echo "intltool-update $args $*"
+exec intltool-update $args "$@"

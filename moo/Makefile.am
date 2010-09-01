@@ -22,18 +22,23 @@ libmoo_la_SOURCES =		\
 EXTRA_DIST = marshals.list
 
 BUILT_SOURCES =			\
-	marshals.stamp		\
 	marshals.c		\
 	marshals.h
 
-marshals.stamp: marshals.list
+marshals.c: marshals.list
 	echo '#include "marshals.h"' > marshals.c.tmp
 	$(GLIB_GENMARSHAL) --prefix=_moo_marshal --body $(srcdir)/marshals.list >> marshals.c.tmp
 	cmp -s marshals.c.tmp marshals.c || mv marshals.c.tmp marshals.c
+	rm -f marshals.c.tmp
+
+marshals.h: marshals.list
 	$(GLIB_GENMARSHAL) --prefix=_moo_marshal --header $(srcdir)/marshals.list > marshals.h.tmp
 	cmp -s marshals.h.tmp marshals.h || mv marshals.h.tmp marshals.h
-	rm -f marshals.c.tmp marshals.h.tmp
-	echo stamp > marshals.stamp
+	rm -f marshals.h.tmp
+
+CLEANFILES =			\
+	marshals.c		\
+	marshals.h
 
 SUBDIRS =			\
 	xdgmime			\

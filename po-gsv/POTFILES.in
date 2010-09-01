@@ -1,11 +1,12 @@
-moo/mooedit/gtksourceview/upstream/gtksourcecontextengine.c
-moo/mooedit/gtksourceview/upstream/gtksourcelanguage-parser-2.c
-moo/mooedit/gtksourceview/upstream/gtksourcelanguage.c
-moo/mooedit/gtksourceview/upstream/gtksourcelanguagemanager.c
-moo/mooedit/gtksourceview/upstream/gtksourcestyle.c
-moo/mooedit/gtksourceview/upstream/gtksourcestylescheme.c
-moo/mooedit/gtksourceview/upstream/gtksourcestyleschememanager.c
+moo/gtksourceview/gtksourcecontextengine.c
+moo/gtksourceview/gtksourcelanguage-parser-2.c
+moo/gtksourceview/gtksourcelanguage.c
+moo/gtksourceview/gtksourcelanguagemanager.c
+moo/gtksourceview/gtksourcestyle.c
+moo/gtksourceview/gtksourcestylescheme.c
+moo/gtksourceview/gtksourcestyleschememanager.c
 moo/mooedit/langs/ada.lang
+moo/mooedit/langs/asp.lang
 moo/mooedit/langs/awk.lang
 moo/mooedit/langs/boo.lang
 moo/mooedit/langs/changelog.lang
@@ -13,6 +14,7 @@ moo/mooedit/langs/chdr.lang
 moo/mooedit/langs/c.lang
 moo/mooedit/langs/classic.xml
 moo/mooedit/langs/cmake.lang
+moo/mooedit/langs/cobalt.xml
 moo/mooedit/langs/cpp.lang
 moo/mooedit/langs/csharp.lang
 moo/mooedit/langs/css.lang
@@ -21,6 +23,7 @@ moo/mooedit/langs/desktop.lang
 moo/mooedit/langs/diff.lang
 moo/mooedit/langs/d.lang
 moo/mooedit/langs/docbook.lang
+moo/mooedit/langs/dosbatch.lang
 moo/mooedit/langs/dot.lang
 moo/mooedit/langs/dpatch.lang
 moo/mooedit/langs/dtd.lang
@@ -47,6 +50,7 @@ moo/mooedit/langs/m4.lang
 moo/mooedit/langs/makefile.lang
 moo/mooedit/langs/msil.lang
 moo/mooedit/langs/nemerle.lang
+moo/mooedit/langs/nsis.lang
 moo/mooedit/langs/objc.lang
 moo/mooedit/langs/oblivion.xml
 moo/mooedit/langs/ocaml.lang
@@ -57,6 +61,7 @@ moo/mooedit/langs/perl.lang
 moo/mooedit/langs/php.lang
 moo/mooedit/langs/pkgconfig.lang
 moo/mooedit/langs/po.lang
+moo/mooedit/langs/prolog.lang
 moo/mooedit/langs/python.lang
 moo/mooedit/langs/R.lang
 moo/mooedit/langs/rpmspec.lang

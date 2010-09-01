@@ -23,7 +23,7 @@ if MOO_OS_WIN32
 medit_LDFLAGS += -mwindows
 endif
 
-# EXTRA_DIST += medit.desktop.in
+EXTRA_DIST = medit.desktop.in
 # desktopdir = $(datadir)/applications
 # desktop_DATA = medit.desktop.in
 
