@@ -1920,6 +1920,52 @@ _moo_edit_set_state (MooEdit        *edit,
 }
 
 
+void
+moo_edit_set_line_wrap_mode (MooEdit  *doc,
+                             gboolean  enabled)
+{
+    GtkWrapMode mode;
+    gboolean old_enabled;
+
+    g_return_if_fail (MOO_IS_EDIT (doc));
+
+    g_object_get (doc, "wrap-mode", &mode, NULL);
+
+    enabled = enabled != 0;
+    old_enabled = mode != GTK_WRAP_NONE;
+
+    if (enabled == old_enabled)
+        return;
+
+    if (!enabled)
+        mode = GTK_WRAP_NONE;
+    else if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_WRAP_WORDS)))
+        mode = GTK_WRAP_WORD;
+    else
+        mode = GTK_WRAP_CHAR;
+
+    moo_edit_config_set (doc->config, MOO_EDIT_CONFIG_SOURCE_USER, "wrap-mode", mode, NULL);
+}
+
+void
+moo_edit_set_show_line_numbers (MooEdit  *doc,
+                                gboolean  show)
+{
+    gboolean old_show;
+
+    g_return_if_fail (MOO_IS_EDIT (doc));
+
+    g_object_get (doc, "show-line-numbers", &old_show, NULL);
+
+    if (!old_show == !show)
+        return;
+
+    moo_edit_config_set (doc->config, MOO_EDIT_CONFIG_SOURCE_USER,
+                         "show-line-numbers", show,
+                         (char*) NULL);
+}
+
+
 #ifdef MOO_ENABLE_UNIT_TESTS
 
 #include <mooedit/mooedit-tests.h>

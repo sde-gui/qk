@@ -156,7 +156,7 @@ static Variant get_arg_variant(lua_State *L, int narg)
         case LUA_TBOOLEAN:
             return bool(lua_toboolean(L, narg));
         case LUA_TNUMBER:
-            return gint64(luaL_checkint(L, narg));
+            return Base1Int(luaL_checkint(L, narg));
         case LUA_TSTRING:
             return String(luaL_checkstring(L, narg));
         default:
@@ -302,17 +302,14 @@ static void push_variant(lua_State *L, const Variant &v)
         case VtBool:
             lua_pushboolean(L, v.value<VtBool>());
             return;
-        case VtInt32:
-            lua_pushinteger(L, v.value<VtInt32>());
+        case VtIndex:
+            lua_pushinteger(L, v.value<VtIndex>().get_base1());
             return;
-        case VtUInt32:
-            lua_pushinteger(L, v.value<VtUInt32>());
+        case VtBase1:
+            lua_pushinteger(L, v.value<VtBase1>().get());
             return;
-        case VtInt64:
-            lua_pushinteger(L, v.value<VtInt64>()); // XXX overflow
-            return;
-        case VtUInt64:
-            lua_pushinteger(L, v.value<VtUInt64>()); // XXX overflow
+        case VtInt:
+            lua_pushinteger(L, v.value<VtInt>());
             return;
         case VtDouble:
             lua_pushnumber(L, v.value<VtDouble>());

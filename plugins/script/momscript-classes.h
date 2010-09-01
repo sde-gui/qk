@@ -6,6 +6,13 @@
 
 namespace mom {
 
+#define PROPERTY(Class,name,kind)           \
+    Variant get_##name();                   \
+    void set_##name(const Variant &value)
+
+#define METHOD(Class,name)                  \
+    Variant name(const VariantArray &args)
+
 template<typename T>
 class _Singleton : public Object
 {
@@ -58,11 +65,11 @@ private:                                \
 class Global : public _Singleton<Global>
 {
 public:
-    Variant get_application();
-    Variant get_editor();
-    Variant get_active_window();
-    Variant get_active_view();
-    Variant get_active_document();
+    PROPERTY(Global, application, read);
+    PROPERTY(Global, editor, read);
+    PROPERTY(Global, active_window, read);
+    PROPERTY(Global, active_view, read);
+    PROPERTY(Global, active_document, read);
 
 private:
     MOM_SINGLETON_DECL(Global)
@@ -71,12 +78,11 @@ private:
 class Application : public _Singleton<Application>
 {
 public:
-    Variant get_editor();
-    Variant get_active_window();
-    void set_active_window(const Variant &val);
-    Variant get_windows();
+    PROPERTY(Application, editor, read);
+    PROPERTY(Application, active_window, read-write);
+    PROPERTY(Application, windows, read);
 
-    Variant quit(const VariantArray &args);
+    METHOD(Application, quit);
 
 private:
     MOM_SINGLETON_DECL(Application)
@@ -85,15 +91,12 @@ private:
 class Editor : public _Singleton<Editor>
 {
 public:
-    Variant get_active_document();
-    void set_active_document(const Variant &val);
-    Variant get_active_window();
-    void set_active_window(const Variant &val);
-    Variant get_active_view();
-    void set_active_view(const Variant &val);
-    Variant get_documents();
-    Variant get_views();
-    Variant get_windows();
+    PROPERTY(Editor, active_document, read-write);
+    PROPERTY(Editor, active_window, read-write);
+    PROPERTY(Editor, active_view, read-write);
+    PROPERTY(Editor, documents, read);
+    PROPERTY(Editor, views, read);
+    PROPERTY(Editor, windows, read);
 
 private:
     MOM_SINGLETON_DECL(Editor)
@@ -170,16 +173,14 @@ protected:                                              \
 class DocumentWindow : public _GObjectWrapper<DocumentWindow, MooEditWindow>
 {
 public:
-    Variant get_editor();
-    Variant get_active_view();
-    void set_active_view(const Variant &val);
-    Variant get_active_document();
-    void set_active_document(const Variant &val);
-    Variant get_views();
-    Variant get_documents();
+    PROPERTY(DocumentWindow, editor, read);
+    PROPERTY(DocumentWindow, active_view, read-write);
+    PROPERTY(DocumentWindow, active_document, read-write);
+    PROPERTY(DocumentWindow, views, read);
+    PROPERTY(DocumentWindow, documents, read);
 
-    Variant get_active();
-    Variant set_active(const VariantArray &args);
+    PROPERTY(DocumentWindow, active, read);
+    METHOD(DocumentWindow, set_active);
 
 private:
     MOM_GOBJECT_DECL(DocumentWindow, MooEditWindow)
@@ -188,8 +189,12 @@ private:
 class DocumentView : public _GObjectWrapper<DocumentView, MooEdit>
 {
 public:
-    Variant get_document();
-    Variant get_window();
+    PROPERTY(DocumentView, document, read);
+    PROPERTY(DocumentView, window, read);
+
+    PROPERTY(DocumentView, line_wrap_mode, read-write);
+    PROPERTY(DocumentView, overwrite_mode, read-write);
+    PROPERTY(DocumentView, show_line_numbers, read-write);
 
 private:
     MOM_GOBJECT_DECL(DocumentView, MooEdit)
@@ -198,12 +203,22 @@ private:
 class Document : public _GObjectWrapper<Document, MooEdit>
 {
 public:
-    Variant get_views();
-    Variant get_active_view();
+    PROPERTY(Document, views, read);
+    PROPERTY(Document, active_view, read);
+
+    PROPERTY(Document, can_undo, read);
+    PROPERTY(Document, can_redo, read);
+    METHOD(Document, undo);
+    METHOD(Document, redo);
+    METHOD(Document, begin_not_undoable_action);
+    METHOD(Document, end_not_undoable_action);
 
 private:
     MOM_GOBJECT_DECL(Document, MooEdit)
 };
+
+#undef PROPERTY
+#undef METHOD
 
 } // namespace mom
 

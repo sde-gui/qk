@@ -128,6 +128,11 @@ MooEditFileInfo *moo_edit_file_info_new_uri     (const char         *uri,
 MooEditFileInfo *moo_edit_file_info_copy        (MooEditFileInfo    *info);
 void             moo_edit_file_info_free        (MooEditFileInfo    *info);
 
+void             moo_edit_set_line_wrap_mode    (MooEdit        *edit,
+                                                 gboolean        enabled);
+void             moo_edit_set_show_line_numbers (MooEdit        *edit,
+                                                 gboolean        show);
+
 
 G_END_DECLS
 

@@ -1755,30 +1755,9 @@ static void
 wrap_text_toggled (MooEditWindow *window,
                    gboolean       active)
 {
-    MooEdit *doc;
-    GtkWrapMode mode;
-
-    doc = ACTIVE_DOC (window);
+    MooEdit *doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
-
-    g_object_get (doc, "wrap-mode", &mode, NULL);
-
-    if ((active && mode != GTK_WRAP_NONE) || (!active && mode == GTK_WRAP_NONE))
-        return;
-
-    if (!active)
-    {
-        mode = GTK_WRAP_NONE;
-    }
-    else
-    {
-        if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_WRAP_WORDS)))
-            mode = GTK_WRAP_WORD;
-        else
-            mode = GTK_WRAP_CHAR;
-    }
-
-    moo_edit_config_set (doc->config, MOO_EDIT_CONFIG_SOURCE_USER, "wrap-mode", mode, NULL);
+    moo_edit_set_line_wrap_mode (doc, active);
 }
 
 
@@ -1786,20 +1765,9 @@ static void
 line_numbers_toggled (MooEditWindow *window,
                       gboolean       active)
 {
-    MooEdit *doc;
-    gboolean show;
-
-    doc = ACTIVE_DOC (window);
+    MooEdit *doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
-
-    g_object_get (doc, "show-line-numbers", &show, NULL);
-
-    if ((active && show) || (!active && !show))
-        return;
-
-    moo_edit_config_set (doc->config, MOO_EDIT_CONFIG_SOURCE_USER,
-                         "show-line-numbers", active,
-                         NULL);
+    moo_edit_set_show_line_numbers (doc, active);
 }
 
 

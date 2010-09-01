@@ -1,51 +1,25 @@
 #ifndef MOM_SCRIPT_VARIANT_H
 #define MOM_SCRIPT_VARIANT_H
 
-#include <glib.h>
-#include <mooutils/moocpp-cont.h>
+#include "momscript-types.h"
 
 namespace mom {
-
-using moo::String;
-
-typedef gint8 int8;
-typedef guint8 uint8;
-typedef gint16 int16;
-typedef guint16 uint16;
-typedef gint32 int32;
-typedef guint32 uint32;
-typedef gint64 int64;
-typedef guint64 uint64;
 
 enum VariantType
 {
     VtVoid,
     VtBool,
-    VtInt32,
-    VtUInt32,
-    VtInt64,
-    VtUInt64,
+    VtIndex,
+    VtBase1,
+    VtInt,
     VtDouble,
     VtString,
     VtArray,
     VtDict,
     VtObject,
-    _VtMax = VtObject
 };
 
 class Variant;
-class Object;
-
-class HObject
-{
-public:
-    HObject(guint id = 0) NOTHROW : m_id(id) {}
-    HObject(const Object &obj) NOTHROW;
-    guint id() const NOTHROW { return m_id; }
-    bool is_null() const NOTHROW { return m_id == 0; }
-private:
-    guint m_id;
-};
 
 class VariantArray : public moo::Vector<Variant>
 {
@@ -62,7 +36,7 @@ public:
 union VariantData
 {
     char p[1];
-    int64 dummy1__;
+    gint64 dummy1__;
     double dummy2__;
     long double dummy3__;
     void *dummy4__[2];
@@ -98,7 +72,7 @@ public:
     void setValue(const T &val);
 
     template<VariantType _vt_> NOTHROW
-    typename impl::VtHelper<_vt_>::PubType value() const;
+    typename impl::VtHelper<_vt_>::ImplType value() const;
 
 private:
     VariantData m_data;
@@ -134,33 +108,30 @@ public:
 
 MOO_STATIC_ASSERT(sizeof(DataPtr<Variant>) <= sizeof(VariantData), "must fit into Variant");
 
-#define MOM_DEFINE_VT_HELPER(_vt_, _ImplType_, _PubType_)   \
+#define MOM_DEFINE_VT_HELPER(_vt_, _ImplType_)              \
 template<> class VtHelper<_vt_>                             \
 {                                                           \
 public:                                                     \
     static const VariantType vt = _vt_;                     \
     typedef _ImplType_ ImplType;                            \
-    typedef _PubType_ PubType;                              \
 };                                                          \
                                                             \
-template<> class VtRHelper<_PubType_>                       \
+template<> class VtRHelper<_ImplType_>                      \
 {                                                           \
 public:                                                     \
     static const VariantType vt = _vt_;                     \
     typedef _ImplType_ ImplType;                            \
-    typedef _PubType_ PubType;                              \
 };
 
-MOM_DEFINE_VT_HELPER(VtBool, bool, bool)
-MOM_DEFINE_VT_HELPER(VtInt32, int32, int32)
-MOM_DEFINE_VT_HELPER(VtUInt32, uint32, uint32)
-MOM_DEFINE_VT_HELPER(VtInt64, int64, int64)
-MOM_DEFINE_VT_HELPER(VtUInt64, uint64, uint64)
-MOM_DEFINE_VT_HELPER(VtDouble, double, double)
-MOM_DEFINE_VT_HELPER(VtObject, HObject, HObject)
-MOM_DEFINE_VT_HELPER(VtString, String, String)
-MOM_DEFINE_VT_HELPER(VtArray, VariantArray, VariantArray)
-MOM_DEFINE_VT_HELPER(VtDict, VariantDict, VariantDict)
+MOM_DEFINE_VT_HELPER(VtBool, bool)
+MOM_DEFINE_VT_HELPER(VtIndex, Index)
+MOM_DEFINE_VT_HELPER(VtBase1, Base1Int)
+MOM_DEFINE_VT_HELPER(VtInt, int)
+MOM_DEFINE_VT_HELPER(VtDouble, double)
+MOM_DEFINE_VT_HELPER(VtObject, HObject)
+MOM_DEFINE_VT_HELPER(VtString, String)
+MOM_DEFINE_VT_HELPER(VtArray, VariantArray)
+MOM_DEFINE_VT_HELPER(VtDict, VariantDict)
 
 #undef MOM_DEFINE_VT_HELPER
 
@@ -175,10 +146,9 @@ inline void destroyTyped(VariantData &data)
 
 #define MOM_VT_CASES(what)          \
     MOM_VT_CASE(VtBool, what);      \
-    MOM_VT_CASE(VtInt32, what);     \
-    MOM_VT_CASE(VtUInt32, what);    \
-    MOM_VT_CASE(VtInt64, what);     \
-    MOM_VT_CASE(VtUInt64, what);    \
+    MOM_VT_CASE(VtIndex, what);     \
+    MOM_VT_CASE(VtBase1, what);     \
+    MOM_VT_CASE(VtInt, what);       \
     MOM_VT_CASE(VtDouble, what);    \
     MOM_VT_CASE(VtObject, what);    \
     MOM_VT_CASE(VtString, what);    \
@@ -309,7 +279,7 @@ inline void Variant::setValue(const T &value)
 }
 
 template<VariantType _vt_> NOTHROW
-inline typename impl::VtHelper<_vt_>::PubType Variant::value() const
+inline typename impl::VtHelper<_vt_>::ImplType Variant::value() const
 {
     typedef typename impl::VtHelper<_vt_>::ImplType ImplType;
     moo_return_val_if_fail(m_vt == _vt_, ImplType());

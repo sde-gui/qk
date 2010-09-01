@@ -3,11 +3,19 @@
 
 namespace mom {
 
+#include "momscript-classes-meta.h"
+
 static void check_no_args(const VariantArray &args)
 {
     if (args.size() != 0)
         Error::raise("no arguments expected");
 }
+
+// static void check_1_arg(const VariantArray &args)
+// {
+//     if (args.size() != 1)
+//         Error::raise("exactly one argument expected");
+// }
 
 template<typename T>
 static moo::SharedPtr<T> get_object(const Variant &val, bool null_ok = false)
@@ -32,6 +40,13 @@ static moo::SharedPtr<T> get_object(const Variant &val, bool null_ok = false)
     return moo::SharedPtr<T>(static_cast<T*>(obj.get()));
 }
 
+static bool get_bool(const Variant &val)
+{
+    if (val.vt() != VtBool)
+        Error::raise("boolean expected");
+    return val.value<VtBool>();
+}
+
 template<typename GClass, typename Class>
 static Variant wrap_gslist(GSList *list)
 {
@@ -45,16 +60,10 @@ static Variant wrap_gslist(GSList *list)
 }
 
 
-MOM_SINGLETON_DEFN(Global)
-
-void Global::InitMetaObject(MetaObject &meta)
-{
-    meta.add_property("application", &Global::get_application, (PropertySetter) 0);
-    meta.add_property("editor", &Global::get_editor, (PropertySetter) 0);
-    meta.add_property("active_window", &Global::get_active_window, (PropertySetter) 0);
-    meta.add_property("active_document", &Global::get_active_document, (PropertySetter) 0);
-    meta.add_property("active_view", &Global::get_active_view, (PropertySetter) 0);
-}
+///////////////////////////////////////////////////////////////////////////////
+//
+// Global
+//
 
 Variant Global::get_application()
 {
@@ -81,15 +90,11 @@ Variant Global::get_active_document()
     return Editor::get_instance().get_active_document();
 }
 
-MOM_SINGLETON_DEFN(Application)
 
-void Application::InitMetaObject(MetaObject &meta)
-{
-    meta.add_property("editor", &Application::get_editor, (PropertySetter) 0);
-    meta.add_property("active_window", &Application::get_active_window, &Application::set_active_window);
-    meta.add_property("windows", &Application::get_windows, (PropertySetter) 0);
-    meta.add_method("quit", &Application::quit);
-}
+///////////////////////////////////////////////////////////////////////////////
+//
+// Application
+//
 
 Variant Application::get_editor()
 {
@@ -118,17 +123,11 @@ Variant Application::quit(const VariantArray &args)
     return Variant();
 }
 
-MOM_SINGLETON_DEFN(Editor)
 
-void Editor::InitMetaObject(MetaObject &meta)
-{
-    meta.add_property("windows", &Editor::get_windows, (PropertySetter) 0);
-    meta.add_property("documents", &Editor::get_documents, (PropertySetter) 0);
-    meta.add_property("views", &Editor::get_views, (PropertySetter) 0);
-    meta.add_property("active_window", &Editor::get_active_window, &Editor::set_active_window);
-    meta.add_property("active_view", &Editor::get_active_view, &Editor::set_active_view);
-    meta.add_property("active_document", &Editor::get_active_document, &Editor::set_active_document);
-}
+///////////////////////////////////////////////////////////////////////////////
+//
+// Editor
+//
 
 Variant Editor::get_active_document()
 {
@@ -182,18 +181,11 @@ Variant Editor::get_windows()
     return wrap_gslist<MooEditWindow, DocumentWindow>(windows);
 }
 
-MOM_GOBJECT_DEFN(DocumentWindow)
 
-void DocumentWindow::InitMetaObject(MetaObject &meta)
-{
-    meta.add_property("editor", &DocumentWindow::get_editor, (PropertySetter) 0);
-    meta.add_property("active_view", &DocumentWindow::get_active_view,  &DocumentWindow::set_active_view);
-    meta.add_property("active_document", &DocumentWindow::get_active_document, &DocumentWindow::set_active_document);
-    meta.add_property("active", &DocumentWindow::get_active, (PropertySetter) 0);
-    meta.add_property("views", &DocumentWindow::get_views, (PropertySetter) 0);
-
-    meta.add_method("set_active", &DocumentWindow::set_active);
-}
+///////////////////////////////////////////////////////////////////////////////
+//
+// DocumentWindow
+//
 
 Variant DocumentWindow::get_editor()
 {
@@ -246,13 +238,11 @@ Variant DocumentWindow::set_active(const VariantArray &args)
     return Variant();
 }
 
-MOM_GOBJECT_DEFN(DocumentView)
 
-void DocumentView::InitMetaObject(MetaObject &meta)
-{
-    meta.add_property("document", &DocumentView::get_document, (PropertySetter) 0);
-    meta.add_property("window", &DocumentView::get_window, (PropertySetter) 0);
-}
+///////////////////////////////////////////////////////////////////////////////
+//
+// DocumentView
+//
 
 Variant DocumentView::get_document()
 {
@@ -264,13 +254,47 @@ Variant DocumentView::get_window()
     return HObject(DocumentWindow::wrap(moo_edit_get_window(gobj())));
 }
 
-MOM_GOBJECT_DEFN(Document)
-
-void Document::InitMetaObject(MetaObject &meta)
+Variant DocumentView::get_line_wrap_mode()
 {
-    meta.add_property("views", &Document::get_views, (PropertySetter) 0);
-    meta.add_property("active_view", &Document::get_active_view, (PropertySetter) 0);
+    GtkWrapMode mode;
+    g_object_get(gobj(), "wrap-mode", &mode, (char*) NULL);
+    return mode != GTK_WRAP_NONE;
 }
+
+void DocumentView::set_line_wrap_mode(const Variant &val)
+{
+    moo_edit_set_line_wrap_mode(gobj(), get_bool(val));
+}
+
+Variant DocumentView::get_overwrite_mode()
+{
+    gboolean overwrite;
+    g_object_get(gobj(), "overwrite", &overwrite, (char*) NULL);
+    return bool(overwrite);
+}
+
+void DocumentView::set_overwrite_mode(const Variant &val)
+{
+    g_object_set(gobj(), "overwrite", gboolean(get_bool(val)), (char*) NULL);
+}
+
+Variant DocumentView::get_show_line_numbers()
+{
+    gboolean show;
+    g_object_get(gobj(), "show-line-numbers", &show, (char*) NULL);
+    return bool(show);
+}
+
+void DocumentView::set_show_line_numbers(const Variant &val)
+{
+    moo_edit_set_show_line_numbers(gobj(), get_bool(val));
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Document
+//
 
 Variant Document::get_active_view()
 {
@@ -283,5 +307,44 @@ Variant Document::get_views()
     views.append(HObject(DocumentView::wrap(gobj())));
     return views;
 }
+
+Variant Document::get_can_undo()
+{
+    return moo_text_view_can_undo(MOO_TEXT_VIEW(gobj()));
+}
+
+Variant Document::get_can_redo()
+{
+    return moo_text_view_can_redo(MOO_TEXT_VIEW(gobj()));
+}
+
+Variant Document::undo(const VariantArray &args)
+{
+    check_no_args(args);
+    moo_text_view_undo(MOO_TEXT_VIEW(gobj()));
+    return Variant();
+}
+
+Variant Document::redo(const VariantArray &args)
+{
+    check_no_args(args);
+    moo_text_view_redo(MOO_TEXT_VIEW(gobj()));
+    return Variant();
+}
+
+Variant Document::begin_not_undoable_action(const VariantArray &args)
+{
+    check_no_args(args);
+    moo_text_view_begin_not_undoable_action(MOO_TEXT_VIEW(gobj()));
+    return Variant();
+}
+
+Variant Document::end_not_undoable_action(const VariantArray &args)
+{
+    check_no_args(args);
+    moo_text_view_end_not_undoable_action(MOO_TEXT_VIEW(gobj()));
+    return Variant();
+}
+
 
 } // namespace mom
