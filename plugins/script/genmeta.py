@@ -6,11 +6,11 @@ in_file = sys.argv[1]
 classes = {}
 singletons = []
 gobjects = []
-re_singleton = re.compile(r':\s*public\s+_Singleton\s*<\s*(\s*\w+\s*)\s*>')
-re_gobject = re.compile(r':\s*public\s+_GObjectWrapper\s*<\s*(\w+)\s*,\s*\w+\s*>')
-re_prop = re.compile(r'^\s*\bPROPERTY\s*\((\w+)\s*,\s*(\w+)\s*,\s*([\w-]+)\s*\)')
-re_meth = re.compile(r'^\s*\bMETHOD\s*\((\w+)\s*,\s*(\w+)\s*\)')
-re_ignore = re.compile(r'$^')
+re_singleton = re.compile(r'\bSINGLETON_CLASS\s*\(\s*(\w+)\s*\)')
+re_gobject = re.compile(r'\bGOBJECT_CLASS\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)')
+re_prop = re.compile(r'^\s*\bPROPERTY\s*\(\s*(\w+)\s*,\s*([\w-]+)\s*\)')
+re_meth = re.compile(r'^\s*\bMETHOD\s*\(\s*(\w+)\s*\)')
+re_ignore = re.compile(r'^\s*#\s*define\b')
 
 def get_class(class_name):
     cls = classes.get(class_name)
@@ -27,21 +27,26 @@ def add_method(class_name, meth_name):
     cls = get_class(class_name)
     cls[1].append(meth_name)
 
+current_class = None
 for line in open(in_file):
     if re_ignore.search(line):
         continue
     m = re_singleton.search(line)
     if m:
         singletons.append(m.group(1))
+        current_class = m.group(1)
+        continue
     m = re_gobject.search(line)
     if m:
         gobjects.append(m.group(1))
+        current_class = m.group(1)
+        continue
     m = re_prop.search(line)
     if m:
-        add_property(m.group(1), m.group(2), m.group(3))
+        add_property(current_class, m.group(1), m.group(2))
     m = re_meth.search(line)
     if m:
-        add_method(m.group(1), m.group(2))
+        add_method(current_class, m.group(1))
 
 for class_name in singletons:
     sys.stdout.write('MOM_SINGLETON_DEFN(%s)\n' % class_name)

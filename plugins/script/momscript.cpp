@@ -44,11 +44,11 @@ Variant Object::get_property(const String &name)
     return prop->get(*this);
 }
 
-HObject Script::get_global_obj()
+HObject Script::get_app_obj()
 {
     try
     {
-        return Global::get_instance();
+        return Application::get_instance();
     }
     catch (...)
     {

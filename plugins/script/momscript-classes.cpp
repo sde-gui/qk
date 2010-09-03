@@ -1,5 +1,7 @@
 #include "momscript-classes.h"
 #include "mooapp/mooapp.h"
+#include "mooutils/mooutils-misc.h"
+#include <string.h>
 
 namespace mom {
 
@@ -119,37 +121,6 @@ static void get_iter_pair(const Variant &val, GtkTextBuffer *buf, GtkTextIter *i
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Global
-//
-
-Variant Global::get_application()
-{
-    return HObject(Application::get_instance());
-}
-
-Variant Global::get_editor()
-{
-    return HObject(Editor::get_instance());
-}
-
-Variant Global::get_active_window()
-{
-    return Application::get_instance().get_active_window();
-}
-
-Variant Global::get_active_view()
-{
-    return Editor::get_instance().get_active_view();
-}
-
-Variant Global::get_active_document()
-{
-    return Editor::get_instance().get_active_document();
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // Application
 //
 
@@ -166,6 +137,16 @@ Variant Application::get_active_window()
 void Application::set_active_window(const Variant &val)
 {
     Editor::get_instance().set_active_window(val);
+}
+
+Variant Application::get_active_document()
+{
+    return Editor::get_instance().get_active_document();
+}
+
+Variant Application::get_active_view()
+{
+    return Editor::get_instance().get_active_view();
 }
 
 Variant Application::get_windows()
@@ -788,7 +769,20 @@ Variant Document::get_selected_lines()
     GtkTextIter start, end;
     GtkTextBuffer *buf = buffer();
     get_selected_lines_bounds(buf, &start, &end);
-    return String::take_utf8(gtk_text_buffer_get_slice(buf, &start, &end, TRUE));
+    char *text = gtk_text_buffer_get_slice(buf, &start, &end, TRUE);
+    char **lines = moo_splitlines(text);
+    if (text && text[0] && lines && *lines && text[strlen(text) - 1] == '\n')
+    {
+        int n_lines = g_strv_length(lines);
+        g_free(lines[n_lines - 1]);
+        lines[n_lines - 1] = NULL;
+    }
+    VariantArray ar;
+    for (char **p = lines; p && *p; ++p)
+        ar.append(String::take_utf8(*p));
+    g_free(lines);
+    g_free(text);
+    return ar;
 }
 
 Variant Document::delete_selected_text(const VariantArray &args)

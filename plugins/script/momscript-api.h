@@ -53,11 +53,11 @@ class IScript
 public:
     virtual void ref() NOTHROW = 0;
     virtual void unref() NOTHROW = 0;
-    virtual HObject get_global_obj () NOTHROW = 0;
-    virtual Result call_method (HObject obj, const String &meth, const VariantArray &args, Variant &ret) NOTHROW = 0;
-    virtual Result set_property (HObject obj, const String &prop, const Variant &val) NOTHROW = 0;
-    virtual Result get_property (HObject obj, const String &prop, Variant &val) NOTHROW = 0;
-    virtual FieldKind lookup_field (HObject obj, const String &field) NOTHROW = 0;
+    virtual HObject get_app_obj() NOTHROW = 0;
+    virtual Result call_method(HObject obj, const String &meth, const VariantArray &args, Variant &ret) NOTHROW = 0;
+    virtual Result set_property(HObject obj, const String &prop, const Variant &val) NOTHROW = 0;
+    virtual Result get_property(HObject obj, const String &prop, Variant &val) NOTHROW = 0;
+    virtual FieldKind lookup_field(HObject obj, const String &field) NOTHROW = 0;
 };
 // #pragma GCC diagnostic pop
 

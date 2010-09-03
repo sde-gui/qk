@@ -6,11 +6,14 @@
 
 namespace mom {
 
-#define PROPERTY(Class,name,kind)           \
+#define SINGLETON_CLASS(Name)  class Name : public _Singleton<Name>
+#define GOBJECT_CLASS(Name, GName) class Name : public _GObjectWrapper<Name, GName>
+
+#define PROPERTY(name,kind)                 \
     Variant get_##name();                   \
     void set_##name(const Variant &value)
 
-#define METHOD(Class,name)                  \
+#define METHOD(name)                        \
     Variant name(const VariantArray &args)
 
 template<typename T>
@@ -62,41 +65,34 @@ private:                                \
     MOM_OBJECT_DEFN(Class)              \
     template<> Class *_Singleton<Class>::s_instance = 0;
 
-class Global : public _Singleton<Global>
+SINGLETON_CLASS(Application)
 {
 public:
-    PROPERTY(Global, application, read);
-    PROPERTY(Global, editor, read);
-    PROPERTY(Global, active_window, read);
-    PROPERTY(Global, active_view, read);
-    PROPERTY(Global, active_document, read);
+    PROPERTY(editor, read);
+    PROPERTY(active_window, read-write);
+    PROPERTY(windows, read);
 
-private:
-    MOM_SINGLETON_DECL(Global)
-};
+    PROPERTY(active_view, read);
+    PROPERTY(active_document, read);
 
-class Application : public _Singleton<Application>
-{
-public:
-    PROPERTY(Application, editor, read);
-    PROPERTY(Application, active_window, read-write);
-    PROPERTY(Application, windows, read);
-
-    METHOD(Application, quit);
+    METHOD(quit);
 
 private:
     MOM_SINGLETON_DECL(Application)
 };
 
-class Editor : public _Singleton<Editor>
+SINGLETON_CLASS(Editor)
 {
 public:
-    PROPERTY(Editor, active_document, read-write);
-    PROPERTY(Editor, active_window, read-write);
-    PROPERTY(Editor, active_view, read-write);
-    PROPERTY(Editor, documents, read);
-    PROPERTY(Editor, views, read);
-    PROPERTY(Editor, windows, read);
+    PROPERTY(active_document, read-write);
+    PROPERTY(active_window, read-write);
+    PROPERTY(active_view, read-write);
+    PROPERTY(documents, read);
+    PROPERTY(views, read);
+    PROPERTY(windows, read);
+
+//     METHOD(open);
+//     METHOD(close);
 
 private:
     MOM_SINGLETON_DECL(Editor)
@@ -170,90 +166,94 @@ protected:                                              \
 #define MOM_GOBJECT_DEFN(Class)                         \
     MOM_OBJECT_DEFN(Class)
 
-class DocumentWindow : public _GObjectWrapper<DocumentWindow, MooEditWindow>
+GOBJECT_CLASS(DocumentWindow, MooEditWindow)
 {
 public:
-    PROPERTY(DocumentWindow, editor, read);
-    PROPERTY(DocumentWindow, active_view, read-write);
-    PROPERTY(DocumentWindow, active_document, read-write);
-    PROPERTY(DocumentWindow, views, read);
-    PROPERTY(DocumentWindow, documents, read);
+    PROPERTY(editor, read);
+    PROPERTY(active_view, read-write);
+    PROPERTY(active_document, read-write);
+    PROPERTY(views, read);
+    PROPERTY(documents, read);
 
-    PROPERTY(DocumentWindow, active, read);
-    METHOD(DocumentWindow, set_active);
+    PROPERTY(active, read);
+    METHOD(set_active);
 
 private:
     MOM_GOBJECT_DECL(DocumentWindow, MooEditWindow)
 };
 
-class DocumentView : public _GObjectWrapper<DocumentView, MooEdit>
+GOBJECT_CLASS(DocumentView, MooEdit)
 {
 public:
-    PROPERTY(DocumentView, document, read);
-    PROPERTY(DocumentView, window, read);
+    PROPERTY(document, read);
+    PROPERTY(window, read);
 
-    PROPERTY(DocumentView, line_wrap_mode, read-write);
-    PROPERTY(DocumentView, overwrite_mode, read-write);
-    PROPERTY(DocumentView, show_line_numbers, read-write);
+    PROPERTY(line_wrap_mode, read-write);
+    PROPERTY(overwrite_mode, read-write);
+    PROPERTY(show_line_numbers, read-write);
 
 private:
     MOM_GOBJECT_DECL(DocumentView, MooEdit)
 };
 
-class Document : public _GObjectWrapper<Document, MooEdit>
+GOBJECT_CLASS(Document, MooEdit)
 {
 public:
-    PROPERTY(Document, views, read);
-    PROPERTY(Document, active_view, read);
+    PROPERTY(views, read);
+    PROPERTY(active_view, read);
 
-    PROPERTY(Document, filename, read);
-    PROPERTY(Document, uri, read);
-    PROPERTY(Document, basename, read);
+    PROPERTY(filename, read);
+    PROPERTY(uri, read);
+    PROPERTY(basename, read);
 
-    PROPERTY(Document, can_undo, read);
-    PROPERTY(Document, can_redo, read);
-    METHOD(Document, undo);
-    METHOD(Document, redo);
-    METHOD(Document, begin_not_undoable_action);
-    METHOD(Document, end_not_undoable_action);
+//     METHOD(reload);
+//     METHOD(save);
+//     METHOD(save_as);
 
-    PROPERTY(Document, start, read);
-    PROPERTY(Document, end, read);
-    PROPERTY(Document, cursor, read-write);
-    PROPERTY(Document, selection, read-write);
-    PROPERTY(Document, selection_bound, read);
-    PROPERTY(Document, has_selection, read);
+    PROPERTY(can_undo, read);
+    PROPERTY(can_redo, read);
+    METHOD(undo);
+    METHOD(redo);
+    METHOD(begin_not_undoable_action);
+    METHOD(end_not_undoable_action);
 
-    PROPERTY(Document, char_count, read);
-    PROPERTY(Document, line_count, read);
+    PROPERTY(start, read);
+    PROPERTY(end, read);
+    PROPERTY(cursor, read-write);
+    PROPERTY(selection, read-write);
+    PROPERTY(selection_bound, read);
+    PROPERTY(has_selection, read);
 
-    METHOD(Document, line_at_pos);
-    METHOD(Document, pos_at_line);
-    METHOD(Document, pos_at_line_end);
-    METHOD(Document, char_at_pos);
-    METHOD(Document, text);
+    PROPERTY(char_count, read);
+    PROPERTY(line_count, read);
 
-    METHOD(Document, insert_text);
-    METHOD(Document, replace_text);
-    METHOD(Document, delete_text);
-    METHOD(Document, append_text);
+    METHOD(line_at_pos);
+    METHOD(pos_at_line);
+    METHOD(pos_at_line_end);
+    METHOD(char_at_pos);
+    METHOD(text);
 
-    METHOD(Document, clear);
-    METHOD(Document, copy);
-    METHOD(Document, cut);
-    METHOD(Document, paste);
+    METHOD(insert_text);
+    METHOD(replace_text);
+    METHOD(delete_text);
+    METHOD(append_text);
 
-    METHOD(Document, select_text);
-    METHOD(Document, select_lines);
-    METHOD(Document, select_lines_at_pos);
-    METHOD(Document, select_all);
+    METHOD(clear);
+    METHOD(copy);
+    METHOD(cut);
+    METHOD(paste);
 
-    PROPERTY(Document, selected_text, read);
-    PROPERTY(Document, selected_lines, read);
-    METHOD(Document, delete_selected_text);
-    METHOD(Document, delete_selected_lines);
-    METHOD(Document, replace_selected_text);
-    METHOD(Document, replace_selected_lines);
+    METHOD(select_text);
+    METHOD(select_lines);
+    METHOD(select_lines_at_pos);
+    METHOD(select_all);
+
+    PROPERTY(selected_text, read);
+    PROPERTY(selected_lines, read);
+    METHOD(delete_selected_text);
+    METHOD(delete_selected_lines);
+    METHOD(replace_selected_text);
+    METHOD(replace_selected_lines);
 
 public:
     GtkTextBuffer *buffer() { return gtk_text_view_get_buffer(GTK_TEXT_VIEW(gobj())); }

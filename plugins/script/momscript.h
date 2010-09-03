@@ -199,7 +199,7 @@ public:
             delete this;
     }
 
-    HObject get_global_obj () NOTHROW;
+    HObject get_app_obj () NOTHROW;
     Result call_method (HObject h, const String &meth, const VariantArray &args, Variant &ret) NOTHROW;
     Result set_property (HObject h, const String &prop, const Variant &val) NOTHROW;
     Result get_property (HObject h, const String &prop, Variant &val) NOTHROW;

@@ -188,15 +188,22 @@ static int cfunc_call_named_method(lua_State *L)
     HObject h = get_arg_object(L, 1);
     const char *meth = get_arg_string(L, lua_upvalueindex(1));
     VariantArray args;
-    for (int i = 3; i <= lua_gettop(L); ++i)
+    for (int i = 2; i <= lua_gettop(L); ++i)
         args.append(get_arg_variant(L, i));
 
     Variant v;
     Result r = data->script->call_method(h, meth, args, v);
     check_result(L, r);
 
-    push_variant(L, v);
-    return 1;
+    if (v.vt() != VtVoid)
+    {
+        push_variant(L, v);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 static int object__index(lua_State *L)
@@ -380,10 +387,10 @@ static void push_variant(lua_State *L, const Variant &v)
 //     return 1;
 // }
 
-static int cfunc_get_global_obj(lua_State *L)
+static int cfunc_get_app_obj(lua_State *L)
 {
     MomLuaData *data = get_data(L);
-    HObject h = data->script->get_global_obj();
+    HObject h = data->script->get_app_obj();
     push_object(L, h);
     return 1;
 }
@@ -391,7 +398,7 @@ static int cfunc_get_global_obj(lua_State *L)
 static bool add_raw_api(lua_State *L)
 {
     static const struct luaL_reg meditlib[] = {
-        { "get_global_obj", cfunc_get_global_obj },
+        { "get_app_obj", cfunc_get_app_obj },
         { 0, 0 }
     };
 
