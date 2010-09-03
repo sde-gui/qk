@@ -5,6 +5,7 @@ AM_CFLAGS = $(MOO_CFLAGS)
 AM_CXXFLAGS = $(MOO_CXXFLAGS)
 
 libmomscript_la_SOURCES =		\
+	momscript-types.h		\
 	momscript-lua.h			\
 	momscript-lua.cpp		\
 	momscript-classes.h		\
@@ -13,7 +14,6 @@ libmomscript_la_SOURCES =		\
 	momscript.h			\
 	momscript.cpp			\
 	momscript-api.h			\
-	momscript-api.cpp		\
 	momscript-variant.h
 
 BUILT_SOURCES = momscript-classes-meta.h

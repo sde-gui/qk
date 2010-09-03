@@ -695,6 +695,13 @@ moo_edit_get_norm_filename (MooEdit *edit)
     return g_strdup (edit->priv->norm_filename);
 }
 
+char *
+moo_edit_get_utf8_filename (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    return edit->priv->filename ? g_strdup (edit->priv->display_filename) : NULL;
+}
+
 const char *
 moo_edit_get_display_name (MooEdit *edit)
 {
@@ -1921,8 +1928,8 @@ _moo_edit_set_state (MooEdit        *edit,
 
 
 void
-moo_edit_set_line_wrap_mode (MooEdit  *doc,
-                             gboolean  enabled)
+moo_edit_ui_set_line_wrap_mode (MooEdit  *doc,
+                                gboolean  enabled)
 {
     GtkWrapMode mode;
     gboolean old_enabled;
@@ -1948,8 +1955,8 @@ moo_edit_set_line_wrap_mode (MooEdit  *doc,
 }
 
 void
-moo_edit_set_show_line_numbers (MooEdit  *doc,
-                                gboolean  show)
+moo_edit_ui_set_show_line_numbers (MooEdit  *doc,
+                                   gboolean  show)
 {
     gboolean old_show;
 

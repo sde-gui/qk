@@ -206,12 +206,57 @@ public:
     PROPERTY(Document, views, read);
     PROPERTY(Document, active_view, read);
 
+    PROPERTY(Document, filename, read);
+    PROPERTY(Document, uri, read);
+    PROPERTY(Document, basename, read);
+
     PROPERTY(Document, can_undo, read);
     PROPERTY(Document, can_redo, read);
     METHOD(Document, undo);
     METHOD(Document, redo);
     METHOD(Document, begin_not_undoable_action);
     METHOD(Document, end_not_undoable_action);
+
+    PROPERTY(Document, start, read);
+    PROPERTY(Document, end, read);
+    PROPERTY(Document, cursor, read-write);
+    PROPERTY(Document, selection, read-write);
+    PROPERTY(Document, selection_bound, read);
+    PROPERTY(Document, has_selection, read);
+
+    PROPERTY(Document, char_count, read);
+    PROPERTY(Document, line_count, read);
+
+    METHOD(Document, line_at_pos);
+    METHOD(Document, pos_at_line);
+    METHOD(Document, pos_at_line_end);
+    METHOD(Document, char_at_pos);
+    METHOD(Document, text);
+
+    METHOD(Document, insert_text);
+    METHOD(Document, replace_text);
+    METHOD(Document, delete_text);
+    METHOD(Document, append_text);
+
+    METHOD(Document, clear);
+    METHOD(Document, copy);
+    METHOD(Document, cut);
+    METHOD(Document, paste);
+
+    METHOD(Document, select_text);
+    METHOD(Document, select_lines);
+    METHOD(Document, select_lines_at_pos);
+    METHOD(Document, select_all);
+
+    PROPERTY(Document, selected_text, read);
+    PROPERTY(Document, selected_lines, read);
+    METHOD(Document, delete_selected_text);
+    METHOD(Document, delete_selected_lines);
+    METHOD(Document, replace_selected_text);
+    METHOD(Document, replace_selected_lines);
+
+public:
+    GtkTextBuffer *buffer() { return gtk_text_view_get_buffer(GTK_TEXT_VIEW(gobj())); }
 
 private:
     MOM_GOBJECT_DECL(Document, MooEdit)

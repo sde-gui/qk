@@ -1757,7 +1757,7 @@ wrap_text_toggled (MooEditWindow *window,
 {
     MooEdit *doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
-    moo_edit_set_line_wrap_mode (doc, active);
+    moo_edit_ui_set_line_wrap_mode (doc, active);
 }
 
 
@@ -1767,7 +1767,7 @@ line_numbers_toggled (MooEditWindow *window,
 {
     MooEdit *doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
-    moo_edit_set_show_line_numbers (doc, active);
+    moo_edit_ui_set_show_line_numbers (doc, active);
 }
 
 

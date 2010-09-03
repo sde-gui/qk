@@ -83,6 +83,8 @@ const char      *moo_edit_get_encoding          (MooEdit        *edit);
 void             moo_edit_set_encoding          (MooEdit        *edit,
                                                  const char     *encoding);
 
+char            *moo_edit_get_utf8_filename     (MooEdit        *edit);
+
 #ifdef __WIN32__
 #define MOO_LE_DEFAULT MOO_LE_WIN32
 #else
@@ -128,10 +130,10 @@ MooEditFileInfo *moo_edit_file_info_new_uri     (const char         *uri,
 MooEditFileInfo *moo_edit_file_info_copy        (MooEditFileInfo    *info);
 void             moo_edit_file_info_free        (MooEditFileInfo    *info);
 
-void             moo_edit_set_line_wrap_mode    (MooEdit        *edit,
-                                                 gboolean        enabled);
-void             moo_edit_set_show_line_numbers (MooEdit        *edit,
-                                                 gboolean        show);
+void             moo_edit_ui_set_line_wrap_mode     (MooEdit        *edit,
+                                                     gboolean        enabled);
+void             moo_edit_ui_set_show_line_numbers  (MooEdit        *edit,
+                                                     gboolean        show);
 
 
 G_END_DECLS

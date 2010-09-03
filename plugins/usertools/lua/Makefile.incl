@@ -18,4 +18,5 @@ EXTRA_DIST += lua/lua2-tool-setup.lua
 BUILT_SOURCES += lua2-tool-setup.h
 CLEANFILES += lua2-tool-setup.h
 lua2-tool-setup.h: lua/lua2-tool-setup.lua $(top_srcdir)/tools/xml2h.py
-	$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/lua/lua2-tool-setup.lua lua2-tool-setup.h LUA2_SETUP_CODE
+	$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/lua/lua2-tool-setup.lua lua2-tool-setup.h.tmp LUA2_SETUP_CODE \
+		&& mv lua2-tool-setup.h.tmp lua2-tool-setup.h

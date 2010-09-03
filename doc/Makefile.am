@@ -29,8 +29,7 @@ help/index.html: help.html
 	cd $(srcdir)/help && $(PERL) -I.. ../splity/splity.pl -index ../splity/index-template.html -page ../splity/page-template.html ../help.html
 
 help-sections.h: help.html genhelpsections.py
-	cd $(srcdir) && $(PYTHON) genhelpsections.py help.html > help-sections.h.tmp && \
-		( cmp -s help-sections.h.tmp help-sections.h || mv help-sections.h.tmp help-sections.h )
+	cd $(srcdir) && $(PYTHON) genhelpsections.py help.html > help-sections.h.tmp && mv help-sections.h.tmp help-sections.h
 	rm -f $(srcdir)/help-sections.h.tmp
 
 all-am: doc

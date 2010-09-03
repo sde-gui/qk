@@ -329,6 +329,8 @@ public:
     String(gsize len, char c) : m_impl(len, validateUtf8(c)) {}
     explicit String(char c) : m_impl(1, validateUtf8(c)) {}
 
+    static String take_utf8(char *str) { String s(str); g_free(str); return s; }
+
     static const String &Null() { static String s; return s; }
 
     ~String() {}

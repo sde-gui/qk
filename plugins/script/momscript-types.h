@@ -39,7 +39,7 @@ public:
     Base1Int(int value = 0) throw() : m_value(value) {}
 
     int get() const throw() { return m_value; }
-    int get_index() const throw() { return m_value - 1; }
+    Index get_index() const throw() { return m_value - 1; }
 
 private:
     int m_value;
