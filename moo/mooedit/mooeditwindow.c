@@ -2682,6 +2682,7 @@ update_tab_label (MooEditWindow *window,
         }
 
         g_object_unref (layout);
+        g_object_unref (M);
     }
 
     pixbuf = _moo_edit_get_icon (doc, icon, GTK_ICON_SIZE_MENU);
