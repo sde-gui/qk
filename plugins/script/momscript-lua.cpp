@@ -2,6 +2,8 @@
 
 namespace mom {
 
+static void push_object(lua_State *L, const HObject &h);
+
 static gpointer data_cookie;
 static gpointer object_cookie;
 
@@ -60,6 +62,22 @@ static MomLuaData *get_data(lua_State *L)
 
     mooThrowIfFalse(data != 0);
     return data;
+}
+
+static HObject get_arg_if_object(lua_State *L, int narg)
+{
+    if (!lua_istable(L, narg))
+        return HObject();
+
+    int id = 0;
+
+    lua_pushlightuserdata(L, &object_cookie);
+    lua_rawget(L, narg);
+    if (!lua_isnil(L, -1))
+        id = luaL_checkint(L, -1);
+    lua_pop(L, 1);
+
+    return HObject(id);
 }
 
 static HObject get_arg_object(lua_State *L, int narg)
@@ -185,14 +203,27 @@ static void push_variant(lua_State *L, const Variant &v);
 static int cfunc_call_named_method(lua_State *L)
 {
     MomLuaData *data = get_data(L);
-    HObject h = get_arg_object(L, 1);
     const char *meth = get_arg_string(L, lua_upvalueindex(1));
+
+    // Allow both obj.method(arg) and obj:method(arg) syntaxes.
+    // We store the object as upvalue so it's always available and
+    // we only need to check whether the first function argument
+    // is the same object or not. (This does mean a method can't
+    // take a first argument equal to the target object)
+
+    HObject self = get_arg_object(L, lua_upvalueindex(2));
+    HObject harg = get_arg_if_object(L, 1);
+
+    int first_arg = 2;
+    if (harg.id() != self.id())
+        first_arg = 1;
+
     VariantArray args;
-    for (int i = 2; i <= lua_gettop(L); ++i)
+    for (int i = first_arg; i <= lua_gettop(L); ++i)
         args.append(get_arg_variant(L, i));
 
     Variant v;
-    Result r = data->script->call_method(h, meth, args, v);
+    Result r = data->script->call_method(self, meth, args, v);
     check_result(L, r);
 
     if (v.vt() != VtVoid)
@@ -210,20 +241,21 @@ static int object__index(lua_State *L)
 {
     MomLuaData *data = get_data(L);
 
-    HObject h = get_arg_object(L, 1);
+    HObject self = get_arg_object(L, 1);
     const char *field = get_arg_string(L, 2);
 
-    switch (data->script->lookup_field(h, field))
+    switch (data->script->lookup_field(self, field))
     {
         case FieldMethod:
             lua_pushstring(L, field);
-            lua_pushcclosure(L, cfunc_call_named_method, 1);
+            push_object(L, self);
+            lua_pushcclosure(L, cfunc_call_named_method, 2);
             return 1;
 
         case FieldProperty:
             {
             Variant v;
-            Result r = data->script->get_property(h, field, v);
+            Result r = data->script->get_property(self, field, v);
             check_result(L, r);
             push_variant(L, v);
             return 1;

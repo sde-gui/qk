@@ -22,3 +22,7 @@ EXTRA_DIST = genmeta.py
 momscript-classes-meta.h: momscript-classes.h genmeta.py
 	$(PYTHON) $(srcdir)/genmeta.py $(srcdir)/momscript-classes.h > momscript-classes-meta.h.tmp && \
 		mv momscript-classes-meta.h.tmp momscript-classes-meta.h
+
+momscript.t2t: momscript-classes.h momscript-classes.cpp gendoc.py
+	$(PYTHON) $(srcdir)/gendoc.py $(srcdir)/momscript-classes.h $(srcdir)/momscript-classes.cpp > $(srcdir)/momscript.t2t.tmp && \
+		mv $(srcdir)/momscript.t2t.tmp $(srcdir)/momscript.t2t

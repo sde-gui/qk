@@ -68,12 +68,13 @@ private:                                \
 SINGLETON_CLASS(Application)
 {
 public:
-    PROPERTY(editor, read);
-    PROPERTY(active_window, read-write);
-    PROPERTY(windows, read);
+    METHOD(editor);
+    METHOD(active_view);
+    METHOD(active_document);
 
-    PROPERTY(active_view, read);
-    PROPERTY(active_document, read);
+    METHOD(active_window);
+    METHOD(set_active_window);
+    METHOD(windows);
 
     METHOD(quit);
 
@@ -81,17 +82,68 @@ private:
     MOM_SINGLETON_DECL(Application)
 };
 
+///////////////////////////////////////////////////////////////////////////////
+///
+/// ==== Editor ====[mom-script-editor]
+///
 SINGLETON_CLASS(Editor)
 {
 public:
-    PROPERTY(active_document, read-write);
-    PROPERTY(active_window, read-write);
-    PROPERTY(active_view, read-write);
-    PROPERTY(documents, read);
-    PROPERTY(views, read);
-    PROPERTY(windows, read);
+    /// - ``Editor.active_document()``: returns current active document or null
+    /// if there are no open documents
+    METHOD(active_document);
+    /// - ``Editor.set_active_document(doc)``: makes ``doc`` active
+    METHOD(set_active_document);
+    /// - ``Editor.active_window()``: returns current active window
+    METHOD(active_window);
+    /// - ``Editor.set_active_window(window)``: makes ``window`` active
+    METHOD(set_active_window);
+    /// - ``Editor.active_view()``: returns current active document view
+    METHOD(active_view);
+    /// - ``Editor.set_active_view(view)``: makes ``view`` active
+    METHOD(set_active_view);
 
-//     METHOD(open);
+    /// - ``Editor.documents()``: returns list of all open documents
+    METHOD(documents);
+    /// - ``Editor.documents()``: returns list of all open document views
+    METHOD(views);
+    /// - ``Editor.documents()``: returns list of all document windows
+    METHOD(windows);
+
+//     /// - ``Editor.get_document_by_path(path)``: returns document with path
+//     /// ``path`` or null.
+//     METHOD(get_document_by_path);
+//     /// - ``Editor.get_document_by_uri(path)``: returns document with uri
+//     /// ``uri`` or null.
+//     METHOD(get_document_by_uri);
+//
+//     /// - ``Editor.open_files(files, window=null)``: open files. If ``window`` is
+//     /// given then open files in that window, otherwise in an existing window.
+//     METHOD(open_files);
+//     /// - ``Editor.open_files(uris, window=null)``: open files. If ``window`` is
+//     /// given then open files in that window, otherwise in an existing window.
+//     METHOD(open_uris);
+//     /// - ``Editor.open_file(file, encoding=null, window=null)``: open file.
+//     /// If ``encoding`` is null or "auto" then pick character encoding automatically,
+//     /// otherwise use ``encoding``.
+//     /// If ``window`` is given then open files in that window, otherwise in an existing window.
+//     METHOD(open_file);
+//     /// - ``Editor.open_uri(uri, encoding=null, window=null)``: open file.
+//     /// If ``encoding`` is null or "auto" then pick character encoding automatically,
+//     /// otherwise use ``encoding``.
+//     /// If ``window`` is given then open files in that window, otherwise in an existing window.
+//     METHOD(open_uri);
+//     /// - ``Editor.reload(doc)``: reload document.
+//     METHOD(reload);
+//     /// - ``Editor.save(doc)``: save document.
+//     METHOD(save);
+//     /// - ``Editor.save_as(doc, new_filename=null)``: save document as ``new_filename``.
+//     /// If ``new_filename`` is not given then first ask user for new filename.
+//     METHOD(save_as);
+//     /// - ``Editor.save_as_uri(doc, new_uri=null)``: save document as ``new_uri``.
+//     /// If ``new_uri`` is not given then first ask user for new filename.
+//     METHOD(save_as_uri);
+//     /// ``Editor.close(doc)``: close document.
 //     METHOD(close);
 
 private:
@@ -169,13 +221,15 @@ protected:                                              \
 GOBJECT_CLASS(DocumentWindow, MooEditWindow)
 {
 public:
-    PROPERTY(editor, read);
-    PROPERTY(active_view, read-write);
-    PROPERTY(active_document, read-write);
-    PROPERTY(views, read);
-    PROPERTY(documents, read);
+    METHOD(editor);
+    METHOD(active_view);
+    METHOD(set_active_view);
+    METHOD(active_document);
+    METHOD(set_active_document);
+    METHOD(views);
+    METHOD(documents);
 
-    PROPERTY(active, read);
+    METHOD(is_active);
     METHOD(set_active);
 
 private:
@@ -185,12 +239,15 @@ private:
 GOBJECT_CLASS(DocumentView, MooEdit)
 {
 public:
-    PROPERTY(document, read);
-    PROPERTY(window, read);
+    METHOD(document);
+    METHOD(window);
 
-    PROPERTY(line_wrap_mode, read-write);
-    PROPERTY(overwrite_mode, read-write);
-    PROPERTY(show_line_numbers, read-write);
+    METHOD(line_wrap_mode);
+    METHOD(set_line_wrap_mode);
+    METHOD(overwrite_mode);
+    METHOD(set_overwrite_mode);
+    METHOD(show_line_numbers);
+    METHOD(set_show_line_numbers);
 
 private:
     MOM_GOBJECT_DECL(DocumentView, MooEdit)
@@ -199,33 +256,41 @@ private:
 GOBJECT_CLASS(Document, MooEdit)
 {
 public:
-    PROPERTY(views, read);
-    PROPERTY(active_view, read);
+    METHOD(views);
+    METHOD(active_view);
 
-    PROPERTY(filename, read);
-    PROPERTY(uri, read);
-    PROPERTY(basename, read);
+    METHOD(filename);
+    METHOD(uri);
+    METHOD(basename);
+
+//     METHOD(encoding);
+//     METHOD(set_encoding);
+//     METHOD(line_endings);
+//     METHOD(set_line_endings);
 
 //     METHOD(reload);
 //     METHOD(save);
 //     METHOD(save_as);
+//     METHOD(save_as_uri);
 
-    PROPERTY(can_undo, read);
-    PROPERTY(can_redo, read);
+    METHOD(can_undo);
+    METHOD(can_redo);
     METHOD(undo);
     METHOD(redo);
     METHOD(begin_not_undoable_action);
     METHOD(end_not_undoable_action);
 
-    PROPERTY(start, read);
-    PROPERTY(end, read);
-    PROPERTY(cursor, read-write);
-    PROPERTY(selection, read-write);
-    PROPERTY(selection_bound, read);
-    PROPERTY(has_selection, read);
+    METHOD(start_pos);
+    METHOD(end_pos);
+    METHOD(cursor_pos);
+    METHOD(set_cursor_pos);
+    METHOD(selection);
+    METHOD(set_selection);
+    METHOD(selection_bound);
+    METHOD(has_selection);
 
-    PROPERTY(char_count, read);
-    PROPERTY(line_count, read);
+    METHOD(char_count);
+    METHOD(line_count);
 
     METHOD(line_at_pos);
     METHOD(pos_at_line);
@@ -248,8 +313,8 @@ public:
     METHOD(select_lines_at_pos);
     METHOD(select_all);
 
-    PROPERTY(selected_text, read);
-    PROPERTY(selected_lines, read);
+    METHOD(selected_text);
+    METHOD(selected_lines);
     METHOD(delete_selected_text);
     METHOD(delete_selected_lines);
     METHOD(replace_selected_text);

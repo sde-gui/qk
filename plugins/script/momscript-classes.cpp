@@ -124,34 +124,35 @@ static void get_iter_pair(const Variant &val, GtkTextBuffer *buf, GtkTextIter *i
 // Application
 //
 
-Variant Application::get_editor()
+Variant Application::editor(const VariantArray &args)
 {
+    check_no_args(args);
     return HObject(Editor::get_instance());
 }
 
-Variant Application::get_active_window()
+Variant Application::active_window(const VariantArray &args)
 {
-    return Editor::get_instance().get_active_window();
+    return Editor::get_instance().active_window(args);
 }
 
-void Application::set_active_window(const Variant &val)
+Variant Application::set_active_window(const VariantArray &args)
 {
-    Editor::get_instance().set_active_window(val);
+    return Editor::get_instance().set_active_window(args);
 }
 
-Variant Application::get_active_document()
+Variant Application::active_document(const VariantArray &args)
 {
-    return Editor::get_instance().get_active_document();
+    return Editor::get_instance().active_document(args);
 }
 
-Variant Application::get_active_view()
+Variant Application::active_view(const VariantArray &args)
 {
-    return Editor::get_instance().get_active_view();
+    return Editor::get_instance().active_view(args);
 }
 
-Variant Application::get_windows()
+Variant Application::windows(const VariantArray &args)
 {
-    return Editor::get_instance().get_windows();
+    return Editor::get_instance().windows(args);
 }
 
 Variant Application::quit(const VariantArray &args)
@@ -167,57 +168,71 @@ Variant Application::quit(const VariantArray &args)
 // Editor
 //
 
-Variant Editor::get_active_document()
+Variant Editor::active_document(const VariantArray &args)
 {
+    check_no_args(args);
     return HObject(Document::wrap(moo_editor_get_active_doc(moo_editor_instance())));
 }
 
-void Editor::set_active_document(const Variant &val)
+Variant Editor::set_active_document(const VariantArray &args)
 {
-    moo::SharedPtr<Document> doc = get_object<Document>(val);
+    check_1_arg(args);
+    moo::SharedPtr<Document> doc = get_object<Document>(args[0]);
     moo_editor_set_active_doc(moo_editor_instance(), doc->gobj());
+    return Variant();
 }
 
-Variant Editor::get_active_window()
+Variant Editor::active_window(const VariantArray &args)
 {
+    check_no_args(args);
     return HObject(DocumentWindow::wrap(moo_editor_get_active_window(moo_editor_instance())));
 }
 
-void Editor::set_active_window(const Variant &val)
+Variant Editor::set_active_window(const VariantArray &args)
 {
-    moo::SharedPtr<DocumentWindow> window = get_object<DocumentWindow>(val);
+    check_1_arg(args);
+    moo::SharedPtr<DocumentWindow> window = get_object<DocumentWindow>(args[0]);
     moo_editor_set_active_window(moo_editor_instance(), window->gobj());
+    return Variant();
 }
 
-Variant Editor::get_active_view()
+Variant Editor::active_view(const VariantArray &args)
 {
+    check_no_args(args);
     return HObject(DocumentView::wrap(moo_editor_get_active_doc(moo_editor_instance())));
 }
 
-void Editor::set_active_view(const Variant &val)
+Variant Editor::set_active_view(const VariantArray &args)
 {
-    moo::SharedPtr<DocumentView> view = get_object<DocumentView>(val);
+    check_1_arg(args);
+    moo::SharedPtr<DocumentView> view = get_object<DocumentView>(args[0]);
     moo_editor_set_active_doc(moo_editor_instance(), view->gobj());
-    g_print("Editor::set_active_view\n");
+    return Variant();
 }
 
-Variant Editor::get_documents()
+Variant Editor::documents(const VariantArray &args)
 {
+    check_no_args(args);
     GSList *docs = moo_editor_list_docs(moo_editor_instance());
     return wrap_gslist<MooEdit, Document>(docs);
 }
 
-Variant Editor::get_views()
+Variant Editor::views(const VariantArray &args)
 {
+    check_no_args(args);
     GSList *docs = moo_editor_list_docs(moo_editor_instance());
     return wrap_gslist<MooEdit, DocumentView>(docs);
 }
 
-Variant Editor::get_windows()
+Variant Editor::windows(const VariantArray &args)
 {
+    check_no_args(args);
     GSList *windows = moo_editor_list_windows(moo_editor_instance());
     return wrap_gslist<MooEditWindow, DocumentWindow>(windows);
 }
+
+// METHOD(get_document_by_path);
+// METHOD(get_document_by_uri);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -225,47 +240,57 @@ Variant Editor::get_windows()
 // DocumentWindow
 //
 
-Variant DocumentWindow::get_editor()
+Variant DocumentWindow::editor(const VariantArray &args)
 {
+    check_no_args(args);
     return HObject(Editor::get_instance());
 }
 
-Variant DocumentWindow::get_active_view()
+Variant DocumentWindow::active_view(const VariantArray &args)
 {
+    check_no_args(args);
     return HObject(DocumentView::wrap(moo_edit_window_get_active_doc(gobj())));
 }
 
-void DocumentWindow::set_active_view(const Variant &val)
+Variant DocumentWindow::set_active_view(const VariantArray &args)
 {
-    moo::SharedPtr<DocumentView> view = get_object<DocumentView>(val);
+    check_1_arg(args);
+    moo::SharedPtr<DocumentView> view = get_object<DocumentView>(args[0]);
     moo_edit_window_set_active_doc(gobj(), view->gobj());
+    return Variant();
 }
 
-Variant DocumentWindow::get_active_document()
+Variant DocumentWindow::active_document(const VariantArray &args)
 {
+    check_no_args(args);
     return HObject(Document::wrap(moo_edit_window_get_active_doc(gobj())));
 }
 
-void DocumentWindow::set_active_document(const Variant &val)
+Variant DocumentWindow::set_active_document(const VariantArray &args)
 {
-    moo::SharedPtr<Document> doc = get_object<Document>(val);
+    check_1_arg(args);
+    moo::SharedPtr<Document> doc = get_object<Document>(args[0]);
     moo_edit_window_set_active_doc(gobj(), doc->gobj());
+    return Variant();
 }
 
-Variant DocumentWindow::get_views()
+Variant DocumentWindow::views(const VariantArray &args)
 {
+    check_no_args(args);
     GSList *docs = moo_edit_window_list_docs(gobj());
     return wrap_gslist<MooEdit, DocumentView>(docs);
 }
 
-Variant DocumentWindow::get_documents()
+Variant DocumentWindow::documents(const VariantArray &args)
 {
+    check_no_args(args);
     GSList *docs = moo_edit_window_list_docs(gobj());
     return wrap_gslist<MooEdit, Document>(docs);
 }
 
-Variant DocumentWindow::get_active()
+Variant DocumentWindow::is_active(const VariantArray &args)
 {
+    check_no_args(args);
     return gobj() == moo_editor_get_active_window(moo_editor_instance());
 }
 
@@ -282,50 +307,61 @@ Variant DocumentWindow::set_active(const VariantArray &args)
 // DocumentView
 //
 
-Variant DocumentView::get_document()
+Variant DocumentView::document(const VariantArray &args)
 {
+    check_no_args(args);
     return HObject(Document::wrap(gobj()));
 }
 
-Variant DocumentView::get_window()
+Variant DocumentView::window(const VariantArray &args)
 {
+    check_no_args(args);
     return HObject(DocumentWindow::wrap(moo_edit_get_window(gobj())));
 }
 
-Variant DocumentView::get_line_wrap_mode()
+Variant DocumentView::line_wrap_mode(const VariantArray &args)
 {
+    check_no_args(args);
     GtkWrapMode mode;
     g_object_get(gobj(), "wrap-mode", &mode, (char*) NULL);
     return mode != GTK_WRAP_NONE;
 }
 
-void DocumentView::set_line_wrap_mode(const Variant &val)
+Variant DocumentView::set_line_wrap_mode(const VariantArray &args)
 {
-    moo_edit_ui_set_line_wrap_mode(gobj(), get_bool(val));
+    check_1_arg(args);
+    moo_edit_ui_set_line_wrap_mode(gobj(), get_bool(args[0]));
+    return Variant();
 }
 
-Variant DocumentView::get_overwrite_mode()
+Variant DocumentView::overwrite_mode(const VariantArray &args)
 {
+    check_no_args(args);
     gboolean overwrite;
     g_object_get(gobj(), "overwrite", &overwrite, (char*) NULL);
     return bool(overwrite);
 }
 
-void DocumentView::set_overwrite_mode(const Variant &val)
+Variant DocumentView::set_overwrite_mode(const VariantArray &args)
 {
-    g_object_set(gobj(), "overwrite", gboolean(get_bool(val)), (char*) NULL);
+    check_1_arg(args);
+    g_object_set(gobj(), "overwrite", gboolean(get_bool(args[0])), (char*) NULL);
+    return Variant();
 }
 
-Variant DocumentView::get_show_line_numbers()
+Variant DocumentView::show_line_numbers(const VariantArray &args)
 {
+    check_no_args(args);
     gboolean show;
     g_object_get(gobj(), "show-line-numbers", &show, (char*) NULL);
     return bool(show);
 }
 
-void DocumentView::set_show_line_numbers(const Variant &val)
+Variant DocumentView::set_show_line_numbers(const VariantArray &args)
 {
-    moo_edit_ui_set_show_line_numbers(gobj(), get_bool(val));
+    check_1_arg(args);
+    moo_edit_ui_set_show_line_numbers(gobj(), get_bool(args[0]));
+    return Variant();
 }
 
 
@@ -334,42 +370,97 @@ void DocumentView::set_show_line_numbers(const Variant &val)
 // Document
 //
 
-Variant Document::get_active_view()
+Variant Document::active_view(const VariantArray &args)
 {
+    check_no_args(args);
     return HObject(DocumentView::wrap(gobj()));
 }
 
-Variant Document::get_views()
+Variant Document::views(const VariantArray &args)
 {
+    check_no_args(args);
     VariantArray views;
     views.append(HObject(DocumentView::wrap(gobj())));
     return views;
 }
 
-Variant Document::get_filename()
+Variant Document::filename(const VariantArray &args)
 {
+    check_no_args(args);
     char *filename = moo_edit_get_utf8_filename(gobj());
     return filename ? String::take_utf8(filename) : String::Null();
 }
 
-Variant Document::get_uri()
+Variant Document::uri(const VariantArray &args)
 {
+    check_no_args(args);
     char *uri = moo_edit_get_uri(gobj());
     return uri ? String::take_utf8(uri) : String::Null();
 }
 
-Variant Document::get_basename()
+Variant Document::basename(const VariantArray &args)
 {
+    check_no_args(args);
     return String(moo_edit_get_display_basename(gobj()));
 }
 
-Variant Document::get_can_undo()
+// Variant Document::reload(const VariantArray &args)
+// {
+//     VariantArray editor_args;
+//     editor_args.append(HObject(*this));
+//     editor_args.append(args);
+//     return Editor::get_instance().reload(editor_args);
+// }
+//
+// Variant Document::save(const VariantArray &args)
+// {
+//     VariantArray editor_args;
+//     editor_args.append(HObject(*this));
+//     editor_args.append(args);
+//     return Editor::get_instance().save(editor_args);
+// }
+//
+// Variant Document::save_as(const VariantArray &args)
+// {
+//     VariantArray editor_args;
+//     editor_args.append(HObject(*this));
+//     editor_args.append(args);
+//     return Editor::get_instance().save_as(editor_args);
+// }
+//
+// Variant Document::save_as_uri(const VariantArray &args)
+// {
+//     VariantArray editor_args;
+//     editor_args.append(HObject(*this));
+//     editor_args.append(args);
+//     return Editor::get_instance().save_as_uri(editor_args);
+// }
+
+// Variant Document::encoding(const VariantArray &args)
+// {
+// }
+//
+// Variant Document::set_encoding(const VariantArray &args)
+// {
+// }
+//
+// Variant Document::line_endings(const VariantArray &args)
+// {
+// }
+//
+// Variant Document::set_line_endings(const VariantArray &args)
+// {
+// }
+
+Variant Document::can_undo(const VariantArray &args)
 {
+    check_no_args(args);
     return moo_text_view_can_undo(MOO_TEXT_VIEW(gobj()));
 }
 
-Variant Document::get_can_redo()
+Variant Document::can_redo(const VariantArray &args)
 {
+    check_no_args(args);
     return moo_text_view_can_redo(MOO_TEXT_VIEW(gobj()));
 }
 
@@ -401,42 +492,49 @@ Variant Document::end_not_undoable_action(const VariantArray &args)
     return Variant();
 }
 
-Variant Document::get_start()
+Variant Document::start_pos(const VariantArray &args)
 {
+    check_no_args(args);
     return Index(0);
 }
 
-Variant Document::get_end()
+Variant Document::end_pos(const VariantArray &args)
 {
+    check_no_args(args);
     return Index(gtk_text_buffer_get_char_count(buffer()));
 }
 
-Variant Document::get_cursor()
+Variant Document::cursor_pos(const VariantArray &args)
 {
+    check_no_args(args);
     GtkTextBuffer *buf = buffer();
     GtkTextIter iter;
     gtk_text_buffer_get_iter_at_mark(buf, &iter, gtk_text_buffer_get_insert(buf));
     return Index(gtk_text_iter_get_offset(&iter));
 }
 
-void Document::set_cursor(const Variant &value)
+Variant Document::set_cursor_pos(const VariantArray &args)
 {
+    check_1_arg(args);
     GtkTextBuffer *buf = buffer();
     GtkTextIter iter;
-    get_iter(value, buf, &iter);
+    get_iter(args[0], buf, &iter);
     gtk_text_buffer_place_cursor(buf, &iter);
+    return Variant();
 }
 
-Variant Document::get_selection_bound()
+Variant Document::selection_bound(const VariantArray &args)
 {
+    check_no_args(args);
     GtkTextBuffer *buf = buffer();
     GtkTextIter iter;
     gtk_text_buffer_get_iter_at_mark(buf, &iter, gtk_text_buffer_get_selection_bound(buf));
     return Index(gtk_text_iter_get_offset(&iter));
 }
 
-Variant Document::get_selection()
+Variant Document::selection(const VariantArray &args)
 {
+    check_no_args(args);
     GtkTextBuffer *buf = buffer();
     GtkTextIter start, end;
     gtk_text_buffer_get_selection_bounds(buf, &start, &end);
@@ -444,29 +542,47 @@ Variant Document::get_selection()
                      Index(gtk_text_iter_get_offset(&end)));
 }
 
-void Document::set_selection(const Variant &value)
+Variant Document::set_selection(const VariantArray &args)
 {
     GtkTextBuffer *buf = buffer();
     GtkTextIter start, end;
-    get_iter_pair(value, buf, &start, &end);
+
+    if (args.size() == 1)
+    {
+        get_iter_pair(args[0], buf, &start, &end);
+    }
+    else if (args.size() == 2)
+    {
+        get_iter(args[0], buf, &start);
+        get_iter(args[1], buf, &end);
+    }
+    else
+    {
+        Error::raise("exactly one or two arguments expected");
+    }
+
     gtk_text_buffer_select_range(buf, &start, &end);
+    return Variant();
 }
 
-Variant Document::get_has_selection()
+Variant Document::has_selection(const VariantArray &args)
 {
+    check_no_args(args);
     GtkTextBuffer *buf = buffer();
     GtkTextIter start, end;
     gtk_text_buffer_get_selection_bounds(buf, &start, &end);
     return bool(gtk_text_iter_equal(&start, &end));
 }
 
-Variant Document::get_char_count()
+Variant Document::char_count(const VariantArray &args)
 {
+    check_no_args(args);
     return gtk_text_buffer_get_char_count(buffer());
 }
 
-Variant Document::get_line_count()
+Variant Document::line_count(const VariantArray &args)
 {
+    check_no_args(args);
     return gtk_text_buffer_get_line_count(buffer());
 }
 
@@ -748,8 +864,9 @@ Variant Document::select_all(const VariantArray &args)
     return Variant();
 }
 
-Variant Document::get_selected_text()
+Variant Document::selected_text(const VariantArray &args)
 {
+    check_no_args(args);
     GtkTextBuffer *buf = buffer();
     GtkTextIter start, end;
     gtk_text_buffer_get_selection_bounds(buf, &start, &end);
@@ -764,8 +881,9 @@ static void get_selected_lines_bounds(GtkTextBuffer *buf, GtkTextIter *start, Gt
     gtk_text_iter_set_line_offset(start, 0);
 }
 
-Variant Document::get_selected_lines()
+Variant Document::selected_lines(const VariantArray &args)
 {
+    check_no_args(args);
     GtkTextIter start, end;
     GtkTextBuffer *buf = buffer();
     get_selected_lines_bounds(buf, &start, &end);

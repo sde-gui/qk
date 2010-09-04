@@ -1,0 +1,16 @@
+
+==== Editor ====[mom-script-editor]
+
+- ``Editor.active_document()``: returns current active document or null
+if there are no open documents
+- ``Editor.set_active_document(doc)``: makes ``doc`` active
+- ``Editor.active_window()``: returns current active window
+- ``Editor.set_active_window(window)``: makes ``window`` active
+- ``Editor.active_view()``: returns current active document view
+- ``Editor.set_active_view(view)``: makes ``view`` active
+- ``Editor.documents()``: returns list of all open documents
+- ``Editor.documents()``: returns list of all open document views
+- ``Editor.documents()``: returns list of all document windows
+- ``Editor.get_document(name)``: returns document with name ``name`` or
+null. ``name`` is interpreted as full file path, as file URI, as file
+basename (file path minus directory path), in that order.
