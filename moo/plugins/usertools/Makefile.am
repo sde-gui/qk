@@ -32,7 +32,7 @@ EXTRA_DIST += glade/moousertools.glade
 BUILT_SOURCES += glade/moousertools-gxml.h
 CLEANFILES += glade/moousertools-gxml.h
 
-include ../../tools/rules.mk
+include $(top_srcdir)/tools/rules.mk
 
 cfgdir = $(MOO_DATA_DIR)
 cfg_DATA = filters.xml

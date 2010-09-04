@@ -17,7 +17,18 @@ medit_SOURCES =		\
 nodist_EXTRA_medit_SOURCES =	\
 	dummy.cpp
 
-medit_LDADD = ../plugins/libmooeditplugins.la ../moo/libmoo.la $(MOO_LIBS)
+medit_LDADD =					\
+	../plugins/libmooeditplugins.la		\
+	../mooapp/libmooapp.la			\
+	../eggsmclient/libeggsmclient.la	\
+	../mooedit/libmooedit.la		\
+	../gtksourceview/libgtksourceview.la	\
+	../moofileview/libmoofileview.la	\
+	../moolua/libmoolua.la			\
+	../mooutils/libmooutils.la		\
+	../xdgmime/libxdgmime.la		\
+	$(MOO_LIBS)
+
 medit_LDFLAGS =
 if MOO_OS_WIN32
 medit_LDFLAGS += -mwindows

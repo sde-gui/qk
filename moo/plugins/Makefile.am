@@ -4,7 +4,7 @@ noinst_LTLIBRARIES = libmooeditplugins.la
 
 libmooeditplugins_la_LIBADD = script/libmomscript.la usertools/libmoousertools.la
 
-AM_CPPFLAGS = $(MOO_CPPFLAGS) -I$(top_srcdir)/moo -I$(top_srcdir)/doc -I../moo
+AM_CPPFLAGS = $(MOO_CPPFLAGS) -I$(top_srcdir)/moo -I$(top_srcdir)/doc -I..
 AM_CFLAGS = $(MOO_CFLAGS)
 AM_CXXFLAGS = $(MOO_CXXFLAGS)
 
@@ -41,4 +41,4 @@ CLEANFILES +=					\
 
 include ctags/Makefile.incl
 
-include ../tools/rules.mk
+include $(top_srcdir)/tools/rules.mk

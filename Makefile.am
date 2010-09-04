@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4 $(ACLOCAL_FLAGS)
 
-SUBDIRS = po po-gsv doc moo plugins medit
+SUBDIRS = po po-gsv doc moo
 
 unix_scripts =				\
 	plat/unix/xdg-open		\

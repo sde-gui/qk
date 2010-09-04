@@ -109,9 +109,9 @@ AC_CONFIG_FILES([
   moo/mooedit/Makefile
   moo/eggsmclient/Makefile
   moo/mooapp/Makefile
-  medit/Makefile
-  plugins/Makefile
-  plugins/script/Makefile
-  plugins/usertools/Makefile
+  moo/medit/Makefile
+  moo/plugins/Makefile
+  moo/plugins/script/Makefile
+  moo/plugins/usertools/Makefile
 ])
 AC_OUTPUT

@@ -145,6 +145,14 @@ libmooutils_la_SOURCES =	\
 	stock-select-all-24.h	\
 	stock-terminal-24.h
 
+libmooutils_la_SOURCES += marshals.c
+BUILT_SOURCES += marshals.c
+CLEANFILES += marshals.c
+marshals.c: $(srcdir)/../marshals.list
+	echo '#include "marshals.h"' > marshals.c.tmp
+	$(GLIB_GENMARSHAL) --prefix=_moo_marshal --body $(srcdir)/../marshals.list >> marshals.c.tmp \
+		&& mv marshals.c.tmp marshals.c
+
 if MOO_OS_WIN32
 libmooutils_la_SOURCES += mooutils-win32.c
 endif
