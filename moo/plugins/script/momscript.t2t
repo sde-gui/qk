@@ -11,6 +11,28 @@ if there are no open documents
 - ``Editor.documents()``: returns list of all open documents
 - ``Editor.documents()``: returns list of all open document views
 - ``Editor.documents()``: returns list of all document windows
-- ``Editor.get_document(name)``: returns document with name ``name`` or
-null. ``name`` is interpreted as full file path, as file URI, as file
-basename (file path minus directory path), in that order.
+- ``Editor.get_document_by_path(path)``: returns document with path
+``path`` or null.
+- ``Editor.get_document_by_uri(path)``: returns document with uri
+``uri`` or null.
+- ``Editor.new_file(file, encoding=null, window=null)``: open file if it exists
+on disk or create a new one. If ``encoding`` is null or "auto" then pick character
+encoding automatically, otherwise use ``encoding``. If ``window`` is given then
+open file in that window, otherwise in an existing window.
+- ``Editor.open_files(files, window=null)``: open files. If ``window`` is
+given then open files in that window, otherwise in an existing window.
+- ``Editor.open_files(uris, window=null)``: open files. If ``window`` is
+given then open files in that window, otherwise in an existing window.
+- ``Editor.open_file(file, encoding=null, window=null)``: open file.
+If ``encoding`` is null or "auto" then pick character encoding automatically,
+otherwise use ``encoding``.
+If ``window`` is given then open files in that window, otherwise in an existing window.
+- ``Editor.open_uri(uri, encoding=null, window=null)``: open file.
+If ``encoding`` is null or "auto" then pick character encoding automatically,
+otherwise use ``encoding``.
+If ``window`` is given then open files in that window, otherwise in an existing window.
+- ``Editor.reload(doc)``: reload document.
+- ``Editor.save(doc)``: save document.
+- ``Editor.save_as(doc, new_filename=null)``: save document as ``new_filename``.
+If ``new_filename`` is not given then first ask user for new filename.
+``Editor.close(doc)``: close document.

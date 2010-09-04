@@ -1,0 +1,117 @@
+@node prefs-langs-and-filters
+@chapter Selecting editing options and languages
+@helpsection{PREFS_LANGS_AND_FILTERS}
+
+@uilabel{Languages and files} tab in the @uilabel{Editor}
+section of the @uilabel{Preferences} dialog allows customizing
+how syntax highlighting language and editing options are chosen
+depending on the document filename, as well as setting editing options for
+all documents which use given language and choosing file patterns and mime types
+for which the given language should be used.
+
+@menu
+* prefs-lang-options:: Language-specific options.
+* prefs-file-filters:: File filters.
+* editing-options:: Editing options.
+@end menu
+
+@node prefs-lang-options
+@section Language-specific options
+@helpsection{PREFS_LANGS_OPTIONS}
+
+Here you can set editing options on per-language basis, as well as define
+for which file patterns and mime types given language should be used.
+@table @asis
+@item @uilabel{Language} combo box
+Choose the language you want to customize. Settings for @code{None} will apply to
+documents for which no syntax highlighting language was chosen.
+@item @uilabel{Mime types}
+The given language will be used for files with these mime types, unless the language
+is chosen based on the filename or overridden in the @uilabel{File filters} section.
+@item @uilabel{Extensions}
+The given language will be used for files whose filenames match these patterns,
+unless overridden in the @uilabel{File filters} section.
+@item @uilabel{Options}
+Default editing options to use in documents which use the given language. These
+options can be overridden using @uilabel{File filters} section, and options set
+in the file text have a higher priority as well. See section @ref{editing-options}
+for the format of this entry content.
+@end table
+
+
+@node prefs-file-filters
+@section File filters
+@helpsection{PREFS_FILE_FILTERS}
+
+@uilabel{File filters} section allows to customize editing options,
+as well as syntax highlighting language, on per-document basis using regular
+expressions which are matched against the document filename. Full file paths are used,
+so one can have per-directory settings.
+
+Use dollar if you need to match ends of filenames, e.g. "@code{\.doc$}" will work as
+"@code{*.doc}" pattern.
+
+The filters are applied in the order they appear in the list, one by one. All filters
+are applied to every file, so several filters may affect options in the same file. In
+this way one can set some options for a set of files or a directory, then set or modify
+some additional options for certain files in that set, etc.
+
+To add a filter, use @uilabel{New} button. Click the filter in the list to
+select it, then click the @uilabel{Filter} or @uilabel{Options}
+part of it to edit. Use @uilabel{Delete} button to delete a filter,
+and @uilabel{Up} and @uilabel{Down} buttons to change the order in
+which they are applied.
+
+@uilabel{Filter} field contains a regular expression matched agains the
+document filename. If it is found in the filename, then the options from the
+@uilabel{Options} field are applied to the document.
+
+@uilabel{Options} field contains the options, in format described in
+section @ref{editing-options}.
+
+
+@node editing-options
+@section Editing options
+@helpsection{EDITING_OPTIONS}
+
+@medit{} has some editing options which can be set in the document text,
+or in the @uilabel{Preferences} dialog for sets of files or for given syntax
+highlighting language.
+
+To set the options in the document text, place the following on the first,
+second or the last line of the document:
+@example
+-%- @var{options} -%-
+@end example
+where @var{options} is the option string
+@example
+@var{key}: @var{value}; @var{key}: @var{value}; ...
+@end example
+(the latter is the format used also in the @uilabel{Preferences} dialog).
+
+Values can be strings, integers, or booleans.
+
+Booleans are @samp{yes}, @samp{no}, @samp{true}, @samp{false}, @samp{1}, @samp{0}.
+
+If a string value contains @code{:} character, then the following syntax may be used:
+@code{@var{key}=/@var{value}/}. Any character may be used instead of slash (and it
+must not occur in the @var{value}). Example: @samp{word-chars=@@-/:@@}
+
+The following options are available:
+@table @var
+@item lang
+syntax highlighting language to use in this document.
+@item strip
+a boolean value, whether trailing whitespace should be removed from the document on save.
+@item add-newline
+a boolean value, whether the editor should ensure that saved files have a trailing new line character.
+@item tab-width
+displayed width of the Tab character. NOTE: This is not an indentation offset, this is the visual width of a Tab character.
+@item use-tabs
+whether the Tab character should be used for indentation.
+@item indent-width
+an integer specifying indentation offset used when the Tab key is pressed to indent text.
+@end table
+
+@medit{} tries to understand modelines of Vim, Emacs, and Kate text editors, so chances are it will correctly
+pick up the conventional settings from source files.

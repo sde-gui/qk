@@ -205,7 +205,10 @@ MooLineEndType
 moo_edit_get_line_end_type (MooEdit *edit)
 {
     moo_return_val_if_fail (MOO_IS_EDIT (edit), MOO_LE_DEFAULT);
-    return edit->priv->line_end_type;
+    if (edit->priv->line_end_type == MOO_LE_NONE)
+        return MOO_LE_DEFAULT;
+    else
+        return edit->priv->line_end_type;
 }
 
 static void

@@ -410,7 +410,7 @@ moo_user_tools_prefs_page_new (void)
 
     g_signal_connect_swapped (page, "init", G_CALLBACK (main_page_init), gxml);
     g_signal_connect_swapped (page, "apply", G_CALLBACK (main_page_apply), gxml);
-    moo_help_set_id (page, HELP_SECTION_PREFS_USER_TOOLS);
+    moo_help_set_id (page, HELP_SECTION_USER_TOOLS);
 
     cxml = command_xml_new_with_root (GTK_WIDGET (gxml->page_menu));
     g_object_set_data (G_OBJECT (gxml->page_menu), "moo-user-tools-prefs-xml", cxml);

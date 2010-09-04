@@ -1224,6 +1224,15 @@ moo_edit_filename_changed (MooEdit    *edit,
 }
 
 
+void
+moo_edit_reload (MooEdit     *edit,
+                 const char  *encoding,
+                 GError     **error)
+{
+    _moo_editor_reload (edit->priv->editor, edit, encoding, error);
+}
+
+
 gboolean
 moo_edit_close (MooEdit        *edit,
                 gboolean        ask_confirm)

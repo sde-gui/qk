@@ -1,0 +1,57 @@
+<html lang="en">
+<head>
+<title>Shell scripts - medit 0.99.0-unstable manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="medit 0.99.0-unstable manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="User_002ddefined-Tools.html#User_002ddefined-Tools" title="User-defined Tools">
+<link rel="prev" href="Storing-tools-in-files.html#Storing-tools-in-files" title="Storing tools in files">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Shell-scripts"></a>
+<p>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Storing-tools-in-files.html#Storing-tools-in-files">Storing tools in files</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="User_002ddefined-Tools.html#User_002ddefined-Tools">User-defined Tools</a>
+<hr>
+</div>
+
+<h3 class="section">4.3 Shell scripts</h3>
+
+<p><!-- moo-help-section: USER_TOOLS_SHELL_SCRIPTS -->
+
+<p>In addition to the document text passed via standard input,
+shell scripts have a number of environment variables set. <samp><span class="env">APP_PID</span></samp>
+variable is set to the current process process id, so that opening a file in the
+same instance of medit is as simple as <code>medit filename</code> (on the other
+hand, you will have to use command line options if you need to run a new medit instance). 
+The following environment variables are set when scripts are executed:
+     <dl>
+<dt><samp><span class="env">DOC</span></samp><dd>the document basename. 
+<br><dt><samp><span class="env">DOC_DIR</span></samp><dd>the document file directory. The full file path is <samp><span class="file">$DOC_DIR/$DOC</span></samp>. 
+<br><dt><samp><span class="env">DOC_BASE</span></samp><dd>the basename without extension. 
+<br><dt><samp><span class="env">DOC_EXT</span></samp><dd>the document filename extension including the period. The basename is always <samp><span class="file">$DOC_BASE$DOC_EXT</span></samp>. 
+<br><dt><samp><span class="env">LINE</span></samp><dd>the number of the line containing cursor. 
+<br><dt><samp><span class="env">DATA_DIR</span></samp><dd>the user data directory. For example the tools are stored in <samp><span class="file">$DATA_DIR/menu.cfg</span></samp> file and in files in the <samp><span class="file">$DATA_DIR/tools/</span></samp> directory. 
+</dl>
+
+   <p>Additionally, all processes ran from inside medit will have <samp><span class="file">DATADIR/scripts</span></samp>
+directories in <code>$PATH</code>, so you may place some medit-specific programs
+or scripts into <samp><span class="file">USERDATADIR/scripts/</span></samp> to be used from shell script tools.
+
+   </body></html>
+

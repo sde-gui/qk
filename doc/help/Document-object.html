@@ -1,0 +1,138 @@
+<html lang="en">
+<head>
+<title>Document object - medit 0.99.0-unstable manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="medit 0.99.0-unstable manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Scripting.html#Scripting" title="Scripting">
+<link rel="prev" href="DocumentView-object.html#DocumentView-object" title="DocumentView object">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Document-object"></a>
+<p>
+Previous:&nbsp;<a rel="previous" accesskey="p" href="DocumentView-object.html#DocumentView-object">DocumentView object</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Scripting.html#Scripting">Scripting</a>
+<hr>
+</div>
+
+<h3 class="section">5.5 Document object</h3>
+
+<p><!-- moo-help-section: DOCUMENT -->
+
+     <dl>
+<dt><code>Document.views()</code><dd>returns list of views which display this document. 
+<br><dt><code>Document.active_view()</code><dd>returns active view of this document. If the document has a single
+view, then that is returned; otherwise if the current active view
+belongs to this document, then that view is returned; otherwise
+a random view is picked. 
+<br><dt><code>Document.filename()</code><dd>returns full file path of the document or <code>null</code> if the document
+has not been saved yet or if it can't be represented with a local
+path (e.g. if it is in a remote location like a web site).
+          <ul>
+<li>Untitled =&gt; <code>null</code>
+<li><samp><span class="file">/home/user/example.txt</span></samp> =&gt; <code>"/home/user/example.txt"</code>
+<li><samp><span class="file">http://example.com/index.html</span></samp> =&gt; <code>null</code>
+</ul>
+     <br><dt><code>Document.uri()</code><dd>returns URI of the document or <code>null</code> if the document has not been
+saved yet. 
+<br><dt><code>Document.basename()</code><dd>returns basename of the document, that is the full path minus directory
+part. If the document has not been saved yet, then it returns the name
+shown in the titlebar, e.g. "Untitled". 
+<br><dt><code>Document.encoding()</code><dd>returns character encoding of the document. 
+<br><dt><code>Document.set_encoding(encoding)</code><dd>set character encoding of the document, it will be used when the document
+is saved. 
+<br><dt><code>Document.reload()</code><dd>reload the document. 
+<br><dt><code>Document.save()</code><dd>save the document. 
+<br><dt><code>Document.save_as(filename=null)</code><dd>save the document as <var>filename</var>. If <var>filename</var> is <code>null</code> then
+<em>Save As</em> will be shown to choose new filename. 
+<br><dt><code>Document.can_undo()</code><dd>returns whether undo action is available. 
+<br><dt><code>Document.can_redo()</code><dd>returns whether redo action is available. 
+<br><dt><code>Document.undo()</code><dd>undo. 
+<br><dt><code>Document.redo()</code><dd>redo. 
+<br><dt><code>Document.begin_not_undoable_action()</code><dd>mark the beginning of a non-undoable operation. Undo stack will be erased
+and undo will not be recorded until <code>end_not_undoable_action()</code> call. 
+<br><dt><code>Document.end_not_undoable_action()</code><dd>end the non-undoable operation started with <code>begin_not_undoable_action()</code>. 
+</dl>
+
+     <dl>
+<dt><code>Document.start_pos()</code><dd>position at the beginning of the document (0 in Python, 1 in Lua, etc.) 
+<br><dt><code>Document.end_pos()</code><dd>position at the end of the document. This is the position past the last
+character: it points to no character, but it is a valid position for
+text insertion, cursor may be put there, etc. 
+<br><dt><code>Document.cursor_pos()</code><dd>position at the cursor. 
+<br><dt><code>Document.set_cursor_pos(pos)</code><dd>move cursor to position <var>pos</var>. 
+<br><dt><code>Document.selection()</code><dd>returns selection bounds as a list of two items, start and end. Returned
+list is always sorted, use <code>cursor()</code> and <code>selection_bound()</code>
+if you need to distinguish beginning and end of selection. If no text is
+is selected, then it returns pair <code>[cursor, cursor]</code>. 
+<br><dt><code>Document.set_selection(bounds_as_list)</code><br><dt><code>Document.set_selection(start, end)</code><dd>select text. 
+<br><dt><code>Document.selection_bound()</code><dd>returns the selection bound other than cursor position. Selection is
+either [cursor, selection_bound) or [selection_bound, cursor), depending
+on direction user dragged the mouse (or on <code>set_selection</code>
+arguments). 
+<br><dt><code>Document.has_selection()</code><dd>whether any text is selected. 
+<br><dt><code>Document.char_count()</code><dd>character count. 
+<br><dt><code>Document.line_count()</code><dd>line count. 
+<br><dt><code>Document.line_at_pos(pos)</code><dd>returns index of the line which contains position <var>pos</var>. 
+<br><dt><code>Document.pos_at_line(line)</code><dd>returns position at the beginning of line <var>line</var>. 
+<br><dt><code>Document.pos_at_line(line)</code><dd>returns position at the end of line <var>line</var>. 
+<br><dt><code>Document.char_at_pos(pos)</code><dd>returns character at position <var>pos</var> as string. 
+<br><dt><code>Document.text()</code><dd>returns whole document contents. 
+<br><dt><code>Document.text(start, end)</code><dd>returns text in the range [<var>start</var>, <var>end</var>), <var>end</var> not
+included. Example: <code>doc.text(doc.start_pos(), doc.end_pos())</code> is
+equivalent <code>to doc.text()</code>. 
+<br><dt><code>Document.insert_text(text)</code><br><dt><code>Document.insert_text(pos, text)</code><dd>insert text into the document. If <var>pos</var> is not given, insert at
+cursor position. 
+<br><dt><code>Document.replace_text(start, end, text)</code><dd>replace text in the region [<var>start</var>, <var>end</var>). Equivalent to
+<code>delete_text(start, end), insert_text(start, text)</code>. 
+<br><dt><code>Document.delete_text(start, end)</code><dd>delete text in the region [<var>start</var>, <var>end</var>). Example:
+<code>doc.delete_text(doc.start(), doc.end())</code> will delete all text in
+<code>doc</code>. 
+<br><dt><code>Document.append_text(text)</code><dd>append text. Equivalent to <code>doc.insert_text(doc.end(), text)</code>. 
+<br><dt><code>Document.clear()</code><dd>delete all text in the document. 
+<br><dt><code>Document.copy()</code><dd>copy selected text to clipboard. If no text is selected then nothing
+will happen, same as Ctrl-C key combination. 
+<br><dt><code>Document.cut()</code><dd>cut selected text to clipboard. If no text is selected then nothing
+will happen, same as Ctrl-X key combination. 
+<br><dt><code>Document.paste()</code><dd>paste text from clipboard. It has the same effect as Ctrl-V key combination:
+nothing happens if clipboard is empty, and selected text is replaced with
+clipboard contents otherwise. 
+<br><dt><code>Document.select_text(bounds_as_list)</code><br><dt><code>Document.select_text(start, end)</code><dd>select text, same as <code>set_selection()</code>. 
+<br><dt><code>Document.select_lines(line)</code><dd>select a line. 
+<br><dt><code>Document.select_lines(first, last)</code><dd>select lines from <var>first</var> to <var>last</var>, <em>including</em>
+<var>last</var>. 
+<br><dt><code>Document.select_lines_at_pos(bounds_as_list)</code><br><dt><code>Document.select_lines_at_pos(start, end)</code><dd>select lines: similar to <code>select_text</code>, but select whole lines. 
+<br><dt><code>Document.select_all()</code><dd>select all. 
+<br><dt><code>Document.selected_text()</code><dd>returns selected text. 
+<br><dt><code>Document.selected_lines()</code><dd>returns selected lines as a list of strings, one string for each line,
+line terminator characters not included. If nothing is selected, then
+line at cursor is returned. 
+<br><dt><code>Document.delete_selected_text()</code><dd>delete selected text, equivalent to <code>doc.delete_text(doc.cursor(),
+doc.selection_bound())</code>. 
+<br><dt><code>Document.delete_selected_lines()</code><dd>delete selected lines. Similar to <code>delete_selected_text()</code> but
+selection is extended to include whole lines. If nothing is selected,
+then line at cursor is deleted. 
+<br><dt><code>Document.replace_selected_text(text)</code><dd>replace selected text with <var>text</var>. If nothing is selected,
+<var>text</var> is inserted at cursor. 
+<br><dt><code>Document.replace_selected_lines(text)</code><dd>replace selected lines with <var>text</var>. Similar to
+<code>replace_selected_text()</code>, but selection is extended to include
+whole lines. If nothing is selected, then line at cursor is replaced. 
+</dl>
+
+   </body></html>
+

@@ -49,12 +49,26 @@ static bool get_bool(const Variant &val)
     return val.value<VtBool>();
 }
 
-static String get_string(const Variant &val)
+static String get_string(const Variant &val, bool null_ok = false)
 {
+    if (null_ok && val.vt() == VtVoid)
+        return String();
+
     if (val.vt() != VtString)
         Error::raise("string expected");
 
     return val.value<VtString>();
+}
+
+static moo::Vector<String> get_string_list(const Variant &val)
+{
+    if (val.vt() != VtArray)
+        Error::raise("list expected");
+    const VariantArray &ar = val.value<VtArray>();
+    moo::Vector<String> ret;
+    for (int i = 0, c = ar.size(); i < c; ++i)
+        ret.append(get_string(ar[i]));
+    return ret;
 }
 
 template<typename GClass, typename Class>
@@ -231,8 +245,168 @@ Variant Editor::windows(const VariantArray &args)
     return wrap_gslist<MooEditWindow, DocumentWindow>(windows);
 }
 
-// METHOD(get_document_by_path);
-// METHOD(get_document_by_uri);
+Variant Editor::get_document_by_path(const VariantArray &args)
+{
+    check_1_arg(args);
+    String path = get_string(args[0]);
+    MooEdit *doc = moo_editor_get_doc(moo_editor_instance(), path);
+    return doc ? HObject(Document::wrap(doc)) : HObject();
+}
+
+Variant Editor::get_document_by_uri(const VariantArray &args)
+{
+    check_1_arg(args);
+    String uri = get_string(args[0]);
+    MooEdit *doc = moo_editor_get_doc_for_uri(moo_editor_instance(), uri);
+    return doc ? HObject(Document::wrap(doc)) : HObject();
+}
+
+static GSList *get_file_info_list(const Variant &val, bool uri)
+{
+    moo::Vector<String> filenames = get_string_list(val);
+
+    if (filenames.empty())
+        return NULL;
+
+    GSList *files = NULL;
+
+    for (int i = 0, c = filenames.size(); i < c; ++i)
+    {
+        MooEditFileInfo *fi = uri ?
+                moo_edit_file_info_new_uri(filenames[i], NULL) :
+                moo_edit_file_info_new_path(filenames[i], NULL);
+        if (!fi)
+            goto error;
+        files = g_slist_prepend(files, fi);
+    }
+
+    return g_slist_reverse(files);
+
+error:
+    g_slist_foreach(files, (GFunc) moo_edit_file_info_free, NULL);
+    g_slist_free(files);
+    Error::raise("error");
+}
+
+static Variant open_files_or_uris(const VariantArray &args, bool uri)
+{
+    if (args.size() == 0 || args.size() > 2)
+        Error::raise("expected one or two arguments");
+
+    moo::SharedPtr<DocumentWindow> window;
+    if (args.size() >= 2)
+        window = get_object<DocumentWindow>(args[1], true);
+
+    GSList *files = get_file_info_list(args[0], uri);
+    moo_editor_open(moo_editor_instance(), window ? window->gobj() : NULL, NULL, files);
+    g_slist_foreach(files, (GFunc) moo_edit_file_info_free, NULL);
+    g_slist_free(files);
+
+    return Variant();
+}
+
+Variant Editor::open_files(const VariantArray &args)
+{
+    return open_files_or_uris(args, false);
+}
+
+Variant Editor::open_uris(const VariantArray &args)
+{
+    return open_files_or_uris(args, true);
+}
+
+static Variant open_file_or_uri(const VariantArray &args, bool uri, bool new_file)
+{
+    if (args.size() == 0)
+        Error::raise("at least one argument expected");
+
+    String file = get_string(args[0]);
+
+    String encoding;
+    if (args.size() > 1)
+        encoding = get_string(args[1], true);
+
+    moo::SharedPtr<DocumentWindow> window;
+    if (args.size() > 2)
+        window = get_object<DocumentWindow>(args[2], true);
+
+    MooEdit *doc = NULL;
+
+    if (new_file)
+    {
+        if (uri)
+        {
+            moo_assert_not_reached();
+            Error::raise("error");
+        }
+        else
+        {
+            doc = moo_editor_new_file(moo_editor_instance(), window ? window->gobj() : NULL, NULL, file, encoding);
+        }
+    }
+    else
+    {
+        if (uri)
+            doc = moo_editor_open_uri(moo_editor_instance(), window ? window->gobj() : NULL, NULL, file, encoding);
+        else
+            doc = moo_editor_open_file(moo_editor_instance(), window ? window->gobj() : NULL, NULL, file, encoding);
+    }
+
+    return doc ? HObject(Document::wrap(doc)) : HObject();
+}
+
+Variant Editor::open_file(const VariantArray &args)
+{
+    return open_file_or_uri(args, false, false);
+}
+
+Variant Editor::open_uri(const VariantArray &args)
+{
+    return open_file_or_uri(args, true, false);
+}
+
+Variant Editor::new_file(const VariantArray &args)
+{
+    return open_file_or_uri(args, false, true);
+}
+
+Variant Editor::reload(const VariantArray &args)
+{
+    check_1_arg(args);
+    moo::SharedPtr<Document> doc = get_object<Document>(args[0]);
+    moo_edit_reload(doc->gobj(), NULL, NULL);
+    return Variant();
+}
+
+Variant Editor::save(const VariantArray &args)
+{
+    check_1_arg(args);
+    moo::SharedPtr<Document> doc = get_object<Document>(args[0]);
+    return bool(moo_edit_save(doc->gobj(), NULL));
+}
+
+Variant Editor::save_as(const VariantArray &args)
+{
+    if (args.size() == 0)
+        Error::raise("at least one argument expected");
+
+    moo::SharedPtr<Document> doc = get_object<Document>(args[0]);
+
+    String filename;
+    if (args.size() > 0)
+        filename = get_string(args[1], true);
+
+    return bool(moo_edit_save_as(doc->gobj(),
+                                 filename.empty() ? NULL : (const char*) filename,
+                                 NULL,
+                                 NULL));
+}
+
+Variant Editor::close(const VariantArray &args)
+{
+    check_1_arg(args);
+    return bool(moo_edit_close(get_object<Document>(args[0])->gobj(), TRUE));
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -404,53 +578,90 @@ Variant Document::basename(const VariantArray &args)
     return String(moo_edit_get_display_basename(gobj()));
 }
 
-// Variant Document::reload(const VariantArray &args)
-// {
-//     VariantArray editor_args;
-//     editor_args.append(HObject(*this));
-//     editor_args.append(args);
-//     return Editor::get_instance().reload(editor_args);
-// }
-//
-// Variant Document::save(const VariantArray &args)
-// {
-//     VariantArray editor_args;
-//     editor_args.append(HObject(*this));
-//     editor_args.append(args);
-//     return Editor::get_instance().save(editor_args);
-// }
-//
-// Variant Document::save_as(const VariantArray &args)
-// {
-//     VariantArray editor_args;
-//     editor_args.append(HObject(*this));
-//     editor_args.append(args);
-//     return Editor::get_instance().save_as(editor_args);
-// }
-//
-// Variant Document::save_as_uri(const VariantArray &args)
-// {
-//     VariantArray editor_args;
-//     editor_args.append(HObject(*this));
-//     editor_args.append(args);
-//     return Editor::get_instance().save_as_uri(editor_args);
-// }
+Variant Document::reload(const VariantArray &args)
+{
+    VariantArray editor_args;
+    editor_args.append(HObject(*this));
+    editor_args.append(args);
+    return Editor::get_instance().reload(editor_args);
+}
 
-// Variant Document::encoding(const VariantArray &args)
-// {
-// }
-//
-// Variant Document::set_encoding(const VariantArray &args)
-// {
-// }
-//
-// Variant Document::line_endings(const VariantArray &args)
-// {
-// }
-//
-// Variant Document::set_line_endings(const VariantArray &args)
-// {
-// }
+Variant Document::save(const VariantArray &args)
+{
+    VariantArray editor_args;
+    editor_args.append(HObject(*this));
+    editor_args.append(args);
+    return Editor::get_instance().save(editor_args);
+}
+
+Variant Document::save_as(const VariantArray &args)
+{
+    VariantArray editor_args;
+    editor_args.append(HObject(*this));
+    editor_args.append(args);
+    return Editor::get_instance().save_as(editor_args);
+}
+
+Variant Document::encoding(const VariantArray &args)
+{
+    check_no_args(args);
+    return String(moo_edit_get_encoding(gobj()));
+}
+
+Variant Document::set_encoding(const VariantArray &args)
+{
+    check_1_arg(args);
+    String enc = get_string(args);
+    moo_edit_set_encoding(gobj(), enc);
+    return Variant();
+}
+
+Variant Document::line_endings(const VariantArray &args)
+{
+    check_no_args(args);
+
+    switch (moo_edit_get_line_end_type(gobj()))
+    {
+        case MOO_LE_UNIX:
+            return String("unix");
+        case MOO_LE_WIN32:
+            return String("win32");
+        case MOO_LE_MAC:
+            return String("mac");
+        case MOO_LE_MIX:
+            return String("mix");
+        case MOO_LE_NONE:
+            return String("none");
+    }
+
+    moo_assert_not_reached();
+    Error::raise("error");
+}
+
+Variant Document::set_line_endings(const VariantArray &args)
+{
+    check_1_arg(args);
+
+    MooLineEndType le = MOO_LE_NONE;
+    String str_le = get_string(args[0]);
+
+    if (str_le == "unix")
+        le = MOO_LE_UNIX;
+    else if (str_le == "win32")
+        le = MOO_LE_WIN32;
+    else if (str_le == "mac")
+        le = MOO_LE_MAC;
+    else if (str_le == "mix")
+        le = MOO_LE_MIX;
+    else if (str_le == "none")
+        le = MOO_LE_NONE;
+    else
+        Error::raise("invalid line ending type");
+
+    moo_edit_set_line_end_type(gobj(), le);
+
+    return Variant();
+}
 
 Variant Document::can_undo(const VariantArray &args)
 {

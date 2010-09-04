@@ -1258,8 +1258,6 @@ update_doc_line_end_item (MooEditWindow *window)
     g_return_if_fail (action != NULL);
 
     le = moo_edit_get_line_end_type (doc);
-    if (le == MOO_LE_NONE)
-        le = MOO_LE_DEFAULT;
     g_return_if_fail (le > 0 && le < G_N_ELEMENTS(line_end_menu_items));
 
     moo_menu_mgr_set_active (moo_menu_action_get_mgr (MOO_MENU_ACTION (action)),

@@ -1,0 +1,13 @@
+@node Regular expressions
+@chapter Regular expressions
+@helpsection{REGEX}
+
+@medit{} uses regular expressions functionality provided by Glib, which in turn uses
+@uref{http://pcre.org/, PCRE} library. See
+@uref{http://library.gnome.org/devel/glib/stable/glib-regex-syntax.html, Glib manual}
+for complete description of regular expression syntax.
+
+Regular expression searches in a document text are limited to single lines, unless the
+search pattern includes newline character. For example, pattern "@code{.*}" will match every
+line in the document, pattern "@code{.*\n.*}" will match pairs of consecutive lines. This means
+that it is mostly impossible to perform searches for text which spawns multiple lines.

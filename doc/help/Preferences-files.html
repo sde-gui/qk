@@ -1,0 +1,66 @@
+<html lang="en">
+<head>
+<title>Preferences files - medit 0.99.0-unstable manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="medit 0.99.0-unstable manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="prev" href="prefs_002dlangs_002dand_002dfilters.html#prefs_002dlangs_002dand_002dfilters" title="prefs-langs-and-filters">
+<link rel="next" href="Regular-expressions.html#Regular-expressions" title="Regular expressions">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Preferences-files"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="Regular-expressions.html#Regular-expressions">Regular expressions</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="prefs_002dlangs_002dand_002dfilters.html#prefs_002dlangs_002dand_002dfilters">prefs-langs-and-filters</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="index.html#Top">Top</a>
+<hr>
+</div>
+
+<h2 class="chapter">2 Preferences files</h2>
+
+<p><!-- moo-help-section: PREFS_FILE -->
+
+<p>medit preferences are stored in <samp><span class="file">$HOME/.config/meditrc</span></samp> file. 
+It is an XML file which may be edited to set preferences which have not found
+their place in the <em>Preferences</em> dialog.
+
+   <p>NOTE: medit reads the preferences file on startup and writes it whenever <em>OK</em>
+or <em>Apply</em> button is clicked in the <em>Preferences</em> dialog. Therefore, if you
+modify the preferences file, your changes may be overwritten, and they not take
+effect until you restart medit.
+
+   <p>The following "hidden" settings are available:
+     <ul>
+<li><var>Editor/window_title</var>: Format of the window title. It is a string which may
+contain format sequences, which are percent sign followed by a character:
+          <ul>
+<li><code>%a</code>: application name;
+<li><code>%b</code>: current document basename;
+<li><code>%f</code>: full path of the current document;
+<li><code>%u</code>: URI of the current document;
+<li><code>%s</code>: the status of the current document, e.g. "<code> [modified]</code>". It is prefixed
+with a space, so that "<code>%b%s</code>" produces a nice string;
+<li><code>%%</code>: the percent character. 
+</ul>
+     Default value is "<code>%a - %f%s</code>" which produces something like "<code>medit - /home/user/file [modified]</code>". 
+<li><var>Editor/window_title_no_doc</var>: same as <code>Editor/window_title</code>, used when no document is open. 
+Default value is "<code>%a</code>". 
+</ul>
+
+   </body></html>
+

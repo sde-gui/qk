@@ -286,7 +286,8 @@ open_file_by_id (const char *id,
                  GtkWidget  *parent)
 {
     const char *dir;
-    char *filename, *basename;
+    const char *basename;
+    char *filename;
 
     g_return_if_fail (id != NULL);
 
@@ -296,10 +297,14 @@ open_file_by_id (const char *id,
         return;
     }
 
-    if (!strcmp (id, MOO_HELP_ID_CONTENTS))
+    if (strcmp (id, MOO_HELP_ID_CONTENTS) == 0)
         id = MOO_HELP_ID_INDEX;
 
-    basename = g_strdup_printf ("%s.html", id);
+    if (strcmp (id, MOO_HELP_ID_INDEX) == 0 || id[0] == 0)
+        basename = "index.html";
+    else
+        basename = id;
+
     filename = g_build_filename (dir, basename, NULL);
 
     if (g_file_test (filename, G_FILE_TEST_IS_REGULAR))
@@ -310,7 +315,6 @@ open_file_by_id (const char *id,
         warn_no_help_file (basename, parent);
 
     g_free (filename);
-    g_free (basename);
 }
 
 void

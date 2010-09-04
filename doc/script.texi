@@ -1,0 +1,25 @@
+@node Scripting
+@chapter Scripting
+@helpsection{SCRIPT}
+
+@macro method{text}
+@code{\text\}
+@end macro
+
+@macro param{text}
+@var{\text\}
+@end macro
+
+@macro null{}
+@code{null}
+@end macro
+
+@menu
+* Application object:: Application object
+* Editor object:: Editor object
+* DocumentWindow object:: DocumentWindow object
+* DocumentView object:: DocumentView object
+* Document object:: Document object
+@end menu
+
+@include momscript.texi

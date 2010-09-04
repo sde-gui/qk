@@ -1,0 +1,74 @@
+<html lang="en">
+<head>
+<title>Editor object - medit 0.99.0-unstable manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="medit 0.99.0-unstable manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="Scripting.html#Scripting" title="Scripting">
+<link rel="prev" href="Application-object.html#Application-object" title="Application object">
+<link rel="next" href="DocumentWindow-object.html#DocumentWindow-object" title="DocumentWindow object">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="Editor-object"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="DocumentWindow-object.html#DocumentWindow-object">DocumentWindow object</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="Application-object.html#Application-object">Application object</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="Scripting.html#Scripting">Scripting</a>
+<hr>
+</div>
+
+<h3 class="section">5.2 Editor object</h3>
+
+<p><!-- moo-help-section: SCRIPT_EDITOR -->
+
+     <dl>
+<dt><code>Editor.active_document()</code><dd>returns current active document or <code>null</code> if there are no open documents
+<br><dt><code>Editor.set_active_document(doc)</code><dd>makes <var>doc</var> active
+<br><dt><code>Editor.active_window()</code><dd>returns current active window
+<br><dt><code>Editor.set_active_window(window)</code><dd>makes <var>window</var> active
+<br><dt><code>Editor.active_view()</code><dd>returns current active document view
+<br><dt><code>Editor.set_active_view(view)</code><dd>makes <var>view</var> active
+<br><dt><code>Editor.documents()</code><dd>returns list of all open documents
+<br><dt><code>Editor.documents()</code><dd>returns list of all open document views
+<br><dt><code>Editor.documents()</code><dd>returns list of all document windows
+<br><dt><code>Editor.get_document_by_path(path)</code><dd>returns document with path <var>path</var> or <code>null</code>. 
+<br><dt><code>Editor.get_document_by_uri(path)</code><dd>returns document with uri <var>uri</var> or <code>null</code>. 
+<br><dt><code>Editor.new_file(file, encoding=null, window=null)</code><dd>open file if it exists on disk or create a new one. If <var>encoding</var> is
+<code>null</code> or "auto" then pick character encoding automatically, otherwise use
+<var>encoding</var>. If <var>window</var> is given then open file in that window,
+otherwise in an existing window. 
+<br><dt><code>Editor.open_files(files, window=null)</code><dd>open files. If <var>window</var> is given then open files in that window,
+otherwise in an existing window. 
+<br><dt><code>Editor.open_files(uris, window=null)</code><dd>open files. If <var>window</var> is given then open files in that window,
+otherwise in an existing window. 
+<br><dt><code>Editor.open_file(file, encoding=null, window=null)</code><dd>open file. If <var>encoding</var> is <code>null</code> or "auto" then pick character
+encoding automatically, otherwise use <var>encoding</var>. If <var>window</var>
+is given then open files in that window, otherwise in an existing window. 
+<br><dt><code>Editor.open_uri(uri, encoding=null, window=null)</code><dd>open file. If <var>encoding</var> is <code>null</code> or "auto" then pick character
+encoding automatically, otherwise use <var>encoding</var>. If <var>window</var>
+is given then open files in that window, otherwise in an existing window. 
+<br><dt><code>Editor.reload(doc)</code><dd>reload document. 
+<br><dt><code>Editor.save(doc)</code><dd>save document. 
+<br><dt><code>Editor.save_as(doc, filename=null)</code><dd>save document as <var>filename</var>. If <var>filename</var> is not given then
+first ask user for new filename. 
+<br><dt><code>Editor.close(doc)</code><dd>close document.
+
+</dl>
+
+   </body></html>
+

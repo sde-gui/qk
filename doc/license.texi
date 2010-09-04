@@ -1,0 +1,75 @@
+@node License
+@unnumbered License
+@helpsection{APP_LICENSE}
+
+@medit{} as a whole is distributed under the terms of the GNU General
+Public License, version 2, but most of its code is released under the
+GNU Lesser General Public License. Full text of these licenses, as well
+as licenses and acknowledgements for third-party software incorporated
+in @medit{}, can be found in this section.
+
+@menu
+* GNU General Public License:: GNU General Public License
+* GNU Lesser General Public License:: GNU Lesser General Public License
+* Lua License:: Lua License
+* LuaFileSystem License:: LuaFileSystem License
+* xdg-utils License:: xdg-utils License
+@end menu
+
+@node GNU General Public License
+@section GNU General Public License
+@helpsection{LICENSE_GPL}
+@verbatiminclude ../COPYING.GPL
+
+@node GNU Lesser General Public License
+@section GNU Lesser General Public License
+@helpsection{LICENSE_LGPL}
+@verbatiminclude ../COPYING
+
+@node Lua License
+@section Lua License
+@helpsection{LICENSE_LUA}
+@verbatiminclude ../moo/moolua/COPYRIGHT
+
+@node LuaFileSystem License
+@section LuaFileSystem License
+@helpsection{LICENSE_LFS}
+@verbatim
+LuaFileSystem - File System Library for Lua
+Copyright 2003-2007 PUC-Rio
+http://www.keplerproject.org/luafilesystem
+
+LuaFileSystem is a Lua library developed to complement the set of functions
+related to file systems offered by the standard Lua distribution. LuaFileSystem
+offers a portable way to access the underlying directory structure and file
+attributes. LuaFileSystem is free software and uses the same license as Lua 5.1
+Current version is 1.2.1.
+@end verbatim
+
+@node xdg-utils License
+@section xdg-utils License
+@helpsection{LICENSE_XDG_UTILS}
+@verbatim
+Copyright 2006, Kevin Krammer <kevin.krammer@gmx.at>
+Copyright 2006, Jeremy White <jwhite@codeweavers.com>
+
+LICENSE:
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+@end verbatim

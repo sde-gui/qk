@@ -1,0 +1,67 @@
+<html lang="en">
+<head>
+<title>prefs-file-filters - medit 0.99.0-unstable manual</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name="description" content="medit 0.99.0-unstable manual">
+<meta name="generator" content="makeinfo 4.13">
+<link title="Top" rel="start" href="index.html#Top">
+<link rel="up" href="prefs_002dlangs_002dand_002dfilters.html#prefs_002dlangs_002dand_002dfilters" title="prefs-langs-and-filters">
+<link rel="prev" href="prefs_002dlang_002doptions.html#prefs_002dlang_002doptions" title="prefs-lang-options">
+<link rel="next" href="editing_002doptions.html#editing_002doptions" title="editing-options">
+<link href="http://www.gnu.org/software/texinfo/" rel="generator-home" title="Texinfo Homepage">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css"><!--
+  pre.display { font-family:inherit }
+  pre.format  { font-family:inherit }
+  pre.smalldisplay { font-family:inherit; font-size:smaller }
+  pre.smallformat  { font-family:inherit; font-size:smaller }
+  pre.smallexample { font-size:smaller }
+  pre.smalllisp    { font-size:smaller }
+  span.sc    { font-variant:small-caps }
+  span.roman { font-family:serif; font-weight:normal; } 
+  span.sansserif { font-family:sans-serif; font-weight:normal; } 
+--></style>
+</head>
+<body>
+<div class="node">
+<a name="prefs-file-filters"></a>
+<a name="prefs_002dfile_002dfilters"></a>
+<p>
+Next:&nbsp;<a rel="next" accesskey="n" href="editing_002doptions.html#editing_002doptions">editing-options</a>,
+Previous:&nbsp;<a rel="previous" accesskey="p" href="prefs_002dlang_002doptions.html#prefs_002dlang_002doptions">prefs-lang-options</a>,
+Up:&nbsp;<a rel="up" accesskey="u" href="prefs_002dlangs_002dand_002dfilters.html#prefs_002dlangs_002dand_002dfilters">prefs-langs-and-filters</a>
+<hr>
+</div>
+
+<h3 class="section">1.2 File filters</h3>
+
+<p><!-- moo-help-section: PREFS_FILE_FILTERS -->
+
+<p><em>File filters</em> section allows to customize editing options,
+as well as syntax highlighting language, on per-document basis using regular
+expressions which are matched against the document filename. Full file paths are used,
+so one can have per-directory settings.
+
+   <p>Use dollar if you need to match ends of filenames, e.g. "<code>\.doc$</code>" will work as
+"<code>*.doc</code>" pattern.
+
+   <p>The filters are applied in the order they appear in the list, one by one. All filters
+are applied to every file, so several filters may affect options in the same file. In
+this way one can set some options for a set of files or a directory, then set or modify
+some additional options for certain files in that set, etc.
+
+   <p>To add a filter, use <em>New</em> button. Click the filter in the list to
+select it, then click the <em>Filter</em> or <em>Options</em>
+part of it to edit. Use <em>Delete</em> button to delete a filter,
+and <em>Up</em> and <em>Down</em> buttons to change the order in
+which they are applied.
+
+   <p><em>Filter</em> field contains a regular expression matched agains the
+document filename. If it is found in the filename, then the options from the
+<em>Options</em> field are applied to the document.
+
+   <p><em>Options</em> field contains the options, in format described in
+section <a href="editing_002doptions.html#editing_002doptions">editing-options</a>.
+
+   </body></html>
+

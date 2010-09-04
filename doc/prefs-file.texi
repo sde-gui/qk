@@ -1,0 +1,32 @@
+@node Preferences files
+@chapter Preferences files
+@helpsection{PREFS_FILE}
+
+@medit{} preferences are stored in @file{$HOME/.config/@medit{}rc} file.
+It is an XML file which may be edited to set preferences which have not found
+their place in the @uilabel{Preferences} dialog.
+
+NOTE: @medit{} reads the preferences file on startup and writes it whenever @uilabel{OK}
+or @uilabel{Apply} button is clicked in the @uilabel{Preferences} dialog. Therefore, if you
+modify the preferences file, your changes may be overwritten, and they not take
+effect until you restart @medit{}.
+
+The following "hidden" settings are available:
+@itemize @bullet
+@item
+@var{Editor/window_title}: Format of the window title. It is a string which may
+contain format sequences, which are percent sign followed by a character:
+@itemize @minus
+@item @code{%a}: application name;
+@item @code{%b}: current document basename;
+@item @code{%f}: full path of the current document;
+@item @code{%u}: URI of the current document;
+@item @code{%s}: the status of the current document, e.g. "@code{ [modified]}". It is prefixed
+with a space, so that "@code{%b%s}" produces a nice string;
+@item @code{%%}: the percent character.
+@end itemize
+Default value is "@code{%a - %f%s}" which produces something like "@code{@medit{} - /home/user/file [modified]}".
+@item
+@var{Editor/window_title_no_doc}: same as @code{Editor/window_title}, used when no document is open.
+Default value is "@code{%a}".
+@end itemize

@@ -106,6 +106,9 @@ MooEditStatus    moo_edit_get_status            (MooEdit        *edit);
 void             moo_edit_status_changed        (MooEdit        *edit);
 MooEditState     moo_edit_get_state             (MooEdit        *edit);
 
+void             moo_edit_reload                (MooEdit        *edit,
+                                                 const char     *encoding,
+                                                 GError        **error);
 gboolean         moo_edit_close                 (MooEdit        *edit,
                                                  gboolean        ask_confirm);
 gboolean         moo_edit_save                  (MooEdit        *edit,
