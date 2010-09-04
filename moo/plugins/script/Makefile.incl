@@ -1,0 +1,20 @@
+plugins_sources +=					\
+	plugins/script/momscript-types.h		\
+	plugins/script/momscript-lua.h			\
+	plugins/script/momscript-lua.cpp		\
+	plugins/script/momscript-classes.h		\
+	plugins/script/momscript-classes.cpp		\
+	plugins/script/momscript.h			\
+	plugins/script/momscript.cpp			\
+	plugins/script/momscript-api.h			\
+	plugins/script/momscript-variant.h
+
+built_plugins_sources += momscript-classes-meta.h
+EXTRA_DIST += plugins/script/genmeta.py
+momscript-classes-meta.h: plugins/script/momscript-classes.h plugins/script/genmeta.py
+	$(PYTHON) $(srcdir)/plugins/script/genmeta.py $(srcdir)/plugins/script/momscript-classes.h > momscript-classes-meta.h.tmp && \
+		mv momscript-classes-meta.h.tmp momscript-classes-meta.h
+
+plugins/script/momscript.t2t: plugins/script/momscript-classes.h plugins/script/momscript-classes.cpp plugins/script/gendoc.py
+	$(PYTHON) $(srcdir)/plugins/script/gendoc.py $(srcdir)/plugins/script/momscript-classes.h $(srcdir)/plugins/script/momscript-classes.cpp \
+		> $(srcdir)/plugins/script/momscript.t2t.tmp && mv $(srcdir)/plugins/script/momscript.t2t.tmp $(srcdir)/plugins/script/momscript.t2t

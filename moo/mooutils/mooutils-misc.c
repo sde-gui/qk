@@ -22,7 +22,7 @@
 #include "mooutils/mooatom.h"
 #include "mooutils/mooonce.h"
 #include "mooutils/mooutils-misc.h"
-#include "glade/moologwindow-gxml.h"
+#include "moologwindow-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gmappedfile.h>
 #include <glib/gstdio.h>

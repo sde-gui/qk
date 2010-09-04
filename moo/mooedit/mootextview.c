@@ -32,7 +32,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooatom.h"
 #include "mooutils/mootype-macros.h"
-#include "glade/mooquicksearch-gxml.h"
+#include "mooquicksearch-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gregex.h>
 #include <gdk/gdkkeysyms.h>

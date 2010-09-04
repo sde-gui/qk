@@ -21,9 +21,9 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
-#include "glade/moofileprops-gxml.h"
-#include "glade/moocreatefolder-gxml.h"
-#include "glade/moofileview-drop-gxml.h"
+#include "moofileprops-gxml.h"
+#include "moocreatefolder-gxml.h"
+#include "moofileview-drop-gxml.h"
 #include <time.h>
 #include <string.h>
 #include <gtk/gtk.h>

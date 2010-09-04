@@ -54,33 +54,6 @@ AC_DEFUN_ONCE([MOO_AC_DEBUG],[
 
 MOO_DEBUG_ENABLED="no"
 
-AC_ARG_ENABLE(tests,
-  AC_HELP_STRING([--enable-tests],[build test programs (default = NO)]),[
-  if test "x$enable_tests" = "xno"; then
-    MOO_ENABLE_TESTS="no"
-  else
-    MOO_ENABLE_TESTS="yes"
-  fi
-  ],[
-  MOO_ENABLE_TESTS="no"
-])
-AM_CONDITIONAL(MOO_ENABLE_TESTS, test x$MOO_ENABLE_TESTS = "xyes")
-
-AC_ARG_ENABLE(unit-tests,
-  AC_HELP_STRING([--enable-unit-tests],[build unit tests (default = NO)]),[
-  if test "x$enable_unit_tests" = "xno"; then
-    MOO_ENABLE_UNIT_TESTS="no"
-  else
-    MOO_ENABLE_UNIT_TESTS="yes"
-  fi
-  ],[
-  MOO_ENABLE_UNIT_TESTS="no"
-])
-AM_CONDITIONAL(MOO_ENABLE_UNIT_TESTS, test x$MOO_ENABLE_UNIT_TESTS = "xyes")
-if test "x$MOO_ENABLE_UNIT_TESTS" = "xyes"; then
-  AC_DEFINE(MOO_ENABLE_UNIT_TESTS, 1, [Enable unit tests])
-fi
-
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--enable-debug],[enable debug options (default = NO)]),[
   if test "x$enable_debug" = "xno"; then
@@ -101,9 +74,24 @@ AC_ARG_ENABLE(dev-mode,
       MOO_DEV_MODE="yes"
     fi
   ],[
-    MOO_DEV_MODE="$MOO_DEBUG_ENABLED"
+  MOO_DEV_MODE="$MOO_DEBUG_ENABLED"
 ])
 AM_CONDITIONAL(MOO_DEV_MODE, test x$MOO_DEV_MODE = "xyes")
+
+AC_ARG_ENABLE(unit-tests,
+  AC_HELP_STRING([--enable-unit-tests],[build unit tests (default = NO)]),[
+  if test "x$enable_unit_tests" = "xno"; then
+    MOO_ENABLE_UNIT_TESTS="no"
+  else
+    MOO_ENABLE_UNIT_TESTS="yes"
+  fi
+  ],[
+  MOO_ENABLE_UNIT_TESTS="$MOO_DEV_MODE"
+])
+AM_CONDITIONAL(MOO_ENABLE_UNIT_TESTS, test x$MOO_ENABLE_UNIT_TESTS = "xyes")
+if test "x$MOO_ENABLE_UNIT_TESTS" = "xyes"; then
+  MOO_CPPFLAGS="$MOO_CPPFLAGS -DMOO_ENABLE_UNIT_TESTS"
+fi
 
 MOO_COMPILER
 
@@ -159,10 +147,6 @@ MOO_CPPFLAGS="$MOO_CPPFLAGS -DENABLE_DEBUG -DENABLE_PROFILE -DG_ENABLE_DEBUG dnl
 -DG_ENABLE_PROFILE -DMOO_DEBUG -DDEBUG"
 else
 MOO_CPPFLAGS="$MOO_CPPFLAGS -DNDEBUG=1 -DG_DISABLE_CAST_CHECKS -DG_DISABLE_ASSERT"
-fi
-
-if test "x$MOO_ENABLE_TESTS" = "xyes"; then
-  MOO_CPPFLAGS="$MOO_CPPFLAGS -DMOO_ENABLE_TESTS"
 fi
 ])
 

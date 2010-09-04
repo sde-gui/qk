@@ -33,7 +33,7 @@
 #include "mooutils/moo-mime.h"
 #include "mooutils/moomenu.h"
 #include "mooutils/moostat.h"
-#include "glade/moofileselector-gxml.h"
+#include "moofileselector-gxml.h"
 #include "mooutils/moohelp.h"
 #include "mooutils/mooatom.h"
 #include "help-sections.h"

@@ -107,7 +107,7 @@ moo_test_run_lua_file (const char *basename,
         luaL_openlibs (L);
 
         {
-            char *testdir = g_build_filename (moo_test_get_data_dir (), "lua", NULL);
+            char *testdir = g_build_filename (moo_test_get_data_dir (), "lua", (char*) NULL);
             lua_addpath (L, (char**) &testdir, 1);
             g_free (testdir);
         }

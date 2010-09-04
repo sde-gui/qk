@@ -1,8 +1,8 @@
 build/
 
 doc/
-medit/
-plugins/
+moo/medit-app/
+moo/plugins/
 moo/mooapp/
 moo/mooedit/glade/
 moo/mooedit/plugins/

@@ -1,0 +1,197 @@
+moo_sources +=				\
+	mooutils/moocpp-types.h		\
+	mooutils/moocpp.cpp		\
+	mooutils/moocpp.h		\
+	mooutils/moocpp-cont.h		\
+	mooutils/moocpp-exc.h		\
+	mooutils/moocpp-macros.h	\
+	mooutils/moocpp-refptr.h	\
+	mooutils/mooutils-thread.c	\
+	mooutils/mooutils-thread.h	\
+	mooutils/mdhistorymgr.c		\
+	mooutils/mdhistorymgr.h		\
+	mooutils/moo-environ.h		\
+	mooutils/mooaccel.c		\
+	mooutils/mooaccel.h		\
+	mooutils/mooaccelbutton.c	\
+	mooutils/mooaccelbutton.h	\
+	mooutils/mooaccelprefs.c	\
+	mooutils/mooaccelprefs.h	\
+	mooutils/mooaction-private.h	\
+	mooutils/mooaction.c		\
+	mooutils/mooaction.h		\
+	mooutils/mooactionbase-private.h\
+	mooutils/mooactionbase.c	\
+	mooutils/mooactionbase.h	\
+	mooutils/mooactioncollection.c	\
+	mooutils/mooactioncollection.h	\
+	mooutils/mooactionfactory.c	\
+	mooutils/mooactionfactory.h	\
+	mooutils/mooactiongroup.c	\
+	mooutils/mooactiongroup.h	\
+	mooutils/mooapp-ipc.c		\
+	mooutils/mooapp-ipc.h		\
+	mooutils/mooappinput.c		\
+	mooutils/mooappinput.h		\
+	mooutils/mooatom.h		\
+	mooutils/moobigpaned.c		\
+	mooutils/moobigpaned.h		\
+	mooutils/mooclosure.c		\
+	mooutils/mooclosure.h		\
+	mooutils/moocombo.c		\
+	mooutils/moocombo.h		\
+	mooutils/moocompat.c		\
+	mooutils/moocompat.h		\
+	mooutils/moodialogs.c		\
+	mooutils/moodialogs.h		\
+	mooutils/mooeditops.c		\
+	mooutils/mooeditops.h		\
+	mooutils/mooencodings-data.h	\
+	mooutils/mooencodings.c		\
+	mooutils/mooencodings.h		\
+	mooutils/mooentry.c		\
+	mooutils/mooentry.h		\
+	mooutils/moofiledialog.c	\
+	mooutils/moofiledialog.h	\
+	mooutils/moofileicon.c		\
+	mooutils/moofileicon.h		\
+	mooutils/moofilewatch.c		\
+	mooutils/moofilewatch.h		\
+	mooutils/moofiltermgr.c		\
+	mooutils/moofiltermgr.h		\
+	mooutils/moofontsel.c		\
+	mooutils/moofontsel.h		\
+	mooutils/mooglade.c		\
+	mooutils/mooglade.h		\
+	mooutils/moohelp.c		\
+	mooutils/moohelp.h		\
+	mooutils/moohistorycombo.c	\
+	mooutils/moohistorycombo.h	\
+	mooutils/moohistorylist.c	\
+	mooutils/moohistorylist.h	\
+	mooutils/mooi18n.c		\
+	mooutils/mooi18n.h		\
+	mooutils/moolist.h		\
+	mooutils/moomarkup.c		\
+	mooutils/moomarkup.h		\
+	mooutils/moomenu.c		\
+	mooutils/moomenu.h		\
+	mooutils/moomenuaction.c	\
+	mooutils/moomenuaction.h	\
+	mooutils/moomenumgr.c		\
+	mooutils/moomenumgr.h		\
+	mooutils/moomenutoolbutton.c	\
+	mooutils/moomenutoolbutton.h	\
+	mooutils/moo-mime.c		\
+	mooutils/moo-mime.h		\
+	mooutils/moonotebook.c		\
+	mooutils/moonotebook.h		\
+	mooutils/mooonce.h		\
+	mooutils/moopane.c		\
+	mooutils/moopane.h		\
+	mooutils/moopaned.c		\
+	mooutils/moopaned.h		\
+	mooutils/mooprefs.c		\
+	mooutils/mooprefs.h		\
+	mooutils/mooprefsdialog.c	\
+	mooutils/mooprefsdialog.h	\
+	mooutils/mooprefspage.c		\
+	mooutils/mooprefspage.h		\
+	mooutils/moopython.h		\
+	mooutils/moospawn.c		\
+	mooutils/moospawn.h		\
+	mooutils/moostat.h		\
+	mooutils/moostock.c		\
+	mooutils/moostock.h		\
+	mooutils/mootype-macros.h	\
+	mooutils/moouixml.c		\
+	mooutils/moouixml.h		\
+	mooutils/mooundo.c		\
+	mooutils/mooundo.h		\
+	mooutils/mooutils-debug.h	\
+	mooutils/mooutils-enums.c	\
+	mooutils/mooutils-enums.h	\
+	mooutils/mooutils-file.c	\
+	mooutils/mooutils-file.h	\
+	mooutils/mooutils-file-private.h\
+	mooutils/mooutils-fli.c		\
+	mooutils/mooutils-fs.c		\
+	mooutils/mooutils-fs.h		\
+	mooutils/mooutils-gobject-private.h \
+	mooutils/mooutils-gobject.c	\
+	mooutils/mooutils-gobject.h	\
+	mooutils/mooutils-macros.h	\
+	mooutils/mooutils-mem.h		\
+	mooutils/mooutils-messages.h	\
+	mooutils/mooutils-misc.c	\
+	mooutils/mooutils-misc.h	\
+	mooutils/mooutils-tests.h	\
+	mooutils/mooutils-treeview.c	\
+	mooutils/mooutils-treeview.h	\
+	mooutils/moowindow.c		\
+	mooutils/moowindow.h		\
+	mooutils/stock-file-24.h	\
+	mooutils/stock-file-selector-24.h\
+	mooutils/stock-select-all-16.h	\
+	mooutils/stock-select-all-24.h	\
+	mooutils/stock-terminal-24.h
+
+built_moo_sources += marshals.c
+marshals.c: $(moo_srcdir)/marshals.list
+	$(MKDIR_P) mooutils
+	echo '#include "marshals.h"' > marshals.c.tmp
+	$(GLIB_GENMARSHAL) --prefix=_moo_marshal --body $(moo_srcdir)/marshals.list >> marshals.c.tmp \
+		&& mv marshals.c.tmp marshals.c
+
+mooutils_win32_sources = mooutils/mooutils-win32.c
+mooutils_unittest_sources =		\
+	mooutils/moo-test-utils.c	\
+	mooutils/moo-test-utils.h	\
+	mooutils/moo-test-macros.h
+EXTRA_DIST += $(mooutils_win32_sources) $(mooutils_unittest_sources)
+
+if MOO_OS_WIN32
+moo_sources += $(mooutils_win32_sources)
+endif
+if MOO_ENABLE_UNIT_TESTS
+moo_sources += $(mooutils_unittest_sources)
+endif
+
+EXTRA_DIST +=					\
+	mooutils/glade/mooaccelprefs.glade	\
+	mooutils/glade/mooaccelbutton.glade	\
+	mooutils/glade/moologwindow.glade
+built_moo_sources +=				\
+	mooaccelprefs-gxml.h			\
+	mooaccelbutton-gxml.h			\
+	moologwindow-gxml.h
+
+built_moo_sources += stock-moo.h moofileicon-symlink.h
+PIXMAPS =					\
+	mooutils/pixmaps/hide.png		\
+	mooutils/pixmaps/close.png		\
+	mooutils/pixmaps/sticky.png		\
+	mooutils/pixmaps/detach.png		\
+	mooutils/pixmaps/attach.png		\
+	mooutils/pixmaps/keepontop.png		\
+	mooutils/pixmaps/medit.png
+EXTRA_DIST += $(PIXMAPS)
+stock-moo.h: $(PIXMAPS)
+	$(GDK_PIXBUF_CSOURCE) --static --build-list \
+		MOO_HIDE_ICON $(moo_srcdir)/mooutils/pixmaps/hide.png \
+		MOO_CLOSE_ICON $(moo_srcdir)/mooutils/pixmaps/close.png \
+		MOO_STICKY_ICON $(moo_srcdir)/mooutils/pixmaps/sticky.png \
+		MOO_DETACH_ICON $(moo_srcdir)/mooutils/pixmaps/detach.png \
+		MOO_ATTACH_ICON $(moo_srcdir)/mooutils/pixmaps/attach.png \
+		MOO_KEEP_ON_TOP_ICON $(moo_srcdir)/mooutils/pixmaps/keepontop.png \
+		MEDIT_ICON $(moo_srcdir)/mooutils/pixmaps/medit.png \
+			> $@.tmp && mv $@.tmp $@
+
+EXTRA_DIST += mooutils/pixmaps/symlink.png mooutils/pixmaps/symlink-small.png
+moofileicon-symlink.h: mooutils/pixmaps/symlink.png mooutils/pixmaps/symlink-small.png
+	$(GDK_PIXBUF_CSOURCE) --static --build-list \
+		SYMLINK_ARROW $(moo_srcdir)/mooutils/pixmaps/symlink.png \
+		SYMLINK_ARROW_SMALL $(moo_srcdir)/mooutils/pixmaps/symlink-small.png \
+			> $@.tmp && mv $@.tmp $@
+
+# -%- strip:true -%-

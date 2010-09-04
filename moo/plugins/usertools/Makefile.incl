@@ -1,0 +1,37 @@
+plugins_sources +=				\
+	plugins/usertools/moousertools.c	\
+	plugins/usertools/moousertools.h	\
+	plugins/usertools/moousertools-prefs.c	\
+	plugins/usertools/moousertools-prefs.h	\
+	plugins/usertools/moocommand.c		\
+	plugins/usertools/moocommand.h		\
+	plugins/usertools/moocommand-private.h	\
+	plugins/usertools/moocommanddisplay.c	\
+	plugins/usertools/moocommanddisplay.h	\
+	plugins/usertools/moooutputfilterregex.c\
+	plugins/usertools/moooutputfilterregex.h\
+	plugins/usertools/mookeyfile.c		\
+	plugins/usertools/mookeyfile.h		\
+	plugins/usertools/moousertools-enums.h	\
+	plugins/usertools/moousertools-enums.c
+
+include plugins/usertools/lua/Makefile.incl
+include plugins/usertools/exe/Makefile.incl
+
+EXTRA_DIST += plugins/usertools/glade/moousertools.glade
+built_plugins_sources += moousertools-gxml.h
+
+cfgdir = $(MOO_DATA_DIR)
+cfg_DATA = plugins/usertools/filters.xml
+EXTRA_DIST +=					\
+	plugins/usertools/filters.xml		\
+	plugins/usertools/win32/menu.cfg	\
+	plugins/usertools/win32/context.cfg	\
+	plugins/usertools/unix/menu.cfg		\
+	plugins/usertools/unix/context.cfg
+
+if MOO_OS_WIN32
+cfg_DATA += plugins/usertools/win32/menu.cfg plugins/usertools/win32/context.cfg
+else !MOO_OS_WIN32
+cfg_DATA += plugins/usertools/unix/menu.cfg plugins/usertools/unix/context.cfg
+endif !MOO_OS_WIN32

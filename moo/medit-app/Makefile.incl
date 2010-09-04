@@ -1,40 +1,40 @@
 bin_PROGRAMS = medit
 
-AM_CPPFLAGS = $(MOO_CPPFLAGS) -I$(top_srcdir) -I$(top_srcdir)/moo -I$(top_srcdir)/doc
-AM_CFLAGS = $(MOO_CFLAGS)
-AM_CXXFLAGS = $(MOO_CXXFLAGS)
-
 # if MOO_ENABLE_UNIT_TESTS
 # AM_CFLAGS += -DSRCDIR="${CMAKE_SOURCE_DIR}/medit")
 # endif
 
-medit_SOURCES =		\
-	mem-debug.h	\
-	run-tests.h	\
-	parse.h		\
-	main.c
+medit_SOURCES =				\
+	medit-app/mem-debug.h		\
+	medit-app/run-tests.h		\
+	medit-app/parse.h		\
+	medit-app/main.c		\
+	$(moo_sources)			\
+	$(plugins_sources)
 
-nodist_EXTRA_medit_SOURCES =	\
+nodist_EXTRA_medit_SOURCES =		\
 	dummy.cpp
 
-medit_LDADD =					\
-	../plugins/libmooeditplugins.la		\
-	../mooapp/libmooapp.la			\
-	../eggsmclient/libeggsmclient.la	\
-	../mooedit/libmooedit.la		\
-	../gtksourceview/libgtksourceview.la	\
-	../moofileview/libmoofileview.la	\
-	../moolua/libmoolua.la			\
-	../mooutils/libmooutils.la		\
-	../xdgmime/libxdgmime.la		\
-	$(MOO_LIBS)
+medit_LDADD = $(MOO_LIBS) $(moo_libadd)
+
+nodist_medit_SOURCES =			\
+	$(built_moo_sources)		\
+	$(built_plugins_sources)
+
+BUILT_SOURCES +=			\
+	$(built_moo_sources)		\
+	$(built_plugins_sources)
+
+CLEANFILES +=				\
+	$(built_moo_sources)		\
+	$(built_plugins_sources)
 
 medit_LDFLAGS =
 if MOO_OS_WIN32
 medit_LDFLAGS += -mwindows
 endif
 
-EXTRA_DIST = medit.desktop.in
+EXTRA_DIST += medit-app/medit.desktop.in
 # desktopdir = $(datadir)/applications
 # desktop_DATA = medit.desktop.in
 

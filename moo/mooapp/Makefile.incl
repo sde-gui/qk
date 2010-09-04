@@ -1,0 +1,26 @@
+moo_sources +=			\
+	mooapp/mooappabout.c	\
+	mooapp/mooappabout.h	\
+	mooapp/mooapp.c		\
+	mooapp/mooapp.h		\
+	mooapp/mooapp-accels.h	\
+	mooapp/mooapp-info.h	\
+	mooapp/mooapp-private.h	\
+	mooapp/moohtml.h	\
+	mooapp/moohtml.c	\
+	mooapp/moolinklabel.h	\
+	mooapp/moolinklabel.c
+
+EXTRA_DIST +=					\
+	mooapp/glade/mooappabout-dialog.glade	\
+	mooapp/glade/mooappabout-license.glade	\
+	mooapp/glade/mooappabout-credits.glade
+
+built_moo_sources +=			\
+	mooappabout-dialog-gxml.h	\
+	mooappabout-license-gxml.h	\
+	mooappabout-credits-gxml.h
+
+built_moo_sources += mooapp-credits.h
+mooapp-credits.h: $(top_srcdir)/THANKS $(top_srcdir)/tools/xml2h.py
+	$(PYTHON) $(top_srcdir)/tools/xml2h.py $(top_srcdir)/THANKS mooapp-credits.h MOO_APP_CREDITS

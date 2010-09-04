@@ -15,20 +15,6 @@ nodist_medit_SOURCES =
 
 medit_SOURCES += main.c
 
-# if MOO_USE_CPP
-# real_main_c = cpp-main.cpp
-# main.lo: cpp-main.lo ; @true
-# cpp-main.cpp: main.c
-# 	echo "#line 1 \"$(srcdir)/main.c\"" > cpp-main.cpp.tmp && \
-# 	cat $(srcdir)/main.c >> cpp-main.cpp.tmp && \
-# 	mv cpp-main.cpp.tmp cpp-main.cpp
-# nodist_medit_SOURCES += cpp-main.cpp
-# BUILT_SOURCES += cpp-main.cpp
-# CLEANFILES += cpp-main.cpp
-# else
-# medit_SOURCES += main.c
-# endif
-
 if MOO_OS_WIN32
 medit_LDFLAGS += -mwindows
 endif
@@ -80,5 +66,3 @@ EXTRA_DIST +=			\
 	data/testustring.lua	\
 	data/testunicode.lua	\
 	data/lua/munit.lua
-
-parse.lo: main.o

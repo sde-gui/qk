@@ -26,7 +26,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mootype-macros.h"
-#include "glade/moobookmark-editor-gxml.h"
+#include "moobookmark-editor-gxml.h"
 #include <string.h>
 #include <errno.h>
 #ifdef HAVE_UNISTD_H

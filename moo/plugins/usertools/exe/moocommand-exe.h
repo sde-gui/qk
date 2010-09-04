@@ -20,7 +20,7 @@
 #error "__WIN32__"
 #endif
 
-#include "moocommand.h"
+#include "usertools/moocommand.h"
 #include <mooedit/mooeditwindow.h>
 
 G_BEGIN_DECLS

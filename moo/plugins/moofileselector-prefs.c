@@ -20,7 +20,7 @@
 #include "mooutils/moostock.h"
 #include "mooutils/moohelp.h"
 #include "help-sections.h"
-#include "glade/moofileselector-prefs-gxml.h"
+#include "moofileselector-prefs-gxml.h"
 #include <gtk/gtk.h>
 #include <string.h>
 

@@ -26,9 +26,9 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/moohelp.h"
 #include "help-sections.h"
-#include "glade/mooappabout-dialog-gxml.h"
-#include "glade/mooappabout-license-gxml.h"
-#include "glade/mooappabout-credits-gxml.h"
+#include "mooappabout-dialog-gxml.h"
+#include "mooappabout-license-gxml.h"
+#include "mooappabout-credits-gxml.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>

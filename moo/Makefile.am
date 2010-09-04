@@ -1,62 +1,70 @@
-EXTRA_DIST = moo-config.h
+EXTRA_DIST =
+BUILT_SOURCES =
+CLEANFILES =
+
+AM_CPPFLAGS = $(MOO_CPPFLAGS) -I$(top_srcdir)/doc -Imooutils/glade
+AM_CFLAGS = $(MOO_CFLAGS)
+AM_CXXFLAGS = $(MOO_CXXFLAGS)
+
+moo_sources =
+built_moo_sources =
+moo_libadd =
+
+plugins_sources =
+built_plugins_sources =
+
+moo_srcdir = $(srcdir)
+moo_builddir = .
+
+moo_sources += moo-config.h
 
 EXTRA_DIST += marshals.list
-BUILT_SOURCES = marshals.h
-CLEANFILES = marshals.h
+built_moo_sources += marshals.h
 marshals.h: marshals.list
 	$(GLIB_GENMARSHAL) --prefix=_moo_marshal --header $(srcdir)/marshals.list > marshals.h.tmp \
 		&& mv marshals.h.tmp marshals.h
 
-# noinst_LTLIBRARIES = libmoo.la
-#
-# AM_CPPFLAGS = $(MOO_CPPFLAGS)
-# AM_CFLAGS = $(MOO_CFLAGS)
-# AM_CXXFLAGS = $(MOO_CXXFLAGS)
-#
-# libmoo_la_LIBADD =				\
-# 	mooapp/libmooapp.la			\
-# 	eggsmclient/libeggsmclient.la		\
-# 	mooedit/libmooedit.la			\
-# 	gtksourceview/libgtksourceview.la	\
-# 	moofileview/libmoofileview.la		\
-# 	moolua/libmoolua.la			\
-# 	mooutils/libmooutils.la			\
-# 	xdgmime/libxdgmime.la
-#
-# libmoo_la_SOURCES =		\
-# 	marshals.c		\
-# 	marshals.h		\
-# 	moo-config.h
-#
-# EXTRA_DIST = marshals.list
-#
-# BUILT_SOURCES =			\
-# 	marshals.c		\
-# 	marshals.h
-#
-# marshals.c: marshals.list
-# 	echo '#include "marshals.h"' > marshals.c.tmp
-# 	$(GLIB_GENMARSHAL) --prefix=_moo_marshal --body $(srcdir)/marshals.list >> marshals.c.tmp
-# 	cmp -s marshals.c.tmp marshals.c || mv marshals.c.tmp marshals.c
-# 	rm -f marshals.c.tmp
-#
-# marshals.h: marshals.list
-# 	$(GLIB_GENMARSHAL) --prefix=_moo_marshal --header $(srcdir)/marshals.list > marshals.h.tmp
-# 	cmp -s marshals.h.tmp marshals.h || mv marshals.h.tmp marshals.h
-# 	rm -f marshals.h.tmp
-#
-# CLEANFILES =			\
-# 	marshals.c		\
-# 	marshals.h
+include xdgmime/Makefile.incl
+include mooutils/Makefile.incl
+include moolua/Makefile.incl
+include moofileview/Makefile.incl
+include gtksourceview/Makefile.incl
+include mooedit/Makefile.incl
+include eggsmclient/Makefile.incl
+include mooapp/Makefile.incl
+include plugins/Makefile.incl
+include medit-app/Makefile.incl
 
-SUBDIRS =			\
-	xdgmime			\
-	mooutils		\
-	moolua			\
-	moofileview		\
-	gtksourceview		\
-	mooedit			\
-	eggsmclient		\
-	mooapp			\
-	plugins			\
-	medit
+BUILT_SOURCES += $(built_moo_sources) $(built_plugin_sources)
+CLEANFILES += $(built_moo_sources) $(built_plugin_sources)
+
+# glade/%-gxml.h: glade/%.glade $(top_srcdir)/tools/glade2c.py
+# 	$(MKDIR_P) glade
+# 	$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
+
+%-gxml.h: mooutils/glade/%.glade $(top_srcdir)/tools/glade2c.py
+	$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
+
+%-gxml.h: moofileview/glade/%.glade $(top_srcdir)/tools/glade2c.py
+	$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
+
+%-gxml.h: mooedit/glade/%.glade $(top_srcdir)/tools/glade2c.py
+	$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
+
+%-gxml.h: mooapp/glade/%.glade $(top_srcdir)/tools/glade2c.py
+	$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
+
+%-gxml.h: plugins/glade/%.glade $(top_srcdir)/tools/glade2c.py
+	$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
+
+%-gxml.h: plugins/usertools/glade/%.glade $(top_srcdir)/tools/glade2c.py
+	$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
+
+# %-ui.h: %.xml $(top_srcdir)/tools/xml2h.py
+# 	$(PYTHON) $(top_srcdir)/tools/xml2h.py $< $@.tmp $*_ui_xml && mv $@.tmp $@
+
+%-ui.h: moofileview/%.xml $(top_srcdir)/tools/xml2h.py
+	$(PYTHON) $(top_srcdir)/tools/xml2h.py $< $@.tmp $*_ui_xml && mv $@.tmp $@
+
+%-ui.h: mooedit/%.xml $(top_srcdir)/tools/xml2h.py
+	$(PYTHON) $(top_srcdir)/tools/xml2h.py $< $@.tmp $*_ui_xml && mv $@.tmp $@

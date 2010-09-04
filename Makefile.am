@@ -15,7 +15,6 @@ endif MOO_OS_UNIX
 EXTRA_DIST +=				\
 	tools/genenums.py		\
 	tools/glade2c.py		\
-	tools/rules.mk			\
 	tools/xml2h.py
 
 CLEANFILES = configargs.h

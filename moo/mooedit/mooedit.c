@@ -29,7 +29,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooatom.h"
-#include "glade/mooeditprogress-gxml.h"
+#include "mooeditprogress-gxml.h"
 #include <string.h>
 #include <stdlib.h>
 

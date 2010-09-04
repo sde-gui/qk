@@ -42,7 +42,7 @@
 #include "mooutils/moofiledialog.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooatom.h"
-#include "glade/moostatusbar-gxml.h"
+#include "moostatusbar-gxml.h"
 #include <string.h>
 #include <gtk/gtk.h>
 #include <math.h>

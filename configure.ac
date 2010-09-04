@@ -79,6 +79,9 @@ AC_DEFINE(MOO_BUILD_LUA,[1],[MOO_BUILD_LUA])
 AC_DEFINE(MOO_BUILD_UTILS,[1],[MOO_BUILD_UTILS])
 
 AM_CONDITIONAL(MOO_BUILD_CTAGS, [$MOO_OS_UNIX])
+if $MOO_OS_UNIX; then
+  AC_DEFINE(MOO_BUILD_CTAGS, 1, [build ctags plugin])
+fi
 
 AC_DEFINE_UNQUOTED(MOO_VERSION,["$MOO_VERSION"],[MOO_VERSION])
 AC_DEFINE_UNQUOTED(MOO_DISPLAY_VERSION,["$MOO_DISPLAY_VERSION"],[MOO_DISPLAY_VERSION])
@@ -101,17 +104,5 @@ AC_CONFIG_FILES([
   po/Makefile.in
   po-gsv/Makefile.in
   moo/Makefile
-  moo/xdgmime/Makefile
-  moo/mooutils/Makefile
-  moo/moolua/Makefile
-  moo/moofileview/Makefile
-  moo/gtksourceview/Makefile
-  moo/mooedit/Makefile
-  moo/eggsmclient/Makefile
-  moo/mooapp/Makefile
-  moo/medit/Makefile
-  moo/plugins/Makefile
-  moo/plugins/script/Makefile
-  moo/plugins/usertools/Makefile
 ])
 AC_OUTPUT

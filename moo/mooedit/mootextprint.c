@@ -25,7 +25,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mootype-macros.h"
-#include "glade/mooprint-gxml.h"
+#include "mooprint-gxml.h"
 #include <sys/types.h>
 #include <time.h>
 #include <errno.h>

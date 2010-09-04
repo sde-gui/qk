@@ -1,0 +1,78 @@
+AM_CPPFLAGS += -DLUA_USE_APICHECK -I$(moo_srcdir)/moolua
+
+if MOO_OS_DARWIN
+AM_CPPFLAGS += -DLUA_USE_MACOSX
+else !MOO_OS_DARWIN
+if MOO_OS_WIN32
+else !MOO_OS_WIN32
+AM_CPPFLAGS += -DLUA_USE_POSIX -DLUA_USE_DLOPEN
+moo_libadd += -ldl
+endif !MOO_OS_WIN32
+endif !MOO_OS_DARWIN
+
+moo_sources +=			\
+	moolua/ext/lfs.h	\
+	moolua/ext/lfs.cpp	\
+	moolua/moolua.h		\
+	moolua/moolua.cpp	\
+	moolua/moolua-tests.h	\
+	moolua/moo-tests-lua.h	\
+	moolua/luaall.cpp
+
+EXTRA_DIST +=			\
+	moolua/COPYRIGHT	\
+	moolua/lapi.c		\
+	moolua/lapi.h		\
+	moolua/lauxlib.c	\
+	moolua/lauxlib.h	\
+	moolua/lbaselib.c	\
+	moolua/lcode.c		\
+	moolua/lcode.h		\
+	moolua/ldblib.c		\
+	moolua/ldebug.c		\
+	moolua/ldebug.h		\
+	moolua/ldo.c		\
+	moolua/ldo.h		\
+	moolua/ldump.c		\
+	moolua/lfunc.c		\
+	moolua/lfunc.h		\
+	moolua/lgc.c		\
+	moolua/lgc.h		\
+	moolua/linit.c		\
+	moolua/liolib.c		\
+	moolua/llex.c		\
+	moolua/llex.h		\
+	moolua/llimits.h	\
+	moolua/lmathlib.c	\
+	moolua/lmem.c		\
+	moolua/lmem.h		\
+	moolua/loadlib.c	\
+	moolua/lobject.c	\
+	moolua/lobject.h	\
+	moolua/lopcodes.c	\
+	moolua/lopcodes.h	\
+	moolua/loslib.c		\
+	moolua/lparser.c	\
+	moolua/lparser.h	\
+	moolua/lstate.c		\
+	moolua/lstate.h		\
+	moolua/lstring.c	\
+	moolua/lstring.h	\
+	moolua/ltable.c		\
+	moolua/ltable.h		\
+	moolua/ltablib.c	\
+	moolua/ltm.c		\
+	moolua/ltm.h		\
+	moolua/lua.h		\
+	moolua/luaall.cpp	\
+	moolua/luaconf.h	\
+	moolua/lualib.h		\
+	moolua/lundump.c	\
+	moolua/lundump.h	\
+	moolua/lvm.c		\
+	moolua/lvm.h		\
+	moolua/lzio.c		\
+	moolua/lzio.h		\
+	moolua/README		\
+	moolua/slnudata.c	\
+	moolua/slnunico.c

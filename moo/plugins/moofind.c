@@ -29,8 +29,8 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moohelp.h"
 #include "mooutils/mooutils-fs.h"
-#include "glade/moofind-gxml.h"
-#include "glade/moogrep-gxml.h"
+#include "moofind-gxml.h"
+#include "moogrep-gxml.h"
 #include "help-sections.h"
 #include <gtk/gtkdialog.h>
 #include <gtk/gtkscrolledwindow.h>
