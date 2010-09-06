@@ -8,7 +8,7 @@ src_texinfo_files =	\
 	regex.texi	\
 	license.texi	\
 	script.texi	\
-	momscript.texi
+	mooscript.texi
 
 # man-medit.t2t: man-medit.t2t.in $(top_builddir)/config.status
 # 	cd $(top_builddir) && ./config.status --file=doc/man-medit.t2t
@@ -22,9 +22,9 @@ medit.texi: medit.texi.in $(top_builddir)/config.status
 	cd $(top_builddir) && ./config.status --file=doc/medit.texi
 	mv medit.texi $(srcdir)/medit.texi
 
-momscript.texi: $(top_srcdir)/moo/plugins/script/momscript-classes.h $(top_srcdir)/moo/plugins/script/gendoc.py
-	$(PYTHON) $(top_srcdir)/moo/plugins/script/gendoc.py $(top_srcdir)/moo/plugins/script/momscript-classes.h \
-		> momscript.texi.tmp && mv momscript.texi.tmp $(srcdir)/momscript.texi
+mooscript.texi: $(top_srcdir)/moo/mooscript/mooscript-classes.h $(top_srcdir)/moo/mooscript/gendoc.py
+	$(PYTHON) $(top_srcdir)/moo/mooscript/gendoc.py $(top_srcdir)/moo/mooscript/mooscript-classes.h \
+		> mooscript.texi.tmp && mv mooscript.texi.tmp $(srcdir)/mooscript.texi
 
 # help.html: $(MOO_HELP_T2T_FILES)
 # 	cd $(srcdir) && $(PYTHON) txt2tags/txt2tags.py --outfile=help.html.tmp medit.t2t && \

@@ -1,7 +1,7 @@
 #ifndef MOM_SCRIPT_API_H
 #define MOM_SCRIPT_API_H
 
-#include "momscript-variant.h"
+#include "mooscript-variant.h"
 
 namespace mom {
 

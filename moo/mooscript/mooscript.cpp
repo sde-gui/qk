@@ -1,4 +1,4 @@
-#include "momscript-classes.h"
+#include "mooscript-classes.h"
 
 namespace mom {
 

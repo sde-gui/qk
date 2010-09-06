@@ -1,4 +1,4 @@
-#include "momscript-lua.h"
+#include "mooscript-lua.h"
 
 namespace mom {
 

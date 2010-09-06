@@ -17,7 +17,7 @@
 #include "moocommand-lua.h"
 #include "mooedit-lua1.h"
 #include "lua2-tool-setup.h"
-#include "script/momscript-lua.h"
+#include "mooscript/mooscript-lua.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootext-private.h"
 #include "mooutils/mooi18n.h"

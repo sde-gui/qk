@@ -1,7 +1,7 @@
 #ifndef MOM_SCRIPT_CLASSES_H
 #define MOM_SCRIPT_CLASSES_H
 
-#include "momscript.h"
+#include "mooscript.h"
 #include <mooedit/mooeditwindow.h>
 
 namespace mom {

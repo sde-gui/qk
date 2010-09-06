@@ -1,0 +1,16 @@
+moo_sources +=				\
+	mooscript/mooscript-types.h	\
+	mooscript/mooscript-lua.h	\
+	mooscript/mooscript-lua.cpp	\
+	mooscript/mooscript-classes.h	\
+	mooscript/mooscript-classes.cpp	\
+	mooscript/mooscript.h		\
+	mooscript/mooscript.cpp		\
+	mooscript/mooscript-api.h	\
+	mooscript/mooscript-variant.h
+
+built_plugins_sources += mooscript-classes-meta.h
+EXTRA_DIST += mooscript/genmeta.py
+mooscript-classes-meta.h: mooscript/mooscript-classes.h mooscript/genmeta.py
+	$(PYTHON) $(srcdir)/mooscript/genmeta.py $(srcdir)/mooscript/mooscript-classes.h > mooscript-classes-meta.h.tmp && \
+		mv mooscript-classes-meta.h.tmp mooscript-classes-meta.h

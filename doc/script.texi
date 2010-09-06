@@ -22,4 +22,4 @@
 * Document object:: Document object
 @end menu
 
-@include momscript.texi
+@include mooscript.texi

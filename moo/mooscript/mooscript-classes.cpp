@@ -1,11 +1,11 @@
-#include "momscript-classes.h"
+#include "mooscript-classes.h"
 #include "mooapp/mooapp.h"
 #include "mooutils/mooutils-misc.h"
 #include <string.h>
 
 namespace mom {
 
-#include "momscript-classes-meta.h"
+#include "mooscript-classes-meta.h"
 
 static void check_no_args(const VariantArray &args)
 {

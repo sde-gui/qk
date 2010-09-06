@@ -1,7 +1,7 @@
 #ifndef MOM_SCRIPT_VARIANT_H
 #define MOM_SCRIPT_VARIANT_H
 
-#include "momscript-types.h"
+#include "mooscript-types.h"
 
 namespace mom {
 

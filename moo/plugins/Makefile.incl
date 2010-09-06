@@ -22,5 +22,4 @@ built_plugins_sources +=		\
 	moogrep-gxml.h
 
 include plugins/ctags/Makefile.incl
-include plugins/script/Makefile.incl
 include plugins/usertools/Makefile.incl
