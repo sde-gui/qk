@@ -29,10 +29,10 @@ medit
 This manual is for medit version 0.99.0-unstable, a text editor.
 
 @menu
-* prefs-langs-and-filters:: Selecting editing options and languages.
-* Preferences files:: Preferences files.
+* Preferences:: Selecting editing options and languages.
+* meditrc:: Preferences files.
 * Regular expressions:: Regular expressions.
-* User-defined Tools:: User-defined Tools.
+* User-defined tools:: User-defined tools.
 * Scripting:: Scripting.
 * License:: License.
 @end menu

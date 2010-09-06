@@ -26,13 +26,13 @@ medit
 @node Top
 @top medit
 
-This manual is for medit version @MOO_DISPLAY_VERSION@, a text editor.
+This manual is for medit version @MOO_DISPLAY_VERSION@.
 
 @menu
-* prefs-langs-and-filters:: Selecting editing options and languages.
-* Preferences files:: Preferences files.
+* Preferences:: Editor preferences.
+* meditrc:: Preferences files.
 * Regular expressions:: Regular expressions.
-* User-defined Tools:: User-defined Tools.
+* User-defined tools:: User-defined tools.
 * Scripting:: Scripting.
 * License:: License.
 @end menu

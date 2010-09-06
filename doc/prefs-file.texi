@@ -1,4 +1,4 @@
-@node Preferences files
+@node meditrc
 @chapter Preferences files
 @helpsection{PREFS_FILE}
 

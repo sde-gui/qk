@@ -1,5 +1,5 @@
-@node User-defined Tools
-@chapter User-defined Tools
+@node User-defined tools
+@chapter User-defined tools
 @helpsection{USER_TOOLS}
 
 @medit{} allows extending its functionality with user-defined
