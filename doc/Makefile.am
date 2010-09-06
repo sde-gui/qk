@@ -44,13 +44,18 @@ help-sections.h: help/index.html $(srcdir)/gensections.py
 # 	rm -f $(srcdir)/help-sections.h.tmp
 
 all-am: doc
-# doc: medit.1 help/index.html help-sections.h
-doc: help/index.html help-sections.h
+doc: help/index.html help-sections.h medit.1
+
+man-medit.t2t: man-medit.t2t.in $(top_builddir)/config.status
+	cd $(top_builddir) && ./config.status --file=doc/man-medit.t2t
+	mv man-medit.t2t $(srcdir)/man-medit.t2t
+
+medit.1: man-medit.t2t
+	txt2tags --target=man --outfile=medit.1.tmp $(srcdir)/man-medit.t2t && mv medit.1.tmp $(srcdir)/medit.1
 
 endif
 
-# EXTRA_DIST = medit.1 help.html help-sections.h help
-EXTRA_DIST = help help-sections.h
+EXTRA_DIST = help help-sections.h medit.1
 
 install-data-local:
 	$(MKDIR_P) $(DESTDIR)$(MOO_HELP_DIR)
@@ -59,6 +64,6 @@ install-data-local:
 uninstall-local:
 	rm -f $(DESTDIR)$(MOO_HELP_DIR)/*.html
 
-# if MOO_OS_UNIX
-# dist_man_MANS = medit.1
-# endif MOO_OS_UNIX
+if MOO_OS_UNIX
+dist_man_MANS = medit.1
+endif MOO_OS_UNIX
