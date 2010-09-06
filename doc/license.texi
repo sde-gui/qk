@@ -9,19 +9,20 @@ as licenses and acknowledgements for third-party software incorporated
 in @medit{}, can be found in this section.
 
 @menu
-* GNU General Public License:: GNU General Public License
-* GNU Lesser General Public License:: GNU Lesser General Public License
+* GNU GPL:: GNU General Public License
+* GNU LGPL:: GNU Lesser General Public License
 * Lua License:: Lua License
 * LuaFileSystem License:: LuaFileSystem License
+* Penlight License:: Penlight License
 * xdg-utils License:: xdg-utils License
 @end menu
 
-@node GNU General Public License
+@node GNU GPL
 @section GNU General Public License
 @helpsection{LICENSE_GPL}
 @verbatiminclude ../COPYING.GPL
 
-@node GNU Lesser General Public License
+@node GNU LGPL
 @section GNU Lesser General Public License
 @helpsection{LICENSE_LGPL}
 @verbatiminclude ../COPYING
@@ -45,6 +46,11 @@ offers a portable way to access the underlying directory structure and file
 attributes. LuaFileSystem is free software and uses the same license as Lua 5.1
 Current version is 1.2.1.
 @end verbatim
+
+@node Penlight License
+@section Penlight Lua Libraries License
+@helpsection{LICENSE_PENLIGHT}
+@verbatiminclude ../moo/moolua/pl/LICENCE.txt
 
 @node xdg-utils License
 @section xdg-utils License

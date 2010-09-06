@@ -779,10 +779,7 @@ Variant Document::set_selection(const VariantArray &args)
 Variant Document::has_selection(const VariantArray &args)
 {
     check_no_args(args);
-    GtkTextBuffer *buf = buffer();
-    GtkTextIter start, end;
-    gtk_text_buffer_get_selection_bounds(buf, &start, &end);
-    return bool(gtk_text_iter_equal(&start, &end));
+    return bool(gtk_text_buffer_get_selection_bounds(buffer(), NULL, NULL));
 }
 
 Variant Document::char_count(const VariantArray &args)
