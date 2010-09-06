@@ -9,7 +9,7 @@ unix_scripts =				\
 EXTRA_DIST = $(unix_scripts)
 if MOO_OS_UNIX
 scriptsdir = $(MOO_DATA_DIR)/scripts
-scripts_DATA = $(unix_scripts)
+scripts_SCRIPTS = $(unix_scripts)
 endif MOO_OS_UNIX
 
 EXTRA_DIST +=				\
