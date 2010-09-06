@@ -1827,7 +1827,7 @@ _moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
 
         if (use_location)
             ret = _moo_win32_message_box (NULL, MB_ABORTRETRYIGNORE, NULL,
-                                          "In file %s, line %d, function %s:\n%s",
+                                          Q_("console message|in file %s, line %d, function %s:\n%s"),
                                           loc.file, loc.line, loc.func, message);
         else
             ret = _moo_win32_message_box (NULL, MB_ABORTRETRYIGNORE, NULL,
@@ -1924,7 +1924,7 @@ void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_lis
 
     if (moo_code_loc_valid (loc))
         g_log (G_LOG_DOMAIN, flags,
-               "In file %s, line %d, function %s: %s",
+               Q_("console message|in file %s, line %d, function %s: %s"),
                loc.file, loc.line, loc.func, message);
     else
         g_log (G_LOG_DOMAIN, flags, "%s", message);

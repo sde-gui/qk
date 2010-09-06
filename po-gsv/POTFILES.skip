@@ -25,3 +25,4 @@ moo/mooedit/mooplugin.c
 moo/mooedit/mootextfind.c
 moo/mooedit/moousertools-prefs.c
 moo/mooedit/moousertools.c
+moo/mooedit/mooplugin-loader.c

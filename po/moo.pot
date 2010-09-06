@@ -8,176 +8,176 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-28 00:19-0800\n"
+"POT-Creation-Date: 2010-09-06 14:18-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #. error message for wrong commmand line
-#: ../medit/main.c:103
+#: ../moo/medit-app/main.c:107
 #, c-format
 msgid "Invalid value '%s' for option %s"
 msgstr ""
 
 #. help message for command line option --new-app
-#: ../medit/main.c:110
+#: ../moo/medit-app/main.c:114
 msgid "Run new instance of application"
 msgstr ""
 
 #. help message for command line option --use-session
-#: ../medit/main.c:116
+#: ../moo/medit-app/main.c:120
 msgid "Load and save session"
 msgstr ""
 
 #. help message for command line option --pid=PID
-#: ../medit/main.c:122
+#: ../moo/medit-app/main.c:126
 msgid "Use existing instance with process id PID"
 msgstr ""
 
 #. "PID" part in "--pid=PID"
-#: ../medit/main.c:123
+#: ../moo/medit-app/main.c:127
 msgid "PID"
 msgstr ""
 
 #. help message for command line option --app-name=NAME
-#: ../medit/main.c:125
+#: ../moo/medit-app/main.c:129
 msgid "Set instance name to NAME if it's not already running"
 msgstr ""
 
 #. "NAME" part in "--app-name=NAME"
-#: ../medit/main.c:126
+#: ../moo/medit-app/main.c:130
 msgid "NAME"
 msgstr ""
 
 #. help message for command line option --new-window
-#: ../medit/main.c:128
+#: ../moo/medit-app/main.c:132
 msgid "Open file(s) in a new window"
 msgstr ""
 
 #. help message for command line option --new-tab
-#: ../medit/main.c:130
+#: ../moo/medit-app/main.c:134
 msgid "Open file(s) in a new tab"
 msgstr ""
 
 #. help message for command line option --line=LINE
-#: ../medit/main.c:136
+#: ../moo/medit-app/main.c:140
 msgid "Open file and position cursor on line LINE"
 msgstr ""
 
 #. "LINE" part in --line=LINE
-#: ../medit/main.c:137
+#: ../moo/medit-app/main.c:141
 msgid "LINE"
 msgstr ""
 
 #. help message for command line option --encoding=ENCODING
-#: ../medit/main.c:139
+#: ../moo/medit-app/main.c:143
 msgid "Use provided character encoding"
 msgstr ""
 
 #. "ENCODING" part in --encoding=ENCODING
-#: ../medit/main.c:140
+#: ../moo/medit-app/main.c:144
 msgid "ENCODING"
 msgstr ""
 
 #. help message for command line option --reload
-#: ../medit/main.c:142
+#: ../moo/medit-app/main.c:146
 msgid "Automatically reload file if it was modified on disk"
 msgstr ""
 
 #. help message for command line option --exec CODE
-#: ../medit/main.c:150
+#: ../moo/medit-app/main.c:154
 msgid "Execute python code in an existing instance"
 msgstr ""
 
 #. "CODE" part in --exec CODE
-#: ../medit/main.c:151
+#: ../moo/medit-app/main.c:155
 msgid "CODE"
 msgstr ""
 
 #. help message for command line option --exec-file FILE
-#: ../medit/main.c:153
+#: ../moo/medit-app/main.c:157
 msgid "Execute python file in an existing instance"
 msgstr ""
 
 #. "FILE" part in --exec-file FILE
-#: ../medit/main.c:154 ../moo/mooapp/smclient/eggsmclient.c:188
+#: ../moo/medit-app/main.c:158
 msgid "FILE"
 msgstr ""
 
 #. help message for command line option --version
-#: ../medit/main.c:156
+#: ../moo/medit-app/main.c:160
 msgid "Show version information and exit"
 msgstr ""
 
 #. "FILES" part in "medit [OPTION...] [FILES]"
-#: ../medit/main.c:158
+#: ../moo/medit-app/main.c:162
 msgid "FILES"
 msgstr ""
 
 #. error message for wrong commmand line
-#: ../medit/main.c:174 ../medit/main.c:182
+#: ../moo/medit-app/main.c:178 ../moo/medit-app/main.c:186
 #, c-format
 msgid "%s and %s options may not be used simultaneously\n"
 msgstr ""
 
-#: ../medit/medit.desktop.in.h:1
+#: ../moo/medit-app/medit.desktop.in.h:1
 msgid "Text editor"
 msgstr ""
 
-#. Translators: do not translate the part before |
-#: ../moo/mooapp/glade/mooappabout-credits.glade.h:2
-msgid "Dialog title|Credits"
-msgstr ""
-
 #. Tab label in Credits dialog
-#: ../moo/mooapp/glade/mooappabout-credits.glade.h:4
+#: ../moo/mooapp/glade/mooappabout-credits.glade.h:2
 msgid "Thanks"
 msgstr ""
 
 #. Tab label in Credits dialog
-#: ../moo/mooapp/glade/mooappabout-credits.glade.h:6
+#: ../moo/mooapp/glade/mooappabout-credits.glade.h:4
 msgid "Translated by"
 msgstr ""
 
 #. Tab label in Credits dialog
-#: ../moo/mooapp/glade/mooappabout-credits.glade.h:8
+#: ../moo/mooapp/glade/mooappabout-credits.glade.h:6
 msgid "Written by"
+msgstr ""
+
+#. Translators: do not translate the part before |
+#: ../moo/mooapp/glade/mooappabout-credits.glade.h:8
+msgctxt "yes"
+msgid "Dialog title|Credits"
 msgstr ""
 
 #. Credits button label in About dialog
 #: ../moo/mooapp/glade/mooappabout-dialog.glade.h:2
+msgctxt "yes"
 msgid "C_redits"
 msgstr ""
 
 #. Translators: do not translate the part before |
 #: ../moo/mooapp/glade/mooappabout-dialog.glade.h:4
+msgctxt "yes"
 msgid "Dialog title|About"
 msgstr ""
 
 #. License button label in About dialog
 #: ../moo/mooapp/glade/mooappabout-dialog.glade.h:6
+msgctxt "yes"
 msgid "_License"
 msgstr ""
 
 #. Translators: do not translate the part before |
 #: ../moo/mooapp/glade/mooappabout-license.glade.h:2
+msgctxt "yes"
 msgid "Dialog title|License"
-msgstr ""
-
-#. Prefs dialog title, like "medit Preferences"
-#: ../moo/mooapp/mooapp.c:1369
-#, c-format
-msgid "%s Preferences"
 msgstr ""
 
 #. Translators: this goes into About box, under Translated by tab,
 #. do not ignore it, markup isn't always used. It should be something
 #. like "Some Guy <someguy@domain.net>", with lines separated by \n
-#: ../moo/mooapp/mooappabout.c:62
+#: ../moo/mooapp/mooappabout.c:57
 msgid "translator-credits"
 msgstr ""
 
@@ -185,67 +185,14 @@ msgstr ""
 #. this must be valid html markup, e.g.
 #. "Some Guy <a href=\"mailto:someguy@domain.net\">&lt;someguy@domain.net&gt;</a>"
 #. Lines must be separated by <br>, like "First guy<br>Second Guy"
-#: ../moo/mooapp/mooappabout.c:67
+#: ../moo/mooapp/mooappabout.c:62
 msgid "translator-credits-markup"
 msgstr ""
 
-#: ../moo/mooapp/smclient/eggdesktopfile.c:141
+#. Prefs dialog title, like "medit Preferences"
+#: ../moo/mooapp/mooapp.c:1369
 #, c-format
-msgid "File is not a valid .desktop file"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggdesktopfile.c:163
-#, c-format
-msgid "Unrecognized desktop file Version '%s'"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggdesktopfile.c:870
-#, c-format
-msgid "Starting %s"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggdesktopfile.c:1004
-#, c-format
-msgid "Application does not accept documents on command line"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggdesktopfile.c:1072
-#, c-format
-msgid "Unrecognized launch option: %d"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggdesktopfile.c:1274
-#, c-format
-msgid "Can't pass document URIs to a 'Type=Link' desktop entry"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggdesktopfile.c:1293
-#, c-format
-msgid "Not a launchable item"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggsmclient.c:185
-msgid "Disable connection to session manager"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggsmclient.c:188
-msgid "Specify file containing saved configuration"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggsmclient.c:191
-msgid "Specify session management ID"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggsmclient.c:191
-msgid "ID"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggsmclient.c:227
-msgid "Session Management Options"
-msgstr ""
-
-#: ../moo/mooapp/smclient/eggsmclient.c:228
-msgid "Show Session Management options"
+msgid "%s Preferences"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:1
@@ -355,7 +302,7 @@ msgid "<b>Language-specific options</b>"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:3
-#: ../plugins/glade/moofileselector-prefs.glade.h:4
+#: ../moo/plugins/glade/moofileselector-prefs.glade.h:4
 msgid "Extensions:"
 msgstr ""
 
@@ -364,12 +311,12 @@ msgid "Language:"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:5
-#: ../plugins/glade/moofileselector-prefs.glade.h:6
+#: ../moo/plugins/glade/moofileselector-prefs.glade.h:6
 msgid "Mime types:"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:6
-#: ../plugins/usertools/glade/moousertools.glade.h:9
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:9
 msgid "Options:"
 msgstr ""
 
@@ -419,15 +366,19 @@ msgid "Show line numbers"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
-msgid "Show tabs"
+msgid "Show spaces"
 msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
+msgid "Show tabs"
+msgstr ""
+
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:15
 msgid "Show trailing spaces"
 msgstr ""
 
 #. Part of the phrase "Draw right margin at column [XX]"
-#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:16
+#: ../moo/mooedit/glade/mooeditprefs-view.glade.h:17
 msgid "at column"
 msgstr ""
 
@@ -523,27 +474,6 @@ msgstr ""
 msgid "_Regular expression"
 msgstr ""
 
-#: ../moo/mooedit/glade/mootextfind-prompt.glade.h:1
-#: ../moo/mooedit/mooeditwindow.c:472
-msgid "Find _Next"
-msgstr ""
-
-#: ../moo/mooedit/glade/mootextfind-prompt.glade.h:2
-msgid "Replace _All"
-msgstr ""
-
-#: ../moo/mooedit/glade/mootextfind-prompt.glade.h:3
-msgid "Replace?"
-msgstr ""
-
-#: ../moo/mooedit/glade/mootextfind-prompt.glade.h:4
-msgid "Sto_p"
-msgstr ""
-
-#: ../moo/mooedit/glade/mootextfind-prompt.glade.h:5
-msgid "_Replace"
-msgstr ""
-
 #: ../moo/mooedit/glade/mootextfind.glade.h:1
 msgid "Case sensitive"
 msgstr ""
@@ -552,7 +482,7 @@ msgstr ""
 msgid "Don't prompt on replace"
 msgstr ""
 
-#: ../moo/mooedit/glade/mootextfind.glade.h:3 ../plugins/moofind.c:1095
+#: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1111
 msgid "Find"
 msgstr ""
 
@@ -594,6 +524,27 @@ msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:13
 msgid "Whole words only"
+msgstr ""
+
+#: ../moo/mooedit/glade/mootextfind-prompt.glade.h:1
+#: ../moo/mooedit/mooeditwindow.c:472
+msgid "Find _Next"
+msgstr ""
+
+#: ../moo/mooedit/glade/mootextfind-prompt.glade.h:2
+msgid "Replace _All"
+msgstr ""
+
+#: ../moo/mooedit/glade/mootextfind-prompt.glade.h:3
+msgid "Replace?"
+msgstr ""
+
+#: ../moo/mooedit/glade/mootextfind-prompt.glade.h:4
+msgid "Sto_p"
+msgstr ""
+
+#: ../moo/mooedit/glade/mootextfind-prompt.glade.h:5
+msgid "_Replace"
 msgstr ""
 
 #: ../moo/mooedit/glade/mootextgotoline.glade.h:1
@@ -639,29 +590,9 @@ msgstr ""
 msgid "_Window"
 msgstr ""
 
-#. Translators: if translated, it should be a comma-separated list
-#. of encodings to try when opening files. Encodings names should be
-#. those understood by iconv, or "LOCALE" which means user's locale
-#. charset. For instance, the default value is "UTF-8,LOCALE,ISO_8859-15,ISO_8859-1".
-#. You want to add common preferred non-UTF8 encodings used in your locale.
-#. Do not remove ISO_8859-15 and ISO_8859-1, instead leave them at the end,
-#. these are common source files encodings.
-#: ../moo/mooedit/mooedit-fileops.c:265
-msgid "encodings_list"
-msgstr ""
-
-#: ../moo/mooedit/mooedit-fileops.c:1288 ../plugins/moofileselector.c:517
-msgid "Untitled"
-msgstr ""
-
-#: ../moo/mooedit/mooedit-fileops.c:1290
-#, c-format
-msgid "Untitled %d"
-msgstr ""
-
 #. Translators: number of documents here is always greater than one, so
 #. ignore singular form (which is simply copy of the plural here)
-#: ../moo/mooedit/mooeditdialogs.c:362
+#: ../moo/mooedit/mooeditdialogs.c:383
 #, c-format
 msgid ""
 "There are %u documents with unsaved changes. Save changes before closing?"
@@ -671,55 +602,55 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Could not save file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:411
+#: ../moo/mooedit/mooeditdialogs.c:438
 #, c-format
 msgid ""
 "Could not save file\n"
 "%s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:413
+#: ../moo/mooedit/mooeditdialogs.c:440
 msgid "Could not save file"
 msgstr ""
 
 #. Error saving file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:435
+#: ../moo/mooedit/mooeditdialogs.c:462
 #, c-format
 msgid ""
 "Error saving file\n"
 "%s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:437
+#: ../moo/mooedit/mooeditdialogs.c:464
 msgid "Error saving file"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:439
+#: ../moo/mooedit/mooeditdialogs.c:466
 #, c-format
 msgid ""
 "Could not convert file to encoding %s. File was saved in UTF-8 encoding."
 msgstr ""
 
 #. Could not open file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:464
+#: ../moo/mooedit/mooeditdialogs.c:491
 #, c-format
 msgid ""
 "Could not open file\n"
 "%s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:466
+#: ../moo/mooedit/mooeditdialogs.c:493
 msgid "Could not open file"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:472
+#: ../moo/mooedit/mooeditdialogs.c:499
 #, c-format
 msgid ""
 "Could not open file using character encoding %s. The file may be binary or "
 "encoding may be specified incorrectly."
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:476
+#: ../moo/mooedit/mooeditdialogs.c:503
 #, c-format
 msgid ""
 "Could not detect file character encoding. Please make sure the file is not "
@@ -727,52 +658,72 @@ msgid ""
 msgstr ""
 
 #. Could not reload file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:511
+#: ../moo/mooedit/mooeditdialogs.c:538
 #, c-format
 msgid ""
 "Could not reload file\n"
 "%s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:571
+#: ../moo/mooedit/mooeditdialogs.c:598
 #, c-format
 msgid "Discard changes in file '%s'?"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:573
+#: ../moo/mooedit/mooeditdialogs.c:600
 msgid "If you reload the document, changes will be discarded"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:574 ../moo/mooedit/mooeditwindow.c:380
+#: ../moo/mooedit/mooeditdialogs.c:601 ../moo/mooedit/mooeditwindow.c:380
 msgid "_Reload"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:595
+#: ../moo/mooedit/mooeditdialogs.c:622
 #, c-format
 msgid "Overwrite modified file '%s'?"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:596
+#: ../moo/mooedit/mooeditdialogs.c:623
 #, c-format
 msgid ""
 "File '%s' was modified on disk by another process. If you save it, changes "
 "on disk will be lost."
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:598
+#: ../moo/mooedit/mooeditdialogs.c:625
 msgid "Over_write"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:619
+#: ../moo/mooedit/mooeditdialogs.c:646
 msgid ""
 "Beginning of document reached.\n"
 "Continue from the end?"
 msgstr ""
 
-#: ../moo/mooedit/mooeditdialogs.c:622
+#: ../moo/mooedit/mooeditdialogs.c:649
 msgid ""
 "End of document reached.\n"
 "Continue from the beginning?"
+msgstr ""
+
+#. Translators: if translated, it should be a comma-separated list
+#. of encodings to try when opening files. Encodings names should be
+#. those understood by iconv, or "LOCALE" which means user's locale
+#. charset. For instance, the default value is "UTF-8,LOCALE,ISO_8859-15,ISO_8859-1".
+#. You want to add common preferred non-UTF8 encodings used in your locale.
+#. Do not remove ISO_8859-15 and ISO_8859-1, instead leave them at the end,
+#. these are common source files encodings.
+#: ../moo/mooedit/mooedit-fileops.c:269
+msgid "encodings_list"
+msgstr ""
+
+#: ../moo/mooedit/mooedit-fileops.c:1315 ../moo/plugins/moofileselector.c:514
+msgid "Untitled"
+msgstr ""
+
+#: ../moo/mooedit/mooedit-fileops.c:1317
+#, c-format
+msgid "Untitled %d"
 msgstr ""
 
 #: ../moo/mooedit/mooeditor.c:226
@@ -802,17 +753,17 @@ msgid "PreferencesPage|Filters"
 msgstr ""
 
 #. Translators: this one is temporary, don't translate
-#: ../moo/mooedit/mooeditprefspage.c:288
+#: ../moo/mooedit/mooeditprefspage.c:289
 msgid "PreferencesPage|View"
 msgstr ""
 
 #. Translators: this one is temporary, don't translate
-#: ../moo/mooedit/mooeditprefspage.c:333
+#: ../moo/mooedit/mooeditprefspage.c:334
 msgid "PreferencesPage|File"
 msgstr ""
 
 #. Translators: this one is temporary, don't translate
-#: ../moo/mooedit/mooeditprefspage.c:387
+#: ../moo/mooedit/mooeditprefspage.c:388
 msgid "PreferencesPage|Langs"
 msgstr ""
 
@@ -1006,7 +957,7 @@ msgstr ""
 msgid "Page Setup..."
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:696 ../moo/mooedit/mooeditwindow.c:1741
+#: ../moo/mooedit/mooeditwindow.c:696 ../moo/mooedit/mooeditwindow.c:1740
 msgid "Export as PDF"
 msgstr ""
 
@@ -1068,56 +1019,68 @@ msgstr ""
 msgid "_Encoding"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1286
+#: ../moo/mooedit/mooeditwindow.c:1284
 msgid "Line En_dings"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1293
+#: ../moo/mooedit/mooeditwindow.c:1291
 msgid "_Windows (CR+LF)"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1302
+#: ../moo/mooedit/mooeditwindow.c:1300
 msgid "_Unix (LF)"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1306
+#: ../moo/mooedit/mooeditwindow.c:1304
 msgid "_Mac (CR)"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1310
+#: ../moo/mooedit/mooeditwindow.c:1308
 msgid "Mi_xed"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:2968
+#: ../moo/mooedit/mooeditwindow.c:2937
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:2969
+#: ../moo/mooedit/mooeditwindow.c:2938
 #, c-format
 msgid "Chars: %s"
 msgstr ""
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3010
+#: ../moo/mooedit/mooeditwindow.c:2979
 msgid "OVR"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3010
+#: ../moo/mooedit/mooeditwindow.c:2979
 msgid "INS"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3107
+#: ../moo/mooedit/mooeditwindow.c:3076
 msgid "_Language"
 msgstr ""
 
 #. Menu item in the Language menu
-#: ../moo/mooedit/mooeditwindow.c:3112
+#: ../moo/mooedit/mooeditwindow.c:3081
 msgid "Language|None"
 msgstr ""
 
 #: ../moo/mooedit/mooplugin.c:1418
 msgid "Plugins"
+msgstr ""
+
+#: ../moo/mooedit/mooplugin-loader.c:234
+#, c-format
+msgid ""
+"console message|ignoring file '%s', module version '%s' is not compatible "
+"with current version %u.%u"
+msgstr ""
+
+#: ../moo/mooedit/mooplugin-loader.c:243
+#, c-format
+msgid "console message|invalid module version '%s' in file '%s'"
 msgstr ""
 
 #: ../moo/mooedit/mootextfind.c:474
@@ -1169,7 +1132,7 @@ msgid "Add separator"
 msgstr ""
 
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:4
-#: ../plugins/glade/moofileselector-prefs.glade.h:3
+#: ../moo/plugins/glade/moofileselector-prefs.glade.h:3
 msgid "Delete"
 msgstr ""
 
@@ -1187,7 +1150,7 @@ msgid "Icon:"
 msgstr ""
 
 #: ../moo/moofileview/glade/moobookmark-editor.glade.h:8
-#: ../plugins/glade/moofileselector-prefs.glade.h:10
+#: ../moo/plugins/glade/moofileselector-prefs.glade.h:10
 msgid "New"
 msgstr ""
 
@@ -1204,18 +1167,14 @@ msgid "General"
 msgstr ""
 
 #: ../moo/moofileview/glade/moofileview-drop.glade.h:1
-#: ../plugins/glade/moofileselector.glade.h:2 ../plugins/moofileselector.c:876
-#: ../plugins/moofileselector.c:901
+#: ../moo/plugins/glade/moofileselector.glade.h:2
+#: ../moo/plugins/moofileselector.c:873 ../moo/plugins/moofileselector.c:898
 msgid "Save As"
 msgstr ""
 
-#: ../moo/moofileview/moofileview-tools.c:290
-msgid "Open with|Default Application"
-msgstr ""
-
-#: ../moo/moofileview/moofileview.c:1117 ../plugins/moofileselector-prefs.c:71
-#: ../plugins/moofileselector.c:642 ../plugins/moofileselector.c:643
-#: ../plugins/moofileselector.c:1259
+#: ../moo/moofileview/moofileview.c:1117 ../moo/plugins/moofileselector.c:639
+#: ../moo/plugins/moofileselector.c:640 ../moo/plugins/moofileselector.c:1256
+#: ../moo/plugins/moofileselector-prefs.c:71
 msgid "File Selector"
 msgstr ""
 
@@ -1306,6 +1265,10 @@ msgstr ""
 msgid "Move selected files to Trash"
 msgstr ""
 
+#: ../moo/moofileview/moofileview-tools.c:292
+msgid "Open with|Default Application"
+msgstr ""
+
 #: ../moo/moofileview/moofileview.xml.h:2
 msgid "Open _With"
 msgstr ""
@@ -1324,16 +1287,19 @@ msgstr ""
 
 #. Translators: do not translate the part before |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:4
+msgctxt "yes"
 msgid "Shortcut|Custom"
 msgstr ""
 
 #. Translators: do not translate the part before |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:6
+msgctxt "yes"
 msgid "Shortcut|Default"
 msgstr ""
 
 #. Translators: do not translate the part before |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:8
+msgctxt "yes"
 msgid "Shortcut|None"
 msgstr ""
 
@@ -1357,6 +1323,31 @@ msgstr ""
 
 #: ../moo/mooutils/moodialogs.c:354
 msgid "If you don't save, changes will be discarded"
+msgstr ""
+
+#. Translators: 012345 denotes order in which character encoding
+#. groups should appear, e.g. 543210 means inverse order.
+#. 0 - "West European",
+#. 1 - "East European",
+#. 2 - "East Asian",
+#. 3 - "SE & SW Asian",
+#. 4 - "Middle Eastern",
+#. 5 - "Unicode"
+#: ../moo/mooutils/mooencodings.c:174
+msgid "012345"
+msgstr ""
+
+#: ../moo/mooutils/mooencodings.c:692
+msgid "Auto Detected"
+msgstr ""
+
+#. Translators: do not translate the part before |
+#: ../moo/mooutils/mooencodings.c:721
+msgid "Encodings combo submenu|Other"
+msgstr ""
+
+#: ../moo/mooutils/mooencodings.c:820
+msgid "Charact_er encoding:"
 msgstr ""
 
 #: ../moo/mooutils/mooencodings-data.h:27
@@ -1547,49 +1538,24 @@ msgstr ""
 msgid "Thai"
 msgstr ""
 
-#. Translators: 012345 denotes order in which character encoding
-#. groups should appear, e.g. 543210 means inverse order.
-#. 0 - "West European",
-#. 1 - "East European",
-#. 2 - "East Asian",
-#. 3 - "SE & SW Asian",
-#. 4 - "Middle Eastern",
-#. 5 - "Unicode"
-#: ../moo/mooutils/mooencodings.c:174
-msgid "012345"
-msgstr ""
-
-#: ../moo/mooutils/mooencodings.c:692
-msgid "Auto Detected"
-msgstr ""
-
-#. Translators: do not translate the part before |
-#: ../moo/mooutils/mooencodings.c:721
-msgid "Encodings combo submenu|Other"
-msgstr ""
-
-#: ../moo/mooutils/mooencodings.c:820
-msgid "Charact_er encoding:"
-msgstr ""
-
-#: ../moo/mooutils/moofiledialog.c:636
+#: ../moo/mooutils/moofiledialog.c:639
 msgid "Selected file is not a regular file"
 msgstr ""
 
-#: ../moo/mooutils/moofiltermgr.c:546
+#: ../moo/mooutils/moofiltermgr.c:545
 msgid "_Show:"
 msgstr ""
 
-#: ../moo/mooutils/moohelp.c:206
+#: ../moo/mooutils/moohelp.c:205
 msgid "Help files not found"
 msgstr ""
 
-#: ../moo/mooutils/moohelp.c:218
+#: ../moo/mooutils/moohelp.c:217
 #, c-format
 msgid "File '%s' is missing in the directory '%s'"
 msgstr ""
 
-#: ../moo/mooutils/moohelp.c:221
+#: ../moo/mooutils/moohelp.c:220
 msgid "Could not find help file"
 msgstr ""
 
@@ -1633,7 +1599,7 @@ msgstr ""
 msgid "Link"
 msgstr ""
 
-#: ../moo/mooutils/moostock.c:47 ../plugins/moofileselector.c:1103
+#: ../moo/mooutils/moostock.c:47 ../moo/plugins/moofileselector.c:1100
 msgid "Save Copy"
 msgstr ""
 
@@ -1681,6 +1647,18 @@ msgstr ""
 msgid "Could not rename file %s to %s: %s"
 msgstr ""
 
+#: ../moo/mooutils/mooutils-misc.c:1830
+#, c-format
+msgid ""
+"console message|in file %s, line %d, function %s:\n"
+"%s"
+msgstr ""
+
+#: ../moo/mooutils/mooutils-misc.c:1927
+#, c-format
+msgid "console message|in file %s, line %d, function %s: %s"
+msgstr ""
+
 #: ../moo/mooutils/moowindow.c:234
 msgid "Configure _Shortcuts..."
 msgstr ""
@@ -1717,332 +1695,348 @@ msgstr ""
 msgid "Toolbar _Style"
 msgstr ""
 
-#: ../plugins/glade/moofileselector-prefs.glade.h:1
+#: ../moo/plugins/glade/moofileselector.glade.h:1
+msgid "Create File"
+msgstr ""
+
+#: ../moo/plugins/glade/moofileselector.glade.h:3
+msgid "Save as"
+msgstr ""
+
+#: ../moo/plugins/glade/moofileselector-prefs.glade.h:1
 msgid "<b>Open With</b>"
 msgstr ""
 
-#: ../plugins/glade/moofileselector-prefs.glade.h:2
+#: ../moo/plugins/glade/moofileselector-prefs.glade.h:2
 msgid "Command:"
 msgstr ""
 
-#: ../plugins/glade/moofileselector-prefs.glade.h:5
+#: ../moo/plugins/glade/moofileselector-prefs.glade.h:5
 msgid "Menu item label"
 msgstr ""
 
-#: ../plugins/glade/moofileselector-prefs.glade.h:7
+#: ../moo/plugins/glade/moofileselector-prefs.glade.h:7
 msgid "Move down"
 msgstr ""
 
-#: ../plugins/glade/moofileselector-prefs.glade.h:8
+#: ../moo/plugins/glade/moofileselector-prefs.glade.h:8
 msgid "Move up"
 msgstr ""
 
-#: ../plugins/glade/moofileselector-prefs.glade.h:9
+#: ../moo/plugins/glade/moofileselector-prefs.glade.h:9
 msgid "Name:"
 msgstr ""
 
-#: ../plugins/glade/moofileselector-prefs.glade.h:11
+#: ../moo/plugins/glade/moofileselector-prefs.glade.h:11
 msgid "Semicolon-separated list of file globs, e.g. '*.txt;foo.*;*bar*'"
 msgstr ""
 
-#: ../plugins/glade/moofileselector-prefs.glade.h:12
+#: ../moo/plugins/glade/moofileselector-prefs.glade.h:12
 msgid ""
 "Semicolon-separated list of mime types, e.g. 'text/*;application/x-glade'"
 msgstr ""
 
-#: ../plugins/glade/moofileselector-prefs.glade.h:14
+#: ../moo/plugins/glade/moofileselector-prefs.glade.h:14
 #, no-c-format
 msgid ""
 "Shell command to open the file: '%f' is replaced with file path, e.g. "
 "'foobar %f'"
 msgstr ""
 
-#: ../plugins/glade/moofileselector.glade.h:1
-msgid "Create File"
-msgstr ""
-
-#: ../plugins/glade/moofileselector.glade.h:3
-msgid "Save as"
-msgstr ""
-
-#: ../plugins/glade/moofind.glade.h:1 ../plugins/glade/moogrep.glade.h:3
+#: ../moo/plugins/glade/moofind.glade.h:1
+#: ../moo/plugins/glade/moogrep.glade.h:3
 msgid "S_kip files:"
 msgstr ""
 
-#: ../plugins/glade/moofind.glade.h:2 ../plugins/glade/moogrep.glade.h:4
+#: ../moo/plugins/glade/moofind.glade.h:2
+#: ../moo/plugins/glade/moogrep.glade.h:4
 msgid "_Directory:"
 msgstr ""
 
-#: ../plugins/glade/moofind.glade.h:3 ../plugins/glade/moogrep.glade.h:5
+#: ../moo/plugins/glade/moofind.glade.h:3
+#: ../moo/plugins/glade/moogrep.glade.h:5
 msgid "_Pattern:"
 msgstr ""
 
-#: ../plugins/glade/moogrep.glade.h:1
+#: ../moo/plugins/glade/moogrep.glade.h:1
 msgid "Case _sensitive"
 msgstr ""
 
-#: ../plugins/glade/moogrep.glade.h:2
+#: ../moo/plugins/glade/moogrep.glade.h:2
 msgid "Fi_les:"
 msgstr ""
 
-#: ../plugins/moofilelist.c:2349 ../plugins/moofilelist.c:2350
-#: ../plugins/moofilelist.c:2407
+#: ../moo/plugins/moofilelist.c:2349 ../moo/plugins/moofilelist.c:2350
+#: ../moo/plugins/moofilelist.c:2407
 msgid "File List"
 msgstr ""
 
-#: ../plugins/moofilelist.c:2407
+#: ../moo/plugins/moofilelist.c:2407
 msgid "List of files"
 msgstr ""
 
-#: ../plugins/moofileselector.c:395
+#: ../moo/plugins/moofileselector.c:392
 #, c-format
 msgid "Create file in folder '%s':"
 msgstr ""
 
-#: ../plugins/moofileselector.c:450
+#: ../moo/plugins/moofileselector.c:447
 #, c-format
 msgid "Could not create file '%s'"
 msgstr ""
 
-#: ../plugins/moofileselector.c:451 ../plugins/moofileselector.c:811
+#: ../moo/plugins/moofileselector.c:448 ../moo/plugins/moofileselector.c:808
 #, c-format
 msgid ""
 "Could not convert '%s' to filename encoding. Please consider simpler name, "
 "such as foo.blah or blah.foo"
 msgstr ""
 
-#: ../plugins/moofileselector.c:466
+#: ../moo/plugins/moofileselector.c:463
 #, c-format
 msgid "File '%s' already exists"
 msgstr ""
 
-#: ../plugins/moofileselector.c:607
+#: ../moo/plugins/moofileselector.c:604
 msgid "Go to current document directory"
 msgstr ""
 
-#: ../plugins/moofileselector.c:619 ../plugins/moofileselector.c:620
+#: ../moo/plugins/moofileselector.c:616 ../moo/plugins/moofileselector.c:617
 msgid "New File..."
 msgstr ""
 
-#: ../plugins/moofileselector.c:810
+#: ../moo/plugins/moofileselector.c:807
 #, c-format
 msgid "Could not save file as '%s'"
 msgstr ""
 
-#: ../plugins/moofileselector.c:921
+#: ../moo/plugins/moofileselector.c:918
 msgid "Save Copy As"
 msgstr ""
 
-#: ../plugins/moofileselector.c:945
+#: ../moo/plugins/moofileselector.c:942
 msgid "Rename To"
 msgstr ""
 
-#: ../plugins/moofileselector.c:1085
+#: ../moo/plugins/moofileselector.c:1082
 msgid "Move Here"
 msgstr ""
 
-#: ../plugins/moofileselector.c:1086
+#: ../moo/plugins/moofileselector.c:1083
 msgid "Move/Rename..."
 msgstr ""
 
-#: ../plugins/moofileselector.c:1094
+#: ../moo/plugins/moofileselector.c:1091
 msgid "Save Here"
 msgstr ""
 
-#: ../plugins/moofileselector.c:1095
+#: ../moo/plugins/moofileselector.c:1092
 msgid "Save As..."
 msgstr ""
 
-#: ../plugins/moofileselector.c:1104
+#: ../moo/plugins/moofileselector.c:1101
 msgid "Save Copy As..."
 msgstr ""
 
-#: ../plugins/moofileselector.c:1260
+#: ../moo/plugins/moofileselector.c:1257
 msgid "File selector pane for editor window"
 msgstr ""
 
-#: ../plugins/moofind.c:189
+#: ../moo/plugins/moofind.c:186
 msgid "Search Results"
 msgstr ""
 
-#: ../plugins/moofind.c:253 ../plugins/moofind.c:254
+#: ../moo/plugins/moofind.c:250 ../moo/plugins/moofind.c:251
 msgid "Find In Files"
 msgstr ""
 
-#: ../plugins/moofind.c:255
+#: ../moo/plugins/moofind.c:252
 msgid "Find in files"
 msgstr ""
 
-#: ../plugins/moofind.c:263 ../plugins/moofind.c:264 ../plugins/moofind.c:974
+#: ../moo/plugins/moofind.c:260 ../moo/plugins/moofind.c:261
+#: ../moo/plugins/moofind.c:990
 msgid "Find File"
 msgstr ""
 
-#: ../plugins/moofind.c:265
+#: ../moo/plugins/moofind.c:262
 msgid "Find file"
 msgstr ""
 
-#: ../plugins/moofind.c:942
+#: ../moo/plugins/moofind.c:959
 msgid "Find in Files"
 msgstr ""
 
-#: ../plugins/moofind.c:1026 ../plugins/moofind.c:1052
+#: ../moo/plugins/moofind.c:1042 ../moo/plugins/moofind.c:1068
 #, c-format
 msgid "*** %u match found ***"
 msgid_plural "*** %u matches found ***"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../plugins/moofind.c:1033 ../plugins/moofind.c:1058
+#: ../moo/plugins/moofind.c:1049 ../moo/plugins/moofind.c:1074
 #, c-format
 msgid "*** %u file found ***"
 msgid_plural "*** %u files found ***"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../plugins/moofind.c:1095
+#: ../moo/plugins/moofind.c:1111
 msgid "Finds everything"
 msgstr ""
 
-#. Output filter for shell commands
-#: ../plugins/usertools/filters.xml.h:2
-msgid "Filter|Bison"
-msgstr ""
-
-#. Output filter for shell commands
-#: ../plugins/usertools/filters.xml.h:4
-msgid "Filter|Default"
-msgstr ""
-
-#. Output filter for shell commands
-#: ../plugins/usertools/filters.xml.h:6
-msgid "Filter|LaTeX"
-msgstr ""
-
-#. Output filter for shell commands
-#: ../plugins/usertools/filters.xml.h:8
-msgid "Filter|Make"
-msgstr ""
-
-#. Output filter for shell commands
-#: ../plugins/usertools/filters.xml.h:10
-msgid "Filter|None"
-msgstr ""
-
-#. Output filter for shell commands
-#: ../plugins/usertools/filters.xml.h:12
-msgid "Filter|Python"
-msgstr ""
-
-#: ../plugins/usertools/glade/mooedittools-exe.glade.h:1
-msgid "Filter:"
-msgstr ""
-
-#: ../plugins/usertools/glade/mooedittools-exe.glade.h:2
-msgid "Input:"
-msgstr ""
-
-#: ../plugins/usertools/glade/mooedittools-exe.glade.h:3
-msgid "Output:"
-msgstr ""
-
-#: ../plugins/usertools/glade/moousertools.glade.h:1
-msgid "Command type:"
-msgstr ""
-
-#: ../plugins/usertools/glade/moousertools.glade.h:2
-msgid "Context menu"
-msgstr ""
-
-#: ../plugins/usertools/glade/moousertools.glade.h:3
-msgid "Delete item"
-msgstr ""
-
-#: ../plugins/usertools/glade/moousertools.glade.h:4
-msgid "Enabled"
-msgstr ""
-
-#: ../plugins/usertools/glade/moousertools.glade.h:5
-msgid "Files:"
-msgstr ""
-
-#: ../plugins/usertools/glade/moousertools.glade.h:6
-msgid "Move item down"
-msgstr ""
-
-#: ../plugins/usertools/glade/moousertools.glade.h:7
-msgid "Move item up"
-msgstr ""
-
-#: ../plugins/usertools/glade/moousertools.glade.h:8
-msgid "New item"
-msgstr ""
-
-#: ../plugins/usertools/glade/moousertools.glade.h:10
-msgid "Tools menu"
-msgstr ""
-
-#: ../plugins/usertools/moocommand-lua.c:231
-msgid "Lua script"
-msgstr ""
-
-#: ../plugins/usertools/moocommand-sh.c:85
+#: ../moo/plugins/usertools/exe/moocommand-exe.c:85
 msgid "Output|None"
 msgstr ""
 
-#: ../plugins/usertools/moocommand-sh.c:86
+#: ../moo/plugins/usertools/exe/moocommand-exe.c:86
 msgid "Output|None, asynchronous"
 msgstr ""
 
-#: ../plugins/usertools/moocommand-sh.c:88
+#: ../moo/plugins/usertools/exe/moocommand-exe.c:88
 msgid "Output|Console"
 msgstr ""
 
-#: ../plugins/usertools/moocommand-sh.c:90
+#: ../moo/plugins/usertools/exe/moocommand-exe.c:90
 msgid "Output|Output pane"
 msgstr ""
 
-#: ../plugins/usertools/moocommand-sh.c:91
+#: ../moo/plugins/usertools/exe/moocommand-exe.c:91
 msgid "Output|Insert into the document"
 msgstr ""
 
-#: ../plugins/usertools/moocommand-sh.c:92
+#: ../moo/plugins/usertools/exe/moocommand-exe.c:92
 msgid "Output|New document"
 msgstr ""
 
-#: ../plugins/usertools/moocommand-sh.c:800
+#: ../moo/plugins/usertools/exe/moocommand-exe.c:800
 msgid "Shell command"
 msgstr ""
 
 #. Translators: these are kinds of input for a shell command, do not translate the part before |
-#: ../plugins/usertools/moocommand-sh.c:1041
+#: ../moo/plugins/usertools/exe/moocommand-exe.c:1041
 msgid "Input|None"
 msgstr ""
 
-#: ../plugins/usertools/moocommand-sh.c:1041
+#: ../moo/plugins/usertools/exe/moocommand-exe.c:1041
 msgid "Input|Selected lines"
 msgstr ""
 
-#: ../plugins/usertools/moocommand-sh.c:1041
+#: ../moo/plugins/usertools/exe/moocommand-exe.c:1041
 msgid "Input|Selection"
 msgstr ""
 
-#: ../plugins/usertools/moocommand-sh.c:1041
+#: ../moo/plugins/usertools/exe/moocommand-exe.c:1041
 msgid "Input|Whole document"
 msgstr ""
 
-#: ../plugins/usertools/moousertools-prefs.c:108
-msgid "New Command"
+#. Output filter for shell commands
+#: ../moo/plugins/usertools/filters.xml.h:2
+msgid "Filter|Bison"
 msgstr ""
 
-#: ../plugins/usertools/moousertools-prefs.c:408
-#: ../plugins/usertools/moousertools.c:392
+#. Output filter for shell commands
+#: ../moo/plugins/usertools/filters.xml.h:4
+msgid "Filter|Default"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/plugins/usertools/filters.xml.h:6
+msgid "Filter|LaTeX"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/plugins/usertools/filters.xml.h:8
+msgid "Filter|Make"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/plugins/usertools/filters.xml.h:10
+msgid "Filter|None"
+msgstr ""
+
+#. Output filter for shell commands
+#: ../moo/plugins/usertools/filters.xml.h:12
+msgid "Filter|Python"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/mooedittools-exe.glade.h:1
+msgid "Filter:"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/mooedittools-exe.glade.h:2
+msgid "Input:"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/mooedittools-exe.glade.h:3
+msgid "Output:"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/mooedittools-lua.glade.h:1
+msgid "Version:"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:1
+msgid "Command type:"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:2
+msgid "Context menu"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:3
+msgid "Delete item"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:4
+msgid "Enabled"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:5
+msgid "Files:"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:6
+msgid "Move item down"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:7
+msgid "Move item up"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:8
+msgid "New item"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:10
+msgid "Tools menu"
+msgstr ""
+
+#: ../moo/plugins/usertools/lua/moocommand-lua.cpp:306
+msgid "1"
+msgstr ""
+
+#: ../moo/plugins/usertools/lua/moocommand-lua.cpp:306
+msgid "2"
+msgstr ""
+
+#: ../moo/plugins/usertools/lua/moocommand-lua.cpp:400
+msgid "Lua script"
+msgstr ""
+
+#: ../moo/plugins/usertools/moousertools.c:393
+#: ../moo/plugins/usertools/moousertools-prefs.c:408
 msgid "Tools"
 msgstr ""
 
-#: ../plugins/usertools/moousertools.c:1399
+#: ../moo/plugins/usertools/moousertools.c:1400
 msgid "User Tools"
 msgstr ""
 
-#: ../plugins/usertools/moousertools.c:1400
+#: ../moo/plugins/usertools/moousertools.c:1401
 msgid "Configurable tools"
+msgstr ""
+
+#: ../moo/plugins/usertools/moousertools-prefs.c:108
+msgid "New Command"
 msgstr ""

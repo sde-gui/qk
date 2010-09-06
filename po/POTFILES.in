@@ -1,14 +1,5 @@
 moo/medit-app/main.c
 moo/medit-app/medit.desktop.in
-moo/eggsmclient/eggdesktopfile.c
-moo/eggsmclient/eggsmclient.c
-moo/gtksourceview/gtksourcecontextengine.c
-moo/gtksourceview/gtksourcelanguage.c
-moo/gtksourceview/gtksourcelanguagemanager.c
-moo/gtksourceview/gtksourcelanguage-parser-2.c
-moo/gtksourceview/gtksourcestyle.c
-moo/gtksourceview/gtksourcestylescheme.c
-moo/gtksourceview/gtksourcestyleschememanager.c
 moo/mooapp/glade/mooappabout-credits.glade
 moo/mooapp/glade/mooappabout-dialog.glade
 moo/mooapp/glade/mooappabout-license.glade
@@ -36,6 +27,7 @@ moo/mooedit/mooeditor.c
 moo/mooedit/mooeditprefspage.c
 moo/mooedit/mooeditwindow.c
 moo/mooedit/mooplugin.c
+moo/mooedit/mooplugin-loader.c
 moo/mooedit/mootextfind.c
 moo/moofileview/glade/moobookmark-editor.glade
 moo/moofileview/glade/moocreatefolder.glade
@@ -57,6 +49,7 @@ moo/mooutils/moopane.c
 moo/mooutils/moostock.c
 moo/mooutils/mooutils-file.c
 moo/mooutils/mooutils-fs.c
+moo/mooutils/mooutils-misc.c
 moo/mooutils/moowindow.c
 moo/plugins/glade/moofileselector.glade
 moo/plugins/glade/moofileselector-prefs.glade
