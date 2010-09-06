@@ -10,14 +10,6 @@ src_texinfo_files =	\
 	script.texi	\
 	mooscript.texi
 
-# man-medit.t2t: man-medit.t2t.in $(top_builddir)/config.status
-# 	cd $(top_builddir) && ./config.status --file=doc/man-medit.t2t
-# 	mv man-medit.t2t $(srcdir)/man-medit.t2t
-
-# medit.1: man-medit.t2t
-# 	cd $(srcdir) && $(PYTHON) txt2tags/txt2tags.py --target=man --outfile=medit.1.tmp man-medit.t2t && \
-# 		mv medit.1.tmp medit.1
-
 medit.texi: medit.texi.in $(top_builddir)/config.status
 	cd $(top_builddir) && ./config.status --file=doc/medit.texi
 	mv medit.texi $(srcdir)/medit.texi
@@ -25,10 +17,6 @@ medit.texi: medit.texi.in $(top_builddir)/config.status
 mooscript.texi: $(top_srcdir)/moo/mooscript/mooscript-classes.h $(top_srcdir)/moo/mooscript/gendoc.py
 	$(PYTHON) $(top_srcdir)/moo/mooscript/gendoc.py $(top_srcdir)/moo/mooscript/mooscript-classes.h \
 		> mooscript.texi.tmp && mv mooscript.texi.tmp $(srcdir)/mooscript.texi
-
-# help.html: $(MOO_HELP_T2T_FILES)
-# 	cd $(srcdir) && $(PYTHON) txt2tags/txt2tags.py --outfile=help.html.tmp medit.t2t && \
-# 		mv help.html.tmp help.html
 
 help/index.html: $(src_texinfo_files)
 	rm -f $(srcdir)/help/*.html
@@ -38,10 +26,6 @@ help/index.html: $(src_texinfo_files)
 help-sections.h: help/index.html $(srcdir)/gensections.py
 	$(PYTHON) $(srcdir)/gensections.py $(srcdir)/help/*.html > help-sections.h.tmp && \
 		mv help-sections.h.tmp $(srcdir)/help-sections.h
-
-# help-sections.h: help.html genhelpsections.py
-# 	cd $(srcdir) && $(PYTHON) genhelpsections.py help.html > help-sections.h.tmp && mv help-sections.h.tmp help-sections.h
-# 	rm -f $(srcdir)/help-sections.h.tmp
 
 all-am: doc
 doc: help/index.html help-sections.h medit.1
