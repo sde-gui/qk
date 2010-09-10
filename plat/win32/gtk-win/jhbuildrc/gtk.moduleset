@@ -1,24 +1,27 @@
 <?xml version="1.0" ?><!-- -%- indent-width:2; use-tabs:0 -%- -->
 <moduleset>
 
-  <tarball id="zlib" version="1.2.4" supports-non-srcdir-builds="no">
-    <source href="http://zlib.net/zlib-1.2.4.tar.gz"
-            md5sum="47f6ed51b3c83a8534f9228531effa18"/>
+  <!-- good -->
+  <tarball id="zlib" version="1.2.5" supports-non-srcdir-builds="no">
+    <source href="http://zlib.net/zlib-1.2.5.tar.gz"
+            md5sum="c735eab2d659a96e5a594c9e8541ad63"/>
     <patches>
-      <patch file="zlib.patch" strip="1"/>
+      <patch file="zlib-1.2.5.patch" strip="1"/>
     </patches>
   </tarball>
 
+  <!-- good -->
   <tarball id="libiconv" version="1.13.1">
     <source href="http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.1.tar.gz"
             md5sum="7ab33ebd26687c744a37264a330bbe9a"/>
   </tarball>
-  
+
+  <!-- good -->
   <tarball id="gettext" version="0.17">
     <source href="http://ftp.gnu.org/pub/gnu/gettext/gettext-0.17.tar.gz"
             md5sum="58a2bc6d39c0ba57823034d55d65d606"/>
     <patches>
-      <patch file="gettext.patch" strip="1"/>
+      <patch file="gettext-0.17.patch" strip="1"/>
     </patches>
     <dependencies>
       <dep package="libiconv"/>
@@ -35,8 +38,9 @@
     </dependencies>
   </tarball>
 
+  <!-- good -->
   <tarball id="libpng" version="1.4.1">
-    <source href="ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng-1.4.1.tar.gz"
+    <source href="http://download.sourceforge.net/libpng/libpng-1.4.1.tar.gz"
             md5sum="fa0b2a84733463f90d3ac9f43ccafabc"/>
     <dependencies>
       <dep package="zlib"/>
@@ -45,7 +49,8 @@
       <patch file="libpng.patch" strip="1"/>
     </patches>
   </tarball>
-  
+
+  <!-- good -->
   <tarball id="libxml2" version="2.6.30">
     <source href="http://ftp.gnome.org/pub/gnome/sources/libxml2/2.6/libxml2-2.6.30.tar.bz2"
             md5sum="cbc6d381daaa836b90a7ab449c1bc1ae"/>
@@ -54,7 +59,8 @@
     </dependencies>
   </tarball>
 
-  <tarball id="glib">
+  <!-- good -->
+  <tarball id="glib-2.24.0">
     <source href="http://ftp.gnome.org/pub/GNOME/sources/glib/2.24/glib-2.24.0.tar.bz2"
             sha256sum="7b6aa2cf21e734a6092a711bf196b8d2ddc589b971f93337610c10fa4f23400d"/>
     <dependencies>
@@ -67,6 +73,26 @@
     </patches>
   </tarball>
 
+  <tarball id="glib-2.24.2">
+    <source href="http://ftp.gnome.org/pub/GNOME/sources/glib/2.24/glib-2.24.2.tar.bz2"
+            sha256sum="3aeb521abd3642dd1224379f0e54915957e5010f888a4ae74afa0ad54da0160c"/>
+    <dependencies>
+      <dep package="libiconv"/>
+      <dep package="gettext"/>
+      <dep package="zlib"/>
+    </dependencies>
+    <patches>
+      <patch file="glib-2.24.patch" strip="1"/>
+    </patches>
+  </tarball>
+
+  <metamodule id="glib">
+    <dependencies>
+      <dep package="glib-2.24.2"/>
+    </dependencies>
+  </metamodule>
+
+  <!-- good -->
   <tarball id="pkgconfig" version="0.23">
     <source href="http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz"
             md5sum="d922a88782b64441d06547632fd85744"/>
@@ -78,15 +104,28 @@
     </patches>
   </tarball>
 
-  <tarball id="pixman" version="0.17.14">
+  <!-- good -->
+  <tarball id="pixman-0.17.14">
     <source href="http://cairographics.org/releases/pixman-0.17.14.tar.gz"
             md5sum="b0ad87c2cc9346056698eaf6af1933a6"/>
     <patches>
-      <patch file="pixman.patch" strip="1"/>
+      <patch file="pixman-0.17.patch" strip="1"/>
     </patches>
   </tarball>
 
-  <tarball id="cairo" version="1.8.4" supports-non-srcdir-builds="no">
+  <tarball id="pixman-0.19.2">
+    <source href="http://cairographics.org/releases/pixman-0.19.2.tar.gz"
+            md5sum="dfb84c9f402fbba5047f0e0a69c17518"/>
+  </tarball>
+
+  <metamodule id="pixman">
+    <dependencies>
+      <dep package="pixman-0.17.4"/>
+    </dependencies>
+  </metamodule>
+
+  <!-- good -->
+  <tarball id="cairo-1.8" supports-non-srcdir-builds="no">
     <source href="http://cairographics.org/releases/cairo-1.8.4.tar.gz"
             md5sum="a5067e355e78294db2485aa97afd1115"/>
     <dependencies>
@@ -96,6 +135,24 @@
     </dependencies>
   </tarball>
 
+  <!-- does not build -->
+  <tarball id="cairo-1.10" supports-non-srcdir-builds="no">
+    <source href="http://cairographics.org/releases/cairo-1.10.0.tar.gz"
+            md5sum="70a2ece66cf473d976e2db0f75bf199e"/>
+    <dependencies>
+      <dep package="pixman"/>
+      <dep package="gettext"/>
+      <dep package="libpng"/>
+    </dependencies>
+  </tarball>
+
+  <metamodule id="cairo">
+    <dependencies>
+      <dep package="cairo-1.8"/>
+    </dependencies>
+  </metamodule>
+
+  <!-- good -->
   <tarball id="pango">
     <source href="http://ftp.acc.umu.se/pub/GNOME/sources/pango/1.28/pango-1.28.0.tar.bz2"
             sha256sum="68480485b714e3570a58c270add9e9785fa78068f7410949b478e8a9d3f5bc40"/>
@@ -108,6 +165,7 @@
     </dependencies>
   </tarball>
 
+  <!-- good -->
   <tarball id="atk" supports-non-srcdir-builds="no">
     <source href="http://ftp.gnome.org/pub/GNOME/sources/atk/1.30/atk-1.30.0.tar.bz2"
             sha256sum="92b9b1213cafc68fe9c3806273b968c26423237d7b1f631dd83dc5270b8c268c"/>
@@ -116,6 +174,7 @@
     </dependencies>
   </tarball>
 
+  <!-- good -->
   <tarball id="gtk+-2.16">
     <source href="http://ftp.gnome.org/pub/GNOME/sources/gtk+/2.16/gtk+-2.16.6.tar.bz2"
             sha256sum="18e0f9792028e6cc5108447678f17d396f9a2cdfec1e6ab5dca98cb844f954af"/>
@@ -161,6 +220,21 @@
     </patches>
   </tarball>
 
+  <repository type="git" name="git.gnome.org" href="git://git.gnome.org/"/>
+  <autotools id="gtk-2-20">
+    <branch repo="git.gnome.org" module="gtk+" revision="gtk-2-20"/>
+    <dependencies>
+      <dep package="cairo"/>
+      <dep package="pango"/>
+      <dep package="atk"/>
+      <dep package="glib"/>
+      <dep package="libpng"/>
+    </dependencies>
+<!--    <patches>
+      <patch file="gtk-2.20.patch" strip="1"/>
+    </patches>-->
+  </autotools>
+
   <tarball id="gtk-engines">
     <source href="http://ftp.gnome.org/pub/GNOME/sources/gtk-engines/2.20/gtk-engines-2.20.0.tar.bz2"
             sha256sum="69b2e6798cfdcf7366b025b8f59fc63f658474f823d185473e94f969bae8cad1"/>
@@ -204,6 +278,7 @@
     </patches>
   </tarball>
 
+  <!-- good -->
   <tarball id="intltool">
     <source href="http://launchpadlibrarian.net/41841194/intltool-0.41.1.tar.gz"
             sha256sum="06d02133a85b9d6f29cd763050dc9267a6d73ef3008993f5b917cafc7ece96c0"/>

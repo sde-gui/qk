@@ -1,5 +1,10 @@
 #! /bin/sh
 
+if [ "$1" = "--help" -o "$1" = "-h" ]; then
+  echo "Usage: $0 [--debug|--release|--all] <make arguments...>"
+  exit 0
+fi
+
 if [ "$1" = "--all" ]; then
   shift
   echo $0 --debug "$@"

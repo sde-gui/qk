@@ -12,7 +12,9 @@ assert _gtkwinconfig in ['debug', 'release']
 
 _mingw_tool_prefix = '/usr/bin/i586-mingw32msvc-'
 
+makeargs = '-j 2'
 moduleset = os.path.join(_gtkwinjhbuilddir, 'gtk.moduleset')
+use_lib64 = False
 
 modules = ['medit-gtk-win']
 
@@ -37,15 +39,15 @@ _mingw_tools = {
     'GCOV': 'gcov',
     'LD': 'ld',
     'NM': 'nm',
-    'OBJCOPY': 'objcopy', 
+    'OBJCOPY': 'objcopy',
     'OBJDUMP': 'objdump',
     'READELF': 'readelf',
     'SIZE': 'size',
-    'STRINGS': 'strings', 
+    'STRINGS': 'strings',
     'WINDRES': 'windres',
     'RC': 'windres',
     'AR': 'ar',
-    'RANLIB': 'ranlib', 
+    'RANLIB': 'ranlib',
     'STRIP': 'strip',
 }
 
@@ -81,7 +83,7 @@ autogenargs += ' --host=' + _configure_target
 autogenargs += ' --target=' + _configure_target
 autogenargs += ' --disable-docs --disable-gtk-doc --disable-scrollkeeper'
 autogenargs += ' --enable-maintainer-mode --enable-shared --disable-static'
-autogenargs += ' --enable-relocatable --disable-glibtest'
+autogenargs += ' --enable-relocatable --enable-silent-rules --disable-glibtest'
 for _var in ['AR', 'RANLIB', 'STRIP', 'AS', 'DLLTOOL', 'OBJDUMP', 'NM', 'WINDRES', 'RC']:
     autogenargs += ' ' + _var + '="' + os.environ[_var] + '" '
 
@@ -110,10 +112,14 @@ module_autogenargs['glib'] =    autogenargs + " --cache-file=" + _glib_win32_cac
 					    + " --with-threads=win32" \
 					    + " --disable-fam" \
 					    + " --disable-selinux"
+module_autogenargs['glib-2.24.0'] = module_autogenargs['glib']
+module_autogenargs['glib-2.24.2'] = module_autogenargs['glib']
 
 module_autogenargs['cairo'] =   autogenargs + " --without-x" \
 					    + " --disable-ft" \
 					    + " png_REQUIRES=libpng"
+module_autogenargs['cairo-1.8'] = module_autogenargs['cairo']
+module_autogenargs['cairo-1.10'] = module_autogenargs['cairo']
 
 module_autogenargs['pango'] =   autogenargs + " --with-included-modules"
 
@@ -142,3 +148,4 @@ module_autogenargs['gtk+-2.20'] = autogenargs \
 					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
                                             + " --with-included-immodules" \
                                             + " --disable-introspection"
+module_autogenargs['gtk-2-20'] = module_autogenargs['gtk+-2.20']

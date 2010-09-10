@@ -1,4 +1,4 @@
-export mgwdestdir=/yevgenm-laptop/c/Home/Projects
+export mgwdestdir=/tmp/gtk-win
 
 export mgwdir_s=$mgwdir
 export mgwdir=`cd $mgwdir && pwd`

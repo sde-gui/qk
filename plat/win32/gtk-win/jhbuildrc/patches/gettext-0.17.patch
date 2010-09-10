@@ -1,0 +1,68 @@
+diff -r 6b03b8e866f5 gettext-runtime/intl/Makefile.in
+--- a/gettext-runtime/intl/Makefile.in	Wed Sep 08 23:54:37 2010 -0700
++++ b/gettext-runtime/intl/Makefile.in	Wed Sep 08 23:55:38 2010 -0700
+@@ -280,15 +280,11 @@
+ # so that they work with the sed-3.02 that is shipped with MSYS. We can use
+ # GNU bash's $'\n' syntax to obtain such a newline.
+ libintl.res: $(srcdir)/libintl.rc
+-	nl=$$'\n'; \
+-	sed_extract_major='/^[0-9]/{'$${nl}'s/^\([0-9]*\).*/\1/p'$${nl}q$${nl}'}'$${nl}'c\'$${nl}0$${nl}q; \
+-	sed_extract_minor='/^[0-9][0-9]*[.][0-9]/{'$${nl}'s/^[0-9]*[.]\([0-9]*\).*/\1/p'$${nl}q$${nl}'}'$${nl}'c\'$${nl}0$${nl}q; \
+-	sed_extract_subminor='/^[0-9][0-9]*[.][0-9][0-9]*[.][0-9]/{'$${nl}'s/^[0-9]*[.][0-9]*[.]\([0-9]*\).*/\1/p'$${nl}q$${nl}'}'$${nl}'c\'$${nl}0$${nl}q; \
+ 	$(WINDRES) \
+ 	  "-DPACKAGE_VERSION_STRING=\\\"$(VERSION)\\\"" \
+-	  "-DPACKAGE_VERSION_MAJOR="`echo '$(VERSION)' | sed -n -e "$$sed_extract_major"` \
+-	  "-DPACKAGE_VERSION_MINOR="`echo '$(VERSION)' | sed -n -e "$$sed_extract_minor"` \
+-	  "-DPACKAGE_VERSION_SUBMINOR="`echo '$(VERSION)' | sed -n -e "$$sed_extract_subminor"` \
++	  "-DPACKAGE_VERSION_MAJOR="`echo '$(VERSION)' | sed -r -e 's/([0-9]+)[.]([0-9]+)/\1/'` \
++	  "-DPACKAGE_VERSION_MINOR="`echo '$(VERSION)' | sed -r -e 's/([0-9]+)[.]([0-9]+)/\1/'` \
++	  "-DPACKAGE_VERSION_SUBMINOR="0 \
+ 	  -i $(srcdir)/libintl.rc -o libintl.res --output-format=coff
+ 
+ ref-add.sed: $(srcdir)/ref-add.sin
+diff -r 6b03b8e866f5 gettext-tools/Makefile.in
+--- a/gettext-tools/Makefile.in	Wed Sep 08 23:54:37 2010 -0700
++++ b/gettext-tools/Makefile.in	Wed Sep 08 23:55:38 2010 -0700
+@@ -724,7 +724,7 @@
+ top_srcdir = @top_srcdir@
+ AUTOMAKE_OPTIONS = 1.5 gnu no-dependencies
+ ACLOCAL_AMFLAGS = -I m4 -I ../gettext-runtime/m4 -I ../autoconf-lib-link/m4 -I ../m4 -I gnulib-m4 -I libgettextpo/gnulib-m4
+-SUBDIRS = doc intl gnulib-lib libgrep src libgettextpo po projects styles misc man m4 tests gnulib-tests examples
++SUBDIRS = intl gnulib-lib libgrep src libgettextpo po misc m4
+ 
+ # Allow users to use "gnulib-tool --update".
+ 
+diff -r 6b03b8e866f5 gettext-tools/configure
+--- a/gettext-tools/configure	Wed Sep 08 23:54:37 2010 -0700
++++ b/gettext-tools/configure	Wed Sep 08 23:55:38 2010 -0700
+@@ -1261,7 +1261,7 @@
+ FFLAGS
+ EMACS
+ EMACSLOADPATH'
+-ac_subdirs_all='examples'
++ac_subdirs_all=
+ 
+ # Initialize some variables set by options.
+ ac_init_help=
+@@ -65980,7 +65980,7 @@
+ 
+ EOF
+ 
+-subdirs="$subdirs examples"
++subdirs="$subdirs"
+ 
+ 
+ ac_config_files="$ac_config_files Makefile"
+diff -r 6b03b8e866f5 gettext-tools/woe32dll/gettextlib-exports.c
+--- a/gettext-tools/woe32dll/gettextlib-exports.c	Wed Sep 08 23:54:37 2010 -0700
++++ b/gettext-tools/woe32dll/gettextlib-exports.c	Wed Sep 08 23:55:38 2010 -0700
+@@ -26,7 +26,7 @@
+ VARIABLE(gl_array_list_implementation)
+ VARIABLE(gl_linkedhash_list_implementation)
+ VARIABLE(program_name)
+-VARIABLE(rpl_optarg)
+-VARIABLE(rpl_optind)
++// VARIABLE(rpl_optarg)
++// VARIABLE(rpl_optind)
+ VARIABLE(simple_backup_suffix)
+ VARIABLE(styled_ostream_typeinfo)
