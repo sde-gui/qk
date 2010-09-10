@@ -40,7 +40,7 @@
 #define MOO_MSVC_WARNING_PUSH_DISABLE(N)
 #endif
 
-#if defined(MOO_CL_GCC)
+#if defined(MOO_CL_GCC) && 0
 #define _MOO_GCC_PRAGMA(x) _Pragma (#x)
 #define MOO_COMPILER_MESSAGE(x)     _MOO_GCC_PRAGMA(message (#x))
 #define MOO_TODO(x)                 _MOO_GCC_PRAGMA(message ("TODO: " #x))
@@ -69,7 +69,6 @@
 #endif
 
 #if defined(MOO_CL_GCC)
-#  define MOO_FA_ERROR(msg) __attribute__((error(msg)))
 #  define MOO_FA_WARNING(msg) __attribute__((warning(msg)))
 #  define MOO_FA_NORETURN __attribute__((noreturn))
 #  define MOO_FA_CONST __attribute__((const))
@@ -84,7 +83,6 @@
 #    define MOO_FA_NOTHROW
 #  endif
 #else /* !MOO_CL_GCC */
-#  define MOO_FA_ERROR(msg)
 #  define MOO_FA_WARNING(msg)
 #  define MOO_FA_MALLOC
 #  define MOO_FA_UNUSED
@@ -105,6 +103,7 @@
 #define NORETURN MOO_NORETURN
 #define NOTHROW MOO_NOTHROW
 
+#define MOO_FA_ERROR(msg)
 #define MOO_FA_MISSING MOO_FA_ERROR("This function must not be used")
 
 #if !defined(MOO_DEV_MODE)
