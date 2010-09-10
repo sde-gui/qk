@@ -34,9 +34,24 @@ if MOO_OS_WIN32
 medit_LDFLAGS += -mwindows
 endif
 
+EXTRA_DIST += medit-app/medit.rc.in
+if MOO_OS_WIN32
+CLEANFILES += medit-app/medit.rc medit-app/medit.res
+medit-app/medit.rc: medit-app/medit.rc.in $(top_builddir)/config.status
+	$(MKDIR_P) medit-app
+	cd $(top_builddir) && ./config.status --file=moo/medit-app/medit.rc
+medit-app/medit.res: medit-app/medit.rc
+	$(WINDRES) -i medit-app/medit.rc --input-format=rc -o medit-app/medit.res -O coff
+medit_LDADD += medit-app/medit.res
+endif
+
 EXTRA_DIST += medit-app/medit.desktop.in
-# desktopdir = $(datadir)/applications
-# desktop_DATA = medit.desktop.in
+if MOO_OS_UNIX
+desktopdir = $(datadir)/applications
+desktop_DATA = medit.desktop
+medit.desktop: medit-app/medit.desktop.in $(INTLTOOL_MERGE) $(wildcard $(top_srcdir)/po/*.po)
+	LC_ALL=C $(INTLTOOL_MERGE) -d -u -c $(top_builddir)/po/.intltool-merge-cache $(top_srcdir)/po $< $@
+endif MOO_OS_UNIX
 
 # MOO_WIN32_RESOURCE(medit.rc.in medit MEDIT_SOURCES medit_libs)
 
