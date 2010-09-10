@@ -1,22 +1,12 @@
-# _MOO_AC_CHECK_COMPILER_OPTIONS(options)
-AC_DEFUN([_MOO_AC_CHECK_COMPILER_OPTIONS],[
-  AC_LANG_PUSH([C])
-  for opt in $1; do
-    AC_MSG_CHECKING(whether compiler accepts $opt)
-    save_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS $opt"
-    AC_TRY_COMPILE([],[],[MOO_CFLAGS="$MOO_CFLAGS $opt"; MOO_CXXFLAGS="$MOO_CXXFLAGS $opt"; AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)])
-    CFLAGS="$save_CFLAGS"
-  done
-  AC_LANG_POP([C])
-])
-
 AC_DEFUN([_MOO_AC_CHECK_C_COMPILER_OPTIONS],[
   AC_LANG_PUSH([C])
   for opt in $1; do
     AC_MSG_CHECKING(whether C compiler accepts $opt)
     save_CFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS $opt"
+    if test "x$MOO_DEV_MODE" = "xyes"; then
+      CFLAGS="-Werror $CFLAGS"
+    fi
     AC_TRY_COMPILE([],[],[MOO_CFLAGS="$MOO_CFLAGS $opt"; AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)])
     CFLAGS="$save_CFLAGS"
   done
@@ -29,10 +19,19 @@ AC_DEFUN([_MOO_AC_CHECK_CXX_COMPILER_OPTIONS],[
     AC_MSG_CHECKING(whether C++ compiler accepts $opt)
     save_CXXFLAGS="$CXXFLAGS"
     CXXFLAGS="$CXXFLAGS $opt"
+    if test "x$MOO_DEV_MODE" = "xyes"; then
+      CXXFLAGS="-Werror $CXXFLAGS"
+    fi
     AC_TRY_COMPILE([],[],[MOO_CXXFLAGS="$MOO_CXXFLAGS $opt"; AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)])
     CXXFLAGS="$save_CXXFLAGS"
   done
   AC_LANG_POP([C++])
+])
+
+# _MOO_AC_CHECK_COMPILER_OPTIONS(options)
+AC_DEFUN([_MOO_AC_CHECK_COMPILER_OPTIONS],[
+  _MOO_AC_CHECK_C_COMPILER_OPTIONS([$1])
+  _MOO_AC_CHECK_CXX_COMPILER_OPTIONS([$1])
 ])
 
 AC_DEFUN([MOO_COMPILER],[
@@ -97,11 +96,11 @@ MOO_COMPILER
 
 _MOO_AC_CHECK_COMPILER_OPTIONS([dnl
 -Wall -Wextra -fexceptions -fno-strict-aliasing -fno-strict-overflow dnl
--Wno-missing-field-initializers -Wno-overlength-strings  -Wno-missing-declarations dnl
+-Wno-missing-field-initializers -Wno-overlength-strings dnl
 -Wno-format-y2k -Wno-overlength-strings dnl
 ])
 _MOO_AC_CHECK_C_COMPILER_OPTIONS([dnl
-dnl
+-Wno-missing-declarations dnl
 ])
 _MOO_AC_CHECK_CXX_COMPILER_OPTIONS([dnl
 -std=c++98 -fno-rtti dnl
@@ -114,22 +113,28 @@ else
 fi
 
 if test "x$MOO_DEV_MODE" = "xyes"; then
+  if $MOO_GCC; then
+    MOO_CFLAGS="$MOO_CFLAGS -Werror"
+    MOO_CXXFLAGS="$MOO_CXXFLAGS -Werror"
+  fi
   _MOO_AC_CHECK_COMPILER_OPTIONS([dnl
--Werror -Wpointer-arith -Wcast-align -Wsign-compare -Wreturn-type dnl
--Wwrite-strings -Wmissing-declarations -Wmissing-format-attribute dnl
+-Wpointer-arith -Wcast-align -Wsign-compare -Wreturn-type dnl
+-Wwrite-strings -Wmissing-format-attribute dnl
 -Wdisabled-optimization -Wendif-labels -Wlong-long dnl
--Wvla -Wuninitialized -Winit-self dnl
+-Wvla -Winit-self dnl
 ])
   # -Wlogical-op triggers warning in strchr() when compiled with optimizations
   if test "x$MOO_DEBUG_ENABLED" = "xyes"; then
     _MOO_AC_CHECK_COMPILER_OPTIONS([-Wlogical-op])
+  else
+    _MOO_AC_CHECK_COMPILER_OPTIONS([-Wuninitialized])
   fi
   _MOO_AC_CHECK_C_COMPILER_OPTIONS([dnl
 -Wmissing-prototypes -Wnested-externs dnl
 ])
   _MOO_AC_CHECK_CXX_COMPILER_OPTIONS([dnl
 -fno-nonansi-builtins -fno-gnu-keywords dnl
--Wctor-dtor-privacy -Wnon-virtual-dtor -Wabi -Wstrict-null-sentinel dnl
+-Wctor-dtor-privacy -Wabi -Wstrict-null-sentinel dnl -Wnon-virtual-dtor
 -Woverloaded-virtual -Wsign-promo dnl
 ])
 fi
@@ -269,6 +274,7 @@ cat >configargs.h.tmp <<EOF
 static const char configure_args@<:@@:>@ = "$moo_ac_configure_args";
 EOF
 cmp -s configargs.h configargs.h.tmp || mv configargs.h.tmp configargs.h
+rm -f configargs.h.tmp
 AC_DEFINE(HAVE_CONFIGARGS_H, 1, [configargs.h is created])
 ])
 
