@@ -321,8 +321,6 @@ class String
 {
 public:
     String() {}
-
-    String(const Pointer<char> &p) { init(p); }
     String(const char *str) { init(str); }
 
     String(const char *str, gsize len) { if (len != 0) s().assign(validateUtf8(str, len), len); }

@@ -64,19 +64,8 @@ inline void DeleteObject<char>::operator() (char *p) { g_free(p); }
 
 } // namespace impl
 
-template<class T>
-class Pointer
-{
-public:
-    virtual ~Pointer() {}
-
-    virtual T *get() const = 0;
-
-    operator T* () const { return get(); }
-};
-
 template<class T, class TDeleter = impl::DeleteObject<T> >
-class OwningPtr : public Pointer<T>
+class OwningPtr
 {
 public:
     OwningPtr(T *p = 0) : m_p(p) {}
@@ -156,7 +145,7 @@ public:
 }
 
 template<class T, class TRefUnref = impl::RefUnrefObject<T> >
-class SharedPtr : public Pointer<T>
+class SharedPtr
 {
 private:
     inline static void ref(T *p) { if (p) TRefUnref::ref(p); }

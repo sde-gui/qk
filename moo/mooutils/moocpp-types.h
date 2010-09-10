@@ -21,13 +21,10 @@
 namespace moo {
 
 #define MOO_IMPLEMENT_POINTER(Class, get_ptr_expr)                          \
-    operator Class*() const { return get_ptr_expr; }                        \
     Class *operator->() const { return get_ptr_expr; }                      \
     Class &operator*() const { return *mooCheckPtr(get_ptr_expr); }
 
 #define MOO_IMPLEMENT_POINTER_TO_MEM(Class, get_ptr_expr)                   \
-    operator Class*() { return get_ptr_expr; }                              \
-    operator const Class*() const { return get_ptr_expr; }                  \
     Class *operator->() { return get_ptr_expr; }                            \
     const Class *operator->() const { return get_ptr_expr; }                \
     Class &operator*() { return *mooCheckPtr(get_ptr_expr); }               \
