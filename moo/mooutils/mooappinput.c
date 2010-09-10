@@ -77,6 +77,7 @@ static InputChannel *input_channel_new      (const char     *appname,
                                              gboolean        may_fail);
 static void          input_channel_free     (InputChannel   *ch);
 static char         *input_channel_get_path (InputChannel   *ch);
+G_GNUC_UNUSED
 static const char   *input_channel_get_name (InputChannel   *ch);
 
 

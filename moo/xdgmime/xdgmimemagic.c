@@ -404,7 +404,7 @@ _xdg_mime_magic_parse_magic_line (FILE              *magic_file,
       return XDG_MIME_MAGIC_ERROR;
     }
   bytes_read = fread (matchlet->value, 1, matchlet->value_length, magic_file);
-  if (bytes_read != matchlet->value_length)
+  if (bytes_read != (int) matchlet->value_length)
     {
       _xdg_mime_magic_matchlet_free (matchlet);
       if (feof (magic_file))
@@ -424,7 +424,7 @@ _xdg_mime_magic_parse_magic_line (FILE              *magic_file,
 	  return XDG_MIME_MAGIC_ERROR;
 	}
       bytes_read = fread (matchlet->mask, 1, matchlet->value_length, magic_file);
-      if (bytes_read != matchlet->value_length)
+      if (bytes_read != (int) matchlet->value_length)
 	{
 	  _xdg_mime_magic_matchlet_free (matchlet);
 	  if (feof (magic_file))
@@ -462,7 +462,7 @@ _xdg_mime_magic_parse_magic_line (FILE              *magic_file,
 	  _xdg_mime_magic_matchlet_free (matchlet);
 	  return XDG_MIME_MAGIC_EOF;
 	}
-      if (matchlet->range_length == -1)
+      if ((int) matchlet->range_length == -1)
 	{
 	  _xdg_mime_magic_matchlet_free (matchlet);
 	  return XDG_MIME_MAGIC_ERROR;
@@ -484,7 +484,7 @@ _xdg_mime_magic_parse_magic_line (FILE              *magic_file,
 	    }
 	  /* FIXME: need to get this defined in a <config.h> style file */
 #if XDG_LITTLE_ENDIAN
-	  for (i = 0; i < matchlet->value_length; i = i + matchlet->word_size)
+	  for (i = 0; i < (int) matchlet->value_length; i = i + matchlet->word_size)
 	    {
 	      if (matchlet->word_size == 2)
 		*((xdg_uint16_t *) matchlet->value + i) = SWAP_BE16_TO_LE16 (*((xdg_uint16_t *) (matchlet->value + i)));
@@ -522,7 +522,7 @@ _xdg_mime_magic_matchlet_compare_to_data (XdgMimeMagicMatchlet *matchlet,
 					  size_t                len)
 {
   int i, j;
-  for (i = matchlet->offset; i < matchlet->offset + matchlet->range_length; i++)
+  for (i = matchlet->offset; i < (int) (matchlet->offset + matchlet->range_length); i++)
     {
       int valid_matchlet = TRUE;
 
@@ -531,7 +531,7 @@ _xdg_mime_magic_matchlet_compare_to_data (XdgMimeMagicMatchlet *matchlet,
 
       if (matchlet->mask)
 	{
-	  for (j = 0; j < matchlet->value_length; j++)
+	  for (j = 0; j < (int) matchlet->value_length; j++)
 	    {
 	      if ((matchlet->value[j] & matchlet->mask[j]) !=
 		  ((((unsigned char *) data)[j + i]) & matchlet->mask[j]))
@@ -543,7 +543,7 @@ _xdg_mime_magic_matchlet_compare_to_data (XdgMimeMagicMatchlet *matchlet,
 	}
       else
 	{
-	  for (j = 0; j <  matchlet->value_length; j++)
+	  for (j = 0; j < (int) matchlet->value_length; j++)
 	    {
 	      if (matchlet->value[j] != ((unsigned char *) data)[j + i])
 		{
@@ -675,11 +675,11 @@ _xdg_mime_magic_lookup_data (XdgMimeMagic *mime_magic,
 	  mime_type = match->mime_type;
 	  break;
 	}
-      else 
+      else
 	{
 	  for (n = 0; n < n_mime_types; n++)
 	    {
-	      if (mime_types[n] && 
+	      if (mime_types[n] &&
 		  _xdg_mime_mime_type_equal (mime_types[n], match->mime_type))
 		mime_types[n] = NULL;
 	    }
@@ -694,7 +694,7 @@ _xdg_mime_magic_lookup_data (XdgMimeMagic *mime_magic,
 	    mime_type = mime_types[n];
 	}
     }
-  
+
   if (result_prio)
     *result_prio = prio;
 
