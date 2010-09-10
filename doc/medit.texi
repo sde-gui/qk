@@ -26,10 +26,10 @@ medit
 @node Top
 @top medit
 
-This manual is for medit version 0.99.0-unstable, a text editor.
+This manual is for medit version 0.99.0-unstable.
 
 @menu
-* Preferences:: Selecting editing options and languages.
+* Preferences:: Editor preferences.
 * meditrc:: Preferences files.
 * Regular expressions:: Regular expressions.
 * User-defined tools:: User-defined tools.
