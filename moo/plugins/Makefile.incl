@@ -7,7 +7,8 @@ plugins_sources +=			\
 	plugins/mooeditplugins.h	\
 	plugins/mooeditplugins.c	\
 	plugins/moofilelist.c		\
-	plugins/moofind.c
+	plugins/moofind.c		\
+	plugins/moopython.c
 
 EXTRA_DIST +=						\
 	plugins/glade/moofileselector-prefs.glade	\
@@ -20,6 +21,12 @@ built_plugins_sources +=		\
 	moofileselector-gxml.h		\
 	moofind-gxml.h			\
 	moogrep-gxml.h
+
+EXTRA_DIST += plugins/moopython.py
+built_plugins_sources += plugins/moopython-py.h
+plugins/moopython-py.h: plugins/moopython.py $(top_srcdir)/tools/xml2h.py
+	$(MKDIR_P) plugins
+	$(PYTHON) $(top_srcdir)/tools/xml2h.py $< $@.tmp MOO_PYTHON_PY && mv $@.tmp $@
 
 include plugins/ctags/Makefile.incl
 include plugins/usertools/Makefile.incl

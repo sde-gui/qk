@@ -16,11 +16,10 @@
 #include <config.h>
 #include "mooeditplugins.h"
 
-void initmoo (void);
-
 void
 moo_plugin_init_builtin (void)
 {
+    _moo_python_plugin_init ();
     _moo_file_selector_plugin_init ();
     _moo_file_list_plugin_init ();
     _moo_find_plugin_init ();
