@@ -35,7 +35,8 @@ man-medit.t2t: man-medit.t2t.in $(top_builddir)/config.status
 	mv man-medit.t2t $(srcdir)/man-medit.t2t
 
 medit.1: man-medit.t2t
-	txt2tags --target=man --outfile=medit.1.tmp $(srcdir)/man-medit.t2t && mv medit.1.tmp $(srcdir)/medit.1
+	txt2tags --target=man --outfile=- $(srcdir)/man-medit.t2t | grep -v "cmdline: txt2tags" \
+		> medit.1.tmp && mv medit.1.tmp $(srcdir)/medit.1
 
 endif
 
