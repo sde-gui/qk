@@ -8,7 +8,6 @@ static gpointer data_cookie;
 static gpointer object_cookie;
 
 struct MomLuaData {
-    moo::SharedPtr<IScript> script;
 };
 
 static MomLuaData *set_data(lua_State *L)
@@ -16,7 +15,6 @@ static MomLuaData *set_data(lua_State *L)
     moo_return_val_if_fail(L != 0, 0);
 
     MomLuaData *data = new MomLuaData;
-    data->script = get_mom_script_instance();
 
     lua_pushlightuserdata (L, &data_cookie);
     lua_pushlightuserdata (L, data);
@@ -48,7 +46,7 @@ static void unset_data(lua_State *L)
     delete data;
 }
 
-static MomLuaData *get_data(lua_State *L)
+G_GNUC_UNUSED static MomLuaData *get_data(lua_State *L)
 {
     MomLuaData *data = 0;
 
@@ -202,7 +200,6 @@ static void push_variant(lua_State *L, const Variant &v);
 
 static int cfunc_call_named_method(lua_State *L)
 {
-    MomLuaData *data = get_data(L);
     const char *meth = get_arg_string(L, lua_upvalueindex(1));
 
     // Allow both obj.method(arg) and obj:method(arg) syntaxes.
@@ -223,7 +220,7 @@ static int cfunc_call_named_method(lua_State *L)
         args.append(get_arg_variant(L, i));
 
     Variant v;
-    Result r = data->script->call_method(self, meth, args, v);
+    Result r = Script::call_method(self, meth, args, v);
     check_result(L, r);
 
     if (v.vt() != VtVoid)
@@ -239,12 +236,10 @@ static int cfunc_call_named_method(lua_State *L)
 
 static int object__index(lua_State *L)
 {
-    MomLuaData *data = get_data(L);
-
     HObject self = get_arg_object(L, 1);
     const char *field = get_arg_string(L, 2);
 
-    switch (data->script->lookup_field(self, field))
+    switch (Script::lookup_field(self, field))
     {
         case FieldMethod:
             lua_pushstring(L, field);
@@ -255,7 +250,7 @@ static int object__index(lua_State *L)
         case FieldProperty:
             {
             Variant v;
-            Result r = data->script->get_property(self, field, v);
+            Result r = Script::get_property(self, field, v);
             check_result(L, r);
             push_variant(L, v);
             return 1;
@@ -268,16 +263,14 @@ static int object__index(lua_State *L)
 
 static int object__newindex(lua_State *L)
 {
-    MomLuaData *data = get_data(L);
-
     HObject h = get_arg_object(L, 1);
     const char *prop = get_arg_string(L, 2);
 
-    if (data->script->lookup_field(h, prop) != FieldProperty)
+    if (Script::lookup_field(h, prop) != FieldProperty)
         return luaL_error(L, "no property '%s'", prop);
 
     Variant v = get_arg_variant(L, 3);
-    Result r = data->script->set_property(h, prop, v);
+    Result r = Script::set_property(h, prop, v);
 
     check_result(L, r);
     return 0;
@@ -379,7 +372,7 @@ static void push_variant(lua_State *L, const Variant &v)
 //     const char *prop = get_arg_string(L, 2);
 //     Variant v = get_arg_variant(L, 3);
 //
-//     Result r = data->script->set_property(h, prop, v);
+//     Result r = Script::set_property(h, prop, v);
 //     check_result(L, r);
 //
 //     return 0;
@@ -393,7 +386,7 @@ static void push_variant(lua_State *L, const Variant &v)
 //     const char *prop = get_arg_string(L, 2);
 //
 //     Variant v;
-//     Result r = data->script->get_property(h, prop, v);
+//     Result r = Script::get_property(h, prop, v);
 //     check_result(L, r);
 //
 //     push_variant(L, v);
@@ -412,7 +405,7 @@ static void push_variant(lua_State *L, const Variant &v)
 //         args.append(get_arg_variant(L, i));
 //
 //     Variant v;
-//     Result r = data->script->call_method(h, meth, args, v);
+//     Result r = Script::call_method(h, meth, args, v);
 //     check_result(L, r);
 //
 //     push_variant(L, v);
@@ -421,8 +414,7 @@ static void push_variant(lua_State *L, const Variant &v)
 
 static int cfunc_get_app_obj(lua_State *L)
 {
-    MomLuaData *data = get_data(L);
-    HObject h = data->script->get_app_obj();
+    HObject h = Script::get_app_obj();
     push_object(L, h);
     return 1;
 }

@@ -46,22 +46,15 @@ enum FieldKind
     FieldProperty
 };
 
-// #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-class IScript
+class Script
 {
 public:
-    virtual void ref() NOTHROW = 0;
-    virtual void unref() NOTHROW = 0;
-    virtual HObject get_app_obj() NOTHROW = 0;
-    virtual Result call_method(HObject obj, const String &meth, const VariantArray &args, Variant &ret) NOTHROW = 0;
-    virtual Result set_property(HObject obj, const String &prop, const Variant &val) NOTHROW = 0;
-    virtual Result get_property(HObject obj, const String &prop, Variant &val) NOTHROW = 0;
-    virtual FieldKind lookup_field(HObject obj, const String &field) NOTHROW = 0;
+    static HObject get_app_obj() NOTHROW;
+    static Result call_method(HObject obj, const String &meth, const VariantArray &args, Variant &ret) NOTHROW;
+    static Result set_property(HObject obj, const String &prop, const Variant &val) NOTHROW;
+    static Result get_property(HObject obj, const String &prop, Variant &val) NOTHROW;
+    static FieldKind lookup_field(HObject obj, const String &field) NOTHROW;
 };
-// #pragma GCC diagnostic pop
-
-moo::SharedPtr<IScript> get_mom_script_instance();
 
 } // namespace mom
 

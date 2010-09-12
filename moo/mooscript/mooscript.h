@@ -182,36 +182,6 @@ private:
     guint m_id;
 };
 
-class Script : public IScript
-{
-public:
-    Script() : m_ref(0) {}
-    virtual ~Script() {}
-
-    void ref()
-    {
-        m_ref.ref();
-    }
-
-    void unref()
-    {
-        if (m_ref.unref())
-            delete this;
-    }
-
-    HObject get_app_obj () NOTHROW;
-    Result call_method (HObject h, const String &meth, const VariantArray &args, Variant &ret) NOTHROW;
-    Result set_property (HObject h, const String &prop, const Variant &val) NOTHROW;
-    Result get_property (HObject h, const String &prop, Variant &val) NOTHROW;
-    FieldKind lookup_field (HObject obj, const String &field);
-
-private:
-    MOO_DISABLE_COPY_AND_ASSIGN(Script)
-
-private:
-    moo::RefCount m_ref;
-};
-
 } // namespace mom
 
 #endif // MOM_SCRIPT_H

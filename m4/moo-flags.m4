@@ -134,8 +134,8 @@ if test "x$MOO_DEV_MODE" = "xyes"; then
 ])
   _MOO_AC_CHECK_CXX_COMPILER_OPTIONS([dnl
 -fno-nonansi-builtins -fno-gnu-keywords dnl
--Wctor-dtor-privacy -Wabi -Wstrict-null-sentinel dnl -Wnon-virtual-dtor
--Woverloaded-virtual -Wsign-promo dnl
+-Wctor-dtor-privacy -Wabi -Wstrict-null-sentinel dnl
+-Woverloaded-virtual -Wsign-promo -Wnon-virtual-dtor dnl
 ])
 fi
 

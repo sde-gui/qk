@@ -132,9 +132,4 @@ Result Script::get_property(HObject h, const String &prop, Variant &val)
     }
 }
 
-moo::SharedPtr<IScript> get_mom_script_instance()
-{
-    return new Script;
-}
-
 } // namespace mom

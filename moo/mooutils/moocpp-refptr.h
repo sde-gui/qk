@@ -121,7 +121,7 @@ public:
         TDeleter()(p);
     }
 
-    virtual T *get() const { return m_p; }
+    T *get() const { return m_p; }
     T *steal() { T *p = m_p; m_p = 0; return p; }
 
 private:
@@ -216,7 +216,7 @@ public:
         }
     }
 
-    virtual T *get() const { return m_p; }
+    T *get() const { return m_p; }
     T *steal() const { T *p = m_p; m_p = 0; return p; }
 
 private:
