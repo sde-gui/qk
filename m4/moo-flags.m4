@@ -268,16 +268,6 @@ AC_DEFUN_ONCE([MOO_AC_FAM],[
   AM_CONDITIONAL(MOO_USE_FAM, test x$MOO_USE_FAM = "xyes")
 ])
 
-AC_DEFUN_ONCE([_MOO_AC_CONFIGARGS_H],[
-moo_ac_configure_args=`echo "$ac_configure_args" | sed 's/^ //; s/\\""\`\$/\\\\&/g'`
-cat >configargs.h.tmp <<EOF
-static const char configure_args@<:@@:>@ = "$moo_ac_configure_args";
-EOF
-cmp -s configargs.h configargs.h.tmp || mv configargs.h.tmp configargs.h
-rm -f configargs.h.tmp
-AC_DEFINE(HAVE_CONFIGARGS_H, 1, [configargs.h is created])
-])
-
 ##############################################################################
 # MOO_AC_FLAGS(moo_top_dir)
 #
@@ -337,8 +327,6 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   AC_SUBST(MOO_CFLAGS)
   AC_SUBST(MOO_CXXFLAGS)
   AC_SUBST(MOO_LIBS)
-
-  _MOO_AC_CONFIGARGS_H
 
 #   MOO_INI_IN_IN_RULE='%.ini.desktop.in: %.ini.desktop.in.in $(top_builddir)/config.status ; cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/[$]@'
 #   MOO_INI_IN_RULE='%.ini: %.ini.in $(top_builddir)/config.status ; cd $(top_builddir) && $(SHELL) ./config.status --file=$(subdir)/[$]@'

@@ -278,9 +278,5 @@ moo_app_get_system_info (MooApp *app)
     g_string_append (text, "Broken gtk theme: yes\n");
 #endif
 
-#ifdef HAVE_CONFIGARGS_H
-    g_string_append_printf (text, "Configured with: %s\n", configure_args);
-#endif
-
     return g_string_free (text, FALSE);
 }
