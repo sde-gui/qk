@@ -1,0 +1,324 @@
+{
+   inflateReset2
+   Memcheck:Cond
+   fun:inflateReset2
+   fun:inflateInit2_
+}
+
+{
+   gtk_label_set_markup
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:gtk_label_set_markup
+}
+
+{
+   gtk_label_set_markup-2
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:g_realloc
+   obj:/lib/libglib-2.0.so*
+   fun:g_string_sized_new
+   fun:pango_parse_markup
+   obj:/usr/lib/libgtk-x11-2.0.so*
+   fun:gtk_label_set_markup
+}
+
+{
+   XextAddDisplay
+   Memcheck:Leak
+   fun:malloc
+   fun:XInitExtension
+}
+
+{
+   gtk_label_set_markup-3
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strjoinv
+   fun:pango_font_description_from_string
+   obj:/usr/lib/libgtk-x11-2.0.so*
+   obj:/usr/lib/libgtk-x11-2.0.so*
+   fun:gtk_rc_get_style
+   obj:/usr/lib/libgtk-x11-2.0.so*
+   obj:/usr/lib/libgtk-x11-2.0.so*
+   obj:/usr/lib/libgtk-x11-2.0.so*
+   fun:gtk_label_set_markup
+}
+
+{
+   g_type_register_static
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:g_realloc
+   obj:/usr/lib/libgobject-2.0.so*
+   fun:g_type_register_static
+}
+
+{
+   g_type_register_fundamental
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:g_realloc
+   obj:/usr/lib/libgobject-2.0.so*
+   fun:g_type_register_fundamental
+}
+
+{
+   g_type_register_fundamental-2
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   obj:/usr/lib/libgobject-2.0.so*
+   fun:g_type_register_fundamental
+}
+
+{
+   g_type_add_interface_static
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   obj:/usr/lib/libgobject-2.0.so*
+   obj:/usr/lib/libgobject-2.0.so*
+   obj:/usr/lib/libgobject-2.0.so*
+   obj:/usr/lib/libgobject-2.0.so*
+   fun:g_type_add_interface_static
+}
+
+{
+   g_type_class_ref
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:g_param_spec_string
+   obj:/usr/lib/libgtk-x11-2.0.so*
+   fun:g_type_class_ref
+}
+
+{
+   libclearlooks.so
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   obj:/usr/lib/libgobject-2.0.so*
+   obj:/usr/lib/libgtk-x11-2.0.so*
+   fun:gtk_widget_style_get_valist
+   fun:gtk_widget_style_get
+   obj:/usr/lib/gtk-2.0/2.10.0/engines/libclearlooks.so
+}
+
+{
+   gtk_widget_set_parent
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:pango_font_description_new
+   fun:pango_font_description_from_string
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   fun:gtk_rc_get_style
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   fun:gtk_widget_set_parent
+}
+
+{
+   gtk_widget_set_parent-2
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_string_sized_new
+   fun:g_string_new_len
+   obj:/usr/lib/libgobject-2.0.so.0.2515.0
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   obj:/usr/lib/gtk-2.0/2.10.0/engines/libclearlooks.so
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   fun:gtk_rc_get_style
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   fun:gtk_widget_set_parent
+}
+
+{
+   gtk_widget_set_parent-3
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strjoinv
+   fun:pango_font_description_from_string
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   fun:gtk_rc_get_style
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   fun:gtk_widget_set_parent
+}
+
+{
+   gtk_widget_set_parent-4
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_copy
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   fun:gtk_rc_get_style
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   obj:/usr/lib/libgtk-x11-2.0.so.0.2107.0
+   fun:gtk_widget_set_parent
+}
+
+{
+   gtk_scrolled_window_set_hadjustment
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_memdup
+   obj:/usr/lib/libgobject-2.0.so.0.2515.0
+   fun:g_type_class_ref
+   fun:g_type_class_ref
+   fun:g_type_class_ref
+   fun:g_object_new_valist
+   fun:g_object_new
+   fun:gtk_scrolled_window_set_hadjustment
+}
+
+{
+   g_type_register_static-2
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   obj:/usr/lib/libgobject-2.0.so.0.2515.0
+   obj:/usr/lib/libgobject-2.0.so.0.2515.0
+   fun:g_type_register_static
+}
+
+{
+   gtk_widget_set_name
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:gtk_widget_set_name
+}
+
+{
+   gdk_pixbuf_loader_close
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   fun:gdk_pixbuf_set_option
+   obj:/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-png.so
+   obj:/lib/libpng12.so*
+   fun:png_process_data
+   obj:/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders/libpixbufloader-png.so
+   obj:/usr/lib/libgdk_pixbuf-2.0.so*
+   fun:gdk_pixbuf_loader_close
+}
+
+{
+   g_type_register_static-3
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   obj:/usr/lib/libgobject-2.0.so*
+   fun:g_type_register_static
+}
+
+{
+   g_type_class_ref-2
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:g_object_class_install_property
+   obj:/usr/lib/libgdk_pixbuf-2.0.so*
+   fun:g_type_class_ref
+}
+
+{
+   g_type_class_ref-3
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:g_object_class_install_property
+   fun:g_type_class_ref
+}
+
+{
+   g_type_class_ref-4
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_memdup
+   obj:/usr/lib/libgobject-2.0.so.0.2515.0
+   fun:g_type_class_ref
+}
+
+{
+   gtk_icon_set_add_source
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   obj:/lib/libglib-2.0.so*
+   fun:gtk_icon_set_add_source
+}
+
+{
+   getpwnam_r
+   Memcheck:Leak
+   fun:malloc
+   fun:nss_parse_service_list
+   fun:__nss_database_lookup
+   obj:*
+   obj:*
+   fun:getpwnam_r@@GLIBC_2.2.5
+   obj:/lib/libglib-2.0.so.0.2515.0
+}
+
+{
+   ft-malloc
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/lib/libfontconfig.so*
+}
+
+{
+   ft-realloc
+   Memcheck:Leak
+   fun:realloc
+   obj:/usr/lib/libfontconfig.so*
+}
+
+{
+   ft_mem_qalloc
+   Memcheck:Leak
+   fun:malloc
+   fun:ft_mem_qalloc
+}
+
+{
+   ft_mem_qrealloc
+   Memcheck:Leak
+   fun:realloc
+   fun:ft_mem_qrealloc
+}
