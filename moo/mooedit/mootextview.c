@@ -1061,7 +1061,7 @@ void
 moo_text_view_select_all (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    g_signal_emit_by_name (view, "select-all", TRUE, NULL);
+    g_signal_emit_by_name (view, "select-all", TRUE);
 }
 
 
