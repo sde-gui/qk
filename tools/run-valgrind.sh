@@ -6,7 +6,10 @@ exec "$@"
 }
 
 export G_SLICE=always-malloc
-args="--tool=memcheck --log-file=medit-valgrind.log --num-callers=10 --error-limit=no --gen-suppressions=all --leak-check=full --leak-resolution=med --show-reachable=no --freelist-vol=100000000"
+export MOO_DISABLE_PYTHON=1
+
+args="--tool=memcheck --log-file=medit-valgrind.log --num-callers=50 --error-limit=no \
+--gen-suppressions=all --leak-check=full --leak-resolution=med --show-reachable=no --freelist-vol=100000000"
 # --track-fds=yes
 
 def_supp_file=`dirname $0`/medit.supp
