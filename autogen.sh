@@ -16,7 +16,7 @@ run_cmd() {
     "$@" || exit $!
 }
 
-run_cmd libtoolize --copy --force
+# run_cmd libtoolize --copy --force
 
 run_cmd intltoolize --copy --force
 echo "sed -e s/@GETTEXT_PACKAGE@/moo-gsv/ po/Makefile.in.in > po-gsv/Makefile.in.in"

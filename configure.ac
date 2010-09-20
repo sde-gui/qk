@@ -18,7 +18,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_SUBST(ACLOCAL_FLAGS)
 
 AM_INIT_AUTOMAKE([1.11 silent-rules foreign dist-bzip2 dist-zip no-dist-gzip])
-LT_INIT([disable-shared])
+# LT_INIT([disable-shared])
 
 AC_ARG_ENABLE(release,
   AC_HELP_STRING([--enable-release],[assume it's a release build]),[
@@ -71,7 +71,7 @@ AH_TOP([#ifndef __CONFIG_H__
 AH_BOTTOM([#include <moo-config.h>
 #endif // __CONFIG_H__])
 
-LT_LIB_M
+MOO_LT_LIB_M
 
 AC_DEFINE(MOO_BUILD_APP,[1],[MOO_BUILD_APP])
 AC_DEFINE(MOO_BUILD_EDIT,[1],[MOO_BUILD_EDIT])

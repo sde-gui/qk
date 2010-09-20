@@ -43,3 +43,22 @@ AM_CONDITIONAL(MOO_OS_[]_moo_os_,[$MOO_OS_[]_moo_os_])
 ])
 
 ])
+
+# LT_LIB_M macro from libtool.m4
+AC_DEFUN([MOO_LT_LIB_M],
+[AC_REQUIRE([AC_CANONICAL_HOST])dnl
+LIBM=
+case $host in
+*-*-beos* | *-*-cygwin* | *-*-pw32* | *-*-darwin*)
+  # These system don't have libm, or don't need it
+  ;;
+*-ncr-sysv4.3*)
+  AC_CHECK_LIB(mw, _mwvalidcheckl, LIBM="-lmw")
+  AC_CHECK_LIB(m, cos, LIBM="$LIBM -lm")
+  ;;
+*)
+  AC_CHECK_LIB(m, cos, LIBM="-lm")
+  ;;
+esac
+AC_SUBST([LIBM])
+])# LT_LIB_M
