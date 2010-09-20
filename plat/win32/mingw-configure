@@ -50,10 +50,9 @@ export OBJCFLAGS="-mms-bitfields -march=i686 $_def_cflags"
 export PKG_CONFIG_LIBDIR="$mgwtargetdir/lib/pkgconfig"
 export PKG_CONFIG_PATH="$mgwtargetdir/lib/pkgconfig"
 
-export INSTALL=install-check
-
 configure_args="--build=i686-pc-linux-gnu --host=i586-pc-mingw32msvc --target=i586-pc-mingw32msvc \
 AR=$AR RANLIB=$RANLIB STRIP=$STRIP AS=$AS DLLTOOL=$DLLTOOL OBJDUMP=$OBJDUMP NM=$NM WINDRES=$WINDRES RC=$RC \
+INSTALL=`which install-check` \
 --prefix=$mgwtargetdir --enable-silent-rules"
 
 if [ "$mgwconfig" = "debug" ]; then
