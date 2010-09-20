@@ -2,8 +2,10 @@
 
 # Usage: mjhbuild.sh [--debug|--release] <jhbuild arguments...>
 
-export mgwdir=`dirname $0`
-. $mgwdir/config.sh || exit 1
+if [ -z "$mgwconfig" ]; then
+  export mgwdir=`dirname $0`
+  . $mgwdir/config.sh || exit 1
+fi
 
 export _GTKWINDIR=`cd $mgwdir && pwd`
 export _GTKWINCONFIG=$mgwconfig
