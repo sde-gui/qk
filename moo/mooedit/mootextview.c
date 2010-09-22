@@ -2547,7 +2547,9 @@ moo_text_view_expose (GtkWidget      *widget,
     if (view->priv->update_n_lines_idle)
         update_n_lines_idle (view);
 
-    if (GTK_WIDGET_SENSITIVE (view) && event->window == text_window)
+    if (GTK_WIDGET_SENSITIVE (view) &&
+        GTK_WIDGET_HAS_FOCUS(view) &&
+        event->window == text_window)
     {
         if (view->priv->color_settings[MOO_TEXT_VIEW_COLOR_CURRENT_LINE] &&
             view->priv->gcs[MOO_TEXT_VIEW_COLOR_CURRENT_LINE])
