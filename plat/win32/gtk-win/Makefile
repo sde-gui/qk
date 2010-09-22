@@ -13,3 +13,6 @@ build-data: check-make
 	cp -R $(mgwdir)/extra/medit-data/* $(mgwtargetdir)/
 
 build: build-gtk build-data
+
+clean:
+	rm -rf $(mgwtargetdir)
