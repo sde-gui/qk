@@ -161,7 +161,7 @@ textview_do_op (GtkTextView   *obj,
             g_signal_emit_by_name (obj, "delete-from-cursor", GTK_DELETE_CHARS, 1);
             break;
         case MOO_EDIT_OP_SELECT_ALL:
-            g_signal_emit_by_name (obj, "select-all");
+            g_signal_emit_by_name (obj, "select-all", TRUE);
             break;
         default:
             g_return_if_reached ();
