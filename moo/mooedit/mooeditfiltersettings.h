@@ -40,7 +40,7 @@ void            _moo_edit_filter_settings_load          (void);
 GSList         *_moo_edit_filter_settings_get_strings   (void);
 void            _moo_edit_filter_settings_set_strings   (GSList     *strings);
 
-char           *_moo_edit_filter_settings_get_for_file  (const char *filename);
+char           *_moo_edit_filter_settings_get_for_doc   (MooEdit        *doc);
 
 
 G_END_DECLS

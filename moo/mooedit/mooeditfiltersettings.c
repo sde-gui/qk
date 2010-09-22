@@ -48,7 +48,7 @@ struct _MooEditFilter {
 };
 
 typedef struct {
-    GRegex *regex;
+    MooEditFilter *filter;
     char *config;
 } FilterSetting;
 
@@ -60,11 +60,57 @@ static FilterSettingsStore *settings_store;
 
 
 static char *filter_settings_store_get_setting (FilterSettingsStore *store,
-                                                const char          *filename);
+                                                MooEdit             *doc);
 
+static char *
+moo_edit_filter_get_string (MooEditFilter     *filter,
+                            MooEditFilterType  default_type)
+{
+    GString *str;
+    GSList *l;
 
-MooEditFilter *
-_moo_edit_filter_new (const char *string)
+    g_return_val_if_fail (filter != NULL, NULL);
+
+    str = g_string_new (NULL);
+
+    if (filter->type != default_type)
+    {
+        switch (filter->type)
+        {
+            case MOO_EDIT_FILTER_LANGS:
+                g_string_append (str, "langs:");
+                break;
+            case MOO_EDIT_FILTER_GLOBS:
+                g_string_append (str, "globs:");
+                break;
+            case MOO_EDIT_FILTER_REGEX:
+                g_string_append (str, "regex:");
+                break;
+        }
+    }
+
+    switch (filter->type)
+    {
+        case MOO_EDIT_FILTER_LANGS:
+        case MOO_EDIT_FILTER_GLOBS:
+            for (l = filter->u.langs; l != NULL; l = l->next)
+            {
+                if (l != filter->u.langs)
+                    g_string_append (str, ";");
+                g_string_append (str, l->data);
+            }
+            break;
+        case MOO_EDIT_FILTER_REGEX:
+            g_string_append (str, g_regex_get_pattern (filter->u.regex));
+            break;
+    }
+
+    return g_string_free (str, FALSE);
+}
+
+static MooEditFilter *
+_moo_edit_filter_new_full (const char *string,
+                           gboolean    default_regex)
 {
     g_return_val_if_fail (string && string[0], NULL);
 
@@ -75,7 +121,16 @@ _moo_edit_filter_new (const char *string)
     if (!strncmp (string, "regex:", strlen ("regex:")))
         return _moo_edit_filter_new_regex (string + strlen ("regex:"));
 
-    return _moo_edit_filter_new_globs (string);
+    if (default_regex)
+        return _moo_edit_filter_new_regex (string);
+    else
+        return _moo_edit_filter_new_globs (string);
+}
+
+MooEditFilter *
+_moo_edit_filter_new (const char *string)
+{
+    return _moo_edit_filter_new_full (string, FALSE);
 }
 
 MooEditFilter *
@@ -227,15 +282,11 @@ static gboolean
 moo_edit_filter_check_langs (GSList  *langs,
                              MooEdit *doc)
 {
-    MooLang *lang;
-    const char *id;
+    const char *lang_id = moo_edit_config_get_string (doc->config, "lang");
 
-    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
-    id = _moo_lang_id (lang);
-
-    while (langs)
+    while (lang_id && langs)
     {
-        if (!strcmp (langs->data, id))
+        if (strcmp (langs->data, lang_id) == 0)
             return TRUE;
         langs = langs->next;
     }
@@ -278,9 +329,8 @@ filter_setting_free (FilterSetting *setting)
 {
     if (setting)
     {
+        _moo_edit_filter_free (setting->filter);
         g_free (setting->config);
-        if (setting->regex)
-            g_regex_unref (setting->regex);
         g_free (setting);
     }
 }
@@ -297,15 +347,10 @@ filter_setting_new (const char *filter,
     g_return_val_if_fail (config != NULL, NULL);
 
     setting = g_new0 (FilterSetting, 1);
-
-    setting->regex = g_regex_new (filter, G_REGEX_DOTALL | G_REGEX_OPTIMIZE
-#ifdef __WIN32__
-                                          | G_REGEX_CASELESS
-#endif
-                                  , 0, &error);
+    setting->filter = _moo_edit_filter_new_full (filter, TRUE);
     setting->config = g_strdup (config);
 
-    if (!setting->regex)
+    if (!setting->filter)
     {
         g_warning ("%s: %s", G_STRLOC, error->message);
         g_error_free (error);
@@ -411,71 +456,31 @@ _moo_edit_filter_settings_reload (void)
 }
 
 
-static char *
-_moo_edit_filter_settings_get_for_file_utf8 (const char *filename)
+char *
+_moo_edit_filter_settings_get_for_doc (MooEdit *doc)
 {
     g_return_val_if_fail (settings_store != NULL, NULL);
-    g_return_val_if_fail (filename != NULL, NULL);
-
-    g_assert (g_utf8_validate (filename, -1, NULL));
-
-    return filter_settings_store_get_setting (settings_store, filename);
-}
-
-
-char *
-_moo_edit_filter_settings_get_for_file (const char *filename)
-{
-    char *filename_utf8;
-    char *result;
-
-    g_return_val_if_fail (filename != NULL, NULL);
-
-    filename_utf8 = g_filename_to_utf8 (filename, -1, NULL, NULL, NULL);
-    g_return_val_if_fail (filename_utf8 != NULL, NULL);
-
-    result = _moo_edit_filter_settings_get_for_file_utf8 (filename_utf8);
-
-    g_free (filename_utf8);
-    return result;
-}
-
-
-static const char *
-filter_setting_match (FilterSetting *setting,
-                      const char    *filename)
-{
-    if (g_regex_match (setting->regex, filename, 0, NULL))
-    {
-        moo_dmsg ("file '%s' matched pattern '%s': config '%s'",
-                  filename, g_regex_get_pattern (setting->regex),
-                  setting->config);
-        return setting->config;
-    }
-
-    return NULL;
+    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    return filter_settings_store_get_setting (settings_store, doc);
 }
 
 
 static char *
 filter_settings_store_get_setting (FilterSettingsStore *store,
-                                   const char          *filename)
+                                   MooEdit             *doc)
 {
     GSList *l;
     GString *result = NULL;
 
     for (l = store->settings; l != NULL; l = l->next)
     {
-        const char *match;
-
-        match = filter_setting_match (l->data, filename);
-
-        if (match)
+        FilterSetting *setting = l->data;
+        if (_moo_edit_filter_match (setting->filter, doc))
         {
             if (!result)
-                result = g_string_new (match);
+                result = g_string_new (setting->config);
             else
-                g_string_append_printf (result, ";%s", match);
+                g_string_append_printf (result, ";%s", setting->config);
         }
     }
 
@@ -538,7 +543,7 @@ _moo_edit_filter_settings_get_strings (void)
     for (l = settings_store->settings; l != NULL; l = l->next)
     {
         FilterSetting *setting = l->data;
-        strings = g_slist_prepend (strings, g_strdup (g_regex_get_pattern (setting->regex)));
+        strings = g_slist_prepend (strings, moo_edit_filter_get_string (setting->filter, MOO_EDIT_FILTER_REGEX));
         strings = g_slist_prepend (strings, g_strdup (setting->config));
     }
 

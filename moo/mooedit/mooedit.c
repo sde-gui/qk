@@ -1191,11 +1191,12 @@ moo_edit_filename_changed (MooEdit    *edit,
         MooLangMgr *mgr = moo_lang_mgr_default ();
         lang = moo_lang_mgr_get_lang_for_file (mgr, filename);
         lang_id = lang ? _moo_lang_id (lang) : NULL;
-        filter_config = _moo_edit_filter_settings_get_for_file (filename);
     }
 
     moo_edit_config_set (edit->config, MOO_EDIT_CONFIG_SOURCE_FILENAME,
                          "lang", lang_id, "indent", (void*) NULL, (char*) NULL);
+
+    filter_config = _moo_edit_filter_settings_get_for_doc (edit);
 
     if (filter_config)
         moo_edit_config_parse (edit->config, filter_config,
