@@ -20,14 +20,6 @@ AC_SUBST(ACLOCAL_FLAGS)
 AM_INIT_AUTOMAKE([1.11 silent-rules foreign dist-bzip2 dist-zip no-dist-gzip])
 # LT_INIT([disable-shared])
 
-AC_ARG_ENABLE(release,
-  AC_HELP_STRING([--enable-release],[assume it's a release build]),[
-  MOO_RELEASE_BUILD="$enable_release"
-  ],[
-  MOO_RELEASE_BUILD="no"
-])
-AM_CONDITIONAL(MOO_RELEASE_BUILD, test "x$MOO_RELEASE_BUILD" = "xMOO_RELEASE_BUILD")
-
 MOO_MAJOR_VERSION=_moo_major_version_
 MOO_MINOR_VERSION=_moo_minor_version_
 MOO_MICRO_VERSION=_moo_micro_version_
@@ -105,6 +97,14 @@ AC_DEFINE_UNQUOTED(PACKAGE_BUGREPORT,["$PACKAGE_BUGREPORT"],PACKAGE_BUGREPORT)
 AC_DEFINE_UNQUOTED(MOO_COPYRIGHT,["$MOO_COPYRIGHT"],MOO_COPYRIGHT)
 
 MOO_AC_CHECK_OS
+
+AC_ARG_ENABLE(install-hooks,
+  AC_HELP_STRING([--enable-install-hooks],[run gtk-update-icon-cache during 'make install']),[
+  MOO_ENABLE_INSTALL_HOOKS="$enable_install_hooks"
+  ],[
+  MOO_ENABLE_INSTALL_HOOKS="yes"
+])
+AM_CONDITIONAL(MOO_ENABLE_INSTALL_HOOKS, test "x$MOO_ENABLE_INSTALL_HOOKS" = "xyes")
 
 AC_CONFIG_FILES([
   Makefile

@@ -55,29 +55,20 @@ medit-app/medit.desktop: medit-app/medit.desktop.in $(INTLTOOL_MERGE) $(wildcard
 CLEANFILES += medit-app/medit.desktop
 endif MOO_OS_UNIX
 
-# MOO_WIN32_RESOURCE(medit.rc.in medit MEDIT_SOURCES medit_libs)
 
-# if !MOO_ENABLE_UNIT_TESTS
-# MEDIT_WIN32 = Win32
-# endif
-#   SET(MEDIT_WIN32 WIN32)
-# ENDIF(NOT MOO_ENABLE_UNIT_TESTS)
-
-# ADD_EXECUTABLE(medit ${MEDIT_WIN32} ${MEDIT_SOURCES})
-# TARGET_LINK_LIBRARIES(medit ${medit_libs} ${MOO_DEP_LIBS})
-# INSTALL(TARGETS medit DESTINATION ${BINDIR})
-
-# IF(MOO_ENABLE_PYTHON)
-#   ADD_DEPENDENCIES(medit python-plugins-ini)
-# ENDIF(MOO_ENABLE_PYTHON)
-
-# FIND_PACKAGE(MooDesktopFile)
-# MOO_INSTALL_DESKTOP_FILE(medit.desktop.in)
-#
-# IF(MOO_OS_UNIX)
-#   SET(PIXMAPS_DIR "${DATADIR}/pixmaps")
-#   SET(ICONTHEME_DIR "${DATADIR}/icons/hicolor/48x48/apps")
-#   SET(MEDIT_ICONS "${CMAKE_SOURCE_DIR}/moo/mooutils/pixmaps/medit.png")
-#   INSTALL(FILES ${MEDIT_ICONS} DESTINATION "${PIXMAPS_DIR}")
-#   INSTALL(FILES ${MEDIT_ICONS} DESTINATION "${ICONTHEME_DIR}")
-# ENDIF(MOO_OS_UNIX)
+iconthemedir = $(datadir)/icons/hicolor/48x48/apps
+icontheme_DATA = mooutils/pixmaps/medit.png
+if MOO_ENABLE_INSTALL_HOOKS
+update_icon_cache = gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor
+install-data-hook: install-data-hook-gtk-icon-cache
+install-data-hook-gtk-icon-cache:
+	@if echo "Updating icon cache" && $(update_icon_cache); then		\
+		echo "Done.";							\
+	else									\
+		echo "*** GTK icon cache not updated. After install, run this:";\
+		echo $(update_icon_cache);					\
+	fi
+uninstall-hook: uninstall-data-hook-gtk-icon-cache
+uninstall-data-hook-gtk-icon-cache:
+	@if echo "Updating icon cache" && $(update_icon_cache); then echo "Done."; else echo "Failed."; fi
+endif
