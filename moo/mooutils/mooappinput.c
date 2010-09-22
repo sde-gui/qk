@@ -110,7 +110,7 @@ moo_app_input_new (const char *name,
     ch->callback = callback;
     ch->callback_data = callback_data;
     ch->pipes = NULL;
-    ch->appname = g_strdup (MOO_PACKAGE_SUBDIR_NAME);
+    ch->appname = g_strdup (MOO_PACKAGE_NAME);
 
     if ((ich = input_channel_new (ch->appname, _moo_get_pid_string (), FALSE)))
     {
@@ -390,7 +390,7 @@ _moo_app_input_send_msg (const char *name,
 
     moo_dmsg ("_moo_app_input_send_msg: sending data to %s", name ? name : "NONE");
 
-    pipe_dir_name = get_pipe_dir (MOO_PACKAGE_SUBDIR_NAME);
+    pipe_dir_name = get_pipe_dir (MOO_PACKAGE_NAME);
     g_return_val_if_fail (pipe_dir_name != NULL, FALSE);
 
     if (name)
@@ -1142,7 +1142,7 @@ _moo_app_input_send_msg (const char *name,
     if (!name)
         name = "main";
 
-    pipe_name = get_pipe_name (MOO_PACKAGE_SUBDIR_NAME, name);
+    pipe_name = get_pipe_name (MOO_PACKAGE_NAME, name);
 	/* XXX unicode */
     pipe_handle = CreateFileA (pipe_name, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 

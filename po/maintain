@@ -1,10 +1,10 @@
 #!/bin/sh
 
-GETTEXT_PACKAGE=moo
+GETTEXT_PACKAGE=medit-1
 
 case `pwd` in
   */po-gsv)
-    GETTEXT_PACKAGE=moo-gsv
+    GETTEXT_PACKAGE=medit-1-gsv
     ;;
 esac
 

@@ -1210,7 +1210,7 @@ moo_tempnam (void)
         char *dirname = NULL;
         const char *short_name;
 
-        short_name = MOO_PACKAGE_SUBDIR_NAME;
+        short_name = MOO_PACKAGE_NAME;
 
         for (i = 0; i < 1000; ++i)
         {
@@ -1309,7 +1309,7 @@ moo_cleanup (void)
 char *
 moo_get_user_cache_dir (void)
 {
-    return g_build_filename (g_get_user_cache_dir (), MOO_PACKAGE_SUBDIR_NAME, NULL);
+    return g_build_filename (g_get_user_cache_dir (), MOO_PACKAGE_NAME, NULL);
 }
 
 char *
@@ -1326,7 +1326,7 @@ moo_get_user_data_dir (void)
 #endif
 
         moo_user_data_dir = g_build_filename (basedir,
-                                              MOO_PACKAGE_SUBDIR_NAME,
+                                              MOO_PACKAGE_NAME,
                                               NULL);
     }
 
@@ -1485,7 +1485,7 @@ moo_get_data_dirs_real (MooDataDirType   type,
                 const char* const *p;
 
                 for (p = g_get_system_data_dirs (); p && *p; ++p)
-                    g_ptr_array_add (all_dirs, g_build_filename (*p, MOO_PACKAGE_SUBDIR_NAME, NULL));
+                    g_ptr_array_add (all_dirs, g_build_filename (*p, MOO_PACKAGE_NAME, NULL));
 
                 g_ptr_array_add (all_dirs, g_strdup (MOO_DATA_DIR));
             }
