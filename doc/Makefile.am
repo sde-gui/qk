@@ -23,12 +23,14 @@ help/index.html: $(src_texinfo_files)
 	$(MKDIR_P) $(srcdir)/help
 	cd $(srcdir) && makeinfo --html medit.texi
 
-help-sections.h: help/index.html $(srcdir)/gensections.py
+help-sections.h.stamp: help/index.html $(srcdir)/gensections.py
 	$(PYTHON) $(srcdir)/gensections.py $(srcdir)/help/*.html > help-sections.h.tmp && \
-		mv help-sections.h.tmp $(srcdir)/help-sections.h
+		(cmp -s help-sections.h.tmp $(srcdir)/help-sections.h || mv help-sections.h.tmp $(srcdir)/help-sections.h)
+	rm -f help-sections.h.tmp
+	echo stamp > help-sections.h.stamp
 
 all-am: doc
-doc: help/index.html help-sections.h medit.1
+doc: help/index.html help-sections.h.stamp medit.1
 
 man-medit.t2t: man-medit.t2t.in $(top_builddir)/config.status
 	cd $(top_builddir) && ./config.status --file=doc/man-medit.t2t
