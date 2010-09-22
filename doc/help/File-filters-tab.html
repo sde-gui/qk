@@ -38,8 +38,8 @@ Up:&nbsp;<a rel="up" accesskey="u" href="Preferences.html#Preferences">Preferenc
 
 <p><em>File filters tab</em> section allows to customize editing options,
 as well as syntax highlighting language, on per-document basis using regular
-expressions which are matched against the document filename. Full file paths are used,
-so one can have per-directory settings.
+expressions which are matched against the document filename (globs can also be
+used, see below). Full file paths are used, so one can have per-directory settings.
 
    <p>Use dollar if you need to match ends of filenames, e.g. "<code>\.doc$</code>" will work as
 "<code>*.doc</code>" pattern.
@@ -57,7 +57,10 @@ which they are applied.
 
    <p><em>Filter</em> field contains a regular expression matched agains the
 document filename. If it is found in the filename, then the options from the
-<em>Options</em> field are applied to the document.
+<em>Options</em> field are applied to the document. Alternatively it can be
+a comma-separated list of globs prefixed with "<code>globs:</code>" or a list
+of language ids prefixed with "<code>langs:</code>", e.g. "<code>globs:*.c,*.h</code>" or
+"<code>langs:c,c++</code>".
 
    <p><em>Options</em> field contains the options, in format described in
 section <a href="Options-for-editing-text.html#Options-for-editing-text">Options for editing text</a>.

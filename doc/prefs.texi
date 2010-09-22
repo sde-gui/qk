@@ -45,8 +45,8 @@ for the format of this entry content.
 
 @uilabel{File filters tab} section allows to customize editing options,
 as well as syntax highlighting language, on per-document basis using regular
-expressions which are matched against the document filename. Full file paths are used,
-so one can have per-directory settings.
+expressions which are matched against the document filename (globs can also be
+used, see below). Full file paths are used, so one can have per-directory settings.
 
 Use dollar if you need to match ends of filenames, e.g. "@code{\.doc$}" will work as
 "@code{*.doc}" pattern.
@@ -64,7 +64,10 @@ which they are applied.
 
 @uilabel{Filter} field contains a regular expression matched agains the
 document filename. If it is found in the filename, then the options from the
-@uilabel{Options} field are applied to the document.
+@uilabel{Options} field are applied to the document. Alternatively it can be
+a comma-separated list of globs prefixed with "@code{globs:}" or a list
+of language ids prefixed with "@code{langs:}", e.g. "@code{globs:*.c,*.h}" or
+"@code{langs:c,c++}".
 
 @uilabel{Options} field contains the options, in format described in
 section @ref{Options for editing text}.
