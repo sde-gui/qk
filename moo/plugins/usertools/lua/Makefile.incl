@@ -1,19 +1,16 @@
 plugins_sources +=					\
 	plugins/usertools/lua/moocommand-lua.cpp	\
-	plugins/usertools/lua/moocommand-lua.h		\
-	plugins/usertools/lua/mooedit-lua1.cpp		\
-	plugins/usertools/lua/mooedit-lua1.h		\
-	plugins/usertools/lua/mooedit-lua-api1.cpp
+	plugins/usertools/lua/moocommand-lua.h
 
 EXTRA_DIST += plugins/usertools/glade/mooedittools-lua.glade
 built_plugins_sources += mooedittools-lua-gxml.h
 
-lua1dir = $(MOO_DATA_DIR)/lua
-lua1_DATA = plugins/usertools/lua/medit.lua
-EXTRA_DIST += plugins/usertools/lua/medit.lua
+# luadir = $(MOO_DATA_DIR)/lua
+# lua_DATA = plugins/usertools/lua/medit.lua
+# EXTRA_DIST += plugins/usertools/lua/medit.lua
 
-EXTRA_DIST += plugins/usertools/lua/lua2-tool-setup.lua
-built_plugins_sources += lua2-tool-setup.h
-lua2-tool-setup.h: plugins/usertools/lua/lua2-tool-setup.lua $(top_srcdir)/tools/xml2h.py
-	$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/plugins/usertools/lua/lua2-tool-setup.lua lua2-tool-setup.h.tmp LUA2_SETUP_CODE \
-		&& mv lua2-tool-setup.h.tmp lua2-tool-setup.h
+EXTRA_DIST += plugins/usertools/lua/lua-tool-setup.lua
+built_plugins_sources += lua-tool-setup.h
+lua-tool-setup.h: plugins/usertools/lua/lua-tool-setup.lua $(top_srcdir)/tools/xml2h.py
+	$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/plugins/usertools/lua/lua-tool-setup.lua lua-tool-setup.h.tmp LUA_SETUP_CODE \
+		&& mv lua-tool-setup.h.tmp lua-tool-setup.h

@@ -40,7 +40,7 @@ static struct MeditOpts {
     int use_session;
     int pid;
     gboolean new_app;
-    const char *app_name;
+    const char *instance_name;
     gboolean new_window;
     gboolean new_tab;
     gboolean reload;
@@ -125,7 +125,7 @@ static GOptionEntry medit_options[] = {
     { "pid", 0, 0, G_OPTION_ARG_INT, &medit_opts.pid,
             /* help message for command line option --pid=PID */ N_("Use existing instance with process id PID"),
             /* "PID" part in "--pid=PID" */ N_("PID") },
-    { "app-name", 0, 0, G_OPTION_ARG_STRING, (gpointer) &medit_opts.app_name,
+    { "app-name", 0, 0, G_OPTION_ARG_STRING, (gpointer) &medit_opts.instance_name,
             /* help message for command line option --app-name=NAME */ N_("Set instance name to NAME if it's not already running"),
             /* "NAME" part in "--app-name=NAME" */ N_("NAME") },
     { "new-window", 'w', 0, G_OPTION_ARG_NONE, &medit_opts.new_window,
@@ -172,7 +172,7 @@ post_parse_func (void)
         exit (0);
     }
 
-    if (medit_opts.pid > 0 && medit_opts.app_name)
+    if (medit_opts.pid > 0 && medit_opts.instance_name)
     {
         /* error message for wrong commmand line */
         g_printerr (_("%s and %s options may not be used simultaneously\n"),
@@ -526,10 +526,6 @@ medit_main (int argc, char *argv[])
 
     ctx = parse_args (argc, argv);
 
-#if !GLIB_CHECK_VERSION(2,8,0)
-    g_set_prgname ("medit");
-#endif
-
     stamp = get_time_stamp ();
 
 #ifdef GDK_WINDOWING_WIN32
@@ -547,7 +543,7 @@ medit_main (int argc, char *argv[])
     if (medit_opts.new_app || medit_opts.project_mode)
         new_instance = TRUE;
 
-    run_input = !medit_opts.new_app || medit_opts.app_name ||
+    run_input = !medit_opts.new_app || medit_opts.instance_name ||
                  medit_opts.use_session == 1 || medit_opts.project_mode;
 
     if (medit_opts.pid > 0)
@@ -555,8 +551,8 @@ medit_main (int argc, char *argv[])
         sprintf (pid_buf, "%d", medit_opts.pid);
         name = pid_buf;
     }
-    else if (medit_opts.app_name)
-        name = medit_opts.app_name;
+    else if (medit_opts.instance_name)
+        name = medit_opts.instance_name;
     else if (!medit_opts.new_app)
         name = g_getenv ("MEDIT_PID");
 
@@ -580,14 +576,14 @@ medit_main (int argc, char *argv[])
         if (moo_app_send_files (files, n_files, stamp, name))
             exit (0);
 
-        if (!medit_opts.app_name)
+        if (!medit_opts.instance_name)
         {
             g_printerr ("Could not send files to instance '%s'\n", name);
             exit (EXIT_FAILURE);
         }
     }
 
-    if (!new_instance && !medit_opts.app_name &&
+    if (!new_instance && !medit_opts.instance_name &&
          moo_app_send_files (files, n_files, stamp, NULL))
     {
         notify_startup_complete ();
@@ -611,7 +607,7 @@ medit_main (int argc, char *argv[])
     app = MOO_APP (g_object_new (medit_app_get_type (),
                                  "run-input", run_input,
                                  "use-session", medit_opts.use_session,
-                                 "instance-name", medit_opts.app_name,
+                                 "instance-name", medit_opts.instance_name,
                                  (const char*) NULL));
 
     if (!moo_app_init (app))

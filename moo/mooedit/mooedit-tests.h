@@ -20,7 +20,6 @@
 
 G_BEGIN_DECLS
 
-void    moo_test_mooedit_lua_api    (void);
 void    moo_test_key_file           (void);
 void    moo_test_editor             (void);
 

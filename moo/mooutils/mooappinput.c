@@ -102,9 +102,7 @@ moo_app_input_new (const char *name,
 {
     MooAppInput *ch;
     InputChannel *ich;
-    const char *appname = g_get_prgname ();
 
-    g_return_val_if_fail (appname != NULL, FALSE);
     g_return_val_if_fail (callback != NULL, NULL);
 
     ch = moo_new0 (MooAppInput);
@@ -112,18 +110,18 @@ moo_app_input_new (const char *name,
     ch->callback = callback;
     ch->callback_data = callback_data;
     ch->pipes = NULL;
-    ch->appname = g_strdup (appname);
+    ch->appname = g_strdup (MOO_PACKAGE_SUBDIR_NAME);
 
-    if ((ich = input_channel_new (appname, _moo_get_pid_string (), FALSE)))
+    if ((ich = input_channel_new (ch->appname, _moo_get_pid_string (), FALSE)))
     {
         ch->pipes = g_slist_prepend (ch->pipes, ich);
         ch->main_path = input_channel_get_path (ich);
     }
 
-    if (name && (ich = input_channel_new (appname, name, FALSE)))
+    if (name && (ich = input_channel_new (ch->appname, name, FALSE)))
         ch->pipes = g_slist_prepend (ch->pipes, ich);
 
-    if (bind_default && (ich = input_channel_new (appname, MOO_APP_INPUT_NAME_DEFAULT, TRUE)))
+    if (bind_default && (ich = input_channel_new (ch->appname, MOO_APP_INPUT_NAME_DEFAULT, TRUE)))
         ch->pipes = g_slist_prepend (ch->pipes, ich);
 
     return ch;
@@ -387,14 +385,12 @@ _moo_app_input_send_msg (const char *name,
     GDir *pipe_dir = NULL;
     char *pipe_dir_name;
     gboolean success = FALSE;
-    const char *appname = g_get_prgname ();
 
-    g_return_val_if_fail (appname != NULL, FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
 
     moo_dmsg ("_moo_app_input_send_msg: sending data to %s", name ? name : "NONE");
 
-    pipe_dir_name = get_pipe_dir (appname);
+    pipe_dir_name = get_pipe_dir (MOO_PACKAGE_SUBDIR_NAME);
     g_return_val_if_fail (pipe_dir_name != NULL, FALSE);
 
     if (name)
@@ -1134,9 +1130,7 @@ _moo_app_input_send_msg (const char *name,
     char *pipe_name;
     HANDLE pipe_handle;
     gboolean result = FALSE;
-    const char *appname = g_get_prgname ();
 
-    g_return_val_if_fail (appname != NULL, FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
 
     if (len < 0)
@@ -1148,7 +1142,7 @@ _moo_app_input_send_msg (const char *name,
     if (!name)
         name = "main";
 
-    pipe_name = get_pipe_name (appname, name);
+    pipe_name = get_pipe_name (MOO_PACKAGE_SUBDIR_NAME, name);
 	/* XXX unicode */
     pipe_handle = CreateFileA (pipe_name, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 

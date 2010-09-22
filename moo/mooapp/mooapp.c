@@ -67,13 +67,6 @@
 
 #define SESSION_VERSION "1.0"
 
-#ifndef __WIN32__
-#define TMPL_RC_FILE    "%src"
-#else
-#define TMPL_RC_FILE    "%s.ini"
-#endif
-#define TMPL_STATE_FILE "%s.state"
-
 static struct {
     MooApp *instance;
     gboolean atexit_installed;
@@ -570,8 +563,6 @@ moo_app_init_editor (MooApp *app)
        will get editor's xml */
     moo_editor_set_ui_xml (app->priv->editor,
                            moo_app_get_ui_xml (app));
-    moo_editor_set_app_name (app->priv->editor,
-                             MOO_APP_SHORT_NAME);
 
     init_plugins (app);
 }
@@ -582,17 +573,16 @@ static void
 moo_app_init_ui (MooApp *app)
 {
     MooUiXml *xml = NULL;
-    char **files;
-    guint n_files, i;
+    char **files, **p;
 
-    files = moo_get_data_files (MOO_UI_XML_FILE, MOO_DATA_SHARE, &n_files);
+    files = moo_get_data_files (MOO_UI_XML_FILE);
 
-    for (i = 0; i < n_files; ++i)
+    for (p = files; p && *p; ++p)
     {
         GError *error = NULL;
         GMappedFile *file;
 
-        file = g_mapped_file_new (files[i], FALSE, &error);
+        file = g_mapped_file_new (*p, FALSE, &error);
 
         if (file)
         {
@@ -606,7 +596,7 @@ moo_app_init_ui (MooApp *app)
 
         if (error->domain != G_FILE_ERROR || error->code != G_FILE_ERROR_NOENT)
         {
-            g_warning ("%s: could not open file '%s'", G_STRLOC, files[i]);
+            g_warning ("%s: could not open file '%s'", G_STRLOC, *p);
             g_warning ("%s: %s", G_STRLOC, error->message);
         }
 
@@ -668,6 +658,7 @@ moo_app_init_real (MooApp *app)
     gdk_set_program_class (MOO_APP_FULL_NAME);
     gtk_window_set_default_icon_name (MOO_APP_SHORT_NAME);
 
+    moo_set_display_app_name (MOO_APP_SHORT_NAME);
     _moo_set_app_instance_name (app->priv->instance_name);
 
     moo_app_load_prefs (app);
@@ -1122,12 +1113,10 @@ moo_app_load_session (MooApp *app)
     if (!app->priv->session_file)
     {
         if (app->priv->instance_name)
-            app->priv->session_file = g_strdup_printf ("%s.session.%s",
-                                                       g_get_prgname (),
+            app->priv->session_file = g_strdup_printf (MOO_SESSION_FILE_NAME ".%s",
                                                        app->priv->instance_name);
         else
-            app->priv->session_file = g_strdup_printf ("%s.session",
-                                                       g_get_prgname ());
+            app->priv->session_file = g_strdup (MOO_SESSION_FILE_NAME);
     }
 
     session_file = moo_get_user_cache_file (app->priv->session_file);
@@ -1388,163 +1377,15 @@ moo_app_create_prefs_dialog (MooApp *app)
 
 
 static void
-try_move_user_data_dir (const char *old_dir,
-                        const char *new_dir)
-{
-    if (!g_file_test (new_dir, G_FILE_TEST_EXISTS) &&
-        g_file_test (old_dir, G_FILE_TEST_EXISTS))
-    {
-        GError *error = NULL;
-
-        g_message ("Moving directory '%s' to '%s'", old_dir, new_dir);
-
-        if (!_moo_rename_file (old_dir, new_dir, &error))
-        {
-            g_critical ("%s: %s", G_STRLOC, error->message);
-            moo_set_user_data_dir (old_dir);
-        }
-    }
-}
-
-#ifndef __WIN32__
-static void
-move_rc_files (MooApp *app)
-{
-    char *old_dir;
-    char *new_dir;
-    char *cache_dir;
-
-    old_dir = g_strdup_printf ("%s/.%s", g_get_home_dir (), g_get_prgname ());
-    new_dir = g_strdup_printf ("%s/%s", g_get_user_data_dir (), g_get_prgname ());
-    cache_dir = g_strdup_printf ("%s/%s", g_get_user_cache_dir (), g_get_prgname ());
-
-    /* do not be too clever here, there are way too many possible errors */
-
-    try_move_user_data_dir (old_dir, new_dir);
-
-    {
-        char *new_file;
-        char *old_file;
-
-        new_file = g_strdup_printf ("%s/" TMPL_RC_FILE, g_get_user_config_dir (), g_get_prgname ());
-        old_file = g_strdup_printf ("%s/." TMPL_RC_FILE, g_get_home_dir (), g_get_prgname ());
-
-        if (!g_file_test (new_file, G_FILE_TEST_EXISTS) &&
-            g_file_test (old_file, G_FILE_TEST_EXISTS) &&
-            _moo_rename (old_file, new_file) != 0)
-        {
-            app->priv->rc_files[MOO_PREFS_RC] = old_file;
-            old_file = NULL;
-        }
-        else
-        {
-            app->priv->rc_files[MOO_PREFS_RC] = new_file;
-            new_file = NULL;
-
-            if (!g_file_test (g_get_user_config_dir (), G_FILE_TEST_EXISTS))
-                _moo_mkdir_with_parents (g_get_user_config_dir ());
-        }
-
-        g_free (old_file);
-        g_free (new_file);
-    }
-
-    if (!g_file_test (cache_dir, G_FILE_TEST_EXISTS))
-        _moo_mkdir_with_parents (cache_dir);
-
-    {
-        const char *new_file;
-        char *old_file = g_strdup_printf ("%s/." TMPL_STATE_FILE, g_get_home_dir (), g_get_prgname ());
-
-        if (app->priv->instance_name)
-            app->priv->rc_files[MOO_PREFS_STATE] =
-                g_strdup_printf ("%s/" TMPL_STATE_FILE ".%s",
-                                 cache_dir,
-                                 g_get_prgname (),
-                                 app->priv->instance_name);
-        else
-            app->priv->rc_files[MOO_PREFS_STATE] =
-                g_strdup_printf ("%s/" TMPL_STATE_FILE,
-                                 cache_dir,
-                                 g_get_prgname ());
-
-        new_file = app->priv->rc_files[MOO_PREFS_STATE];
-
-        if (!g_file_test (new_file, G_FILE_TEST_EXISTS) &&
-            g_file_test (old_file, G_FILE_TEST_EXISTS))
-        {
-            _moo_rename (old_file, new_file);
-        }
-
-        g_free (old_file);
-    }
-
-    g_free (cache_dir);
-    g_free (new_dir);
-    g_free (old_dir);
-}
-#endif
-
-#ifdef __WIN32__
-static void
-move_user_data_dir (void)
-{
-    char *old_dir = g_build_filename (g_get_home_dir (), g_get_prgname (), NULL);
-    char *new_dir = moo_get_user_data_dir ();
-    try_move_user_data_dir (old_dir, new_dir);
-    g_free (new_dir);
-    g_free (old_dir);
-}
-#endif
-
-static char **
-get_rc_files (void)
-{
-    char *prefix;
-    char *var;
-    const char *value;
-    char **files = NULL;
-
-    prefix = g_ascii_strup (g_get_prgname (), -1);
-    var = g_strdup_printf ("%s_RC_FILES", prefix);
-    value = g_getenv (var);
-
-    if (value && value[0])
-    {
-        files = g_strsplit (value, G_SEARCHPATH_SEPARATOR_S, 0);
-    }
-    else
-    {
-        char *tmpl = g_strdup_printf (TMPL_RC_FILE, g_get_prgname ());
-        files = moo_get_data_files (tmpl, MOO_DATA_SHARE, NULL);
-        g_free (tmpl);
-    }
-
-    g_free (var);
-    g_free (prefix);
-    return files;
-}
-
-static void
 moo_app_load_prefs (MooApp *app)
 {
     GError *error = NULL;
     char **sys_files;
 
-#ifndef __WIN32__
-    move_rc_files (app);
-#else
-    app->priv->rc_files[MOO_PREFS_RC] =
-        g_strdup_printf ("%s\\" TMPL_RC_FILE, g_get_user_config_dir (), g_get_prgname ());
-    app->priv->rc_files[MOO_PREFS_STATE] =
-        g_strdup_printf ("%s\\" TMPL_STATE_FILE, g_get_user_config_dir (), g_get_prgname ());
-#endif
+    app->priv->rc_files[MOO_PREFS_RC] = moo_get_user_data_file (MOO_INI_FILE_NAME);
+    app->priv->rc_files[MOO_PREFS_STATE] = moo_get_user_cache_file (MOO_STATE_FILE_NAME);
 
-#ifdef __WIN32__
-    move_user_data_dir ();
-#endif
-
-    sys_files = get_rc_files ();
+    sys_files = moo_get_sys_data_files (MOO_INI_FILE_NAME);
 
     if (!moo_prefs_load (sys_files,
                          app->priv->rc_files[MOO_PREFS_RC],

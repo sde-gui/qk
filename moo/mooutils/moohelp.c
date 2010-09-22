@@ -180,7 +180,7 @@ find_help_dir (void)
 
     for (p = dirs; p && *p; ++p)
     {
-        char *d = g_build_filename (*p, "doc", g_get_prgname (), "help", NULL);
+        char *d = g_build_filename (*p, "doc", MOO_PACKAGE_SUBDIR_NAME, "help", NULL);
 
         if (try_help_dir (d))
         {

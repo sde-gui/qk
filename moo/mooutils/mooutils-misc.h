@@ -69,8 +69,9 @@ typedef enum {
 
 void       _moo_set_app_instance_name       (const char     *name);
 void        moo_set_user_data_dir           (const char     *path);
+void        moo_set_display_app_name        (const char     *name);
+const char *moo_get_display_app_name        (void);
 
-/* ~/.appname */
 gboolean    moo_make_user_data_dir          (const char     *path);
 char       *moo_get_user_data_dir           (void);
 char       *moo_get_user_data_file          (const char     *basename);
@@ -93,13 +94,14 @@ gboolean    moo_save_config_file            (const char     *filename,
 /* user data comes first; MOO_DATA_DIR comes last */
 /* $MOO_APP_DIR:$MOO_DATA_DIRS:$prefix/share/appname or
    $MOO_APP_DIR:$MOO_LIB_DIRS:$prefix/lib/appname */
-void        moo_add_data_dirs               (char          **dirs);
 char      **moo_get_data_dirs               (MooDataDirType  type,
                                              guint          *n_dirs);
-char      **moo_get_data_subdirs            (const char     *subdir,
-                                             MooDataDirType  type,
-                                             guint          *n_dirs);
+char      **moo_get_data_subdirs            (const char     *subdir);
+char      **moo_get_sys_data_subdirs        (const char     *subdir);
+char      **moo_get_lib_subdirs             (const char     *subdir);
+
 #define moo_get_data_files moo_get_data_subdirs
+#define moo_get_sys_data_files moo_get_sys_data_subdirs
 
 char       *moo_tempnam                     (void);
 void        moo_cleanup                     (void);

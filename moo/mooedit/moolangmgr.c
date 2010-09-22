@@ -66,7 +66,6 @@ static void
 moo_lang_mgr_init (MooLangMgr *mgr)
 {
     char **dirs;
-    guint n_dirs;
 
     mgr->schemes = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
 
@@ -76,7 +75,7 @@ moo_lang_mgr_init (MooLangMgr *mgr)
                                          g_free, g_free);
 
     mgr->lang_mgr = gtk_source_language_manager_new ();
-    dirs = moo_get_data_subdirs (LANGUAGE_DIR, MOO_DATA_SHARE, &n_dirs);
+    dirs = moo_get_data_subdirs (LANGUAGE_DIR);
     g_object_set (mgr->lang_mgr, "search-path", dirs, NULL);
     mgr->style_mgr = gtk_source_style_scheme_manager_new ();
     gtk_source_style_scheme_manager_set_search_path (mgr->style_mgr, dirs);

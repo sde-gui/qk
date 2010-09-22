@@ -77,12 +77,12 @@ EXTRA_DIST +=			\
 	moolua/slnudata.c	\
 	moolua/slnunico.c
 
-lua2dir = $(MOO_DATA_DIR)/lua2
+luadir = $(MOO_DATA_DIR)/lua
 EXTRA_DIST += moolua/pl
 install-data-local: install-lua-pl
 uninstall-local: uninstall-lua-pl
 install-lua-pl:
-	$(MKDIR_P) $(DESTDIR)$(lua2dir)/pl
-	cd $(srcdir) && $(INSTALL_DATA) moolua/pl/*.lua $(DESTDIR)$(lua2dir)/pl/
+	$(MKDIR_P) $(DESTDIR)$(luadir)/pl
+	cd $(srcdir) && $(INSTALL_DATA) moolua/pl/*.lua $(DESTDIR)$(luadir)/pl/
 uninstall-lua-pl:
-	rm -f $(DESTDIR)$(lua2dir)/pl/*.lua
+	rm -f $(DESTDIR)$(luadir)/pl/*.lua

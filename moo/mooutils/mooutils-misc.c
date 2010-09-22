@@ -53,12 +53,12 @@
 
 G_LOCK_DEFINE_STATIC (moo_user_data_dir);
 static char *moo_app_instance_name;
+static char *moo_display_app_name;
 static char *moo_user_data_dir;
 static char *moo_temp_dir;
 
 static void         moo_install_atexit      (void);
 static void         moo_remove_tempdir      (void);
-static const char  *moo_get_prgname         (void);
 
 
 #ifdef __WIN32__
@@ -87,7 +87,7 @@ _moo_find_script (const char *name,
     {
         char **dirs, **p;
 
-        dirs = moo_get_data_subdirs ("scripts", MOO_DATA_SHARE, NULL);
+        dirs = moo_get_data_subdirs ("scripts");
 
         for (p = dirs; p && *p; ++p)
         {
@@ -1197,23 +1197,6 @@ _moo_get_pid_string (void)
 }
 
 
-static const char *
-moo_get_prgname (void)
-{
-    const char *name;
-
-    name = g_get_prgname ();
-
-    if (!name)
-    {
-        g_critical ("%s: program name not set", G_STRLOC);
-        name = "medit";
-    }
-
-    return name;
-}
-
-
 char *
 moo_tempnam (void)
 {
@@ -1227,7 +1210,7 @@ moo_tempnam (void)
         char *dirname = NULL;
         const char *short_name;
 
-        short_name = moo_get_prgname ();
+        short_name = MOO_PACKAGE_SUBDIR_NAME;
 
         for (i = 0; i < 1000; ++i)
         {
@@ -1326,7 +1309,7 @@ moo_cleanup (void)
 char *
 moo_get_user_cache_dir (void)
 {
-    return g_build_filename (g_get_user_cache_dir (), moo_get_prgname (), NULL);
+    return g_build_filename (g_get_user_cache_dir (), MOO_PACKAGE_SUBDIR_NAME, NULL);
 }
 
 char *
@@ -1343,7 +1326,7 @@ moo_get_user_data_dir (void)
 #endif
 
         moo_user_data_dir = g_build_filename (basedir,
-                                              moo_get_prgname (),
+                                              MOO_PACKAGE_SUBDIR_NAME,
                                               NULL);
     }
 
@@ -1379,6 +1362,20 @@ _moo_set_app_instance_name (const char *name)
 
     g_free (moo_app_instance_name);
     moo_app_instance_name = g_strdup (name);
+}
+
+void
+moo_set_display_app_name (const char *name)
+{
+    g_return_if_fail (name && *name);
+    g_free (moo_display_app_name);
+    moo_display_app_name = g_strdup (name);
+}
+
+const char *
+moo_get_display_app_name (void)
+{
+    return moo_display_app_name ? moo_display_app_name : g_get_prgname ();
 }
 
 
@@ -1443,7 +1440,7 @@ add_dir_list_from_env (GPtrArray  *list,
 
 static char **
 moo_get_data_dirs_real (MooDataDirType   type,
-                        char           **add,
+                        gboolean         include_user,
                         guint           *n_dirs)
 {
     static char **moo_data_dirs[2];
@@ -1453,9 +1450,6 @@ moo_get_data_dirs_real (MooDataDirType   type,
     g_return_val_if_fail (type < 2, NULL);
 
     G_LOCK (moo_data_dirs);
-
-    if (add && moo_data_dirs[type])
-        g_critical ("moo_add_data_dirs() called too late, ignored");
 
     if (!moo_data_dirs[type])
     {
@@ -1472,9 +1466,6 @@ moo_get_data_dirs_real (MooDataDirType   type,
         env[1] = type == MOO_DATA_SHARE ? g_getenv ("MOO_DATA_DIRS") : g_getenv ("MOO_LIB_DIRS");
 
         g_ptr_array_add (all_dirs, moo_get_user_data_dir ());
-
-        while (add && *add)
-            g_ptr_array_add (all_dirs, g_strdup (*add++));
 
         /* environment variables override everything */
         if (env[0] || env[1])
@@ -1494,7 +1485,7 @@ moo_get_data_dirs_real (MooDataDirType   type,
                 const char* const *p;
 
                 for (p = g_get_system_data_dirs (); p && *p; ++p)
-                    g_ptr_array_add (all_dirs, g_build_filename (*p, MOO_PACKAGE_NAME, NULL));
+                    g_ptr_array_add (all_dirs, g_build_filename (*p, MOO_PACKAGE_SUBDIR_NAME, NULL));
 
                 g_ptr_array_add (all_dirs, g_strdup (MOO_DATA_DIR));
             }
@@ -1543,23 +1534,33 @@ moo_get_data_dirs_real (MooDataDirType   type,
 
     G_UNLOCK (moo_data_dirs);
 
-    if (n_dirs)
-        *n_dirs = n_data_dirs[type];
-
-    return g_strdupv (moo_data_dirs[type]);
+    if (include_user)
+    {
+        if (n_dirs)
+            *n_dirs = n_data_dirs[type];
+        return g_strdupv (moo_data_dirs[type]);
+    }
+    else if (n_data_dirs[type] == 1)
+    {
+        if (n_dirs)
+            *n_dirs = 0;
+        return g_strdupv (moo_data_dirs[type] + 1);
+    }
+    else
+    {
+        char **ret = g_strdupv (moo_data_dirs[type]);
+        ret[n_data_dirs[type] - 1] = 0;
+        if (n_dirs)
+            *n_dirs = n_data_dirs[type] - 1;
+        return ret;
+    }
 }
 
 char **
 moo_get_data_dirs (MooDataDirType type,
                    guint         *n_dirs)
 {
-    return moo_get_data_dirs_real (type, NULL, n_dirs);
-}
-
-void
-moo_add_data_dirs (char **dirs)
-{
-    g_strfreev (moo_get_data_dirs_real (MOO_DATA_SHARE, dirs, NULL));
+    return moo_get_data_dirs_real (type, TRUE, n_dirs);
 }
 
 
@@ -1575,21 +1576,18 @@ moo_get_locale_dir (void)
 }
 
 
-char **
-moo_get_data_subdirs (const char    *subdir,
-                      MooDataDirType type,
-                      guint         *n_dirs_p)
+static char **
+moo_get_stuff_subdirs (const char    *subdir,
+                       MooDataDirType type,
+                       gboolean       include_user)
 {
     char **data_dirs, **dirs;
     guint n_dirs, i;
 
     g_return_val_if_fail (subdir != NULL, NULL);
 
-    data_dirs = moo_get_data_dirs (type, &n_dirs);
+    data_dirs = moo_get_data_dirs_real (type, include_user, &n_dirs);
     g_return_val_if_fail (data_dirs != NULL, NULL);
-
-    if (n_dirs_p)
-        *n_dirs_p = n_dirs;
 
     dirs = g_new0 (char*, n_dirs + 1);
 
@@ -1598,6 +1596,24 @@ moo_get_data_subdirs (const char    *subdir,
 
     g_strfreev (data_dirs);
     return dirs;
+}
+
+char **
+moo_get_data_subdirs (const char *subdir)
+{
+    return moo_get_stuff_subdirs (subdir, MOO_DATA_SHARE, TRUE);
+}
+
+char **
+moo_get_sys_data_subdirs (const char *subdir)
+{
+    return moo_get_stuff_subdirs (subdir, MOO_DATA_SHARE, FALSE);
+}
+
+char **
+moo_get_lib_subdirs (const char *subdir)
+{
+    return moo_get_stuff_subdirs (subdir, MOO_DATA_LIB, TRUE);
 }
 
 

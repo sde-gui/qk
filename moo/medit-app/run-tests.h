@@ -21,7 +21,6 @@ add_tests (void)
 #endif
 
     moo_test_lua ();
-    moo_test_mooedit_lua_api ();
 
     moo_test_key_file ();
     moo_test_editor ();

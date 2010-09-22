@@ -185,10 +185,12 @@ find_user_tools_file (int     type,
     *sys_files_p = NULL;
     *user_file_p = NULL;
 
-    files = _moo_strv_reverse (moo_get_data_files (FILENAMES[type], MOO_DATA_SHARE, &n_files));
+    files = _moo_strv_reverse (moo_get_data_files (FILENAMES[type]));
 
-    if (!n_files)
+    if (!files || !*files)
         return;
+
+    n_files = g_strv_length (files);
 
     if (g_file_test (files[n_files - 1], G_FILE_TEST_EXISTS))
         *user_file_p = g_strdup (files[n_files - 1]);
@@ -445,14 +447,13 @@ init_tools_environment (void)
     if (!done)
     {
         char **script_dirs;
-        guint n_script_dirs;
         const char *old_path;
         char *new_path, *my_path;
 
         done = TRUE;
 
-        script_dirs = moo_get_data_subdirs ("scripts", MOO_DATA_SHARE, &n_script_dirs);
-        g_return_if_fail (n_script_dirs != 0);
+        script_dirs = moo_get_data_subdirs ("scripts");
+        g_return_if_fail (script_dirs != NULL);
 
         old_path = g_getenv ("PATH");
         g_return_if_fail (old_path != NULL);
@@ -659,10 +660,8 @@ load_directories (MooUserToolType   type,
                   GHashTable       *ids)
 {
     char **dirs, **p;
-    guint n_dirs;
 
-    dirs = moo_get_data_subdirs (type == MOO_USER_TOOL_MENU ? "tools" : "tools-context",
-                                 MOO_DATA_SHARE, &n_dirs);
+    dirs = moo_get_data_subdirs (type == MOO_USER_TOOL_MENU ? "tools" : "tools-context");
     dirs = _moo_strv_reverse (dirs);
 
     for (p = dirs; p && *p; ++p)

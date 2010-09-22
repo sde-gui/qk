@@ -148,7 +148,7 @@ _moo_win32_add_data_dirs (GPtrArray  *list,
 {
     char *subdir;
 
-    subdir = g_strdup_printf ("%s\\" MOO_PACKAGE_NAME, prefix);
+    subdir = g_strdup_printf ("%s\\" MOO_PACKAGE_SUBDIR_NAME, prefix);
     add_win32_data_dirs_for_dll (list, subdir, NULL);
     add_win32_data_dirs_for_dll (list, subdir, get_moo_dll_name ());
 

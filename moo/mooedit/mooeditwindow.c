@@ -942,9 +942,8 @@ get_doc_status_string (MooEdit *doc)
 }
 
 static char *
-parse_title_format (const char    *format,
-                    MooEditWindow *window,
-                    MooEdit       *doc)
+parse_title_format (const char *format,
+                    MooEdit    *doc)
 {
     GString *str;
 
@@ -965,7 +964,7 @@ parse_title_format (const char    *format,
             switch (*format)
             {
                 case 'a':
-                    g_string_append (str, moo_editor_get_app_name (window->priv->editor));
+                    g_string_append (str, moo_get_display_app_name ());
                     break;
                 case 'b':
                     if (!doc)
@@ -1031,9 +1030,9 @@ update_window_title (MooEditWindow *window)
     doc = ACTIVE_DOC (window);
 
     if (doc)
-        title = parse_title_format (window->priv->title_format, window, doc);
+        title = parse_title_format (window->priv->title_format, doc);
     else
-        title = parse_title_format (window->priv->title_format_no_doc, window, NULL);
+        title = parse_title_format (window->priv->title_format_no_doc, NULL);
 
     gtk_window_set_title (GTK_WINDOW (window), title);
 

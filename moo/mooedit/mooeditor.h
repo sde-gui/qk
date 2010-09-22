@@ -121,10 +121,6 @@ gboolean         moo_editor_close_all       (MooEditor      *editor,
                                              gboolean        ask_confirm,
                                              gboolean        leave_one);
 
-void             moo_editor_set_app_name    (MooEditor      *editor,
-                                             const char     *name);
-const char      *moo_editor_get_app_name    (MooEditor      *editor);
-
 MooUiXml        *moo_editor_get_ui_xml      (MooEditor      *editor);
 void             moo_editor_set_ui_xml      (MooEditor      *editor,
                                              MooUiXml       *xml);

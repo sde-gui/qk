@@ -61,7 +61,6 @@ typedef enum {
 struct MooEditorPrivate {
     DocList         *windowless;
     WindowList      *windows;
-    char            *app_name;
     MooUiXml        *doc_ui_xml;
     MooUiXml        *ui_xml;
     MdHistoryMgr    *history;
@@ -369,8 +368,6 @@ moo_editor_finalize (GObject *object)
 {
     MooEditor *editor = MOO_EDITOR (object);
 
-    g_free (editor->priv->app_name);
-
     if (editor->priv->ui_xml)
         g_object_unref (editor->priv->ui_xml);
     if (editor->priv->history)
@@ -561,27 +558,6 @@ file_info_list_free (GSList *list)
 {
     g_slist_foreach (list, (GFunc) moo_edit_file_info_free, NULL);
     g_slist_free (list);
-}
-
-
-void
-moo_editor_set_app_name (MooEditor  *editor,
-                         const char *name)
-{
-    g_return_if_fail (MOO_IS_EDITOR (editor));
-    MOO_ASSIGN_STRING (editor->priv->app_name, name);
-    _moo_edit_window_update_title ();
-}
-
-const char *
-moo_editor_get_app_name (MooEditor *editor)
-{
-    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-
-    if (!editor->priv->app_name)
-        return g_get_prgname ();
-    else
-        return editor->priv->app_name;
 }
 
 
