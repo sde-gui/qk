@@ -17,6 +17,7 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
+#include "mooedit/mooedit-tests.h"
 #include <string.h>
 
 
@@ -871,10 +872,6 @@ moo_key_file_format (MooKeyFile *key_file,
 }
 
 
-#ifdef MOO_ENABLE_UNIT_TESTS
-
-#include <mooedit/mooedit-tests.h>
-
 #define CMT_BODY1           \
 "A comment\n"               \
 "blah blah blah "
@@ -967,5 +964,3 @@ moo_test_key_file (void)
 
     moo_test_suite_add_test (suite, "MooKeyFile", (MooTestFunc) test_key_file, NULL);
 }
-
-#endif

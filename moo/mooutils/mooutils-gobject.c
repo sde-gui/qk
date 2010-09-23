@@ -16,6 +16,7 @@
 #include "mooutils/mooutils-gobject-private.h"
 #include "mooutils/mooclosure.h"
 #include "mooutils/mootype-macros.h"
+#include <mooutils/mooutils-tests.h>
 #include <gobject/gvaluecollector.h>
 #include <string.h>
 #include <errno.h>
@@ -966,10 +967,6 @@ _moo_value_change_type (GValue *val,
 }
 
 
-#ifdef MOO_ENABLE_UNIT_TESTS
-
-#include <mooutils/mooutils-tests.h>
-
 static double
 string_to_double (const char *string)
 {
@@ -1189,8 +1186,6 @@ moo_test_gobject (void)
 
     moo_test_suite_add_test (suite, "test of converting values", (MooTestFunc) test_misc, NULL);
 }
-
-#endif
 
 
 /*****************************************************************************/

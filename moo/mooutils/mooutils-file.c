@@ -19,6 +19,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooi18n.h"
+#include <mooutils/mooutils-tests.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -553,10 +554,6 @@ moo_string_writer_get_string (MooFileWriter *fwriter,
 }
 
 
-#ifdef MOO_ENABLE_UNIT_TESTS
-
-#include <mooutils/mooutils-tests.h>
-
 static gboolean
 same_content (const char *filename1,
               const char *filename2)
@@ -706,5 +703,3 @@ moo_test_moo_file_writer (void)
     moo_test_suite_add_test (suite, "test of MooFileWriter",
                              (MooTestFunc) test_moo_file_writer, NULL);
 }
-
-#endif /* MOO_ENABLE_UNIT_TESTS */

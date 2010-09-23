@@ -22,6 +22,7 @@
 #include "mooutils/mooatom.h"
 #include "mooutils/mooonce.h"
 #include "mooutils/mooutils-misc.h"
+#include <mooutils/mooutils-tests.h>
 #include "moologwindow-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gmappedfile.h>
@@ -2487,10 +2488,6 @@ moo_debug_enabled (const char *domain,
 }
 
 
-#ifdef MOO_ENABLE_UNIT_TESTS
-
-#include <mooutils/mooutils-tests.h>
-
 static void
 test_strv_one (const char *string,
                gssize      len,
@@ -2575,5 +2572,3 @@ moo_test_mooutils_misc (void)
     moo_test_suite_add_test (suite, "test of moo_splitlines()",
                              (MooTestFunc) test_moo_splitlines, NULL);
 }
-
-#endif

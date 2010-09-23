@@ -1,5 +1,3 @@
-#ifdef MOO_ENABLE_UNIT_TESTS
-
 #include <mooedit/mooedit-tests.h>
 #include <moolua/moolua-tests.h>
 #include <mooutils/mooutils-tests.h>
@@ -89,5 +87,3 @@ unit_tests_main (int argc, char *argv[])
 
     return moo_test_get_result () ? 0 : 1;
 }
-
-#endif /* MOO_ENABLE_UNIT_TESTS */

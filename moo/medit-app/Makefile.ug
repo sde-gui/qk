@@ -53,11 +53,9 @@ endif
 TESTS =
 EXTRA_DIST += run-tests.sh
 
-if MOO_ENABLE_UNIT_TESTS
 AM_CFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
 AM_CXXFLAGS += -DSRCDIR=\"$(shell cd $(srcdir) && pwd)\" -DTOP_SRCDIR=\"$(shell cd $(top_srcdir) && pwd)\"
 TESTS += run-tests.sh
-endif
 
 EXTRA_DIST +=			\
 	data/gobject.lua	\

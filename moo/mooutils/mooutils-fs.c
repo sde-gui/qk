@@ -24,6 +24,7 @@
 #include "mooutils/mootype-macros.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooi18n.h"
+#include <mooutils/mooutils-tests.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -734,8 +735,6 @@ normalize_full_path_unix (const char *path)
 
 #endif /* !__WIN32__ */
 
-#if defined(__WIN32__) || defined(MOO_ENABLE_UNIT_TESTS)
-
 static char *
 normalize_full_path_win32 (const char *fullpath)
 {
@@ -844,8 +843,6 @@ normalize_full_path_win32 (const char *fullpath)
     return path;
 }
 
-#endif
-
 static char *
 normalize_path (const char *filename)
 {
@@ -897,10 +894,6 @@ _moo_path_is_absolute (const char *path)
         ;
 }
 
-
-#ifdef MOO_ENABLE_UNIT_TESTS
-
-#include <mooutils/mooutils-tests.h>
 
 static void
 test_normalize_path_one (const char *path,
@@ -1143,8 +1136,6 @@ moo_test_mooutils_fs (void)
                              (MooTestFunc) test_normalize_file_path_win32, NULL);
 #endif
 }
-
-#endif /* MOO_ENABLE_UNIT_TESTS */
 
 
 /**********************************************************************/

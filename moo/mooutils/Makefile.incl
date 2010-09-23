@@ -153,9 +153,8 @@ EXTRA_DIST += $(mooutils_win32_sources) $(mooutils_unittest_sources)
 if MOO_OS_WIN32
 moo_sources += $(mooutils_win32_sources)
 endif
-if MOO_ENABLE_UNIT_TESTS
+
 moo_sources += $(mooutils_unittest_sources)
-endif
 
 EXTRA_DIST +=					\
 	mooutils/glade/mooaccelprefs.glade	\

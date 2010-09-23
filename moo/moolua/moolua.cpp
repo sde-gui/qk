@@ -16,6 +16,8 @@
 /* This is not a part of the Lua distribution */
 
 #include "moolua.h"
+#include "moo-tests-lua.h"
+#include "moolua/moolua-tests.h"
 #include <string.h>
 #include <glib.h>
 
@@ -107,11 +109,6 @@ lua_addpath (lua_State  *L,
 }
 
 
-#ifdef MOO_ENABLE_UNIT_TESTS
-
-#include "moo-tests-lua.h"
-#include "moolua/moolua-tests.h"
-
 static void
 test_unicode (void)
 {
@@ -134,5 +131,3 @@ moo_test_lua (void)
     moo_test_suite_add_test (suite, "test of unicode", (MooTestFunc) test_unicode, NULL);
     moo_test_suite_add_test (suite, "test of unicode (2)", (MooTestFunc) test_ustring, NULL);
 }
-
-#endif /* MOO_ENABLE_UNIT_TESTS */

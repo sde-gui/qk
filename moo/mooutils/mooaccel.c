@@ -15,9 +15,11 @@
 
 #include "mooutils/mooaccel.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/mooutils-tests.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <string.h>
+#include <locale.h>
 
 #define MOO_ACCEL_PREFS_KEY "Shortcuts"
 
@@ -702,11 +704,6 @@ _moo_accel_normalize (const char *accel)
 }
 
 
-#ifdef MOO_ENABLE_UNIT_TESTS
-
-#include <mooutils/mooutils-tests.h>
-#include <locale.h>
-
 static void
 test_moo_accel_register (void)
 {
@@ -949,5 +946,3 @@ moo_test_mooaccel (void)
     moo_test_suite_add_test (suite, "test of _moo_accel_register() and friends",
                              (MooTestFunc) test_moo_accel_register, NULL);
 }
-
-#endif

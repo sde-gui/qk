@@ -77,21 +77,6 @@ AC_ARG_ENABLE(dev-mode,
 ])
 AM_CONDITIONAL(MOO_DEV_MODE, test x$MOO_DEV_MODE = "xyes")
 
-AC_ARG_ENABLE(unit-tests,
-  AC_HELP_STRING([--enable-unit-tests],[build unit tests (default = NO)]),[
-  if test "x$enable_unit_tests" = "xno"; then
-    MOO_ENABLE_UNIT_TESTS="no"
-  else
-    MOO_ENABLE_UNIT_TESTS="yes"
-  fi
-  ],[
-  MOO_ENABLE_UNIT_TESTS="$MOO_DEV_MODE"
-])
-AM_CONDITIONAL(MOO_ENABLE_UNIT_TESTS, test x$MOO_ENABLE_UNIT_TESTS = "xyes")
-if test "x$MOO_ENABLE_UNIT_TESTS" = "xyes"; then
-  MOO_CPPFLAGS="$MOO_CPPFLAGS -DMOO_ENABLE_UNIT_TESTS"
-fi
-
 MOO_COMPILER
 
 _MOO_AC_CHECK_COMPILER_OPTIONS([dnl

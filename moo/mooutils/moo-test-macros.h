@@ -13,10 +13,6 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_ENABLE_UNIT_TESTS
-#error "Ooops"
-#endif
-
 #ifndef MOO_TEST_MACROS_H
 #define MOO_TEST_MACROS_H
 

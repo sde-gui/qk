@@ -1,8 +1,6 @@
 bin_PROGRAMS = medit
 
-# if MOO_ENABLE_UNIT_TESTS
 # AM_CFLAGS += -DSRCDIR="${CMAKE_SOURCE_DIR}/medit")
-# endif
 
 medit_SOURCES =				\
 	medit-app/mem-debug.h		\

@@ -24,7 +24,10 @@
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooeditor-private.h"
 #include "mooedit/moolangmgr.h"
+#include "mooedit/mooedit-tests.h"
 #include "marshals.h"
+#include "mooutils/mooutils-fs.h"
+#include "mooutils/moocompat.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
@@ -1983,12 +1986,6 @@ moo_edit_ui_set_show_line_numbers (MooEdit  *doc,
 }
 
 
-#ifdef MOO_ENABLE_UNIT_TESTS
-
-#include <mooedit/mooedit-tests.h>
-#include <mooutils/mooutils-fs.h>
-#include <mooutils/moocompat.h>
-
 static struct {
     char *working_dir;
     char *encodings_dir;
@@ -2258,5 +2255,3 @@ moo_test_editor (void)
     moo_test_suite_add_test (suite, "basic", (MooTestFunc) test_basic, NULL);
     moo_test_suite_add_test (suite, "encodings", (MooTestFunc) test_encodings, NULL);
 }
-
-#endif

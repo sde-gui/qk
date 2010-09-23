@@ -37,6 +37,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/moowin32/mingw/fnmatch.h"
 #include "mooutils/moowin32/mingw/sys/mman.h"
+#include <mooutils/mooutils-tests.h>
 #include <gdk/gdkwin32.h>
 #include <windows.h>
 #include <shellapi.h>
@@ -364,10 +365,6 @@ _moo_win32_fnmatch (const char *pattern,
 }
 
 
-#ifdef MOO_ENABLE_UNIT_TESTS
-
-#include <mooutils/mooutils-tests.h>
-
 static void
 test_parse_cmd_line_one (const char  *cmd_line,
                          const char **expected)
@@ -435,8 +432,6 @@ moo_test_mooutils_win32 (void)
                              (MooTestFunc) test_moo_win32_lame_parse_cmd_line,
                              NULL);
 }
-
-#endif
 
 
 /***************************************************************************

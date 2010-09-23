@@ -650,16 +650,14 @@ medit_main (int argc, char *argv[])
 int
 main (int argc, char *argv[])
 {
-#ifdef MOO_ENABLE_UNIT_TESTS
-    if (argc > 1 && strcmp (argv[1], "--ut") == 0)
+    if (argc > 1 && strcmp (argv[1], "--run-unit-tests") == 0)
     {
         memmove (argv + 1, argv + 2, (argc - 1) * sizeof (char*));
         argc -= 1;
         return unit_tests_main (argc, argv);
     }
     else
-#endif
-    return medit_main (argc, argv);
+        return medit_main (argc, argv);
 }
 
 #if defined(__WIN32__) && !defined(__GNUC__)
