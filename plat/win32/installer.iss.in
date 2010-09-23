@@ -1,0 +1,55 @@
+[Setup]
+AppId=@MEDIT_WIN32_APP_UID@
+AppName="medit"
+AppVersion="@MOO_DISPLAY_VERSION@"
+;AppVerName="medit @MOO_DISPLAY_VERSION@"
+AppPublisher="Yevgen Muntyan"
+AppPublisherURL="@MOO_WEBSITE@"
+AppSupportURL="@MOO_WEBSITE@"
+AppUpdatesURL="@MOO_WEBSITE@"
+AppContact="@MOO_EMAIL@"
+AppCopyright="@MOO_COPYRIGHT@"
+DefaultDirName={pf}\medit
+DefaultGroupName="medit"
+AllowNoIcons=yes
+;LicenseFile="@MEDIT_INNO_TOP_SRCDIR@/COPYING.GPL"
+OutputDir="@MEDIT_INNO_TOP_BUILDDIR@"
+OutputBaseFilename="medit-@MOO_DISPLAY_VERSION@"
+Compression=lzma
+SolidCompression=yes
+DisableReadyPage=true
+ShowLanguageDialog=auto
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "basque"; MessagesFile: "compiler:Languages\Basque.isl"
+Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
+Name: "catalan"; MessagesFile: "compiler:Languages\Catalan.isl"
+Name: "czech"; MessagesFile: "compiler:Languages\Czech.isl"
+Name: "danish"; MessagesFile: "compiler:Languages\Danish.isl"
+Name: "dutch"; MessagesFile: "compiler:Languages\Dutch.isl"
+Name: "finnish"; MessagesFile: "compiler:Languages\Finnish.isl"
+Name: "french"; MessagesFile: "compiler:Languages\French.isl"
+Name: "german"; MessagesFile: "compiler:Languages\German.isl"
+Name: "hebrew"; MessagesFile: "compiler:Languages\Hebrew.isl"
+Name: "hungarian"; MessagesFile: "compiler:Languages\Hungarian.isl"
+Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
+Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
+Name: "norwegian"; MessagesFile: "compiler:Languages\Norwegian.isl"
+Name: "polish"; MessagesFile: "compiler:Languages\Polish.isl"
+Name: "portuguese"; MessagesFile: "compiler:Languages\Portuguese.isl"
+Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
+Name: "slovak"; MessagesFile: "compiler:Languages\Slovak.isl"
+Name: "slovenian"; MessagesFile: "compiler:Languages\Slovenian.isl"
+Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
+
+[Files]
+Source: "@MEDIT_INNO_INSTDIR@/*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Icons]
+Name: "{group}\medit"; Filename: "{app}\bin\medit.exe"
+Name: "{group}\{cm:ProgramOnTheWeb,medit}"; Filename: "@MOO_WEBSITE@"
+Name: "{group}\{cm:UninstallProgram,medit}"; Filename: "{uninstallexe}"
+
+[Run]
+Filename: "{app}\bin\medit.exe"; Description: "{cm:LaunchProgram,medit}"; Flags: nowait postinstall skipifsilent

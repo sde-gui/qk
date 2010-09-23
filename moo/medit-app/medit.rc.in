@@ -15,7 +15,7 @@ VS_VERSION_INFO VERSIONINFO
     BEGIN
       BLOCK "040904B0"
       BEGIN
-        VALUE "CompanyName", "http://mooedit.sourceforge.net/"
+        VALUE "CompanyName", "@MOO_WEBSITE@"
         VALUE "FileDescription", "medit"
         VALUE "FileVersion", "@MOO_MAJOR_VERSION@.@MOO_MINOR_VERSION@.@MOO_MICRO_VERSION@.0"
         VALUE "InternalName", "medit"

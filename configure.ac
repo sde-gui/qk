@@ -8,6 +8,8 @@ m4_define([_moo_version_],[_moo_major_version_._moo_minor_version_._moo_micro_ve
 
 m4_if([_moo_version_suffix_],[],[m4_define([_moo_display_version_],[_moo_version_])],[m4_define([_moo_display_version_],[_moo_version_-_moo_version_suffix_])])
 
+m4_define([_moo_website_],[http://mooedit.sourceforge.net/])
+m4_define([_moo_web_contact_],[http://mooedit.sourceforge.net/contact.html])
 m4_define([_moo_email_],[emuntyan@sourceforge.net])
 m4_define([_moo_copyright_],[2004-2010 Yevgen Muntyan <_moo_email_>])
 
@@ -17,7 +19,7 @@ AC_GNU_SOURCE
 AC_CONFIG_MACRO_DIR([m4])
 AC_SUBST(ACLOCAL_FLAGS)
 
-AM_INIT_AUTOMAKE([1.11 silent-rules foreign dist-bzip2 dist-zip no-dist-gzip])
+AM_INIT_AUTOMAKE([1.11 silent-rules foreign dist-bzip2 no-dist-gzip])
 # LT_INIT([disable-shared])
 
 MOO_MAJOR_VERSION=_moo_major_version_
@@ -28,9 +30,12 @@ MOO_MODULE_MINOR_VERSION=_moo_module_minor_version_
 MOO_VERSION=_moo_version_
 MOO_DISPLAY_VERSION=_moo_display_version_
 MOO_EMAIL="_moo_email_"
+MOO_WEBSITE="_moo_website_"
+MOO_WEB_CONTACT="_moo_web_contact_"
 MOO_COPYRIGHT="_moo_copyright_"
 MOO_PACKAGE_NAME=moo
 AC_SUBST(MOO_EMAIL)
+AC_SUBST(MOO_WEBSITE)
 AC_SUBST(MOO_DISPLAY_VERSION)
 AC_SUBST(MOO_COPYRIGHT)
 
@@ -76,11 +81,6 @@ AC_DEFINE(MOO_BUILD_EDIT,[1],[MOO_BUILD_EDIT])
 AC_DEFINE(MOO_BUILD_LUA,[1],[MOO_BUILD_LUA])
 AC_DEFINE(MOO_BUILD_UTILS,[1],[MOO_BUILD_UTILS])
 
-AM_CONDITIONAL(MOO_BUILD_CTAGS, [$MOO_OS_UNIX])
-if $MOO_OS_UNIX; then
-  AC_DEFINE(MOO_BUILD_CTAGS, 1, [build ctags plugin])
-fi
-
 AC_DEFINE_UNQUOTED(MOO_VERSION,["$MOO_VERSION"],[MOO_VERSION])
 AC_DEFINE_UNQUOTED(MOO_DISPLAY_VERSION,["$MOO_DISPLAY_VERSION"],[MOO_DISPLAY_VERSION])
 AC_DEFINE_UNQUOTED(MOO_MAJOR_VERSION,[$MOO_MAJOR_VERSION],[MOO_MAJOR_VERSION])
@@ -95,8 +95,28 @@ AC_DEFINE_UNQUOTED(MOO_MODULE_MINOR_VERSION,[$MOO_MODULE_MINOR_VERSION],[MOO_MOD
 AC_DEFINE_UNQUOTED(MOO_EMAIL,["$MOO_EMAIL"],MOO_EMAIL)
 AC_DEFINE_UNQUOTED(PACKAGE_BUGREPORT,["$PACKAGE_BUGREPORT"],PACKAGE_BUGREPORT)
 AC_DEFINE_UNQUOTED(MOO_COPYRIGHT,["$MOO_COPYRIGHT"],MOO_COPYRIGHT)
+AC_DEFINE_UNQUOTED(MOO_WEBSITE,["$MOO_WEBSITE"],MOO_WEBSITE)
+AC_DEFINE_UNQUOTED(MOO_WEB_CONTACT,["$MOO_WEB_CONTACT"],MOO_WEB_CONTACT)
 
 MOO_AC_CHECK_OS
+
+AM_CONDITIONAL(MOO_BUILD_CTAGS, [$MOO_OS_UNIX])
+if $MOO_OS_UNIX; then
+  AC_DEFINE(MOO_BUILD_CTAGS, 1, [build ctags plugin])
+fi
+
+if $MOO_OS_WIN32; then
+  MEDIT_WIN32_APP_UID="7F9F899F-EE8A-47F0-9981-8C525AF78E4D"
+  AC_SUBST(MEDIT_WIN32_APP_UID)
+  MEDIT_INNO_TOP_SRCDIR="Z:`cd $srcdir && pwd`"
+  MEDIT_INNO_TOP_BUILDDIR="Z:`pwd`"
+  MEDIT_INNO_INSTDIR="Z:`cd $prefix && pwd`"
+  MEDIT_INNO_COMPILER='wine "c:\\program files\\inno setup 5\\ISCC.exe"'
+  AC_SUBST(MEDIT_INNO_TOP_SRCDIR)
+  AC_SUBST(MEDIT_INNO_TOP_BUILDDIR)
+  AC_SUBST(MEDIT_INNO_INSTDIR)
+  AC_SUBST(MEDIT_INNO_COMPILER)
+fi
 
 AC_ARG_ENABLE(install-hooks,
   AC_HELP_STRING([--enable-install-hooks],[run gtk-update-icon-cache during 'make install']),[

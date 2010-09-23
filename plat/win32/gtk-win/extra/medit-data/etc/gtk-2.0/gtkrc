@@ -7,6 +7,7 @@ gtk-entry-select-on-focus = 1
 gtk-label-select-on-focus = 1
 gtk-show-input-method-menu = 1
 gtk-show-unicode-menu = 1
+gtk-toolbar-style = icons
 
 # gtk-icon-theme-name = "Tango"
 # gtk-font-name = "Segoe UI 9"

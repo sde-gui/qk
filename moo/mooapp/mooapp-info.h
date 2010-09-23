@@ -20,7 +20,7 @@
 #define MOO_APP_FULL_NAME       "medit"
 #define MOO_APP_DESCRIPTION     _("medit is a text editor")
 #define MOO_APP_LOGO            "medit"
-#define MOO_APP_WEBSITE         "http://mooedit.sourceforge.net/"
-#define MOO_APP_WEBSITE_LABEL   "http://mooedit.sourceforge.net/"
+#define MOO_APP_WEBSITE         MOO_WEBSITE
+#define MOO_APP_WEBSITE_LABEL   MOO_WEBSITE
 
 #endif /* MOO_APP_INFO_H */

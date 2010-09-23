@@ -17,8 +17,18 @@ EXTRA_DIST +=				\
 	tools/glade2c.py		\
 	tools/xml2h.py
 
-CLEANFILES = configargs.h
-
 if MOO_DEV_MODE
 DISTCHECK_CONFIGURE_FLAGS = MAKEFLAGS=-j2
+endif
+
+CLEANFILES =
+
+if MOO_OS_WIN32
+CLEANFILES += plat/win32/installer.iss
+plat/win32/installer.iss: $(top_srcdir)/plat/win32/installer.iss.in $(top_builddir)/config.status
+	$(MKDIR_P) plat/win32
+	cd $(top_builddir) && ./config.status --file=plat/win32/installer.iss
+installer: plat/win32/installer.iss
+	$(MAKE) $(AM_MAKEFLAGS) install
+	$(MEDIT_INNO_COMPILER) plat/win32/installer.iss
 endif

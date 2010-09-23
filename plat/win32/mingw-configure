@@ -18,6 +18,17 @@ done
 export mgwdir=`dirname $0`/gtk-win
 . $mgwdir/config.sh || exit 1
 
+en_only=false
+if [ "$1" = "--en" ]; then
+  en_only=true
+  shift
+fi
+
+destdir=$mgwdestdir
+if $en_only; then
+  destdir=$destdir-en
+fi
+
 if [ "$mgwconfig" = "debug" ]; then
   _def_cflags='-gstabs'
 else
@@ -58,7 +69,13 @@ export PKG_CONFIG_PATH="$mgwtargetdir/lib/pkgconfig"
 configure_args="--build=i686-pc-linux-gnu --host=i586-pc-mingw32msvc --target=i586-pc-mingw32msvc \
 AR=$AR RANLIB=$RANLIB STRIP=$STRIP AS=$AS DLLTOOL=$DLLTOOL OBJDUMP=$OBJDUMP NM=$NM WINDRES=$WINDRES RC=$RC \
 INSTALL=`which install-check` \
---prefix=$mgwtargetdir --enable-silent-rules"
+--prefix=$destdir --enable-silent-rules"
+
+if $en_only; then
+  moo_nls_flags='--disable-nls'
+else
+  moo_nls_flags=
+fi
 
 if [ "$mgwconfig" = "debug" ]; then
   moo_configure_args='--enable-debug'
@@ -66,5 +83,5 @@ else
   moo_configure_args='--enable-dev-mode'
 fi
 
-echo $srcdir/configure $configure_args $moo_configure_args "$@"
-exec $srcdir/configure $configure_args $moo_configure_args "$@"
+echo $srcdir/configure $configure_args $moo_configure_args $moo_nls_flags "$@"
+exec $srcdir/configure $configure_args $moo_configure_args $moo_nls_flags "$@"
