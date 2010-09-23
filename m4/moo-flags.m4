@@ -120,7 +120,7 @@ if test "x$MOO_DEV_MODE" = "xyes"; then
   _MOO_AC_CHECK_COMPILER_OPTIONS([dnl
 -Wpointer-arith -Wcast-align -Wsign-compare -Wreturn-type dnl
 -Wwrite-strings -Wmissing-format-attribute dnl
--Wdisabled-optimization -Wendif-labels -Wlong-long dnl
+-Wdisabled-optimization -Wendif-labels dnl
 -Wvla -Winit-self dnl
 ])
   # -Wlogical-op triggers warning in strchr() when compiled with optimizations
@@ -129,13 +129,16 @@ if test "x$MOO_DEV_MODE" = "xyes"; then
   else
     _MOO_AC_CHECK_COMPILER_OPTIONS([-Wuninitialized])
   fi
+  # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=7263 - -Wlong-long
+  # ignores __extension__ in C++
   _MOO_AC_CHECK_C_COMPILER_OPTIONS([dnl
--Wmissing-prototypes -Wnested-externs dnl
+-Wmissing-prototypes -Wnested-externs -Wlong-long dnl
 ])
   _MOO_AC_CHECK_CXX_COMPILER_OPTIONS([dnl
 -fno-nonansi-builtins -fno-gnu-keywords dnl
 -Wctor-dtor-privacy -Wabi -Wstrict-null-sentinel dnl
 -Woverloaded-virtual -Wsign-promo -Wnon-virtual-dtor dnl
+-Wno-long-long dnl
 ])
 fi
 
