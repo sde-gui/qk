@@ -1963,8 +1963,11 @@ parse_int (const char *str,
 
     if (errno)
         return FALSE;
+
+#if G_MAXINT != G_MAXLONG
     if (num < G_MININT || num > G_MAXINT)
         return FALSE;
+#endif
 
     if (dest)
         *dest = num;

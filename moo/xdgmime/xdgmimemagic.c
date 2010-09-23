@@ -231,8 +231,14 @@ _xdg_mime_magic_read_a_number (FILE *magic_file,
       errno = 0;
       retval = strtol (number_string, NULL, 10);
 
-      if ((retval < INT_MIN) || (retval > INT_MAX) || (errno != 0))
-	return -1;
+/* workaround gcc bug http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43772 */
+#if G_MAXINT != G_MAXLONG
+      if (retval < INT_MIN || retval > INT_MAX)
+        return -1;
+#endif
+
+      if (errno != 0)
+          return -1;
     }
 
   return retval;

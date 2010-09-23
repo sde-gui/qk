@@ -244,8 +244,10 @@ string_to_int (const char *string,
     if (errno || !end || *end)
         return FALSE;
 
+#if G_MAXINT != G_MAXLONG
     if (val > G_MAXINT || val < G_MININT)
         return FALSE;
+#endif
 
     *dest = val;
     return TRUE;
