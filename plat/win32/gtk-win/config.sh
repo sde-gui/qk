@@ -1,5 +1,3 @@
-export mgwdestdir=/tmp/gtk-win
-
 export mgwdir_s=$mgwdir
 export mgwdir=`cd $mgwdir && pwd`
 export mgwconfig=release
@@ -15,7 +13,7 @@ case "$1" in
     ;;
 esac
 
-export mgwdestgtkdir=$mgwdestdir/gtk-bin-$mgwconfig
+export mgwdestdir=$mgwdir/bdist-$mgwconfig
 
 export mgwbuilddir=$mgwdir/$mgwconfig
 export mgwbuilddir_s=$mgwdir_s/$mgwconfig

@@ -14,5 +14,17 @@ build-data: check-make
 
 build: build-gtk build-data
 
+bdist-en:
+	rm -fr $(mgwdestdir)/medit-en
+	$(mgwdir)/copyuser.sh --en $(mgwtargetdir) $(mgwdestdir)/medit-en
+	$(mgwdir)/copymedit.sh --en $(mgwtargetdir) $(mgwdestdir)/medit-en
+
+bdist:
+	rm -fr $(mgwdestdir)/medit
+	$(mgwdir)/copyuser.sh $(mgwtargetdir) $(mgwdestdir)/medit
+	$(mgwdir)/copymedit.sh $(mgwtargetdir) $(mgwdestdir)/medit
+
+bdist-full: bdist-en bdist
+
 clean:
-	rm -rf $(mgwtargetdir)
+	rm -rf $(mgwtargetdir) $(mgwdestdir)
