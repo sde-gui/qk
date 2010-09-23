@@ -10,7 +10,12 @@ else:
     _gtkwinconfig = _gtkwinconfig.lower()
 assert _gtkwinconfig in ['debug', 'release']
 
-_mingw_tool_prefix = '/usr/bin/i586-mingw32msvc-'
+_mingw_tool_prefix = None
+for __p in ('i586-mingw32msvc', 'i486-mingw32'):
+    if os.path.exists('/usr/bin/%s-gcc' % (__p,)):
+        _mingw_tool_prefix = '/usr/bin/%s-' % (__p,)
+        break
+assert _mingw_tool_prefix
 
 makeargs = '-j 2'
 moduleset = os.path.join(_gtkwinjhbuilddir, 'gtk.moduleset')
@@ -71,7 +76,10 @@ os.environ['OBJCFLAGS'] = "-mms-bitfields -march=i686 %s" % (_def_cflags,)
 os.environ['PKG_CONFIG_LIBDIR'] = "%s/lib/pkgconfig" % (prefix,)
 os.environ['PKG_CONFIG_PATH'] = "%s/lib/pkgconfig" % (prefix,)
 
-os.environ['INSTALL']  = 'install-check'
+for __dir in os.environ['PATH'].split(':'):
+    if os.path.exists(os.path.join(__dir, 'install-check')):
+        os.environ['INSTALL'] = os.path.join(__dir, 'install-check')
+        break
 
 #Populating autogenargs
 
@@ -84,7 +92,7 @@ autogenargs += ' --target=' + _configure_target
 autogenargs += ' --disable-docs --disable-gtk-doc --disable-scrollkeeper'
 autogenargs += ' --enable-maintainer-mode --enable-shared --disable-static'
 autogenargs += ' --enable-relocatable --enable-silent-rules --disable-glibtest'
-for _var in ['AR', 'RANLIB', 'STRIP', 'AS', 'DLLTOOL', 'OBJDUMP', 'NM', 'WINDRES', 'RC']:
+for _var in ['AR', 'RANLIB', 'STRIP', 'AS', 'DLLTOOL', 'OBJDUMP', 'NM', 'WINDRES', 'RC', 'INSTALL']:
     autogenargs += ' ' + _var + '="' + os.environ[_var] + '" '
 
 # zlib uses custom configure script which doesn't ignore unknown options

@@ -8,7 +8,12 @@ if [ ! -e $srcdir/configure ]; then
   exit 1
 fi
 
-_mingw_tool_prefix='/usr/bin/i586-mingw32msvc'
+for p in i586-mingw32msvc i486-mingw32; do
+  if [ -e "/usr/bin/$p-gcc" ]; then
+    _mingw_tool_prefix="/usr/bin/$p"
+    break
+  fi
+done
 
 export mgwdir=`dirname $0`/gtk-win
 . $mgwdir/config.sh || exit 1
