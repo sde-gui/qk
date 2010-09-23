@@ -46,7 +46,7 @@ export AR=$_mingw_tool_prefix-ar
 export RANLIB=$_mingw_tool_prefix-ranlib
 export STRIP=$_mingw_tool_prefix-strip
 
-export LDFLAGS="-L$mgwtargetdir/lib"
+export LDFLAGS="-static-libgcc -static-libstdc++ -L$mgwtargetdir/lib"
 export CPPFLAGS="-I$mgwtargetdir/include"
 export CFLAGS="-mms-bitfields -march=i686 $_def_cflags"
 export CXXFLAGS="-mms-bitfields -march=i686 $_def_cflags"
