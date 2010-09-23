@@ -1,6 +1,6 @@
 \input texinfo @c -*-texinfo-*-
 @setfilename help.info
-@settitle medit 0.99.0-unstable manual
+@settitle medit 0.99.0-devel manual
 @c %**end of header
 
 @macro medit
@@ -26,7 +26,7 @@ medit
 @node Top
 @top medit
 
-This manual is for medit version 0.99.0-unstable.
+This manual is for medit version 0.99.0-devel.
 
 @menu
 * Preferences:: Editor preferences.
