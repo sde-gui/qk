@@ -115,7 +115,7 @@ static Variant convert_table_to_variant(lua_State *L, int narg)
 
         bool int_idx = lua_isnumber(L, -2);
 
-        if ((int_idx && dic.empty()) || (!int_idx && !ar.empty()))
+        if ((int_idx && !dic.empty()) || (!int_idx && !ar.empty()))
             luaL_argerror(L, narg, "either table with string keys or an array expected");
 
         if (int_idx)

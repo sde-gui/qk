@@ -574,6 +574,7 @@ public:
     /// @param{text} is inserted at cursor.
     METHOD(replace_selected_text);
     /// @item Document.replace_selected_lines(text)
+    /// @item Document.replace_selected_lines(lines)
     /// replace selected lines with @param{text}. Similar to
     /// @method{replace_selected_text()}, but selection is extended to include
     /// whole lines. If nothing is selected, then line at cursor is replaced.

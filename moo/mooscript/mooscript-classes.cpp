@@ -2,6 +2,7 @@
 #include "mooapp/mooapp.h"
 #include "mooutils/mooutils-misc.h"
 #include <string.h>
+#include <sstream>
 
 namespace mom {
 
@@ -1081,12 +1082,25 @@ Variant Document::selected_text(const VariantArray &args)
     return String::take_utf8(gtk_text_buffer_get_slice(buf, &start, &end, TRUE));
 }
 
-static void get_selected_lines_bounds(GtkTextBuffer *buf, GtkTextIter *start, GtkTextIter *end)
+static void get_selected_lines_bounds(GtkTextBuffer *buf, GtkTextIter *start, GtkTextIter *end, bool *cursor_at_next_line = 0)
 {
+    if (cursor_at_next_line)
+        *cursor_at_next_line = false;
+
     gtk_text_buffer_get_selection_bounds(buf, start, end);
-    if (!gtk_text_iter_starts_line(end) || (gtk_text_iter_equal(start, end) && !gtk_text_iter_ends_line(start)))
-        gtk_text_iter_forward_line(end);
+
     gtk_text_iter_set_line_offset(start, 0);
+
+    if (gtk_text_iter_starts_line(end) && !gtk_text_iter_equal(start, end))
+    {
+        gtk_text_iter_backward_line(end);
+        if (cursor_at_next_line)
+            *cursor_at_next_line = true;
+    }
+
+    if (!gtk_text_iter_ends_line(end))
+        gtk_text_iter_forward_to_line_end(end);
+
 }
 
 Variant Document::selected_lines(const VariantArray &args)
@@ -1097,12 +1111,6 @@ Variant Document::selected_lines(const VariantArray &args)
     get_selected_lines_bounds(buf, &start, &end);
     char *text = gtk_text_buffer_get_slice(buf, &start, &end, TRUE);
     char **lines = moo_splitlines(text);
-    if (text && text[0] && lines && *lines && text[strlen(text) - 1] == '\n')
-    {
-        int n_lines = g_strv_length(lines);
-        g_free(lines[n_lines - 1]);
-        lines[n_lines - 1] = NULL;
-    }
     VariantArray ar;
     for (char **p = lines; p && *p; ++p)
         ar.append(String::take_utf8(*p));
@@ -1127,6 +1135,7 @@ Variant Document::delete_selected_lines(const VariantArray &args)
     GtkTextIter start, end;
     GtkTextBuffer *buf = buffer();
     get_selected_lines_bounds(buf, &start, &end);
+    gtk_text_iter_forward_line(&end);
     gtk_text_buffer_delete(buf, &start, &end);
     return Variant();
 }
@@ -1140,18 +1149,57 @@ Variant Document::replace_selected_text(const VariantArray &args)
     gtk_text_buffer_get_selection_bounds(buf, &start, &end);
     gtk_text_buffer_delete(buf, &start, &end);
     gtk_text_buffer_insert(buf, &start, text.utf8(), -1);
+    gtk_text_buffer_place_cursor(buf, &start);
     return Variant();
+}
+
+static String join(const moo::Vector<String> &list, const String &sep)
+{
+    std::stringstream ss;
+    for (int i = 0, c = list.size(); i < c; ++i)
+    {
+        if (i != 0)
+            ss << sep.utf8();
+        ss << list[i].utf8();
+    }
+    return ss.str();
 }
 
 Variant Document::replace_selected_lines(const VariantArray &args)
 {
     check_1_arg(args);
-    String text = get_string(args[0]);
+
+    String text;
+
+    switch (args[0].vt())
+    {
+        case VtString:
+            text = get_string(args[0]);
+            break;
+        case VtArray:
+            {
+                moo::Vector<String> lines = get_string_list(args[0]);
+                text = join(lines, "\n");
+            }
+            break;
+        default:
+            Error::raise("string or list of strings expected");
+            break;
+    }
+
     GtkTextBuffer *buf = buffer();
     GtkTextIter start, end;
-    get_selected_lines_bounds(buf, &start, &end);
+    bool cursor_at_next_line;
+    get_selected_lines_bounds(buf, &start, &end, &cursor_at_next_line);
     gtk_text_buffer_delete(buf, &start, &end);
     gtk_text_buffer_insert(buf, &start, text.utf8(), -1);
+
+    if (cursor_at_next_line)
+    {
+        gtk_text_iter_forward_line(&start);
+        gtk_text_buffer_place_cursor(buf, &start);
+    }
+
     return Variant();
 }
 
