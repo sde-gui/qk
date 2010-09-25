@@ -87,10 +87,8 @@ AM_CONDITIONAL(GDK_X11, $GDK_X11)
 AM_CONDITIONAL(GDK_WIN32, $GDK_WIN32)
 AM_CONDITIONAL(GDK_QUARTZ, $GDK_QUARTZ)
 
-GLIB_GENMARSHAL=`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`
-GLIB_MKENUMS=`$PKG_CONFIG --variable=glib_mkenums glib-2.0`
-AC_SUBST(GLIB_GENMARSHAL)
-AC_SUBST(GLIB_MKENUMS)
+AC_SUBST(GLIB_GENMARSHAL, `$PKG_CONFIG --variable=glib_genmarshal glib-2.0`)
+AC_SUBST(GLIB_MKENUMS, `$PKG_CONFIG --variable=glib_mkenums glib-2.0`)
 
 AC_ARG_VAR([GDK_PIXBUF_CSOURCE], [gdk-pixbuf-csource])
 AC_CHECK_TOOL(GDK_PIXBUF_CSOURCE, gdk-pixbuf-csource, [AC_MSG_ERROR([gdk-pixbuf-csource not found])])
