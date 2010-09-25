@@ -154,22 +154,14 @@ AC_DEFUN_ONCE([MOO_AC_SET_DIRS],[
   AC_SUBST(MOO_PACKAGE_NAME)
   AC_DEFINE_UNQUOTED([MOO_PACKAGE_NAME], "$MOO_PACKAGE_NAME", [data goes into /usr/share/$MOO_PACKAGE_NAME, etc.])
 
-  MOO_DATA_DIR="${datadir}/$MOO_PACKAGE_NAME"
-  AC_SUBST(MOO_DATA_DIR)
+  AC_SUBST(MOO_DATA_DIR, "${datadir}/$MOO_PACKAGE_NAME")
+  AC_SUBST(MOO_LIB_DIR, "${libdir}/$MOO_PACKAGE_NAME")
+  AC_SUBST(MOO_PLUGINS_DIR, "${MOO_LIB_DIR}/plugins")
 
-  MOO_LIB_DIR="${libdir}/$MOO_PACKAGE_NAME"
-  AC_SUBST(MOO_LIB_DIR)
+  AC_SUBST(MOO_DOC_DIR, "${datadir}/doc/$MOO_PACKAGE_NAME")
+  AC_SUBST(MOO_HELP_DIR, "${MOO_DOC_DIR}/help")
 
-  MOO_PLUGINS_DIR="${MOO_LIB_DIR}/plugins"
-  AC_SUBST(MOO_PLUGINS_DIR)
-
-  MOO_DOC_DIR="${datadir}/doc/$MOO_PACKAGE_NAME"
-  AC_SUBST(MOO_DOC_DIR)
-  MOO_HELP_DIR="${MOO_DOC_DIR}/help"
-  AC_SUBST(MOO_HELP_DIR)
-
-  MOO_TEXT_LANG_FILES_DIR="${MOO_DATA_DIR}/language-specs"
-  AC_SUBST(MOO_TEXT_LANG_FILES_DIR)
+  AC_SUBST(MOO_TEXT_LANG_FILES_DIR, "${MOO_DATA_DIR}/language-specs")
 
   AC_DEFINE_UNQUOTED([MOO_INI_FILE_NAME], "$MOO_INI_FILE_NAME", [medit.ini])
   AC_DEFINE_UNQUOTED([MOO_STATE_FILE_NAME], "$MOO_STATE_FILE_NAME", [medit.state])
@@ -267,7 +259,6 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   AC_REQUIRE([MOO_AC_CHECK_OS])
   AC_REQUIRE([MOO_AC_SET_DIRS])
 
-  AC_PATH_XTRA
   MOO_PKG_CHECK_GTK_VERSIONS
   MOO_AC_DEBUG
   MOO_AC_FAM
@@ -281,22 +272,26 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
     AC_CHECK_FUNCS(mmap)
   fi
 
-  if $GDK_X11; then
-    AC_CHECK_LIB(Xrender, XRenderFindFormat,[
-      AC_SUBST(RENDER_LIBS, "-lXrender -lXext")
-      AC_DEFINE(HAVE_RENDER, 1, [Define if libXrender is available.])
-    ],[
-      AC_SUBST(RENDER_LIBS, "")
-    ],[-lXext])
-  fi
-
   AC_DEFINE(MOO_COMPILATION, 1, [must be 1])
 
   moo_top_src_dir=`cd $srcdir && pwd`
   MOO_CFLAGS="$MOO_CFLAGS $GTK_CFLAGS"
   MOO_CXXFLAGS="$MOO_CXXFLAGS $GTK_CFLAGS"
   MOO_CPPFLAGS="$MOO_CPPFLAGS -I$moo_top_src_dir/moo -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\""
-  MOO_LIBS="$MOO_LIBS $GTK_LIBS $GTHREAD_LIBS $LIBM $RENDER_LIBS"
+  MOO_LIBS="$MOO_LIBS $GTK_LIBS $GTHREAD_LIBS $LIBM"
+
+  if $GDK_X11; then
+    AC_PATH_XTRA
+    AC_CHECK_LIB(Xrender, XRenderFindFormat,[
+      AC_SUBST(RENDER_LIBS, "-lXrender -lXext")
+      AC_DEFINE(HAVE_RENDER, 1, [Define if libXrender is available.])
+    ],[
+      AC_SUBST(RENDER_LIBS, "")
+    ],[-lXext])
+    MOO_CFLAGS="$MOO_CFLAGS $X_CFLAGS"
+    MOO_CXXFLAGS="$MOO_CXXFLAGS $X_CFLAGS"
+    MOO_LIBS="$MOO_LIBS $X_LIBS -lX11 -lICE -lSM $RENDER_LIBS"
+  fi
 
   if $MOO_OS_WIN32; then
     MOO_CPPFLAGS="$MOO_CPPFLAGS -DUNICODE -D_UNICODE -DSTRICT -DWIN32_LEAN_AND_MEAN -I$moo_top_src_dir/moo/mooutils/moowin32/mingw"
