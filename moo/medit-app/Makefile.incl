@@ -1,6 +1,6 @@
 bin_PROGRAMS = medit
 
-# AM_CFLAGS += -DSRCDIR="${CMAKE_SOURCE_DIR}/medit")
+AM_CFLAGS += -DMOO_UNIT_TEST_DATA_DIR=\"${MOO_TOP_SRCDIR}/moo/medit-app/data\"
 
 medit_SOURCES =				\
 	medit-app/mem-debug.h		\

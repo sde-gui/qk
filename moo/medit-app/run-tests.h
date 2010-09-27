@@ -43,8 +43,7 @@ unit_tests_main (int argc, char *argv[])
     g_thread_init (NULL);
     g_set_prgname ("run-tests");
 
-//     data_dir = SRCDIR "/data";
-    data_dir = NULL;
+    data_dir = MOO_UNIT_TEST_DATA_DIR;
 
     grp = g_option_group_new ("run-tests", "run-tests", "run-tests", NULL, NULL);
     g_option_group_add_entries (grp, options);

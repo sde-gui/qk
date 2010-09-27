@@ -47,10 +47,6 @@ function any(t, pred)
 end
 
 function filter(func, t)
-  local func = func
-  if func == nil then
-    func = function(x) return x; end
-  end
   local t_new = {}
   for k, v in pairs(t) do
     if func(v, k) then
@@ -110,7 +106,7 @@ end
 
 function min(...)
   if select('#', ...) ~= 1 then
-    return max(pack(...))
+    return min(pack(...))
   end
   local val
   for _, v in pairs(select(1, ...)) do

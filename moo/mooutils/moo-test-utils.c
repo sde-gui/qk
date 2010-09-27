@@ -48,6 +48,7 @@ typedef struct {
         guint suites;
         guint tests;
         guint asserts;
+        guint suites_passed;
         guint tests_passed;
         guint asserts_passed;
     } tr;
@@ -142,7 +143,7 @@ moo_test_suite_free (MooTestSuite *ts)
     }
 }
 
-static void
+static gboolean
 run_test (MooTest        *test,
           MooTestSuite   *ts,
           MooTestOptions  opts)
@@ -153,7 +154,7 @@ run_test (MooTest        *test,
     if (opts & MOO_TEST_LIST_ONLY)
     {
         fprintf (stdout, "  Test: %s\n", test->name);
-        return;
+        return TRUE;
     }
 
     env.suite_data = ts->data;
@@ -193,6 +194,8 @@ run_test (MooTest        *test,
     registry.tr.tests += 1;
     if (!failed)
         registry.tr.tests_passed += 1;
+
+    return !failed;
 }
 
 static void
@@ -202,6 +205,7 @@ run_suite (MooTestSuite   *ts,
 {
     GSList *l;
     gboolean run = !(opts & MOO_TEST_LIST_ONLY);
+    gboolean passed = TRUE;
 
     if (run && ts->init_func && !ts->init_func (ts->data))
         return;
@@ -211,16 +215,18 @@ run_suite (MooTestSuite   *ts,
     g_print ("Suite: %s\n", ts->name);
 
     if (single_test)
-        run_test (single_test, ts, opts);
+        passed = run_test (single_test, ts, opts) && passed;
     else
         for (l = ts->tests; l != NULL; l = l->next)
-            run_test (l->data, ts, opts);
+            passed = run_test (l->data, ts, opts) && passed;
 
     if (run && ts->cleanup_func)
         ts->cleanup_func (ts->data);
 
     registry.current_suite = NULL;
     registry.tr.suites += 1;
+    if (passed)
+        registry.tr.suites_passed += 1;
 }
 
 static gboolean
@@ -265,8 +271,11 @@ moo_test_run_tests (const char     *name,
     MooTestSuite *single_ts = NULL;
     MooTest *single_test = NULL;
 
-    g_return_if_fail (data_dir != NULL);
-    g_return_if_fail (g_file_test (data_dir, G_FILE_TEST_IS_DIR));
+    if (!(opts & MOO_TEST_LIST_ONLY))
+    {
+        g_return_if_fail (data_dir != NULL);
+        g_return_if_fail (g_file_test (data_dir, G_FILE_TEST_IS_DIR));
+    }
 
     if (name && !find_test (name, &single_ts, &single_test))
     {
@@ -290,8 +299,9 @@ moo_test_run_tests (const char     *name,
     if (!(opts & MOO_TEST_LIST_ONLY))
     {
         fprintf (stdout, "Run Summary: Type      Total     Ran  Passed  Failed\n");
-        fprintf (stdout, "             suites    %5d     %3d     n/a     n/a\n",
-                 registry.tr.suites, registry.tr.suites);
+        fprintf (stdout, "             suites    %5d     %3d  %6d  %6d\n",
+                 registry.tr.suites, registry.tr.suites, registry.tr.suites_passed,
+                 registry.tr.suites - registry.tr.suites_passed);
         fprintf (stdout, "             tests     %5d     %3d  %6d  %6d\n",
                  registry.tr.tests, registry.tr.tests, registry.tr.tests_passed,
                  registry.tr.tests - registry.tr.tests_passed);
@@ -399,7 +409,10 @@ moo_test_load_data_file (const char *basename)
 
     g_return_val_if_fail (registry.data_dir != NULL, NULL);
 
-    fullname = g_build_filename (registry.data_dir, basename, NULL);
+    if (!_moo_path_is_absolute (basename))
+        fullname = g_build_filename (registry.data_dir, basename, NULL);
+    else
+        fullname = g_strdup (basename);
 
     if (!g_file_get_contents (fullname, &contents, NULL, &error))
     {

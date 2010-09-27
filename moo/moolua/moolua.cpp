@@ -110,15 +110,15 @@ lua_addpath (lua_State  *L,
 
 
 static void
-test_unicode (void)
+test_func (MooTestEnv *env)
 {
-    moo_test_run_lua_file ("testunicode.lua", NULL, NULL);
+    moo_test_run_lua_file ((const char *) env->test_data, NULL, NULL);
 }
 
 static void
-test_ustring (void)
+add_test (MooTestSuite *suite, const char *name, const char *lua_file)
 {
-    moo_test_run_lua_file ("testustring.lua", NULL, NULL);
+    moo_test_suite_add_test (suite, name, test_func, (void*) lua_file);
 }
 
 void
@@ -126,8 +126,9 @@ moo_test_lua (void)
 {
     MooTestSuite *suite;
 
-    suite = moo_test_suite_new ("moolua/ustring.c", NULL, NULL, NULL);
+    suite = moo_test_suite_new ("moolua", NULL, NULL, NULL);
 
-    moo_test_suite_add_test (suite, "test of unicode", (MooTestFunc) test_unicode, NULL);
-    moo_test_suite_add_test (suite, "test of unicode (2)", (MooTestFunc) test_ustring, NULL);
+    add_test (suite, "test of unicode", "testunicode.lua");
+    add_test (suite, "test of unicode (2)", "testustring.lua");
+    add_test (suite, "test of moo package", "testmoo.lua");
 }

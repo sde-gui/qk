@@ -107,6 +107,13 @@ moo_test_run_lua_file (const char *basename,
         luaL_openlibs (L);
 
         {
+            char **dirs;
+            dirs = moo_get_data_subdirs ("lua");
+            lua_addpath (L, dirs, g_strv_length (dirs));
+            g_strfreev (dirs);
+        }
+
+        {
             char *testdir = g_build_filename (moo_test_get_data_dir (), "lua", (char*) NULL);
             lua_addpath (L, (char**) &testdir, 1);
             g_free (testdir);

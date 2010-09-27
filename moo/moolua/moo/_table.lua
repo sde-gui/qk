@@ -32,7 +32,7 @@ function reverse(t)
   local len = #t
   for i = 1, math.floor(len / 2) do
     local tmp = t[i]
-    t[len - i + 1] = t[i]
     t[i] = t[len - i + 1]
+    t[len - i + 1] = tmp
   end
 end

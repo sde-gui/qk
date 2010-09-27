@@ -12,5 +12,9 @@ function startswith(s, prfx)
 end
 
 function endswith(s, sfx)
-  return s:sub(-#sfx) == sfx
+  if #sfx == 0 then
+    return true
+  else
+    return s:sub(-#sfx) == sfx
+  end
 end
