@@ -20,7 +20,7 @@ add_tests (void)
 
     moo_test_lua ();
 
-    moo_test_key_file ();
+//     moo_test_key_file ();
     moo_test_editor ();
 }
 
