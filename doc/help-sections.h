@@ -14,7 +14,6 @@
 #define HELP_SECTION_LICENSE_LFS "LuaFileSystem-License.html"
 #define HELP_SECTION_LICENSE_LGPL "GNU-LGPL.html"
 #define HELP_SECTION_LICENSE_LUA "Lua-License.html"
-#define HELP_SECTION_LICENSE_PENLIGHT "Penlight-License.html"
 #define HELP_SECTION_LICENSE_XDG_UTILS "xdg_002dutils-License.html"
 #define HELP_SECTION_PREFS_ACCELS "index.html"
 #define HELP_SECTION_PREFS_DIALOG "index.html"

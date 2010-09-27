@@ -13,7 +13,6 @@ in @medit{}, can be found in this section.
 * GNU LGPL:: GNU Lesser General Public License
 * Lua License:: Lua License
 * LuaFileSystem License:: LuaFileSystem License
-* Penlight License:: Penlight License
 * xdg-utils License:: xdg-utils License
 @end menu
 
@@ -46,11 +45,6 @@ offers a portable way to access the underlying directory structure and file
 attributes. LuaFileSystem is free software and uses the same license as Lua 5.1
 Current version is 1.2.1.
 @end verbatim
-
-@node Penlight License
-@section Penlight Lua Libraries License
-@helpsection{LICENSE_PENLIGHT}
-@verbatiminclude ../moo/moolua/pl/LICENCE.txt
 
 @node xdg-utils License
 @section xdg-utils License
