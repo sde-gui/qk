@@ -1535,25 +1535,17 @@ moo_get_data_dirs_real (MooDataDirType   type,
 
     G_UNLOCK (moo_data_dirs);
 
-    if (include_user)
+    if (include_user || !n_data_dirs[type])
     {
         if (n_dirs)
             *n_dirs = n_data_dirs[type];
         return g_strdupv (moo_data_dirs[type]);
     }
-    else if (n_data_dirs[type] == 1)
-    {
-        if (n_dirs)
-            *n_dirs = 0;
-        return g_strdupv (moo_data_dirs[type] + 1);
-    }
     else
     {
-        char **ret = g_strdupv (moo_data_dirs[type]);
-        ret[n_data_dirs[type] - 1] = 0;
         if (n_dirs)
             *n_dirs = n_data_dirs[type] - 1;
-        return ret;
+        return g_strdupv (moo_data_dirs[type] + 1);
     }
 }
 
