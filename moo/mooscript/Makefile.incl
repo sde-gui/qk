@@ -7,7 +7,9 @@ moo_sources +=				\
 	mooscript/mooscript.h		\
 	mooscript/mooscript.cpp		\
 	mooscript/mooscript-api.h	\
-	mooscript/mooscript-variant.h
+	mooscript/mooscript-variant.h	\
+	mooscript/mooscript-extension.h	\
+	mooscript/mooscript-extension.cpp
 
 built_plugins_sources += mooscript-classes-meta.h
 EXTRA_DIST += mooscript/genmeta.py

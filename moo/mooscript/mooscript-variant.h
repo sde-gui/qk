@@ -74,6 +74,8 @@ public:
     template<VariantType _vt_> NOTHROW
     typename impl::VtHelper<_vt_>::ImplType value() const;
 
+    bool to_bool() const NOTHROW;
+
 private:
     VariantData m_data;
     VariantType m_vt;
@@ -284,6 +286,20 @@ inline typename impl::VtHelper<_vt_>::ImplType Variant::value() const
     typedef typename impl::VtHelper<_vt_>::ImplType ImplType;
     moo_return_val_if_fail(m_vt == _vt_, ImplType());
     return *reinterpret_cast<const ImplType*>(m_data.p);
+}
+
+NOTHROW inline bool Variant::to_bool() const
+{
+    switch (m_vt)
+    {
+        case VtVoid:
+            return false;
+        case VtBool:
+            return value<VtBool>();
+        default:
+            moo_warning("can't convert value to bool");
+            return false;
+    }
 }
 
 } // namespace mom

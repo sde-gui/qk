@@ -40,4 +40,6 @@ const char  *lua_check_utf8string   (lua_State  *L,
                                      int         numArg,
                                      size_t     *len);
 
+void         moo_lua_add_user_path  (lua_State  *L);
+
 #endif /* MOO_LUA_H */

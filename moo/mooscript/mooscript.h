@@ -22,6 +22,10 @@ public:
     virtual Variant get (Object &obj) = 0;
 };
 
+class Signal : public moo::RefCounted<Signal>
+{
+};
+
 class MetaObject
 {
 public:
@@ -33,6 +37,7 @@ public:
 
     moo::SharedPtr<Method> lookup_method(const String &meth) const NOTHROW { return m_methods.value(meth); }
     moo::SharedPtr<Property> lookup_property(const String &prop) const NOTHROW { return m_props.value(prop); }
+    moo::SharedPtr<Signal> lookup_signal(const String &sig) const NOTHROW { return m_signals.value(sig); }
 
     FieldKind lookup_field(const String &field) const NOTHROW
     {
@@ -109,12 +114,18 @@ public:
         m_props[prop] = new PropertyImpl(getter, setter);
     }
 
+    void add_signal(const String &sig)
+    {
+        m_signals[sig] = new Signal;
+    }
+
 private:
     MOO_DISABLE_COPY_AND_ASSIGN(MetaObject)
 
 private:
     moo::Dict<String, moo::SharedPtr<Method> > m_methods;
     moo::Dict<String, moo::SharedPtr<Property> > m_props;
+    moo::Dict<String, moo::SharedPtr<Signal> > m_signals;
 };
 
 #define MOM_OBJECT_DECL(Class) \
@@ -143,6 +154,15 @@ public:
     void set_property(const String &prop, const Variant &val);
     Variant get_property(const String &prop);
 
+    gulong connect_callback(const String &name, moo::SharedPtr<Callback> cb);
+    void disconnect_callback(gulong id);
+    moo::Vector<moo::SharedPtr<Callback> > list_callbacks(const String &name) const;
+    bool has_callbacks(const String &name) const;
+
+private:
+    void disconnect_callback(gulong id, bool notify);
+
+public:
     static moo::SharedPtr<Object> lookup_object (const HObject &h) NOTHROW
     {
         return s_objects.value(h.id());
@@ -180,6 +200,14 @@ private:
     static guint s_last_id;
     MetaObject &m_meta;
     guint m_id;
+
+    struct CallbackInfo {
+        gulong id;
+        moo::SharedPtr<Callback> cb;
+    };
+    typedef moo::Dict<String, moo::Vector<CallbackInfo> > CallbackMap;
+    CallbackMap m_callbacks;
+    static gulong s_last_callback_id;
 };
 
 } // namespace mom

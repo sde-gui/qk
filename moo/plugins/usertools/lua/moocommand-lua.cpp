@@ -40,18 +40,6 @@ MOO_DEFINE_TYPE_STATIC (MooCommandFactoryLua, _moo_command_factory_lua, MOO_TYPE
 static MooCommand  *moo_command_lua_new (const char       *code,
                                          MooCommandOptions options);
 
-
-static void
-add_path (lua_State *L, const char *dir)
-{
-    char **dirs;
-
-    dirs = moo_get_data_subdirs (dir);
-    lua_addpath (L, dirs, g_strv_length (dirs));
-
-    g_strfreev (dirs);
-}
-
 static void
 moo_command_lua_run (MooCommand        *cmd_base,
                      MooCommandContext *ctx)
@@ -66,9 +54,9 @@ moo_command_lua_run (MooCommand        *cmd_base,
     g_return_if_fail (L != NULL);
 
     luaL_openlibs (L);
-    add_path (L, "lua");
+    moo_lua_add_user_path (L);
 
-    if (!mom::lua_setup (L))
+    if (!mom::lua_setup (L, false))
     {
         lua_close (L);
         return;

@@ -16,6 +16,8 @@ namespace mom {
 #define METHOD(name)                        \
     Variant name(const VariantArray &args)
 
+#define SIGNAL(name)
+
 template<typename T>
 class _Singleton : public Object
 {
@@ -187,6 +189,9 @@ public:
     /// @item Editor.close(doc)
     /// close document.
     METHOD(close);
+
+    SIGNAL(document-save-before)
+    SIGNAL(document-save-after)
 
 private:
     MOM_SINGLETON_DECL(Editor)

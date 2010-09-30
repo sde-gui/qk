@@ -6,7 +6,7 @@
 
 namespace mom {
 
-bool lua_setup(lua_State *L) throw();
+bool lua_setup(lua_State *L, bool enable_callbacks) throw();
 void lua_cleanup(lua_State *L) throw();
 
 } // namespace mom

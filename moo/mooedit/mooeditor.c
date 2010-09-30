@@ -35,6 +35,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/moolist.h"
+#include "mooscript/mooscript-extension.h"
 #include <glib/gbase64.h>
 #include <string.h>
 #include <stdlib.h>
@@ -2065,9 +2066,12 @@ do_save (MooEditor    *editor,
          const char   *encoding,
          GError      **error)
 {
-    gboolean result;
     gboolean strip;
     gboolean add_newline;
+    GError *error_here = NULL;
+
+    if (mom_event_editor_save_before (doc, file, encoding))
+        return FALSE;
 
     strip = moo_edit_config_get_bool (doc->config, "strip");
     add_newline = moo_edit_config_get_bool (doc->config, "add-newline");
@@ -2077,13 +2081,34 @@ do_save (MooEditor    *editor,
     if (add_newline)
         _moo_edit_ensure_newline (doc);
 
-    g_signal_emit_by_name (doc, "save-before");
-    result = _moo_edit_save_file (doc, file, encoding,
-                                  moo_editor_get_save_flags (editor),
-                                  error);
-    g_signal_emit_by_name (doc, "save-after");
+    if (!_moo_edit_save_file (doc, file, encoding,
+                              moo_editor_get_save_flags (editor),
+                              &error_here))
+    {
+        if (!is_embedded (editor))
+        {
+            gboolean saved_utf8 = error_here->domain == MOO_EDIT_FILE_ERROR &&
+                                  error_here->code == MOO_EDIT_FILE_ERROR_ENCODING;
+            if (saved_utf8)
+                _moo_edit_save_error_enc_dialog (GTK_WIDGET (doc), file, encoding);
+            else
+                _moo_edit_save_error_dialog (GTK_WIDGET (doc), file, error_here);
+            g_error_free (error_here);
+        }
+        else
+        {
+            /* XXX */
+            g_propagate_error (error, error_here);
+        }
 
-    return result;
+        return FALSE;
+    }
+
+    mom_event_editor_save_after (doc);
+
+    add_recent_file (editor, file);
+
+    return TRUE;
 }
 
 
@@ -2092,7 +2117,6 @@ _moo_editor_save (MooEditor  *editor,
                   MooEdit    *doc,
                   GError    **error)
 {
-    GError *error_here = NULL;
     GFile *file;
     char *encoding;
     gboolean result = FALSE;
@@ -2113,29 +2137,7 @@ _moo_editor_save (MooEditor  *editor,
         !_moo_edit_overwrite_modified_dialog (doc))
             goto out;
 
-    if (!do_save (editor, doc, file, encoding, &error_here))
-    {
-        if (!is_embedded (editor))
-        {
-            gboolean saved_utf8 = error_here->domain == MOO_EDIT_FILE_ERROR &&
-                                  error_here->code == MOO_EDIT_FILE_ERROR_ENCODING;
-            if (saved_utf8)
-                _moo_edit_save_error_enc_dialog (GTK_WIDGET (doc), file, encoding);
-            else
-                _moo_edit_save_error_dialog (GTK_WIDGET (doc), file, error_here);
-            g_error_free (error_here);
-        }
-        else
-        {
-            /* XXX */
-            g_propagate_error (error, error_here);
-        }
-
-        goto out;
-    }
-
-    add_recent_file (editor, file);
-    result = TRUE;
+    result = do_save (editor, doc, file, encoding, error);
 
     /* fall through */
 out:
@@ -2153,7 +2155,6 @@ _moo_editor_save_as (MooEditor      *editor,
                      const char     *encoding,
                      GError        **error)
 {
-    GError *error_here = NULL;
     MooEditFileInfo *file_info = NULL;
     gboolean result = FALSE;
 
@@ -2176,33 +2177,7 @@ _moo_editor_save_as (MooEditor      *editor,
         file_info = moo_edit_file_info_new_path (filename, encoding);
     }
 
-    if (!do_save (editor, doc, file_info->file, file_info->encoding, &error_here))
-    {
-        if (!is_embedded (editor))
-        {
-            gboolean saved_utf8 = error_here->domain == MOO_EDIT_FILE_ERROR &&
-                                  error_here->code == MOO_EDIT_FILE_ERROR_ENCODING;
-            if (saved_utf8)
-                _moo_edit_save_error_enc_dialog (GTK_WIDGET (doc),
-                                                 file_info->file,
-                                                 file_info->encoding);
-            else
-                _moo_edit_save_error_dialog (GTK_WIDGET (doc),
-                                             file_info->file,
-                                             error_here);
-            g_error_free (error_here);
-        }
-        else
-        {
-            /* XXX */
-            g_propagate_error (error, error_here);
-        }
-
-        goto out;
-    }
-
-    add_recent_file (editor, file_info->file);
-    result = TRUE;
+    result = do_save (editor, doc, file_info->file, file_info->encoding, error);
 
     /* fall through */
 out:

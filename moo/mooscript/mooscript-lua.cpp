@@ -198,6 +198,12 @@ static void check_result(lua_State *L, Result r)
 
 static void push_variant(lua_State *L, const Variant &v);
 
+static void push_args_array(lua_State *L, const VariantArray &args)
+{
+    for (int i = 0, c = args.size(); i < c; ++i)
+        push_variant(L, args[i]);
+}
+
 static int cfunc_call_named_method(lua_State *L)
 {
     const char *meth = get_arg_string(L, lua_upvalueindex(1));
@@ -419,26 +425,106 @@ static int cfunc_get_app_obj(lua_State *L)
     return 1;
 }
 
-static bool add_raw_api(lua_State *L)
+class CallbackLua : public Callback
 {
-    static const struct luaL_reg meditlib[] = {
+public:
+    CallbackLua(lua_State *L)
+        : L(L)
+        , id(0)
+    {
+    }
+
+    static void do_run(lua_State *L, void *ud)
+    {
+        CallbackLua *self = (CallbackLua *) ud;
+        lua_getfield(L, LUA_GLOBALSINDEX, "__medit_invoke_callback");
+        lua_pushnumber(L, self->id);
+        push_args_array(L, self->args);
+        if (lua_pcall(L, self->args.size() + 1, 1, 0) != 0)
+        {
+            const char *msg = lua_tostring(L, -1);
+            moo_critical ("%s: %s", G_STRLOC, msg ? msg : "ERROR");
+            lua_pop(L, 1);
+        }
+        else
+        {
+            self->retval = get_arg_variant(L, -1);
+        }
+    }
+
+    Variant run(const VariantArray &args)
+    {
+        this->retval.reset();
+        this->args = args;
+        do_run(L, this);
+        this->args = VariantArray();
+        Variant retval = this->retval;
+        this->retval.reset();
+        return retval;
+    }
+
+    void on_connect()
+    {
+    }
+
+    void on_disconnect()
+    {
+    }
+
+public:
+    lua_State *L;
+    gulong id;
+    Variant retval;
+    VariantArray args;
+};
+
+static int cfunc_connect(lua_State *L)
+{
+    HObject h = get_arg_object(L, 1);
+    const char *name = get_arg_string(L, 2);
+
+    gulong id;
+    moo::SharedPtr<CallbackLua> cb = new CallbackLua(L);
+    Result r = Script::connect_callback(h, name, cb, id);
+    check_result(L, r);
+
+    cb->id = id;
+    lua_pushinteger(L, id);
+    return 1;
+}
+
+static bool add_raw_api(lua_State *L, bool enable_callbacks)
+{
+#define CALLBACKS \
+    { "connect", cfunc_connect }, \
+
+    static const struct luaL_reg meditlib_no_callbacks[] = {
         { "get_app_obj", cfunc_get_app_obj },
         { 0, 0 }
     };
 
-    luaL_openlib(L, "medit", meditlib, 0);
+    static const struct luaL_reg meditlib[] = {
+        { "get_app_obj", cfunc_get_app_obj },
+        CALLBACKS
+        { 0, 0 }
+    };
+
+    if (enable_callbacks)
+        luaL_openlib(L, "medit", meditlib, 0);
+    else
+        luaL_openlib(L, "medit", meditlib_no_callbacks, 0);
 
     return true;
 }
 
-bool lua_setup(lua_State *L) throw()
+bool lua_setup(lua_State *L, bool enable_callbacks) throw()
 {
     try
     {
         if (!set_data(L))
             return false;
 
-        if (!add_raw_api(L))
+        if (!add_raw_api(L, enable_callbacks))
         {
             unset_data(L);
             return false;

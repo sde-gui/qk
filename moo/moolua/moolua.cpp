@@ -108,6 +108,15 @@ lua_addpath (lua_State  *L,
     g_string_free (new_path, TRUE);
 }
 
+void
+moo_lua_add_user_path (lua_State *L)
+{
+    char **dirs;
+    dirs = moo_get_data_subdirs ("lua");
+    lua_addpath (L, dirs, g_strv_length (dirs));
+    g_strfreev (dirs);
+}
+
 
 static void
 test_func (MooTestEnv *env)
