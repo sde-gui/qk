@@ -160,7 +160,7 @@ copy_icons() {
 }
 
 copy_mime() {
-  do_or_die cp -R -l /usr/share/mime "$dstdir/share/mime-tmp"
+  do_or_die cp -R /usr/share/mime "$dstdir/share/mime-tmp"
   do_or_die update-mime-database "$dstdir/share/mime-tmp"
   do_or_die mkdir -p "$dstdir/share/mime"
   do_or_die mv "$dstdir/share/mime-tmp/mime.cache" "$dstdir/share/mime/"
