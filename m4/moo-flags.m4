@@ -281,16 +281,17 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   MOO_LIBS="$MOO_LIBS $GTK_LIBS $GTHREAD_LIBS $LIBM"
 
   if $GDK_X11; then
-    AC_PATH_XTRA
-    AC_CHECK_LIB(Xrender, XRenderFindFormat,[
-      AC_SUBST(RENDER_LIBS, "-lXrender -lXext")
-      AC_DEFINE(HAVE_RENDER, 1, [Define if libXrender is available.])
-    ],[
-      AC_SUBST(RENDER_LIBS, "")
-    ],[-lXext])
-    MOO_CFLAGS="$MOO_CFLAGS $X_CFLAGS"
-    MOO_CXXFLAGS="$MOO_CXXFLAGS $X_CFLAGS"
-    MOO_LIBS="$MOO_LIBS $X_LIBS -lX11 -lICE -lSM $RENDER_LIBS"
+    _moo_x_pkgs=
+    PKG_CHECK_EXISTS(x11,[_moo_x_pkgs="$_moo_x_pkgs x11"],[:])
+    PKG_CHECK_EXISTS(xext,[_moo_x_pkgs="$_moo_x_pkgs xext"],[:])
+    PKG_CHECK_EXISTS(xrender,[_moo_x_pkgs="$_moo_x_pkgs xrender"],[:])
+    PKG_CHECK_EXISTS(ice,[_moo_x_pkgs="$_moo_x_pkgs ice"],[:])
+    if test -n "$_moo_x_pkgs"; then
+      PKG_CHECK_MODULES(X,[$_moo_x_pkgs])
+      MOO_CFLAGS="$MOO_CFLAGS $X_CFLAGS"
+      MOO_CXXFLAGS="$MOO_CXXFLAGS $X_CFLAGS"
+      MOO_LIBS="$MOO_LIBS $X_LIBS"
+    fi
   fi
 
   if $MOO_OS_WIN32; then
