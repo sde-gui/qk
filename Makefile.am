@@ -32,3 +32,5 @@ installer: plat/win32/installer.iss
 	$(MAKE) $(AM_MAKEFLAGS) install
 	$(MEDIT_INNO_COMPILER) plat/win32/installer.iss
 endif
+
+@MOO_PO_SUBDIRS_RULE@

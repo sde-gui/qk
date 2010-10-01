@@ -47,9 +47,9 @@ EXTRA_DIST += medit-app/medit.desktop.in
 if MOO_OS_UNIX
 desktopdir = $(datadir)/applications
 desktop_DATA = medit-app/medit.desktop
-medit-app/medit.desktop: medit-app/medit.desktop.in $(INTLTOOL_MERGE) $(wildcard $(top_srcdir)/po/*.po)
+medit-app/medit.desktop: medit-app/medit.desktop.in @MOO_INTLTOOL_INI_DEPS@
 	$(AM_V_at)$(MKDIR_P) medit-app
-	$(AM_V_GEN)LC_ALL=C $(INTLTOOL_MERGE) -d -u -c $(top_builddir)/po/.intltool-merge-cache $(top_srcdir)/po $< $@
+	@MOO_INTLTOOL_INI_CMD@
 CLEANFILES += medit-app/medit.desktop
 endif MOO_OS_UNIX
 

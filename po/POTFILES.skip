@@ -1,5 +1,7 @@
 build/
 junk/
+plat/
+tools/
 moo/mooedit/langs/
 moo/gtksourceview/
 moo/eggsmclient/

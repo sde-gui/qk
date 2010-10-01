@@ -1,4 +1,6 @@
 build/
+plat/
+tools/
 
 doc/
 moo/medit-app/

@@ -18,10 +18,6 @@ run_cmd() {
 
 # run_cmd libtoolize --copy --force
 
-run_cmd intltoolize --copy --force
-echo "sed -e s/@GETTEXT_PACKAGE@/@GETTEXT_PACKAGE@-gsv/ po/Makefile.in.in > po-gsv/Makefile.in.in"
-sed -e s/@GETTEXT_PACKAGE@/@GETTEXT_PACKAGE@-gsv/ po/Makefile.in.in > po-gsv/Makefile.in.in || exit $!
-
 run_cmd $ACLOCAL --force -I m4 $ACLOCAL_FLAGS
 run_cmd $AUTOCONF --force
 run_cmd $AUTOHEADER --force

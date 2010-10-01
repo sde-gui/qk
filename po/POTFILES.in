@@ -59,6 +59,7 @@ moo/plugins/moofilelist.c
 moo/plugins/moofileselector.c
 moo/plugins/moofileselector-prefs.c
 moo/plugins/moofind.c
+moo/plugins/mooluaplugin.cpp
 moo/plugins/moopython.c
 moo/plugins/usertools/exe/moocommand-exe.c
 moo/plugins/usertools/filters.xml

@@ -282,10 +282,9 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
 
   if $GDK_X11; then
     _moo_x_pkgs=
-    PKG_CHECK_EXISTS(x11,[_moo_x_pkgs="$_moo_x_pkgs x11"],[:])
-    PKG_CHECK_EXISTS(xext,[_moo_x_pkgs="$_moo_x_pkgs xext"],[:])
-    PKG_CHECK_EXISTS(xrender,[_moo_x_pkgs="$_moo_x_pkgs xrender"],[:])
-    PKG_CHECK_EXISTS(ice,[_moo_x_pkgs="$_moo_x_pkgs ice"],[:])
+    m4_foreach([_pkg_],[x11, xext, xrender, ice, sm],[
+      PKG_CHECK_EXISTS(_pkg_,[_moo_x_pkgs="$_moo_x_pkgs _pkg_"],[:])
+    ])
     if test -n "$_moo_x_pkgs"; then
       PKG_CHECK_MODULES(X,[$_moo_x_pkgs])
       MOO_CFLAGS="$MOO_CFLAGS $X_CFLAGS"
