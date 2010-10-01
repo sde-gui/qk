@@ -12,5 +12,5 @@ built_plugins_sources += mooedittools-lua-gxml.h
 EXTRA_DIST += plugins/usertools/lua/lua-tool-setup.lua
 built_plugins_sources += lua-tool-setup.h
 lua-tool-setup.h: plugins/usertools/lua/lua-tool-setup.lua $(top_srcdir)/tools/xml2h.py
-	$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/plugins/usertools/lua/lua-tool-setup.lua lua-tool-setup.h.tmp LUA_SETUP_CODE \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/plugins/usertools/lua/lua-tool-setup.lua lua-tool-setup.h.tmp LUA_SETUP_CODE \
 		&& mv lua-tool-setup.h.tmp lua-tool-setup.h

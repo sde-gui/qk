@@ -26,8 +26,8 @@ CLEANFILES =
 if MOO_OS_WIN32
 CLEANFILES += plat/win32/installer.iss
 plat/win32/installer.iss: $(top_srcdir)/plat/win32/installer.iss.in $(top_builddir)/config.status
-	$(MKDIR_P) plat/win32
-	cd $(top_builddir) && ./config.status --file=plat/win32/installer.iss
+	$(AM_V_at)$(MKDIR_P) plat/win32
+	$(AM_V_GEN)cd $(top_builddir) && ./config.status --silent --file=plat/win32/installer.iss
 installer: plat/win32/installer.iss
 	$(MAKE) $(AM_MAKEFLAGS) install
 	$(MEDIT_INNO_COMPILER) plat/win32/installer.iss

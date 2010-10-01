@@ -23,4 +23,4 @@ built_moo_sources +=			\
 
 built_moo_sources += mooapp-credits.h
 mooapp-credits.h: $(top_srcdir)/THANKS $(top_srcdir)/tools/xml2h.py
-	$(PYTHON) $(top_srcdir)/tools/xml2h.py $(top_srcdir)/THANKS mooapp-credits.h MOO_APP_CREDITS
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $(top_srcdir)/THANKS mooapp-credits.h MOO_APP_CREDITS

@@ -138,9 +138,9 @@ moo_sources +=				\
 
 built_moo_sources += marshals.c
 marshals.c: $(moo_srcdir)/marshals.list
-	$(MKDIR_P) mooutils
-	echo '#include "marshals.h"' > marshals.c.tmp
-	$(GLIB_GENMARSHAL) --prefix=_moo_marshal --body $(moo_srcdir)/marshals.list >> marshals.c.tmp \
+	$(AM_V_at)$(MKDIR_P) mooutils
+	$(AM_V_at)echo '#include "marshals.h"' > marshals.c.tmp
+	$(AM_V_GEN)$(GLIB_GENMARSHAL) --prefix=_moo_marshal --body $(moo_srcdir)/marshals.list >> marshals.c.tmp \
 		&& mv marshals.c.tmp marshals.c
 
 mooutils_win32_sources = mooutils/mooutils-win32.c
@@ -176,7 +176,7 @@ PIXMAPS =					\
 	mooutils/pixmaps/medit.png
 EXTRA_DIST += $(PIXMAPS)
 stock-moo.h: $(PIXMAPS)
-	$(GDK_PIXBUF_CSOURCE) --static --build-list \
+	$(AM_V_GEN)$(GDK_PIXBUF_CSOURCE) --static --build-list \
 		MOO_HIDE_ICON $(moo_srcdir)/mooutils/pixmaps/hide.png \
 		MOO_CLOSE_ICON $(moo_srcdir)/mooutils/pixmaps/close.png \
 		MOO_STICKY_ICON $(moo_srcdir)/mooutils/pixmaps/sticky.png \
@@ -188,7 +188,7 @@ stock-moo.h: $(PIXMAPS)
 
 EXTRA_DIST += mooutils/pixmaps/symlink.png mooutils/pixmaps/symlink-small.png
 moofileicon-symlink.h: mooutils/pixmaps/symlink.png mooutils/pixmaps/symlink-small.png
-	$(GDK_PIXBUF_CSOURCE) --static --build-list \
+	$(AM_V_GEN)$(GDK_PIXBUF_CSOURCE) --static --build-list \
 		SYMLINK_ARROW $(moo_srcdir)/mooutils/pixmaps/symlink.png \
 		SYMLINK_ARROW_SMALL $(moo_srcdir)/mooutils/pixmaps/symlink-small.png \
 			> $@.tmp && mv $@.tmp $@

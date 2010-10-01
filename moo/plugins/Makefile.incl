@@ -26,13 +26,13 @@ built_plugins_sources +=		\
 EXTRA_DIST += plugins/moopython.py
 built_plugins_sources += plugins/moopython-py.h
 plugins/moopython-py.h: plugins/moopython.py $(top_srcdir)/tools/xml2h.py
-	$(MKDIR_P) plugins
-	$(PYTHON) $(top_srcdir)/tools/xml2h.py $< $@.tmp MOO_PYTHON_PY && mv $@.tmp $@
+	$(AM_V_at)$(MKDIR_P) plugins
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $< $@.tmp MOO_PYTHON_PY && mv $@.tmp $@
 
 EXTRA_DIST += plugins/lua-module-setup.lua
 built_plugins_sources += lua-module-setup.h
 lua-module-setup.h: plugins/lua-module-setup.lua $(top_srcdir)/tools/xml2h.py
-	$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/plugins/lua-module-setup.lua lua-module-setup.h.tmp LUA_MODULE_SETUP_CODE \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/plugins/lua-module-setup.lua lua-module-setup.h.tmp LUA_MODULE_SETUP_CODE \
 		&& mv lua-module-setup.h.tmp lua-module-setup.h
 
 include plugins/ctags/Makefile.incl

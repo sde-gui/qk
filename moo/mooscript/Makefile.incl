@@ -14,5 +14,5 @@ moo_sources +=				\
 built_plugins_sources += mooscript-classes-meta.h
 EXTRA_DIST += mooscript/genmeta.py
 mooscript-classes-meta.h: mooscript/mooscript-classes.h mooscript/genmeta.py
-	$(PYTHON) $(srcdir)/mooscript/genmeta.py $(srcdir)/mooscript/mooscript-classes.h > mooscript-classes-meta.h.tmp && \
+	$(AM_V_GEN)$(PYTHON) $(srcdir)/mooscript/genmeta.py $(srcdir)/mooscript/mooscript-classes.h > mooscript-classes-meta.h.tmp && \
 		mv mooscript-classes-meta.h.tmp mooscript-classes-meta.h
