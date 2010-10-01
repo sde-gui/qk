@@ -16,8 +16,13 @@ AC_DEFUN([_MOO_INTLTOOL_NO_NLS],[
 
 AC_DEFUN([MOO_INTL],[
   AM_GLIB_GNU_GETTEXT
-  AC_REQUIRE([AM_NLS])
-  if test "$USE_NLS" = "yes"; then
+  AC_ARG_ENABLE([nls],AC_HELP_STRING([--disable-nls],[do not use Native Language Support]),[
+    ENABLE_NLS=$enableval
+  ],[
+    ENABLE_NLS=yes
+  ])
+  AC_SUBST([ENABLE_NLS])
+  if test "$ENABLE_NLS" = "yes"; then
     _MOO_INTLTOOL
   else
     _MOO_INTLTOOL_NO_NLS

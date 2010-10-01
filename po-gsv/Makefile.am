@@ -15,13 +15,13 @@ SUFFIXES: .po .gmo .mo
 	$(AM_V_GEN)file=`echo $* | sed 's,.*/,,'`.gmo \
 	  && rm -f $$file && $(GMSGFMT) -o $$file $<
 
-all: all-catalogs-@USE_NLS@
+all: all-catalogs-$(ENABLE_NLS)
 all-catalogs-yes: $(CATALOGS)
 all-catalogs-no:
 $(CATALOGS): $(srcdir)/Makefile.am
 
 install: install-catalogs
-install-catalogs: install-catalogs-@USE_NLS@
+install-catalogs: install-catalogs-$(ENABLE_NLS)
 install-catalogs-no: all
 install-catalogs-yes: all
 	linguas="$(LINGUAS)"; \
