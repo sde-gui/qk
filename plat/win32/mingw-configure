@@ -8,12 +8,16 @@ if [ ! -e $srcdir/configure ]; then
   exit 1
 fi
 
-for p in i586-mingw32msvc i486-mingw32; do
-  if [ -e "/usr/bin/$p-gcc" ]; then
-    _mingw_tool_prefix="/usr/bin/$p"
-    break
-  fi
-done
+if [ -e /usr/bin/i586-mingw32msvc-gcc ]; then
+  _mingw_tool_prefix="/usr/bin/i586-mingw32msvc"
+  STATIC_LIBGCC=
+elif [ -e /usr/bin/i486-mingw32-gcc ]; then
+  _mingw_tool_prefix="/usr/bin/i486-mingw32"
+  STATIC_LIBGCC="-static-libgcc -static-libstdc++"
+else
+  echo "don't know where mingw compiler is"
+  exit 1
+fi
 
 export mgwdir=`dirname $0`/gtk-win
 . $mgwdir/config.sh || exit 1
@@ -57,7 +61,7 @@ export AR=$_mingw_tool_prefix-ar
 export RANLIB=$_mingw_tool_prefix-ranlib
 export STRIP=$_mingw_tool_prefix-strip
 
-export LDFLAGS="-static-libgcc -static-libstdc++ -L$mgwtargetdir/lib"
+export LDFLAGS="$STATIC_LIBGCC -L$mgwtargetdir/lib"
 export CPPFLAGS="-I$mgwtargetdir/include"
 export CFLAGS="-mms-bitfields -march=i686 $_def_cflags"
 export CXXFLAGS="-mms-bitfields -march=i686 $_def_cflags"
