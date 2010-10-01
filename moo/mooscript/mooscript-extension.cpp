@@ -29,13 +29,13 @@ mom_event_editor_save_before (MooEdit *doc, GFile *file, const char *encoding)
     char *path = g_file_get_path(file);
     if (!path)
         path = g_file_get_uri(file);
-    moo_return_val_if_fail(path != NULL, true);
+    moo_return_val_if_fail(path != NULL, false);
 
     try
     {
         Editor &editor = Editor::get_instance();
         if (!editor.has_callbacks("document-save-before"))
-            return true;
+            return false;
 
         VariantArray args;
         args.append(HObject(editor));
@@ -48,7 +48,7 @@ mom_event_editor_save_before (MooEdit *doc, GFile *file, const char *encoding)
     }
     catch (...)
     {
-        moo_return_val_if_reached(true);
+        moo_return_val_if_reached(false);
     }
 }
 
