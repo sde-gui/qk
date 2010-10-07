@@ -136,6 +136,7 @@
     <item name="Help" stock-label="gtk-help">
       <separator/>
       <item action="Help"/>
+      <item action="ReportBug"/>
       <item action="About"/>
       <separator/>
     </item>

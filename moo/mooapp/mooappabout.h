@@ -118,23 +118,13 @@ get_system_name (void)
 {
     char *string;
 
-    if (g_spawn_command_line_sync ("uname -a", &string, NULL, NULL, NULL))
+    if (g_spawn_command_line_sync ("uname -s -r -v -m", &string, NULL, NULL, NULL))
         return string;
     else
         return g_strdup ("unknown");
 }
 
 #endif
-
-static char *
-get_python_info (void)
-{
-    if (!moo_python_running ())
-        return NULL;
-
-    return moo_python_get_info ();
-}
-
 
 #endif /* MOO_APP_ABOUT_H */
 

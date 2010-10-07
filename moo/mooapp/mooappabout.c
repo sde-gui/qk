@@ -46,6 +46,15 @@ static gpointer credits_dialog;
 #define MOO_TYPE_HTML GTK_TYPE_TEXT_VIEW
 #endif
 
+static char *
+get_python_info (void)
+{
+    if (!moo_python_running ())
+        return NULL;
+
+    return moo_python_get_info ();
+}
+
 static void
 set_translator_credits (CreditsDialogXml *gxml)
 {

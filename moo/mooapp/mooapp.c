@@ -23,6 +23,7 @@
 #include "eggsmclient/eggsmclient.h"
 #include "mooapp-accels.h"
 #include "mooapp-info.h"
+#include "mooappabout.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
@@ -110,6 +111,7 @@ static void     install_common_actions  (void);
 static void     install_editor_actions  (void);
 
 static void     moo_app_help            (GtkWidget          *window);
+static void     moo_app_report_bug      (GtkWidget          *window);
 
 static void     moo_app_set_property    (GObject            *object,
                                          guint               prop_id,
@@ -948,6 +950,11 @@ install_common_actions (void)
                                  "closure-callback", moo_app_help,
                                  NULL);
 
+    moo_window_class_new_action (klass, "ReportBug", NULL,
+                                 "label", _("Report a Bug..."),
+                                 "closure-callback", moo_app_report_bug,
+                                 NULL);
+
     moo_window_class_new_action (klass, "Quit", NULL,
                                  "display-name", GTK_STOCK_QUIT,
                                  "label", GTK_STOCK_QUIT,
@@ -1324,6 +1331,29 @@ moo_app_help (GtkWidget *window)
 {
     GtkWidget *focus = gtk_window_get_focus (GTK_WINDOW (window));
     moo_help_open_any (focus ? focus : window);
+}
+
+
+static void
+moo_app_report_bug (G_GNUC_UNUSED GtkWidget *window)
+{
+    char *url;
+    char *os;
+    char *version_escaped, *os_escaped;
+
+    version_escaped = g_uri_escape_string (MOO_DISPLAY_VERSION, NULL, FALSE);
+    os = get_system_name ();
+    os_escaped = os ? g_uri_escape_string (os, NULL, FALSE) : g_strdup ("");
+
+    url = g_strdup_printf ("http://mooedit.sourceforge.net/cgi-bin/report_bug.cgi?version=%s&os=%s",
+                           version_escaped, os_escaped);
+
+    moo_open_url (url);
+
+    g_free (url);
+    g_free (os_escaped);
+    g_free (os);
+    g_free (version_escaped);
 }
 
 
