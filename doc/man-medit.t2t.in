@@ -71,6 +71,10 @@ execute python code in //STRING// in an existing instance.
 : **--exec-file** //FILE//
 execute python file //FILE// in an existing instance.
 
+: **--geometry** //WIDTHxHEIGHT//
+: **--geometry** //WIDTHxHEIGHT+X+Y//
+default window size and position.
+
 : **-h**, **--help**
 show summary of options.
 

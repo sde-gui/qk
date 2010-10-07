@@ -126,6 +126,8 @@ GtkAction  *moo_window_get_action           (MooWindow          *window,
 void        moo_window_set_global_accels    (MooWindow          *window,
                                              gboolean            global);
 
+void        moo_window_set_default_geometry (const char         *geometry);
+
 
 G_END_DECLS
 

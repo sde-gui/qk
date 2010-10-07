@@ -53,6 +53,7 @@ static struct MeditOpts {
     const char *exec_string;
     const char *exec_file;
     char **files;
+    const char *geometry;
     gboolean show_version;
     const char *debug;
 } medit_opts = { -1, -1 };
@@ -156,6 +157,9 @@ static GOptionEntry medit_options[] = {
     { "exec-file", 0, 0, G_OPTION_ARG_FILENAME, (gpointer) &medit_opts.exec_file,
             /* help message for command line option --exec-file FILE */ N_("Execute python file in an existing instance"),
             /* "FILE" part in --exec-file FILE */ N_("FILE") },
+    { "geometry", 0, 0, G_OPTION_ARG_STRING, (gpointer) &medit_opts.geometry,
+            /* help message for command line option --geometry=WIDTHxHEIGHT[+X+Y] */ N_("Default window size and position"),
+            /* "WIDTHxHEIGHT[+X+Y]" part in --geometry=WIDTHxHEIGHT[+X+Y] */ N_("WIDTHxHEIGHT[+X+Y]") },
     { "version", 0, 0, G_OPTION_ARG_NONE, &medit_opts.show_version,
             /* help message for command line option --version */ N_("Show version information and exit"), NULL },
     { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &medit_opts.files,
@@ -616,6 +620,9 @@ medit_main (int argc, char *argv[])
         g_object_unref (app);
         exit (EXIT_FAILURE);
     }
+
+    if (medit_opts.geometry && *medit_opts.geometry)
+        moo_window_set_default_geometry (medit_opts.geometry);
 
     if (medit_opts.project_mode)
 #ifdef MOO_ENABLE_PROJECT

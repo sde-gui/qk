@@ -44,6 +44,7 @@
 
 #define TOOLBAR_STYLE_ACTION_ID "ToolbarStyle"
 
+static char *default_geometry = NULL;
 
 static GSList *window_instances = NULL;
 
@@ -454,7 +455,12 @@ moo_window_constructor (GType                  type,
     g_signal_connect (window, "notify::ui-xml",
                       G_CALLBACK (moo_window_update_ui), NULL);
 
-    if (moo_prefs_get_bool (setting (window, PREFS_REMEMBER_SIZE)))
+    if (default_geometry && *default_geometry)
+    {
+        if (!gtk_window_parse_geometry (GTK_WINDOW (window), default_geometry))
+            g_printerr (_("Could not parse geometry string '%s'\n"), default_geometry);
+    }
+    else if (moo_prefs_get_bool (setting (window, PREFS_REMEMBER_SIZE)))
     {
         int width = moo_prefs_get_int (setting (window, PREFS_WIDTH));
         int height = moo_prefs_get_int (setting (window, PREFS_HEIGHT));
@@ -489,6 +495,15 @@ moo_window_constructor (GType                  type,
 
     g_type_class_unref (klass);
     return object;
+}
+
+
+void
+moo_window_set_default_geometry (const char *geometry)
+{
+    char *tmp = default_geometry;
+    default_geometry = g_strdup (geometry);
+    g_free (tmp);
 }
 
 
