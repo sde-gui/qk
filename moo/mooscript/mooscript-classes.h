@@ -9,10 +9,6 @@ namespace mom {
 #define SINGLETON_CLASS(Name)  class Name : public _Singleton<Name>
 #define GOBJECT_CLASS(Name, GName) class Name : public _GObjectWrapper<Name, GName>
 
-#define PROPERTY(name,kind)                 \
-    Variant get_##name();                   \
-    void set_##name(const Variant &value)
-
 #define METHOD(name)                        \
     Variant name(const VariantArray &args)
 
@@ -596,7 +592,6 @@ private:
 ///
 ///
 
-#undef PROPERTY
 #undef METHOD
 
 } // namespace mom

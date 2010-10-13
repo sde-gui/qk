@@ -15,13 +15,6 @@ public:
     virtual Variant call (Object &obj, const VariantArray &args) = 0;
 };
 
-class Property : public moo::RefCounted<Property>
-{
-public:
-    virtual void set (Object &obj, const Variant &val) = 0;
-    virtual Variant get (Object &obj) = 0;
-};
-
 class Signal : public moo::RefCounted<Signal>
 {
 };
@@ -36,18 +29,7 @@ public:
     }
 
     moo::SharedPtr<Method> lookup_method(const String &meth) const NOTHROW { return m_methods.value(meth); }
-    moo::SharedPtr<Property> lookup_property(const String &prop) const NOTHROW { return m_props.value(prop); }
     moo::SharedPtr<Signal> lookup_signal(const String &sig) const NOTHROW { return m_signals.value(sig); }
-
-    FieldKind lookup_field(const String &field) const NOTHROW
-    {
-        if (m_methods.contains(field))
-            return FieldMethod;
-        else if (m_props.contains(field))
-            return FieldProperty;
-        else
-            return FieldInvalid;
-    }
 
     template<typename TObject>
     void add_method(const String &meth, Variant (TObject::*impl)(const VariantArray &args))
@@ -75,45 +57,6 @@ public:
         m_methods[meth] = new MethodImpl(impl);
     }
 
-    template<typename TObject>
-    void add_property(const String &prop, Variant (TObject::*getter)(), void (TObject::*setter)(const Variant &val))
-    {
-        class PropertyImpl : public Property
-        {
-        public:
-            typedef Variant (TObject::*GetterFunc)();
-            typedef void (TObject::*SetterFunc)(const Variant &val);
-
-            PropertyImpl(GetterFunc getter, SetterFunc setter)
-                : m_getter(getter)
-                , m_setter(setter)
-            {
-            }
-
-            Variant get(Object &obj)
-            {
-                if (!m_getter)
-                    Error::raise("property not readable");
-                TObject &tobj = static_cast<TObject&>(obj);
-                return (tobj.*m_getter)();
-            }
-
-            void set(Object &obj, const Variant &val)
-            {
-                if (!m_setter)
-                    Error::raise("property not writable");
-                TObject &tobj = static_cast<TObject&>(obj);
-                (tobj.*m_setter)(val);
-            }
-
-        private:
-            GetterFunc m_getter;
-            SetterFunc m_setter;
-        };
-
-        m_props[prop] = new PropertyImpl(getter, setter);
-    }
-
     void add_signal(const String &sig)
     {
         m_signals[sig] = new Signal;
@@ -124,7 +67,6 @@ private:
 
 private:
     moo::Dict<String, moo::SharedPtr<Method> > m_methods;
-    moo::Dict<String, moo::SharedPtr<Property> > m_props;
     moo::Dict<String, moo::SharedPtr<Signal> > m_signals;
 };
 
@@ -135,9 +77,7 @@ public: \
 protected: \
     static MetaObject s_meta; \
     static void InitMetaObject(MetaObject &meta); \
-    static void _InitMetaObjectFull(MetaObject &meta); \
-    typedef void (Class::*PropertySetter)(const Variant &val); \
-    typedef Variant (Class::*PropertyGetter)();
+    static void _InitMetaObjectFull(MetaObject &meta);
 
 #define MOM_OBJECT_DEFN(Class) \
     MetaObject Class::s_meta(Class::_InitMetaObjectFull); \
@@ -151,8 +91,6 @@ class Object : public moo::RefCounted<Object>
 {
 public:
     Variant call_method(const String &meth, const VariantArray &args);
-    void set_property(const String &prop, const Variant &val);
-    Variant get_property(const String &prop);
 
     gulong connect_callback(const String &name, moo::SharedPtr<Callback> cb);
     void disconnect_callback(gulong id);

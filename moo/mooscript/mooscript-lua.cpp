@@ -244,42 +244,10 @@ static int object__index(lua_State *L)
 {
     HObject self = get_arg_object(L, 1);
     const char *field = get_arg_string(L, 2);
-
-    switch (Script::lookup_field(self, field))
-    {
-        case FieldMethod:
-            lua_pushstring(L, field);
-            push_object(L, self);
-            lua_pushcclosure(L, cfunc_call_named_method, 2);
-            return 1;
-
-        case FieldProperty:
-            {
-            Variant v;
-            Result r = Script::get_property(self, field, v);
-            check_result(L, r);
-            push_variant(L, v);
-            return 1;
-            }
-
-        default:
-            return luaL_error(L, "no property or method '%s'", field);
-    }
-}
-
-static int object__newindex(lua_State *L)
-{
-    HObject h = get_arg_object(L, 1);
-    const char *prop = get_arg_string(L, 2);
-
-    if (Script::lookup_field(h, prop) != FieldProperty)
-        return luaL_error(L, "no property '%s'", prop);
-
-    Variant v = get_arg_variant(L, 3);
-    Result r = Script::set_property(h, prop, v);
-
-    check_result(L, r);
-    return 0;
+    lua_pushstring(L, field);
+    push_object(L, self);
+    lua_pushcclosure(L, cfunc_call_named_method, 2);
+    return 1;
 }
 
 static void push_object(lua_State *L, const HObject &h)
@@ -299,8 +267,6 @@ static void push_object(lua_State *L, const HObject &h)
         lua_setfield(L, -2, "__eq");
         lua_pushcfunction(L, object__index);
         lua_setfield(L, -2, "__index");
-        lua_pushcfunction(L, object__newindex);
-        lua_setfield(L, -2, "__newindex");
     }
 
     // setmetatable(O, M)
@@ -369,54 +335,6 @@ static void push_variant(lua_State *L, const Variant &v)
     luaL_error(L, "bad value");
     mooThrowIfReached();
 }
-
-// static int cfunc_set_property(lua_State *L)
-// {
-//     MomLuaData *data = get_data(L);
-//
-//     HObject h = get_arg_object(L, 1);
-//     const char *prop = get_arg_string(L, 2);
-//     Variant v = get_arg_variant(L, 3);
-//
-//     Result r = Script::set_property(h, prop, v);
-//     check_result(L, r);
-//
-//     return 0;
-// }
-//
-// static int cfunc_get_property(lua_State *L)
-// {
-//     MomLuaData *data = get_data(L);
-//
-//     HObject h = get_arg_object(L, 1);
-//     const char *prop = get_arg_string(L, 2);
-//
-//     Variant v;
-//     Result r = Script::get_property(h, prop, v);
-//     check_result(L, r);
-//
-//     push_variant(L, v);
-//     return 1;
-// }
-//
-// static int cfunc_call_method(lua_State *L)
-// {
-//     MomLuaData *data = get_data(L);
-//
-//     HObject h = get_arg_object(L, 1);
-//     const char *meth = get_arg_string(L, 2);
-//     VariantArray args;
-//
-//     for (int i = 3; i <= lua_gettop(L); ++i)
-//         args.append(get_arg_variant(L, i));
-//
-//     Variant v;
-//     Result r = Script::call_method(h, meth, args, v);
-//     check_result(L, r);
-//
-//     push_variant(L, v);
-//     return 1;
-// }
 
 static int cfunc_get_app_obj(lua_State *L)
 {

@@ -39,13 +39,6 @@ private:
     String m_message;
 };
 
-enum FieldKind
-{
-    FieldInvalid,
-    FieldMethod,
-    FieldProperty
-};
-
 class Callback : public moo::RefCounted<Callback>
 {
 public:
@@ -58,12 +51,7 @@ class Script
 {
 public:
     static HObject get_app_obj() NOTHROW;
-
-    static FieldKind lookup_field(HObject obj, const String &field) NOTHROW;
     static Result call_method(HObject obj, const String &meth, const VariantArray &args, Variant &ret) NOTHROW;
-    static Result set_property(HObject obj, const String &prop, const Variant &val) NOTHROW;
-    static Result get_property(HObject obj, const String &prop, Variant &val) NOTHROW;
-
     static Result connect_callback(HObject obj, const String &event, moo::SharedPtr<Callback> cb, gulong &id) NOTHROW;
     static Result disconnect_callback(HObject obj, gulong id) NOTHROW;
 };
