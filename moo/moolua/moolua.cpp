@@ -18,6 +18,7 @@
 #include "moolua.h"
 #include "moo-tests-lua.h"
 #include "moolua/moolua-tests.h"
+#include "mooscript/mooscript-lua.h"
 #include <string.h>
 #include <glib.h>
 
@@ -118,16 +119,68 @@ moo_lua_add_user_path (lua_State *L)
 }
 
 
+lua_State *
+medit_lua_new (const char *init, bool enable_callbacks)
+{
+    lua_State *L = lua_open ();
+    moo_return_val_if_fail (L != NULL, NULL);
+
+    luaL_openlibs (L);
+    moo_lua_add_user_path (L);
+
+    moo_assert (lua_gettop (L) == 0);
+
+    if (!mom::lua_setup (L, enable_callbacks))
+    {
+        lua_close (L);
+        return NULL;
+    }
+
+    moo_assert (lua_gettop (L) == 0);
+
+    if (init)
+    {
+        if (luaL_loadstring (L, init) != 0)
+        {
+            const char *msg = lua_tostring (L, -1);
+            moo_critical ("%s", msg ? msg : "ERROR");
+            lua_close (L);
+            return NULL;
+        }
+
+        if (lua_pcall (L, 0, 0, 0) != 0)
+        {
+            const char *msg = lua_tostring (L, -1);
+            moo_critical ("%s", msg ? msg : "ERROR");
+            lua_close (L);
+            return NULL;
+        }
+    }
+
+    moo_assert (lua_gettop (L) == 0);
+
+    return L;
+}
+
+void
+medit_lua_free (lua_State *L)
+{
+    moo_return_if_fail (L != NULL);
+    mom::lua_cleanup (L);
+    lua_close (L);
+}
+
+
 static void
 test_func (MooTestEnv *env)
 {
-    moo_test_run_lua_file ((const char *) env->test_data, NULL, NULL);
+    moo_test_run_lua_file ((const char *) env->test_data);
 }
 
 static void
-add_test (MooTestSuite *suite, const char *name, const char *lua_file)
+add_test (MooTestSuite *suite, const char *name, const char *description, const char *lua_file)
 {
-    moo_test_suite_add_test (suite, name, test_func, (void*) lua_file);
+    moo_test_suite_add_test (suite, name, description, test_func, (void*) lua_file);
 }
 
 void
@@ -135,9 +188,10 @@ moo_test_lua (void)
 {
     MooTestSuite *suite;
 
-    suite = moo_test_suite_new ("moolua", NULL, NULL, NULL);
+    suite = moo_test_suite_new ("MooLua", "Lua scripting tests", NULL, NULL, NULL);
 
-    add_test (suite, "test of unicode", "testunicode.lua");
-    add_test (suite, "test of unicode (2)", "testustring.lua");
-    add_test (suite, "test of moo package", "testmoo.lua");
+    add_test (suite, "unicode", "test of unicode", "testunicode.lua");
+    add_test (suite, "unicode", "test of unicode (2)", "testustring.lua");
+    add_test (suite, "moo", "test of moo package", "testmoo.lua");
+    add_test (suite, "medit", "test of medit package", "testmedit.lua");
 }

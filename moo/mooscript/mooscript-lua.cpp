@@ -27,6 +27,8 @@ static void unset_data(lua_State *L)
 {
     MomLuaData *data = 0;
 
+    g_assert (lua_gettop (L) == 0);
+
     lua_pushlightuserdata(L, &data_cookie);
     lua_gettable(L, LUA_REGISTRYINDEX);
 
@@ -42,6 +44,8 @@ static void unset_data(lua_State *L)
     {
         lua_pop(L, 1);
     }
+
+    g_assert (lua_gettop (L) == 0);
 
     delete data;
 }
@@ -103,7 +107,7 @@ static Variant get_arg_variant(lua_State *L, int narg);
 
 static Variant convert_table_to_variant(lua_State *L, int narg)
 {
-    VariantArray ar;
+    ArgArray ar;
     VariantDict dic;
 
     size_t len = lua_objlen(L, narg);
@@ -198,7 +202,7 @@ static void check_result(lua_State *L, Result r)
 
 static void push_variant(lua_State *L, const Variant &v);
 
-static void push_args_array(lua_State *L, const VariantArray &args)
+static void push_args_array(lua_State *L, const ArgArray &args)
 {
     for (int i = 0, c = args.size(); i < c; ++i)
         push_variant(L, args[i]);
@@ -221,7 +225,7 @@ static int cfunc_call_named_method(lua_State *L)
     if (harg.id() != self.id())
         first_arg = 1;
 
-    VariantArray args;
+    ArgArray args;
     for (int i = first_arg; i <= lua_gettop(L); ++i)
         args.append(get_arg_variant(L, i));
 
@@ -330,6 +334,8 @@ static void push_variant(lua_State *L, const Variant &v)
         case VtObject:
             push_object(L, v.value<VtObject>());
             return;
+        case VtArgs:
+            break;
     }
 
     luaL_error(L, "bad value");
@@ -370,12 +376,12 @@ public:
         }
     }
 
-    Variant run(const VariantArray &args)
+    Variant run(const ArgArray &args)
     {
         this->retval.reset();
         this->args = args;
         do_run(L, this);
-        this->args = VariantArray();
+        this->args = ArgArray();
         Variant retval = this->retval;
         this->retval.reset();
         return retval;
@@ -393,7 +399,7 @@ public:
     lua_State *L;
     gulong id;
     Variant retval;
-    VariantArray args;
+    ArgArray args;
 };
 
 static int cfunc_connect(lua_State *L)
@@ -427,10 +433,16 @@ static bool add_raw_api(lua_State *L, bool enable_callbacks)
         { 0, 0 }
     };
 
+    g_assert (lua_gettop (L) == 0);
+
     if (enable_callbacks)
-        luaL_openlib(L, "medit", meditlib, 0);
+        luaL_register(L, "medit", meditlib);
     else
-        luaL_openlib(L, "medit", meditlib_no_callbacks, 0);
+        luaL_register(L, "medit", meditlib_no_callbacks);
+
+    lua_pop(L, 1);
+
+    g_assert (lua_gettop (L) == 0);
 
     return true;
 }
@@ -439,14 +451,20 @@ bool lua_setup(lua_State *L, bool enable_callbacks) throw()
 {
     try
     {
+        g_assert (lua_gettop (L) == 0);
+
         if (!set_data(L))
             return false;
+
+        g_assert (lua_gettop (L) == 0);
 
         if (!add_raw_api(L, enable_callbacks))
         {
             unset_data(L);
             return false;
         }
+
+        g_assert (lua_gettop (L) == 0);
 
         return true;
     }

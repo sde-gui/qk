@@ -6,14 +6,14 @@
 
 @item Application.editor()
 returns Editor object.
-@item Application.active_view()
-returns current active document view or @null{} if no documents are open.
-@item Application.active_document()
-returns current active document or @null{} if no documents are open.
 @item Application.active_window()
 returns current active window.
 @item Application.set_active_window(window)
 activates @param{window}.
+@item Application.active_document()
+returns current active document or @null{} if no documents are open.
+@item Application.active_view()
+returns current active document view or @null{} if no documents are open.
 @item Application.windows()
 returns a list of all editor windows.
 @item Application.quit()
@@ -41,23 +41,18 @@ returns current active document view
 makes @param{view} active
 @item Editor.documents()
 returns list of all open documents
-@item Editor.documents()
+@item Editor.views()
 returns list of all open document views
-@item Editor.documents()
+@item Editor.windows()
 returns list of all document windows
 @item Editor.get_document_by_path(path)
 returns document with path @param{path} or @null{}.
 @item Editor.get_document_by_uri(path)
 returns document with uri @param{uri} or @null{}.
-@item Editor.new_file(file, encoding=null, window=null)
-open file if it exists on disk or create a new one. If @param{encoding} is
-@null{} or "auto" then pick character encoding automatically, otherwise use
-@param{encoding}. If @param{window} is given then open file in that window,
-otherwise in an existing window.
 @item Editor.open_files(files, window=null)
 open files. If @param{window} is given then open files in that window,
 otherwise in an existing window.
-@item Editor.open_files(uris, window=null)
+@item Editor.open_uris(uris, window=null)
 open files. If @param{window} is given then open files in that window,
 otherwise in an existing window.
 @item Editor.open_file(file, encoding=null, window=null)
@@ -68,6 +63,11 @@ is given then open files in that window, otherwise in an existing window.
 open file. If @param{encoding} is @null{} or "auto" then pick character
 encoding automatically, otherwise use @param{encoding}. If @param{window}
 is given then open files in that window, otherwise in an existing window.
+@item Editor.new_file(file, encoding=null, window=null)
+open file if it exists on disk or create a new one. If @param{encoding} is
+@null{} or "auto" then pick character encoding automatically, otherwise use
+@param{encoding}. If @param{window} is given then open file in that window,
+otherwise in an existing window.
 @item Editor.reload(doc)
 reload document.
 @item Editor.save(doc)
@@ -223,7 +223,7 @@ line count.
 returns index of the line which contains position @param{pos}.
 @item Document.pos_at_line(line)
 returns position at the beginning of line @param{line}.
-@item Document.pos_at_line(line)
+@item Document.pos_at_line_end(line)
 returns position at the end of line @param{line}.
 @item Document.char_at_pos(pos)
 returns character at position @param{pos} as string.
@@ -293,5 +293,3 @@ replace selected lines with @param{text}. Similar to
 @method{replace_selected_text()}, but selection is extended to include
 whole lines. If nothing is selected, then line at cursor is replaced.
 @end table
-
-

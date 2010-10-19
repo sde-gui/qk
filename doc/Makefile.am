@@ -14,8 +14,8 @@ medit.texi: medit.texi.in $(top_builddir)/config.status
 	$(AM_V_GEN)cd $(top_builddir) && ./config.status --silent --file=doc/medit.texi
 	$(AM_V_at)mv medit.texi $(srcdir)/medit.texi
 
-mooscript.texi: $(top_srcdir)/moo/mooscript/mooscript-classes.h $(top_srcdir)/moo/mooscript/gendoc.py
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/moo/mooscript/gendoc.py $(top_srcdir)/moo/mooscript/mooscript-classes.h \
+mooscript.texi: $(top_srcdir)/moo/mooscript/mooscript-classes-impl.cpp $(top_srcdir)/moo/mooscript/gendoc.py
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/moo/mooscript/gendoc.py $(top_srcdir)/moo/mooscript/mooscript-classes-impl.cpp \
 		> mooscript.texi.tmp && mv mooscript.texi.tmp $(srcdir)/mooscript.texi
 
 help/index.html: $(src_texinfo_files)

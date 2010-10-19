@@ -50,33 +50,8 @@ moo_command_lua_run (MooCommand        *cmd_base,
 
     g_return_if_fail (cmd->priv->code != NULL);
 
-    L = lua_open ();
+    L = medit_lua_new (LUA_SETUP_CODE);
     g_return_if_fail (L != NULL);
-
-    luaL_openlibs (L);
-    moo_lua_add_user_path (L);
-
-    if (!mom::lua_setup (L, false))
-    {
-        lua_close (L);
-        return;
-    }
-
-    if (luaL_loadstring (L, LUA_SETUP_CODE) != 0)
-    {
-        const char *msg = lua_tostring (L, -1);
-        g_critical ("%s: %s", G_STRLOC, msg ? msg : "ERROR");
-        lua_close (L);
-        return;
-    }
-
-    if (lua_pcall (L, 0, 0, 0) != 0)
-    {
-        const char *msg = lua_tostring (L, -1);
-        g_critical ("%s: %s", G_STRLOC, msg ? msg : "ERROR");
-        lua_close (L);
-        return;
-    }
 
     if (luaL_loadstring (L, cmd->priv->code) != 0)
     {
@@ -102,8 +77,7 @@ moo_command_lua_run (MooCommand        *cmd_base,
     if (buffer)
         gtk_text_buffer_end_user_action (buffer);
 
-    mom::lua_cleanup (L);
-    lua_close (L);
+    medit_lua_free (L);
 }
 
 

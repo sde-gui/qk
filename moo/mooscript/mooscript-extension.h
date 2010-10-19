@@ -61,7 +61,7 @@ private:
     bool m_stop;
 };
 
-void emit_signal(Object &obj, const char *name, const VariantArray &args, Accumulator &acc) throw();
+void emit_signal(Object &obj, const char *name, const ArgArray &args, Accumulator &acc) throw();
 
 } // namespace mom
 

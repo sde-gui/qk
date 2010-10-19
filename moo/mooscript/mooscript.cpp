@@ -21,7 +21,7 @@ void Object::_InitMetaObjectFull(MetaObject &meta)
     InitMetaObject(meta);
 }
 
-Variant Object::call_method(const String &name, const VariantArray &args)
+Variant Object::call_method(const String &name, const ArgArray &args)
 {
     moo::SharedPtr<Method> meth = m_meta.lookup_method(name);
     if (!meth)
@@ -124,7 +124,7 @@ HObject Script::get_app_obj()
     }
 }
 
-Result Script::call_method(HObject h, const String &meth, const VariantArray &args, Variant &ret)
+Result Script::call_method(HObject h, const String &meth, const ArgArray &args, Variant &ret)
 {
     try
     {

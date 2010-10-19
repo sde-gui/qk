@@ -42,4 +42,8 @@ const char  *lua_check_utf8string   (lua_State  *L,
 
 void         moo_lua_add_user_path  (lua_State  *L);
 
+lua_State   *medit_lua_new          (const char *init = NULL,
+                                     bool        enable_callbacks = false);
+void         medit_lua_free         (lua_State  *L);
+
 #endif /* MOO_LUA_H */

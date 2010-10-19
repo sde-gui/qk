@@ -44,17 +44,13 @@ Up:&nbsp;<a rel="up" accesskey="u" href="Scripting.html#Scripting">Scripting</a>
 <br><dt><code>Editor.active_view()</code><dd>returns current active document view
 <br><dt><code>Editor.set_active_view(view)</code><dd>makes <var>view</var> active
 <br><dt><code>Editor.documents()</code><dd>returns list of all open documents
-<br><dt><code>Editor.documents()</code><dd>returns list of all open document views
-<br><dt><code>Editor.documents()</code><dd>returns list of all document windows
+<br><dt><code>Editor.views()</code><dd>returns list of all open document views
+<br><dt><code>Editor.windows()</code><dd>returns list of all document windows
 <br><dt><code>Editor.get_document_by_path(path)</code><dd>returns document with path <var>path</var> or <code>null</code>. 
 <br><dt><code>Editor.get_document_by_uri(path)</code><dd>returns document with uri <var>uri</var> or <code>null</code>. 
-<br><dt><code>Editor.new_file(file, encoding=null, window=null)</code><dd>open file if it exists on disk or create a new one. If <var>encoding</var> is
-<code>null</code> or "auto" then pick character encoding automatically, otherwise use
-<var>encoding</var>. If <var>window</var> is given then open file in that window,
-otherwise in an existing window. 
 <br><dt><code>Editor.open_files(files, window=null)</code><dd>open files. If <var>window</var> is given then open files in that window,
 otherwise in an existing window. 
-<br><dt><code>Editor.open_files(uris, window=null)</code><dd>open files. If <var>window</var> is given then open files in that window,
+<br><dt><code>Editor.open_uris(uris, window=null)</code><dd>open files. If <var>window</var> is given then open files in that window,
 otherwise in an existing window. 
 <br><dt><code>Editor.open_file(file, encoding=null, window=null)</code><dd>open file. If <var>encoding</var> is <code>null</code> or "auto" then pick character
 encoding automatically, otherwise use <var>encoding</var>. If <var>window</var>
@@ -62,6 +58,10 @@ is given then open files in that window, otherwise in an existing window.
 <br><dt><code>Editor.open_uri(uri, encoding=null, window=null)</code><dd>open file. If <var>encoding</var> is <code>null</code> or "auto" then pick character
 encoding automatically, otherwise use <var>encoding</var>. If <var>window</var>
 is given then open files in that window, otherwise in an existing window. 
+<br><dt><code>Editor.new_file(file, encoding=null, window=null)</code><dd>open file if it exists on disk or create a new one. If <var>encoding</var> is
+<code>null</code> or "auto" then pick character encoding automatically, otherwise use
+<var>encoding</var>. If <var>window</var> is given then open file in that window,
+otherwise in an existing window. 
 <br><dt><code>Editor.reload(doc)</code><dd>reload document. 
 <br><dt><code>Editor.save(doc)</code><dd>save document. 
 <br><dt><code>Editor.save_as(doc, filename=null)</code><dd>save document as <var>filename</var>. If <var>filename</var> is not given then

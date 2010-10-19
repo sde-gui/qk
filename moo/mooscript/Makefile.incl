@@ -1,18 +1,36 @@
-moo_sources +=				\
-	mooscript/mooscript-types.h	\
-	mooscript/mooscript-lua.h	\
-	mooscript/mooscript-lua.cpp	\
-	mooscript/mooscript-classes.h	\
-	mooscript/mooscript-classes.cpp	\
-	mooscript/mooscript.h		\
-	mooscript/mooscript.cpp		\
-	mooscript/mooscript-api.h	\
-	mooscript/mooscript-variant.h	\
-	mooscript/mooscript-extension.h	\
-	mooscript/mooscript-extension.cpp
+moo_sources +=					\
+	mooscript/mooscript-types.h		\
+	mooscript/mooscript-classes.h		\
+	mooscript/mooscript-classes.cpp		\
+	mooscript/mooscript-classes-util.h	\
+	mooscript/mooscript-classes-base.h	\
+	mooscript/mooscript-classes-impl.cpp	\
+	mooscript/mooscript.h			\
+	mooscript/mooscript.cpp			\
+	mooscript/mooscript-api.h		\
+	mooscript/mooscript-variant.h		\
+	mooscript/mooscript-extension.h		\
+	mooscript/mooscript-extension.cpp	\
+	mooscript/mooscript-lua.h		\
+	mooscript/mooscript-lua.cpp
 
-built_plugins_sources += mooscript-classes-meta.h
-EXTRA_DIST += mooscript/genmeta.py
-mooscript-classes-meta.h: mooscript/mooscript-classes.h mooscript/genmeta.py
-	$(AM_V_GEN)$(PYTHON) $(srcdir)/mooscript/genmeta.py $(srcdir)/mooscript/mooscript-classes.h > mooscript-classes-meta.h.tmp && \
-		mv mooscript-classes-meta.h.tmp mooscript-classes-meta.h
+MOO_SCRIPT_PARSER_FILES =		\
+	mooscript/mooscriptgen.py	\
+	mooscript/mooscriptparser.py
+
+EXTRA_DIST +=				\
+	$(MOO_SCRIPT_PARSER_FILES)	\
+	mooscript/mooscript.xml
+
+if MOO_DEV_MODE
+built_moo_sources +=		\
+	mooscript/mooscript.stamp
+mooscript/mooscript.stamp: $(MOO_SCRIPT_PARSER_FILES) mooscript/mooscript.xml
+	$(AM_V_GEN)$(PYTHON) $(srcdir)/mooscript/mooscriptgen.py --input $(srcdir)/mooscript/mooscript.xml \
+		--decl $(srcdir)/mooscript/mooscript-classes.h.tmp --impl $(srcdir)/mooscript/mooscript-classes.cpp.tmp
+	$(AM_V_at)cmp -s $(srcdir)/mooscript/mooscript-classes.h.tmp $(srcdir)/mooscript/mooscript-classes.h || mv $(srcdir)/mooscript/mooscript-classes.h.tmp $(srcdir)/mooscript/mooscript-classes.h
+	$(AM_V_at)cmp -s $(srcdir)/mooscript/mooscript-classes.cpp.tmp $(srcdir)/mooscript/mooscript-classes.cpp || mv $(srcdir)/mooscript/mooscript-classes.cpp.tmp $(srcdir)/mooscript/mooscript-classes.cpp
+	$(AM_V_at)rm -f $(srcdir)/mooscript/mooscript-classes.h.tmp $(srcdir)/mooscript/mooscript-classes.cpp.tmp
+	$(AM_V_at)$(MKDIR_P) mooscript
+	echo stamp > mooscript/mooscript.stamp
+endif

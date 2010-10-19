@@ -1,0 +1,179 @@
+<classes>
+  <class name='Application' singleton='1'>
+    <method name='editor' retval='Editor'/>
+    <method name='active_view' retval='DocumentView'/>
+    <method name='active_document' retval='Document'/>
+    <method name='active_window' retval='DocumentWindow'/>
+    <method name='set_active_window'>
+      <param name='window' type='DocumentWindow'/>
+    </method>
+    <method name='windows' retval='list'/>
+    <method name='quit'/>
+  </class>
+
+  <class name='Editor' singleton='1'>
+    <method name='active_document' retval='Document'/>
+    <method name='set_active_document'>
+      <param name='doc' type='Document'/>
+    </method>
+    <method name='active_window' retval='DocumentWindow'/>
+    <method name='set_active_window'>
+      <param name='window' type='DocumentWindow'/>
+    </method>
+    <method name='active_view' retval='DocumentView'/>
+    <method name='set_active_view'>
+      <param name='view' type='DocumentView'/>
+    </method>
+
+    <method name='documents' retval='list'/>
+    <method name='views' retval='list'/>
+    <method name='windows' retval='list'/>
+
+    <method name='get_document_by_path' retval='Document'>
+      <param name='path' type='string'/>
+    </method>
+    <method name='get_document_by_uri' retval='Document'>
+      <param name='uri' type='string'/>
+    </method>
+
+    <method name='new_file' retval='Document'>
+      <param name='file' type='string' optional='1'/>
+      <param name='encoding' type='string' optional='1'/>
+      <param name='window' type='DocumentWindow' optional='1'/>
+    </method>
+    <method name='open_files'>
+      <param name='files' type='list'/>
+      <param name='window' type='DocumentWindow' optional='1'/>
+    </method>
+    <method name='open_uris'>
+      <param name='uris' type='list'/>
+      <param name='window' type='DocumentWindow' optional='1'/>
+    </method>
+    <method name='open_file' retval='Document'>
+      <param name='file' type='string'/>
+      <param name='encoding' type='string' optional='1'/>
+      <param name='window' type='DocumentWindow' optional='1'/>
+    </method>
+    <method name='open_uri' retval='Document'>
+      <param name='file' type='string'/>
+      <param name='encoding' type='string' optional='1'/>
+      <param name='window' type='DocumentWindow' optional='1'/>
+    </method>
+    <method name='reload'>
+      <param name='doc' type='Document'/>
+    </method>
+    <method name='save' retval='bool'>
+      <param name='doc' type='Document'/>
+    </method>
+    <method name='save_as' retval='bool'>
+      <param name='doc' type='Document'/>
+      <param name='filename' type='string' optional='1'/>
+    </method>
+    <method name='close' retval='bool'>
+      <param name='doc' type='Document'/>
+    </method>
+
+    <signal name='document-save-before'>
+      <param name='doc' type='Document'/>
+    </signal>
+    <signal name='document-save-after'>
+      <param name='doc' type='Document'/>
+    </signal>
+  </class>
+
+  <class name='DocumentWindow' gobject='MooEditWindow'>
+    <method name='editor' retval='Editor'/>
+    <method name='active_view' retval='DocumentView'/>
+    <method name='set_active_view' param-name='view' param-type='DocumentView'/>
+    <method name='active_document' retval='Document'/>
+    <method name='set_active_document' param-name='doc' param-type='Document'/>
+    <method name='views' retval='list'/>
+    <method name='documents' retval='list'/>
+    <method name='is_active' retval='bool'/>
+    <method name='set_active'/>
+  </class>
+
+  <class name='DocumentView' gobject='MooEdit'>
+    <method name='document' retval='Document'/>
+    <method name='window' retval='DocumentWindow'/>
+    <method name='line_wrap_mode' retval='bool'/>
+    <method name='set_line_wrap_mode' param-name='enabled' param-type='bool'/>
+    <method name='overwrite_mode' retval='bool'/>
+    <method name='set_overwrite_mode' param-name='enabled' param-type='bool'/>
+    <method name='show_line_numbers' retval='bool'/>
+    <method name='set_show_line_numbers' param-name='show' param-type='bool'/>
+  </class>
+
+  <class name='Document' gobject='MooEdit'>
+    <method name='views' retval='list'/>
+    <method name='active_view' retval='DocumentView'/>
+
+    <method name='filename' retval='string'/>
+    <method name='uri' retval='string'/>
+    <method name='basename' retval='string'/>
+
+    <method name='encoding' retval='string'/>
+    <method name='set_encoding' param-name='encoding' param-type='string'/>
+
+    <method name='line_endings' retval='string'/>
+    <method name='set_line_endings' param-name='value' param-type='string'/>
+
+    <method name='reload'/>
+    <method name='save' retval='bool'/>
+    <method name='save_as' param-name='filename' param-type='string' param-optional='1' retval='bool'/>
+
+    <method name='can_undo' retval='bool'/>
+    <method name='can_redo' retval='bool'/>
+    <method name='undo'/>
+    <method name='redo'/>
+    <method name='begin_not_undoable_action'/>
+    <method name='end_not_undoable_action'/>
+
+    <method name='start_pos' retval='index'/>
+    <method name='end_pos' retval='index'/>
+    <method name='cursor_pos' retval='index'/>
+    <method name='set_cursor_pos' param-name='pos' param-type='index'/>
+    <method name='selection' retval='list'/>
+    <method name='set_selection' varargs='1'/>
+    <method name='selection_bound' retval='index'/>
+    <method name='has_selection' retval='bool'/>
+
+    <method name='char_count' retval='int'/>
+    <method name='line_count' retval='int'/>
+
+    <method name='line_at_pos' param-name='pos' param-type='index' retval='index'/>
+    <method name='pos_at_line' param-name='line' param-type='index' retval='index'/>
+    <method name='pos_at_line_end' param-name='line' param-type='index' retval='index'/>
+    <method name='char_at_pos' param-name='pos' param-type='index' retval='string'/>
+    <method name='text' varargs='1' retval='string'/>
+
+    <method name='insert_text' varargs='1'/>
+    <method name='replace_text'>
+      <param name='start' type='index'/>
+      <param name='end' type='index'/>
+      <param name='text' type='string'/>
+    </method>
+    <method name='delete_text'>
+      <param name='start' type='index'/>
+      <param name='end' type='index'/>
+    </method>
+    <method name='append_text' param-name='text' param-type='string'/>
+    <method name='clear'/>
+
+    <method name='copy'/>
+    <method name='cut'/>
+    <method name='paste'/>
+
+    <method name='select_text' varargs='1'/>
+    <method name='select_lines' varargs='1'/>
+    <method name='select_lines_at_pos' varargs='1'/>
+    <method name='select_all'/>
+
+    <method name='selected_text' retval='string'/>
+    <method name='selected_lines' retval='list'/>
+    <method name='delete_selected_text'/>
+    <method name='delete_selected_lines'/>
+    <method name='replace_selected_text' param-name='text' param-type='string'/>
+    <method name='replace_selected_lines' param-name='repl' param-type='variant'/>
+  </class>
+</classes>

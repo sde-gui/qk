@@ -15,6 +15,7 @@ enum VariantType
     VtDouble,
     VtString,
     VtArray,
+    VtArgs,
     VtDict,
     VtObject,
 };
@@ -25,6 +26,10 @@ class VariantArray : public moo::Vector<Variant>
 {
 public:
     VariantArray() : moo::Vector<Variant>() {}
+};
+
+class ArgArray : public VariantArray
+{
 };
 
 class VariantDict : public moo::Dict<String, Variant>
@@ -128,11 +133,12 @@ public:                                                     \
 MOM_DEFINE_VT_HELPER(VtBool, bool)
 MOM_DEFINE_VT_HELPER(VtIndex, Index)
 MOM_DEFINE_VT_HELPER(VtBase1, Base1Int)
-MOM_DEFINE_VT_HELPER(VtInt, int)
+MOM_DEFINE_VT_HELPER(VtInt, gint64)
 MOM_DEFINE_VT_HELPER(VtDouble, double)
 MOM_DEFINE_VT_HELPER(VtObject, HObject)
 MOM_DEFINE_VT_HELPER(VtString, String)
 MOM_DEFINE_VT_HELPER(VtArray, VariantArray)
+MOM_DEFINE_VT_HELPER(VtArgs, ArgArray)
 MOM_DEFINE_VT_HELPER(VtDict, VariantDict)
 
 #undef MOM_DEFINE_VT_HELPER
@@ -155,6 +161,7 @@ inline void destroyTyped(VariantData &data)
     MOM_VT_CASE(VtObject, what);    \
     MOM_VT_CASE(VtString, what);    \
     MOM_VT_CASE(VtArray, what);     \
+    MOM_VT_CASE(VtArgs, what);      \
     MOM_VT_CASE(VtDict, what);
 
 NOTHROW inline void destroy(VariantType vt, VariantData &data)

@@ -36,38 +36,6 @@ struct MooLuaPlugin {
     ModuleList *modules;
 };
 
-static lua_State *
-create_lua (void)
-{
-    lua_State *L = lua_open();
-    luaL_openlibs (L);
-    moo_lua_add_user_path (L);
-
-    if (!mom::lua_setup (L, true))
-    {
-        lua_close (L);
-        return NULL;
-    }
-
-    if (luaL_loadstring (L, LUA_MODULE_SETUP_CODE) != 0)
-    {
-        const char *msg = lua_tostring (L, -1);
-        g_critical ("%s: %s", G_STRLOC, msg ? msg : "ERROR");
-        lua_close (L);
-        return NULL;
-    }
-
-    if (lua_pcall (L, 0, 0, 0) != 0)
-    {
-        const char *msg = lua_tostring (L, -1);
-        g_critical ("%s: %s", G_STRLOC, msg ? msg : "ERROR");
-        lua_close (L);
-        return NULL;
-    }
-
-    return L;
-}
-
 static bool
 load_file (lua_State *L, const char *module_file)
 {
@@ -96,7 +64,7 @@ load_file (lua_State *L, const char *module_file)
 static MooLuaModule *
 moo_lua_module_load (const char *filename)
 {
-    lua_State *L = create_lua ();
+    lua_State *L = medit_lua_new (LUA_MODULE_SETUP_CODE);
     if (!L)
         return NULL;
     if (!load_file (L, filename))
@@ -115,7 +83,7 @@ moo_lua_module_unload (MooLuaModule *mod)
 {
     moo_return_if_fail (mod != NULL);
     if (mod->L)
-        lua_close (mod->L);
+        medit_lua_free (mod->L);
     g_free (mod);
 }
 
