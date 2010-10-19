@@ -161,6 +161,8 @@ class Parser(object):
                 raise RuntimeError('oops')
         elif elm.get('param-name') is not None:
             p = Param(elm.get('param-name'), elm.get('param-type'))
+            if elm.get('param-optional') is not None:
+                p.optional = parse_bool(elm.get('param-optional'))
             meth.params.append(p)
         else:
             for child in elm:

@@ -30,6 +30,7 @@ void         lua_addpath            (lua_State   *L,
                                      unsigned    n_dirs);
 
 int          luaopen_unicode        (lua_State  *L);
+int          luaopen_moo_utils      (lua_State  *L);
 
 void         lua_take_utf8string    (lua_State  *L,
                                      char       *s);

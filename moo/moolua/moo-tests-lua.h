@@ -115,8 +115,6 @@ moo_test_run_lua_file (const char *basename)
         moo_test_run_lua_script (L, contents, basename);
         lua_pop (L, lua_gettop (L));
 
-        g_assert (lua_gettop (L) == 0);
-
         medit_lua_free (L);
     }
 

@@ -46,6 +46,9 @@ Up:&nbsp;<a rel="up" accesskey="u" href="Scripting.html#Scripting">Scripting</a>
 <br><dt><code>Editor.documents()</code><dd>returns list of all open documents
 <br><dt><code>Editor.views()</code><dd>returns list of all open document views
 <br><dt><code>Editor.windows()</code><dd>returns list of all document windows
+<br><dt><code>Editor.new_document(window=null)</code><dd>creates new document in specified window. If window is <code>null</code> then
+the document is created in an existing window
+<br><dt><code>Editor.new_window()</code><dd>creates new document window
 <br><dt><code>Editor.get_document_by_path(path)</code><dd>returns document with path <var>path</var> or <code>null</code>. 
 <br><dt><code>Editor.get_document_by_uri(path)</code><dd>returns document with uri <var>uri</var> or <code>null</code>. 
 <br><dt><code>Editor.open_files(files, window=null)</code><dd>open files. If <var>window</var> is given then open files in that window,
@@ -66,7 +69,9 @@ otherwise in an existing window.
 <br><dt><code>Editor.save(doc)</code><dd>save document. 
 <br><dt><code>Editor.save_as(doc, filename=null)</code><dd>save document as <var>filename</var>. If <var>filename</var> is not given then
 first ask user for new filename. 
-<br><dt><code>Editor.close(doc)</code><dd>close document.
+<br><dt><code>Editor.close(doc)</code><dd>close document. 
+<br><dt><code>Editor.close_documents(docs)</code><dd>close all documents in the list <var>docs</var>. 
+<br><dt><code>Editor.close_window(window)</code><dd>close window.
 
 </dl>
 

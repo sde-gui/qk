@@ -6,16 +6,6 @@
 
 @item Application.editor()
 returns Editor object.
-@item Application.active_window()
-returns current active window.
-@item Application.set_active_window(window)
-activates @param{window}.
-@item Application.active_document()
-returns current active document or @null{} if no documents are open.
-@item Application.active_view()
-returns current active document view or @null{} if no documents are open.
-@item Application.windows()
-returns a list of all editor windows.
 @item Application.quit()
 quit @medit{}.
 
@@ -45,6 +35,11 @@ returns list of all open documents
 returns list of all open document views
 @item Editor.windows()
 returns list of all document windows
+@item Editor.new_document(window=null)
+creates new document in specified window. If window is @null{} then
+the document is created in an existing window
+@item Editor.new_window()
+creates new document window
 @item Editor.get_document_by_path(path)
 returns document with path @param{path} or @null{}.
 @item Editor.get_document_by_uri(path)
@@ -77,6 +72,10 @@ save document as @param{filename}. If @param{filename} is not given then
 first ask user for new filename.
 @item Editor.close(doc)
 close document.
+@item Editor.close_documents(docs)
+close all documents in the list @param{docs}.
+@item Editor.close_window(window)
+close window.
 
 @end table
 

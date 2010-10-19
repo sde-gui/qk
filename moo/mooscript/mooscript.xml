@@ -1,13 +1,6 @@
 <classes>
   <class name='Application' singleton='1'>
     <method name='editor' retval='Editor'/>
-    <method name='active_view' retval='DocumentView'/>
-    <method name='active_document' retval='Document'/>
-    <method name='active_window' retval='DocumentWindow'/>
-    <method name='set_active_window'>
-      <param name='window' type='DocumentWindow'/>
-    </method>
-    <method name='windows' retval='list'/>
     <method name='quit'/>
   </class>
 
@@ -35,6 +28,9 @@
     <method name='get_document_by_uri' retval='Document'>
       <param name='uri' type='string'/>
     </method>
+
+    <method name='new_window' retval='DocumentWindow'/>
+    <method name='new_document' retval='Document' param-name='window' param-type='DocumentWindow' param-optional='1'/>
 
     <method name='new_file' retval='Document'>
       <param name='file' type='string' optional='1'/>
@@ -69,9 +65,10 @@
       <param name='doc' type='Document'/>
       <param name='filename' type='string' optional='1'/>
     </method>
-    <method name='close' retval='bool'>
-      <param name='doc' type='Document'/>
-    </method>
+
+    <method name='close' retval='bool' param-name='doc' param-type='Document'/>
+    <method name='close_documents' retval='bool' param-name='docs' param-type='list'/>
+    <method name='close_window' retval='bool' param-name='window' param-type='DocumentWindow'/>
 
     <signal name='document-save-before'>
       <param name='doc' type='Document'/>

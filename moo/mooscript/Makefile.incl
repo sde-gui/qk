@@ -1,10 +1,10 @@
 moo_sources +=					\
 	mooscript/mooscript-types.h		\
 	mooscript/mooscript-classes.h		\
+	mooscript/mooscript-classes-impl.cpp	\
 	mooscript/mooscript-classes.cpp		\
 	mooscript/mooscript-classes-util.h	\
 	mooscript/mooscript-classes-base.h	\
-	mooscript/mooscript-classes-impl.cpp	\
 	mooscript/mooscript.h			\
 	mooscript/mooscript.cpp			\
 	mooscript/mooscript-api.h		\

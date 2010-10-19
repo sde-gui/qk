@@ -1,4 +1,5 @@
 #include "mooscript-classes.h"
+#include "mooscript-classes-util.h"
 #include "mooapp/mooapp.h"
 #include "mooutils/mooutils-misc.h"
 #include <string.h>
@@ -156,41 +157,6 @@ Editor *Application::editor()
     return &Editor::get_instance();
 }
 
-/// @item Application.active_window()
-/// returns current active window.
-DocumentWindow *Application::active_window()
-{
-    return Editor::get_instance().active_window();
-}
-
-/// @item Application.set_active_window(window)
-/// activates @param{window}.
-void Application::set_active_window(DocumentWindow &window)
-{
-    return Editor::get_instance().set_active_window(window);
-}
-
-/// @item Application.active_document()
-/// returns current active document or @null{} if no documents are open.
-Document *Application::active_document()
-{
-    return Editor::get_instance().active_document();
-}
-
-/// @item Application.active_view()
-/// returns current active document view or @null{} if no documents are open.
-DocumentView *Application::active_view()
-{
-    return Editor::get_instance().active_view();
-}
-
-/// @item Application.windows()
-/// returns a list of all editor windows.
-VariantArray Application::windows()
-{
-    return Editor::get_instance().windows();
-}
-
 /// @item Application.quit()
 /// quit @medit{}.
 void Application::quit()
@@ -278,6 +244,21 @@ VariantArray Editor::windows()
 {
     GSList *windows = moo_editor_list_windows(moo_editor_instance());
     return wrap_gslist<MooEditWindow, DocumentWindow>(windows);
+}
+
+/// @item Editor.new_document(window=null)
+/// creates new document in specified window. If window is @null{} then
+/// the document is created in an existing window
+Document *Editor::new_document(DocumentWindow *window)
+{
+    return Document::wrap(moo_editor_new_doc(moo_editor_instance(), window ? window->gobj() : NULL));
+}
+
+/// @item Editor.new_window()
+/// creates new document window
+DocumentWindow *Editor::new_window()
+{
+    return DocumentWindow::wrap(moo_editor_new_window(moo_editor_instance()));
 }
 
 /// @item Editor.get_document_by_path(path)
@@ -430,6 +411,32 @@ bool Editor::save_as(Document &doc, const String &filename)
 bool Editor::close(Document &doc)
 {
     return moo_edit_close(doc.gobj(), TRUE);
+}
+
+/// @item Editor.close_documents(docs)
+/// close all documents in the list @param{docs}.
+bool Editor::close_documents(const VariantArray &arr)
+{
+    moo::Vector<MooEdit*> pvec;
+
+    for (int i = 0, c = arr.size(); i < c; ++i)
+        pvec.append(get_object_arg<Document>(arr[i], "doc").gobj());
+
+    GSList *docs = NULL;
+    for (int i = 0, c = pvec.size(); i < c; ++i)
+        docs = g_slist_prepend (docs, pvec[i]);
+    docs = g_slist_reverse (docs);
+
+    bool retval = moo_editor_close_docs (moo_editor_instance(), docs, TRUE);
+    g_slist_free (docs);
+    return retval;
+}
+
+/// @item Editor.close_window(window)
+/// close window.
+bool Editor::close_window(DocumentWindow &window)
+{
+    return moo_editor_close_window(moo_editor_instance(), window.gobj(), TRUE);
 }
 
 ///

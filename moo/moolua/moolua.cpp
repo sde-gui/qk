@@ -66,6 +66,49 @@ lua_check_utf8string (lua_State  *L,
 }
 
 
+static int
+cfunc_sleep (lua_State *L)
+{
+    double sec = luaL_checknumber (L, 1);
+    g_usleep (G_USEC_PER_SEC * sec);
+    return 0;
+}
+
+static gboolean
+quit_main_loop (GMainLoop *main_loop)
+{
+    g_main_loop_quit (main_loop);
+    return FALSE;
+}
+
+static int
+cfunc_spin_main_loop (lua_State *L)
+{
+    double sec = luaL_checknumber (L, 1);
+    g_return_val_if_fail (sec >= 0, 0);
+
+    GMainLoop *main_loop = g_main_loop_new (NULL, FALSE);
+    g_timeout_add (sec * 1000, (GSourceFunc) quit_main_loop, main_loop);
+    g_main_loop_run (main_loop);
+    g_main_loop_unref (main_loop);
+
+    return 0;
+}
+
+static const luaL_Reg moo_utils_funcs[] = {
+  { "sleep", cfunc_sleep },
+  { "spin_main_loop", cfunc_spin_main_loop },
+  { NULL, NULL }
+};
+
+int
+luaopen_moo_utils (lua_State *L)
+{
+    luaL_register (L, "_moo_utils", moo_utils_funcs);
+    return 1;
+}
+
+
 void
 lua_addpath (lua_State  *L,
              char      **dirs,
