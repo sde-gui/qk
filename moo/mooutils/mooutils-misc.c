@@ -2559,8 +2559,8 @@ moo_test_mooutils_misc (void)
 {
     MooTestSuite *suite;
 
-    suite = moo_test_suite_new ("mooutils/mooutils-misc.c", NULL, NULL, NULL);
+    suite = moo_test_suite_new ("mooutils-misc", "mooutils/mooutils-misc.c", NULL, NULL, NULL);
 
-    moo_test_suite_add_test (suite, "test of moo_splitlines()",
+    moo_test_suite_add_test (suite, "moo_splitlines", "test of moo_splitlines()",
                              (MooTestFunc) test_moo_splitlines, NULL);
 }

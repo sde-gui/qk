@@ -93,25 +93,16 @@ moo_test_run_lua_script (lua_State  *L,
 }
 
 static void
-moo_test_run_lua_file (const char *basename,
-                       void (*setup_lua) (lua_State*),
-                       void (*cleanup_lua) (lua_State*))
+moo_test_run_lua_file (const char *basename)
 {
     static char *contents;
 
     if ((contents = moo_test_load_data_file (basename)))
     {
-        lua_State *L;
+        lua_State *L = medit_lua_new (NULL, false);
+        moo_return_if_fail (L != NULL);
 
-        L = lua_open ();
-        luaL_openlibs (L);
-
-        {
-            char **dirs;
-            dirs = moo_get_data_subdirs ("lua");
-            lua_addpath (L, dirs, g_strv_length (dirs));
-            g_strfreev (dirs);
-        }
+        g_assert (lua_gettop (L) == 0);
 
         {
             char *testdir = g_build_filename (moo_test_get_data_dir (), "lua", (char*) NULL);
@@ -119,15 +110,14 @@ moo_test_run_lua_file (const char *basename,
             g_free (testdir);
         }
 
-        if (setup_lua)
-            setup_lua (L);
+        g_assert (lua_gettop (L) == 0);
 
         moo_test_run_lua_script (L, contents, basename);
+        lua_pop (L, lua_gettop (L));
 
-        if (cleanup_lua)
-            cleanup_lua (L);
+        g_assert (lua_gettop (L) == 0);
 
-        lua_close (L);
+        medit_lua_free (L);
     }
 
     g_free (contents);

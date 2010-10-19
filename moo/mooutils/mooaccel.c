@@ -704,6 +704,8 @@ _moo_accel_normalize (const char *accel)
 }
 
 
+#define TEST_PREFS_KEY_PREFIX "FooBar/"
+
 static void
 test_moo_accel_register (void)
 {
@@ -721,8 +723,8 @@ test_moo_accel_register (void)
     };
 
     PA bad_accels[] = {
-        { "<Something>/Test1/a", NULL, "" },
-        { "<Something>/Test1/b", "<dd", "" },
+        { "<Something>/Foobar/aa", NULL, "" },
+        { "<Something>/Foobar/bb", "<dd", "" },
     };
 
     PA cases[] = {
@@ -935,14 +937,46 @@ test_moo_get_accel_label (void)
     setlocale (LC_ALL, "");
 }
 
+static void
+delete_prefs_keys (void)
+{
+    GSList *keys = moo_prefs_list_keys (MOO_PREFS_RC);
+    while (keys)
+    {
+        char *key = keys->data;
+
+        if (g_str_has_prefix (key, "Shortcuts/Foobar/"))
+            moo_prefs_delete_key (key);
+
+        g_free (key);
+        keys = g_slist_delete_link (keys, keys);
+    }
+}
+
+static gboolean
+test_suite_init (void)
+{
+    delete_prefs_keys ();
+    return TRUE;
+}
+
+static void
+test_suite_cleanup (void)
+{
+    delete_prefs_keys ();
+}
+
 void
 moo_test_mooaccel (void)
 {
-    MooTestSuite *suite = moo_test_suite_new ("mooutils/mooaccel.c", NULL, NULL, NULL);
-    moo_test_suite_add_test (suite, "test of _moo_get_accel_label()",
+    MooTestSuite *suite = moo_test_suite_new ("mooaccel", "mooutils/mooaccel.c",
+                                              (MooTestSuiteInit) test_suite_init,
+                                              (MooTestSuiteCleanup) test_suite_cleanup,
+                                              NULL);
+    moo_test_suite_add_test (suite, "_moo_get_accel_label", "test of _moo_get_accel_label()",
                              (MooTestFunc) test_moo_get_accel_label, NULL);
-    moo_test_suite_add_test (suite, "test of _moo_accel_normalize()",
+    moo_test_suite_add_test (suite, "_moo_accel_normalize", "test of _moo_accel_normalize()",
                              (MooTestFunc) test_moo_accel_normalize, NULL);
-    moo_test_suite_add_test (suite, "test of _moo_accel_register() and friends",
+    moo_test_suite_add_test (suite, "_moo_accel_register", "test of _moo_accel_register() and friends",
                              (MooTestFunc) test_moo_accel_register, NULL);
 }

@@ -25,53 +25,14 @@ add_tests (void)
 }
 
 static int
-unit_tests_main (int argc, char *argv[])
+unit_tests_main (MooTestOptions opts, char **tests)
 {
     const char *data_dir;
-    GOptionContext *ctx;
-    GOptionGroup *grp;
-    GError *error = NULL;
-    MooTestOptions opts = 0;
-    gboolean list_only = FALSE;
-
-    GOptionEntry options[] = {
-        { "list", 0, 0, G_OPTION_ARG_NONE, &list_only, "List available tests", NULL },
-        { NULL, 0, 0, 0, NULL, NULL, NULL }
-    };
-
-    init_mem_stuff ();
-    g_thread_init (NULL);
-    g_set_prgname ("run-tests");
 
     data_dir = MOO_UNIT_TEST_DATA_DIR;
 
-    grp = g_option_group_new ("run-tests", "run-tests", "run-tests", NULL, NULL);
-    g_option_group_add_entries (grp, options);
-    ctx = g_option_context_new ("[TEST_SUITE]");
-    g_option_context_set_main_group (ctx, grp);
-    g_option_context_add_group (ctx, gtk_get_option_group (TRUE));
-
-    if (!g_option_context_parse (ctx, &argc, &argv, &error))
-    {
-        g_printerr ("%s\n", error->message);
-        exit (EXIT_FAILURE);
-    }
-
-#if !GLIB_CHECK_VERSION(2,8,0)
-    g_set_prgname ("run-tests");
-#endif
-
-    if (argc > 2)
-    {
-        g_printerr ("invalid arguments\n");
-        exit (EXIT_FAILURE);
-    }
-
-    if (list_only)
-        opts |= MOO_TEST_LIST_ONLY;
-
     add_tests ();
-    moo_test_run_tests (argv[1], data_dir, opts);
+    moo_test_run_tests (tests, data_dir, opts);
 
     moo_test_cleanup ();
 
@@ -85,4 +46,10 @@ unit_tests_main (int argc, char *argv[])
 #endif
 
     return moo_test_get_result () ? 0 : 1;
+}
+
+static void
+list_unit_tests (void)
+{
+    unit_tests_main (MOO_TEST_LIST_ONLY, NULL);
 }

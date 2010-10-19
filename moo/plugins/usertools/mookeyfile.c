@@ -960,7 +960,7 @@ moo_test_key_file (void)
 {
     MooTestSuite *suite;
 
-    suite = moo_test_suite_new ("mooedit/mookeyfile.c", NULL, NULL, NULL);
+    suite = moo_test_suite_new ("MooKeyFile", "MooKeyFile test suite", NULL, NULL, NULL);
 
-    moo_test_suite_add_test (suite, "MooKeyFile", (MooTestFunc) test_key_file, NULL);
+    moo_test_suite_add_test (suite, "MooKeyFile", "MooKeyFile test", (MooTestFunc) test_key_file, NULL);
 }

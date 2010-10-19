@@ -56,6 +56,9 @@ static struct MeditOpts {
     const char *geometry;
     gboolean show_version;
     const char *debug;
+    gboolean ut;
+    gboolean ut_list;
+    char **ut_tests;
 } medit_opts = { -1, -1 };
 
 #include "parse.h"
@@ -162,6 +165,10 @@ static GOptionEntry medit_options[] = {
             /* "WIDTHxHEIGHT[+X+Y]" part in --geometry=WIDTHxHEIGHT[+X+Y] */ N_("WIDTHxHEIGHT[+X+Y]") },
     { "version", 0, 0, G_OPTION_ARG_NONE, &medit_opts.show_version,
             /* help message for command line option --version */ N_("Show version information and exit"), NULL },
+    { "ut", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.ut,
+            "Run unit tests", NULL },
+    { "ut-list", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.ut_list,
+            "List unit tests", NULL },
     { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &medit_opts.files,
             NULL, /* "FILES" part in "medit [OPTION...] [FILES]" */ N_("FILES") },
     { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
@@ -174,6 +181,18 @@ post_parse_func (void)
     {
         g_print ("medit " MOO_DISPLAY_VERSION "\n");
         exit (0);
+    }
+
+    if (medit_opts.ut_list)
+    {
+        list_unit_tests ();
+        exit (0);
+    }
+
+    if (medit_opts.ut)
+    {
+        medit_opts.ut_tests = medit_opts.files;
+        medit_opts.files = NULL;
     }
 
     if (medit_opts.pid > 0 && medit_opts.instance_name)
@@ -509,6 +528,15 @@ hookup_synaptics_touchpad (void)
 
 #endif // GDK_WINDOWING_WIN32
 
+static gboolean
+unit_test_func (void)
+{
+    MooTestOptions opts = 0;
+    unit_tests_main (opts, medit_opts.ut_tests);
+    moo_app_quit (moo_app_get_instance ());
+    return FALSE;
+}
+
 static int
 medit_main (int argc, char *argv[])
 {
@@ -549,6 +577,13 @@ medit_main (int argc, char *argv[])
 
     run_input = !medit_opts.new_app || medit_opts.instance_name ||
                  medit_opts.use_session == 1 || medit_opts.project_mode;
+
+    if (medit_opts.ut)
+    {
+        new_instance = TRUE;
+        run_input = FALSE;
+        medit_opts.use_session = FALSE;
+    }
 
     if (medit_opts.pid > 0)
     {
@@ -646,6 +681,9 @@ medit_main (int argc, char *argv[])
     free_files (files, n_files);
     g_option_context_free (ctx);
 
+    if (medit_opts.ut)
+        g_timeout_add (10, (GSourceFunc) unit_test_func, NULL);
+
     retval = moo_app_run (app);
     gdk_threads_leave ();
 
@@ -657,14 +695,7 @@ medit_main (int argc, char *argv[])
 int
 main (int argc, char *argv[])
 {
-    if (argc > 1 && strcmp (argv[1], "--run-unit-tests") == 0)
-    {
-        memmove (argv + 1, argv + 2, (argc - 1) * sizeof (char*));
-        argc -= 1;
-        return unit_tests_main (argc, argv);
-    }
-    else
-        return medit_main (argc, argv);
+    return medit_main (argc, argv);
 }
 
 #if defined(__WIN32__) && !defined(__GNUC__)
@@ -677,7 +708,7 @@ WinMain (HINSTANCE hInstance,
          char     *lpszCmdLine,
          int       nCmdShow)
 {
-	return main (__argc, __argv);
+    return main (__argc, __argv);
 }
 
 #endif

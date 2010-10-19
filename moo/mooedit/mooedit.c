@@ -2178,13 +2178,6 @@ test_encodings (void)
 static gboolean
 test_suite_init (G_GNUC_UNUSED gpointer data)
 {
-    /* try to avoid accidental deletion of good stuff */
-    if (strcmp (g_get_prgname(), "run-tests") != 0)
-    {
-        g_critical ("fix the program name!");
-        return FALSE;
-    }
-
     test_data.working_dir = g_build_filename (moo_test_get_working_dir (),
                                               "editor-work", (char*)0);
     test_data.encodings_dir = g_build_filename (moo_test_get_data_dir (),
@@ -2199,25 +2192,23 @@ test_suite_init (G_GNUC_UNUSED gpointer data)
         return FALSE;
     }
 
-    moo_editor_create_instance (FALSE);
     return TRUE;
 }
 
 static void
 test_suite_cleanup (G_GNUC_UNUSED gpointer data)
 {
-    GError *error = NULL;
     char *recent_file;
-    char *cache_dir;
     MooEditor *editor;
+    GError *error = NULL;
 
-//     if (!_moo_remove_dir (test_data.working_dir, TRUE, &error))
-//     {
-//         g_critical ("could not remove directory '%s': %s",
-//                     test_data.working_dir, error->message);
-//         g_error_free (error);
-//         error = NULL;
-//     }
+    if (!_moo_remove_dir (test_data.working_dir, TRUE, &error))
+    {
+        g_critical ("could not remove directory '%s': %s",
+                    test_data.working_dir, error->message);
+        g_error_free (error);
+        error = NULL;
+    }
 
     g_free (test_data.working_dir);
     g_free (test_data.encodings_dir);
@@ -2225,23 +2216,21 @@ test_suite_cleanup (G_GNUC_UNUSED gpointer data)
     test_data.encodings_dir = NULL;
 
     editor = moo_editor_instance ();
-    moo_editor_close_all (editor, FALSE, FALSE);
+//     moo_editor_close_all (editor, FALSE, FALSE);
     recent_file = _md_history_mgr_get_filename (_moo_editor_get_history_mgr (editor));
-    g_object_unref (moo_editor_instance ());
 
     if (!g_file_test (recent_file, G_FILE_TEST_EXISTS))
         g_critical ("recent file %s does not exist", recent_file);
 
-    cache_dir = moo_get_user_cache_dir ();
-    if (!_moo_remove_dir (cache_dir, TRUE, &error))
-    {
-        g_critical ("could not remove directory '%s': %s",
-                    cache_dir, error->message);
-        g_error_free (error);
-        error = NULL;
-    }
+//     cache_dir = moo_get_user_cache_dir ();
+//     if (!_moo_remove_dir (cache_dir, TRUE, &error))
+//     {
+//         g_critical ("could not remove directory '%s': %s",
+//                     cache_dir, error->message);
+//         g_error_free (error);
+//         error = NULL;
+//     }
 
-    g_free (cache_dir);
     g_free (recent_file);
 }
 
@@ -2249,9 +2238,10 @@ void
 moo_test_editor (void)
 {
     MooTestSuite *suite = moo_test_suite_new ("Editor",
+                                              "Editor tests",
                                               test_suite_init,
                                               test_suite_cleanup,
                                               NULL);
-    moo_test_suite_add_test (suite, "basic", (MooTestFunc) test_basic, NULL);
-    moo_test_suite_add_test (suite, "encodings", (MooTestFunc) test_encodings, NULL);
+    moo_test_suite_add_test (suite, "basic", "basic editor functionality", (MooTestFunc) test_basic, NULL);
+    moo_test_suite_add_test (suite, "encodings", "character encoding handling", (MooTestFunc) test_encodings, NULL);
 }

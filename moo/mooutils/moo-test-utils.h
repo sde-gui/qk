@@ -31,7 +31,8 @@ typedef struct {
 } MooTestEnv;
 
 typedef enum {
-    MOO_TEST_LIST_ONLY = 1 << 0
+    MOO_TEST_LIST_ONLY   = 1 << 0,
+    MOO_TEST_FATAL_ERROR = 1 << 1
 } MooTestOptions;
 
 typedef struct MooTestSuite MooTestSuite;
@@ -40,15 +41,17 @@ typedef void     (*MooTestSuiteCleanup) (gpointer    data);
 typedef void     (*MooTestFunc)         (MooTestEnv *env);
 
 MooTestSuite    *moo_test_suite_new         (const char         *name,
+                                             const char         *description,
                                              MooTestSuiteInit    init_func,
                                              MooTestSuiteCleanup cleanup_func,
                                              gpointer            data);
 void             moo_test_suite_add_test    (MooTestSuite       *ts,
                                              const char         *name,
+                                             const char         *description,
                                              MooTestFunc         test_func,
                                              gpointer            data);
 
-void             moo_test_run_tests         (const char         *single_test,
+void             moo_test_run_tests         (char              **tests,
                                              const char         *data_dir,
                                              MooTestOptions      opts);
 void             moo_test_cleanup           (void);

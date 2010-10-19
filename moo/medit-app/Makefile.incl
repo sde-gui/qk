@@ -1,5 +1,8 @@
 bin_PROGRAMS = medit
 
+EXTRA_DIST += medit-app/run-tests-am.sh
+TESTS = medit-app/run-tests-am.sh
+
 AM_CFLAGS += -DMOO_UNIT_TEST_DATA_DIR=\"${MOO_TOP_SRCDIR}/moo/medit-app/data\"
 
 medit_SOURCES =				\

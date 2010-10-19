@@ -427,8 +427,8 @@ moo_test_mooutils_win32 (void)
 {
     MooTestSuite *suite;
 
-    suite = moo_test_suite_new ("mooutils/mooutils-win32.c", NULL, NULL, NULL);
-    moo_test_suite_add_test (suite, "test of _moo_win32_lame_parse_cmd_line()",
+    suite = moo_test_suite_new ("mooutils-win32", "win32 utility functions", NULL, NULL, NULL);
+    moo_test_suite_add_test (suite, "_moo_win32_lame_parse_cmd_line", "test of _moo_win32_lame_parse_cmd_line()",
                              (MooTestFunc) test_moo_win32_lame_parse_cmd_line,
                              NULL);
 }

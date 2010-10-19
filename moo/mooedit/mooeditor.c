@@ -369,6 +369,9 @@ moo_editor_finalize (GObject *object)
 {
     MooEditor *editor = MOO_EDITOR (object);
 
+    if (editor_instance == editor)
+        editor_instance = NULL;
+
     if (editor->priv->ui_xml)
         g_object_unref (editor->priv->ui_xml);
     if (editor->priv->history)

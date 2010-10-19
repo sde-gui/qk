@@ -1127,12 +1127,12 @@ moo_test_mooutils_fs (void)
 {
     MooTestSuite *suite;
 
-    suite = moo_test_suite_new ("mooutils/mooutils-fs.c", NULL, NULL, NULL);
+    suite = moo_test_suite_new ("mooutils-fs", "mooutils/mooutils-fs.c", NULL, NULL, NULL);
 
-    moo_test_suite_add_test (suite, "test of _moo_normalize_file_path()",
+    moo_test_suite_add_test (suite, "_moo_normalize_file_path", "test of _moo_normalize_file_path()",
                              (MooTestFunc) test_normalize_file_path, NULL);
 #ifndef __WIN32__
-    moo_test_suite_add_test (suite, "test of normalize_full_path_win32()",
+    moo_test_suite_add_test (suite, "normalize_full_path_win32", "test of normalize_full_path_win32()",
                              (MooTestFunc) test_normalize_file_path_win32, NULL);
 #endif
 }

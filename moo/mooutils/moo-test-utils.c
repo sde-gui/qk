@@ -26,6 +26,7 @@ typedef struct {
 
 typedef struct {
     char *name;
+    char *description;
     MooTestFunc func;
     gpointer data;
     GSList *failed_asserts;
@@ -33,6 +34,7 @@ typedef struct {
 
 struct MooTestSuite {
     char *name;
+    char *description;
     GSList *tests;
     MooTestSuiteInit init_func;
     MooTestSuiteCleanup cleanup_func;
@@ -81,6 +83,7 @@ test_assert_info_free (TestAssertInfo *ai)
 
 MooTestSuite *
 moo_test_suite_new (const char         *name,
+                    const char         *description,
                     MooTestSuiteInit    init_func,
                     MooTestSuiteCleanup cleanup_func,
                     gpointer            data)
@@ -91,6 +94,7 @@ moo_test_suite_new (const char         *name,
 
     ts = g_new0 (MooTestSuite, 1);
     ts->name = g_strdup (name);
+    ts->description = g_strdup (description);
     ts->init_func = init_func;
     ts->cleanup_func = cleanup_func;
     ts->data = data;
@@ -104,6 +108,7 @@ moo_test_suite_new (const char         *name,
 void
 moo_test_suite_add_test (MooTestSuite *ts,
                          const char   *name,
+                         const char   *description,
                          MooTestFunc   test_func,
                          gpointer      data)
 {
@@ -115,6 +120,7 @@ moo_test_suite_add_test (MooTestSuite *ts,
 
     test = g_new0 (MooTest, 1);
     test->name = g_strdup (name);
+    test->description = g_strdup (description);
     test->func = test_func;
     test->data = data;
 
@@ -134,10 +140,12 @@ moo_test_suite_free (MooTestSuite *ts)
                              (GFunc) test_assert_info_free,
                              NULL);
             g_slist_free (test->failed_asserts);
+            g_free (test->description);
             g_free (test->name);
             g_free (test);
         }
         g_slist_free (ts->tests);
+        g_free (ts->description);
         g_free (ts->name);
         g_free (ts);
     }
@@ -153,7 +161,7 @@ run_test (MooTest        *test,
 
     if (opts & MOO_TEST_LIST_ONLY)
     {
-        fprintf (stdout, "  Test: %s\n", test->name);
+        fprintf (stdout, "  Test: %s - %s\n", test->name, test->description);
         return TRUE;
     }
 
@@ -235,52 +243,64 @@ find_test (const char    *name,
            MooTest      **test_p)
 {
     GSList *l;
+    char **pieces;
+    const char *suite_name = NULL;
+    const char *test_name = NULL;
+    gboolean retval = FALSE;
+
+    g_return_val_if_fail (name != NULL, FALSE);
+
+    pieces = g_strsplit (name, "/", 2);
+    g_return_val_if_fail (pieces != NULL && pieces[0] != NULL, FALSE);
+
+    suite_name = pieces[0];
+    test_name = pieces[1];
 
     for (l = registry.test_suites; l != NULL; l = l->next)
     {
-        int idx;
         MooTestSuite *ts = l->data;
+        GSList *tl;
 
-        if (!g_str_has_prefix (name, ts->name))
+        if (strcmp (ts->name, suite_name) != 0)
             continue;
 
-        *ts_p = ts;
+        if (!test_name)
+        {
+            *ts_p = ts;
+            *test_p = NULL;
+            retval = TRUE;
+            goto out;
+        }
 
-        name += strlen (ts->name);
+        for (tl = ts->tests; tl != NULL; tl = tl->next)
+        {
+            MooTest *test = tl->data;
+            if (strcmp (test->name, test_name) == 0)
+            {
+                *ts_p = ts;
+                *test_p = NULL;
+                retval = TRUE;
+                goto out;
+            }
+        }
 
-        if (!name[0])
-            return TRUE;
-        else if (!name[1])
-            return FALSE;
-
-        idx = strtol (name + 1, NULL, 10);
-        *test_p = g_slist_nth_data (ts->tests, idx - 1);
-
-        return *test_p != NULL;
+        break;
     }
 
-    return FALSE;
+out:
+    g_strfreev (pieces);
+    return retval;
 }
 
 void
-moo_test_run_tests (const char     *name,
+moo_test_run_tests (char          **tests,
                     const char     *data_dir,
                     MooTestOptions  opts)
 {
-    GSList *l;
-    MooTestSuite *single_ts = NULL;
-    MooTest *single_test = NULL;
-
     if (!(opts & MOO_TEST_LIST_ONLY))
     {
         g_return_if_fail (data_dir != NULL);
         g_return_if_fail (g_file_test (data_dir, G_FILE_TEST_IS_DIR));
-    }
-
-    if (name && !find_test (name, &single_ts, &single_test))
-    {
-        g_printerr ("could not find test %s", name);
-        exit (EXIT_FAILURE);
     }
 
     g_free (registry.data_dir);
@@ -288,11 +308,29 @@ moo_test_run_tests (const char     *name,
 
     fprintf (stdout, "\n");
 
-    if (single_ts)
-        run_suite (single_ts, single_test, opts);
+    if (tests && *tests)
+    {
+        char *name;
+        while ((name = *tests++))
+        {
+            MooTestSuite *single_ts = NULL;
+            MooTest *single_test = NULL;
+
+            if (!find_test (name, &single_ts, &single_test))
+            {
+                g_printerr ("could not find test %s", name);
+                exit (EXIT_FAILURE);
+            }
+
+            run_suite (single_ts, single_test, opts);
+        }
+    }
     else
+    {
+        GSList *l;
         for (l = registry.test_suites; l != NULL; l = l->next)
             run_suite (l->data, NULL, opts);
+    }
 
     fprintf (stdout, "\n");
 

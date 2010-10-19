@@ -698,8 +698,8 @@ moo_test_moo_file_writer (void)
 {
     MooTestSuite *suite;
 
-    suite = moo_test_suite_new ("MooFileWriter", NULL, NULL, NULL);
+    suite = moo_test_suite_new ("MooFileWriter", "MooFileWriter tests", NULL, NULL, NULL);
 
-    moo_test_suite_add_test (suite, "test of MooFileWriter",
+    moo_test_suite_add_test (suite, "MooFileWriter", "MooFileWriter tests",
                              (MooTestFunc) test_moo_file_writer, NULL);
 }

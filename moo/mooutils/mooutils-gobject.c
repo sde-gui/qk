@@ -1182,9 +1182,9 @@ moo_test_gobject (void)
 {
     MooTestSuite *suite;
 
-    suite = moo_test_suite_new ("mooutils/mooutils-gobject.c", NULL, NULL, NULL);
+    suite = moo_test_suite_new ("mooutils-gobject", "mooutils/mooutils-gobject.c", NULL, NULL, NULL);
 
-    moo_test_suite_add_test (suite, "test of converting values", (MooTestFunc) test_misc, NULL);
+    moo_test_suite_add_test (suite, "convert", "test of converting values", (MooTestFunc) test_misc, NULL);
 }
 
 
