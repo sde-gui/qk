@@ -17,20 +17,6 @@ public:
     virtual Variant get_return_value() = 0;
 };
 
-class AccumulatorVoid : public Accumulator
-{
-public:
-    bool add_value(const Variant &)
-    {
-        return true;
-    }
-
-    Variant get_return_value()
-    {
-        return Variant();
-    }
-};
-
 class AccumulatorBool : public Accumulator
 {
 public:
@@ -61,7 +47,7 @@ private:
     bool m_stop;
 };
 
-void emit_signal(Object &obj, const char *name, const ArgArray &args, Accumulator &acc) throw();
+void emit_signal(Object &obj, const char *name, const ArgArray &args, Accumulator *acc = 0) throw();
 
 } // namespace mom
 
@@ -69,8 +55,8 @@ void emit_signal(Object &obj, const char *name, const ArgArray &args, Accumulato
 
 G_BEGIN_DECLS
 
-gboolean mom_event_editor_save_before (MooEdit *doc, GFile *file, const char *encoding);
-void mom_event_editor_save_after (MooEdit *doc);
+gboolean mom_signal_editor_save_before (MooEdit *doc, GFile *file, const char *encoding);
+void mom_signal_editor_save_after (MooEdit *doc);
 
 G_END_DECLS
 

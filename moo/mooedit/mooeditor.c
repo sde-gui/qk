@@ -2073,7 +2073,7 @@ do_save (MooEditor    *editor,
     gboolean add_newline;
     GError *error_here = NULL;
 
-    if (mom_event_editor_save_before (doc, file, encoding))
+    if (mom_signal_editor_save_before (doc, file, encoding))
         return FALSE;
 
     strip = moo_edit_config_get_bool (doc->config, "strip");
@@ -2107,7 +2107,7 @@ do_save (MooEditor    *editor,
         return FALSE;
     }
 
-    mom_event_editor_save_after (doc);
+    mom_signal_editor_save_after (doc);
 
     add_recent_file (editor, file);
 
