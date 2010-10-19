@@ -1175,8 +1175,18 @@ moo_encodings_menu_action_create_menu_item (GtkAction *gtkaction)
 }
 
 static void
+moo_encodings_menu_action_finalize (GObject *object)
+{
+    MooEncodingsMenuAction *action = MOO_ENCODINGS_MENU_ACTION (object);
+    if (action->update_idle)
+        g_source_remove (action->update_idle);
+    G_OBJECT_CLASS (moo_encodings_menu_action_parent_class)->finalize (object);
+}
+
+static void
 moo_encodings_menu_action_class_init (MooEncodingsMenuActionClass *klass)
 {
+    G_OBJECT_CLASS(klass)->finalize = moo_encodings_menu_action_finalize;
     GTK_ACTION_CLASS (klass)->create_menu_item = moo_encodings_menu_action_create_menu_item;
 }
 
