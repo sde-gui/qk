@@ -33,3 +33,6 @@ plat/win32/gtk-win/debug/
 plat/win32/gtk-win/release/
 plat/win32/gtk-win/bdist-debug/
 plat/win32/gtk-win/bdist-release/
+
+moo/mooscript/mooscript-classes.cpp
+moo/mooscript/mooscript-classes.h
