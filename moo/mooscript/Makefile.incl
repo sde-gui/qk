@@ -32,5 +32,5 @@ mooscript/mooscript.stamp: $(MOO_SCRIPT_PARSER_FILES) mooscript/mooscript.xml
 	$(AM_V_at)cmp -s $(srcdir)/mooscript/mooscript-classes.cpp.tmp $(srcdir)/mooscript/mooscript-classes.cpp || mv $(srcdir)/mooscript/mooscript-classes.cpp.tmp $(srcdir)/mooscript/mooscript-classes.cpp
 	$(AM_V_at)rm -f $(srcdir)/mooscript/mooscript-classes.h.tmp $(srcdir)/mooscript/mooscript-classes.cpp.tmp
 	$(AM_V_at)$(MKDIR_P) mooscript
-	echo stamp > mooscript/mooscript.stamp
+	$(AM_V_at)echo stamp > mooscript/mooscript.stamp
 endif
