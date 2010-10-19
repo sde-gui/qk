@@ -36,3 +36,7 @@ plat/win32/gtk-win/bdist-release/
 
 moo/mooscript/mooscript-classes.cpp
 moo/mooscript/mooscript-classes.h
+doc/help/*.html
+doc/man-medit.t2t
+doc/medit.texi
+doc/mooscript.texi
