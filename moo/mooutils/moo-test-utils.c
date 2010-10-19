@@ -278,7 +278,7 @@ find_test (const char    *name,
             if (strcmp (test->name, test_name) == 0)
             {
                 *ts_p = ts;
-                *test_p = NULL;
+                *test_p = test;
                 retval = TRUE;
                 goto out;
             }
