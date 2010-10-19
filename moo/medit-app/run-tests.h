@@ -37,7 +37,7 @@ unit_tests_main (MooTestOptions opts, char **tests)
     moo_test_cleanup ();
 
 #ifdef __WIN32__
-    if (!g_getenv ("WINESERVER") && !list_only)
+    if (!g_getenv ("WINESERVER") && !(opts & MOO_TEST_LIST_ONLY))
     {
         printf ("Done, press Enter...");
         fflush (stdout);
