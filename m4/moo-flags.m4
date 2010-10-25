@@ -1,13 +1,12 @@
 AC_DEFUN([_MOO_AC_CHECK_C_COMPILER_OPTIONS],[
   AC_LANG_PUSH([C])
   for opt in $1; do
-    AC_MSG_CHECKING(whether C compiler accepts $opt)
     save_CFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS $opt"
     if test "x$MOO_DEV_MODE" = "xyes"; then
       CFLAGS="-Werror $CFLAGS"
     fi
-    AC_TRY_COMPILE([],[],[MOO_CFLAGS="$MOO_CFLAGS $opt"; AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)])
+    AC_TRY_COMPILE([],[],[MOO_CFLAGS="$MOO_CFLAGS $opt"],[:])
     CFLAGS="$save_CFLAGS"
   done
   AC_LANG_POP([C])
@@ -16,13 +15,12 @@ AC_DEFUN([_MOO_AC_CHECK_C_COMPILER_OPTIONS],[
 AC_DEFUN([_MOO_AC_CHECK_CXX_COMPILER_OPTIONS],[
   AC_LANG_PUSH([C++])
   for opt in $1; do
-    AC_MSG_CHECKING(whether C++ compiler accepts $opt)
     save_CXXFLAGS="$CXXFLAGS"
     CXXFLAGS="$CXXFLAGS $opt"
     if test "x$MOO_DEV_MODE" = "xyes"; then
       CXXFLAGS="-Werror $CXXFLAGS"
     fi
-    AC_TRY_COMPILE([],[],[MOO_CXXFLAGS="$MOO_CXXFLAGS $opt"; AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)])
+    AC_TRY_COMPILE([],[],[MOO_CXXFLAGS="$MOO_CXXFLAGS $opt"],[:])
     CXXFLAGS="$save_CXXFLAGS"
   done
   AC_LANG_POP([C++])
