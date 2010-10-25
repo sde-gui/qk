@@ -39,4 +39,5 @@ moo/mooscript/mooscript-classes.h
 doc/help/*.html
 doc/man-medit.t2t
 doc/medit.texi
+doc/medit.1
 doc/mooscript.texi
