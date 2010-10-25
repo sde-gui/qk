@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-06 14:18-0700\n"
+"POT-Creation-Date: 2010-10-24 23:49-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,108 +19,98 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #. error message for wrong commmand line
-#: ../moo/medit-app/main.c:107
+#: ../moo/medit-app/main.c:114
 #, c-format
 msgid "Invalid value '%s' for option %s"
 msgstr ""
 
 #. help message for command line option --new-app
-#: ../moo/medit-app/main.c:114
+#: ../moo/medit-app/main.c:121
 msgid "Run new instance of application"
 msgstr ""
 
 #. help message for command line option --use-session
-#: ../moo/medit-app/main.c:120
+#: ../moo/medit-app/main.c:127
 msgid "Load and save session"
 msgstr ""
 
 #. help message for command line option --pid=PID
-#: ../moo/medit-app/main.c:126
+#: ../moo/medit-app/main.c:133
 msgid "Use existing instance with process id PID"
 msgstr ""
 
 #. "PID" part in "--pid=PID"
-#: ../moo/medit-app/main.c:127
+#: ../moo/medit-app/main.c:134
 msgid "PID"
 msgstr ""
 
 #. help message for command line option --app-name=NAME
-#: ../moo/medit-app/main.c:129
+#: ../moo/medit-app/main.c:136
 msgid "Set instance name to NAME if it's not already running"
 msgstr ""
 
 #. "NAME" part in "--app-name=NAME"
-#: ../moo/medit-app/main.c:130
+#: ../moo/medit-app/main.c:137
 msgid "NAME"
 msgstr ""
 
 #. help message for command line option --new-window
-#: ../moo/medit-app/main.c:132
+#: ../moo/medit-app/main.c:139
 msgid "Open file(s) in a new window"
 msgstr ""
 
 #. help message for command line option --new-tab
-#: ../moo/medit-app/main.c:134
+#: ../moo/medit-app/main.c:141
 msgid "Open file(s) in a new tab"
 msgstr ""
 
 #. help message for command line option --line=LINE
-#: ../moo/medit-app/main.c:140
+#: ../moo/medit-app/main.c:147
 msgid "Open file and position cursor on line LINE"
 msgstr ""
 
 #. "LINE" part in --line=LINE
-#: ../moo/medit-app/main.c:141
+#: ../moo/medit-app/main.c:148
 msgid "LINE"
 msgstr ""
 
 #. help message for command line option --encoding=ENCODING
-#: ../moo/medit-app/main.c:143
+#: ../moo/medit-app/main.c:150
 msgid "Use provided character encoding"
 msgstr ""
 
 #. "ENCODING" part in --encoding=ENCODING
-#: ../moo/medit-app/main.c:144
+#: ../moo/medit-app/main.c:151
 msgid "ENCODING"
 msgstr ""
 
 #. help message for command line option --reload
-#: ../moo/medit-app/main.c:146
+#: ../moo/medit-app/main.c:153
 msgid "Automatically reload file if it was modified on disk"
 msgstr ""
 
-#. help message for command line option --exec CODE
-#: ../moo/medit-app/main.c:154
-msgid "Execute python code in an existing instance"
+#. help message for command line option --geometry=WIDTHxHEIGHT[+X+Y]
+#: ../moo/medit-app/main.c:165
+msgid "Default window size and position"
 msgstr ""
 
-#. "CODE" part in --exec CODE
-#: ../moo/medit-app/main.c:155
-msgid "CODE"
-msgstr ""
-
-#. help message for command line option --exec-file FILE
-#: ../moo/medit-app/main.c:157
-msgid "Execute python file in an existing instance"
-msgstr ""
-
-#. "FILE" part in --exec-file FILE
-#: ../moo/medit-app/main.c:158
-msgid "FILE"
+#. "WIDTHxHEIGHT[+X+Y]" part in --geometry=WIDTHxHEIGHT[+X+Y]
+#: ../moo/medit-app/main.c:166
+msgid "WIDTHxHEIGHT[+X+Y]"
 msgstr ""
 
 #. help message for command line option --version
-#: ../moo/medit-app/main.c:160
+#: ../moo/medit-app/main.c:168
 msgid "Show version information and exit"
 msgstr ""
 
 #. "FILES" part in "medit [OPTION...] [FILES]"
-#: ../moo/medit-app/main.c:162
+#: ../moo/medit-app/main.c:176
 msgid "FILES"
 msgstr ""
 
 #. error message for wrong commmand line
-#: ../moo/medit-app/main.c:178 ../moo/medit-app/main.c:186
+#: ../moo/medit-app/main.c:204
 #, c-format
 msgid "%s and %s options may not be used simultaneously\n"
 msgstr ""
@@ -177,7 +167,7 @@ msgstr ""
 #. Translators: this goes into About box, under Translated by tab,
 #. do not ignore it, markup isn't always used. It should be something
 #. like "Some Guy <someguy@domain.net>", with lines separated by \n
-#: ../moo/mooapp/mooappabout.c:57
+#: ../moo/mooapp/mooappabout.c:66
 msgid "translator-credits"
 msgstr ""
 
@@ -185,12 +175,16 @@ msgstr ""
 #. this must be valid html markup, e.g.
 #. "Some Guy <a href=\"mailto:someguy@domain.net\">&lt;someguy@domain.net&gt;</a>"
 #. Lines must be separated by <br>, like "First guy<br>Second Guy"
-#: ../moo/mooapp/mooappabout.c:62
+#: ../moo/mooapp/mooappabout.c:71
 msgid "translator-credits-markup"
 msgstr ""
 
+#: ../moo/mooapp/mooapp.c:973
+msgid "Report a Bug..."
+msgstr ""
+
 #. Prefs dialog title, like "medit Preferences"
-#: ../moo/mooapp/mooapp.c:1369
+#: ../moo/mooapp/mooapp.c:1398
 #, c-format
 msgid "%s Preferences"
 msgstr ""
@@ -734,11 +728,11 @@ msgstr ""
 msgid "Open Recent|_More..."
 msgstr ""
 
-#: ../moo/mooedit/mooeditor.c:524
+#: ../moo/mooedit/mooeditor.c:525
 msgid "Open new editor window"
 msgstr ""
 
-#: ../moo/mooedit/mooeditor.c:734
+#: ../moo/mooedit/mooeditor.c:714
 msgid "Open Recent"
 msgstr ""
 
@@ -957,7 +951,7 @@ msgstr ""
 msgid "Page Setup..."
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:696 ../moo/mooedit/mooeditwindow.c:1740
+#: ../moo/mooedit/mooeditwindow.c:696 ../moo/mooedit/mooeditwindow.c:1739
 msgid "Export as PDF"
 msgstr ""
 
@@ -1011,63 +1005,63 @@ msgstr ""
 msgid "%s [modified]"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1179
+#: ../moo/mooedit/mooeditwindow.c:1178
 msgid "Reopen Using Encoding"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1229
+#: ../moo/mooedit/mooeditwindow.c:1228
 msgid "_Encoding"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1284
+#: ../moo/mooedit/mooeditwindow.c:1283
 msgid "Line En_dings"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1291
+#: ../moo/mooedit/mooeditwindow.c:1290
 msgid "_Windows (CR+LF)"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1300
+#: ../moo/mooedit/mooeditwindow.c:1299
 msgid "_Unix (LF)"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1304
+#: ../moo/mooedit/mooeditwindow.c:1303
 msgid "_Mac (CR)"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1308
+#: ../moo/mooedit/mooeditwindow.c:1307
 msgid "Mi_xed"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:2937
+#: ../moo/mooedit/mooeditwindow.c:2936
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:2938
+#: ../moo/mooedit/mooeditwindow.c:2937
 #, c-format
 msgid "Chars: %s"
 msgstr ""
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:2979
+#: ../moo/mooedit/mooeditwindow.c:2978
 msgid "OVR"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:2979
+#: ../moo/mooedit/mooeditwindow.c:2978
 msgid "INS"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3076
+#: ../moo/mooedit/mooeditwindow.c:3075
 msgid "_Language"
 msgstr ""
 
 #. Menu item in the Language menu
-#: ../moo/mooedit/mooeditwindow.c:3081
+#: ../moo/mooedit/mooeditwindow.c:3080
 msgid "Language|None"
 msgstr ""
 
-#: ../moo/mooedit/mooplugin.c:1418
+#: ../moo/mooedit/mooplugin.c:1416
 msgid "Plugins"
 msgstr ""
 
@@ -1611,87 +1605,92 @@ msgstr ""
 msgid "New _Window"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-file.c:99
+#: ../moo/mooutils/mooutils-file.c:100
 #, c-format
 msgid "Could not open %s: %s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-file.c:265 ../moo/mooutils/mooutils-fs.c:387
-#: ../moo/mooutils/mooutils-fs.c:406 ../moo/mooutils/mooutils-fs.c:422
+#: ../moo/mooutils/mooutils-file.c:266 ../moo/mooutils/mooutils-fs.c:388
+#: ../moo/mooutils/mooutils-fs.c:407 ../moo/mooutils/mooutils-fs.c:423
 #, c-format
 msgid "Could not create folder %s: %s"
 msgstr ""
 
 #. This is error message in file selector when rm
 #. fails for some strange reason
-#: ../moo/mooutils/mooutils-fs.c:227
+#: ../moo/mooutils/mooutils-fs.c:228
 #, c-format
 msgid "Could not run 'rm' command: %s"
 msgstr ""
 
 #. This is error message in file selector when rm
 #. fails to delete a file or folder
-#: ../moo/mooutils/mooutils-fs.c:245
+#: ../moo/mooutils/mooutils-fs.c:246
 #, c-format
 msgid "'rm' command failed: %s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-fs.c:295 ../moo/mooutils/mooutils-fs.c:315
-#: ../moo/mooutils/mooutils-fs.c:342
+#: ../moo/mooutils/mooutils-fs.c:296 ../moo/mooutils/mooutils-fs.c:316
+#: ../moo/mooutils/mooutils-fs.c:343
 #, c-format
 msgid "Could not remove %s: %s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-fs.c:451
+#: ../moo/mooutils/mooutils-fs.c:452
 #, c-format
 msgid "Could not rename file %s to %s: %s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-misc.c:1830
+#: ../moo/mooutils/mooutils-misc.c:1839
 #, c-format
 msgid ""
 "console message|in file %s, line %d, function %s:\n"
 "%s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-misc.c:1927
+#: ../moo/mooutils/mooutils-misc.c:1936
 #, c-format
 msgid "console message|in file %s, line %d, function %s: %s"
 msgstr ""
 
-#: ../moo/mooutils/moowindow.c:234
+#: ../moo/mooutils/moowindow.c:235
 msgid "Configure _Shortcuts..."
 msgstr ""
 
-#: ../moo/mooutils/moowindow.c:242 ../moo/mooutils/moowindow.c:243
+#: ../moo/mooutils/moowindow.c:243 ../moo/mooutils/moowindow.c:244
 msgid "Show Toolbar"
 msgstr ""
 
-#: ../moo/mooutils/moowindow.c:249 ../moo/mooutils/moowindow.c:250
+#: ../moo/mooutils/moowindow.c:250 ../moo/mooutils/moowindow.c:251
 msgid "Show Menubar"
 msgstr ""
 
-#: ../moo/mooutils/moowindow.c:257 ../moo/mooutils/moowindow.c:258
+#: ../moo/mooutils/moowindow.c:258 ../moo/mooutils/moowindow.c:259
 msgid "Show Statusbar"
 msgstr ""
 
-#: ../moo/mooutils/moowindow.c:1157
+#: ../moo/mooutils/moowindow.c:461
+#, c-format
+msgid "Could not parse geometry string '%s'\n"
+msgstr ""
+
+#: ../moo/mooutils/moowindow.c:1172
 msgid "_Icons Only"
 msgstr ""
 
-#: ../moo/mooutils/moowindow.c:1158
+#: ../moo/mooutils/moowindow.c:1173
 msgid "_Labels Only"
 msgstr ""
 
-#: ../moo/mooutils/moowindow.c:1159
+#: ../moo/mooutils/moowindow.c:1174
 msgid "Labels _Below Icons"
 msgstr ""
 
-#: ../moo/mooutils/moowindow.c:1160
+#: ../moo/mooutils/moowindow.c:1175
 msgid "Labels Be_side Icons"
 msgstr ""
 
-#: ../moo/mooutils/moowindow.c:1170
+#: ../moo/mooutils/moowindow.c:1185
 msgid "Toolbar _Style"
 msgstr ""
 
@@ -1885,6 +1884,22 @@ msgstr[1] ""
 msgid "Finds everything"
 msgstr ""
 
+#: ../moo/plugins/mooluaplugin.cpp:110
+msgid "Lua"
+msgstr ""
+
+#: ../moo/plugins/mooluaplugin.cpp:110
+msgid "Lua support"
+msgstr ""
+
+#: ../moo/plugins/moopython.c:111
+msgid "Python"
+msgstr ""
+
+#: ../moo/plugins/moopython.c:111
+msgid "Python support"
+msgstr ""
+
 #: ../moo/plugins/usertools/exe/moocommand-exe.c:85
 msgid "Output|None"
 msgstr ""
@@ -1972,10 +1987,6 @@ msgstr ""
 msgid "Output:"
 msgstr ""
 
-#: ../moo/plugins/usertools/glade/mooedittools-lua.glade.h:1
-msgid "Version:"
-msgstr ""
-
 #: ../moo/plugins/usertools/glade/moousertools.glade.h:1
 msgid "Command type:"
 msgstr ""
@@ -2012,28 +2023,20 @@ msgstr ""
 msgid "Tools menu"
 msgstr ""
 
-#: ../moo/plugins/usertools/lua/moocommand-lua.cpp:306
-msgid "1"
-msgstr ""
-
-#: ../moo/plugins/usertools/lua/moocommand-lua.cpp:306
-msgid "2"
-msgstr ""
-
-#: ../moo/plugins/usertools/lua/moocommand-lua.cpp:400
+#: ../moo/plugins/usertools/lua/moocommand-lua.cpp:209
 msgid "Lua script"
 msgstr ""
 
-#: ../moo/plugins/usertools/moousertools.c:393
+#: ../moo/plugins/usertools/moousertools.c:395
 #: ../moo/plugins/usertools/moousertools-prefs.c:408
 msgid "Tools"
 msgstr ""
 
-#: ../moo/plugins/usertools/moousertools.c:1400
+#: ../moo/plugins/usertools/moousertools.c:1399
 msgid "User Tools"
 msgstr ""
 
-#: ../moo/plugins/usertools/moousertools.c:1401
+#: ../moo/plugins/usertools/moousertools.c:1400
 msgid "Configurable tools"
 msgstr ""
 
