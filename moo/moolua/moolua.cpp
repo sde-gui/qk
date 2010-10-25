@@ -88,8 +88,12 @@ cfunc_spin_main_loop (lua_State *L)
     g_return_val_if_fail (sec >= 0, 0);
 
     GMainLoop *main_loop = g_main_loop_new (NULL, FALSE);
-    g_timeout_add (sec * 1000, (GSourceFunc) quit_main_loop, main_loop);
+    _moo_timeout_add (sec * 1000, (GSourceFunc) quit_main_loop, main_loop);
+
+    gdk_threads_leave ();
     g_main_loop_run (main_loop);
+    gdk_threads_enter ();
+
     g_main_loop_unref (main_loop);
 
     return 0;
@@ -163,7 +167,7 @@ moo_lua_add_user_path (lua_State *L)
 
 
 lua_State *
-medit_lua_new (const char *init, bool enable_callbacks)
+medit_lua_new (bool default_init, bool enable_callbacks)
 {
     lua_State *L = lua_open ();
     moo_return_val_if_fail (L != NULL, NULL);
@@ -173,7 +177,7 @@ medit_lua_new (const char *init, bool enable_callbacks)
 
     moo_assert (lua_gettop (L) == 0);
 
-    if (!mom::lua_setup (L, enable_callbacks))
+    if (!mom::lua_setup (L, default_init, enable_callbacks))
     {
         lua_close (L);
         return NULL;
@@ -181,36 +185,74 @@ medit_lua_new (const char *init, bool enable_callbacks)
 
     moo_assert (lua_gettop (L) == 0);
 
-    if (init)
-    {
-        if (luaL_loadstring (L, init) != 0)
-        {
-            const char *msg = lua_tostring (L, -1);
-            moo_critical ("%s", msg ? msg : "ERROR");
-            lua_close (L);
-            return NULL;
-        }
+    return L;
+}
 
-        if (lua_pcall (L, 0, 0, 0) != 0)
-        {
-            const char *msg = lua_tostring (L, -1);
-            moo_critical ("%s", msg ? msg : "ERROR");
-            lua_close (L);
-            return NULL;
-        }
+bool
+medit_lua_do_string (lua_State *L, const char *string)
+{
+    moo_return_val_if_fail (L != NULL, FALSE);
+    moo_return_val_if_fail (string != NULL, FALSE);
+
+    if (luaL_dostring (L, string) != 0)
+    {
+        const char *msg = lua_tostring (L, -1);
+        g_critical ("%s: %s", G_STRLOC, msg ? msg : "ERROR");
+        return false;
     }
 
-    moo_assert (lua_gettop (L) == 0);
+    return true;
+}
 
-    return L;
+bool
+medit_lua_do_file (lua_State *L, const char *filename)
+{
+    moo_return_val_if_fail (L != NULL, FALSE);
+    moo_return_val_if_fail (filename != NULL, FALSE);
+
+    char *content = NULL;
+    GError *error = NULL;
+    if (!g_file_get_contents (filename, &content, NULL, &error))
+    {
+        moo_warning ("could not read file '%s': %s", filename, error->message);
+        g_error_free (error);
+        return false;
+    }
+
+    gboolean ret = medit_lua_do_string (L, content);
+    g_free (content);
+    return ret;
 }
 
 void
 medit_lua_free (lua_State *L)
 {
-    moo_return_if_fail (L != NULL);
-    mom::lua_cleanup (L);
-    lua_close (L);
+    if (L)
+    {
+        mom::lua_cleanup (L);
+        lua_close (L);
+    }
+}
+
+
+extern "C" void
+medit_lua_run_string (const char *string)
+{
+    moo_return_if_fail (string != NULL);
+    lua_State *L = medit_lua_new (TRUE, FALSE);
+    if (L)
+        medit_lua_do_string (L, string);
+    medit_lua_free (L);
+}
+
+extern "C" void
+medit_lua_run_file (const char *filename)
+{
+    moo_return_if_fail (filename != NULL);
+    lua_State *L = medit_lua_new (TRUE, FALSE);
+    if (L)
+        medit_lua_do_file (L, filename);
+    medit_lua_free (L);
 }
 
 

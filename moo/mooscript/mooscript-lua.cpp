@@ -1,4 +1,5 @@
 #include "mooscript-lua.h"
+#include "lua-default-init.h"
 
 namespace mom {
 
@@ -447,7 +448,7 @@ static bool add_raw_api(lua_State *L, bool enable_callbacks)
     return true;
 }
 
-bool lua_setup(lua_State *L, bool enable_callbacks) throw()
+bool lua_setup(lua_State *L, bool default_init, bool enable_callbacks) throw()
 {
     try
     {
@@ -465,6 +466,9 @@ bool lua_setup(lua_State *L, bool enable_callbacks) throw()
         }
 
         g_assert (lua_gettop (L) == 0);
+
+        if (default_init)
+            medit_lua_do_string (L, LUA_DEFAULT_INIT);
 
         return true;
     }

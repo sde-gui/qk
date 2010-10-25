@@ -109,6 +109,9 @@
     <method name='uri' retval='string'/>
     <method name='basename' retval='string'/>
 
+    <method name='is_modified' retval='bool'/>
+    <method name='set_modified' param-type='bool' param-name='modified'/>
+
     <method name='encoding' retval='string'/>
     <method name='set_encoding' param-name='encoding' param-type='string'/>
 

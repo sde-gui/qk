@@ -9,6 +9,7 @@ fi
 
 export _GTKWINDIR=`cd $mgwdir && pwd`
 export _GTKWINCONFIG=$mgwconfig
+export _GTKWINBUILDROOT=$mgwbuildroot
 
 # JHBUILD=$mgwdir_s/jhbuild/bin/jhbuild
 JHBUILD=jhbuild

@@ -50,14 +50,20 @@ moo_command_lua_run (MooCommand        *cmd_base,
 
     g_return_if_fail (cmd->priv->code != NULL);
 
-    L = medit_lua_new (LUA_SETUP_CODE);
+    L = medit_lua_new (TRUE, FALSE);
     g_return_if_fail (L != NULL);
+
+    if (!medit_lua_do_string (L, LUA_SETUP_CODE))
+    {
+        medit_lua_free (L);
+        return;
+    }
 
     if (luaL_loadstring (L, cmd->priv->code) != 0)
     {
         const char *msg = lua_tostring (L, -1);
         g_critical ("%s: %s", G_STRLOC, msg ? msg : "ERROR");
-        lua_close (L);
+        medit_lua_free (L);
         return;
     }
 

@@ -58,7 +58,10 @@ static struct MeditOpts {
     const char *debug;
     gboolean ut;
     gboolean ut_list;
+    char *ut_dir;
     char **ut_tests;
+    char **run_script;
+    char **send_script;
 } medit_opts = { -1, -1 };
 
 #include "parse.h"
@@ -148,18 +151,16 @@ static GOptionEntry medit_options[] = {
             /* "ENCODING" part in --encoding=ENCODING */ N_("ENCODING") },
     { "reload", 'r', 0, G_OPTION_ARG_NONE, &medit_opts.reload,
             /* help message for command line option --reload */ N_("Automatically reload file if it was modified on disk"), NULL },
+    { "run-script", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING_ARRAY, (gpointer) &medit_opts.run_script,
+            "Run SCRIPT", "SCRIPT" },
+    { "send-script", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING_ARRAY, (gpointer) &medit_opts.send_script,
+            "Send SCRIPT to existing instance", "SCRIPT" },
     { "log-window", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.log_window,
             "Show debug output", NULL },
     { "log-file", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_FILENAME, (gpointer) &medit_opts.log_file,
             "Write debug output to FILE", "FILE" },
     { "debug", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING, (gpointer) &medit_opts.debug,
             "Run in debug mode", NULL },
-    { "exec", 0, 0, G_OPTION_ARG_STRING, (gpointer) &medit_opts.exec_string,
-            /* help message for command line option --exec CODE */ N_("Execute python code in an existing instance"),
-            /* "CODE" part in --exec CODE */ N_("CODE") },
-    { "exec-file", 0, 0, G_OPTION_ARG_FILENAME, (gpointer) &medit_opts.exec_file,
-            /* help message for command line option --exec-file FILE */ N_("Execute python file in an existing instance"),
-            /* "FILE" part in --exec-file FILE */ N_("FILE") },
     { "geometry", 0, 0, G_OPTION_ARG_STRING, (gpointer) &medit_opts.geometry,
             /* help message for command line option --geometry=WIDTHxHEIGHT[+X+Y] */ N_("Default window size and position"),
             /* "WIDTHxHEIGHT[+X+Y]" part in --geometry=WIDTHxHEIGHT[+X+Y] */ N_("WIDTHxHEIGHT[+X+Y]") },
@@ -167,6 +168,8 @@ static GOptionEntry medit_options[] = {
             /* help message for command line option --version */ N_("Show version information and exit"), NULL },
     { "ut", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.ut,
             "Run unit tests", NULL },
+    { "ut-dir", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING, &medit_opts.ut_dir,
+            "Data dir for unit tests", NULL },
     { "ut-list", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.ut_list,
             "List unit tests", NULL },
     { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &medit_opts.files,
@@ -200,14 +203,6 @@ post_parse_func (void)
         /* error message for wrong commmand line */
         g_printerr (_("%s and %s options may not be used simultaneously\n"),
                     "--app-name", "--pid");
-        exit (EXIT_FAILURE);
-    }
-
-    if (medit_opts.exec_string && medit_opts.exec_file)
-    {
-        /* error message for wrong commmand line */
-        g_printerr (_("%s and %s options may not be used simultaneously\n"),
-                    "--exec", "--exec-file");
         exit (EXIT_FAILURE);
     }
 
@@ -532,8 +527,17 @@ static gboolean
 unit_test_func (void)
 {
     MooTestOptions opts = 0;
-    unit_tests_main (opts, medit_opts.ut_tests);
+    unit_tests_main (opts, medit_opts.ut_tests, medit_opts.ut_dir);
     moo_app_quit (moo_app_get_instance ());
+    return FALSE;
+}
+
+static gboolean
+run_script_func (void)
+{
+    char **p;
+    for (p = medit_opts.run_script; p && *p; ++p)
+        moo_app_run_script (moo_app_get_instance(), *p);
     return FALSE;
 }
 
@@ -598,12 +602,15 @@ medit_main (int argc, char *argv[])
     if (name && !name[0])
         name = NULL;
 
-    if (medit_opts.exec_string || medit_opts.exec_file)
+    if (medit_opts.send_script)
     {
-        GString *msg;
-        msg = g_string_new (medit_opts.exec_string ? "p" : "P");
-        g_string_append (msg, medit_opts.exec_string ? medit_opts.exec_string : medit_opts.exec_file);
-        moo_app_send_msg (name, msg->str, msg->len + 1);
+        char **p;
+        for (p = medit_opts.send_script; *p; ++p)
+        {
+            GString *msg = g_string_new ("e");
+            g_string_append (msg, *p);
+            moo_app_send_msg (name, msg->str, msg->len + 1);
+        }
         notify_startup_complete ();
         exit (0);
     }
@@ -682,7 +689,9 @@ medit_main (int argc, char *argv[])
     g_option_context_free (ctx);
 
     if (medit_opts.ut)
-        g_timeout_add (10, (GSourceFunc) unit_test_func, NULL);
+        _moo_timeout_add (10, (GSourceFunc) unit_test_func, NULL);
+    if (medit_opts.run_script)
+        _moo_timeout_add (10, (GSourceFunc) run_script_func, NULL);
 
     retval = moo_app_run (app);
     gdk_threads_leave ();

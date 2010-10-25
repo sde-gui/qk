@@ -25,11 +25,12 @@ add_tests (void)
 }
 
 static int
-unit_tests_main (MooTestOptions opts, char **tests)
+unit_tests_main (MooTestOptions opts, char **tests, const char *data_dir_arg)
 {
-    const char *data_dir;
+    const char *data_dir = MOO_UNIT_TEST_DATA_DIR;
 
-    data_dir = MOO_UNIT_TEST_DATA_DIR;
+    if (data_dir_arg)
+        data_dir = data_dir_arg;
 
     add_tests ();
     moo_test_run_tests (tests, data_dir, opts);
@@ -51,5 +52,5 @@ unit_tests_main (MooTestOptions opts, char **tests)
 static void
 list_unit_tests (void)
 {
-    unit_tests_main (MOO_TEST_LIST_ONLY, NULL);
+    unit_tests_main (MOO_TEST_LIST_ONLY, NULL, NULL);
 }

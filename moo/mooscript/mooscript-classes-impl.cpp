@@ -62,9 +62,13 @@ static String get_string(const Variant &val, bool null_ok = false)
 
 static moo::Vector<String> get_string_list(const Variant &val)
 {
-    if (val.vt() != VtArray)
+    VariantArray ar;
+    if (val.vt() == VtArray)
+        ar = val.value<VtArray>();
+    else if (val.vt() == VtArgs)
+        ar = val.value<VtArgs>();
+    else
         Error::raise("list expected");
-    const VariantArray &ar = val.value<VtArray>();
     moo::Vector<String> ret;
     for (int i = 0, c = ar.size(); i < c; ++i)
         ret.append(get_string(ar[i]));
@@ -113,9 +117,13 @@ static void get_iter(const Variant &val, GtkTextBuffer *buf, GtkTextIter *iter)
 
 static void get_pair(const Variant &val, Variant &elm1, Variant &elm2)
 {
-    if (val.vt() != VtArray)
+    VariantArray ar;
+    if (val.vt() == VtArray)
+        ar = val.value<VtArray>();
+    else if (val.vt() == VtArgs)
+        ar = val.value<VtArgs>();
+    else
         Error::raise("pair of values expected");
-    const VariantArray &ar = val.value<VtArray>();
     if (ar.size() != 2)
         Error::raise("pair of values expected");
     elm1 = ar[0];
@@ -672,6 +680,20 @@ String Document::uri()
 String Document::basename()
 {
     return String(moo_edit_get_display_basename(gobj()));
+}
+
+/// @item Document.is_modified()
+/// returns whether the document is modified.
+bool Document::is_modified()
+{
+    return MOO_EDIT_IS_MODIFIED(gobj());
+}
+
+/// @item Document.set_modified(modified)
+/// sets modification state of the document.
+void Document::set_modified(bool modified)
+{
+    moo_edit_set_modified(gobj(), modified);
 }
 
 /// @item Document.encoding()

@@ -100,6 +100,8 @@ void             moo_app_open_files             (MooApp         *app,
                                                  MooAppFileInfo *files,
                                                  int             n_files,
                                                  guint32         stamp);
+void             moo_app_run_script             (MooApp         *app,
+                                                 const char     *script);
 
 
 G_END_DECLS

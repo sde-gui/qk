@@ -1,10 +1,4 @@
-local _g = getfenv(0)
-
-require("moo.builtin")._inject(_g)
-
 local medit = require("medit")
-_g.app = medit.get_app_obj()
-_g.editor = _g.app.editor()
 
 local __medit_callbacks = {}
 

@@ -36,40 +36,22 @@ struct MooLuaPlugin {
     ModuleList *modules;
 };
 
-static bool
-load_file (lua_State *L, const char *module_file)
-{
-    char *content = NULL;
-    GError *error = NULL;
-    if (!g_file_get_contents (module_file, &content, NULL, &error))
-    {
-        moo_warning ("could not read file '%s': %s", module_file, error->message);
-        g_error_free (error);
-        return false;
-    }
-
-    bool ret = true;
-
-    if (luaL_dostring (L, content) != 0)
-    {
-        const char *msg = lua_tostring (L, -1);
-        g_critical ("%s: %s", G_STRLOC, msg ? msg : "ERROR");
-        ret = false;
-    }
-
-    g_free (content);
-    return ret;
-}
-
 static MooLuaModule *
 moo_lua_module_load (const char *filename)
 {
-    lua_State *L = medit_lua_new (LUA_MODULE_SETUP_CODE);
+    lua_State *L = medit_lua_new (true, true);
     if (!L)
         return NULL;
-    if (!load_file (L, filename))
+
+    if (!medit_lua_do_string (L, LUA_MODULE_SETUP_CODE))
     {
-        lua_close (L);
+        medit_lua_free (L);
+        return NULL;
+    }
+
+    if (!medit_lua_do_file (L, filename))
+    {
+        medit_lua_free (L);
         return NULL;
     }
 

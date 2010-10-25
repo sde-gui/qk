@@ -22,27 +22,18 @@ G_BEGIN_DECLS
 
 typedef enum
 {
-    CMD_PYTHON_SCRIPT = 1,
-    CMD_PYTHON_FILE,
-    CMD_LUA_SCRIPT,
-    CMD_LUA_FILE,
+    CMD_SCRIPT = 1,
     CMD_OPEN_FILES,
     CMD_LAST
 } MooAppCmdCode;
 
 /* I is taken by the IPC thing */
-#define CMD_PYTHON_SCRIPT_S "p"
-#define CMD_PYTHON_FILE_S   "P"
-#define CMD_LUA_SCRIPT_S    "l"
-#define CMD_LUA_FILE_S      "L"
+#define CMD_SCRIPT_S        "e"
 #define CMD_OPEN_FILES_S    "F"
 
 static const char *moo_app_cmd_chars =
     "\0"
-    CMD_PYTHON_SCRIPT_S
-    CMD_PYTHON_FILE_S
-    CMD_LUA_SCRIPT_S
-    CMD_LUA_FILE_S
+    CMD_SCRIPT_S
     CMD_OPEN_FILES_S
 ;
 

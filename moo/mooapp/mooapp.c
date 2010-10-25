@@ -24,6 +24,7 @@
 #include "mooapp-accels.h"
 #include "mooapp-info.h"
 #include "mooappabout.h"
+#include "moolua/moolua.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
@@ -475,45 +476,63 @@ moo_app_get_instance (void)
 }
 
 
-static void
-run_python_file (MooApp     *app,
-                 const char *filename)
-{
-    FILE *file;
-    MooPyObject *res;
+#define SCRIPT_PREFIX_LUA "lua-script:"
+#define SCRIPT_PREFIX_LUA_FILE "lua-file:"
 
+void
+moo_app_run_script (MooApp     *app,
+                    const char *script)
+{
     g_return_if_fail (MOO_IS_APP (app));
-    g_return_if_fail (filename != NULL);
-    g_return_if_fail (moo_python_running ());
+    g_return_if_fail (script != NULL);
 
-    file = _moo_fopen (filename, "rb");
-    g_return_if_fail (file != NULL);
-
-    res = moo_python_run_file (file, filename, NULL, NULL);
-
-    fclose (file);
-
-    if (res)
-        moo_Py_DECREF (res);
+    if (g_str_has_prefix (script, SCRIPT_PREFIX_LUA))
+        medit_lua_run_string (script + strlen (SCRIPT_PREFIX_LUA));
+    else if (g_str_has_prefix (script, SCRIPT_PREFIX_LUA_FILE))
+        medit_lua_run_file (script + strlen (SCRIPT_PREFIX_LUA_FILE));
     else
-        moo_PyErr_Print ();
+        medit_lua_run_string (script);
 }
 
-static void
-run_python_script (const char *string)
-{
-    MooPyObject *res;
-
-    g_return_if_fail (string != NULL);
-    g_return_if_fail (moo_python_running ());
-
-    res = moo_python_run_simple_string (string);
-
-    if (res)
-        moo_Py_DECREF (res);
-    else
-        moo_PyErr_Print ();
-}
+// static void
+// run_python_file (MooApp     *app,
+//                  const char *filename)
+// {
+//     FILE *file;
+//     MooPyObject *res;
+//
+//     g_return_if_fail (MOO_IS_APP (app));
+//     g_return_if_fail (filename != NULL);
+//     g_return_if_fail (moo_python_running ());
+//
+//     file = _moo_fopen (filename, "rb");
+//     g_return_if_fail (file != NULL);
+//
+//     res = moo_python_run_file (file, filename, NULL, NULL);
+//
+//     fclose (file);
+//
+//     if (res)
+//         moo_Py_DECREF (res);
+//     else
+//         moo_PyErr_Print ();
+// }
+//
+// static void
+// run_python_script (const char *string)
+// {
+//     MooPyObject *res;
+//
+//     g_return_if_fail (string != NULL);
+//     g_return_if_fail (moo_python_running ());
+//
+//     res = moo_python_run_simple_string (string);
+//
+//     if (res)
+//         moo_Py_DECREF (res);
+//     else
+//         moo_PyErr_Print ();
+// }
 
 
 MooEditor *
@@ -1303,18 +1322,9 @@ moo_app_exec_cmd (MooApp             *app,
 
     switch (code)
     {
-        case CMD_PYTHON_SCRIPT:
-            run_python_script (data);
+        case CMD_SCRIPT:
+            moo_app_run_script (app, data);
             break;
-        case CMD_PYTHON_FILE:
-            run_python_file (app, data);
-            break;
-//         case CMD_LUA_SCRIPT:
-//             run_lua_script (data);
-//             break;
-//         case CMD_LUA_FILE:
-//             run_lua_file (app, data);
-//             break;
 
         case CMD_OPEN_FILES:
             moo_app_cmd_open_files (app, data);

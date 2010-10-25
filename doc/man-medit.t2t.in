@@ -65,12 +65,6 @@ show debug output in a log window. This option is only useful on Windows.
 enable debug output for //DOMAINS// (if **medit** was compiled with
 --enable-debug option).
 
-: **--exec** //STRING//
-execute python code in //STRING// in an existing instance.
-
-: **--exec-file** //FILE//
-execute python file //FILE// in an existing instance.
-
 : **--geometry** //WIDTHxHEIGHT//
 : **--geometry** //WIDTHxHEIGHT+X+Y//
 default window size and position.

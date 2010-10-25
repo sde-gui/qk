@@ -25,4 +25,4 @@ bdist:
 bdist-all: bdist-en bdist
 
 clean:
-	rm -rf $(mgwtargetdir) $(mgwdestdir) $(mgwdestdir)-en
+	rm -rf $(mgwbuilddir) $(mgwdestdir) $(mgwdestdir)-en
