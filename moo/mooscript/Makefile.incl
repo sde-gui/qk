@@ -40,3 +40,5 @@ mooscript/mooscript.stamp: $(MOO_SCRIPT_PARSER_FILES) mooscript/mooscript.xml
 	$(AM_V_at)$(MKDIR_P) mooscript
 	$(AM_V_at)echo stamp > mooscript/mooscript.stamp
 endif
+
+include mooscript/lua/Makefile.incl

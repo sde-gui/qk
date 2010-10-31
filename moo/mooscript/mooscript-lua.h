@@ -1,7 +1,7 @@
 #ifndef MOM_SCRIPT_LUA_H
 #define MOM_SCRIPT_LUA_H
 
-#include <moolua/moolua.h>
+#include "lua/moolua.h"
 #include "mooscript-api.h"
 
 namespace mom {

@@ -17,7 +17,7 @@
 
 #include "moolua.h"
 #include "moo-tests-lua.h"
-#include "moolua/moolua-tests.h"
+#include "moolua-tests.h"
 #include "mooscript/mooscript-lua.h"
 #include <string.h>
 #include <glib.h>

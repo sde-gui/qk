@@ -24,7 +24,7 @@
 #include "mooapp-accels.h"
 #include "mooapp-info.h"
 #include "mooappabout.h"
-#include "moolua/moolua.h"
+#include "mooscript/lua/moolua.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"

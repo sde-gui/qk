@@ -1,0 +1,88 @@
+AM_CPPFLAGS += -DLUA_USE_APICHECK -I$(moo_srcdir)/mooscript/lua
+
+if MOO_OS_DARWIN
+AM_CPPFLAGS += -DLUA_USE_MACOSX
+else !MOO_OS_DARWIN
+if MOO_OS_WIN32
+else !MOO_OS_WIN32
+AM_CPPFLAGS += -DLUA_USE_POSIX -DLUA_USE_DLOPEN
+moo_libadd += -ldl
+endif !MOO_OS_WIN32
+endif !MOO_OS_DARWIN
+
+moo_sources +=				\
+	mooscript/lua/ext/lfs.h		\
+	mooscript/lua/ext/lfs.cpp	\
+	mooscript/lua/moolua.h		\
+	mooscript/lua/moolua.cpp	\
+	mooscript/lua/moolua-tests.h	\
+	mooscript/lua/moo-tests-lua.h	\
+	mooscript/lua/luaall.cpp
+
+EXTRA_DIST +=				\
+	mooscript/lua/COPYRIGHT		\
+	mooscript/lua/lapi.c		\
+	mooscript/lua/lapi.h		\
+	mooscript/lua/lauxlib.c		\
+	mooscript/lua/lauxlib.h		\
+	mooscript/lua/lbaselib.c	\
+	mooscript/lua/lcode.c		\
+	mooscript/lua/lcode.h		\
+	mooscript/lua/ldblib.c		\
+	mooscript/lua/ldebug.c		\
+	mooscript/lua/ldebug.h		\
+	mooscript/lua/ldo.c		\
+	mooscript/lua/ldo.h		\
+	mooscript/lua/ldump.c		\
+	mooscript/lua/lfunc.c		\
+	mooscript/lua/lfunc.h		\
+	mooscript/lua/lgc.c		\
+	mooscript/lua/lgc.h		\
+	mooscript/lua/linit.c		\
+	mooscript/lua/liolib.c		\
+	mooscript/lua/llex.c		\
+	mooscript/lua/llex.h		\
+	mooscript/lua/llimits.h		\
+	mooscript/lua/lmathlib.c	\
+	mooscript/lua/lmem.c		\
+	mooscript/lua/lmem.h		\
+	mooscript/lua/loadlib.c		\
+	mooscript/lua/lobject.c		\
+	mooscript/lua/lobject.h		\
+	mooscript/lua/lopcodes.c	\
+	mooscript/lua/lopcodes.h	\
+	mooscript/lua/loslib.c		\
+	mooscript/lua/lparser.c		\
+	mooscript/lua/lparser.h		\
+	mooscript/lua/lstate.c		\
+	mooscript/lua/lstate.h		\
+	mooscript/lua/lstring.c		\
+	mooscript/lua/lstring.h		\
+	mooscript/lua/ltable.c		\
+	mooscript/lua/ltable.h		\
+	mooscript/lua/ltablib.c		\
+	mooscript/lua/ltm.c		\
+	mooscript/lua/ltm.h		\
+	mooscript/lua/lua.h		\
+	mooscript/lua/luaall.cpp	\
+	mooscript/lua/luaconf.h		\
+	mooscript/lua/lualib.h		\
+	mooscript/lua/lundump.c		\
+	mooscript/lua/lundump.h		\
+	mooscript/lua/lvm.c		\
+	mooscript/lua/lvm.h		\
+	mooscript/lua/lzio.c		\
+	mooscript/lua/lzio.h		\
+	mooscript/lua/README		\
+	mooscript/lua/slnudata.c	\
+	mooscript/lua/slnunico.c
+
+luadir = $(MOO_DATA_DIR)/lua
+EXTRA_DIST += mooscript/lua/moo
+install-data-local: install-lua-moo
+uninstall-local: uninstall-lua-moo
+install-lua-moo:
+	$(MKDIR_P) $(DESTDIR)$(luadir)/moo
+	cd $(srcdir) && $(INSTALL_DATA) mooscript/lua/moo/*.lua $(DESTDIR)$(luadir)/moo/
+uninstall-lua-moo:
+	rm -f $(DESTDIR)$(luadir)/moo/*.lua

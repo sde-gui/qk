@@ -26,7 +26,6 @@ marshals.h: marshals.list
 
 include xdgmime/Makefile.incl
 include mooutils/Makefile.incl
-include moolua/Makefile.incl
 include moofileview/Makefile.incl
 include gtksourceview/Makefile.incl
 include mooedit/Makefile.incl
