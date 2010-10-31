@@ -35,6 +35,17 @@ public:
         throw Error(message);
     }
 
+    NORETURN static void raisef(const char *format, ...)
+    {
+        va_list args;
+        va_start(args, format);
+        char *msg = g_strdup_vprintf(format, args);
+        va_end(args);
+        String str(msg);
+        g_free(msg);
+        raise(str);
+    }
+
 private:
     String m_message;
 };

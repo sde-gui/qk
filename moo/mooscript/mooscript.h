@@ -23,9 +23,15 @@ class MetaObject
 {
 public:
     typedef void (*Init) (MetaObject &meta);
-    MetaObject(Init init)
+    MetaObject(const String &name, Init init)
+        : m_name(name)
     {
         init(*this);
+    }
+
+    const String &name() const
+    {
+        return m_name;
     }
 
     moo::SharedPtr<Method> lookup_method(const String &meth) const NOTHROW { return m_methods.value(meth); }
@@ -66,6 +72,7 @@ private:
     MOO_DISABLE_COPY_AND_ASSIGN(MetaObject)
 
 private:
+    String m_name;
     moo::Dict<String, moo::SharedPtr<Method> > m_methods;
     moo::Dict<String, moo::SharedPtr<Signal> > m_signals;
 };
@@ -80,7 +87,7 @@ protected: \
     static void _InitMetaObjectFull(MetaObject &meta);
 
 #define MOM_OBJECT_DEFN(Class) \
-    MetaObject Class::s_meta(Class::_InitMetaObjectFull); \
+    MetaObject Class::s_meta(#Class, Class::_InitMetaObjectFull); \
     void Class::_InitMetaObjectFull(MetaObject &meta) \
     { \
         Object::_InitMetaObjectFull(meta); \

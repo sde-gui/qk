@@ -197,6 +197,26 @@ tmpl_impl_file_start = """\
 
 namespace mom {
 
+static moo::Vector<FunctionCallInfo> func_calls;
+
+FunctionCallInfo current_func()
+{
+    if (!func_calls.empty())
+        return func_calls[func_calls.size() - 1];
+    else
+        return FunctionCallInfo("<no function>");
+}
+
+static void push_function_call(const char *name)
+{
+    func_calls.append(FunctionCallInfo(name));
+}
+
+static void pop_function_call()
+{
+    func_calls.pop_back();
+}
+
 """
 
 tmpl_impl_file_end = """\
@@ -312,18 +332,26 @@ def write_class_init(cls, out):
 tmpl_method_impl_start = """\
 Variant %(ClassName)s::_%(method_name)s(const ArgArray &args)
 {
+    push_function_call("%(ClassName)s::%(method_name)s");
+    try {
 """
 tmpl_method_impl_end = """\
+    } catch(...) {
+        pop_function_call();
+        throw;
+    }
 }
 """
 tmpl_check_no_args = """\
     if (args.size() != 0)
-        Error::raise("no arguments expected");
+        Error::raisef("in function %s, no arguments expected",
+                      (const char*) current_func().name);
 """
 
 tmpl_get_obj_arg = """\
     if (args.size() <= %(iarg)d)
-        Error::raise("argument '%(argname)s' missing");
+        Error::raisef("in function %%s, argument '%(argname)s' missing",
+                      (const char*) current_func().name);
     %(type)s &%(arg)s = get_object_arg<%(type)s>(args[%(iarg)d], "%(argname)s");
 """
 
@@ -340,7 +368,8 @@ def write_check_arg_object(meth, p, i, out):
 
 tmpl_get_arg = """\
     if (args.size() <= %(iarg)d)
-        Error::raise("argument '%(argname)s' missing");
+        Error::raisef("in function %%s, argument '%(argname)s' missing",
+                      (const char*) current_func().name);
     %(type)s %(arg)s = %(get_arg)s(args[%(iarg)d], "%(argname)s");
 """
 

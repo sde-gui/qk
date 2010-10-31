@@ -28,8 +28,6 @@ static void unset_data(lua_State *L)
 {
     MomLuaData *data = 0;
 
-    g_assert (lua_gettop (L) == 0);
-
     lua_pushlightuserdata(L, &data_cookie);
     lua_gettable(L, LUA_REGISTRYINDEX);
 
@@ -45,8 +43,6 @@ static void unset_data(lua_State *L)
     {
         lua_pop(L, 1);
     }
-
-    g_assert (lua_gettop (L) == 0);
 
     delete data;
 }

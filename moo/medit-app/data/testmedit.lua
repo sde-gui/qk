@@ -65,6 +65,16 @@ abcdefghij
   tassert(doc.selected_text() == 'abcdefg\n')
 end
 
--- test_active_window()
+local function test_views()
+  doc = editor.new_document()
+  add_doc_to_cleanup(doc)
+  window = doc.active_view().window()
+  tassert(doc.active_view() ~= nil)
+  tassert(#doc.views() == 1)
+  tassert(doc.views()[1] == doc.active_view())
+end
+
+test_active_window()
 test_selection()
+test_views()
 cleanup()

@@ -2,7 +2,7 @@
 
 namespace mom {
 
-MetaObject Object::s_meta(Object::InitMetaObject);
+MetaObject Object::s_meta("Object", Object::InitMetaObject);
 moo::Dict<guint, moo::SharedPtr<Object> > Object::s_objects;
 guint Object::s_last_id;
 gulong Object::s_last_callback_id;
@@ -25,14 +25,14 @@ Variant Object::call_method(const String &name, const ArgArray &args)
 {
     moo::SharedPtr<Method> meth = m_meta.lookup_method(name);
     if (!meth)
-        Error::raise("invalid method");
+        Error::raisef("no method '%s' in class '%s'", (const char*) name, (const char*) m_meta.name());
     return meth->call(*this, args);
 }
 
 gulong Object::connect_callback(const String &name, moo::SharedPtr<Callback> cb)
 {
     if (!m_meta.lookup_signal(name))
-        Error::raise("invalid signal");
+        Error::raisef("no signal '%s' in class '%s'", (const char*) name, (const char*) m_meta.name());
 
     CallbackInfo info = { ++s_last_callback_id, cb };
 
@@ -88,7 +88,7 @@ void Object::disconnect_callback(gulong id)
 moo::Vector<moo::SharedPtr<Callback> > Object::list_callbacks(const String &name) const
 {
     if (!m_meta.lookup_signal(name))
-        Error::raise("invalid signal");
+        Error::raisef("no signal '%s' in class '%s'", (const char*) name, (const char*) m_meta.name());
 
     moo::Vector<moo::SharedPtr<Callback> > callbacks;
     CallbackMap::const_iterator iter = m_callbacks.find(name);
@@ -107,7 +107,7 @@ moo::Vector<moo::SharedPtr<Callback> > Object::list_callbacks(const String &name
 bool Object::has_callbacks(const String &name) const
 {
     if (!m_meta.lookup_signal(name))
-        Error::raise("invalid signal");
+        Error::raisef("no signal '%s' in class '%s'", (const char*) name, (const char*) m_meta.name());
 
     return m_callbacks.find(name) != m_callbacks.end();
 }
@@ -130,7 +130,7 @@ Result Script::call_method(HObject h, const String &meth, const ArgArray &args, 
     {
         moo::SharedPtr<Object> obj = Object::lookup_object(h);
         if (!obj)
-            Error::raise("invalid object");
+            Error::raisef("no object with id %lu", h.id());
         ret = obj->call_method(meth, args);
         return true;
     }
@@ -151,7 +151,7 @@ Result Script::connect_callback(HObject h, const String &event, moo::SharedPtr<C
         id = 0;
         moo::SharedPtr<Object> obj = Object::lookup_object(h);
         if (!obj)
-            Error::raise("invalid object");
+            Error::raisef("no object with id %lu", h.id());
         id = obj->connect_callback(event, cb);
         return true;
     }
@@ -171,7 +171,7 @@ Result Script::disconnect_callback(HObject h, gulong id)
     {
         moo::SharedPtr<Object> obj = Object::lookup_object(h);
         if (!obj)
-            Error::raise("invalid object");
+            Error::raisef("no object with id %lu", h.id());
         obj->disconnect_callback(id);
         return true;
     }
