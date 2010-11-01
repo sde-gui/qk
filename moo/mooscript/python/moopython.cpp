@@ -41,7 +41,7 @@ find_python_dll (gboolean py3)
 #ifdef __WIN32__
         "python35", "python34", "python33", "python32", "python31",
 #else
-        "python3.5", "python34", "python33", "python32", "python31",
+        "python3.5", "python3.4", "python3.3", "python3.2", "python3.1",
 #endif
         NULL
     };
@@ -56,7 +56,12 @@ find_python_dll (gboolean py3)
 
     for (p = libs; p && *p; ++p)
     {
-        char *path = g_module_build_path (NULL, *p);
+        char *path =
+#ifdef __WIN32__
+            g_strdup_printf ("%s.dll", *p);
+#else
+            g_module_build_path (NULL, *p);
+#endif
         if (path)
             module = g_module_open (path, G_MODULE_BIND_LAZY);
         g_free (path);
