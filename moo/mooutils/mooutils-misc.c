@@ -1198,6 +1198,14 @@ _moo_get_pid_string (void)
 }
 
 
+gboolean
+moo_getenv_bool (const char *var)
+{
+    const char *value = g_getenv (var);
+    return value && *value && strcmp (value, "0") != 0;
+}
+
+
 char *
 moo_tempnam (void)
 {

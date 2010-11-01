@@ -103,6 +103,8 @@ char      **moo_get_lib_subdirs             (const char     *subdir);
 #define moo_get_data_files moo_get_data_subdirs
 #define moo_get_sys_data_files moo_get_sys_data_subdirs
 
+gboolean    moo_getenv_bool                 (const char     *var);
+
 char       *moo_tempnam                     (void);
 void        moo_cleanup                     (void);
 
