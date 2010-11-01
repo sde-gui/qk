@@ -9,7 +9,7 @@ plugins_sources +=			\
 	plugins/moofilelist.c		\
 	plugins/moofind.c		\
 	plugins/mooluaplugin.cpp	\
-	plugins/moopython.c
+	plugins/moopythonplugin.c
 
 EXTRA_DIST +=						\
 	plugins/glade/moofileselector-prefs.glade	\
@@ -22,12 +22,6 @@ built_plugins_sources +=		\
 	moofileselector-gxml.h		\
 	moofind-gxml.h			\
 	moogrep-gxml.h
-
-EXTRA_DIST += plugins/moopython.py
-built_plugins_sources += plugins/moopython-py.h
-plugins/moopython-py.h: plugins/moopython.py $(top_srcdir)/tools/xml2h.py
-	$(AM_V_at)$(MKDIR_P) plugins
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $< $@.tmp MOO_PYTHON_PY && mv $@.tmp $@
 
 EXTRA_DIST += plugins/lua-module-setup.lua
 built_plugins_sources += lua-module-setup.h

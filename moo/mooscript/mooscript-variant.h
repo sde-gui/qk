@@ -30,6 +30,9 @@ public:
 
 class ArgArray : public VariantArray
 {
+public:
+    ArgArray() {}
+    ArgArray(const VariantArray &ar) : VariantArray(ar) {}
 };
 
 class VariantDict : public moo::Dict<String, Variant>

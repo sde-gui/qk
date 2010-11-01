@@ -97,7 +97,6 @@ moo_sources +=				\
 	mooutils/mooprefsdialog.h	\
 	mooutils/mooprefspage.c		\
 	mooutils/mooprefspage.h		\
-	mooutils/moopython.h		\
 	mooutils/moospawn.c		\
 	mooutils/moospawn.h		\
 	mooutils/moostat.h		\
@@ -114,7 +113,6 @@ moo_sources +=				\
 	mooutils/mooutils-file.c	\
 	mooutils/mooutils-file.h	\
 	mooutils/mooutils-file-private.h\
-	mooutils/mooutils-fli.c		\
 	mooutils/mooutils-fs.c		\
 	mooutils/mooutils-fs.h		\
 	mooutils/mooutils-gobject-private.h \

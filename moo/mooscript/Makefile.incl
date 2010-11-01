@@ -42,3 +42,4 @@ mooscript/mooscript.stamp: $(MOO_SCRIPT_PARSER_FILES) mooscript/mooscript.xml
 endif
 
 include mooscript/lua/Makefile.incl
+include mooscript/python/Makefile.incl

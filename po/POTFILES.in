@@ -60,7 +60,7 @@ moo/plugins/moofileselector.c
 moo/plugins/moofileselector-prefs.c
 moo/plugins/moofind.c
 moo/plugins/mooluaplugin.cpp
-moo/plugins/moopython.c
+moo/plugins/moopythonplugin.c
 moo/plugins/usertools/exe/moocommand-exe.c
 moo/plugins/usertools/filters.xml
 moo/plugins/usertools/glade/mooedittools-exe.glade

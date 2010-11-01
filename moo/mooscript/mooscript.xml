@@ -72,6 +72,8 @@
 
     <signal name='document-save-before'>
       <param name='doc' type='Document'/>
+      <param name='path' type='string'/>
+      <param name='encoding' type='string'/>
     </signal>
     <signal name='document-save-after'>
       <param name='doc' type='Document'/>

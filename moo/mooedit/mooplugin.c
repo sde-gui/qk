@@ -950,11 +950,6 @@ moo_plugin_shutdown (void)
         list = g_slist_delete_link (list, list);
     }
 
-    /* XXX */
-#if 0 && defined(MOO_USE_PYTHON)
-    _moo_python_plugin_deinit ();
-#endif
-
     plugin_store->dirs_read = FALSE;
     plugin_store->editor = NULL;
 

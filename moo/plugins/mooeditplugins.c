@@ -15,14 +15,14 @@
 
 #include <config.h>
 #include "mooeditplugins.h"
+#include "mooutils/mooutils-misc.h"
 
 void
 moo_plugin_init_builtin (void)
 {
-    const char *v = g_getenv ("MOO_DISABLE_PYTHON");
-    if (!v || !*v)
+    if (!moo_getenv_bool ("MOO_DISABLE_PYTHON"))
         _moo_python_plugin_init ();
-    if (0)
+    if (!moo_getenv_bool ("MOO_DISABLE_LUA"))
         _moo_lua_plugin_init ();
     _moo_file_selector_plugin_init ();
     _moo_file_list_plugin_init ();

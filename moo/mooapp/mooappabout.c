@@ -46,15 +46,6 @@ static gpointer credits_dialog;
 #define MOO_TYPE_HTML GTK_TYPE_TEXT_VIEW
 #endif
 
-static char *
-get_python_info (void)
-{
-    if (!moo_python_running ())
-        return NULL;
-
-    return moo_python_get_info ();
-}
-
 static void
 set_translator_credits (CreditsDialogXml *gxml)
 {
@@ -254,18 +245,6 @@ moo_app_get_system_info (MooApp *app)
                             GTK_MAJOR_VERSION,
                             GTK_MINOR_VERSION,
                             GTK_MICRO_VERSION);
-
-    if (moo_python_running ())
-    {
-        g_string_append (text, "Python support: yes\n");
-        string = get_python_info ();
-        g_string_append_printf (text, "Python: %s\n", string ? string : "None");
-        g_free (string);
-    }
-    else
-    {
-        g_string_append (text, "Python support: no\n");
-    }
 
     g_string_append_printf (text, "libxml2: %s\n", LIBXML_DOTTED_VERSION);
 

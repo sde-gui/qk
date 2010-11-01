@@ -12,6 +12,12 @@ private:
     String m_message;
 
 public:
+    Result() NOTHROW
+        : m_success(true)
+        , m_message()
+    {
+    }
+
     Result(bool success, const String &message = "unknown error") NOTHROW
         : m_success(success)
         , m_message(message)

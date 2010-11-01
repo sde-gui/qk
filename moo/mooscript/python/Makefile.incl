@@ -1,0 +1,33 @@
+moo_sources +=						\
+	mooscript/python/moopython.h			\
+	mooscript/python/moopython.cpp
+
+built_moo_sources +=					\
+	mooscript/python/moopython-init.h		\
+	mooscript/python/moopython-init-script.h
+
+EXTRA_DIST +=						\
+	mooscript/python/moopython-init.py		\
+	mooscript/python/moopython-init-script.py
+
+mooscript/python/moopython-init.h: mooscript/python/moopython-init.py
+	$(AM_V_at)$(MKDIR_P) mooscript/python
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/mooscript/python/moopython-init.py \
+		mooscript/python/moopython-init.h.tmp MOO_PYTHON_INIT \
+		&& mv mooscript/python/moopython-init.h.tmp mooscript/python/moopython-init.h
+
+mooscript/python/moopython-init-script.h: mooscript/python/moopython-init-script.py
+	$(AM_V_at)$(MKDIR_P) mooscript/python
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/mooscript/python/moopython-init-script.py \
+		mooscript/python/moopython-init-script.h.tmp MOO_PYTHON_INIT_SCRIPT \
+		&& mv mooscript/python/moopython-init-script.h.tmp mooscript/python/moopython-init-script.h
+
+pythondir = $(MOO_DATA_DIR)/python
+EXTRA_DIST += mooscript/python/moo
+install-data-local: install-python-moo
+uninstall-local: uninstall-python-moo
+install-python-moo:
+	$(MKDIR_P) $(DESTDIR)$(pythondir)/moo
+	cd $(srcdir) && $(INSTALL_DATA) mooscript/python/moo/*.py $(DESTDIR)$(pythondir)/moo/
+uninstall-python-moo:
+	rm -f $(DESTDIR)$(pythondir)/moo/*.py $(DESTDIR)$(pythondir)/moo/*.pyc

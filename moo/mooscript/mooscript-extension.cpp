@@ -38,7 +38,6 @@ mom_signal_editor_save_before (MooEdit *doc, GFile *file, const char *encoding)
             return false;
 
         ArgArray args;
-        args.append(HObject(editor));
         args.append(HObject(*Document::wrap(doc)));
         args.append(String(path));
         args.append(String(encoding));

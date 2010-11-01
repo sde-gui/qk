@@ -25,11 +25,11 @@
 #include "mooapp-info.h"
 #include "mooappabout.h"
 #include "mooscript/lua/moolua.h"
+#include "mooscript/python/moopython.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
 #include "mooutils/mooprefsdialog.h"
-#include "mooutils/moopython.h"
 #include "marshals.h"
 #include "mooutils/mooappinput.h"
 #include "mooutils/moodialogs.h"
@@ -476,8 +476,10 @@ moo_app_get_instance (void)
 }
 
 
-#define SCRIPT_PREFIX_LUA "lua-script:"
-#define SCRIPT_PREFIX_LUA_FILE "lua-file:"
+#define SCRIPT_PREFIX_LUA "lua:"
+#define SCRIPT_PREFIX_LUA_FILE "luaf:"
+#define SCRIPT_PREFIX_PYTHON "py:"
+#define SCRIPT_PREFIX_PYTHON_FILE "pyf:"
 
 void
 moo_app_run_script (MooApp     *app,
@@ -490,6 +492,10 @@ moo_app_run_script (MooApp     *app,
         medit_lua_run_string (script + strlen (SCRIPT_PREFIX_LUA));
     else if (g_str_has_prefix (script, SCRIPT_PREFIX_LUA_FILE))
         medit_lua_run_file (script + strlen (SCRIPT_PREFIX_LUA_FILE));
+    else if (g_str_has_prefix (script, SCRIPT_PREFIX_PYTHON))
+        moo_python_run_string (script + strlen (SCRIPT_PREFIX_PYTHON));
+    else if (g_str_has_prefix (script, SCRIPT_PREFIX_PYTHON_FILE))
+        moo_python_run_file (script + strlen (SCRIPT_PREFIX_PYTHON_FILE));
     else
         medit_lua_run_string (script);
 }
