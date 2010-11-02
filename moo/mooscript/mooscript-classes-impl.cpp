@@ -2,6 +2,7 @@
 #include "mooscript-classes-util.h"
 #include "mooapp/mooapp.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moodialogs.h"
 #include <string.h>
 #include <sstream>
 
@@ -172,15 +173,94 @@ void Application::quit()
     moo_app_quit(moo_app_get_instance());
 }
 
+struct DialogButtons
+{
+    GtkButtonsType bt;
+    moo::Vector<String> custom;
+    String default_button;
+};
+
+static DialogButtons parse_buttons(const Variant &var)
+{
+    DialogButtons buttons = { GTK_BUTTONS_NONE };
+
+    if (var.vt() == VtVoid)
+        return buttons;
+
+    if (var.vt() == VtArray)
+    {
+        buttons.custom = get_string_list(var);
+        return buttons;
+    }
+
+    if (var.vt() == VtString)
+    {
+        const String &str = var.value<VtString>();
+        if (str == "none")
+            buttons.bt = GTK_BUTTONS_NONE;
+        else if (str == "ok")
+            buttons.bt = GTK_BUTTONS_OK;
+        else if (str == "close")
+            buttons.bt = GTK_BUTTONS_CLOSE;
+        else if (str == "cancel")
+            buttons.bt = GTK_BUTTONS_CANCEL;
+        else if (str == "yesno")
+            buttons.bt = GTK_BUTTONS_YES_NO;
+        else if (str == "okcancel")
+            buttons.bt = GTK_BUTTONS_OK_CANCEL;
+        else
+            Error::raisef("in function %s, invalid dialog buttons value '%s'",
+                          (const char*) current_func().name, (const char*) str);
+        return buttons;
+    }
+
+    Error::raisef("in function %s, invalid dialog buttons value",
+                  (const char*) current_func().name);
+}
+
+static void
+add_buttons (GtkWidget *dialog, const DialogButtons &buttons)
+{
+    int default_response = G_MININT;
+
+    for (int i = 0, c = buttons.custom.size(); i < c; ++i)
+    {
+        gtk_dialog_add_button(GTK_DIALOG(dialog), buttons.custom[i], i);
+        if (buttons.custom[i] == buttons.default_button)
+            default_response = i;
+    }
+
+    if (default_response < 0 && !buttons.default_button.empty())
+    {
+        if (buttons.default_button == "ok")
+            default_response = GTK_RESPONSE_OK;
+        else if (buttons.default_button == "close")
+            default_response = GTK_RESPONSE_CLOSE;
+        else if (buttons.default_button == "cancel")
+            default_response = GTK_RESPONSE_CANCEL;
+        else if (buttons.default_button == "yes")
+            default_response = GTK_RESPONSE_YES;
+        else if (buttons.default_button == "no")
+            default_response = GTK_RESPONSE_NO;
+        else
+            Error::raisef("in function %s, invalid default button '%s'",
+                          (const char*) current_func().name,
+                          (const char*) buttons.default_button);
+    }
+
+    if (default_response != G_MININT)
+        gtk_dialog_set_default_response(GTK_DIALOG(dialog), default_response);
+}
+
 struct DialogOptions
 {
     String title;
     String dialog_id;
     String icon;
-    String buttons;
+    DialogButtons buttons;
     gint64 width;
     gint64 height;
-    gint64 timeout;
+    DocumentWindow *parent;
 };
 
 struct FileDialogOptions
@@ -206,6 +286,7 @@ struct MessageDialogOptions
 {
     String kind;
     String text;
+    String secondary_text;
 };
 
 struct EntryDialogOptions
@@ -223,6 +304,70 @@ struct TextDialogOptions
     bool editable;
 };
 
+static void setup_dialog(GtkWidget *dialog, const DialogOptions &opts)
+{
+    add_buttons(dialog, opts.buttons);
+
+    if (!opts.title.empty())
+        gtk_window_set_title(GTK_WINDOW(dialog), opts.title);
+
+    if (opts.parent)
+        moo_window_set_parent(dialog, GTK_WIDGET(opts.parent->gobj()));
+
+    if (!opts.dialog_id.empty())
+    {
+        String prefs_key("Dialogs/");
+        prefs_key += opts.dialog_id;
+        _moo_window_set_remember_size(GTK_WINDOW(dialog), prefs_key, opts.width, opts.height, FALSE);
+    }
+    else if (opts.width > 0 && opts.height > 0)
+    {
+        gtk_window_set_default_size(GTK_WINDOW(dialog), opts.width, opts.height);
+    }
+
+    if (!opts.icon.empty())
+        gtk_window_set_icon_name(GTK_WINDOW(dialog), opts.icon);
+}
+
+static String response_to_string(int response, const DialogOptions &opts)
+{
+    if (response >= 0)
+    {
+        if (response >= opts.buttons.custom.size())
+            Error::raisef("in function %s, got unexpected response %d from dialog",
+                          (const char*) current_func().name, response);
+        return opts.buttons.custom[response];
+    }
+
+    switch (response)
+    {
+        case GTK_RESPONSE_NONE:
+        case GTK_RESPONSE_DELETE_EVENT:
+            return "";
+        case GTK_RESPONSE_REJECT:
+            return "reject";
+        case GTK_RESPONSE_ACCEPT:
+            return "accept";
+        case GTK_RESPONSE_OK:
+            return "ok";
+        case GTK_RESPONSE_CANCEL:
+            return "cancel";
+        case GTK_RESPONSE_CLOSE:
+            return "close";
+        case GTK_RESPONSE_YES:
+            return "yes";
+        case GTK_RESPONSE_NO:
+            return "no";
+        case GTK_RESPONSE_APPLY:
+            return "apply";
+        case GTK_RESPONSE_HELP:
+            return "help";
+        default:
+            Error::raisef("in function %s, got unexpected response %d from dialog",
+                          (const char*) current_func().name, response);
+    }
+}
+
 static Variant show_file_dialog(G_GNUC_UNUSED const FileDialogOptions &dopts, G_GNUC_UNUSED const DialogOptions &opts)
 {
     Error::raise("not implemented");
@@ -233,9 +378,31 @@ static Variant show_list_dialog(G_GNUC_UNUSED const ListDialogOptions &dopts, G_
     Error::raise("not implemented");
 }
 
-static Variant show_message_dialog(G_GNUC_UNUSED const MessageDialogOptions &dopts, G_GNUC_UNUSED const DialogOptions &opts)
+static Variant show_message_dialog(const MessageDialogOptions &dopts, const DialogOptions &opts)
 {
-    Error::raise("not implemented");
+    GtkMessageType type = GTK_MESSAGE_OTHER;
+    if (dopts.kind == "error")
+        type = GTK_MESSAGE_ERROR;
+    else if (dopts.kind == "warning")
+        type = GTK_MESSAGE_WARNING;
+    else if (dopts.kind == "question")
+        type = GTK_MESSAGE_QUESTION;
+    else if (dopts.kind == "information" || dopts.kind == "info")
+        type = GTK_MESSAGE_INFO;
+    else
+        Error::raisef("in function %s, invalid message dialog kind '%s'",
+                      (const char*) current_func().name, (const char*) dopts.kind);
+
+    GtkWidget *dialog = gtk_message_dialog_new (0, GTK_DIALOG_MODAL, type, opts.buttons.bt,
+                                                "%s", (const char*) dopts.text);
+    if (!dopts.secondary_text.empty())
+        gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog), "%s",
+                                                  (const char*) dopts.secondary_text);
+
+    setup_dialog(dialog, opts);
+
+    int response = gtk_dialog_run(GTK_DIALOG(dialog));
+    return response_to_string(response, opts);
 }
 
 static Variant show_entry_dialog(G_GNUC_UNUSED const EntryDialogOptions &dopts, G_GNUC_UNUSED const DialogOptions &opts)
@@ -260,10 +427,11 @@ Variant Application::dialog(const ArgSet &args)
     opts.title = get_kwarg_string_opt(args, "title");
     opts.dialog_id = get_kwarg_string_opt(args, "id");
     opts.icon = get_kwarg_string_opt(args, "icon");
-    opts.buttons = get_kwarg_string_opt(args, "buttons");
     opts.width = get_kwarg_int_opt(args, "width", -1);
     opts.height = get_kwarg_int_opt(args, "height", -1);
-    opts.timeout = get_kwarg_int_opt(args, "timeout", -1);
+    opts.buttons = parse_buttons(get_kwarg_variant_opt(args, "buttons"));
+    opts.buttons.default_button = get_kwarg_string_opt(args, "default_button");
+    opts.parent = get_object_arg_opt<DocumentWindow>(args.kw.value("parent"), "parent");
 
     String kind = get_kwarg_string(args, "kind");
 
@@ -295,6 +463,7 @@ Variant Application::dialog(const ArgSet &args)
         MessageDialogOptions dopts;
         dopts.kind = kind;
         dopts.text = get_kwarg_string(args, "text");
+        dopts.secondary_text = get_kwarg_string_opt(args, "secondary_text");
         return show_message_dialog(dopts, opts);
     }
 

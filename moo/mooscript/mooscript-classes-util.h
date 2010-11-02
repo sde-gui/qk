@@ -219,6 +219,11 @@ inline bool get_kwarg_bool_opt(const ArgSet &args, const char *argname, bool dfl
     return get_arg_bool_opt(args.kw.value(argname), argname, dflt);
 }
 
+inline Variant get_kwarg_variant_opt(const ArgSet &args, const char *argname)
+{
+    return get_arg_variant_opt(args.kw.value(argname), argname);
+}
+
 } // namespace mom
 
 #endif /* MOO_SCRIPT_CLASSES_UTIL_H */
