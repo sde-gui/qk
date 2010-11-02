@@ -46,6 +46,8 @@ class _MethodBase(object):
         self.name = name
         self.params = []
         self.retval = None
+        self.varargs = False
+        self.kwargs = False
 
 class Method(_MethodBase):
     def __init__(self, name):
@@ -111,7 +113,7 @@ class Parser(object):
             raise RuntimeError("oops: '%s'" % (typ,))
 
     def __check_types(self, mod):
-        for t in ('bool', 'string', 'variant', 'list', 'int', 'index', 'args'):
+        for t in ('bool', 'string', 'variant', 'list', 'int', 'index', 'arglist', 'argset'):
             mod.types[t] = BasicType(t)
         for name in mod.classes:
             cls = mod.classes[name]
@@ -156,7 +158,15 @@ class Parser(object):
         if elm.get('varargs') is not None:
             va = parse_bool(elm.get('varargs'))
             if va:
-                meth.params.append(Param('args', 'args'))
+                meth.varargs = True
+                meth.params.append(Param('args', 'arglist'))
+            else:
+                raise RuntimeError('oops')
+        elif elm.get('kwargs') is not None:
+            va = parse_bool(elm.get('kwargs'))
+            if va:
+                meth.kwargs = True
+                meth.params.append(Param('args', 'argset'))
             else:
                 raise RuntimeError('oops')
         elif elm.get('param-name') is not None:

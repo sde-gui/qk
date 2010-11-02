@@ -12,7 +12,7 @@ class Object;
 class Method : public moo::RefCounted<Method>
 {
 public:
-    virtual Variant call (Object &obj, const ArgArray &args) = 0;
+    virtual Variant call(Object &obj, const ArgSet &args) = 0;
 };
 
 class Signal : public moo::RefCounted<Signal>
@@ -38,19 +38,19 @@ public:
     moo::SharedPtr<Signal> lookup_signal(const String &sig) const NOTHROW { return m_signals.value(sig); }
 
     template<typename TObject>
-    void add_method(const String &meth, Variant (TObject::*impl)(const ArgArray &args))
+    void add_method(const String &meth, Variant (TObject::*impl)(const ArgSet &args))
     {
         class MethodImpl : public Method
         {
         public:
-            typedef Variant (TObject::*CallFunc)(const ArgArray &args);
+            typedef Variant (TObject::*CallFunc)(const ArgSet &args);
 
             MethodImpl(CallFunc impl)
                 : m_impl(impl)
             {
             }
 
-            Variant call(Object &obj, const ArgArray &args)
+            Variant call(Object &obj, const ArgSet &args)
             {
                 TObject &tobj = static_cast<TObject&>(obj);
                 return (tobj.*m_impl)(args);
@@ -97,7 +97,7 @@ protected: \
 class Object : public moo::RefCounted<Object>
 {
 public:
-    Variant call_method(const String &meth, const ArgArray &args);
+    Variant call_method(const String &meth, const ArgSet &args);
 
     gulong connect_callback(const String &name, moo::SharedPtr<Callback> cb);
     void disconnect_callback(gulong id);

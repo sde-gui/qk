@@ -15,7 +15,8 @@ enum VariantType
     VtDouble,
     VtString,
     VtArray,
-    VtArgs,
+    VtArgList,
+    VtArgDict,
     VtDict,
     VtObject,
 };
@@ -28,17 +29,24 @@ public:
     VariantArray() : moo::Vector<Variant>() {}
 };
 
-class ArgArray : public VariantArray
+class ArgList : public VariantArray
 {
 public:
-    ArgArray() {}
-    ArgArray(const VariantArray &ar) : VariantArray(ar) {}
+    ArgList() {}
+    ArgList(const VariantArray &ar) : VariantArray(ar) {}
 };
 
 class VariantDict : public moo::Dict<String, Variant>
 {
 public:
     VariantDict() : moo::Dict<String, Variant>() {}
+};
+
+class ArgDict : public VariantDict
+{
+public:
+    ArgDict() {}
+    ArgDict(const VariantDict &dic) : VariantDict(dic) {}
 };
 
 union VariantData
@@ -141,7 +149,8 @@ MOM_DEFINE_VT_HELPER(VtDouble, double)
 MOM_DEFINE_VT_HELPER(VtObject, HObject)
 MOM_DEFINE_VT_HELPER(VtString, String)
 MOM_DEFINE_VT_HELPER(VtArray, VariantArray)
-MOM_DEFINE_VT_HELPER(VtArgs, ArgArray)
+MOM_DEFINE_VT_HELPER(VtArgList, ArgList)
+MOM_DEFINE_VT_HELPER(VtArgDict, ArgDict)
 MOM_DEFINE_VT_HELPER(VtDict, VariantDict)
 
 #undef MOM_DEFINE_VT_HELPER
@@ -164,7 +173,8 @@ inline void destroyTyped(VariantData &data)
     MOM_VT_CASE(VtObject, what);    \
     MOM_VT_CASE(VtString, what);    \
     MOM_VT_CASE(VtArray, what);     \
-    MOM_VT_CASE(VtArgs, what);      \
+    MOM_VT_CASE(VtArgList, what);   \
+    MOM_VT_CASE(VtArgDict, what);   \
     MOM_VT_CASE(VtDict, what);
 
 NOTHROW inline void destroy(VariantType vt, VariantData &data)

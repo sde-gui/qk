@@ -4,7 +4,7 @@
 
 using namespace mom;
 
-void mom::emit_signal(Object &obj, const char *name, const ArgArray &args, Accumulator *acc) throw()
+void mom::emit_signal(Object &obj, const char *name, const ArgList &args, Accumulator *acc) throw()
 {
     try
     {
@@ -37,7 +37,7 @@ mom_signal_editor_save_before (MooEdit *doc, GFile *file, const char *encoding)
         if (!editor.has_callbacks("document-save-before"))
             return false;
 
-        ArgArray args;
+        ArgList args;
         args.append(HObject(*Document::wrap(doc)));
         args.append(String(path));
         args.append(String(encoding));
@@ -60,7 +60,7 @@ mom_signal_editor_save_after (MooEdit *doc)
         if (!editor.has_callbacks("document-save-after"))
             return;
 
-        ArgArray args;
+        ArgList args;
         args.append(HObject(*Document::wrap(doc)));
         emit_signal(editor, "document-save-after", args);
     }

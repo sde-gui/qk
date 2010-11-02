@@ -59,16 +59,26 @@ private:
 class Callback : public moo::RefCounted<Callback>
 {
 public:
-    virtual Variant run(const ArgArray &args) = 0;
+    virtual Variant run(const ArgList &args) = 0;
     virtual void on_connect() = 0;
     virtual void on_disconnect() = 0;
+};
+
+struct ArgSet
+{
+    ArgList pos;
+    ArgDict kw;
+
+    ArgSet() {}
+    explicit ArgSet(const ArgList &pos) : pos(pos) {}
+    ArgSet(const ArgList &pos, const ArgDict &kw) : pos(pos), kw(kw) {}
 };
 
 class Script
 {
 public:
     static HObject get_app_obj() NOTHROW;
-    static Result call_method(HObject obj, const String &meth, const ArgArray &args, Variant &ret) NOTHROW;
+    static Result call_method(HObject obj, const String &meth, const ArgSet &args, Variant &ret) NOTHROW;
     static Result connect_callback(HObject obj, const String &event, moo::SharedPtr<Callback> cb, gulong &id) NOTHROW;
     static Result disconnect_callback(HObject obj, gulong id) NOTHROW;
 };

@@ -47,7 +47,7 @@ private:
     bool m_stop;
 };
 
-void emit_signal(Object &obj, const char *name, const ArgArray &args, Accumulator *acc = 0) throw();
+void emit_signal(Object &obj, const char *name, const ArgList &args, Accumulator *acc = 0) throw();
 
 } // namespace mom
 

@@ -148,9 +148,9 @@ encode_variant (const Variant &val, GString *str)
         case VtArray:
             encode_list (val.value<VtArray>(), str);
             break;
-        case VtArgs:
-            encode_list (val.value<VtArgs>(), str);
-            break;
+//         case VtArgList:
+//             encode_list (val.value<VtArgList>(), str);
+//             break;
         case VtDict:
             encode_dict (val.value<VtDict>(), str);
             break;
@@ -184,7 +184,7 @@ encode_list (const VariantArray &list, GString *str)
 }
 
 static void
-encode_args (const ArgArray &args, GString *str)
+encode_args (const ArgList &args, GString *str)
 {
     encode_list_elms (args, str);
 }
@@ -331,11 +331,16 @@ cfunc_push_retval (guint id, const Variant *value)
     moo_python_module.retvals[id] = *value;
 }
 
-#define CFUNC_PROTO_call_method "ctypes.c_char_p, ctypes.c_uint, ctypes.c_char_p, ctypes.c_void_p"
+#define CFUNC_PROTO_call_method "ctypes.c_char_p, ctypes.c_uint, ctypes.c_char_p, ctypes.c_void_p, ctypes.c_void_p"
 static char *
-cfunc_call_method (guint obj_id, const char *method, const VariantArray *argsv)
+cfunc_call_method (guint obj_id, const char *method, const VariantArray *args_pos, const VariantDict *args_kw)
 {
-    ArgArray args (argsv ? *argsv : VariantArray ());
+    ArgSet args;
+    if (args_pos)
+        args.pos = *args_pos;
+    if (args_kw)
+        args.kw = *args_kw;
+
     Variant ret;
 
     moo_python_ref ();
@@ -352,7 +357,7 @@ struct MooPythonCallback : public Callback
 {
     gulong id;
 
-    Variant run(const ArgArray &args)
+    Variant run(const ArgList &args)
     {
         guint retval_id = ++moo_python_module.last_retval_id;
 
@@ -368,7 +373,7 @@ struct MooPythonCallback : public Callback
 
         if (result != 0)
         {
-            moo_message ("error in PyRun_SimpleString");
+//             moo_message ("error in PyRun_SimpleString");
             return Variant();
         }
         else if (!moo_python_module.retvals.contains(retval_id))
@@ -545,7 +550,7 @@ moo_python_init_impl (void)
 
     if (moo_python_module.pfn_PyRun_SimpleString (init_script->str) != 0)
     {
-        moo_message ("error in PyRun_SimpleString");
+        moo_critical ("error in PyRun_SimpleString");
         goto error;
     }
 
@@ -642,7 +647,7 @@ moo_python_run_string_full (const char *prefix,
 
     if (moo_python_module.pfn_PyRun_SimpleString (script->str) != 0)
     {
-        moo_message ("error in PyRun_SimpleString");
+//         moo_message ("error in PyRun_SimpleString");
         ret = FALSE;
     }
 

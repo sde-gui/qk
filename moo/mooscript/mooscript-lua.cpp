@@ -104,7 +104,7 @@ static Variant get_arg_variant(lua_State *L, int narg);
 
 static Variant convert_table_to_variant(lua_State *L, int narg)
 {
-    ArgArray ar;
+    ArgList list;
     VariantDict dic;
 
     size_t len = lua_objlen(L, narg);
@@ -116,7 +116,7 @@ static Variant convert_table_to_variant(lua_State *L, int narg)
 
         bool int_idx = lua_isnumber(L, -2);
 
-        if ((int_idx && !dic.empty()) || (!int_idx && !ar.empty()))
+        if ((int_idx && !dic.empty()) || (!int_idx && !list.empty()))
             luaL_argerror(L, narg, "either table with string keys or an array expected");
 
         if (int_idx)
@@ -125,10 +125,10 @@ static Variant convert_table_to_variant(lua_State *L, int narg)
             if (idx <= 0 || idx > (int) len)
                 luaL_argerror(L, narg, "either table with string keys or an array expected");
 
-            if (ar.size() < idx)
-                ar.resize(idx);
+            if (list.size() < idx)
+                list.resize(idx);
 
-            ar[idx - 1] = v;
+            list[idx - 1] = v;
         }
         else
         {
@@ -144,7 +144,7 @@ static Variant convert_table_to_variant(lua_State *L, int narg)
     if (!dic.empty())
         return dic;
     else
-        return ar;
+        return list;
 }
 
 static Variant get_arg_variant(lua_State *L, int narg)
@@ -199,7 +199,7 @@ static void check_result(lua_State *L, Result r)
 
 static void push_variant(lua_State *L, const Variant &v);
 
-static void push_args_array(lua_State *L, const ArgArray &args)
+static void push_args_array(lua_State *L, const ArgList &args)
 {
     for (int i = 0, c = args.size(); i < c; ++i)
         push_variant(L, args[i]);
@@ -222,12 +222,12 @@ static int cfunc_call_named_method(lua_State *L)
     if (harg.id() != self.id())
         first_arg = 1;
 
-    ArgArray args;
+    ArgList args;
     for (int i = first_arg; i <= lua_gettop(L); ++i)
         args.append(get_arg_variant(L, i));
 
     Variant v;
-    Result r = Script::call_method(self, meth, args, v);
+    Result r = Script::call_method(self, meth, ArgSet(args), v);
     check_result(L, r);
 
     if (v.vt() != VtVoid)
@@ -331,7 +331,8 @@ static void push_variant(lua_State *L, const Variant &v)
         case VtObject:
             push_object(L, v.value<VtObject>());
             return;
-        case VtArgs:
+        case VtArgList:
+        case VtArgDict:
             break;
     }
 
@@ -373,12 +374,12 @@ public:
         }
     }
 
-    Variant run(const ArgArray &args)
+    Variant run(const ArgList &args)
     {
         this->retval.reset();
         this->args = args;
         do_run(L, this);
-        this->args = ArgArray();
+        this->args = ArgList();
         Variant retval = this->retval;
         this->retval.reset();
         return retval;
@@ -396,7 +397,7 @@ public:
     lua_State *L;
     gulong id;
     Variant retval;
-    ArgArray args;
+    ArgList args;
 };
 
 static int cfunc_connect(lua_State *L)

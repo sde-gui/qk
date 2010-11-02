@@ -2,6 +2,8 @@
   <class name='Application' singleton='1'>
     <method name='editor' retval='Editor'/>
     <method name='quit'/>
+
+    <method name='dialog' retval='variant' kwargs='1'/>
   </class>
 
   <class name='Editor' singleton='1'>

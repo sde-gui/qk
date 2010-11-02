@@ -43,8 +43,10 @@ inline const char *get_argument_type_name(VariantType vt)
             return "string";
         case VtArray:
             return "list";
-        case VtArgs:
+        case VtArgList:
             return "arglist";
+        case VtArgDict:
+            return "argdict";
         case VtDict:
             return "dict";
         case VtObject:
@@ -62,17 +64,26 @@ NORETURN inline void invalid_argument_type(const char *arg, VariantType vt_expec
                   (const char*) current_func().name, arg, type_expected, type_actual);
 }
 
+NORETURN inline void missing_argument(const char *arg)
+{
+    Error::raisef("in function %s, missing argument '%s'",
+                  (const char*) current_func().name, arg);
+}
+
 #define DEFINE_GET_ARG_SIMPLE(Vt, Type, get_arg_func, wrap_func)    \
 inline Type get_arg_func(const Variant &var, const char *arg)       \
 {                                                                   \
+    if (var.vt() == VtVoid)                                         \
+        missing_argument(arg);                                      \
     if (var.vt() != Vt)                                             \
         invalid_argument_type(arg, Vt, var.vt());                   \
     return var.value<Vt>();                                         \
 }                                                                   \
-inline Type get_arg_func##_opt(const Variant &var, const char *arg) \
+inline Type get_arg_func##_opt(const Variant &var, const char *arg, \
+                               const Type &dflt=Type())             \
 {                                                                   \
     if (var.vt() == VtVoid)                                         \
-        return Type();                                              \
+        return dflt;                                                \
     else if (var.vt() != Vt)                                        \
         invalid_argument_type(arg, Vt, var.vt());                   \
     else                                                            \
@@ -129,6 +140,11 @@ inline Variant wrap_index(gint64 val)
     return Variant(Index(val));
 }
 
+inline Variant wrap_variant(const Variant &val)
+{
+    return val;
+}
+
 inline Variant get_arg_variant(const Variant &var, const char *)
 {
     return var;
@@ -177,6 +193,30 @@ inline T *get_object_arg_opt(const Variant &var, const char *argname)
 inline Variant wrap_object(Object *obj)
 {
     return HObject(obj ? obj->id() : 0);
+}
+
+inline String get_kwarg_string(const ArgSet &args, const char *argname)
+{
+    return get_arg_string(args.kw.value(argname), argname);
+}
+
+inline String get_kwarg_string_opt(const ArgSet &args, const char *argname)
+{
+    return get_arg_string_opt(args.kw.value(argname), argname);
+}
+
+inline gint64 get_kwarg_int_opt(const ArgSet &args, const char *argname, int dflt)
+{
+    Variant v = args.kw.value(argname);
+    if (v.vt() == VtVoid)
+        return dflt;
+    else
+        return get_arg_int(v, argname);
+}
+
+inline bool get_kwarg_bool_opt(const ArgSet &args, const char *argname, bool dflt=false)
+{
+    return get_arg_bool_opt(args.kw.value(argname), argname, dflt);
 }
 
 } // namespace mom

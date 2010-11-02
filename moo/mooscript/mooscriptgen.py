@@ -6,8 +6,6 @@ import tempfile
 
 import mooscriptparser as parser
 
-marshals = set()
-
 tmpl_decl_file_start = """\
 #ifndef MOO_SCRIPT_CLASSES_GENERATED_H
 #define MOO_SCRIPT_CLASSES_GENERATED_H
@@ -24,10 +22,6 @@ tmpl_decl_file_end = """\
 
 #endif /* MOO_SCRIPT_CLASSES_GENERATED_H */
 """
-
-# tmpl_decl_get_type_func = """\
-# GType mom_%(class_name)s_get_type (void) G_GNUC_CONST;
-# """
 
 tmpl_decl_forward_cls = """\
 class %(ClassName)s;
@@ -83,11 +77,8 @@ def make_method_dict(meth, cls):
     dic['signal_name'] = '-'.join(comps)
     return dic
 
-# tmpl_method_impl_decl = """\
-# %(retval)smom_%(class_name)s_%(method_name)s (Mom%(ClassName)s *self%(args)s);
-# """
 tmpl_gen_method_decl = """\
-    Variant _%(method_name)s(const ArgArray &args);
+    Variant %(method_name)s__imp__(const ArgSet &args);
 """
 tmpl_method_decl = """\
     %(retval)s%(method_name)s(%(args)s);
@@ -107,7 +98,8 @@ def format_param_decl(p):
             'list': 'const VariantArray &',
             'int': 'gint64 ',
             'index': 'gint64 ',
-            'args': 'const ArgArray &',
+            'arglist': 'const ArgList &',
+            'argset': 'const ArgSet &',
         }
         return basic_names[p.type.name] + p.name
 
@@ -204,18 +196,22 @@ FunctionCallInfo current_func()
     if (!func_calls.empty())
         return func_calls[func_calls.size() - 1];
     else
-        return FunctionCallInfo("<no function>");
+        moo_return_val_if_reached(FunctionCallInfo("<no function>"));
 }
 
-static void push_function_call(const char *name)
+class PushFunctionCall
 {
-    func_calls.append(FunctionCallInfo(name));
-}
+public:
+    explicit PushFunctionCall(const char *name)
+    {
+        func_calls.append(FunctionCallInfo(name));
+    }
 
-static void pop_function_call()
-{
-    func_calls.pop_back();
-}
+    ~PushFunctionCall()
+    {
+        func_calls.pop_back();
+    }
+};
 
 """
 
@@ -236,127 +232,56 @@ tmpl_impl_class_init_end = """\
 }
 """
 
-# tmpl_impl_assign_meth = """\
-#     klass->%(method_name)s = mom_%(class_name)s_%(method_name)s;
-# """
-
 tmpl_impl_method = """\
-    meta.add_method("%(method_name)s", &%(ClassName)s::_%(method_name)s);
+    meta.add_method("%(method_name)s", &%(ClassName)s::%(method_name)s__imp__);
 """
 
 tmpl_impl_signal = """\
     meta.add_signal("%(signal_name)s");
 """
 
-def format_mom_type(retval):
-    if retval is None:
-        return 'MOM_TYPE_NONE'
-    elif isinstance(retval.type, parser.Class):
-        comps = split_camel_case_name(retval.type.name)
-        return '_'.join(['MOM', 'TYPE'] + [s.upper() for s in comps])
-    else:
-        basic_types = {
-            'bool': 'MOM_TYPE_BOOL',
-            'string': 'MOM_TYPE_STRING',
-            'variant': 'MOM_TYPE_VARIANT',
-            'list': 'MOM_TYPE_LIST',
-            'args': 'MOM_TYPE_ARGS',
-            'int': 'MOM_TYPE_INT',
-            'index': 'MOM_TYPE_INDEX',
-            'base1': 'MOM_TYPE_BASE1',
-        }
-        return basic_types[retval.type.name]
-
-def format_marshal_type(p):
-    if p is None:
-        return 'VOID'
-    elif isinstance(p.type, parser.Class):
-        return 'OBJECT'
-    else:
-        basic_types = {
-            'bool': 'BOOL',
-            'string': 'STRING',
-            'variant': 'BOXED',
-            'list': 'BOXED',
-            'int': 'INT64',
-            'index': 'UINT64',
-            'args': 'BOXED',
-        }
-        return basic_types[p.type.name]
-
-def format_marshal(meth):
-    if meth.params:
-        arg_types = [format_marshal_type(p) for p in meth.params]
-    else:
-        arg_types = ['VOID']
-    m = 'mom_marshal_%s__%s' % (format_marshal_type(meth.retval), '_'.join(arg_types))
-    global marshals
-    marshals.add(m)
-    return m
-
 def write_class_init(cls, out):
     dic = make_class_dict(cls)
     out.write(tmpl_impl_class_init_start % dic)
 
-#     for meth in cls.methods.values():
-#         meth_dic = make_method_dict(meth, cls)
-#         out.write(tmpl_impl_assign_meth % meth_dic)
-
     for meth in cls.methods.values():
         meth_dic = make_method_dict(meth, cls)
-        meth_dic['accumulator'] = 'NULL'
-        meth_dic['marshal'] = format_marshal(meth)
-        meth_dic['TYPE_RET'] = format_mom_type(meth.retval)
-        meth_dic['n_params'] = len(meth.params)
         out.write(tmpl_impl_method % meth_dic)
 
     for meth in cls.signals.values():
         meth_dic = make_method_dict(meth, cls)
-        meth_dic['accumulator'] = 'NULL'
-        meth_dic['marshal'] = format_marshal(meth)
-        meth_dic['TYPE_RET'] = format_mom_type(meth.retval)
-        meth_dic['n_params'] = len(meth.params)
         out.write(tmpl_impl_signal % meth_dic)
-#         if meth.params:
-#             for p in meth.params:
-#                 mtype = format_mom_type(p)
-#                 out.write(tmpl_impl_method_param % (mtype,))
-#         out.write(');\n')
 
     out.write(tmpl_impl_class_init_end % dic)
 
-# def write_object_init(cls, out):
-#     dic = make_class_dict(cls)
-#     out.write(tmpl_impl_object_init % dic)
-
 tmpl_method_impl_start = """\
-Variant %(ClassName)s::_%(method_name)s(const ArgArray &args)
+Variant %(ClassName)s::%(method_name)s__imp__(const ArgSet &args)
 {
-    push_function_call("%(ClassName)s::%(method_name)s");
-    try {
+    PushFunctionCall pfc__("%(ClassName)s::%(method_name)s");
 """
 tmpl_method_impl_end = """\
-    } catch(...) {
-        pop_function_call();
-        throw;
-    }
 }
 """
 tmpl_check_no_args = """\
-    if (args.size() != 0)
+    if (!args.pos.empty() || !args.kw.empty())
         Error::raisef("in function %s, no arguments expected",
-                      (const char*) current_func().name);
+                          (const char*) current_func().name);
+"""
+tmpl_check_no_kwargs = """\
+    if (!args.kw.empty())
+        Error::raisef("in function %s, no keyword arguments expected",
+                          (const char*) current_func().name);
 """
 
 tmpl_get_obj_arg = """\
-    if (args.size() <= %(iarg)d)
+    if (args.pos.size() <= %(iarg)d)
         Error::raisef("in function %%s, argument '%(argname)s' missing",
-                      (const char*) current_func().name);
-    %(type)s &%(arg)s = get_object_arg<%(type)s>(args[%(iarg)d], "%(argname)s");
+                          (const char*) current_func().name);
+    %(type)s &%(arg)s = get_object_arg<%(type)s>(args.pos[%(iarg)d], "%(argname)s");
 """
 
 tmpl_get_obj_arg_opt = """\
-    %(type)s *%(arg)s = get_object_arg_opt<%(type)s>(args.size() > %(iarg)d ? args[%(iarg)d] : Variant(), "%(argname)s");
+    %(type)s *%(arg)s = get_object_arg_opt<%(type)s>(args.pos.size() > %(iarg)d ? args.pos[%(iarg)d] : Variant(), "%(argname)s");
 """
 
 def write_check_arg_object(meth, p, i, out):
@@ -367,14 +292,14 @@ def write_check_arg_object(meth, p, i, out):
         out.write(tmpl_get_obj_arg % dic)
 
 tmpl_get_arg = """\
-    if (args.size() <= %(iarg)d)
+    if (args.pos.size() <= %(iarg)d)
         Error::raisef("in function %%s, argument '%(argname)s' missing",
                       (const char*) current_func().name);
-    %(type)s %(arg)s = %(get_arg)s(args[%(iarg)d], "%(argname)s");
+    %(type)s %(arg)s = %(get_arg)s(args.pos[%(iarg)d], "%(argname)s");
 """
 
 tmpl_get_arg_opt = """\
-    %(type)s %(arg)s = %(get_arg)s_opt(args.size() > %(iarg)d ? args[%(iarg)d] : Variant(), "%(argname)s");
+    %(type)s %(arg)s = %(get_arg)s_opt(args.pos.size() > %(iarg)d ? args.pos[%(iarg)d] : Variant(), "%(argname)s");
 """
 
 def write_check_arg(meth, p, i, out):
@@ -405,9 +330,12 @@ def write_check_arg(meth, p, i, out):
 def write_method_impl_check_args(meth, out):
     if not meth.params:
         out.write(tmpl_check_no_args)
-    elif len(meth.params) == 1 and meth.params[0].type.name == 'args':
+    elif meth.kwargs:
         pass
+    elif meth.varargs:
+        out.write(tmpl_check_no_kwargs)
     else:
+        out.write(tmpl_check_no_kwargs)
         i = 0
         for p in meth.params:
             write_check_arg(meth, p, i, out)
@@ -436,8 +364,10 @@ def write_method_impl_call_func(meth, out):
     write_wrap_retval(meth, out)
     out.write(meth.name + '(')
     if meth.params:
-        if len(meth.params) == 1 and meth.params[0].type.name == 'args':
+        if meth.kwargs:
             out.write('args')
+        elif meth.varargs:
+            out.write('args.pos')
         else:
             out.write(', '.join(['arg%d' % (i,) for i in range(len(meth.params))]))
     out.write(')')
@@ -475,13 +405,6 @@ def write_module_impl(out, mod):
 
     out.write(tmpl_impl_file_end)
 
-# def write_marshals(out):
-#     global marshals
-#     print >> out, "namespace mom {"
-#     for m in sorted(marshals):
-#         print >> out, 'static Variant %s(Object *self, const ArgArray &args);' % (m,)
-#     print >> out, "} // namespace mom"
-
 def generate_file(filename, gen_func, *args):
     tmp = tempfile.NamedTemporaryFile(dir=os.path.dirname(filename), delete=False)
     try:
@@ -497,7 +420,6 @@ def do_generate(input_file, decl_file, impl_file):
     mod = p.parse(input_file)
     generate_file(decl_file, write_module_decl, mod)
     generate_file(impl_file, write_module_impl, mod)
-#     generate_file(marshals_file, write_marshals)
 
 if __name__ == '__main__':
     from optparse import OptionParser

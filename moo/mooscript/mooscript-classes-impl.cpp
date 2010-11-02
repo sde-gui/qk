@@ -65,8 +65,8 @@ static moo::Vector<String> get_string_list(const Variant &val)
     VariantArray ar;
     if (val.vt() == VtArray)
         ar = val.value<VtArray>();
-    else if (val.vt() == VtArgs)
-        ar = val.value<VtArgs>();
+    else if (val.vt() == VtArgList)
+        ar = val.value<VtArgList>();
     else
         Error::raise("list expected");
     moo::Vector<String> ret;
@@ -120,8 +120,8 @@ static void get_pair(const Variant &val, Variant &elm1, Variant &elm2)
     VariantArray ar;
     if (val.vt() == VtArray)
         ar = val.value<VtArray>();
-    else if (val.vt() == VtArgs)
-        ar = val.value<VtArgs>();
+    else if (val.vt() == VtArgList)
+        ar = val.value<VtArgList>();
     else
         Error::raise("pair of values expected");
     if (ar.size() != 2)
@@ -170,6 +170,155 @@ Editor *Application::editor()
 void Application::quit()
 {
     moo_app_quit(moo_app_get_instance());
+}
+
+struct DialogOptions
+{
+    String title;
+    String dialog_id;
+    String icon;
+    String buttons;
+    gint64 width;
+    gint64 height;
+    gint64 timeout;
+};
+
+struct FileDialogOptions
+{
+    String filename;
+    bool multiple;
+    bool directory;
+    bool save;
+};
+
+struct ListDialogOptions
+{
+    moo::Vector<String> columns;
+    moo::Vector<String> data;
+    bool checklist;
+    bool radiolist;
+    bool editable;
+    bool show_header;
+    String return_column;
+};
+
+struct MessageDialogOptions
+{
+    String kind;
+    String text;
+};
+
+struct EntryDialogOptions
+{
+    String text;
+    String entry_text;
+    bool hide;
+};
+
+struct TextDialogOptions
+{
+    String text;
+    String info_text;
+    String filename;
+    bool editable;
+};
+
+static Variant show_file_dialog(G_GNUC_UNUSED const FileDialogOptions &dopts, G_GNUC_UNUSED const DialogOptions &opts)
+{
+    Error::raise("not implemented");
+}
+
+static Variant show_list_dialog(G_GNUC_UNUSED const ListDialogOptions &dopts, G_GNUC_UNUSED const DialogOptions &opts)
+{
+    Error::raise("not implemented");
+}
+
+static Variant show_message_dialog(G_GNUC_UNUSED const MessageDialogOptions &dopts, G_GNUC_UNUSED const DialogOptions &opts)
+{
+    Error::raise("not implemented");
+}
+
+static Variant show_entry_dialog(G_GNUC_UNUSED const EntryDialogOptions &dopts, G_GNUC_UNUSED const DialogOptions &opts)
+{
+    Error::raise("not implemented");
+}
+
+static Variant show_text_dialog(G_GNUC_UNUSED const TextDialogOptions &dopts, G_GNUC_UNUSED const DialogOptions &opts)
+{
+    Error::raise("not implemented");
+}
+
+/// @item Application.dialog()
+/// show a dialog.
+Variant Application::dialog(const ArgSet &args)
+{
+    if (!args.pos.empty())
+        Error::raisef("in function %s, no positional arguments expected",
+                          (const char*) current_func().name);
+
+    DialogOptions opts;
+    opts.title = get_kwarg_string_opt(args, "title");
+    opts.dialog_id = get_kwarg_string_opt(args, "id");
+    opts.icon = get_kwarg_string_opt(args, "icon");
+    opts.buttons = get_kwarg_string_opt(args, "buttons");
+    opts.width = get_kwarg_int_opt(args, "width", -1);
+    opts.height = get_kwarg_int_opt(args, "height", -1);
+    opts.timeout = get_kwarg_int_opt(args, "timeout", -1);
+
+    String kind = get_kwarg_string(args, "kind");
+
+    if (kind == "file" || kind == "file-selection")
+    {
+        FileDialogOptions dopts;
+        dopts.filename = get_kwarg_string_opt(args, "filename");
+        dopts.multiple = get_kwarg_bool_opt(args, "multiple");
+        dopts.directory = get_kwarg_bool_opt(args, "directory");
+        dopts.save = get_kwarg_bool_opt(args, "save");
+        return show_file_dialog(dopts, opts);
+    }
+
+    if (kind == "list")
+    {
+        ListDialogOptions dopts;
+        dopts.columns = get_string_list(args.kw.value("column"));
+        dopts.data = get_string_list(args.kw.value("data"));
+        dopts.checklist = get_kwarg_bool_opt(args, "checklist");
+        dopts.radiolist = get_kwarg_bool_opt(args, "radiolist");
+        dopts.editable = get_kwarg_bool_opt(args, "editable");
+        dopts.show_header = get_kwarg_bool_opt(args, "show_header");
+        dopts.return_column = get_kwarg_string_opt(args, "return_column");
+        return show_list_dialog(dopts, opts);
+    }
+
+    if (kind == "error" || kind == "warning" || kind == "question" || kind == "information")
+    {
+        MessageDialogOptions dopts;
+        dopts.kind = kind;
+        dopts.text = get_kwarg_string(args, "text");
+        return show_message_dialog(dopts, opts);
+    }
+
+    if (kind == "entry" || kind == "text-entry")
+    {
+        EntryDialogOptions dopts;
+        dopts.text = get_kwarg_string_opt(args, "text");
+        dopts.entry_text = get_kwarg_string_opt(args, "entry_text");
+        dopts.hide = get_kwarg_bool_opt(args, "hide");
+        return show_entry_dialog(dopts, opts);
+    }
+
+    if (kind == "text" || kind == "text-info")
+    {
+        TextDialogOptions dopts;
+        dopts.text = get_kwarg_string_opt(args, "text");
+        dopts.info_text = get_kwarg_string_opt(args, "info_text");
+        dopts.filename = get_kwarg_string_opt(args, "filename");
+        dopts.editable = get_kwarg_bool_opt(args, "editable");
+        return show_text_dialog(dopts, opts);
+    }
+
+    Error::raisef("in function %s, invalid dialog kind '%s'",
+                      (const char*) current_func().name, (const char*) kind);
 }
 
 ///
@@ -873,7 +1022,7 @@ VariantArray Document::selection()
 /// @item Document.set_selection(bounds_as_list)
 /// @item Document.set_selection(start, end)
 /// select text.
-void Document::set_selection(const ArgArray &args)
+void Document::set_selection(const ArgList &args)
 {
     GtkTextBuffer *buf = buffer(this);
     GtkTextIter start, end;
@@ -985,7 +1134,7 @@ String Document::char_at_pos(gint64 pos)
 /// returns text in the range [@param{start}, @param{end}), @param{end} not
 /// included. Example: @code{doc.text(doc.start_pos(), doc.end_pos())} is
 /// equivalent @code{to doc.text()}.
-String Document::text(const ArgArray &args)
+String Document::text(const ArgList &args)
 {
     if (args.size() == 0)
     {
@@ -1009,7 +1158,7 @@ String Document::text(const ArgArray &args)
 /// @item Document.insert_text(pos, text)
 /// insert text into the document. If @param{pos} is not given, insert at
 /// cursor position.
-void Document::insert_text(const ArgArray &args)
+void Document::insert_text(const ArgList &args)
 {
     String text;
     GtkTextIter iter;
@@ -1112,7 +1261,7 @@ void Document::paste()
 /// @item Document.select_text(bounds_as_list)
 /// @item Document.select_text(start, end)
 /// select text, same as @method{set_selection()}.
-void Document::select_text(const ArgArray &args)
+void Document::select_text(const ArgList &args)
 {
     GtkTextIter start, end;
     GtkTextBuffer *buf = buffer(this);
@@ -1139,7 +1288,7 @@ void Document::select_text(const ArgArray &args)
 /// @item Document.select_lines(first, last)
 /// select lines from @param{first} to @param{last}, @emph{including}
 /// @param{last}.
-void Document::select_lines(const ArgArray &args)
+void Document::select_lines(const ArgList &args)
 {
     Index first_line, last_line;
 
@@ -1198,7 +1347,7 @@ static void get_select_lines_range(const VariantArray &args, GtkTextBuffer *buf,
 /// @item Document.select_lines_at_pos(bounds_as_list)
 /// @item Document.select_lines_at_pos(start, end)
 /// select lines: similar to @method{select_text}, but select whole lines.
-void Document::select_lines_at_pos(const ArgArray &args)
+void Document::select_lines_at_pos(const ArgList &args)
 {
     GtkTextBuffer *buf = buffer(this);
     GtkTextIter start, end;

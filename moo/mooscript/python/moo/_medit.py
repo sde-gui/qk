@@ -72,9 +72,10 @@ class Method(object):
         self.__obj = obj
         self.__meth = meth
 
-    def __call__(self, *args):
+    def __call__(self, *args, **kwargs):
         args_v = VariantArray(args)
-        ret = eval(_medit_raw.call_method(self.__obj._id(), self.__meth, args_v.p))
+        kwargs_v = VariantDict(kwargs)
+        ret = eval(_medit_raw.call_method(self.__obj._id(), self.__meth, args_v.p, kwargs_v.p))
         if isinstance(ret, Exception):
             raise ret
         else:
