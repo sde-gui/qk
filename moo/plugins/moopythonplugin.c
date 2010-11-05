@@ -66,6 +66,8 @@ MOO_PLUGIN_DEFINE (MooPython, moo_python,
 gboolean
 _moo_python_plugin_init (void)
 {
+    return FALSE;
+
     MooPluginLoader loader = { load_python_module, NULL, NULL };
     moo_plugin_loader_register (&loader, "Python");
     MooPluginParams params = { TRUE, TRUE };
