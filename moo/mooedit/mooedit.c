@@ -31,6 +31,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooatom.h"
+#include "mooutils/moocompat.h"
 #include "mooeditprogress-gxml.h"
 #include <string.h>
 #include <stdlib.h>
@@ -1750,7 +1751,7 @@ _moo_edit_do_popup (MooEdit        *edit,
     menu = (GtkMenu*) moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup", edit->priv->actions,
                                                 window ? MOO_WINDOW(window)->accel_group : NULL);
     g_return_if_fail (menu != NULL);
-    MOO_OBJECT_REF_SINK (menu);
+    g_object_ref_sink (menu);
 
     _moo_edit_check_actions (edit);
 

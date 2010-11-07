@@ -238,17 +238,6 @@ gboolean    _moo_regex_escape               (const char *string,
 #define moo_obj_dup(type, p)    ((type*) moo_dup_block (sizeof (type), p))
 #endif
 
-#define MOO_OBJECT_REF_SINK moo_object_ref_sink
-static inline gpointer moo_object_ref_sink (gpointer obj)
-{
-#if GLIB_CHECK_VERSION(2,10,0)
-    g_object_ref_sink (obj);
-#else
-    gtk_object_sink (g_object_ref (obj));
-#endif
-    return obj;
-}
-
 G_END_DECLS
 
 

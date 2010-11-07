@@ -19,6 +19,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/moohelp.h"
 #include "mooutils/mooutils-treeview.h"
+#include "mooutils/moocompat.h"
 #include "help-sections.h"
 
 
@@ -162,7 +163,7 @@ moo_prefs_dialog_init (MooPrefsDialog *dialog)
     notebook = gtk_notebook_new ();
     gtk_widget_show (notebook);
     gtk_box_pack_start (GTK_BOX (hbox), notebook, TRUE, TRUE, 0);
-    GTK_WIDGET_UNSET_FLAGS (notebook, GTK_CAN_FOCUS);
+    GTK_WIDGET_UNSET_CAN_FOCUS (notebook);
     gtk_notebook_set_show_tabs (GTK_NOTEBOOK (notebook), FALSE);
     gtk_notebook_set_show_border (GTK_NOTEBOOK (notebook), FALSE);
 
@@ -438,10 +439,8 @@ moo_prefs_dialog_apply (MooPrefsDialog *dialog)
     {
         MooPrefsPage *page = list->data;
 
-        if (!(GTK_OBJECT_FLAGS (page) & GTK_IN_DESTRUCTION) &&
-            page->auto_apply &&
-            page_initialized (page))
-                g_signal_emit_by_name (page, "apply");
+        if (page->auto_apply && page_initialized (page))
+            g_signal_emit_by_name (page, "apply");
 
         g_object_unref (page);
         list = g_slist_delete_link (list, list);

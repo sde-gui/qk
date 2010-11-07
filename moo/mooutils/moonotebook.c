@@ -21,6 +21,7 @@
 #include "mooutils/moonotebook.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moopane.h"
+#include "mooutils/moocompat.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <string.h>
@@ -455,8 +456,8 @@ static void moo_notebook_class_init (MooNotebookClass *klass)
 static void
 moo_notebook_init (MooNotebook *notebook)
 {
-    GTK_WIDGET_SET_FLAGS (notebook, GTK_CAN_FOCUS);
-    GTK_WIDGET_SET_FLAGS (notebook, GTK_NO_WINDOW);
+    GTK_WIDGET_SET_CAN_FOCUS (notebook);
+    GTK_WIDGET_SET_NO_WINDOW (notebook);
 
     notebook->priv = g_new0 (MooNotebookPrivate, 1);
 
@@ -512,7 +513,7 @@ notebook_create_arrows (MooNotebook *nb)
     gtk_box_pack_start (GTK_BOX (box), button, TRUE, TRUE, 0);
 
     nb->priv->arrows = box;
-    MOO_OBJECT_REF_SINK (box);
+    g_object_ref_sink (box);
     gtk_widget_set_parent (box, GTK_WIDGET (nb));
 
     g_signal_connect (nb->priv->left_arrow, "clicked",
@@ -1018,7 +1019,7 @@ moo_notebook_realize (GtkWidget *widget)
     GSList *l;
     int border_width = get_border_width (nb);
 
-    GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
+    GTK_WIDGET_SET_REALIZED (widget);
 
     widget->window = gtk_widget_get_parent_window (widget);
     g_object_ref (widget->window);
@@ -1108,7 +1109,7 @@ moo_notebook_map (GtkWidget *widget)
     if (GTK_WIDGET_MAPPED (widget))
         return;
 
-    GTK_WIDGET_SET_FLAGS (widget, GTK_MAPPED);
+    GTK_WIDGET_SET_MAPPED (widget);
 
     if (nb->priv->tabs_visible)
     {
@@ -1165,7 +1166,7 @@ moo_notebook_unmap (GtkWidget *widget)
 
     gdk_window_hide (nb->priv->tab_window);
 
-    GTK_WIDGET_UNSET_FLAGS (widget, GTK_MAPPED);
+    GTK_WIDGET_UNSET_MAPPED (widget);
 }
 
 
@@ -1377,7 +1378,7 @@ moo_notebook_remove (GtkContainer *container,
         widget = gtk_label_new (text);
         g_free (text);
 
-        MOO_OBJECT_REF_SINK (widget);
+        g_object_ref_sink (widget);
 
         if (GTK_WIDGET_REALIZED (nb))
             gtk_widget_set_parent_window (widget, nb->priv->tab_window);
@@ -1407,7 +1408,7 @@ child_visible_notify (GtkWidget      *child,
             if (nb->priv->show_tabs)
             {
                 gtk_widget_show (page->label->widget);
-                GTK_WIDGET_SET_FLAGS (nb, GTK_CAN_FOCUS);
+                GTK_WIDGET_SET_CAN_FOCUS (nb);
             }
 
             if (!nb->priv->current_page)
@@ -1424,7 +1425,7 @@ child_visible_notify (GtkWidget      *child,
                 if (n >= 0)
                     moo_notebook_set_current_page (nb, n);
                 else
-                    GTK_WIDGET_UNSET_FLAGS (nb, GTK_CAN_FOCUS);
+                    GTK_WIDGET_UNSET_CAN_FOCUS (nb);
             }
         }
     }
@@ -1546,8 +1547,8 @@ moo_notebook_insert_page (MooNotebook *nb,
 
     page->label->widget = label;
 
-    MOO_OBJECT_REF_SINK (child);
-    MOO_OBJECT_REF_SINK (label);
+    g_object_ref_sink (child);
+    g_object_ref_sink (label);
 
     if (GTK_WIDGET_REALIZED (nb))
         gtk_widget_set_parent_window (label, nb->priv->tab_window);
@@ -1558,7 +1559,7 @@ moo_notebook_insert_page (MooNotebook *nb,
     if (GTK_WIDGET_VISIBLE (child) && nb->priv->tabs_visible)
     {
         /* XXX do something about tabs */
-        GTK_WIDGET_SET_FLAGS (nb, GTK_CAN_FOCUS);
+        GTK_WIDGET_SET_CAN_FOCUS (nb);
         gtk_widget_show (label);
     }
 
@@ -1898,7 +1899,7 @@ moo_notebook_set_action_widget (MooNotebook *notebook,
     if (widget)
     {
         *widget_ptr = widget;
-        MOO_OBJECT_REF_SINK (widget);
+        g_object_ref_sink (widget);
         gtk_widget_set_parent (widget, GTK_WIDGET (notebook));
     }
 
@@ -1995,7 +1996,7 @@ moo_notebook_set_tab_label (MooNotebook *notebook,
     g_object_unref (page->label->widget);
 
     page->label->widget = tab_label;
-    MOO_OBJECT_REF_SINK (tab_label);
+    g_object_ref_sink (tab_label);
 
     if (GTK_WIDGET_REALIZED (notebook))
         gtk_widget_set_parent_window (tab_label, notebook->priv->tab_window);
@@ -3219,7 +3220,7 @@ moo_notebook_do_popup (MooNotebook    *nb,
     g_return_val_if_fail (page != NULL, FALSE);
 
     menu = gtk_menu_new ();
-    MOO_OBJECT_REF_SINK (menu);
+    g_object_ref_sink (menu);
 
     g_signal_emit (nb, signals[POPULATE_POPUP], 0, page->child, menu, &dont);
 

@@ -33,6 +33,7 @@ moo_sources +=				\
 	mooutils/mooclosure.h		\
 	mooutils/moocombo.c		\
 	mooutils/moocombo.h		\
+	mooutils/moocompat.h		\
 	mooutils/moodialogs.c		\
 	mooutils/moodialogs.h		\
 	mooutils/mooeditops.c		\

@@ -148,7 +148,7 @@ moo_menu_tool_button_set_menu (MooMenuToolButton  *button,
 
     if (menu)
     {
-        MOO_OBJECT_REF_SINK (menu);
+        g_object_ref_sink (menu);
         g_signal_connect_swapped (menu, "deactivate",
                                   G_CALLBACK (menu_deactivated),
                                   button);

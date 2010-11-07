@@ -1,1 +1,1 @@
-/* empty */
+#include "mooutils/moocompat.h"

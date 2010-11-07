@@ -27,12 +27,7 @@
 
 #ifdef MOO_COMPILATION
 # include "mooutils-misc.h"
-#else
-# if GLIB_CHECK_VERSION(2,10,0)
-#  define MOO_OBJECT_REF_SINK(obj) g_object_ref_sink (obj)
-# else
-#  define MOO_OBJECT_REF_SINK(obj) gtk_object_sink (g_object_ref (obj))
-# endif
+# include "moocompat.h"
 #endif
 
 
@@ -356,7 +351,7 @@ moo_paned_class_init (MooPanedClass *klass)
 static void
 moo_paned_init (MooPaned *paned)
 {
-    GTK_WIDGET_SET_FLAGS (paned, GTK_NO_WINDOW);
+    GTK_WIDGET_SET_NO_WINDOW (paned);
 
     paned->priv = G_TYPE_INSTANCE_GET_PRIVATE (paned,
                                                MOO_TYPE_PANED,
@@ -425,7 +420,7 @@ moo_paned_constructor (GType                  type,
             break;
     }
 
-    MOO_OBJECT_REF_SINK (paned->button_box);
+    g_object_ref_sink (paned->button_box);
     gtk_widget_set_parent_window (paned->button_box, paned->priv->bin_window);
     gtk_widget_set_parent (paned->button_box, GTK_WIDGET (paned));
     gtk_widget_show (paned->button_box);
@@ -638,7 +633,7 @@ moo_paned_realize (GtkWidget *widget)
     widget->style = gtk_style_attach (widget->style, widget->window);
     gtk_style_set_background (widget->style, paned->priv->bin_window, GTK_STATE_NORMAL);
 
-    GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
+    GTK_WIDGET_SET_REALIZED (widget);
 
     realize_pane (paned);
 
@@ -2235,7 +2230,7 @@ _moo_paned_insert_pane (MooPaned *paned,
     g_return_if_fail (MOO_IS_PANE (pane));
     g_return_if_fail (_moo_pane_get_parent (pane) == NULL);
 
-    MOO_OBJECT_REF_SINK (pane);
+    g_object_ref_sink (pane);
     _moo_pane_set_parent (pane, paned, paned->priv->pane_window);
 
     if (position < 0 || position > (int) moo_paned_n_panes (paned))

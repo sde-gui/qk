@@ -23,6 +23,7 @@
 #include "mooutils/mooonce.h"
 #include "mooutils/mooutils-misc.h"
 #include <mooutils/mooutils-tests.h>
+#include "mooutils/moocompat.h"
 #include "moologwindow-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gmappedfile.h>

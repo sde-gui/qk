@@ -817,7 +817,7 @@ moo_editor_create_doc (MooEditor      *editor,
 
     if (file && !_moo_edit_load_file (doc, file, encoding, error))
     {
-        MOO_OBJECT_REF_SINK (doc);
+        g_object_ref_sink (doc);
         g_object_unref (file);
         g_object_unref (doc);
         return NULL;
@@ -947,7 +947,7 @@ moo_editor_load_file (MooEditor       *editor,
     if (!doc)
     {
         doc = MOO_EDIT (g_object_new (get_doc_type (editor), "editor", editor, (const char*) NULL));
-        MOO_OBJECT_REF_SINK (doc);
+        g_object_ref_sink (doc);
         new_doc = TRUE;
     }
 

@@ -719,7 +719,7 @@ moo_file_dialog_set_extra_widget (MooFileDialog *dialog,
     g_return_if_fail (!widget || GTK_IS_WIDGET (widget));
 
     if (widget)
-        MOO_OBJECT_REF_SINK (widget);
+        g_object_ref_sink (widget);
     if (dialog->priv->extra_widget)
         g_object_unref (dialog->priv->extra_widget);
     dialog->priv->extra_widget = widget;

@@ -19,6 +19,7 @@
 #include "mooedit/mootextbuffer.h"
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moocompat.h"
 
 
 struct _MooLineMarkPrivate {

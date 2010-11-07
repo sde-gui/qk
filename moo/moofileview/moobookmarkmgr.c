@@ -813,7 +813,7 @@ _moo_bookmark_mgr_get_editor (MooBookmarkMgr *mgr)
                       G_CALLBACK (dialog_show), mgr);
 
     mgr->priv->editor = dialog;
-    MOO_OBJECT_REF_SINK (dialog);
+    g_object_ref_sink (dialog);
 
     return dialog;
 }

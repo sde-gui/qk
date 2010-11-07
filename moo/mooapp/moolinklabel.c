@@ -17,6 +17,7 @@
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
 
 
@@ -202,7 +203,7 @@ moo_link_label_button_press (GtkWidget      *widget,
         return FALSE;
 
     menu = gtk_menu_new ();
-    MOO_OBJECT_REF_SINK (menu);
+    g_object_ref_sink (menu);
 
     item = gtk_image_menu_item_new_with_label ("Copy Link");
     image = gtk_image_new_from_stock (GTK_STOCK_COPY, GTK_ICON_SIZE_MENU);

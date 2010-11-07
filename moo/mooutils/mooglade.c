@@ -1884,7 +1884,7 @@ parse_property (GParamSpec     *param_spec,
         }
         else
         {
-            MOO_OBJECT_REF_SINK (adjustment);
+            g_object_ref_sink (adjustment);
             g_value_set_object (&param->value, adjustment);
             g_object_unref (adjustment);
         }

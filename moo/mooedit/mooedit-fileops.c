@@ -31,6 +31,7 @@
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooutils-messages.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/moocompat.h"
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>

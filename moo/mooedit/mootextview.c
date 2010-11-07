@@ -32,6 +32,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooatom.h"
 #include "mooutils/mootype-macros.h"
+#include "mooutils/moocompat.h"
 #include "mooquicksearch-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gregex.h>
@@ -3998,7 +3999,7 @@ moo_text_view_add_child_in_border (MooTextView        *view,
     child = &view->priv->children[pos];
     g_return_if_fail (*child == NULL);
 
-    MOO_OBJECT_REF_SINK (widget);
+    g_object_ref_sink (widget);
 
     *child = widget;
 

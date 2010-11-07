@@ -14,6 +14,7 @@
  */
 
 #include "mooedit/mootextpopup.h"
+#include "mooutils/moocompat.h"
 #include "marshals.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>

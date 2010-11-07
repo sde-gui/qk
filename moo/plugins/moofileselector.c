@@ -1159,7 +1159,7 @@ moo_file_selector_drop_doc (MooFileSelector *filesel,
     if (action == DROP_DOC_ASK)
     {
         GtkWidget *menu = create_drop_doc_menu (filesel, doc, destdir);
-        MOO_OBJECT_REF_SINK (menu);
+        g_object_ref_sink (menu);
         _moo_file_view_drag_finish (MOO_FILE_VIEW (filesel), context, TRUE, FALSE, time);
         gtk_menu_popup (GTK_MENU (menu), NULL, NULL, NULL, NULL, 0, 0);
         g_object_unref (menu);

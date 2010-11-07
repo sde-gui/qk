@@ -19,6 +19,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/moocompat.h"
 #include <mooutils/mooutils-tests.h>
 #include <stdio.h>
 #include <string.h>

@@ -17,6 +17,7 @@
 #include "moohtml.h"
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moocompat.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <glib/gregex.h>

@@ -41,6 +41,7 @@
 #include "mooutils/moofiledialog.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooatom.h"
+#include "mooutils/moocompat.h"
 #include "moostatusbar-gxml.h"
 #include <string.h>
 #include <gtk/gtk.h>
@@ -2847,7 +2848,7 @@ moo_edit_window_add_pane_full (MooEditWindow  *window,
 
     g_return_val_if_fail (moo_edit_window_get_pane (window, user_id) == NULL, NULL);
 
-    MOO_OBJECT_REF_SINK (widget);
+    g_object_ref_sink (widget);
 
     pane = moo_big_paned_insert_pane (window->paned, widget, user_id, label, position, -1);
 

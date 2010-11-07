@@ -24,6 +24,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moohelp.h"
+#include "mooutils/moocompat.h"
 #include "mootextfind-gxml.h"
 #include "mootextgotoline-gxml.h"
 #include "help-sections.h"

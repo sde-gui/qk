@@ -15,6 +15,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mootextbox.h"
+#include "mooutils/moocompat.h"
 #include <gtk/gtklabel.h>
 
 

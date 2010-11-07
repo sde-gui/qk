@@ -25,12 +25,7 @@
 
 #ifdef MOO_COMPILATION
 #include "mooutils-misc.h"
-#else
-#if GLIB_CHECK_VERSION(2,10,0)
-#define MOO_OBJECT_REF_SINK(obj) g_object_ref_sink (obj)
-#else
-#define MOO_OBJECT_REF_SINK(obj) gtk_object_sink (g_object_ref (obj))
-#endif
+#include "moocompat.h"
 #endif
 
 typedef struct {
@@ -213,7 +208,7 @@ moo_big_paned_init (MooBigPaned *paned)
                                           "pane-position", (MooPanePosition) i,
                                           (const char*) NULL));
 
-        MOO_OBJECT_REF_SINK (child);
+        g_object_ref_sink (child);
         gtk_widget_show (child);
 
         g_signal_connect_after (child, "set-pane-size",

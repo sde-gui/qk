@@ -31,6 +31,7 @@
 #ifdef MOO_COMPILATION
 
 #include "mooutils-misc.h"
+#include "moocompat.h"
 #include "moohelp.h"
 #include "mooutils-gobject.h"
 #include "mooi18n.h"
@@ -82,12 +83,6 @@ _moo_window_set_icon_from_stock (GtkWindow  *window,
         gtk_window_set_icon_name (GTK_WINDOW (window), name);
     }
 }
-
-#if GLIB_CHECK_VERSION(2,10,0)
-#define MOO_OBJECT_REF_SINK(obj) g_object_ref_sink (obj)
-#else
-#define MOO_OBJECT_REF_SINK(obj) gtk_object_sink (g_object_ref (obj))
-#endif
 
 #endif
 
@@ -1541,7 +1536,7 @@ G_DEFINE_TYPE (MooIconWidget, _moo_icon_widget, GTK_TYPE_WIDGET)
 static void
 _moo_icon_widget_init (MooIconWidget *icon)
 {
-    GTK_WIDGET_SET_FLAGS (icon, GTK_NO_WINDOW);
+    GTK_WIDGET_SET_NO_WINDOW (icon);
     icon->pixbufs = NULL;
     icon->data = NULL;
     icon->type = ICON_PIXBUFS;

@@ -16,6 +16,7 @@
 #include "mooutils/mooaccel.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-tests.h"
+#include "mooutils/moocompat.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <string.h>

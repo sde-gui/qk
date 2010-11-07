@@ -28,6 +28,7 @@
 #include "mooutils/mooutils-mem.h"
 #include "mooutils/mooeditops.h"
 #include "mooutils/mootype-macros.h"
+#include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
 #include <gobject/gvaluecollector.h>
 

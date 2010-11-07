@@ -40,6 +40,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moo-mime.h"
 #include "mooutils/moohelp.h"
+#include "mooutils/moocompat.h"
 #include <glib/gmappedfile.h>
 #include <string.h>
 #include <stdio.h>

@@ -21,6 +21,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moomenu.h"
 #include "mooutils/mootype-macros.h"
+#include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
 #include <string.h>
 

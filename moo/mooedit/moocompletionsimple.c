@@ -13,6 +13,12 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef G_DISABLE_DEPRECATED
+#undef G_DISABLE_DEPRECATED
+#include <glib/gcompletion.h>
+#define G_DISABLE_DEPRECATED
+#endif
+
 #include "mooedit/moocompletionsimple.h"
 #include "mooedit/mootextpopup.h"
 #include "marshals.h"

@@ -19,6 +19,7 @@
 #include "mooutils/mooaccel.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moocompat.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <string.h>
@@ -499,13 +500,13 @@ _moo_icon_view_init (MooIconView *view)
     widget->allocation.width = -1;
     widget->allocation.height = -1;
 
-    GTK_WIDGET_UNSET_FLAGS (view, GTK_NO_WINDOW);
-    GTK_WIDGET_SET_FLAGS (view, GTK_CAN_FOCUS);
+    GTK_WIDGET_UNSET_NO_WINDOW (view);
+    GTK_WIDGET_SET_CAN_FOCUS (view);
 
     view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_ICON_VIEW, MooIconViewPrivate);
 
     view->priv->pixbuf.cell = gtk_cell_renderer_pixbuf_new ();
-    MOO_OBJECT_REF_SINK (view->priv->pixbuf.cell);
+    g_object_ref_sink (view->priv->pixbuf.cell);
     view->priv->pixbuf.attributes = NULL;
     view->priv->pixbuf.func = cell_data_func;
     view->priv->pixbuf.func_data = &view->priv->pixbuf;
@@ -513,7 +514,7 @@ _moo_icon_view_init (MooIconView *view)
     view->priv->pixbuf.show = TRUE;
 
     view->priv->text.cell = gtk_cell_renderer_text_new ();
-    MOO_OBJECT_REF_SINK (view->priv->text.cell);
+    g_object_ref_sink (view->priv->text.cell);
     view->priv->text.attributes = NULL;
     view->priv->text.func = cell_data_func;
     view->priv->text.func_data = &view->priv->text;
@@ -770,7 +771,7 @@ _moo_icon_view_set_cell (MooIconView    *view,
     g_object_unref (info->cell);
 
     info->cell = cell;
-    MOO_OBJECT_REF_SINK (cell);
+    g_object_ref_sink (cell);
 
     moo_icon_view_invalidate_layout (view);
 }
@@ -955,7 +956,7 @@ moo_icon_view_realize (GtkWidget *widget)
 
     view = MOO_ICON_VIEW (widget);
 
-    GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
+    GTK_WIDGET_SET_REALIZED (widget);
 
     attributes.x = widget->allocation.x;
     attributes.y = widget->allocation.y;
@@ -995,7 +996,7 @@ moo_icon_view_unrealize (GtkWidget *widget)
     gdk_window_set_user_data (widget->window, NULL);
     gdk_window_destroy (widget->window);
     widget->window = NULL;
-    GTK_WIDGET_UNSET_FLAGS (widget, GTK_REALIZED);
+    GTK_WIDGET_UNSET_REALIZED (widget);
 
     if (view->priv->sel_gc)
     {
@@ -1867,7 +1868,7 @@ _moo_icon_view_set_adjustment (MooIconView    *view,
     }
 
     view->priv->adjustment = adjustment;
-    MOO_OBJECT_REF_SINK (adjustment);
+    g_object_ref_sink (adjustment);
 
     g_signal_connect_swapped (adjustment, "value-changed",
                               G_CALLBACK (value_changed),

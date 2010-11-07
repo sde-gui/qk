@@ -834,13 +834,13 @@ filter_new (const char *description,
     filter->user = user;
 
     filter->filter = gtk_file_filter_new ();
-    MOO_OBJECT_REF_SINK (filter->filter);
+    g_object_ref_sink (filter->filter);
     gtk_file_filter_set_name (filter->filter, description);
 
     if (negative)
     {
         filter->aux = gtk_file_filter_new ();
-        MOO_OBJECT_REF_SINK (filter->aux);
+        g_object_ref_sink (filter->aux);
 
         for (p = globs; *p != NULL; p++)
             gtk_file_filter_add_pattern (filter->aux, *p);

@@ -25,6 +25,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooaccel.h"
+#include "mooutils/moocompat.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
@@ -788,7 +789,7 @@ completion_popup (MooFileEntryCompletion *cmpl)
 
     gtk_widget_realize (cmpl->priv->popup);
 
-    GTK_WIDGET_SET_FLAGS (GTK_WIDGET (cmpl->priv->treeview), GTK_CAN_FOCUS);
+    GTK_WIDGET_SET_CAN_FOCUS (cmpl->priv->treeview);
 
     if (GTK_WINDOW (window)->group)
         gtk_window_group_add_window (GTK_WINDOW (window)->group,

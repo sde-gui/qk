@@ -13,12 +13,6 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef GTK_DISABLE_DEPRECATED
-#undef GTK_DISABLE_DEPRECATED
-#include <gtk/gtktoolbar.h>
-#define GTK_DISABLE_DEPRECATED
-#endif
-
 #define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moofileview-accels.h"
 #include "moofileview/moofileview-dialogs.h"
@@ -48,6 +42,7 @@
 #include "mooutils/mooeditops.h"
 #include "mooutils/mooatom.h"
 #include "mooutils/moolist.h"
+#include "mooutils/moocompat.h"
 #include "marshals.h"
 #include "mooutils/mooi18n.h"
 #include <gdk/gdkkeysyms.h>
@@ -3014,7 +3009,7 @@ fileview_set_filter (MooFileView    *fileview,
     if (filter)
     {
         const char *name;
-        gtk_object_sink (g_object_ref (filter));
+        g_object_ref_sink (filter);
         name = gtk_file_filter_get_name (filter);
         gtk_entry_set_text (fileview->priv->filter_entry, name);
         fileview_set_use_filter (fileview, TRUE, FALSE);
@@ -3486,7 +3481,7 @@ do_popup (MooFileView    *fileview,
                                      MOO_UI_MENU, "MooFileView/Menu",
                                      fileview->priv->actions,
                                      NULL);
-    MOO_OBJECT_REF_SINK (menu);
+    g_object_ref_sink (menu);
 
     g_signal_connect_swapped (menu, "alternate-toggled",
                               G_CALLBACK (update_delete_action),
@@ -3729,7 +3724,7 @@ edit_bookmarks (MooFileView *fileview)
     if (!dialog)
     {
         dialog = _moo_bookmark_mgr_get_editor (fileview->priv->bookmark_mgr);
-        gtk_object_sink (g_object_ref (dialog));
+        g_object_ref_sink (dialog);
         g_object_set_data_full (G_OBJECT (fileview),
                                 "moo-file-view-bookmarks-editor",
                                 dialog, g_object_unref);
@@ -6022,7 +6017,7 @@ moo_file_view_drop_uris (MooFileView    *fileview,
         char *dir_copy = g_strdup (destdir);
 
         menu = gtk_menu_new ();
-        MOO_OBJECT_REF_SINK (menu);
+        g_object_ref_sink (menu);
 
         g_object_set_data_full (G_OBJECT (menu), "moo-file-view-drop-files",
                                 filenames, (GDestroyNotify) free_string_list);

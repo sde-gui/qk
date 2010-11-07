@@ -21,6 +21,7 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
+#include "mooutils/moocompat.h"
 #include "moofileprops-gxml.h"
 #include "moocreatefolder-gxml.h"
 #include "moofileview-drop-gxml.h"

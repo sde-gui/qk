@@ -283,7 +283,7 @@ _moo_command_display_new (GtkComboBox        *factory_combo,
                               new_btn, delete_btn, up_btn, down_btn);
     init_factory_combo (display, factory_combo, notebook);
 
-    MOO_OBJECT_REF_SINK (display);
+    g_object_ref_sink (display);
     return display;
 }
 

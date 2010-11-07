@@ -16,6 +16,7 @@
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/moocompat.h"
 #include "mooutils/mootype-macros.h"
 #include "marshals.h"
 #include <string.h>
@@ -769,7 +770,7 @@ _moo_tree_helper_new (GtkWidget *widget,
     g_return_val_if_fail (GTK_IS_TREE_VIEW (widget) || GTK_IS_COMBO_BOX (widget), NULL);
 
     helper = g_object_new (MOO_TYPE_TREE_HELPER, (const char*) NULL);
-    MOO_OBJECT_REF_SINK (helper);
+    g_object_ref_sink (helper);
 
     _moo_tree_helper_connect (helper, widget, new_btn, delete_btn, up_btn, down_btn);
 
