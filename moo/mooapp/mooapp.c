@@ -1145,10 +1145,10 @@ moo_app_load_session (MooApp *app)
     if (!app->priv->session_file)
     {
         if (app->priv->instance_name)
-            app->priv->session_file = g_strdup_printf (MOO_SESSION_FILE_NAME ".%s",
+            app->priv->session_file = g_strdup_printf (MOO_SESSION_XML_FILE_NAME ".%s",
                                                        app->priv->instance_name);
         else
-            app->priv->session_file = g_strdup (MOO_SESSION_FILE_NAME);
+            app->priv->session_file = g_strdup (MOO_SESSION_XML_FILE_NAME);
     }
 
     session_file = moo_get_user_cache_file (app->priv->session_file);
@@ -1428,10 +1428,10 @@ moo_app_load_prefs (MooApp *app)
     GError *error = NULL;
     char **sys_files;
 
-    app->priv->rc_files[MOO_PREFS_RC] = moo_get_user_data_file (MOO_INI_FILE_NAME);
-    app->priv->rc_files[MOO_PREFS_STATE] = moo_get_user_cache_file (MOO_STATE_FILE_NAME);
+    app->priv->rc_files[MOO_PREFS_RC] = moo_get_user_data_file (MOO_PREFS_XML_FILE_NAME);
+    app->priv->rc_files[MOO_PREFS_STATE] = moo_get_user_cache_file (MOO_STATE_XML_FILE_NAME);
 
-    sys_files = moo_get_sys_data_files (MOO_INI_FILE_NAME);
+    sys_files = moo_get_sys_data_files (MOO_PREFS_XML_FILE_NAME);
 
     if (!moo_prefs_load (sys_files,
                          app->priv->rc_files[MOO_PREFS_RC],

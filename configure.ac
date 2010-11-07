@@ -36,9 +36,10 @@ AC_SUBST(MOO_COPYRIGHT,"_moo_copyright_")
 
 # keep in sync with po/maintain
 AC_SUBST(MOO_PACKAGE_NAME,"medit-1")
-MOO_INI_FILE_NAME="medit.ini"
-MOO_STATE_FILE_NAME="medit.state"
-MOO_SESSION_FILE_NAME="medit.session"
+
+MOO_PREFS_XML_FILE_NAME="prefs.xml"
+MOO_STATE_XML_FILE_NAME="state.xml"
+MOO_SESSION_XML_FILE_NAME="session.xml"
 
 AC_SUBST(GETTEXT_PACKAGE,$MOO_PACKAGE_NAME)
 AC_SUBST(GETTEXT_PACKAGE_GSV,"$MOO_PACKAGE_NAME-gsv")

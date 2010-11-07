@@ -1212,7 +1212,7 @@ moo_markup_write_pretty (MooMarkupDoc  *doc,
     g_return_val_if_fail (MOO_MARKUP_IS_DOC (doc), FALSE);
     g_return_val_if_fail (writer != NULL, FALSE);
 
-    result = moo_file_writer_write (writer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", -1);
+    result = moo_file_writer_write (writer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!-- -*- xml -*- -->\n", -1);
 
     for (child = doc->children; result && child != NULL; child = child->next)
         if (MOO_MARKUP_IS_ELEMENT (child))
