@@ -2,7 +2,7 @@
 <!--
 
  Copyright (C) 2006-2007 GtkSourceView team
- Author: Yevgen Muntyan <muntyan@tamu.edu>
+ Author: Yevgen Muntyan <emuntyan@sourceforge.net>
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Library General Public
@@ -44,8 +44,8 @@
   <style name="bracket-mismatch"            foreground="#white" background="#red" bold="true"/>
 
   <!-- Search Matching -->
-  <style name="search-match"                background="yellow"/>  
-  
+  <style name="search-match"                background="yellow"/>
+
   <!-- Comments -->
   <style name="def:comment"                 foreground="blue"/>
   <style name="def:shebang"                 foreground="blue" bold="true"/>

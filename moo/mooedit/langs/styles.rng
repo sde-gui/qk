@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
- Copyright (C) 2006-2007 Yevgen Muntyan <muntyan@tamu.edu>
+ Copyright (C) 2006-2007 Yevgen Muntyan <emuntyan@sourceforge.net>
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Library General Public
@@ -48,7 +48,7 @@
         <element name="author">
           <text/>
         </element>
-      </oneOrMore>        
+      </oneOrMore>
     </optional>
 
     <optional>

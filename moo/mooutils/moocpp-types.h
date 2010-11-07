@@ -1,7 +1,7 @@
 /*
  *   moocpp-types.h
  *
- *   Copyright (C) 2004-2009 by Yevgen Muntyan <muntyan@tamu.edu>
+ *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the

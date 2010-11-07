@@ -1,7 +1,7 @@
 /*
  *   ctags-doc.c
  *
- *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
+ *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
  *   Copyright (C) 2008      by Christian Dywan <christian@twotoasts.de>
  *
  *   This file is part of medit.  medit is free software; you can

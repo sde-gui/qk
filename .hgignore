@@ -25,6 +25,7 @@ aclocal.m4
 *.bak
 *.tmp
 *.pyc
+.goutputstream-*
 po*/dist
 po*/pot
 config.h.in

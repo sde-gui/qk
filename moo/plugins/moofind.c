@@ -1,7 +1,7 @@
 /*
  *   moofind.c
  *
- *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
+ *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -1109,7 +1109,7 @@ output_activate (WindowStuff    *stuff,
 
 MOO_PLUGIN_DEFINE_INFO (find,
                         N_("Find"), N_("Finds everything"),
-                        "Yevgen Muntyan <muntyan@tamu.edu>",
+                        "Yevgen Muntyan <emuntyan@sourceforge.net>",
                         MOO_VERSION, NULL)
 MOO_WIN_PLUGIN_DEFINE (Find, find)
 MOO_PLUGIN_DEFINE (Find, find,
