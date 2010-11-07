@@ -103,15 +103,6 @@
 #define NORETURN MOO_NORETURN
 #define NOTHROW MOO_NOTHROW
 
-#define MOO_FA_ERROR(msg)
-#define MOO_FA_MISSING MOO_FA_ERROR("This function must not be used")
-
-#if !defined(MOO_DEV_MODE)
-#  define MOO_FUNC_DEV_MODE MOO_FA_ERROR("This function must be used only in dev mode")
-#else
-#  define MOO_FUNC_DEV_MODE
-#endif
-
 #if defined(MOO_CL_GCC)
 #  define MOO_VA_CLEANUP(func) __attribute__((cleanup(func)))
 #  define _MOO_VA_CLEANUP_DEFINED 1
@@ -150,11 +141,6 @@
 
 MOO_STATIC_ASSERT(sizeof(char) == 1, "test");
 
-int __moo_test_func_name(void) MOO_FA_MISSING;
-void __moo_test_func_name(void) MOO_FA_ERROR("test");
-void MOO_FA_ERROR("test") __moo_test_func_name(void);
-void __moo_test_func_name(void) MOO_FUNC_DEV_MODE;
-void MOO_FUNC_DEV_MODE __moo_test_func_name(void);
 void __moo_test_func(void);
 void __moo_test_func(void) MOO_FA_WARNING("warning");
 void MOO_FA_WARNING("warning") __moo_test_func(void);

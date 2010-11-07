@@ -30,7 +30,7 @@
 namespace moo {
 
 template<typename FromClass, typename ToClass>
-inline void MOO_FUNC_DEV_MODE checkCanCast()
+inline void checkCanCast()
 {
     FromClass *p = 0;
     ToClass &q = *p;
@@ -43,10 +43,10 @@ inline void MOO_FUNC_DEV_MODE checkCanCast()
 #define mooCheckCanCast(FromClass, ToClass) MOO_VOID_STMT
 #endif // !DEBUG
 
-#define MOO_DISABLE_COPY_AND_ASSIGN(Class)          \
-private:                                            \
-    Class(const Class&) MOO_FA_MISSING;             \
-    Class &operator=(const Class&) MOO_FA_MISSING;
+#define MOO_DISABLE_COPY_AND_ASSIGN(Class)  \
+private:                                    \
+    Class(const Class&);                    \
+    Class &operator=(const Class&);
 
 #ifdef MOO_DEV_MODE
 
