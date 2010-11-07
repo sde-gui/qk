@@ -14,7 +14,6 @@
  */
 
 #include "mooutils/moostock.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/stock-terminal-24.h"
 #include "mooutils/stock-file-selector-24.h"
 #include "mooutils/stock-file-24.h"

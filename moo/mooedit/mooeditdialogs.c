@@ -18,7 +18,6 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooedit-fileops.h"
 #include "mooutils/moodialogs.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooencodings.h"

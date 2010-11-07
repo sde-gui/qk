@@ -36,7 +36,6 @@
 #include "mooutils/moomenuaction.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moodialogs.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/moofiledialog.h"

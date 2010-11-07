@@ -17,7 +17,6 @@
 #define MOO_ATOM_H
 
 #include <gdk/gdk.h>
-#include <mooutils/moocompat.h>
 
 G_BEGIN_DECLS
 

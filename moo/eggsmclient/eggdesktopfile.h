@@ -21,7 +21,6 @@
 #define __EGG_DESKTOP_FILE_H__
 
 #include <glib.h>
-#include "mooutils/moocompat.h"
 
 G_BEGIN_DECLS
 

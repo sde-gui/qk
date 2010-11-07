@@ -21,7 +21,6 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/mooutils-fs.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/mooatom.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>

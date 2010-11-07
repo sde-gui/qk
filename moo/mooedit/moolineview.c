@@ -17,7 +17,7 @@
 #include "marshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-messages.h"
-#include "mooutils/moocompat.h"
+#include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
 

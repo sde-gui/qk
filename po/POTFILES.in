@@ -38,7 +38,6 @@ moo/moofileview/moofileview-tools.c
 moo/moofileview/moofileview.xml
 moo/mooutils/glade/mooaccelprefs.glade
 moo/mooutils/mooaccelprefs.c
-moo/mooutils/moocompat.c
 moo/mooutils/moodialogs.c
 moo/mooutils/mooencodings.c
 moo/mooutils/mooencodings-data.h

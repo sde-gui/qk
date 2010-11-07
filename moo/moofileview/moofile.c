@@ -30,7 +30,6 @@
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moostat.h"
-#include "mooutils/moocompat.h"
 #include "marshals.h"
 #include "mooutils/moo-mime.h"
 #include <glib/gstdio.h>

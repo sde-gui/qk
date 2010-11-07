@@ -27,7 +27,6 @@
 #include "mooedit/mooedit-tests.h"
 #include "marshals.h"
 #include "mooutils/mooutils-fs.h"
-#include "mooutils/moocompat.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"

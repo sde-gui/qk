@@ -15,7 +15,6 @@
 
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
-#include "mooutils/moocompat.h"
 #include <glib.h>
 
 
