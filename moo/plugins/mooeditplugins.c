@@ -20,7 +20,7 @@
 void
 moo_plugin_init_builtin (void)
 {
-    if (!moo_getenv_bool ("MOO_DISABLE_PYTHON"))
+    if (moo_getenv_bool ("MOO_ENABLE_PYTHON"))
         _moo_python_plugin_init ();
     if (!moo_getenv_bool ("MOO_DISABLE_LUA"))
         _moo_lua_plugin_init ();
