@@ -20,6 +20,11 @@
 
 G_BEGIN_DECLS
 
+#define MD_HISTORY_MGR_PARSE_ERROR (md_history_mgr_parse_error_quark ())
+
+enum {
+    MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT
+};
 
 #define MD_TYPE_HISTORY_MGR             (md_history_mgr_get_type ())
 #define MD_HISTORY_MGR(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), MD_TYPE_HISTORY_MGR, MdHistoryMgr))
@@ -45,6 +50,7 @@ struct MdHistoryMgrClass {
 typedef void (*MdHistoryCallback)               (GSList   *items,
                                                  gpointer  data);
 
+GQuark      md_history_mgr_parse_error_quark    (void) G_GNUC_CONST;
 GType       md_history_mgr_get_type             (void) G_GNUC_CONST;
 
 void        md_history_mgr_add_file             (MdHistoryMgr   *mgr,

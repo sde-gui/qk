@@ -20,14 +20,6 @@
 
 G_BEGIN_DECLS
 
-#define MOO_TYPE_MARKUP_DOC (moo_markup_doc_get_type())
-
-#define MOO_PARSE_ERROR (moo_parse_error_quark ())
-
-enum {
-    MOO_PARSE_ERROR_INVALID_CONTENT
-};
-
 typedef enum {
     MOO_MARKUP_DOC_NODE,
     MOO_MARKUP_ELEMENT_NODE,
@@ -35,12 +27,11 @@ typedef enum {
     MOO_MARKUP_COMMENT_NODE
 } MooMarkupNodeType;
 
-
-typedef struct _MooMarkupNode MooMarkupNode;
-typedef struct _MooMarkupDoc MooMarkupDoc;
-typedef struct _MooMarkupElement MooMarkupElement;
-typedef struct _MooMarkupText MooMarkupText;
-typedef struct _MooMarkupText MooMarkupComment;
+typedef struct MooMarkupNode MooMarkupNode;
+typedef struct MooMarkupDoc MooMarkupDoc;
+typedef struct MooMarkupElement MooMarkupElement;
+typedef struct MooMarkupText MooMarkupText;
+typedef struct MooMarkupText MooMarkupComment;
 
 typedef void (*MooMarkupStartElementFunc)   (GMarkupParseContext    *context,
                                              const gchar            *element_name,
@@ -83,7 +74,7 @@ typedef void (*MooMarkupPassthroughFunc)    (GMarkupParseContext    *context,
 #define MOO_MARKUP_IS_COMMENT(n)    ((n) != NULL && MOO_MARKUP_NODE(n)->type == MOO_MARKUP_COMMENT_NODE)
 
 
-struct _MooMarkupNode {
+struct MooMarkupNode {
     MooMarkupNodeType        type;      /* type of the node */
     char                    *name;      /* the name of the node */
     MooMarkupNode           *children;  /* parent->childs link */
@@ -95,7 +86,7 @@ struct _MooMarkupNode {
 };
 
 
-struct _MooMarkupDoc {
+struct MooMarkupDoc {
     MooMarkupNodeType        type;      /* MOO_MARKUP_DOC_NODE */
     char                    *name;      /* name/filename/URI of the document */
     MooMarkupNode           *children;  /* the document tree */
@@ -111,7 +102,7 @@ struct _MooMarkupDoc {
 };
 
 
-struct _MooMarkupElement {
+struct MooMarkupElement {
     MooMarkupNodeType        type;      /* MOO_MARKUP_ELEMENT_NODE */
     char                    *name;      /* name */
     MooMarkupNode           *children;  /* content */
@@ -128,7 +119,7 @@ struct _MooMarkupElement {
 };
 
 
-struct _MooMarkupText {
+struct MooMarkupText {
     MooMarkupNodeType        type;      /* MOO_MARKUP_TEXT_NODE */
     char                    *name;      /* "TEXT" */
     MooMarkupNode           *children;  /* NULL */
@@ -144,7 +135,6 @@ struct _MooMarkupText {
 
 
 GType               moo_markup_doc_get_type         (void) G_GNUC_CONST;
-GQuark              moo_parse_error_quark           (void) G_GNUC_CONST;
 
 MooMarkupNode      *MOO_MARKUP_NODE_CHECK_CAST      (gpointer node);
 MooMarkupDoc       *MOO_MARKUP_DOC_CHECK_CAST       (gpointer node);
@@ -220,7 +210,6 @@ void                _moo_markup_set_modified        (MooMarkupDoc       *doc,
 void                _moo_markup_set_track_modified  (MooMarkupDoc       *doc,
                                                      gboolean            track);
 gboolean            _moo_markup_get_modified        (MooMarkupDoc       *doc);
-
 
 G_END_DECLS
 

@@ -28,7 +28,6 @@ typedef struct {
 } ParserState;
 
 MOO_DEFINE_BOXED_TYPE_R (MooMarkupDoc, moo_markup_doc)
-MOO_DEFINE_QUARK (moo-parse-error, moo_parse_error_quark)
 
 static MooMarkupDoc     *moo_markup_doc_new_priv    (const char         *name);
 static void              moo_markup_doc_set_name    (MooMarkupDoc       *doc,

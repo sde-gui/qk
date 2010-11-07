@@ -21,10 +21,11 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-treeview.h"
-#include "mooutils/moomarkup.h"
 #include "mooutils/mooprefs.h"
+#include "mooutils/moomarkup.h"
 #include "mooutils/mooutils-thread.h"
 #include "mooutils/moolist.h"
+#include "mooutils/mootype-macros.h"
 #include "marshals.h"
 #include <stdarg.h>
 #include <string.h>
@@ -36,6 +37,7 @@
 
 MOO_DEFINE_DLIST(WidgetList, widget_list, GtkWidget)
 MOO_DEFINE_QUEUE(MdHistoryItem, md_history_item)
+MOO_DEFINE_QUARK(md-history-mgr-parse-error, md_history_mgr_parse_error_quark)
 
 struct MdHistoryMgrPrivate {
     char *filename;
@@ -502,16 +504,16 @@ start_element_root (const gchar  *element_name,
 
     if (data->seen_root)
     {
-        g_set_error (error, MOO_PARSE_ERROR,
-                     MOO_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "invalid element '%s'", element_name);
         return;
     }
 
     if (strcmp (element_name, ELM_ROOT) != 0)
     {
-        g_set_error (error, MOO_PARSE_ERROR,
-                     MOO_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "invalid element '%s'", element_name);
         return;
     }
@@ -520,16 +522,16 @@ start_element_root (const gchar  *element_name,
     {
         if (seen_version || strcmp (*p, PROP_VERSION) != 0)
         {
-            g_set_error (error, MOO_PARSE_ERROR,
-                         MOO_PARSE_ERROR_INVALID_CONTENT,
+            g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                         MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                          "invalid attribute '%s'", *p);
             return;
         }
 
         if (strcmp (*v, PROP_VERSION_VALUE) != 0)
         {
-            g_set_error (error, MOO_PARSE_ERROR,
-                         MOO_PARSE_ERROR_INVALID_CONTENT,
+            g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                         MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                          "invalid version value '%s'", *v);
             return;
         }
@@ -539,8 +541,8 @@ start_element_root (const gchar  *element_name,
 
     if (!seen_version)
     {
-        g_set_error (error, MOO_PARSE_ERROR,
-                     MOO_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "version attribute missing");
         return;
     }
@@ -561,8 +563,8 @@ start_element_item (const gchar  *element_name,
 
     if (strcmp (element_name, ELM_ITEM) != 0)
     {
-        g_set_error (error, MOO_PARSE_ERROR,
-                     MOO_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "invalid element '%s'",
                      element_name);
         return;
@@ -574,16 +576,16 @@ start_element_item (const gchar  *element_name,
     {
         if (strcmp (*p, PROP_URI) != 0)
         {
-            g_set_error (error, MOO_PARSE_ERROR,
-                         MOO_PARSE_ERROR_INVALID_CONTENT,
+            g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                         MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                          "invalid attribute '%s'", *v);
             return;
         }
 
         if (item != NULL)
         {
-            g_set_error (error, MOO_PARSE_ERROR,
-                         MOO_PARSE_ERROR_INVALID_CONTENT,
+            g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                         MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                          "duplicate attribute '%s'", *v);
             return;
         }
@@ -594,8 +596,8 @@ start_element_item (const gchar  *element_name,
 
     if (!item)
     {
-        g_set_error (error, MOO_PARSE_ERROR,
-                     MOO_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "missing attribute '%s'", PROP_URI);
         return;
     }
@@ -618,8 +620,8 @@ start_element_data (const gchar  *element_name,
 
     if (strcmp (element_name, ELM_DATA) != 0)
     {
-        g_set_error (error, MOO_PARSE_ERROR,
-                     MOO_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "invalid element '%s'",
                      element_name);
         return;
@@ -639,8 +641,8 @@ start_element_data (const gchar  *element_name,
         }
         else
         {
-            g_set_error (error, MOO_PARSE_ERROR,
-                         MOO_PARSE_ERROR_INVALID_CONTENT,
+            g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                         MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                          "invalid attribute '%s'", *v);
             return;
         }
@@ -648,16 +650,16 @@ start_element_data (const gchar  *element_name,
 
     if (!key || !key[0])
     {
-        g_set_error (error, MOO_PARSE_ERROR,
-                     MOO_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "missing attribute '%s'", PROP_KEY);
         return;
     }
 
     if (!value)
     {
-        g_set_error (error, MOO_PARSE_ERROR,
-                     MOO_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "missing attribute '%s'", PROP_VALUE);
         return;
     }
@@ -688,8 +690,8 @@ parser_start_element (G_GNUC_UNUSED GMarkupParseContext *context,
                                 attribute_values, data, error);
             break;
         case ELEMENT_DATA:
-            g_set_error (error, MOO_PARSE_ERROR,
-                         MOO_PARSE_ERROR_INVALID_CONTENT,
+            g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                         MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                          "invalid element '%s'", element_name);
             break;
     }
