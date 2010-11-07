@@ -17,16 +17,7 @@
 #define MOO_PREFS_H
 
 #include <glib-object.h>
-#include <gdk/gdkcolor.h>
 #include <mooutils/moomarkup.h>
-
-#ifndef G_GNUC_NULL_TERMINATED
-#if __GNUC__ >= 4
-#define G_GNUC_NULL_TERMINATED __attribute__((__sentinel__))
-#else
-#define G_GNUC_NULL_TERMINATED
-#endif
-#endif
 
 G_BEGIN_DECLS
 
@@ -34,13 +25,7 @@ G_BEGIN_DECLS
 typedef enum {
     MOO_PREFS_RC,
     MOO_PREFS_STATE
-} MooPrefsType;
-
-typedef enum {
-    MOO_PREFS_MATCH_KEY       = 1 << 0,
-    MOO_PREFS_MATCH_PREFIX    = 1 << 1,
-    MOO_PREFS_MATCH_REGEX     = 1 << 2
-} MooPrefsMatchType;
+} MooPrefsKind;
 
 
 gboolean        moo_prefs_load          (char          **sys_files,
@@ -51,18 +36,18 @@ gboolean        moo_prefs_save          (const char     *file_rc,
                                          const char     *file_state,
                                          GError        **error);
 
-MooMarkupDoc   *moo_prefs_get_markup    (MooPrefsType    prefs_type);
+MooMarkupDoc   *moo_prefs_get_markup    (MooPrefsKind    prefs_kind);
 
 void            moo_prefs_new_key       (const char     *key,
                                          GType           value_type,
                                          const GValue   *default_value,
-                                         MooPrefsType    prefs_type);
+                                         MooPrefsKind    prefs_kind);
 void            moo_prefs_delete_key    (const char     *key);
 
 GType           moo_prefs_get_key_type  (const char     *key);
 gboolean        moo_prefs_key_registered(const char     *key);
 
-GSList         *moo_prefs_list_keys     (MooPrefsType    prefs_type);
+GSList         *moo_prefs_list_keys     (MooPrefsKind    prefs_kind);
 
 const GValue   *moo_prefs_get           (const char     *key);
 const GValue   *moo_prefs_get_default   (const char     *key);
@@ -77,8 +62,6 @@ void            moo_prefs_new_key_int   (const char     *key,
                                          int             default_val);
 void            moo_prefs_new_key_string(const char     *key,
                                          const char     *default_val);
-void            moo_prefs_new_key_color (const char     *key,
-                                         const GdkColor *default_val);
 void            moo_prefs_new_key_enum  (const char     *key,
                                          GType           enum_type,
                                          int             default_val);
@@ -87,7 +70,7 @@ void            moo_prefs_new_key_flags (const char     *key,
                                          int             default_val);
 
 void            moo_prefs_create_key    (const char     *key,
-                                         MooPrefsType    prefs_type,
+                                         MooPrefsKind    prefs_kind,
                                          GType           value_type,
                                          ...);
 
@@ -115,19 +98,6 @@ void            moo_prefs_set_enum      (const char     *key,
                                          int             val);
 void            moo_prefs_set_flags     (const char     *key,
                                          int             val);
-
-typedef void  (*MooPrefsNotify)         (const char     *key,
-                                         const GValue   *newval,
-                                         gpointer        data);
-
-guint           moo_prefs_notify_connect    (const char     *pattern,
-                                             MooPrefsMatchType match_type,
-                                             MooPrefsNotify  callback,
-                                             gpointer        data,
-                                             GDestroyNotify  notify);
-gboolean        moo_prefs_notify_block      (guint           id);
-gboolean        moo_prefs_notify_unblock    (guint           id);
-gboolean        moo_prefs_notify_disconnect (guint           id);
 
 
 G_END_DECLS

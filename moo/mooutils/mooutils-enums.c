@@ -46,7 +46,7 @@ moo_file_event_code_get_type (void)
 #include "mooprefs.h"
 
 GType
-moo_prefs_type_get_type (void)
+moo_prefs_kind_get_type (void)
 {
     static GType etype;
     if (G_UNLIKELY (!etype))
@@ -56,24 +56,7 @@ moo_prefs_type_get_type (void)
             { MOO_PREFS_STATE, (char*) "MOO_PREFS_STATE", (char*) "state" },
             { 0, NULL, NULL }
         };
-        etype = g_enum_register_static ("MooPrefsType", values);
-    }
-    return etype;
-}
-
-GType
-moo_prefs_match_type_get_type (void)
-{
-    static GType etype;
-    if (G_UNLIKELY (!etype))
-    {
-        static const GFlagsValue values[] = {
-            { MOO_PREFS_MATCH_KEY, (char*) "MOO_PREFS_MATCH_KEY", (char*) "key" },
-            { MOO_PREFS_MATCH_PREFIX, (char*) "MOO_PREFS_MATCH_PREFIX", (char*) "prefix" },
-            { MOO_PREFS_MATCH_REGEX, (char*) "MOO_PREFS_MATCH_REGEX", (char*) "regex" },
-            { 0, NULL, NULL }
-        };
-        etype = g_flags_register_static ("MooPrefsMatchType", values);
+        etype = g_enum_register_static ("MooPrefsKind", values);
     }
     return etype;
 }

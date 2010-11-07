@@ -18,11 +18,8 @@ GType moo_file_event_code_get_type (void) G_GNUC_CONST;
 #define MOO_TYPE_FILE_EVENT_CODE (moo_file_event_code_get_type())
 
 /* enumerations from mooprefs.h */
-GType moo_prefs_type_get_type (void) G_GNUC_CONST;
-#define MOO_TYPE_PREFS_TYPE (moo_prefs_type_get_type())
-
-GType moo_prefs_match_type_get_type (void) G_GNUC_CONST;
-#define MOO_TYPE_PREFS_MATCH_TYPE (moo_prefs_match_type_get_type())
+GType moo_prefs_kind_get_type (void) G_GNUC_CONST;
+#define MOO_TYPE_PREFS_KIND (moo_prefs_kind_get_type())
 
 /* enumerations from moouixml.h */
 GType moo_ui_node_type_get_type (void) G_GNUC_CONST;

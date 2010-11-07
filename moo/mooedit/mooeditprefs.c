@@ -85,7 +85,6 @@ _moo_edit_init_config (void)
 #define NEW_KEY_BOOL(s,v)    moo_prefs_new_key_bool (MOO_EDIT_PREFS_PREFIX "/" s, v)
 #define NEW_KEY_INT(s,v)     moo_prefs_new_key_int (MOO_EDIT_PREFS_PREFIX "/" s, v)
 #define NEW_KEY_STRING(s,v)  moo_prefs_new_key_string (MOO_EDIT_PREFS_PREFIX "/" s, v)
-#define NEW_KEY_COLOR(s,v)   moo_prefs_new_key_color (MOO_EDIT_PREFS_PREFIX "/" s, v)
 #define NEW_KEY_ENUM(s,t,v)  moo_prefs_new_key_enum (MOO_EDIT_PREFS_PREFIX "/" s, t, v)
 #define NEW_KEY_FLAGS(s,t,v) moo_prefs_new_key_flags (MOO_EDIT_PREFS_PREFIX "/" s, t, v)
 
