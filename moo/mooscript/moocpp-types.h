@@ -16,7 +16,7 @@
 #ifndef MOO_CPP_TYPES_H
 #define MOO_CPP_TYPES_H
 
-#include <mooutils/moocpp-exc.h>
+#include "moocpp-exc.h"
 
 namespace moo {
 

@@ -16,7 +16,7 @@
 #ifndef MOO_CPP_EXC_H
 #define MOO_CPP_EXC_H
 
-#include <mooutils/moocpp-macros.h>
+#include "moocpp-macros.h"
 
 namespace moo {
 

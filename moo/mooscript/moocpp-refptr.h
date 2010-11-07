@@ -16,7 +16,7 @@
 #ifndef MOO_CPP_REFPTR_H
 #define MOO_CPP_REFPTR_H
 
-#include <mooutils/moocpp-types.h>
+#include "moocpp-types.h"
 
 namespace moo {
 

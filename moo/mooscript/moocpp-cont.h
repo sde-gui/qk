@@ -21,7 +21,7 @@
 #include <string>
 #include <map>
 #include <glib.h>
-#include <mooutils/moocpp-refptr.h>
+#include "moocpp-refptr.h"
 
 namespace moo {
 

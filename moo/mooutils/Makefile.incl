@@ -1,11 +1,4 @@
 moo_sources +=				\
-	mooutils/moocpp-types.h		\
-	mooutils/moocpp.cpp		\
-	mooutils/moocpp.h		\
-	mooutils/moocpp-cont.h		\
-	mooutils/moocpp-exc.h		\
-	mooutils/moocpp-macros.h	\
-	mooutils/moocpp-refptr.h	\
 	mooutils/mooutils-thread.c	\
 	mooutils/mooutils-thread.h	\
 	mooutils/mdhistorymgr.c		\

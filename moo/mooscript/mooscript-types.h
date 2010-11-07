@@ -2,7 +2,7 @@
 #define MOM_SCRIPT_TYPES_H
 
 #include <glib.h>
-#include <mooutils/moocpp-cont.h>
+#include "moocpp-cont.h"
 
 namespace mom {
 

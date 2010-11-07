@@ -18,10 +18,10 @@
 
 #ifdef __cplusplus
 
-#include <mooutils/moocpp-macros.h>
-#include <mooutils/moocpp-types.h>
-#include <mooutils/moocpp-refptr.h>
-#include <mooutils/moocpp-cont.h>
+#include "moocpp-macros.h"
+#include "moocpp-types.h"
+#include "moocpp-refptr.h"
+#include "moocpp-cont.h"
 
 #endif /* __cplusplus */
 

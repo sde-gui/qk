@@ -12,7 +12,14 @@ moo_sources +=					\
 	mooscript/mooscript-extension.h		\
 	mooscript/mooscript-extension.cpp	\
 	mooscript/mooscript-lua.h		\
-	mooscript/mooscript-lua.cpp
+	mooscript/mooscript-lua.cpp		\
+	mooscript/moocpp-types.h		\
+	mooscript/moocpp.cpp			\
+	mooscript/moocpp.h			\
+	mooscript/moocpp-cont.h			\
+	mooscript/moocpp-exc.h			\
+	mooscript/moocpp-macros.h		\
+	mooscript/moocpp-refptr.h
 
 MOO_SCRIPT_PARSER_FILES =		\
 	mooscript/mooscriptgen.py	\
