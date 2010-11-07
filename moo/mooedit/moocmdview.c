@@ -43,6 +43,8 @@ static GObject  *moo_cmd_view_constructor   (GType                  type,
                                              guint                  n_construct_properties,
                                              GObjectConstructParam *construct_param);
 
+static void     moo_cmd_view_abort_and_disconnect (MooCmdView *view);
+
 static gboolean moo_cmd_view_abort_real     (MooCmdView *view);
 static gboolean moo_cmd_view_cmd_exit       (MooCmdView *view,
                                              int         status);
@@ -186,17 +188,27 @@ moo_cmd_view_destroy (GtkObject *object)
 {
     MooCmdView *view = MOO_CMD_VIEW (object);
 
+    moo_cmd_view_abort_and_disconnect (view);
     moo_cmd_view_set_filter (view, NULL);
-
-    if (view->priv->cmd)
-    {
-        _moo_cmd_abort (view->priv->cmd);
-        g_object_unref (view->priv->cmd);
-        view->priv->cmd = NULL;
-    }
 
     if (GTK_OBJECT_CLASS (moo_cmd_view_parent_class)->destroy)
         GTK_OBJECT_CLASS (moo_cmd_view_parent_class)->destroy (object);
+}
+
+
+static void
+moo_cmd_view_abort_and_disconnect (MooCmdView *view)
+{
+    MooCmd *cmd = view->priv->cmd;
+    view->priv->cmd = NULL;
+
+    if (cmd)
+    {
+        g_signal_handlers_disconnect_matched (cmd, G_SIGNAL_MATCH_DATA,
+                                              0, 0, NULL, NULL, view);
+        _moo_cmd_abort (cmd);
+        g_object_unref (cmd);
+    }
 }
 
 
@@ -336,7 +348,8 @@ moo_cmd_view_run_command_full (MooCmdView  *view,
 
     g_return_val_if_fail (MOO_IS_CMD_VIEW (view), FALSE);
     g_return_val_if_fail (cmd && cmd[0], FALSE);
-    g_return_val_if_fail (!view->priv->cmd, FALSE);
+
+    moo_cmd_view_abort_and_disconnect (view);
 
     display_cmd_line = make_display_cmd_line (cmd, display_cmd, working_dir);
     moo_line_view_write_line (MOO_LINE_VIEW (view),
