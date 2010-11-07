@@ -353,26 +353,6 @@ setting_apply (GtkWidget *widget)
 }
 
 
-static int
-radio_button_get_value (GtkWidget *button,
-                        GType      type)
-{
-    const char *string;
-    GValue val;
-
-    string = g_object_get_data (G_OBJECT (button), "moo-prefs-value");
-    g_return_val_if_fail (string != NULL, -1);
-
-    val.g_type = 0;
-    g_value_init (&val, type);
-
-    if (_moo_value_convert_from_string (string, &val))
-        return g_value_get_enum (&val);
-
-    g_return_val_if_reached (-1);
-}
-
-
 static gboolean
 setting_get_value (GtkWidget      *widget,
                    GValue         *value,
@@ -388,12 +368,6 @@ setting_get_value (GtkWidget      *widget,
         {
             int val = gtk_spin_button_get_value_as_int (spin);
             g_value_set_int (value, val);
-            return TRUE;
-        }
-        else if (value->g_type == G_TYPE_DOUBLE)
-        {
-            double val = gtk_spin_button_get_value (spin);
-            g_value_set_double (value, val);
             return TRUE;
         }
     }
@@ -425,33 +399,7 @@ setting_get_value (GtkWidget      *widget,
             return TRUE;
         }
     }
-    else if (GTK_IS_COLOR_BUTTON (widget))
-    {
-        if (value->g_type == GDK_TYPE_COLOR)
-        {
-            GdkColor val;
-            gtk_color_button_get_color (GTK_COLOR_BUTTON (widget), &val);
-            g_value_set_boxed (value, &val);
-            return TRUE;
-        }
-    }
-    else if (GTK_IS_RADIO_BUTTON (widget))
-    {
-        if (g_type_is_a (G_VALUE_TYPE (value), G_TYPE_ENUM))
-        {
-            if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget)))
-            {
-                int val = radio_button_get_value (widget, G_VALUE_TYPE (value));
-                g_value_set_enum (value, val);
-                return TRUE;
-            }
-            else
-            {
-                return FALSE;
-            }
-        }
-    }
-    else if (GTK_IS_TOGGLE_BUTTON (widget))
+    else if (GTK_IS_TOGGLE_BUTTON (widget) && !GTK_IS_RADIO_BUTTON (widget))
     {
         if (value->g_type == G_TYPE_BOOLEAN)
         {
@@ -481,11 +429,6 @@ setting_set_value (GtkWidget    *widget,
             gtk_spin_button_set_value (spin, g_value_get_int (value));
             return;
         }
-        else if (value->g_type == G_TYPE_DOUBLE)
-        {
-            gtk_spin_button_set_value (spin, g_value_get_double (value));
-            return;
-        }
     }
     else if (GTK_IS_ENTRY (widget))
     {
@@ -509,29 +452,7 @@ setting_set_value (GtkWidget    *widget,
             return;
         }
     }
-    else if (GTK_IS_COLOR_BUTTON (widget))
-    {
-        if (value->g_type == GDK_TYPE_COLOR)
-        {
-            GdkColor *val = g_value_get_boxed (value);
-            gtk_color_button_set_color (GTK_COLOR_BUTTON (widget), val);
-            return;
-        }
-    }
-    else if (GTK_IS_RADIO_BUTTON (widget))
-    {
-        if (g_type_is_a (G_VALUE_TYPE (value), G_TYPE_ENUM))
-        {
-            int val = g_value_get_enum (value);
-            int val_here = radio_button_get_value (widget, G_VALUE_TYPE (value));
-
-            if (val == val_here)
-                gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), TRUE);
-
-            return;
-        }
-    }
-    else if (GTK_IS_TOGGLE_BUTTON (widget))
+    else if (GTK_IS_TOGGLE_BUTTON (widget) && !GTK_IS_RADIO_BUTTON (widget))
     {
         if (value->g_type == G_TYPE_BOOLEAN)
         {

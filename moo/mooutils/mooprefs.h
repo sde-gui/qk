@@ -1,7 +1,7 @@
 /*
  *   mooprefs.h
  *
- *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
+ *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -21,12 +21,10 @@
 
 G_BEGIN_DECLS
 
-
 typedef enum {
     MOO_PREFS_RC,
     MOO_PREFS_STATE
 } MooPrefsKind;
-
 
 gboolean        moo_prefs_load          (char          **sys_files,
                                          const char     *file_rc,
@@ -62,12 +60,6 @@ void            moo_prefs_new_key_int   (const char     *key,
                                          int             default_val);
 void            moo_prefs_new_key_string(const char     *key,
                                          const char     *default_val);
-void            moo_prefs_new_key_enum  (const char     *key,
-                                         GType           enum_type,
-                                         int             default_val);
-void            moo_prefs_new_key_flags (const char     *key,
-                                         GType           flags_type,
-                                         int             default_val);
 
 void            moo_prefs_create_key    (const char     *key,
                                          MooPrefsKind    prefs_kind,
@@ -83,8 +75,6 @@ const char     *moo_prefs_get_string    (const char     *key);
 const char     *moo_prefs_get_filename  (const char     *key);
 gboolean        moo_prefs_get_bool      (const char     *key);
 int             moo_prefs_get_int       (const char     *key);
-int             moo_prefs_get_enum      (const char     *key);
-int             moo_prefs_get_flags     (const char     *key);
 
 void            moo_prefs_set_string    (const char     *key,
                                          const char     *val);
@@ -94,11 +84,6 @@ void            moo_prefs_set_int       (const char     *key,
                                          int             val);
 void            moo_prefs_set_bool      (const char     *key,
                                          gboolean        val);
-void            moo_prefs_set_enum      (const char     *key,
-                                         int             val);
-void            moo_prefs_set_flags     (const char     *key,
-                                         int             val);
-
 
 G_END_DECLS
 

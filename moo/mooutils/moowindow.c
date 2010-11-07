@@ -1149,7 +1149,7 @@ toolbar_style_toggled (MooWindow            *window,
     GtkToolbarStyle style = GPOINTER_TO_INT (data);
     if (window->toolbar)
         gtk_toolbar_set_style (GTK_TOOLBAR (window->toolbar), style);
-    moo_prefs_set_enum (setting (window, PREFS_TOOLBAR_STYLE), style);
+    moo_prefs_set_int (setting (window, PREFS_TOOLBAR_STYLE), style);
 }
 
 
@@ -1226,9 +1226,8 @@ init_prefs (MooWindow *window)
     moo_prefs_new_key_bool (setting (window, PREFS_SHOW_TOOLBAR), TRUE);
     moo_prefs_new_key_bool (setting (window, PREFS_SHOW_MENUBAR), TRUE);
     moo_prefs_new_key_bool (setting (window, PREFS_SHOW_STATUSBAR), TRUE);
-    moo_prefs_new_key_enum (setting (window, PREFS_TOOLBAR_STYLE),
-                            GTK_TYPE_TOOLBAR_STYLE,
-                            get_toolbar_style_gtk (window));
+    moo_prefs_new_key_int (setting (window, PREFS_TOOLBAR_STYLE),
+                           get_toolbar_style_gtk (window));
 
     moo_prefs_create_key (setting (window, PREFS_MAXIMIZED), MOO_PREFS_STATE, G_TYPE_BOOLEAN, FALSE);
     moo_prefs_create_key (setting (window, PREFS_WIDTH), MOO_PREFS_STATE, G_TYPE_INT, 800);
@@ -1238,7 +1237,7 @@ init_prefs (MooWindow *window)
 static GtkToolbarStyle
 get_toolbar_style (MooWindow *window)
 {
-    GtkToolbarStyle s = moo_prefs_get_enum (setting (window, PREFS_TOOLBAR_STYLE));
+    GtkToolbarStyle s = moo_prefs_get_int (setting (window, PREFS_TOOLBAR_STYLE));
     g_return_val_if_fail (s < N_STYLES, GTK_TOOLBAR_ICONS);
     return s;
 }

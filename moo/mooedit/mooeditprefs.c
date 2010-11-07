@@ -85,8 +85,6 @@ _moo_edit_init_config (void)
 #define NEW_KEY_BOOL(s,v)    moo_prefs_new_key_bool (MOO_EDIT_PREFS_PREFIX "/" s, v)
 #define NEW_KEY_INT(s,v)     moo_prefs_new_key_int (MOO_EDIT_PREFS_PREFIX "/" s, v)
 #define NEW_KEY_STRING(s,v)  moo_prefs_new_key_string (MOO_EDIT_PREFS_PREFIX "/" s, v)
-#define NEW_KEY_ENUM(s,t,v)  moo_prefs_new_key_enum (MOO_EDIT_PREFS_PREFIX "/" s, t, v)
-#define NEW_KEY_FLAGS(s,t,v) moo_prefs_new_key_flags (MOO_EDIT_PREFS_PREFIX "/" s, t, v)
 
 static void
 _moo_edit_init_prefs (void)
@@ -136,9 +134,7 @@ _moo_edit_init_prefs (void)
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_SPACES, FALSE);
     NEW_KEY_BOOL (MOO_EDIT_PREFS_SHOW_TRAILING_SPACES, FALSE);
     NEW_KEY_STRING (MOO_EDIT_PREFS_FONT, DEFAULT_FONT);
-    NEW_KEY_FLAGS (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS,
-                   MOO_TYPE_TEXT_SEARCH_FLAGS,
-                   MOO_TEXT_SEARCH_CASELESS);
+    NEW_KEY_INT (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS, MOO_TEXT_SEARCH_CASELESS);
     NEW_KEY_STRING (MOO_EDIT_PREFS_LINE_NUMBERS_FONT, NULL);
 
     NEW_KEY_STRING (MOO_EDIT_PREFS_ENCODINGS, _moo_get_default_encodings ());
@@ -149,8 +145,6 @@ _moo_edit_init_prefs (void)
 #define get_string(key) moo_prefs_get_string (MOO_EDIT_PREFS_PREFIX "/" key)
 #define get_bool(key) moo_prefs_get_bool (MOO_EDIT_PREFS_PREFIX "/" key)
 #define get_int(key) moo_prefs_get_int (MOO_EDIT_PREFS_PREFIX "/" key)
-#define get_enum(key) moo_prefs_get_enum (MOO_EDIT_PREFS_PREFIX "/" key)
-#define get_flags(key) moo_prefs_get_flags (MOO_EDIT_PREFS_PREFIX "/" key)
 
 void
 _moo_edit_update_global_config (void)
@@ -209,7 +203,7 @@ _moo_edit_apply_prefs (MooEdit *edit)
                   "highlight-current-line", get_bool (MOO_EDIT_PREFS_HIGHLIGHT_CURRENT_LINE),
                   "draw-right-margin", get_bool (MOO_EDIT_PREFS_DRAW_RIGHT_MARGIN),
                   "right-margin-offset", get_int (MOO_EDIT_PREFS_RIGHT_MARGIN_OFFSET),
-                  "quick-search-flags", get_flags (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS),
+                  "quick-search-flags", get_int (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS),
                   "auto-indent", get_bool (MOO_EDIT_PREFS_AUTO_INDENT),
                   "tab-indents", get_bool (MOO_EDIT_PREFS_TAB_INDENTS),
                   "backspace-indents", get_bool (MOO_EDIT_PREFS_BACKSPACE_INDENTS),

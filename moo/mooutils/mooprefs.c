@@ -1,7 +1,7 @@
 /*
  *   mooprefs.c
  *
- *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
+ *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -17,6 +17,7 @@
 #include "marshals.h"
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mootype-macros.h"
 #include <string.h>
@@ -29,33 +30,13 @@
 
 #define MOO_PREFS_SYS -1
 
-#define MOO_TYPE_PREFS              (_moo_prefs_get_type ())
-#define MOO_PREFS(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_PREFS, MooPrefs))
-#define MOO_PREFS_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_PREFS, MooPrefsClass))
-#define MOO_IS_PREFS(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_PREFS))
-#define MOO_IS_PREFS_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_PREFS))
-#define MOO_PREFS_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PREFS, MooPrefsClass))
-
-typedef struct _MooPrefs        MooPrefs;
-typedef struct _MooPrefsClass   MooPrefsClass;
-
-struct _MooPrefs
+typedef struct
 {
-    GObject          gobject;
-
     GHashTable      *data; /* char* -> Item* */
     MooMarkupDoc    *xml_rc;
-    gboolean         rc_modified;
     MooMarkupDoc    *xml_state;
-    GList           *closures;
-    GHashTable      *closures_map; /* guint -> closures list link */
-};
-
-struct _MooPrefsClass
-{
-    GObjectClass   parent_class;
-};
-
+    gboolean         rc_modified;
+} PrefsStore;
 
 typedef struct {
     GType  type;
@@ -65,36 +46,7 @@ typedef struct {
     guint  overridden : 1;
 } PrefsItem;
 
-
-static void          prefs_new_key      (MooPrefs       *prefs,
-                                         const char     *key,
-                                         GType           value_type,
-                                         const GValue   *default_value,
-                                         MooPrefsKind    prefs_kind);
-static void          prefs_new_key_from_string (MooPrefs *prefs,
-                                         const char     *key,
-                                         const char     *value,
-                                         int             prefs_kind);
-static void          prefs_delete_key   (MooPrefs       *prefs,
-                                         const char     *key);
-static GType         prefs_get_key_type (MooPrefs       *prefs,
-                                         const char     *key);
-
-static const GValue *prefs_get          (MooPrefs       *prefs,
-                                         const char     *key);
-static const GValue *prefs_get_default  (MooPrefs       *prefs,
-                                         const char     *key);
-static void          prefs_set          (MooPrefs       *prefs,
-                                         const char     *key,
-                                         const GValue   *value);
-static void          prefs_set_default  (MooPrefs       *prefs,
-                                         const char     *key,
-                                         const GValue   *value);
-static PrefsItem    *prefs_get_item     (MooPrefs       *prefs,
-                                         const char     *key);
-static void          prefs_emit_notify  (MooPrefs       *prefs,
-                                         const char     *key,
-                                         const GValue   *value);
+static PrefsItem    *prefs_get_item     (const char     *key);
 
 static PrefsItem    *item_new           (GType           type,
                                          const GValue   *value,
@@ -103,73 +55,31 @@ static PrefsItem    *item_new           (GType           type,
 static void          item_free          (PrefsItem      *item);
 static gboolean      item_set_type      (PrefsItem      *item,
                                          GType           type);
-static const GValue *item_value         (PrefsItem      *item);
-static const GValue *item_default_value (PrefsItem      *item);
 static gboolean      item_set           (PrefsItem      *item,
                                          const GValue   *value);
 static gboolean      item_set_default   (PrefsItem      *item,
                                          const GValue   *value);
 
-static void          moo_prefs_finalize (GObject        *object);
-static void          moo_prefs_new_key_from_string (const char *key,
-                                         const char     *value,
-                                         int             prefs_kind);
-
 static void          moo_prefs_set_modified (gboolean    modified);
 
 
-MOO_DEFINE_TYPE_STATIC (MooPrefs, _moo_prefs, G_TYPE_OBJECT)
-
-
-static MooPrefs *
-instance (void)
+static PrefsStore *
+prefs_instance (void)
 {
-    static MooPrefs *p = NULL;
+    static PrefsStore prefs;
 
-    if (G_UNLIKELY (!p))
-        p = g_object_new (MOO_TYPE_PREFS, (const char*) NULL);
-
-    return p;
-}
-
-
-/***************************************************************************/
-/* MooPrefs
- */
-
-static void
-_moo_prefs_class_init (MooPrefsClass *klass)
-{
-    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-    gobject_class->finalize = moo_prefs_finalize;
-}
-
-
-static void
-_moo_prefs_init (MooPrefs *prefs)
-{
-    prefs->data =
+    if (G_UNLIKELY (!prefs.data))
+        prefs.data =
             g_hash_table_new_full (g_str_hash, g_str_equal,
                                    (GDestroyNotify) g_free,
                                    (GDestroyNotify) item_free);
 
-    prefs->closures_map = g_hash_table_new (g_direct_hash, NULL);
+    return &prefs;
 }
 
 
-static void
-moo_prefs_finalize (GObject *obj)
-{
-    MooPrefs *prefs = MOO_PREFS (obj);
-
-    g_hash_table_destroy (prefs->data);
-
-    G_OBJECT_CLASS(_moo_prefs_parent_class)->finalize (obj);
-}
-
-
-char*
-moo_prefs_make_key (const char     *first_comp,
+char *
+moo_prefs_make_key (const char *first_comp,
                     ...)
 {
     char *key;
@@ -185,9 +95,9 @@ moo_prefs_make_key (const char     *first_comp,
 }
 
 
-char*
-moo_prefs_make_keyv (const char     *first_comp,
-                     va_list         var_args)
+char *
+moo_prefs_make_keyv (const char *first_comp,
+                     va_list     var_args)
 {
     const char *comp;
     GString *key = NULL;
@@ -215,10 +125,10 @@ moo_prefs_make_keyv (const char     *first_comp,
 }
 
 
-MooMarkupDoc*
+MooMarkupDoc *
 moo_prefs_get_markup (MooPrefsKind prefs_kind)
 {
-    MooPrefs *prefs = instance ();
+    PrefsStore *prefs = prefs_instance ();
 
     if (!prefs->xml_rc)
         prefs->xml_rc = moo_markup_doc_new ("Prefs");
@@ -234,21 +144,6 @@ moo_prefs_get_markup (MooPrefsKind prefs_kind)
     }
 
     g_return_val_if_reached (NULL);
-}
-
-
-void
-moo_prefs_new_key (const char     *key,
-                   GType           value_type,
-                   const GValue   *default_value,
-                   MooPrefsKind    prefs_kind)
-{
-    g_return_if_fail (key != NULL);
-    g_return_if_fail (_moo_value_type_supported (value_type));
-    g_return_if_fail (default_value != NULL);
-    g_return_if_fail (G_VALUE_TYPE (default_value) == value_type);
-
-    prefs_new_key (instance(), key, value_type, default_value, prefs_kind);
 }
 
 
@@ -288,8 +183,9 @@ moo_prefs_create_key (const char   *key,
 GType
 moo_prefs_get_key_type (const char *key)
 {
-    g_return_val_if_fail (key != NULL, G_TYPE_NONE);
-    return prefs_get_key_type (instance(), key);
+    PrefsItem *item = prefs_get_item (key);
+    g_return_val_if_fail (item != NULL, G_TYPE_NONE);
+    return item->type;
 }
 
 
@@ -297,31 +193,39 @@ gboolean
 moo_prefs_key_registered (const char *key)
 {
     g_return_val_if_fail (key != NULL, FALSE);
-    return prefs_get_item (instance(), key) != NULL;
+    return prefs_get_item (key) != NULL;
 }
 
 
-const GValue*
+const GValue *
 moo_prefs_get (const char *key)
 {
     const GValue *val;
+    PrefsItem *item;
 
     g_return_val_if_fail (key != NULL, NULL);
 
-    val = prefs_get (instance(), key);
+    item = prefs_get_item (key);
+    val = item ? &item->value : NULL;
 
-    if (!val)
-        g_warning ("%s: key %s not registered", G_STRLOC, key);
+    if (!item)
+        moo_warning ("key '%s' not registered", key);
 
     return val;
 }
 
 
-const GValue*
+const GValue *
 moo_prefs_get_default (const char *key)
 {
+    PrefsItem *item;
+
     g_return_val_if_fail (key != NULL, NULL);
-    return prefs_get_default (instance(), key);
+
+    item = prefs_get_item (key);
+    g_return_val_if_fail (item != NULL, NULL);
+
+    return &item->default_value;
 }
 
 
@@ -329,9 +233,22 @@ void
 moo_prefs_set (const char     *key,
                const GValue   *value)
 {
+    PrefsItem *item;
+
     g_return_if_fail (key != NULL);
-    g_return_if_fail (value != NULL);
-    prefs_set (instance(), key, value);
+    g_return_if_fail (G_IS_VALUE (value));
+
+    item = prefs_get_item (key);
+
+    if (!item)
+    {
+        moo_warning ("key '%s' not registered", key);
+        return;
+    }
+
+    if (item_set (item, value))
+        if (item->prefs_kind == MOO_PREFS_RC)
+            moo_prefs_set_modified (TRUE);
 }
 
 
@@ -339,35 +256,22 @@ void
 moo_prefs_set_default (const char     *key,
                        const GValue   *value)
 {
+    PrefsItem *item;
+
     g_return_if_fail (key != NULL);
-    g_return_if_fail (value != NULL);
-    prefs_set_default (instance(), key, value);
-}
+    g_return_if_fail (G_IS_VALUE (value));
 
+    item = prefs_get_item (key);
+    g_return_if_fail (item != NULL);
 
-void
-moo_prefs_delete_key (const char     *key)
-{
-    g_return_if_fail (key != NULL);
-    prefs_delete_key (instance(), key);
-}
-
-
-static void
-moo_prefs_new_key_from_string (const char     *key,
-                               const char     *value,
-                               int             prefs_kind)
-{
-    g_return_if_fail (key != NULL);
-    g_return_if_fail (value != NULL);
-    prefs_new_key_from_string (instance(), key, value, prefs_kind);
+    item_set_default (item, value);
 }
 
 
 static void
 moo_prefs_set_modified (gboolean modified)
 {
-    MooPrefs *prefs = instance ();
+    PrefsStore *prefs = prefs_instance ();
     prefs->rc_modified = modified;
 }
 
@@ -389,7 +293,7 @@ prepend_key (const char *key,
 GSList *
 moo_prefs_list_keys (MooPrefsKind prefs_kind)
 {
-    MooPrefs *prefs = instance ();
+    PrefsStore *prefs = prefs_instance ();
 
     struct {
         GSList *list;
@@ -409,36 +313,45 @@ moo_prefs_list_keys (MooPrefsKind prefs_kind)
  */
 
 
-static void
-prefs_new_key (MooPrefs       *prefs,
-               const char     *key,
-               GType           type,
-               const GValue   *default_value,
-               MooPrefsKind    prefs_kind)
+void
+moo_prefs_new_key (const char   *key,
+                   GType         value_type,
+                   const GValue *default_value,
+                   MooPrefsKind  prefs_kind)
 {
     PrefsItem *item;
-    gboolean changed;
+    PrefsStore *prefs;
 
     g_return_if_fail (key && key[0]);
     g_return_if_fail (g_utf8_validate (key, -1, NULL));
-    g_return_if_fail (_moo_value_type_supported (type));
     g_return_if_fail (G_IS_VALUE (default_value));
-    g_return_if_fail (G_VALUE_TYPE (default_value) == type);
+    g_return_if_fail (G_VALUE_TYPE (default_value) == value_type);
 
-    item = prefs_get_item (prefs, key);
+    switch (value_type)
+    {
+        case G_TYPE_STRING:
+        case G_TYPE_BOOLEAN:
+        case G_TYPE_INT:
+            break;
+        default:
+            moo_warning ("bad type '%s'", g_type_name (value_type));
+            return;
+    }
+
+    prefs = prefs_instance ();
+    item = prefs_get_item (key);
 
     if (!item)
     {
-        item = item_new (type, default_value, default_value, prefs_kind);
+        item = item_new (value_type, default_value, default_value, prefs_kind);
         g_hash_table_insert (prefs->data, g_strdup (key), item);
-        changed = TRUE;
     }
     else
     {
-        changed = item_set_type (item, type);
+        item_set_type (item, value_type);
 
-        if (!item->overridden && item_set_default (item, default_value))
-            changed = TRUE;
+        if (!item->overridden)
+            item_set_default (item, default_value);
 
         if (!item->overridden &&
             item->prefs_kind == MOO_PREFS_RC &&
@@ -447,160 +360,76 @@ prefs_new_key (MooPrefs       *prefs,
 
         item->prefs_kind = prefs_kind;
     }
-
-    if (changed)
-        prefs_emit_notify (prefs, key, item_value (item));
 }
 
 
 static void
-prefs_new_key_from_string (MooPrefs     *prefs,
-                           const char   *key,
+prefs_new_key_from_string (const char   *key,
+                           const char   *type,
                            const char   *value,
                            int           prefs_kind)
 {
+    PrefsStore *prefs;
     PrefsItem *item;
-    GValue val, default_val;
+    GValue string_val = { 0 };
+    GValue real_val = { 0 };
+    GType value_type;
 
     g_return_if_fail (key && key[0]);
+    g_return_if_fail (type && type[0]);
     g_return_if_fail (g_utf8_validate (key, -1, NULL));
 
-    item = prefs_get_item (prefs, key);
-
-    val.g_type = 0;
-    g_value_init (&val, G_TYPE_STRING);
-    g_value_set_static_string (&val, value);
-    default_val.g_type = 0;
-    g_value_init (&default_val, G_TYPE_STRING);
-
-    if (prefs_kind == MOO_PREFS_SYS)
-        g_value_set_static_string (&default_val, value);
-
-    if (!item)
-    {
-        prefs_new_key (prefs, key, G_TYPE_STRING, &default_val,
-                       prefs_kind == MOO_PREFS_SYS ? MOO_PREFS_RC : prefs_kind);
-        item = prefs_get_item (prefs, key);
-        item_set (item, &val);
-
-        if (prefs_kind == MOO_PREFS_SYS)
-            item->overridden = TRUE;
-    }
+    if (strcmp (type, "bool") == 0)
+        value_type = G_TYPE_BOOLEAN;
+    else if (strcmp (type, "int") == 0)
+        value_type = G_TYPE_INT;
+    else if (strcmp (type, "string") == 0)
+        value_type = G_TYPE_STRING;
     else
     {
-        _moo_value_convert (&val, &item->value);
-
-        if (prefs_kind == MOO_PREFS_SYS)
-        {
-            _moo_value_convert (&default_val, &item->default_value);
-            item->overridden = TRUE;
-        }
-        else
-            item->prefs_kind = prefs_kind;
-    }
-
-    g_value_unset (&val);
-    g_value_unset (&default_val);
-    prefs_emit_notify (prefs, key, item_value (item));
-}
-
-
-static GType
-prefs_get_key_type (MooPrefs       *prefs,
-                    const char     *key)
-{
-    PrefsItem *item;
-
-    g_return_val_if_fail (key != NULL, G_TYPE_NONE);
-
-    item = prefs_get_item (prefs, key);
-    g_return_val_if_fail (item != NULL, G_TYPE_NONE);
-
-    return item->type;
-}
-
-
-static const GValue*
-prefs_get (MooPrefs       *prefs,
-           const char     *key)
-{
-    PrefsItem *item;
-
-    g_return_val_if_fail (key != NULL, NULL);
-
-    item = prefs_get_item (prefs, key);
-    return item ? item_value (item) : NULL;
-}
-
-
-static const GValue*
-prefs_get_default (MooPrefs       *prefs,
-                   const char     *key)
-{
-    PrefsItem *item;
-
-    g_return_val_if_fail (key != NULL, NULL);
-
-    item = prefs_get_item (prefs, key);
-    g_return_val_if_fail (item != NULL, NULL);
-
-    return item_default_value (item);
-}
-
-
-static void
-prefs_set (MooPrefs       *prefs,
-           const char     *key,
-           const GValue   *value)
-{
-    PrefsItem *item;
-
-    g_return_if_fail (key != NULL);
-    g_return_if_fail (G_IS_VALUE (value));
-
-    item = prefs_get_item (prefs, key);
-
-    if (!item)
-    {
-        g_warning ("key '%s' not registered", key);
+        moo_critical ("unknown value type '%s'", type);
         return;
     }
 
-    if (item_set (item, value))
+    g_value_init (&string_val, G_TYPE_STRING);
+    g_value_set_string (&string_val, value);
+    g_value_init (&real_val, value_type);
+    _moo_value_convert (&string_val, &real_val);
+
+    prefs = prefs_instance ();
+    item = prefs_get_item (key);
+
+    if (!item)
     {
-        if (item->prefs_kind == MOO_PREFS_RC)
-            moo_prefs_set_modified (TRUE);
-        prefs_emit_notify (prefs, key, item_value (item));
+        GValue default_val = { 0 };
+        g_value_init (&default_val, value_type);
+        if (prefs_kind == MOO_PREFS_SYS)
+            g_value_copy (&real_val, &default_val);
+        moo_prefs_new_key (key, value_type, &default_val,
+                           prefs_kind == MOO_PREFS_SYS ? MOO_PREFS_RC : prefs_kind);
+        item = prefs_get_item (key);
+        g_value_unset (&default_val);
     }
+
+    item_set (item, &real_val);
+
+    if (prefs_kind == MOO_PREFS_SYS)
+        item->overridden = TRUE;
+
+    g_value_unset (&real_val);
+    g_value_unset (&string_val);
 }
 
 
-static void
-prefs_set_default (MooPrefs       *prefs,
-                   const char     *key,
-                   const GValue   *value)
+void
+moo_prefs_delete_key (const char *key)
 {
     PrefsItem *item;
-
-    g_return_if_fail (key != NULL);
-    g_return_if_fail (G_IS_VALUE (value));
-
-    item = prefs_get_item (prefs, key);
-    g_return_if_fail (item != NULL);
-
-    item_set_default (item, value);
-}
-
-
-static void
-prefs_delete_key (MooPrefs       *prefs,
-                  const char     *key)
-{
-    PrefsItem *item;
+    PrefsStore *prefs;
 
     g_return_if_fail (key != NULL);
 
-    item = prefs_get_item (prefs, key);
+    item = prefs_get_item (key);
 
     if (!item)
         return;
@@ -608,16 +437,16 @@ prefs_delete_key (MooPrefs       *prefs,
     if (item->prefs_kind == MOO_PREFS_RC)
         moo_prefs_set_modified (TRUE);
 
+    prefs = prefs_instance ();
     g_hash_table_remove (prefs->data, key);
-    prefs_emit_notify (prefs, key, NULL);
 }
 
 
 
 static PrefsItem*
-prefs_get_item (MooPrefs       *prefs,
-                const char     *key)
+prefs_get_item (const char *key)
 {
+    PrefsStore *prefs = prefs_instance ();
     g_return_val_if_fail (key != NULL, NULL);
     return g_hash_table_lookup (prefs->data, key);
 }
@@ -663,6 +492,7 @@ item_set_type (PrefsItem      *item,
 
     if (type != item->type)
     {
+        moo_critical ("oops");
         item->type = type;
         _moo_value_change_type (&item->value, type);
         _moo_value_change_type (&item->default_value, type);
@@ -683,22 +513,6 @@ item_free (PrefsItem *item)
         g_value_unset (&item->default_value);
         g_free (item);
     }
-}
-
-
-static const GValue*
-item_value (PrefsItem *item)
-{
-    g_return_val_if_fail (item != NULL, NULL);
-    return &item->value;
-}
-
-
-static const GValue*
-item_default_value (PrefsItem *item)
-{
-    g_return_val_if_fail (item != NULL, NULL);
-    return &item->default_value;
 }
 
 
@@ -739,70 +553,32 @@ item_set_default (PrefsItem      *item,
 
 
 /***************************************************************************/
-/* PrefsNotify
- */
-
-static void
-prefs_emit_notify (G_GNUC_UNUSED MooPrefs     *prefs,
-                   G_GNUC_UNUSED const char   *key,
-                   G_GNUC_UNUSED const GValue *value)
-{
-}
-
-
-/***************************************************************************/
 /* Loading abd saving
  */
 
 static void
-process_element (MooMarkupElement *elm,
-                 int               prefs_kind)
+process_item (MooMarkupElement *elm,
+              int               prefs_kind)
 {
-    MooMarkupNode *child;
-    gboolean dir = FALSE;
+    const char *name;
+    const char *type;
 
-    if (elm->parent->type == MOO_MARKUP_DOC_NODE)
+    if (strcmp (elm->name, "item") != 0)
     {
-        dir = TRUE;
-    }
-    else
-    {
-        for (child = elm->children; child != NULL; child = child->next)
-            if (child->type == MOO_MARKUP_ELEMENT_NODE)
-                dir = TRUE;
+        moo_critical ("bad element '%s'", elm->name);
+        return;
     }
 
-    if (!dir)
-    {
-        char *path;
+    name = moo_markup_get_prop (MOO_MARKUP_NODE (elm), "name");
+    type = moo_markup_get_prop (MOO_MARKUP_NODE (elm), "type");
+    moo_return_if_fail (name && *name && type && *type);
 
-        path = moo_markup_element_get_path (elm);
-
-        if (strncmp (path, PREFS_ROOT "/", strlen (PREFS_ROOT "/")) != 0 ||
-            strlen (path) < strlen (PREFS_ROOT) + 2)
-        {
-            g_free (path);
-            g_return_if_reached ();
-        }
-        else
-        {
-            const char *key = path + strlen (PREFS_ROOT) + 1;
-            moo_prefs_new_key_from_string (key, elm->content, prefs_kind);
+    prefs_new_key_from_string (name, type, elm->content, prefs_kind);
 
 #ifdef MOO_PREFS_DEBUG_READWRITE
-            g_print ("key: '%s', val: '%s'\n", key, elm->content);
+    g_print ("key: '%s', type: '%s', val: '%s'\n", name, type, elm->content);
 #endif
-
-            g_free (path);
-            return;
-        }
-    }
-
-    for (child = elm->children; child != NULL; child = child->next)
-        if (child->type == MOO_MARKUP_ELEMENT_NODE)
-            process_element (MOO_MARKUP_ELEMENT (child), prefs_kind);
 }
-
 
 static gboolean
 load_file (const char  *file,
@@ -811,10 +587,10 @@ load_file (const char  *file,
 {
     MooMarkupDoc *xml;
     MooMarkupNode *root;
-    MooPrefs *prefs;
+    PrefsStore *prefs;
     MooMarkupDoc **target = NULL;
 
-    prefs = instance ();
+    prefs = prefs_instance ();
 
     switch (prefs_kind)
     {
@@ -859,7 +635,12 @@ load_file (const char  *file,
     root = moo_markup_get_root_element (xml, PREFS_ROOT);
 
     if (root)
-        process_element (MOO_MARKUP_ELEMENT (root), prefs_kind);
+    {
+        MooMarkupNode *child;
+        for (child = root->children; child != NULL; child = child->next)
+            if (child->type == MOO_MARKUP_ELEMENT_NODE)
+                process_item (MOO_MARKUP_ELEMENT (child), prefs_kind);
+    }
 
     moo_markup_doc_unref (xml);
     return TRUE;
@@ -889,27 +670,22 @@ moo_prefs_load (char          **sys_files,
 
 
 typedef struct {
-    MooMarkupDoc  *xml;
-    MooMarkupNode *root;
-    MooPrefsKind   prefs_kind;
-} Stuff;
-
+    GPtrArray *keys;
+    MooPrefsKind prefs_kind;
+} CollectItemsData;
 
 static void
-write_item (const char  *key,
-            PrefsItem   *item,
-            Stuff       *stuff)
+collect_item (const char       *key,
+              PrefsItem        *item,
+              CollectItemsData *data)
 {
-    const char *string = NULL;
-
-    g_return_if_fail (key != NULL && key[0] != 0);
-    g_return_if_fail (item != NULL && stuff != NULL);
+    g_return_if_fail (key && *key && item);
     g_return_if_fail (_moo_value_type_supported (item->type));
 
-    if (item->prefs_kind != stuff->prefs_kind)
+    if (item->prefs_kind != data->prefs_kind)
         return;
 
-    if (_moo_value_equal (item_value (item), item_default_value (item)))
+    if (_moo_value_equal (&item->value, &item->default_value))
     {
 #ifdef MOO_PREFS_DEBUG_READWRITE
         g_print ("skipping '%s'\n", key);
@@ -917,33 +693,64 @@ write_item (const char  *key,
         return;
     }
 
-    string = _moo_value_convert_to_string (item_value (item));
+    g_ptr_array_add (data->keys, (gpointer) key);
+}
+
+static void
+write_item (const char    *key,
+            MooMarkupNode *root)
+{
+    const char *string = NULL;
+    const char *type;
+    MooMarkupNode *elm;
+    PrefsItem *item;
+
+    item = prefs_get_item (key);
+    g_return_if_fail (item != NULL);
+
+    string = _moo_value_convert_to_string (&item->value);
 
     if (!string)
         string = "";
 
-    if (!stuff->root)
-        stuff->root =
-                moo_markup_create_root_element (stuff->xml, PREFS_ROOT);
+    switch (item->type)
+    {
+        case G_TYPE_INT:
+            type = "int";
+            break;
+        case G_TYPE_STRING:
+            type = "string";
+            break;
+        case G_TYPE_BOOLEAN:
+            type = "bool";
+            break;
+        default:
+            moo_return_if_reached ();
+    }
 
-    g_return_if_fail (stuff->root != NULL);
-
-    moo_markup_create_text_element (stuff->root, key, string);
+    elm = moo_markup_create_text_element (root, "item", string);
+    moo_markup_set_prop (elm, "name", key);
+    moo_markup_set_prop (elm, "type", type);
 
 #ifdef MOO_PREFS_DEBUG_READWRITE
-    g_print ("writing key: '%s', val: '%s'\n", key, string);
+    g_print ("writing key: '%s', type: '%s', val: '%s'\n", key, type, string);
 #endif
 }
 
+static int
+compare_strings (gconstpointer a, gconstpointer b)
+{
+    return strcmp (*(char**)a, *(char**)b);
+}
 
 static void
 sync_xml (MooPrefsKind prefs_kind)
 {
-    MooPrefs *prefs = instance ();
+    PrefsStore *prefs = prefs_instance ();
     MooMarkupDoc *xml;
     MooMarkupDoc **xml_ptr = NULL;
     MooMarkupNode *root;
-    Stuff stuff;
+    CollectItemsData data;
 
     switch (prefs_kind)
     {
@@ -967,20 +774,33 @@ sync_xml (MooPrefsKind prefs_kind)
     if (root)
         moo_markup_delete_node (root);
 
-    stuff.prefs_kind = prefs_kind;
-    stuff.xml = xml;
-    stuff.root = NULL;
+    data.prefs_kind = prefs_kind;
+    data.keys = g_ptr_array_new ();
 
     g_hash_table_foreach (prefs->data,
-                          (GHFunc) write_item,
-                          &stuff);
+                          (GHFunc) collect_item,
+                          &data);
+
+    if (data.keys->len > 0)
+    {
+        guint i;
+
+        g_ptr_array_sort (data.keys, compare_strings);
+
+        root = moo_markup_create_root_element (xml, PREFS_ROOT);
+
+        for (i = 0; i < data.keys->len; ++i)
+            write_item (data.keys->pdata[i], root);
+    }
+
+    g_ptr_array_free (data.keys, TRUE);
 }
 
 
 static gboolean
 check_modified (MooPrefsKind prefs_kind)
 {
-    MooPrefs *prefs = instance ();
+    PrefsStore *prefs = prefs_instance ();
     MooMarkupDoc *xml = prefs->xml_rc;
 
     if (prefs_kind != MOO_PREFS_RC)
@@ -1000,7 +820,7 @@ save_file (const char    *file,
     MooMarkupDoc *xml = NULL;
     MooMarkupNode *node;
     gboolean empty;
-    MooPrefs *prefs = instance ();
+    PrefsStore *prefs = prefs_instance ();
     MooFileWriter *writer;
 
     if (!check_modified (prefs_kind))
@@ -1049,7 +869,7 @@ moo_prefs_save (const char  *file_rc,
                 const char  *file_state,
                 GError     **error)
 {
-    MooPrefs *prefs = instance ();
+    PrefsStore *prefs = prefs_instance ();
 
     g_return_val_if_fail (file_rc != NULL, FALSE);
     g_return_val_if_fail (file_state != NULL, FALSE);
@@ -1102,40 +922,6 @@ moo_prefs_new_key_int (const char *key,
     g_value_set_int (&val, default_val);
 
     moo_prefs_new_key (key, G_TYPE_INT, &val, MOO_PREFS_RC);
-}
-
-
-void
-moo_prefs_new_key_enum (const char *key,
-                        GType       enum_type,
-                        int         default_val)
-{
-    GValue val;
-
-    g_return_if_fail (key != NULL);
-
-    val.g_type = 0;
-    g_value_init (&val, enum_type);
-    g_value_set_enum (&val, default_val);
-
-    moo_prefs_new_key (key, enum_type, &val, MOO_PREFS_RC);
-}
-
-
-void
-moo_prefs_new_key_flags (const char *key,
-                         GType       flags_type,
-                         int         default_val)
-{
-    GValue val;
-
-    g_return_if_fail (key != NULL);
-
-    val.g_type = 0;
-    g_value_init (&val, flags_type);
-    g_value_set_flags (&val, default_val);
-
-    moo_prefs_new_key (key, flags_type, &val, MOO_PREFS_RC);
 }
 
 
@@ -1201,10 +987,12 @@ moo_prefs_get_bool (const char *key)
 {
     const GValue *value;
 
-    g_return_val_if_fail (key != NULL, FALSE);
+    moo_return_val_if_fail (key != NULL, FALSE);
 
     value = moo_prefs_get (key);
-    g_return_val_if_fail (value != NULL, FALSE);
+
+    moo_return_val_if_fail (value != NULL, FALSE);
+    moo_return_val_if_fail (G_VALUE_TYPE (value) == G_TYPE_BOOLEAN, FALSE);
 
     return g_value_get_boolean (value);
 }
@@ -1215,40 +1003,14 @@ moo_prefs_get_int (const char *key)
 {
     const GValue *value;
 
-    g_return_val_if_fail (key != NULL, 0);
+    moo_return_val_if_fail (key != NULL, 0);
 
     value = moo_prefs_get (key);
-    g_return_val_if_fail (value != NULL, 0);
+
+    moo_return_val_if_fail (value != NULL, 0);
+    moo_return_val_if_fail (G_VALUE_TYPE (value) == G_TYPE_INT, 0);
 
     return g_value_get_int (value);
-}
-
-
-int
-moo_prefs_get_enum (const char *key)
-{
-    const GValue *value;
-
-    g_return_val_if_fail (key != NULL, 0);
-
-    value = moo_prefs_get (key);
-    g_return_val_if_fail (value != NULL, 0);
-
-    return g_value_get_enum (value);
-}
-
-
-int
-moo_prefs_get_flags (const char *key)
-{
-    const GValue *value;
-
-    g_return_val_if_fail (key != NULL, 0);
-
-    value = moo_prefs_get (key);
-    g_return_val_if_fail (value != NULL, 0);
-
-    return g_value_get_flags (value);
 }
 
 
@@ -1296,111 +1058,30 @@ moo_prefs_set_filename (const char     *key,
 
 
 void
-moo_prefs_set_int (const char     *key,
-                   int             val)
+moo_prefs_set_int (const char *key,
+                   int         val)
 {
-    static GValue gval;
+    GValue gval = { 0 };
 
-    g_return_if_fail (key != NULL);
+    moo_return_if_fail (key != NULL);
 
-    if (!G_IS_VALUE (&gval))
-        g_value_init (&gval, G_TYPE_INT);
-
+    g_value_init (&gval, G_TYPE_INT);
     g_value_set_int (&gval, val);
     moo_prefs_set (key, &gval);
+    g_value_unset (&gval);
 }
 
 
 void
-moo_prefs_set_bool (const char     *key,
-                    gboolean        val)
+moo_prefs_set_bool (const char *key,
+                    gboolean    val)
 {
-    static GValue gval;
+    GValue gval = { 0 };
 
-    g_return_if_fail (key != NULL);
+    moo_return_if_fail (key != NULL);
 
-    if (!G_IS_VALUE (&gval))
-        g_value_init (&gval, G_TYPE_BOOLEAN);
-
+    g_value_init (&gval, G_TYPE_BOOLEAN);
     g_value_set_boolean (&gval, val);
     moo_prefs_set (key, &gval);
+    g_value_unset (&gval);
 }
-
-
-void
-moo_prefs_set_enum (const char     *key,
-                    int             value)
-{
-    GValue gval;
-    GType type;
-
-    g_return_if_fail (key != NULL);
-
-    type = moo_prefs_get_key_type (key);
-    g_return_if_fail (G_TYPE_IS_ENUM (type));
-
-    gval.g_type = 0;
-    g_value_init (&gval, type);
-    g_value_set_enum (&gval, value);
-
-    moo_prefs_set (key, &gval);
-}
-
-
-void
-moo_prefs_set_flags (const char     *key,
-                     int             value)
-{
-    GValue gval;
-    GType type;
-
-    g_return_if_fail (key != NULL);
-
-    type = moo_prefs_get_key_type (key);
-    g_return_if_fail (G_TYPE_IS_FLAGS (type));
-
-    gval.g_type = 0;
-    g_value_init (&gval, type);
-    g_value_set_flags (&gval, value);
-
-    moo_prefs_set (key, &gval);
-}
-
-
-#if 0
-static void
-add_key (const char  *key,
-         G_GNUC_UNUSED PrefsItem *item,
-         GPtrArray   *array)
-{
-    g_ptr_array_add (array, g_strdup (key));
-}
-
-char**
-moo_prefs_list_keys (guint *n_keys)
-{
-    MooPrefs *prefs = instance ();
-    GPtrArray *array;
-
-    array = g_ptr_array_new ();
-
-    g_hash_table_foreach (prefs->data,
-                          (GHFunc) add_key,
-                          array);
-
-    if (!array->len)
-    {
-        g_ptr_array_free (array, TRUE);
-        if (n_keys)
-            *n_keys = 0;
-        return NULL;
-    }
-    else
-    {
-        if (n_keys)
-            *n_keys = array->len;
-        g_ptr_array_add (array, NULL);
-        return (char**) g_ptr_array_free (array, FALSE);
-    }
-}
-#endif

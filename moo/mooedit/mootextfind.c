@@ -94,8 +94,8 @@ init_find_history (void)
         last_search = moo_history_list_get_last_item (search_history);
 
         moo_prefs_create_key (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS), MOO_PREFS_STATE,
-                                                MOO_TYPE_FIND_FLAGS, MOO_FIND_CASELESS);
-        last_search_flags = moo_prefs_get_flags (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS));
+                                                G_TYPE_INT, MOO_FIND_CASELESS);
+        last_search_flags = moo_prefs_get_int (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS));
     }
 }
 
@@ -512,7 +512,7 @@ moo_find_run (MooFind        *find,
         }
 
         last_search_flags = flags;
-        moo_prefs_set_flags (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS), flags);
+        moo_prefs_set_int (moo_edit_setting (MOO_EDIT_PREFS_SEARCH_FLAGS), flags);
         g_free (last_search);
         last_search = g_strdup (search_for);
         REGEX_FREE (last_regex);

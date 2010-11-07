@@ -4212,7 +4212,7 @@ quick_search_option_toggled (MooTextView *view)
     moo_text_view_set_quick_search_flags (view, flags);
 
     if (MOO_IS_EDIT (view))
-        moo_prefs_set_flags (moo_edit_setting (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS), flags);
+        moo_prefs_set_int (moo_edit_setting (MOO_EDIT_PREFS_QUICK_SEARCH_FLAGS), flags);
 }
 
 
