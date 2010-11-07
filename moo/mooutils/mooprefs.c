@@ -1495,21 +1495,6 @@ moo_prefs_get_number (const char *key)
 }
 
 
-const GdkColor*
-moo_prefs_get_color (const char *key)
-{
-    const GValue *value;
-
-    g_return_val_if_fail (key != NULL, NULL);
-
-    value = moo_prefs_get (key);
-    g_return_val_if_fail (value != NULL, NULL);
-
-    g_return_val_if_fail (G_VALUE_TYPE (value) == GDK_TYPE_COLOR, NULL);
-    return g_value_get_boxed (value);
-}
-
-
 int
 moo_prefs_get_int (const char *key)
 {
@@ -1646,22 +1631,6 @@ moo_prefs_set_bool (const char     *key,
         g_value_init (&gval, G_TYPE_BOOLEAN);
 
     g_value_set_boolean (&gval, val);
-    moo_prefs_set (key, &gval);
-}
-
-
-void
-moo_prefs_set_color (const char     *key,
-                     const GdkColor *val)
-{
-    static GValue gval;
-
-    g_return_if_fail (key != NULL);
-
-    if (!G_IS_VALUE (&gval))
-        g_value_init (&gval, GDK_TYPE_COLOR);
-
-    g_value_set_boxed (&gval, val);
     moo_prefs_set (key, &gval);
 }
 

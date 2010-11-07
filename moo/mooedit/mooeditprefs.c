@@ -150,7 +150,6 @@ _moo_edit_init_prefs (void)
 #define get_string(key) moo_prefs_get_string (MOO_EDIT_PREFS_PREFIX "/" key)
 #define get_bool(key) moo_prefs_get_bool (MOO_EDIT_PREFS_PREFIX "/" key)
 #define get_int(key) moo_prefs_get_int (MOO_EDIT_PREFS_PREFIX "/" key)
-#define get_color(key) moo_prefs_get_color (MOO_EDIT_PREFS_PREFIX "/" key)
 #define get_enum(key) moo_prefs_get_enum (MOO_EDIT_PREFS_PREFIX "/" key)
 #define get_flags(key) moo_prefs_get_flags (MOO_EDIT_PREFS_PREFIX "/" key)
 

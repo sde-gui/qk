@@ -100,7 +100,6 @@ const char     *moo_prefs_get_string    (const char     *key);
 const char     *moo_prefs_get_filename  (const char     *key);
 gboolean        moo_prefs_get_bool      (const char     *key);
 gdouble         moo_prefs_get_number    (const char     *key);
-const GdkColor *moo_prefs_get_color     (const char     *key);
 int             moo_prefs_get_int       (const char     *key);
 int             moo_prefs_get_enum      (const char     *key);
 int             moo_prefs_get_flags     (const char     *key);
@@ -115,8 +114,6 @@ void            moo_prefs_set_int       (const char     *key,
                                          int             val);
 void            moo_prefs_set_bool      (const char     *key,
                                          gboolean        val);
-void            moo_prefs_set_color     (const char     *key,
-                                         const GdkColor *val);
 void            moo_prefs_set_enum      (const char     *key,
                                          int             val);
 void            moo_prefs_set_flags     (const char     *key,
