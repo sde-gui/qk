@@ -894,7 +894,8 @@ _moo_editor_move_doc (MooEditor     *editor,
 
 static void
 update_history_item_for_doc (MooEditor *editor,
-                             MooEdit   *doc)
+                             MooEdit   *doc,
+                             gboolean   add)
 {
     char *uri;
     MdHistoryItem *item;
@@ -914,10 +915,14 @@ update_history_item_for_doc (MooEditor *editor,
         _moo_edit_history_item_set_line (item, line);
 
     enc = moo_edit_get_encoding (doc);
-    if (enc)
+    if (enc && strcmp (enc, MOO_ENCODING_UTF8) != 0)
         _moo_edit_history_item_set_encoding (item, enc);
 
-    md_history_mgr_update_file (editor->priv->history, item);
+    if (add)
+        md_history_mgr_add_file (editor->priv->history, item);
+    else
+        md_history_mgr_update_file (editor->priv->history, item);
+
     md_history_item_free (item);
     g_free (uri);
 }
@@ -1017,7 +1022,7 @@ moo_editor_load_file (MooEditor       *editor,
         }
 
         if (add_history)
-            update_history_item_for_doc (editor, doc);
+            update_history_item_for_doc (editor, doc, TRUE);
     }
 
     if (result)
@@ -1321,7 +1326,7 @@ do_close_doc (MooEditor *editor,
         editor->priv->windowless = doc_list_remove (editor->priv->windowless, doc);
     }
 
-    update_history_item_for_doc (editor, doc);
+    update_history_item_for_doc (editor, doc, TRUE);
 
     if (window)
         _moo_edit_window_remove_doc (window, doc, TRUE);
@@ -2115,7 +2120,7 @@ do_save (MooEditor    *editor,
 
     mom_signal_editor_save_after (doc);
 
-    update_history_item_for_doc (editor, doc);
+    update_history_item_for_doc (editor, doc, TRUE);
 
     return TRUE;
 }
@@ -2186,7 +2191,7 @@ _moo_editor_save_as (MooEditor      *editor,
         file_info = moo_edit_file_info_new_path (filename, encoding);
     }
 
-    update_history_item_for_doc (editor, doc);
+    update_history_item_for_doc (editor, doc, FALSE);
 
     result = do_save (editor, doc, file_info->file, file_info->encoding, error);
 
