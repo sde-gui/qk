@@ -38,15 +38,6 @@ unit_tests_main (MooTestOptions opts, char **tests, const char *data_dir_arg)
 
     moo_test_cleanup ();
 
-#ifdef __WIN32__
-    if (!g_getenv ("WINESERVER") && !(opts & MOO_TEST_LIST_ONLY))
-    {
-        printf ("Done, press Enter...");
-        fflush (stdout);
-        getchar ();
-    }
-#endif
-
     return moo_test_get_result () ? 0 : 1;
 }
 
