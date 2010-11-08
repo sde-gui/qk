@@ -629,19 +629,6 @@ add_recent_uri (MooEditor  *editor,
 }
 
 static void
-add_recent_file (MooEditor *editor,
-                 GFile     *file)
-{
-    if (!is_embedded (editor))
-    {
-        char *uri = g_file_get_uri (file);
-        if (uri)
-            md_history_mgr_add_uri (editor->priv->history, uri);
-        g_free (uri);
-    }
-}
-
-static void
 recent_item_activated (GSList   *items,
                        gpointer  data)
 {
@@ -905,6 +892,37 @@ _moo_editor_move_doc (MooEditor     *editor,
 }
 
 
+static void
+update_history_item_for_doc (MooEditor *editor,
+                             MooEdit   *doc)
+{
+    char *uri;
+    MdHistoryItem *item;
+    int line;
+    const char *enc;
+
+    if (is_embedded (editor))
+        return;
+
+    if (!(uri = moo_edit_get_uri (doc)))
+        return;
+
+    item = md_history_item_new (uri, NULL);
+
+    line = moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc));
+    if (line != 0)
+        _moo_edit_history_item_set_line (item, line);
+
+    enc = moo_edit_get_encoding (doc);
+    if (enc)
+        _moo_edit_history_item_set_encoding (item, enc);
+
+    md_history_mgr_update_file (editor->priv->history, item);
+    md_history_item_free (item);
+    g_free (uri);
+}
+
+
 static gboolean
 moo_editor_load_file (MooEditor       *editor,
                       MooEditWindow   *window,
@@ -999,7 +1017,7 @@ moo_editor_load_file (MooEditor       *editor,
         }
 
         if (add_history)
-            add_recent_uri (editor, uri);
+            update_history_item_for_doc (editor, doc);
     }
 
     if (result)
@@ -1286,37 +1304,6 @@ do_close_window (MooEditor      *editor,
     gtk_widget_destroy (GTK_WIDGET (window));
 
     doc_list_free_links (list);
-}
-
-
-static void
-update_history_item_for_doc (MooEditor *editor,
-                             MooEdit   *doc)
-{
-    char *uri;
-    MdHistoryItem *item;
-    int line;
-    const char *enc;
-
-    if (is_embedded (editor))
-        return;
-
-    if (!(uri = moo_edit_get_uri (doc)))
-        return;
-
-    item = md_history_item_new (uri, NULL);
-
-    line = moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc));
-    if (line != 0)
-        _moo_edit_history_item_set_line (item, line);
-
-    enc = moo_edit_get_encoding (doc);
-    if (enc && !_moo_encodings_equal (enc, MOO_ENCODING_UTF8))
-        _moo_edit_history_item_set_encoding (item, enc);
-
-    md_history_mgr_update_file (editor->priv->history, item);
-    md_history_item_free (item);
-    g_free (uri);
 }
 
 
@@ -2128,7 +2115,7 @@ do_save (MooEditor    *editor,
 
     mom_signal_editor_save_after (doc);
 
-    add_recent_file (editor, file);
+    update_history_item_for_doc (editor, doc);
 
     return TRUE;
 }
