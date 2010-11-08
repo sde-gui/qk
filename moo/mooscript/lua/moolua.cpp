@@ -20,7 +20,14 @@
 #include "moolua-tests.h"
 #include "mooscript/mooscript-lua.h"
 #include <string.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef __WIN32__
+#include <io.h>
+#endif
 #include <glib.h>
+#include <glib/gstdio.h>
 
 void
 lua_push_utf8string (lua_State  *L,
@@ -99,9 +106,35 @@ cfunc_spin_main_loop (lua_State *L)
     return 0;
 }
 
+enum {
+    my_F_OK = 0,
+    my_R_OK = 1 << 0,
+    my_W_OK = 1 << 1,
+    my_X_OK = 1 << 2
+};
+
+static int
+cfunc__access (lua_State *L)
+{
+    const char *filename = luaL_checkstring (L, 1);
+    int mode = luaL_checkint (L, 2);
+
+    int g_mode = F_OK;
+    if (mode & my_R_OK)
+        g_mode |= R_OK;
+    if (mode & my_W_OK)
+        g_mode |= W_OK;
+    if (mode & my_X_OK)
+        g_mode |= X_OK;
+
+    lua_pushboolean (L, g_access (filename, g_mode) == 0);
+    return 1;
+}
+
 static const luaL_Reg moo_utils_funcs[] = {
   { "sleep", cfunc_sleep },
   { "spin_main_loop", cfunc_spin_main_loop },
+  { "_access", cfunc__access },
   { NULL, NULL }
 };
 
@@ -109,6 +142,16 @@ int
 luaopen_moo_utils (lua_State *L)
 {
     luaL_register (L, "_moo_utils", moo_utils_funcs);
+
+    lua_pushinteger (L, my_F_OK);
+    lua_setfield (L, -2, "F_OK");
+    lua_pushinteger (L, my_R_OK);
+    lua_setfield (L, -2, "R_OK");
+    lua_pushinteger (L, my_W_OK);
+    lua_setfield (L, -2, "W_OK");
+    lua_pushinteger (L, my_X_OK);
+    lua_setfield (L, -2, "X_OK");
+
     return 1;
 }
 

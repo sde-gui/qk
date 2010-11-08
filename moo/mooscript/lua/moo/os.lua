@@ -5,6 +5,7 @@ local math, table, package = math, table, package
 local require, setmetatable = require, setmetatable
 local _os = os
 local lfs = require('lfs')
+local _moo_utils = require("_moo_utils")
 
 module('moo.os')
 
@@ -31,3 +32,9 @@ setmetatable(environ, { __index = function(t, v) return getenv(v) end })
 
 chdir = lfs.chdir
 getcwd = lfs.currentdir
+
+access = _moo_utils._access
+F_OK = _moo_utils.F_OK
+R_OK = _moo_utils.R_OK
+W_OK = _moo_utils.W_OK
+X_OK = _moo_utils.X_OK
