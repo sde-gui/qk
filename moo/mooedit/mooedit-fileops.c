@@ -71,6 +71,7 @@ static void     add_status                  (MooEdit        *edit,
 static gboolean moo_edit_load_local         (MooEdit        *edit,
                                              GFile          *file,
                                              const char     *encoding,
+                                             const char     *cached_encoding,
                                              GError        **error);
 static gboolean moo_edit_reload_local       (MooEdit        *edit,
                                              const char     *encoding,
@@ -102,9 +103,11 @@ gboolean
 _moo_edit_load_file (MooEdit      *edit,
                      GFile        *file,
                      const char   *encoding,
+                     const char   *cached_encoding,
                      GError      **error)
 {
     char *encoding_copy;
+    char *cached_encoding_copy;
     gboolean result;
     GError *error_here = NULL;
 
@@ -112,8 +115,9 @@ _moo_edit_load_file (MooEdit      *edit,
     moo_return_val_if_fail (G_IS_FILE (file), FALSE);
 
     encoding_copy = g_strdup (normalize_encoding (encoding, FALSE));
+    cached_encoding_copy = cached_encoding ? g_strdup (normalize_encoding (cached_encoding, FALSE)) : NULL;
 
-    result = moo_edit_load_local (edit, file, encoding_copy, &error_here);
+    result = moo_edit_load_local (edit, file, encoding_copy, cached_encoding_copy, &error_here);
 
     if (error_here)
         g_propagate_error (error, error_here);
@@ -379,6 +383,7 @@ static gboolean
 moo_edit_load_local (MooEdit     *edit,
                      GFile       *file,
                      const char  *encoding,
+                     const char  *cached_encoding,
                      GError     **error)
 {
     GtkTextIter start;
@@ -419,6 +424,8 @@ moo_edit_load_local (MooEdit     *edit,
         GSList *encodings;
 
         encodings = get_encodings ();
+        if (cached_encoding)
+            encodings = g_slist_prepend (encodings, g_strdup (cached_encoding));
         result = ERROR_ENCODING;
 
         while (encodings)
@@ -761,6 +768,7 @@ moo_edit_reload_local (MooEdit    *edit,
 
     result = _moo_edit_load_file (edit, file,
                                   encoding ? encoding : edit->priv->encoding,
+                                  NULL,
                                   error);
 
     g_object_set (edit, "enable-highlight", enable_highlight, (char*) 0);

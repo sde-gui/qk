@@ -815,7 +815,7 @@ moo_editor_create_doc (MooEditor      *editor,
     if (filename)
         file = g_file_new_for_path (filename);
 
-    if (file && !_moo_edit_load_file (doc, file, encoding, error))
+    if (file && !_moo_edit_load_file (doc, file, encoding, NULL, error))
     {
         g_object_ref_sink (doc);
         g_object_unref (file);
@@ -920,6 +920,7 @@ moo_editor_load_file (MooEditor       *editor,
     MooEdit *doc = NULL;
     char *uri;
     gboolean result = TRUE;
+    const char *recent_encoding = NULL;
 
     *docp = NULL;
     uri = g_file_get_uri (info->file);
@@ -951,8 +952,15 @@ moo_editor_load_file (MooEditor       *editor,
         new_doc = TRUE;
     }
 
+    if (!info->encoding)
+    {
+        MdHistoryItem *hist_item = md_history_mgr_find_uri (editor->priv->history, uri);
+        if (hist_item)
+            recent_encoding = _moo_edit_history_item_get_encoding (hist_item);
+    }
+
     /* XXX open_single */
-    if (!_moo_edit_load_file (doc, info->file, info->encoding, &error))
+    if (!_moo_edit_load_file (doc, info->file, info->encoding, recent_encoding, &error))
     {
         if (!silent)
         {
@@ -1282,10 +1290,43 @@ do_close_window (MooEditor      *editor,
 
 
 static void
+update_history_item_for_doc (MooEditor *editor,
+                             MooEdit   *doc)
+{
+    char *uri;
+    MdHistoryItem *item;
+    int line;
+    const char *enc;
+
+    if (is_embedded (editor))
+        return;
+
+    if (!(uri = moo_edit_get_uri (doc)))
+        return;
+
+    item = md_history_item_new (uri, NULL);
+
+    line = moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc));
+    if (line != 0)
+        _moo_edit_history_item_set_line (item, line);
+
+    enc = moo_edit_get_encoding (doc);
+    if (enc && !_moo_encodings_equal (enc, MOO_ENCODING_UTF8))
+    {
+        _moo_edit_history_item_set_encoding (item, enc);
+        g_print ("*** file: %s, encoding: %s ***\n", uri, enc);
+    }
+
+    md_history_mgr_update_file (editor->priv->history, item);
+    md_history_item_free (item);
+    g_free (uri);
+}
+
+
+static void
 do_close_doc (MooEditor *editor,
               MooEdit   *doc)
 {
-    char *uri;
     MooEditWindow *window;
 
     window = moo_edit_get_window (doc);
@@ -1296,26 +1337,7 @@ do_close_doc (MooEditor *editor,
         editor->priv->windowless = doc_list_remove (editor->priv->windowless, doc);
     }
 
-    if (!is_embedded (editor) && (uri = moo_edit_get_uri (doc)))
-    {
-        MdHistoryItem *item;
-        int line;
-        const char *enc;
-
-        item = md_history_item_new (uri, NULL);
-
-        line = moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc));
-        if (line != 0)
-            _moo_edit_history_item_set_line (item, line);
-
-        enc = moo_edit_get_encoding (doc);
-        if (enc && !_moo_encodings_equal (enc, MOO_ENCODING_UTF8))
-            _moo_edit_history_item_set_encoding (item, enc);
-
-        md_history_mgr_update_file (editor->priv->history, item);
-        md_history_item_free (item);
-        g_free (uri);
-    }
+    update_history_item_for_doc (editor, doc);
 
     if (window)
         _moo_edit_window_remove_doc (window, doc, TRUE);
@@ -2179,6 +2201,8 @@ _moo_editor_save_as (MooEditor      *editor,
             encoding = moo_edit_get_encoding (doc);
         file_info = moo_edit_file_info_new_path (filename, encoding);
     }
+
+    update_history_item_for_doc (editor, doc);
 
     result = do_save (editor, doc, file_info->file, file_info->encoding, error);
 

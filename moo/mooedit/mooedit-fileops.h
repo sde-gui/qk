@@ -44,6 +44,7 @@ GQuark           _moo_edit_file_error_quark     (void) G_GNUC_CONST;
 gboolean         _moo_edit_load_file            (MooEdit        *edit,
                                                  GFile          *file,
                                                  const char     *encoding,
+                                                 const char     *cached_encoding,
                                                  GError        **error);
 gboolean         _moo_edit_reload_file          (MooEdit        *edit,
                                                  const char     *encoding,
