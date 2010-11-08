@@ -1312,10 +1312,7 @@ update_history_item_for_doc (MooEditor *editor,
 
     enc = moo_edit_get_encoding (doc);
     if (enc && !_moo_encodings_equal (enc, MOO_ENCODING_UTF8))
-    {
         _moo_edit_history_item_set_encoding (item, enc);
-        g_print ("*** file: %s, encoding: %s ***\n", uri, enc);
-    }
 
     md_history_mgr_update_file (editor->priv->history, item);
     md_history_item_free (item);
