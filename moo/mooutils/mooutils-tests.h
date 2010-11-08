@@ -25,6 +25,7 @@ void    moo_test_mooaccel           (void);
 void    moo_test_mooutils_fs        (void);
 void    moo_test_moo_file_writer    (void);
 void    moo_test_mooutils_misc      (void);
+void    moo_test_i18n               (void);
 
 #ifdef __WIN32__
 void    moo_test_mooutils_win32     (void);

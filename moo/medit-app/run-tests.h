@@ -13,6 +13,7 @@ add_tests (void)
     moo_test_mooutils_fs ();
     moo_test_moo_file_writer ();
     moo_test_mooutils_misc ();
+    moo_test_i18n ();
 
 #ifdef __WIN32__
     moo_test_mooutils_win32 ();
