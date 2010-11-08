@@ -313,6 +313,16 @@ error:
 
 
 static void
+set_mnemonic_widget (GtkLabel  *label,
+                     GtkWidget *widget)
+{
+    if (MOO_IS_COMBO (widget))
+        widget = MOO_COMBO (widget)->entry;
+
+    gtk_label_set_mnemonic_widget (label, widget);
+}
+
+static void
 set_mnemonics (MooGladeXML    *xml,
                Widget         *node)
 {
@@ -335,7 +345,7 @@ set_mnemonics (MooGladeXML    *xml,
             g_warning ("%s: mnemonic widget property specified for widget of class %s",
                        G_STRLOC, g_type_name (G_OBJECT_TYPE (node->widget)));
         else
-            gtk_label_set_mnemonic_widget (GTK_LABEL (node->widget), mnemonic);
+            set_mnemonic_widget (GTK_LABEL (node->widget), mnemonic);
     }
 
     for (l = node->children; l != NULL; l = l->next)
