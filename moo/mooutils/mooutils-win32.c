@@ -107,7 +107,7 @@ _moo_win32_get_locale_dir (void)
         char *dir, *subdir;
 
         dir = g_win32_get_package_installation_directory_of_module (_moo_hinst);
-        subdir = g_build_filename (dir, "lib", "locale", NULL);
+        subdir = g_build_filename (dir, "share", "locale", NULL);
 
         moo_locale_dir = g_win32_locale_filename_from_utf8 (subdir);
 
