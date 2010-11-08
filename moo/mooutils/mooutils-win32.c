@@ -58,34 +58,40 @@ long _ftol2_sse( double dblSource ) { return _ftol( dblSource ); }
 #endif
 #endif
 
-extern HINSTANCE _moo_hinst_dll;
+#ifdef MOO_DLL
+extern HINSTANCE _moo_hinst;
+#else
+HINSTANCE _moo_hinst = NULL;
+#endif
 
 static const char *
 get_moo_dll_name (void)
 {
-    return NULL;
+#ifdef MOO_DLL
+    G_LOCK_DEFINE_STATIC (moo_dll_name);
+    static char *moo_dll_name = NULL;
 
-//     G_LOCK_DEFINE_STATIC (moo_dll_name);
-//     static char *moo_dll_name = NULL;
-//
-//     G_LOCK (moo_dll_name);
-//
-//     if (!moo_dll_name)
-//     {
-//         char *name = NULL;
-//         wchar_t buf[MAX_PATH+1];
-//         if (GetModuleFileNameW ((HMODULE) _moo_hinst_dll, buf, G_N_ELEMENTS (buf)))
-//             name = g_utf16_to_utf8 (buf, -1, NULL, NULL, NULL);
-//         if (name)
-//             moo_dll_name = g_path_get_basename (name);
-//         if (!moo_dll_name)
-//             moo_dll_name = g_strdup ("libmoo.dll");
-//         g_free (name);
-//     }
-//
-//     G_UNLOCK (moo_dll_name);
-//
-//     return moo_dll_name;
+    G_LOCK (moo_dll_name);
+
+    if (!moo_dll_name)
+    {
+        char *name = NULL;
+        wchar_t buf[MAX_PATH+1];
+        if (GetModuleFileNameW ((HMODULE) _moo_hinst, buf, G_N_ELEMENTS (buf)))
+            name = g_utf16_to_utf8 (buf, -1, NULL, NULL, NULL);
+        if (name)
+            moo_dll_name = g_path_get_basename (name);
+        if (!moo_dll_name)
+            moo_dll_name = g_strdup ("libmoo.dll");
+        g_free (name);
+    }
+
+    G_UNLOCK (moo_dll_name);
+
+    return moo_dll_name;
+#else
+    return NULL;
+#endif
 }
 
 const char *
@@ -98,11 +104,15 @@ _moo_win32_get_locale_dir (void)
 
     if (!moo_locale_dir)
     {
-        char *tmp;
-        tmp = g_win32_get_package_installation_subdirectory (NULL, get_moo_dll_name (),
-                                                             "lib\\locale");
-        moo_locale_dir = g_win32_locale_filename_from_utf8 (tmp);
-        g_free (tmp);
+        char *dir, *subdir;
+
+        dir = g_win32_get_package_installation_directory_of_module (_moo_hinst);
+        subdir = g_build_filename (dir, "lib", "locale", NULL);
+
+        moo_locale_dir = g_win32_locale_filename_from_utf8 (subdir);
+
+        g_free (subdir);
+        g_free (dir);
     }
 
     G_UNLOCK (moo_locale_dir);
@@ -148,10 +158,13 @@ _moo_win32_add_data_dirs (GPtrArray  *list,
                           const char *prefix)
 {
     char *subdir;
+    const char *dll_name;
 
     subdir = g_strdup_printf ("%s\\" MOO_PACKAGE_NAME, prefix);
     add_win32_data_dirs_for_dll (list, subdir, NULL);
-    add_win32_data_dirs_for_dll (list, subdir, get_moo_dll_name ());
+
+    if ((dll_name = get_moo_dll_name ()))
+        add_win32_data_dirs_for_dll (list, subdir, dll_name);
 
     g_free (subdir);
 }
