@@ -28,7 +28,11 @@ add_tests (void)
 static int
 unit_tests_main (MooTestOptions opts, char **tests, const char *data_dir_arg)
 {
-    const char *data_dir = MOO_UNIT_TEST_DATA_DIR;
+    const char *data_dir = NULL;
+
+#ifdef MOO_UNIT_TEST_DATA_DIR
+    data_dir = MOO_UNIT_TEST_DATA_DIR;
+#endif
 
     if (data_dir_arg)
         data_dir = data_dir_arg;
