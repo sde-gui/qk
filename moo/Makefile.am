@@ -1,6 +1,8 @@
 EXTRA_DIST =
 BUILT_SOURCES =
 CLEANFILES =
+bin_PROGRAMS =
+noinst_LIBRARIES =
 
 AM_CPPFLAGS = $(MOO_CPPFLAGS) -I$(top_srcdir)/doc -Imooutils/glade
 AM_CFLAGS = $(MOO_CFLAGS)

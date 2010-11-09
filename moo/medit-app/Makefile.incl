@@ -1,4 +1,4 @@
-bin_PROGRAMS = medit
+bin_PROGRAMS += medit
 
 EXTRA_DIST += medit-app/run-tests-am.sh
 TESTS = medit-app/run-tests-am.sh
@@ -18,7 +18,7 @@ medit_SOURCES =				\
 nodist_EXTRA_medit_SOURCES =		\
 	dummy.cpp
 
-medit_LDADD = $(MOO_LIBS) $(moo_libadd)
+medit_LDADD = $(GSPAWN_WIN32_LIB) $(MOO_LIBS) $(moo_libadd)
 
 nodist_medit_SOURCES =			\
 	$(built_moo_sources)		\
