@@ -60,19 +60,6 @@
   </tarball>
 
   <!-- good -->
-  <tarball id="glib-2.24.0">
-    <source href="http://ftp.gnome.org/pub/gnome/sources/glib/2.24/glib-2.24.0.tar.bz2"
-            sha256sum="7b6aa2cf21e734a6092a711bf196b8d2ddc589b971f93337610c10fa4f23400d"/>
-    <dependencies>
-      <dep package="libiconv"/>
-      <dep package="gettext"/>
-      <dep package="zlib"/>
-    </dependencies>
-    <patches>
-      <patch file="glib-2.24.patch" strip="1"/>
-    </patches>
-  </tarball>
-
   <tarball id="glib-2.24.2">
     <source href="http://ftp.gnome.org/pub/gnome/sources/glib/2.24/glib-2.24.2.tar.bz2"
             sha256sum="3aeb521abd3642dd1224379f0e54915957e5010f888a4ae74afa0ad54da0160c"/>
@@ -83,6 +70,8 @@
     </dependencies>
     <patches>
       <patch file="glib-2.24.patch" strip="1"/>
+      <patch file="glib-spawn-win32.patch" strip="1"/>
+      <patch file="glib-spawn-win32-moo.patch" strip="1"/>
     </patches>
   </tarball>
 

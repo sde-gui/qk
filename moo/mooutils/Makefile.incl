@@ -184,6 +184,4 @@ moofileicon-symlink.h: mooutils/pixmaps/symlink.png mooutils/pixmaps/symlink-sma
 		SYMLINK_ARROW_SMALL $(moo_srcdir)/mooutils/pixmaps/symlink-small.png \
 			> $@.tmp && mv $@.tmp $@
 
-include mooutils/gspawn/Makefile.incl
-
 # -%- strip:true -%-
