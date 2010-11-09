@@ -1,0 +1,7 @@
+moo_sources +=				\
+	mooutils/gspawn/gspawn.h	\
+	mooutils/gspawn/gspawn.h	\
+	mooutils/gspawn/gspawn-win32.c
+
+EXTRA_DIST +=				\
+	mooutils/gspawn/mangle.sh
