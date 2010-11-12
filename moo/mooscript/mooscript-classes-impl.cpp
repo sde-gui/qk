@@ -1653,8 +1653,15 @@ void Document::replace_selected_lines(const Variant &repl)
                 text = join(lines, "\n");
             }
             break;
+        case VtArgList:
+            {
+                moo::Vector<String> lines = get_string_list(repl);
+                text = join(lines, "\n");
+            }
+            break;
         default:
-            Error::raise("string or list of strings expected");
+            Error::raisef("string or list of strings expected, got %s",
+                          get_argument_type_name(repl.vt()));
             break;
     }
 

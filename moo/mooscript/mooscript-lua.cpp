@@ -104,7 +104,7 @@ static Variant get_arg_variant(lua_State *L, int narg);
 
 static Variant convert_table_to_variant(lua_State *L, int narg)
 {
-    ArgList list;
+    VariantArray list;
     VariantDict dic;
 
     size_t len = lua_objlen(L, narg);
