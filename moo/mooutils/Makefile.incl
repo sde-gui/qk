@@ -91,7 +91,6 @@ moo_sources +=				\
 	mooutils/mooprefspage.h		\
 	mooutils/moospawn.c		\
 	mooutils/moospawn.h		\
-	mooutils/mspawn.h		\
 	mooutils/moostat.h		\
 	mooutils/moostock.c		\
 	mooutils/moostock.h		\
