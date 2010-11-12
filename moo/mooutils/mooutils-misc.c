@@ -1415,6 +1415,12 @@ moo_make_user_data_dir (const char *path)
 }
 
 
+typedef enum {
+    MOO_DATA_SHARE,
+    MOO_DATA_LIB,
+    MOO_DATA_BOTH
+} MooDataDirType;
+
 static gboolean
 cmp_dirs (const char *dir1,
           const char *dir2)
@@ -1424,7 +1430,6 @@ cmp_dirs (const char *dir1,
     /* XXX */
     return !strcmp (dir1, dir2);
 }
-
 
 static void
 add_dir_list_from_env (GPtrArray  *list,
@@ -1447,122 +1452,149 @@ add_dir_list_from_env (GPtrArray  *list,
     g_free (dirs);
 }
 
-
-static char **
-moo_get_data_dirs_real (MooDataDirType   type,
-                        gboolean         include_user,
-                        guint           *n_dirs)
+static void
+enumerate_data_dirs (MooDataDirType  type,
+                     GPtrArray      *dirs)
 {
-    static char **moo_data_dirs[2];
-    static guint n_data_dirs[2];
-    G_LOCK_DEFINE_STATIC(moo_data_dirs);
+    const char *env[2];
 
-    g_return_val_if_fail (type < 2, NULL);
-
-    G_LOCK (moo_data_dirs);
-
-    if (!moo_data_dirs[type])
+    if (type == MOO_DATA_BOTH)
     {
-        const char *env[2];
-        GPtrArray *dirs;
-        GPtrArray *all_dirs;
-        char **ptr;
-        guint i;
+        enumerate_data_dirs (MOO_DATA_LIB, dirs);
+        enumerate_data_dirs (MOO_DATA_SHARE, dirs);
+        return;
+    }
 
-        all_dirs = g_ptr_array_new ();
-        dirs = g_ptr_array_new ();
+    g_ptr_array_add (dirs, moo_get_user_data_dir ());
 
-        env[0] = g_getenv ("MOO_APP_DIRS");
-        env[1] = type == MOO_DATA_SHARE ? g_getenv ("MOO_DATA_DIRS") : g_getenv ("MOO_LIB_DIRS");
+    env[0] = g_getenv ("MOO_APP_DIRS");
+    env[1] = type == MOO_DATA_SHARE ? g_getenv ("MOO_DATA_DIRS") : g_getenv ("MOO_LIB_DIRS");
 
-        g_ptr_array_add (all_dirs, moo_get_user_data_dir ());
-
-        /* environment variables override everything */
-        if (env[0] || env[1])
+    /* environment variables override everything */
+    if (env[0] || env[1])
+    {
+        if (env[1])
+            add_dir_list_from_env (dirs, env[1]);
+        else
+            add_dir_list_from_env (dirs, env[0]);
+    }
+    else
+    {
+#ifdef __WIN32__
+        _moo_win32_add_data_dirs (dirs, type == MOO_DATA_SHARE ? "share" : "lib");
+#else
+        if (type == MOO_DATA_SHARE)
         {
-            if (env[1])
-                add_dir_list_from_env (all_dirs, env[1]);
-            else
-                add_dir_list_from_env (all_dirs, env[0]);
+            const char* const *p;
+
+            for (p = g_get_system_data_dirs (); p && *p; ++p)
+                g_ptr_array_add (dirs, g_build_filename (*p, MOO_PACKAGE_NAME, NULL));
+
+            g_ptr_array_add (dirs, g_strdup (MOO_DATA_DIR));
         }
         else
         {
-#ifdef __WIN32__
-            _moo_win32_add_data_dirs (all_dirs, type == MOO_DATA_SHARE ? "share" : "lib");
-#else
-            if (type == MOO_DATA_SHARE)
-            {
-                const char* const *p;
-
-                for (p = g_get_system_data_dirs (); p && *p; ++p)
-                    g_ptr_array_add (all_dirs, g_build_filename (*p, MOO_PACKAGE_NAME, NULL));
-
-                g_ptr_array_add (all_dirs, g_strdup (MOO_DATA_DIR));
-            }
-            else
-            {
-                g_ptr_array_add (all_dirs, g_strdup (MOO_LIB_DIR));
-            }
+            g_ptr_array_add (dirs, g_strdup (MOO_LIB_DIR));
+        }
 #endif
-        }
+    }
+}
 
-        g_ptr_array_add (all_dirs, NULL);
+static char **
+do_get_data_dirs (MooDataDirType  type,
+                  guint          *n_dirs)
+{
+    GPtrArray *dirs;
+    GPtrArray *all_dirs;
+    char **ptr;
+    guint i;
 
-        for (ptr = (char**) all_dirs->pdata; *ptr; ++ptr)
+    all_dirs = g_ptr_array_new ();
+    enumerate_data_dirs (type, all_dirs);
+    g_ptr_array_add (all_dirs, NULL);
+
+    dirs = g_ptr_array_new ();
+
+    for (ptr = (char**) all_dirs->pdata; *ptr; ++ptr)
+    {
+        gboolean found = FALSE;
+        char *path;
+
+        path = *ptr;
+
+        if (!path || !path[0])
         {
-            gboolean found = FALSE;
-            char *path;
-
-            path = *ptr;
-
-            if (!path || !path[0])
-            {
-                g_free (path);
-                continue;
-            }
-
-            for (i = 0; i < dirs->len; ++i)
-            {
-                if (cmp_dirs (path, dirs->pdata[i]))
-                {
-                    found = TRUE;
-                    break;
-                }
-            }
-
-            if (!found)
-                g_ptr_array_add (dirs, path);
-            else
-                g_free (path);
+            g_free (path);
+            continue;
         }
 
-        g_ptr_array_add (dirs, NULL);
-        n_data_dirs[type] = dirs->len - 1;
-        moo_data_dirs[type] = (char**) g_ptr_array_free (dirs, FALSE);
-        g_ptr_array_free (all_dirs, TRUE);
+        for (i = 0; i < dirs->len; ++i)
+        {
+            if (cmp_dirs (path, dirs->pdata[i]))
+            {
+                found = TRUE;
+                break;
+            }
+        }
+
+        if (!found)
+            g_ptr_array_add (dirs, path);
+        else
+            g_free (path);
+    }
+
+    g_ptr_array_add (dirs, NULL);
+    *n_dirs = dirs->len - 1;
+    g_ptr_array_free (all_dirs, TRUE);
+    return (char**) g_ptr_array_free (dirs, FALSE);
+}
+
+static char **
+moo_get_data_dirs_real (MooDataDirType   type_requested,
+                        gboolean         include_user,
+                        guint           *n_dirs)
+{
+    static char **moo_data_dirs[3];
+    static guint n_data_dirs[3];
+    G_LOCK_DEFINE_STATIC(moo_data_dirs);
+
+    g_return_val_if_fail (type_requested < 3, NULL);
+
+    G_LOCK (moo_data_dirs);
+
+    if (!moo_data_dirs[0])
+    {
+        int type;
+        for (type = 0; type < 3; ++type)
+            moo_data_dirs[type] = do_get_data_dirs (type, &n_data_dirs[type]);
     }
 
     G_UNLOCK (moo_data_dirs);
 
-    if (include_user || !n_data_dirs[type])
+    if (include_user || !n_data_dirs[type_requested])
     {
         if (n_dirs)
-            *n_dirs = n_data_dirs[type];
-        return g_strdupv (moo_data_dirs[type]);
+            *n_dirs = n_data_dirs[type_requested];
+        return g_strdupv (moo_data_dirs[type_requested]);
     }
     else
     {
         if (n_dirs)
-            *n_dirs = n_data_dirs[type] - 1;
-        return g_strdupv (moo_data_dirs[type] + 1);
+            *n_dirs = n_data_dirs[type_requested] - 1;
+        return g_strdupv (moo_data_dirs[type_requested] + 1);
     }
 }
 
 char **
-moo_get_data_dirs (MooDataDirType type,
-                   guint         *n_dirs)
+moo_get_data_dirs (void)
 {
-    return moo_get_data_dirs_real (type, TRUE, n_dirs);
+    return moo_get_data_dirs_real (MOO_DATA_SHARE, TRUE, NULL);
+}
+
+char **
+moo_get_lib_dirs (void)
+{
+    return moo_get_data_dirs_real (MOO_DATA_LIB, TRUE, NULL);
 }
 
 
@@ -1616,6 +1648,12 @@ char **
 moo_get_lib_subdirs (const char *subdir)
 {
     return moo_get_stuff_subdirs (subdir, MOO_DATA_LIB, TRUE);
+}
+
+char **
+moo_get_data_and_lib_subdirs (const char *subdir)
+{
+    return moo_get_stuff_subdirs (subdir, MOO_DATA_BOTH, TRUE);
 }
 
 

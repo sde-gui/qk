@@ -31,10 +31,6 @@ GType moo_ui_node_flags_get_type (void) G_GNUC_CONST;
 GType moo_ui_widget_type_get_type (void) G_GNUC_CONST;
 #define MOO_TYPE_UI_WIDGET_TYPE (moo_ui_widget_type_get_type())
 
-/* enumerations from mooutils-misc.h */
-GType moo_data_dir_type_get_type (void) G_GNUC_CONST;
-#define MOO_TYPE_DATA_DIR_TYPE (moo_data_dir_type_get_type())
-
 
 G_END_DECLS
 

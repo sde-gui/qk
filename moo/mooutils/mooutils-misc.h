@@ -62,11 +62,6 @@ seriously_ignore_return_value_p (G_GNUC_UNUSED void *p)
 void        moo_disable_win32_error_message (void);
 void        moo_enable_win32_error_message  (void);
 
-typedef enum {
-    MOO_DATA_SHARE,
-    MOO_DATA_LIB
-} MooDataDirType;
-
 void       _moo_set_app_instance_name       (const char     *name);
 void        moo_set_user_data_dir           (const char     *path);
 void        moo_set_display_app_name        (const char     *name);
@@ -91,14 +86,13 @@ gboolean    moo_save_config_file            (const char     *filename,
                                              gssize          len,
                                              GError        **error);
 
-/* user data comes first; MOO_DATA_DIR comes last */
-/* $MOO_APP_DIR:$MOO_DATA_DIRS:$prefix/share/appname or
-   $MOO_APP_DIR:$MOO_LIB_DIRS:$prefix/lib/appname */
-char      **moo_get_data_dirs               (MooDataDirType  type,
-                                             guint          *n_dirs);
+/* user data comes first */
+char      **moo_get_data_dirs               (void);
+char      **moo_get_lib_dirs                (void);
 char      **moo_get_data_subdirs            (const char     *subdir);
 char      **moo_get_sys_data_subdirs        (const char     *subdir);
 char      **moo_get_lib_subdirs             (const char     *subdir);
+char      **moo_get_data_and_lib_subdirs    (const char     *subdir);
 
 #define moo_get_data_files moo_get_data_subdirs
 #define moo_get_sys_data_files moo_get_sys_data_subdirs

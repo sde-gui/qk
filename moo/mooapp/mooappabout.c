@@ -249,14 +249,14 @@ moo_app_get_system_info (MooApp *app)
     g_string_append_printf (text, "libxml2: %s\n", LIBXML_DOTTED_VERSION);
 
     g_string_append (text, "Data dirs: ");
-    dirs = moo_get_data_dirs (MOO_DATA_SHARE, NULL);
+    dirs = moo_get_data_dirs ();
     for (p = dirs; p && *p; ++p)
         g_string_append_printf (text, "%s'%s'", p == dirs ? "" : ", ", *p);
     g_string_append (text, "\n");
     g_strfreev (dirs);
 
     g_string_append (text, "Lib dirs: ");
-    dirs = moo_get_data_dirs (MOO_DATA_LIB, NULL);
+    dirs = moo_get_lib_dirs ();
     for (p = dirs; p && *p; ++p)
         g_string_append_printf (text, "%s'%s'", p == dirs ? "" : ", ", *p);
     g_string_append (text, "\n");

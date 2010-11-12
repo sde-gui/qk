@@ -114,24 +114,6 @@ moo_ui_widget_type_get_type (void)
     return etype;
 }
 
-#include "mooutils-misc.h"
-
-GType
-moo_data_dir_type_get_type (void)
-{
-    static GType etype;
-    if (G_UNLIKELY (!etype))
-    {
-        static const GEnumValue values[] = {
-            { MOO_DATA_SHARE, (char*) "MOO_DATA_SHARE", (char*) "share" },
-            { MOO_DATA_LIB, (char*) "MOO_DATA_LIB", (char*) "lib" },
-            { 0, NULL, NULL }
-        };
-        etype = g_enum_register_static ("MooDataDirType", values);
-    }
-    return etype;
-}
-
 
 /* Generated data ends here */
 

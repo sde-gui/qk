@@ -921,7 +921,7 @@ moo_plugin_read_dirs (void)
 
     plugin_store->dirs_read = TRUE;
 
-    dirs = moo_get_lib_subdirs (MOO_PLUGIN_DIR_BASENAME);
+    dirs = moo_get_data_and_lib_subdirs (MOO_PLUGIN_DIR_BASENAME);
     g_strfreev (plugin_store->dirs);
     plugin_store->dirs = _moo_strv_reverse (dirs);
 
