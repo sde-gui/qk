@@ -140,7 +140,11 @@ cfunc__execute (lua_State *L)
     GError *error = NULL;
     int exit_status;
 
+#ifdef __WIN32__
     argv = _moo_win32_lame_parse_cmd_line (command, &error);
+#else
+    g_shell_parse_argv (command, NULL, &argv, &error);
+#endif
 
     if (!argv)
     {
