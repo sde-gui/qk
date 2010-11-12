@@ -19,6 +19,7 @@
 #include "moo-tests-lua.h"
 #include "moolua-tests.h"
 #include "mooscript/mooscript-lua.h"
+#include "mooutils/moospawn.h"
 #include <string.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -131,10 +132,46 @@ cfunc__access (lua_State *L)
     return 1;
 }
 
+static int
+cfunc__execute (lua_State *L)
+{
+    char **argv = 0;
+    const char *command = luaL_checkstring (L, 1);
+    GError *error = NULL;
+    int exit_status;
+
+    argv = _moo_win32_lame_parse_cmd_line (command, &error);
+
+    if (!argv)
+    {
+        lua_pushinteger (L, 2);
+        moo_message ("could not parse command line '%s': %s", command, error->message);
+        g_error_free (error);
+        return 1;
+    }
+
+    if (!g_spawn_sync (NULL, argv, NULL,
+                       (GSpawnFlags) (G_SPAWN_SEARCH_PATH | MOO_SPAWN_WIN32_HIDDEN_CONSOLE),
+                       NULL, NULL, NULL, NULL,
+                       &exit_status, &error))
+    {
+        lua_pushinteger (L, 2);
+        moo_message ("could not run command '%s': %s", command, error->message);
+        g_error_free (error);
+        g_strfreev (argv);
+        return 1;
+    }
+
+    g_strfreev (argv);
+    lua_pushinteger (L, exit_status);
+    return 1;
+}
+
 static const luaL_Reg moo_utils_funcs[] = {
   { "sleep", cfunc_sleep },
   { "spin_main_loop", cfunc_spin_main_loop },
   { "_access", cfunc__access },
+  { "_execute", cfunc__execute },
   { NULL, NULL }
 };
 

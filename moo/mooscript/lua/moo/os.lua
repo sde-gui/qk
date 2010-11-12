@@ -17,7 +17,7 @@ end
 
 os = _os
 execute = os.execute
-system = os.execute
+system = _moo_utils._execute
 clock = os.clock
 date = os.date
 difftime = os.difftime

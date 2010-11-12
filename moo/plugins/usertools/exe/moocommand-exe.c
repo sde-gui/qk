@@ -524,7 +524,7 @@ run_sync (const char  *base_cmd_line,
 {
     GError *error = NULL;
     gboolean result = FALSE;
-    GSpawnFlags flags = RUN_CMD_FLAGS;
+    GSpawnFlags flags = RUN_CMD_FLAGS | MOO_SPAWN_WIN32_HIDDEN_CONSOLE;
     char **argv;
     char **real_env;
     char *cmd_line;

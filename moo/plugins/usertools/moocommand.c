@@ -20,6 +20,7 @@
 #define MOOEDIT_COMPILATION
 #include "moocommand-private.h"
 #include "lua/moocommand-lua.h"
+#include "exe/moocommand-exe.h"
 #include "moooutputfilterregex.h"
 #include "mooedit/mooeditwindow.h"
 #include "mooedit/mooedit-enums.h"
@@ -30,10 +31,6 @@
 #include <glib/gstdio.h>
 #include <string.h>
 #include <stdio.h>
-
-#ifndef __WIN32__
-#include "exe/moocommand-exe.h"
-#endif
 
 #define KEY_TYPE    "type"
 #define KEY_OPTIONS "options"
@@ -1360,9 +1357,7 @@ _moo_command_init (void)
     if (!been_here)
     {
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_LUA));
-#ifndef __WIN32__
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));
-#endif
         _moo_command_filter_regex_load ();
         been_here = TRUE;
     }

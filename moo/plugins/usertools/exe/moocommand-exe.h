@@ -16,10 +16,6 @@
 #ifndef MOO_COMMAND_EXE_H
 #define MOO_COMMAND_EXE_H
 
-#ifdef __WIN32__
-#error "__WIN32__"
-#endif
-
 #include "usertools/moocommand.h"
 #include <mooedit/mooeditwindow.h>
 

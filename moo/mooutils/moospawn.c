@@ -530,6 +530,8 @@ moo_cmd_run_command (MooCmd     *cmd,
     else
 #endif
     {
+        flags |= MOO_SPAWN_WIN32_HIDDEN_CONSOLE;
+
         if ((flags & G_SPAWN_STDOUT_TO_DEV_NULL) || (cmd_flags & MOO_CMD_STDOUT_TO_PARENT))
             outp = NULL;
         else
