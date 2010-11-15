@@ -105,6 +105,10 @@ if $MOO_OS_WIN32; then
   AC_SUBST(MEDIT_INNO_TOP_BUILDDIR,"Z:`pwd`")
   AC_SUBST(MEDIT_INNO_INSTDIR,"Z:`cd $prefix && pwd`")
   AC_SUBST(MEDIT_INNO_COMPILER,'wine "c:\\program files\\inno setup 5\\ISCC.exe"')
+  AC_SUBST(MEDIT_INNO_INSTALLER_SUFFIX,"")
+  if test "x$MOO_DEBUG_ENABLED" = "xyes"; then
+    MEDIT_INNO_INSTALLER_SUFFIX="-debug"
+  fi
 fi
 
 AC_ARG_ENABLE(install-hooks,
