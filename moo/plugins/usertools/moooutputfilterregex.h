@@ -13,14 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOOEDIT_COMPILATION
-#error "This file may not be used directly"
-#endif
-
 #ifndef MOO_OUTPUT_FILTER_REGEX_H
 #define MOO_OUTPUT_FILTER_REGEX_H
 
-#include <mooedit/moooutputfilter.h>
+#include "moooutputfilter.h"
 
 G_BEGIN_DECLS
 

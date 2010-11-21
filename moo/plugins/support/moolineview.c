@@ -13,7 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "mooedit/moolineview.h"
+#include "moolineview.h"
 #include "marshals.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-messages.h"

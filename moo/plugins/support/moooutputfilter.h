@@ -16,7 +16,7 @@
 #ifndef MOO_OUTPUT_FILTER_H
 #define MOO_OUTPUT_FILTER_H
 
-#include <mooedit/moolineview.h>
+#include "moolineview.h"
 
 G_BEGIN_DECLS
 

@@ -41,10 +41,6 @@ moo_sources +=				\
 	mooedit/moolinebuffer.h		\
 	mooedit/moolinemark.c		\
 	mooedit/moolinemark.h		\
-	mooedit/moolineview.c		\
-	mooedit/moolineview.h		\
-	mooedit/moooutputfilter.c	\
-	mooedit/moooutputfilter.h	\
 	mooedit/mooplugin.c		\
 	mooedit/mooplugin.h		\
 	mooedit/mooplugin-loader.c	\

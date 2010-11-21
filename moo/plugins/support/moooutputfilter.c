@@ -13,7 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "mooedit/moooutputfilter.h"
+#include "moooutputfilter.h"
 #include "mooedit/mooeditor.h"
 #include "marshals.h"
 #include "mooutils/mooutils-debug.h"
