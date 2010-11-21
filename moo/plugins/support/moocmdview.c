@@ -13,7 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "mooedit/moocmdview.h"
+#include "moocmdview.h"
 #include "mooedit/mooeditwindow.h"
 #include "marshals.h"
 #include "mooutils/moospawn.h"

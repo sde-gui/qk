@@ -16,7 +16,7 @@
 #define MOOEDIT_COMPILATION
 #include "moooutputfilterregex.h"
 #include "moocommand.h"
-#include "mooedit/moocmdview.h"
+#include "moocmdview.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/moolangmgr.h"
 #include "mooutils/mooutils-gobject.h"

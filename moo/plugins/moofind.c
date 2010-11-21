@@ -20,7 +20,7 @@
 #include "mooedit/mooplugin-macro.h"
 #include "mooeditplugins.h"
 #include "moofileview/moofileentry.h"
-#include "mooedit/moocmdview.h"
+#include "moocmdview.h"
 #include "mooedit/mooedit-accels.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooutils/moostock.h"

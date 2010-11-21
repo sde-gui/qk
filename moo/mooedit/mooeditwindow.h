@@ -106,10 +106,6 @@ void         moo_edit_window_remove_stop_client     (MooEditWindow  *window,
                                                      gpointer        client);
 void         moo_edit_window_abort_jobs             (MooEditWindow  *window);
 
-void         moo_edit_window_present_output         (MooEditWindow  *window);
-GtkWidget   *moo_edit_window_get_output             (MooEditWindow  *window);
-GtkWidget   *moo_edit_window_get_output_pane        (MooEditWindow  *window);
-
 
 G_END_DECLS
 

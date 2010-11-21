@@ -18,7 +18,8 @@
 #endif
 #include "moocommand-exe.h"
 #include "mooedit/mooeditor.h"
-#include "mooedit/moocmdview.h"
+#include "moocmdview.h"
+#include "mooeditwindowoutput.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"

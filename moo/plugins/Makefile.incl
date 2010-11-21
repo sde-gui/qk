@@ -31,3 +31,4 @@ lua-module-setup.h: plugins/lua-module-setup.lua $(top_srcdir)/tools/xml2h.py
 
 include plugins/ctags/Makefile.incl
 include plugins/usertools/Makefile.incl
+include plugins/support/Makefile.incl
