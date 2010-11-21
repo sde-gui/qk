@@ -18,12 +18,11 @@
 
 #include <glib.h>
 #include <string.h>
-#include <stdlib.h>
 
 
 #define _MOO_COPYELMS(func_,dest_,src_,n_)      \
 G_STMT_START {                                  \
-    size_t n__ = n_;                            \
+    gsize n__ = n_;                             \
     if ((dest_) == (src_))                      \
         (void) 0;                               \
     func_ ((dest_), (src_),                     \
@@ -35,21 +34,24 @@ G_STMT_START {                                  \
 
 #define MOO_ARRAY_GROW(Type_,mem_,new_size_)                \
 G_STMT_START {                                              \
-    size_t ns__ = new_size_;                                \
+    gsize ns__ = new_size_;                                 \
     (mem_) = g_renew (Type_, (mem_), ns__);                 \
 } G_STMT_END
 
 
 #define MOO_IP_ARRAY_ELMS(ElmType,name_)                            \
     ElmType *name_;                                                 \
-    size_t n_##name_;                                               \
-    size_t n_##name_##_allocd__
+    gsize n_##name_;                                                \
+    gsize n_##name_##_allocd__
 
 #define MOO_IP_ARRAY_INIT(c_,name_,len_)                            \
 G_STMT_START {                                                      \
-    (c_)->name_ = g_malloc0 (len_ * sizeof *(c_)->name_);           \
+    gsize use_len__ = len_;                                         \
+    if (use_len__ == 0)                                             \
+        use_len__ = 2;                                              \
+    (c_)->name_ = g_malloc0 (use_len__ * sizeof *(c_)->name_);      \
     (c_)->n_##name_ = len_;                                         \
-    (c_)->n_##name_##_allocd__ = len_;                              \
+    (c_)->n_##name_##_allocd__ = use_len__;                         \
 } G_STMT_END
 
 #define MOO_IP_ARRAY_DESTROY(c_,name_)                              \

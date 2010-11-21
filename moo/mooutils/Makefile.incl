@@ -1,4 +1,5 @@
 moo_sources +=				\
+	mooutils/mooarray.h		\
 	mooutils/mooutils-thread.c	\
 	mooutils/mooutils-thread.h	\
 	mooutils/mdhistorymgr.c		\
