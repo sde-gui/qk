@@ -1,12 +1,4 @@
 moo_sources +=				\
-	mooedit/moocompletionsimple.c	\
-	mooedit/moocompletionsimple.h	\
-	mooedit/mootextcompletion.c	\
-	mooedit/mootextcompletion.h	\
-	mooedit/mootextpopup.c		\
-	mooedit/mootextpopup.h		\
-	mooedit/moocmdview.c		\
-	mooedit/moocmdview.h		\
 	mooedit/mooedit-accels.h	\
 	mooedit/mooeditaction.c		\
 	mooedit/mooeditaction-factory.c	\
@@ -58,8 +50,6 @@ moo_sources +=				\
 	mooedit/mooplugin-loader.c	\
 	mooedit/mooplugin-loader.h	\
 	mooedit/mooplugin-macro.h	\
-	mooedit/mootextbox.c		\
-	mooedit/mootextbox.h		\
 	mooedit/mootextbtree.c		\
 	mooedit/mootextbtree.h		\
 	mooedit/mootextbuffer.c		\

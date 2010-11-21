@@ -208,7 +208,6 @@ struct _MooTextViewPrivate {
     /* Children
      */
     GtkWidget *children[4];
-    GSList *boxes;
 
     /***********************************************************************/
     /* Search
