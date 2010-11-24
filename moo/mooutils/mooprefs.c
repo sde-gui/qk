@@ -981,6 +981,13 @@ moo_prefs_get_filename (const char *key)
     return val;
 }
 
+GFile *
+moo_prefs_get_file (const char *key)
+{
+    const char *uri = moo_prefs_get_string (key);
+    return uri ? g_file_new_for_uri (uri) : NULL;
+}
+
 
 gboolean
 moo_prefs_get_bool (const char *key)
@@ -1054,6 +1061,25 @@ moo_prefs_set_filename (const char     *key,
 
     moo_prefs_set_string (key, utf8_val);
     g_free (utf8_val);
+}
+
+void
+moo_prefs_set_file (const char *key,
+                    GFile      *val)
+{
+    char *uri;
+
+    g_return_if_fail (key != NULL);
+
+    if (!val)
+    {
+        moo_prefs_set_string (key, NULL);
+        return;
+    }
+
+    uri = g_file_get_uri (val);
+    moo_prefs_set_string (key, uri);
+    g_free (uri);
 }
 
 

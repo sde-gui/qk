@@ -24,6 +24,7 @@ aclocal.m4
 *.orig
 *.bak
 *.tmp
+*.rej
 *.pyc
 .goutputstream-*
 po*/dist

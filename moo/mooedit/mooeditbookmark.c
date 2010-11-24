@@ -14,7 +14,7 @@
  */
 
 #define MOOEDIT_COMPILATION
-#include "mooedit/mooedit-bookmarks.h"
+#include "mooedit/mooeditbookmark.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooutils/moostock.h"

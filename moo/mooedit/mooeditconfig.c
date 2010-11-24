@@ -105,7 +105,7 @@ moo_edit_config_init (MooEditConfig *config)
 
     config->priv = G_TYPE_INSTANCE_GET_PRIVATE (config, MOO_TYPE_EDIT_CONFIG, MooEditConfigPrivate);
 
-    MOO_IP_ARRAY_INIT (config->priv, values, vars->len);
+    MOO_IP_ARRAY_INIT (Value, config->priv, values, vars->len);
 
     if (global)
     {
@@ -231,7 +231,7 @@ update_prop_from_global (MooEditConfig *config,
 
     if (prop_id == config->priv->n_values)
     {
-        MOO_IP_ARRAY_GROW (config->priv, values, 1);
+        MOO_IP_ARRAY_GROW (Value, config->priv, values, 1);
         g_value_init (GVALUE (config, prop_id),
                       G_VALUE_TYPE (GVALUE (global, prop_id)));
         VALUE (config, prop_id)->source = VALUE (global, prop_id)->source;
@@ -270,7 +270,7 @@ global_add_prop (GParamSpec *pspec,
 {
     g_assert (global->priv->n_values == prop_id);
 
-    MOO_IP_ARRAY_GROW (global->priv, values, 1);
+    MOO_IP_ARRAY_GROW (Value, global->priv, values, 1);
 
     g_value_init (GVALUE (global, prop_id), G_PARAM_SPEC_VALUE_TYPE (pspec));
     g_param_value_set_default (pspec, GVALUE (global, prop_id));

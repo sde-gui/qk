@@ -17,6 +17,7 @@
 #define MOO_FILE_DIALOG_H
 
 #include <gtk/gtkwidget.h>
+#include <mooutils/mooutils-file.h>
 
 G_BEGIN_DECLS
 
@@ -62,14 +63,14 @@ MooFileDialog  *moo_file_dialog_new                     (MooFileDialogType type,
                                                          GtkWidget      *parent,
                                                          gboolean        multiple,
                                                          const char     *title,
-                                                         const char     *start_dir,
+                                                         GFile          *start_loc,
                                                          const char     *start_name);
 void            moo_file_dialog_set_filter_mgr_id       (MooFileDialog  *dialog,
                                                          const char     *id);
 
 gboolean        moo_file_dialog_run                     (MooFileDialog  *dialog);
-char           *moo_file_dialog_get_filename            (MooFileDialog  *dialog);
-char          **moo_file_dialog_get_filenames           (MooFileDialog  *dialog);
+GFile          *moo_file_dialog_get_file                (MooFileDialog  *dialog);
+MooFileArray   *moo_file_dialog_get_files               (MooFileDialog  *dialog);
 char           *moo_file_dialog_get_uri                 (MooFileDialog  *dialog);
 char          **moo_file_dialog_get_uris                (MooFileDialog  *dialog);
 

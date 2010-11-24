@@ -1,5 +1,5 @@
 /*
- *   mooutils-file-private.h
+ *   moofilewriter-private.h
  *
  *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
  *
@@ -13,10 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_UTILS_FILE_PRIVATE_H
-#define MOO_UTILS_FILE_PRIVATE_H
+#ifndef MOO_FILE_WRITER_PRIVATE_H
+#define MOO_FILE_WRITER_PRIVATE_H
 
-#include "mooutils/mooutils-file.h"
+#include "mooutils/moofilewriter.h"
 
 G_BEGIN_DECLS
 
@@ -82,4 +82,4 @@ struct MooStringWriterClass {
 
 G_END_DECLS
 
-#endif /* MOO_UTILS_FILE_PRIVATE_H */
+#endif /* MOO_FILE_WRITER_PRIVATE_H */

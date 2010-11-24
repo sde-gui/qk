@@ -159,7 +159,7 @@ ctags_plugin_deinit (G_GNUC_UNUSED CtagsPlugin *plugin)
 MOO_PLUGIN_DEFINE_INFO (ctags, "Ctags", "Shows functions in the open document",
                         "Yevgen Muntyan <emuntyan@sourceforge.net>\n"
                         "Christian Dywan <christian@twotoasts.de>",
-                        MOO_VERSION, NULL)
+                        MOO_VERSION)
 MOO_WIN_PLUGIN_DEFINE (Ctags, ctags)
 MOO_PLUGIN_DEFINE (Ctags, ctags,
                    NULL, NULL, NULL, NULL, NULL,

@@ -4,8 +4,8 @@ moo_sources +=				\
 	mooedit/mooeditaction-factory.c	\
 	mooedit/mooeditaction-factory.h	\
 	mooedit/mooeditaction.h		\
-	mooedit/mooedit-bookmarks.c	\
-	mooedit/mooedit-bookmarks.h	\
+	mooedit/mooeditbookmark.c	\
+	mooedit/mooeditbookmark.h	\
 	mooedit/mooedit.c		\
 	mooedit/mooedit.h		\
 	mooedit/mooeditconfig.c		\
@@ -19,14 +19,19 @@ moo_sources +=				\
 	mooedit/mooedit-impl.h		\
 	mooedit/mooeditor.c		\
 	mooedit/mooeditor.h		\
+	mooedit/mooeditor-impl.h	\
 	mooedit/mooeditor-private.h	\
+	mooedit/mooeditor-tests.c	\
+	mooedit/mooeditor-tests.h	\
 	mooedit/mooeditprefs.c		\
 	mooedit/mooeditprefs.h		\
 	mooedit/mooeditprefspage.c	\
 	mooedit/mooedit-private.h	\
-	mooedit/mooedit-tests.h		\
+	mooedit/mooeditor-tests.h	\
 	mooedit/mooeditwindow.c		\
 	mooedit/mooeditwindow.h		\
+	mooedit/moofileenc.c		\
+	mooedit/moofileenc.h		\
 	mooedit/moofold.c		\
 	mooedit/moofold.h		\
 	mooedit/mooindenter.c		\

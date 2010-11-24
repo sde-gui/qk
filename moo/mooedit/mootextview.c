@@ -20,9 +20,10 @@
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mootextfind.h"
 #include "mooedit/mootext-private.h"
-#include "mooedit/mooedit-enums.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/moolangmgr.h"
+#include "mooedit/mooeditwindow.h"
+#include "mooedit/mooedit.h"
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooundo.h"
@@ -32,6 +33,7 @@
 #include "mooutils/mooatom.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/mooutils-gobject.h"
 #include "mooquicksearch-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gregex.h>
@@ -2605,13 +2607,9 @@ void
 moo_text_view_set_lang_by_id (MooTextView *view,
                               const char  *lang_id)
 {
-    MooEditor *editor;
     MooLangMgr *mgr;
     MooLang *lang;
     MooTextStyleScheme *scheme;
-
-    editor = moo_editor_instance ();
-    g_return_if_fail (editor != NULL);
 
     mgr = moo_lang_mgr_default ();
     lang = moo_lang_mgr_get_lang (mgr, lang_id);
@@ -4116,12 +4114,7 @@ static void
 quick_search_message (MooTextView *view,
                       const char  *msg)
 {
-    GtkWidget *window;
-
-    window = gtk_widget_get_toplevel (GTK_WIDGET (view));
-
-    if (MOO_IS_EDIT_WINDOW (window))
-        moo_window_message (MOO_WINDOW (window), msg);
+    moo_text_view_message (view, msg);
 }
 
 

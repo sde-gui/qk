@@ -17,13 +17,14 @@
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditaction.h"
+#include "mooedit/moolang.h"
+#include "mooedit/mooeditconfig.h"
+#include "mooedit/mooedit.h"
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include <glib/gregex.h>
 #include <string.h>
-#include <fnmatch.h>
-
 
 MOO_DEBUG_INIT(filters, FALSE)
 
@@ -131,6 +132,32 @@ MooEditFilter *
 _moo_edit_filter_new (const char *string)
 {
     return _moo_edit_filter_new_full (string, FALSE);
+}
+
+static GSList *
+_moo_edit_parse_langs (const char *string)
+{
+    char **pieces, **p;
+    GSList *list = NULL;
+
+    if (!string)
+        return NULL;
+
+    pieces = g_strsplit_set (string, " \t\r\n;,", 0);
+
+    if (!pieces)
+        return NULL;
+
+    for (p = pieces; *p != NULL; ++p)
+    {
+        g_strstrip (*p);
+
+        if (**p)
+            list = g_slist_prepend (list, _moo_lang_id_from_name (*p));
+    }
+
+    g_strfreev (pieces);
+    return g_slist_reverse (list);
 }
 
 MooEditFilter *
@@ -244,37 +271,21 @@ static gboolean
 moo_edit_filter_check_globs (GSList  *globs,
                              MooEdit *doc)
 {
-    char *name = NULL;
-
-    name = moo_edit_get_filename (doc);
-
-    if (name)
-    {
-        char *tmp = name;
-        name = g_path_get_basename (tmp);
-        g_free (tmp);
-    }
+    GFile *file = moo_edit_get_file (doc);
 
     while (globs)
     {
-        if (name)
+        if (!strcmp (globs->data, "*") ||
+            (file && moo_file_fnmatch (file, globs->data)))
         {
-            if (fnmatch (globs->data, name, 0) == 0)
-            {
-                g_free (name);
-                return TRUE;
-            }
-        }
-        else
-        {
-            if (!strcmp (globs->data, "*"))
-                return TRUE;
+            g_object_unref (file);
+            return TRUE;
         }
 
         globs = globs->next;
     }
 
-    g_free (name);
+    moo_file_free (file);
     return FALSE;
 }
 
@@ -282,7 +293,8 @@ static gboolean
 moo_edit_filter_check_langs (GSList  *langs,
                              MooEdit *doc)
 {
-    const char *lang_id = moo_edit_config_get_string (doc->config, "lang");
+    MooLang *lang = moo_edit_get_lang (doc);
+    const char *lang_id = _moo_lang_id (lang);
 
     while (lang_id && langs)
     {

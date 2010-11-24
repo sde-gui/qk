@@ -85,6 +85,9 @@ const char *moo_edit_setting            (const char *setting_name);
 #define MOO_EDIT_PREFS_ENCODINGS                "encodings"
 #define MOO_EDIT_PREFS_ENCODING_SAVE            "encoding_save"
 
+#define MOO_EDIT_ENCODING_LOCALE "LOCALE"
+const char *_moo_get_default_encodings      (void);
+const char *_moo_edit_get_default_encoding  (void);
 
 G_END_DECLS
 

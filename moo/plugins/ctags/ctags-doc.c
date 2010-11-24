@@ -350,6 +350,7 @@ moo_ctags_doc_plugin_update (MooCtagsDocPlugin *plugin)
 {
     MooEdit *doc;
     char *filename;
+    GFile *file;
 
     plugin->priv->update_idle = 0;
 
@@ -357,7 +358,8 @@ moo_ctags_doc_plugin_update (MooCtagsDocPlugin *plugin)
 
     doc = MOO_DOC_PLUGIN (plugin)->doc;
 
-    filename = moo_edit_get_filename (doc);
+    file = moo_edit_get_file (doc);
+    filename = file ? g_file_get_path (file) : NULL;
 
     if (filename && !g_file_test (filename, G_FILE_TEST_EXISTS))
     {
@@ -368,7 +370,7 @@ moo_ctags_doc_plugin_update (MooCtagsDocPlugin *plugin)
     if (filename)
     {
         GSList *list = NULL;
-        MooLang *lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
+        MooLang *lang = moo_edit_get_lang (doc);
         MooCtagsLanguage *ctags_lang = _moo_ctags_language_find_for_name (_moo_lang_id (lang));
 
         if (ctags_lang && (list = moo_ctags_parse_file (filename, ctags_lang->opts)))
@@ -381,6 +383,7 @@ moo_ctags_doc_plugin_update (MooCtagsDocPlugin *plugin)
     }
 
     g_free (filename);
+    moo_file_free (file);
     return FALSE;
 }
 

@@ -1,4 +1,4 @@
-#include <mooedit/mooedit-tests.h>
+#include <mooedit/mooeditor-tests.h>
 #include <mooscript/lua/moolua-tests.h>
 #include <mooutils/mooutils-tests.h>
 #include <gtk/gtk.h>

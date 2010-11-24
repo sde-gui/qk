@@ -86,6 +86,8 @@ GType           moo_action_get_type         (void) G_GNUC_CONST;
 GType           moo_toggle_action_get_type  (void) G_GNUC_CONST;
 GType           moo_radio_action_get_type   (void) G_GNUC_CONST;
 
+gpointer       _moo_action_get_window       (gpointer   action);
+
 
 G_END_DECLS
 

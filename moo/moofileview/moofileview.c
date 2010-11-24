@@ -1906,15 +1906,34 @@ static void size_data_func  (G_GNUC_UNUSED GObject            *column_or_iconvie
 
 
 gboolean
-moo_file_view_chdir (MooFileView    *fileview,
-                     const char     *dir,
-                     GError        **error)
+moo_file_view_chdir (MooFileView  *fileview,
+                     GFile        *file,
+                     GError      **error)
+{
+    gboolean result;
+    char *dir;
+
+    moo_return_error_if_fail (MOO_IS_FILE_VIEW (fileview));
+
+    dir = g_file_get_path (file);
+    moo_return_error_if_fail (dir != NULL);
+
+    result = moo_file_view_chdir_path (fileview, dir, error);
+
+    g_free (dir);
+    return result;
+}
+
+gboolean
+moo_file_view_chdir_path (MooFileView    *fileview,
+                          const char     *path,
+                          GError        **error)
 {
     gboolean result;
 
-    g_return_val_if_fail (MOO_IS_FILE_VIEW (fileview), FALSE);
+    moo_return_error_if_fail (MOO_IS_FILE_VIEW (fileview));
 
-    g_signal_emit (fileview, signals[CHDIR], 0, dir, error, &result);
+    g_signal_emit (fileview, signals[CHDIR], 0, path, error, &result);
 
     return result;
 }
@@ -1949,7 +1968,7 @@ moo_file_view_go_up (MooFileView *fileview)
         const char *path = _moo_folder_get_path (parent);
         char *name = g_path_get_basename (_moo_folder_get_path (fileview->priv->current_dir));
 
-        if (moo_file_view_chdir (fileview, path, NULL))
+        if (moo_file_view_chdir_path (fileview, path, NULL))
             _moo_file_view_select_name (fileview, name);
 
         g_free (name);
@@ -1967,7 +1986,7 @@ moo_file_view_go_home (MooFileView *fileview)
     if (fileview->priv->entry_state)
         stop_path_entry (fileview, TRUE);
 
-    if (!moo_file_view_chdir (fileview, moo_file_view_get_home_dir (fileview), &error))
+    if (!moo_file_view_chdir_path (fileview, moo_file_view_get_home_dir (fileview), &error))
     {
         g_warning ("%s: could not go home", G_STRLOC);
 
@@ -2005,7 +2024,7 @@ file_list_row_activated (MooFileView    *fileview,
     {
         GError *error = NULL;
 
-        if (!moo_file_view_chdir (fileview, _moo_file_name (file), &error))
+        if (!moo_file_view_chdir_path (fileview, _moo_file_name (file), &error))
         {
             g_warning ("%s: could not go into '%s'",
                        G_STRLOC, _moo_file_name (file));
@@ -2216,7 +2235,7 @@ moo_file_view_go (MooFileView *fileview,
     {
         fileview->priv->history->block++;
 
-        if (!moo_file_view_chdir (fileview, dir, &error))
+        if (!moo_file_view_chdir_path (fileview, dir, &error))
         {
             g_warning ("%s: could not go into '%s'",
                        G_STRLOC, dir);
@@ -2262,7 +2281,7 @@ moo_file_view_set_property (GObject        *object,
     switch (prop_id)
     {
         case PROP_CURRENT_DIRECTORY:
-            moo_file_view_chdir (fileview, g_value_get_string (value), NULL);
+            moo_file_view_chdir_path (fileview, g_value_get_string (value), NULL);
             break;
 
         case PROP_HOME_DIRECTORY:
@@ -3746,7 +3765,7 @@ bookmark_activate (G_GNUC_UNUSED MooBookmarkMgr *mgr,
     if (activated != fileview)
         return;
 
-    moo_file_view_chdir (fileview, bookmark->path, NULL);
+    moo_file_view_chdir_path (fileview, bookmark->path, NULL);
 }
 
 
@@ -3755,7 +3774,7 @@ bookmark_activated (MooFileView    *fileview,
                     MooBookmark    *bookmark)
 {
     g_return_if_fail (bookmark != NULL && bookmark->path != NULL);
-    moo_file_view_chdir (fileview, bookmark->path, NULL);
+    moo_file_view_chdir_path (fileview, bookmark->path, NULL);
 }
 
 
@@ -4567,7 +4586,7 @@ file_view_activate_filename (MooFileView    *fileview,
 
     if (g_file_test (path, G_FILE_TEST_IS_DIR))
     {
-        if (!moo_file_view_chdir (fileview, path, &error))
+        if (!moo_file_view_chdir_path (fileview, path, &error))
         {
             g_warning ("%s: could not chdir to %s",
                        G_STRLOC, path);
@@ -4593,7 +4612,7 @@ file_view_activate_filename (MooFileView    *fileview,
         g_return_if_reached ();
     }
 
-    if (!moo_file_view_chdir (fileview, dirname, &error))
+    if (!moo_file_view_chdir_path (fileview, dirname, &error))
     {
         g_warning ("%s: could not chdir to %s",
                     G_STRLOC, dirname);
@@ -5127,7 +5146,7 @@ drop_open_timeout_func2 (MooFileView *fileview)
             g_warning ("%s: oops", G_STRLOC);
         }
 
-        if (goto_dir && moo_file_view_chdir (fileview, goto_dir, NULL))
+        if (goto_dir && moo_file_view_chdir_path (fileview, goto_dir, NULL))
             _moo_file_view_select_name (fileview, NULL);
 
         if (file)

@@ -1,5 +1,5 @@
 /*
- *   mooutils-file.c
+ *   moofilewriter.c
  *
  *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
  *
@@ -14,7 +14,7 @@
  */
 
 #include <config.h>
-#include "mooutils/mooutils-file-private.h"
+#include "mooutils/moofilewriter-private.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"

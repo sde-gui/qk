@@ -35,6 +35,15 @@ static GdkAtom name ## _atom (void)                                             
     MOO_DEFINE_ATOM_ (Name)                                                                 \
 }
 
+#define MOO_DECLARE_ATOM_GLOBAL(Name, name)                                                 \
+GdkAtom name ## _atom (void) G_GNUC_CONST;
+
+#define MOO_DEFINE_ATOM_GLOBAL(Name, name)                                                  \
+GdkAtom name ## _atom (void)                                                                \
+{                                                                                           \
+    MOO_DEFINE_ATOM_ (Name)                                                                 \
+}
+
 GdkAtom     moo_atom_uri_list   (void) G_GNUC_CONST;
 
 G_END_DECLS

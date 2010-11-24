@@ -54,9 +54,6 @@ GType   moo_edit_action_get_type            (void) G_GNUC_CONST;
 
 MooEdit *moo_edit_action_get_doc            (MooEditAction  *action);
 
-/* defined in mooeditwindow.c */
-GSList *_moo_edit_parse_langs               (const char     *string);
-
 
 G_END_DECLS
 

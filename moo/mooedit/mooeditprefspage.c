@@ -15,7 +15,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-impl.h"
-#include "mooedit/mooeditor-private.h"
+#include "mooedit/mooeditor-impl.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditfiltersettings.h"

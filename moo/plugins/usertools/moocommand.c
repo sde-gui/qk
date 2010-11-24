@@ -432,7 +432,8 @@ static gboolean
 save_all (MooEdit *doc)
 {
     MooEditWindow *window;
-    GSList *list, *l;
+    MooEditArray *docs;
+    guint i;
     gboolean result = TRUE;
 
     g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
@@ -440,18 +441,18 @@ save_all (MooEdit *doc)
     window = moo_edit_get_window (doc);
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
 
-    list = moo_edit_window_list_docs (window);
+    docs = moo_edit_window_get_docs (window);
 
-    for (l = list; l != NULL; l = l->next)
+    for (i = 0; i < docs->n_elms; ++i)
     {
-        if (!save_one (l->data))
+        if (!save_one (docs->elms[i]))
         {
             result = FALSE;
             break;
         }
     }
 
-    g_slist_free (list);
+    moo_edit_array_free (docs);
     return result;
 }
 

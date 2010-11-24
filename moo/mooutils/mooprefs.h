@@ -18,6 +18,7 @@
 
 #include <glib-object.h>
 #include <mooutils/moomarkup.h>
+#include <mooutils/mooutils-file.h>
 
 G_BEGIN_DECLS
 
@@ -73,6 +74,7 @@ char           *moo_prefs_make_keyv     (const char     *first_comp,
 
 const char     *moo_prefs_get_string    (const char     *key);
 const char     *moo_prefs_get_filename  (const char     *key);
+GFile          *moo_prefs_get_file      (const char     *key);
 gboolean        moo_prefs_get_bool      (const char     *key);
 int             moo_prefs_get_int       (const char     *key);
 
@@ -80,6 +82,8 @@ void            moo_prefs_set_string    (const char     *key,
                                          const char     *val);
 void            moo_prefs_set_filename  (const char     *key,
                                          const char     *val);
+void            moo_prefs_set_file      (const char     *key,
+                                         GFile          *val);
 void            moo_prefs_set_int       (const char     *key,
                                          int             val);
 void            moo_prefs_set_bool      (const char     *key,

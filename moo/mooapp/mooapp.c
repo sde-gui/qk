@@ -554,21 +554,21 @@ moo_app_get_editor (MooApp *app)
 static gboolean
 close_editor_window (MooApp *app)
 {
-    GSList *windows;
+    MooEditWindowArray *windows;
     gboolean ret = FALSE;
 
     if (!app->priv->running || app->priv->in_try_quit)
         return FALSE;
 
-    windows = moo_editor_list_windows (app->priv->editor);
+    windows = moo_editor_get_windows (app->priv->editor);
 
-    if (windows && !windows->next)
+    if (moo_edit_window_array_get_size (windows) == 1)
     {
         moo_app_quit (app);
         ret = TRUE;
     }
 
-    g_slist_free (windows);
+    moo_edit_window_array_free (windows);
     return ret;
 }
 
@@ -582,7 +582,7 @@ init_plugins (MooApp *app)
 static void
 moo_app_init_editor (MooApp *app)
 {
-    app->priv->editor = moo_editor_create_instance (FALSE);
+    app->priv->editor = moo_editor_create (FALSE);
 
     g_signal_connect_swapped (app->priv->editor, "close-window",
                               G_CALLBACK (close_editor_window), app);

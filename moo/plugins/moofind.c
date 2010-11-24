@@ -244,7 +244,6 @@ find_plugin_init (FindPlugin *plugin)
     MooUiXml *xml = moo_editor_get_ui_xml (editor);
 
     g_return_val_if_fail (klass != NULL, FALSE);
-    g_return_val_if_fail (editor != NULL, FALSE);
 
     moo_window_class_new_action (klass, "FindInFiles", NULL,
                                  "display-name", _("Find In Files"),
@@ -343,8 +342,8 @@ init_skip_list (void)
 }
 
 static void
-create_grep_dialog (MooEditWindow  *window,
-                    WindowStuff    *stuff)
+create_grep_dialog (MooEditWindow *window,
+                    WindowStuff   *stuff)
 {
     GtkWidget *pattern_entry;
 
@@ -388,8 +387,8 @@ create_grep_dialog (MooEditWindow  *window,
 
 
 static void
-create_find_dialog (MooEditWindow  *window,
-                    WindowStuff    *stuff)
+create_find_dialog (MooEditWindow *window,
+                    WindowStuff   *stuff)
 {
     GtkWidget *pattern_entry;
 
@@ -443,11 +442,13 @@ init_dir_entry (MooHistoryCombo *hist_combo,
     if (!gtk_entry_get_text (GTK_ENTRY (entry))[0])
     {
         MooFileEntryCompletion *completion;
+        GFile *file;
         char *filename;
 
         completion = g_object_get_data (G_OBJECT (entry), "find-plugin-file-completion");
 
-        filename = doc ? moo_edit_get_filename (doc) : NULL;
+        file = doc ? moo_edit_get_file (doc) : NULL;
+        filename = file ? g_file_get_path (file) : NULL;
 
         if (filename)
         {
@@ -461,6 +462,7 @@ init_dir_entry (MooHistoryCombo *hist_combo,
         }
 
         g_free (filename);
+        g_object_unref (file);
     }
 
 #if 0
@@ -556,8 +558,8 @@ get_directories (MooHistoryCombo *combo)
 
 
 static void
-do_grep (MooEditWindow  *window,
-         WindowStuff    *stuff)
+do_grep (MooEditWindow *window,
+         WindowStuff   *stuff)
 {
     GtkWidget *pane;
     MooHistoryCombo *pattern_combo, *skip_combo, *glob_combo;
@@ -604,8 +606,8 @@ do_grep (MooEditWindow  *window,
 
 
 static void
-do_find (MooEditWindow  *window,
-         WindowStuff    *stuff)
+do_find (MooEditWindow *window,
+         WindowStuff   *stuff)
 {
     GtkWidget *pane;
     MooHistoryCombo *pattern_combo, *skip_combo;
@@ -1100,8 +1102,7 @@ output_activate (WindowStuff    *stuff,
         return FALSE;
 
     editor = moo_edit_window_get_editor (stuff->window);
-    moo_editor_open_file_line (editor, line_data->filename,
-                               line_data->line, stuff->window);
+    moo_editor_open_file_line (editor, line_data->filename, line_data->line, stuff->window);
 
     return TRUE;
 }
@@ -1110,7 +1111,7 @@ output_activate (WindowStuff    *stuff,
 MOO_PLUGIN_DEFINE_INFO (find,
                         N_("Find"), N_("Finds everything"),
                         "Yevgen Muntyan <emuntyan@sourceforge.net>",
-                        MOO_VERSION, NULL)
+                        MOO_VERSION)
 MOO_WIN_PLUGIN_DEFINE (Find, find)
 MOO_PLUGIN_DEFINE (Find, find,
                    NULL, NULL, NULL, NULL, NULL,

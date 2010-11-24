@@ -50,7 +50,7 @@ gboolean         _moo_edit_reload_file          (MooEdit        *edit,
                                                  const char     *encoding,
                                                  GError        **error);
 gboolean         _moo_edit_save_file            (MooEdit        *edit,
-                                                 GFile          *file,
+                                                 GFile          *floc,
                                                  const char     *encoding,
                                                  MooEditSaveFlags flags,
                                                  GError        **error);
@@ -59,9 +59,6 @@ gboolean         _moo_edit_save_file_copy       (MooEdit        *edit,
                                                  const char     *encoding,
                                                  MooEditSaveFlags flags,
                                                  GError        **error);
-
-char            *_moo_file_get_display_name     (GFile          *file);
-char            *_moo_file_get_display_basename (GFile          *file);
 
 
 G_END_DECLS

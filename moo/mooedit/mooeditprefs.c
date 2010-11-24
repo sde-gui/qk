@@ -22,6 +22,7 @@
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/moolangmgr.h"
 #include "mooutils/mooencodings.h"
+#include "mooutils/mooi18n.h"
 #include <string.h>
 
 #ifdef __WIN32__
@@ -35,6 +36,34 @@ static void _moo_edit_init_prefs (void);
 
 static guint settings[MOO_EDIT_LAST_SETTING];
 guint *_moo_edit_settings = settings;
+
+
+const char *
+_moo_get_default_encodings (void)
+{
+    /* Translators: if translated, it should be a comma-separated list
+       of encodings to try when opening files. Encodings names should be
+       those understood by iconv, or "LOCALE" which means user's locale
+       charset. For instance, the default value is "UTF-8,LOCALE,ISO_8859-15,ISO_8859-1".
+       You want to add common preferred non-UTF8 encodings used in your locale.
+       Do not remove ISO_8859-15 and ISO_8859-1, instead leave them at the end,
+       these are common source files encodings. */
+    const char *to_translate = N_("encodings_list");
+    const char *encodings;
+
+    encodings = _(to_translate);
+
+    if (!strcmp (encodings, to_translate))
+        encodings = "UTF-8," MOO_EDIT_ENCODING_LOCALE ",ISO_8859-1,ISO_8859-15";
+
+    return encodings;
+}
+
+const char *
+_moo_edit_get_default_encoding (void)
+{
+    return moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODING_SAVE));
+}
 
 
 void

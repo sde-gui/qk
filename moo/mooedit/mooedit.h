@@ -19,6 +19,7 @@
 #include <mooedit/mootextview.h>
 #include <mooedit/mooeditconfig.h>
 #include <mooedit/mooedit-enums.h>
+#include <mooedit/mooedittypes.h>
 #include <mooutils/mooprefs.h>
 
 G_BEGIN_DECLS
@@ -37,7 +38,6 @@ G_BEGIN_DECLS
 #define MOO_EDIT_IS_CLEAN(edit)     (moo_edit_get_status (edit) & MOO_EDIT_CLEAN)
 #define MOO_EDIT_IS_BUSY(edit)      (moo_edit_get_state (edit) != MOO_EDIT_STATE_NORMAL)
 
-typedef struct MooEdit         MooEdit;
 typedef struct MooEditPrivate  MooEditPrivate;
 typedef struct MooEditClass    MooEditClass;
 
@@ -73,6 +73,10 @@ struct MooEditClass
 GType            moo_edit_get_type              (void) G_GNUC_CONST;
 GType            moo_edit_file_info_get_type    (void) G_GNUC_CONST;
 
+MooEditWindow   *moo_edit_get_window            (MooEdit        *edit);
+
+GFile           *moo_edit_get_file              (MooEdit        *edit);
+
 char            *moo_edit_get_uri               (MooEdit        *edit);
 char            *moo_edit_get_filename          (MooEdit        *edit);
 char            *moo_edit_get_norm_filename     (MooEdit        *edit);
@@ -84,6 +88,10 @@ void             moo_edit_set_encoding          (MooEdit        *edit,
                                                  const char     *encoding);
 
 char            *moo_edit_get_utf8_filename     (MooEdit        *edit);
+
+MooLang         *moo_edit_get_lang              (MooEdit        *edit);
+
+MooEditor       *moo_edit_get_editor            (MooEdit        *doc);
 
 #ifdef __WIN32__
 #define MOO_LE_DEFAULT MOO_LE_WIN32
@@ -124,14 +132,6 @@ gboolean         moo_edit_save_copy             (MooEdit        *edit,
 
 void             moo_edit_comment               (MooEdit        *edit);
 void             moo_edit_uncomment             (MooEdit        *edit);
-
-typedef struct MooEditFileInfo MooEditFileInfo;
-MooEditFileInfo *moo_edit_file_info_new_path    (const char         *path,
-                                                 const char         *encoding);
-MooEditFileInfo *moo_edit_file_info_new_uri     (const char         *uri,
-                                                 const char         *encoding);
-MooEditFileInfo *moo_edit_file_info_copy        (MooEditFileInfo    *info);
-void             moo_edit_file_info_free        (MooEditFileInfo    *info);
 
 void             moo_edit_ui_set_line_wrap_mode     (MooEdit        *edit,
                                                      gboolean        enabled);

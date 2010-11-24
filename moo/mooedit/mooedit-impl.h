@@ -20,17 +20,9 @@
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootextview.h"
 #include "mooutils/mdhistorymgr.h"
-#include "mooutils/moolist.h"
 #include <gio/gio.h>
 
 G_BEGIN_DECLS
-
-struct MooEditFileInfo {
-    GFile *file;
-    char *encoding;
-};
-
-MOO_DEFINE_SLIST(MooEditList, moo_edit_list, MooEdit)
 
 extern MooEditList *_moo_edit_instances;
 
@@ -91,8 +83,6 @@ void        _moo_edit_apply_prefs               (MooEdit        *edit);
 /***********************************************************************/
 /* File operations
  */
-
-GFile       *_moo_edit_get_file                 (MooEdit        *edit);
 
 void         _moo_edit_set_file                 (MooEdit        *edit,
                                                  GFile          *file,

@@ -19,7 +19,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-private.h"
-#include "mooedit/mooeditor-private.h"
+#include "mooedit/mooeditor-impl.h"
 #include "mooedit/mooedit-fileops.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mootextbuffer.h"
@@ -261,27 +261,6 @@ static LoadResult   load_binary (MooEdit      *edit,
                                  GError      **error);
 #endif
 
-const char *
-_moo_get_default_encodings (void)
-{
-    /* Translators: if translated, it should be a comma-separated list
-       of encodings to try when opening files. Encodings names should be
-       those understood by iconv, or "LOCALE" which means user's locale
-       charset. For instance, the default value is "UTF-8,LOCALE,ISO_8859-15,ISO_8859-1".
-       You want to add common preferred non-UTF8 encodings used in your locale.
-       Do not remove ISO_8859-15 and ISO_8859-1, instead leave them at the end,
-       these are common source files encodings. */
-    const char *to_translate = N_("encodings_list");
-    const char *encodings;
-
-    encodings = _(to_translate);
-
-    if (!strcmp (encodings, to_translate))
-        encodings = "UTF-8," ENCODING_LOCALE ",ISO_8859-1,ISO_8859-15";
-
-    return encodings;
-}
-
 static GSList *
 get_encodings (void)
 {
@@ -395,7 +374,7 @@ moo_edit_load_local (MooEdit     *edit,
     MooLineEndType saved_le;
 
     moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    moo_return_val_if_fail (file != NULL, FALSE);
+    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
 
     if (!check_regular (file, error))
         return FALSE;
@@ -753,8 +732,8 @@ moo_edit_reload_local (MooEdit    *edit,
     gboolean result, enable_highlight;
     GFile *file;
 
-    file = _moo_edit_get_file (edit);
-    moo_return_val_if_fail (file != NULL, FALSE);
+    file = moo_edit_get_file (edit);
+    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
 
@@ -1233,29 +1212,15 @@ add_untitled (MooEdit *edit)
 }
 
 
-const char *
-_moo_edit_get_default_encoding (void)
-{
-    return moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_ENCODING_SAVE));
-}
-
-
-char *
-_moo_file_get_display_name (GFile *file)
-{
-    moo_return_val_if_fail (G_IS_FILE (file), NULL);
-    return g_file_get_parse_name (file);
-}
-
-char *
-_moo_file_get_display_basename (GFile *file)
+static char *
+moo_file_get_display_basename (GFile *file)
 {
     char *name;
     const char *slash;
 
     moo_return_val_if_fail (G_IS_FILE (file), NULL);
 
-    name = _moo_file_get_display_name (file);
+    name = moo_file_get_display_name (file);
     moo_return_val_if_fail (name != NULL, NULL);
 
     slash = strrchr (name, '/');
@@ -1339,8 +1304,8 @@ _moo_edit_set_file (MooEdit    *edit,
         edit->priv->norm_filename = _moo_edit_normalize_filename_for_comparison (norm_name_tmp);
         free_list = g_slist_prepend (free_list, norm_name_tmp);
 
-        edit->priv->display_filename = _moo_file_get_display_name (file);
-        edit->priv->display_basename = _moo_file_get_display_basename (file);
+        edit->priv->display_filename = moo_file_get_display_name (file);
+        edit->priv->display_basename = moo_file_get_display_basename (file);
     }
 
     if (!encoding)
@@ -1351,8 +1316,7 @@ _moo_edit_set_file (MooEdit    *edit,
     g_signal_emit_by_name (edit, "filename-changed", edit->priv->filename, NULL);
     moo_edit_status_changed (edit);
 
-    if (tmp)
-        g_object_unref (tmp);
+    moo_file_free (tmp);
 
     g_slist_foreach (free_list, (GFunc) g_free, NULL);
     g_slist_free (free_list);
@@ -1365,9 +1329,9 @@ _moo_edit_get_icon (MooEdit     *doc,
                     GtkIconSize  size)
 {
     if (doc->priv->filename)
-        return moo_get_icon_for_file (doc->priv->filename, widget, size);
+        return moo_get_icon_for_path (doc->priv->filename, widget, size);
     else if (doc->priv->file)
-        return moo_get_icon_for_file (doc->priv->display_basename, widget, size);
+        return moo_get_icon_for_path (doc->priv->display_basename, widget, size);
     else
-        return moo_get_icon_for_file (NULL, widget, size);
+        return moo_get_icon_for_path (NULL, widget, size);
 }

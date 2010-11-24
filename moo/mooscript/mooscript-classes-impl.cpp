@@ -1,6 +1,7 @@
 #include "mooscript-classes.h"
 #include "mooscript-classes-util.h"
 #include "mooapp/mooapp.h"
+#include "mooedit/moofileenc.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moodialogs.h"
 #include <string.h>
@@ -85,6 +86,18 @@ static VariantArray wrap_gslist(GSList *list)
         GClass *gobj = (GClass*) list->data;
         array.append(HObject(gobj ? Class::wrap(gobj)->id() : 0));
         list = list->next;
+    }
+    return array;
+}
+
+template<typename GArrayClass, typename GClass, typename Class>
+static VariantArray wrap_array(GArrayClass *ar)
+{
+    VariantArray array;
+    for (guint i = 0; i < ar->n_elms; ++i)
+    {
+        GClass *gobj = ar->elms[i];
+        array.append(HObject(gobj ? Class::wrap(gobj)->id() : 0));
     }
     return array;
 }
@@ -534,42 +547,24 @@ void Editor::set_active_window(DocumentWindow &window)
     moo_editor_set_active_window(moo_editor_instance(), window.gobj());
 }
 
-/// @item Editor.active_view()
-/// returns current active document view
-DocumentView *Editor::active_view()
-{
-    return DocumentView::wrap(moo_editor_get_active_doc(moo_editor_instance()));
-}
-
-/// @item Editor.set_active_view(view)
-/// makes @param{view} active
-void Editor::set_active_view(DocumentView &view)
-{
-    moo_editor_set_active_doc(moo_editor_instance(), view.gobj());
-}
-
 /// @item Editor.documents()
 /// returns list of all open documents
 VariantArray Editor::documents()
 {
-    GSList *docs = moo_editor_list_docs(moo_editor_instance());
-    return wrap_gslist<MooEdit, Document>(docs);
-}
-
-/// @item Editor.views()
-/// returns list of all open document views
-VariantArray Editor::views()
-{
-    GSList *docs = moo_editor_list_docs(moo_editor_instance());
-    return wrap_gslist<MooEdit, DocumentView>(docs);
+    MooEditArray *docs = moo_editor_get_docs(moo_editor_instance());
+    VariantArray ret = wrap_array<MooEditArray, MooEdit, Document>(docs);
+    moo_edit_array_free(docs);
+    return ret;
 }
 
 /// @item Editor.windows()
 /// returns list of all document windows
 VariantArray Editor::windows()
 {
-    GSList *windows = moo_editor_list_windows(moo_editor_instance());
-    return wrap_gslist<MooEditWindow, DocumentWindow>(windows);
+    MooEditWindowArray *windows = moo_editor_get_windows(moo_editor_instance());
+    VariantArray ret = wrap_array<MooEditWindowArray, MooEditWindow, DocumentWindow>(windows);
+    moo_edit_window_array_free(windows);
+    return ret;
 }
 
 /// @item Editor.new_document(window=null)
@@ -601,39 +596,37 @@ Document *Editor::get_document_by_uri(const String &uri)
     return Document::wrap(moo_editor_get_doc_for_uri(moo_editor_instance(), uri));
 }
 
-static GSList *get_file_info_list(const Variant &val, bool uri)
+static MooFileEncArray *get_file_info_list(const Variant &val, bool uri)
 {
     moo::Vector<String> filenames = get_string_list(val);
 
     if (filenames.empty())
         return NULL;
 
-    GSList *files = NULL;
+    MooFileEncArray *files = moo_file_enc_array_new();
 
     for (int i = 0, c = filenames.size(); i < c; ++i)
     {
-        MooEditFileInfo *fi = uri ?
-                moo_edit_file_info_new_uri(filenames[i], NULL) :
-                moo_edit_file_info_new_path(filenames[i], NULL);
-        if (!fi)
+        MooFileEnc *fenc = uri ?
+                moo_file_enc_new_for_uri(filenames[i], NULL) :
+                moo_file_enc_new_for_path(filenames[i], NULL);
+        if (!fenc)
             goto error;
-        files = g_slist_prepend(files, fi);
+        moo_file_enc_array_take(files, fenc);
     }
 
-    return g_slist_reverse(files);
+    return files;
 
 error:
-    g_slist_foreach(files, (GFunc) moo_edit_file_info_free, NULL);
-    g_slist_free(files);
+    moo_file_enc_array_free(files);
     Error::raise("error");
 }
 
 static void open_files_or_uris(const VariantArray &file_array, DocumentWindow *window, bool uri)
 {
-    GSList *files = get_file_info_list(file_array, uri);
+    MooFileEncArray *files = get_file_info_list(file_array, uri);
     moo_editor_open(moo_editor_instance(), window ? window->gobj() : NULL, NULL, files);
-    g_slist_foreach(files, (GFunc) moo_edit_file_info_free, NULL);
-    g_slist_free(files);
+    moo_file_enc_array_free(files);
 }
 
 /// @item Editor.open_files(files, window=null)
@@ -748,13 +741,12 @@ bool Editor::close_documents(const VariantArray &arr)
     for (int i = 0, c = arr.size(); i < c; ++i)
         pvec.append(get_object_arg<Document>(arr[i], "doc").gobj());
 
-    GSList *docs = NULL;
+    MooEditArray *docs = moo_edit_array_new ();
     for (int i = 0, c = pvec.size(); i < c; ++i)
-        docs = g_slist_prepend (docs, pvec[i]);
-    docs = g_slist_reverse (docs);
+        moo_edit_array_append (docs, pvec[i]);
 
     bool retval = moo_editor_close_docs (moo_editor_instance(), docs, TRUE);
-    g_slist_free (docs);
+    moo_edit_array_free (docs);
     return retval;
 }
 
@@ -788,50 +780,28 @@ Editor *DocumentWindow::editor()
     return &Editor::get_instance();
 }
 
-/// @item DocumentWindow.active_view()
-/// returns current active document view in this window.
-DocumentView *DocumentWindow::active_view()
-{
-    return DocumentView::wrap(moo_edit_window_get_active_doc(gobj()));
-}
-
-/// @item DocumentWindow.set_active_view(view)
-/// makes @param{view} active, i.e. switches to its tab.
-void DocumentWindow::set_active_view(DocumentView &view)
-{
-    moo_edit_window_set_active_doc(gobj(), view.gobj());
-}
-
 /// @item DocumentWindow.active_document()
-/// returns current active document in this window, that is the document
-/// whose view is the active one.
+/// returns current active document in this window.
 Document *DocumentWindow::active_document()
 {
     return Document::wrap(moo_edit_window_get_active_doc(gobj()));
 }
 
 /// @item DocumentWindow.set_active_document(doc)
-/// makes active a view of document @param{doc}. It picks arbitrary view
-/// of @param{doc} if there are more than one in this window.
+/// makes active document @param{doc}.
 void DocumentWindow::set_active_document(Document &doc)
 {
     moo_edit_window_set_active_doc(gobj(), doc.gobj());
-}
-
-/// @item DocumentWindow.views()
-/// returns list of all document views in this window.
-VariantArray DocumentWindow::views()
-{
-    GSList *docs = moo_edit_window_list_docs(gobj());
-    return wrap_gslist<MooEdit, DocumentView>(docs);
 }
 
 /// @item DocumentWindow.documents()
 /// returns list of all documents in this window.
 VariantArray DocumentWindow::documents()
 {
-    GSList *docs = moo_edit_window_list_docs(gobj());
-    return wrap_gslist<MooEdit, Document>(docs);
+    MooEditArray *docs = moo_edit_window_get_docs(gobj());
+    VariantArray ret = wrap_array<MooEditArray, MooEdit, Document>(docs);
+    moo_edit_array_free(docs);
+    return ret;
 }
 
 /// @item DocumentWindow.is_active()
@@ -854,84 +824,6 @@ void DocumentWindow::set_active()
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// DocumentView
-//
-
-///
-/// @node DocumentView object
-/// @section DocumentView object
-/// @helpsection{DOCUMENT_VIEW}
-/// @table @method
-///
-
-/// @item DocumentView.document()
-/// returns document to which this view belongs.
-Document *DocumentView::document()
-{
-    return Document::wrap(gobj());
-}
-
-/// @item DocumentView.window()
-/// returns window which contains this view.
-DocumentWindow *DocumentView::window()
-{
-    return DocumentWindow::wrap(moo_edit_get_window(gobj()));
-}
-
-/// @item DocumentView.line_wrap_mode()
-/// returns whether line wrapping is enabled.
-bool DocumentView::line_wrap_mode()
-{
-    GtkWrapMode mode;
-    g_object_get(gobj(), "wrap-mode", &mode, (char*) NULL);
-    return mode != GTK_WRAP_NONE;
-}
-
-/// @item DocumentView.set_line_wrap_mode(enabled)
-/// enables or disables line wrapping.
-void DocumentView::set_line_wrap_mode(bool wrap)
-{
-    moo_edit_ui_set_line_wrap_mode(gobj(), wrap);
-}
-
-/// @item DocumentView.overwrite_mode()
-/// returns whether overwrite mode is on.
-bool DocumentView::overwrite_mode()
-{
-    gboolean overwrite;
-    g_object_get(gobj(), "overwrite", &overwrite, (char*) NULL);
-    return overwrite;
-}
-
-/// @item DocumentView.set_overwrite_mode(enabled)
-/// enables or disables overwrite mode.
-void DocumentView::set_overwrite_mode(bool overwrite)
-{
-    g_object_set(gobj(), "overwrite", gboolean(overwrite), (char*) NULL);
-}
-
-/// @item DocumentView.show_line_numbers()
-/// returns whether line numbers are displayed.
-bool DocumentView::show_line_numbers()
-{
-    gboolean show;
-    g_object_get(gobj(), "show-line-numbers", &show, (char*) NULL);
-    return show;
-}
-
-/// @item DocumentView.set_show_line_numbers(show)
-/// shows or hides line numbers.
-void DocumentView::set_show_line_numbers(bool show)
-{
-    moo_edit_ui_set_show_line_numbers(gobj(), show);
-}
-
-///
-/// @end table
-///
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // Document
 //
 
@@ -946,25 +838,6 @@ void DocumentView::set_show_line_numbers(bool show)
 static GtkTextBuffer *buffer(Document *doc)
 {
     return gtk_text_view_get_buffer(GTK_TEXT_VIEW(doc->gobj()));
-}
-
-/// @item Document.views()
-/// returns list of views which display this document.
-VariantArray Document::views()
-{
-    VariantArray views;
-    views.append(HObject(*DocumentView::wrap(gobj())));
-    return views;
-}
-
-/// @item Document.active_view()
-/// returns active view of this document. If the document has a single
-/// view, then that is returned; otherwise if the current active view
-/// belongs to this document, then that view is returned; otherwise
-/// a random view is picked.
-DocumentView *Document::active_view()
-{
-    return DocumentView::wrap(gobj());
 }
 
 /// @item Document.filename()

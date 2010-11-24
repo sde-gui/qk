@@ -15,14 +15,15 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditor-private.h"
+#include "mooedit/mooeditwindow-impl.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooedit-fileops.h"
 #include "mooedit/mooplugin.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooedit-impl.h"
 #include "mooedit/mooedit-accels.h"
-#include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditfiltersettings.h"
+#include "mooedit/moofileenc.h"
 #include "mooedit-ui.h"
 #include "medit-ui.h"
 #include "mooutils/moomenuaction.h"
@@ -47,38 +48,6 @@
 
 static gpointer editor_instance = NULL;
 
-MOO_DEFINE_SLIST (DocList, doc_list, MooEdit)
-MOO_DEFINE_SLIST (WindowList, window_list, MooEditWindow)
-
-typedef enum {
-    OPEN_SINGLE         = 1 << 0,
-    ALLOW_EMPTY_WINDOW  = 1 << 1,
-    SINGLE_WINDOW       = 1 << 2,
-    SAVE_BACKUPS        = 1 << 3,
-    STRIP_WHITESPACE    = 1 << 4,
-    EMBEDDED            = 1 << 5
-} MooEditorOptions;
-
-struct MooEditorPrivate {
-    DocList         *windowless;
-    WindowList      *windows;
-    MooUiXml        *doc_ui_xml;
-    MooUiXml        *ui_xml;
-    MdHistoryMgr    *history;
-    MooLangMgr      *lang_mgr;
-    MooFileWatch    *file_watch;
-    MooEditorOptions opts;
-
-    MooEdit         *focused_doc;
-
-    GType            window_type;
-    GType            doc_type;
-
-    char            *default_lang;
-
-    guint            prefs_idle;
-};
-
 static void          set_single_window          (MooEditor      *editor,
                                                  gboolean        single);
 
@@ -98,9 +67,9 @@ static void          do_close_window            (MooEditor      *editor,
 static void          do_close_doc               (MooEditor      *editor,
                                                  MooEdit        *doc);
 static gboolean      close_docs_real            (MooEditor      *editor,
-                                                 DocList        *docs,
+                                                 MooEditArray   *docs,
                                                  gboolean        ask_confirm);
-static DocList      *find_modified              (DocList        *docs);
+static MooEditArray *find_modified              (MooEditArray   *docs);
 
 static void          add_new_window_action      (void);
 static void          remove_new_window_action   (void);
@@ -237,6 +206,8 @@ static void
 moo_editor_init (MooEditor *editor)
 {
     editor->priv = G_TYPE_INSTANCE_GET_PRIVATE (editor, MOO_TYPE_EDITOR, MooEditorPrivate);
+    editor->priv->windows = moo_edit_window_array_new ();
+    editor->priv->windowless = moo_edit_array_new ();
 }
 
 static GObject *
@@ -266,9 +237,6 @@ moo_editor_constructor (GType                  type,
         editor->priv->history = MD_HISTORY_MGR (g_object_new (MD_TYPE_HISTORY_MGR,
                                                               "name", "Editor",
                                                               (const char*) NULL));
-
-    editor->priv->windows = NULL;
-    editor->priv->windowless = NULL;
 
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG),
                               MOO_LANG_NONE);
@@ -396,10 +364,13 @@ moo_editor_finalize (GObject *object)
         moo_file_watch_unref (editor->priv->file_watch);
     }
 
-    if (editor->priv->windows)
+    if (editor->priv->windows->n_elms)
         g_critical ("finalizing editor while some windows are open");
-    if (editor->priv->windowless)
+    if (editor->priv->windowless->n_elms)
         g_critical ("finalizing editor while some documents are open");
+
+    moo_edit_window_array_free (editor->priv->windows);
+    moo_edit_array_free (editor->priv->windowless);
 
     g_free (editor->priv->default_lang);
 
@@ -454,7 +425,7 @@ _moo_editor_get_file_watch (MooEditor *editor)
 
 
 MooEditor *
-moo_editor_create_instance (gboolean embedded)
+moo_editor_create (gboolean embedded)
 {
     if (!editor_instance)
     {
@@ -544,24 +515,24 @@ static MooEditWindow *
 get_top_window (MooEditor *editor)
 {
     GtkWindow *window;
+    GSList *window_list;
+    guint i;
 
-    if (!editor->priv->windows)
+    if (moo_edit_window_array_is_empty (editor->priv->windows))
         return NULL;
 
-    window = _moo_get_top_window (window_list_to_gslist (editor->priv->windows));
+    for (window_list = NULL, i = 0; i < editor->priv->windows->n_elms; ++i)
+        window_list = g_slist_prepend (window_list, editor->priv->windows->elms[i]);
+    window_list = g_slist_reverse (window_list);
+
+    window = _moo_get_top_window (window_list);
 
     if (!window)
-        window = GTK_WINDOW (editor->priv->windows->data);
+        window = GTK_WINDOW (editor->priv->windows->elms[0]);
+
+    g_slist_free (window_list);
 
     return MOO_EDIT_WINDOW (window);
-}
-
-
-static void
-file_info_list_free (GSList *list)
-{
-    g_slist_foreach (list, (GFunc) moo_edit_file_info_free, NULL);
-    g_slist_free (list);
 }
 
 
@@ -592,7 +563,7 @@ void
 moo_editor_set_ui_xml (MooEditor      *editor,
                        MooUiXml       *xml)
 {
-    WindowList *l;
+    guint i;
 
     g_return_if_fail (MOO_IS_EDITOR (editor));
     g_return_if_fail (MOO_IS_UI_XML (xml));
@@ -608,8 +579,9 @@ moo_editor_set_ui_xml (MooEditor      *editor,
     if (editor->priv->ui_xml)
         g_object_ref (editor->priv->ui_xml);
 
-    for (l = editor->priv->windows; l != NULL; l = l->next)
-        moo_window_set_ui_xml (MOO_WINDOW (l->data), editor->priv->ui_xml);
+    for (i = 0; i < editor->priv->windows->n_elms; ++i)
+        moo_window_set_ui_xml (MOO_WINDOW (editor->priv->windows->elms[i]),
+                               editor->priv->ui_xml);
 }
 
 
@@ -737,7 +709,7 @@ create_window (MooEditor *editor)
                       "editor", editor,
                       "ui-xml", moo_editor_get_ui_xml (editor),
                       (const char*) NULL));
-    editor->priv->windows = window_list_append (editor->priv->windows, window);
+    moo_edit_window_array_append (editor->priv->windows, window);
     _moo_window_attach_plugins (window);
     gtk_widget_show (GTK_WIDGET (window));
     return window;
@@ -750,7 +722,7 @@ moo_editor_add_doc (MooEditor      *editor,
                     MooEdit        *doc)
 {
     if (!window)
-        editor->priv->windowless = doc_list_prepend (editor->priv->windowless, doc);
+        moo_edit_array_append (editor->priv->windowless, doc);
 
     if (moo_edit_is_untitled (doc) &&
         !moo_edit_config_get_string (doc->config, "lang") &&
@@ -813,8 +785,7 @@ moo_editor_create_doc (MooEditor      *editor,
     moo_editor_add_doc (editor, NULL, doc);
     _moo_doc_attach_plugins (NULL, doc);
 
-    if (file)
-        g_object_unref (file);
+    g_object_unref (file);
 
     return doc;
 }
@@ -932,7 +903,7 @@ static gboolean
 moo_editor_load_file (MooEditor       *editor,
                       MooEditWindow   *window,
                       GtkWidget       *parent,
-                      MooEditFileInfo *info,
+                      MooFileEnc      *fenc,
                       gboolean         silent,
                       gboolean         add_history,
                       int              line,
@@ -946,7 +917,7 @@ moo_editor_load_file (MooEditor       *editor,
     const char *recent_encoding = NULL;
 
     *docp = NULL;
-    uri = g_file_get_uri (info->file);
+    uri = g_file_get_uri (fenc->file);
     g_return_val_if_fail (uri != NULL, FALSE);
 
     if ((doc = moo_editor_get_doc_for_uri (editor, uri)))
@@ -975,7 +946,7 @@ moo_editor_load_file (MooEditor       *editor,
         new_doc = TRUE;
     }
 
-    if (!info->encoding)
+    if (!fenc->encoding)
     {
         MdHistoryItem *hist_item = md_history_mgr_find_uri (editor->priv->history, uri);
         if (hist_item)
@@ -983,7 +954,7 @@ moo_editor_load_file (MooEditor       *editor,
     }
 
     /* XXX open_single */
-    if (!_moo_edit_load_file (doc, info->file, info->encoding, recent_encoding, &error))
+    if (!_moo_edit_load_file (doc, fenc->file, fenc->encoding, recent_encoding, &error))
     {
         if (!silent)
         {
@@ -991,7 +962,7 @@ moo_editor_load_file (MooEditor       *editor,
                 window = moo_editor_get_active_window (editor);
             if (!parent && window)
                 parent = GTK_WIDGET (window);
-            _moo_edit_open_error_dialog (parent, info->file, info->encoding, error);
+            _moo_edit_open_error_dialog (parent, fenc->file, fenc->encoding, error);
         }
         g_error_free (error);
         result = FALSE;
@@ -1034,12 +1005,12 @@ moo_editor_load_file (MooEditor       *editor,
 }
 
 gboolean
-moo_editor_open (MooEditor      *editor,
-                 MooEditWindow  *window,
-                 GtkWidget      *parent,
-                 GSList         *files)
+moo_editor_open (MooEditor       *editor,
+                 MooEditWindow   *window,
+                 GtkWidget       *parent,
+                 MooFileEncArray *files)
 {
-    GSList *l;
+    guint i;
     MooEdit *bring_to_front = NULL;
     gboolean result = TRUE;
 
@@ -1056,26 +1027,26 @@ moo_editor_open (MooEditor      *editor,
 
         files = _moo_edit_open_dialog (parent, active);
 
-        if (!files)
-            return FALSE;
+        if (files)
+            result = moo_editor_open (editor, window, parent, files);
+        else
+            result = FALSE;
 
-        result = moo_editor_open (editor, window, parent, files);
-        file_info_list_free (files);
-
+        moo_file_enc_array_free (files);
         return result;
     }
 
     bring_to_front = NULL;
 
-    for (l = files; l != NULL; l = l->next)
+    for (i = 0; i < files->n_elms; ++i)
     {
-        MooEditFileInfo *info = l->data;
+        MooFileEnc *fenc = files->elms[i];
         MooEdit *doc = NULL;
 
         if (!window)
             window = moo_editor_get_active_window (editor);
 
-        if (moo_editor_load_file (editor, window, parent, info,
+        if (moo_editor_load_file (editor, window, parent, fenc,
                                   is_embedded (editor), TRUE, -1, &doc))
             parent = GTK_WIDGET (doc);
 
@@ -1155,25 +1126,14 @@ moo_editor_set_active_doc (MooEditor      *editor,
 
 
 static MooEdit *
-find_busy (DocList *docs)
+find_busy (MooEditArray *docs)
 {
-    while (docs)
-    {
-        if (MOO_EDIT_IS_BUSY (docs->data))
-            return docs->data;
-        docs = docs->next;
-    }
-
+    guint i;
+    for (i = 0; i < docs->n_elms; ++i)
+        if (MOO_EDIT_IS_BUSY (docs->elms[i]))
+            return docs->elms[i];
     return NULL;
 }
-
-
-inline static DocList *
-window_list_docs (MooEditWindow *window)
-{
-    return doc_list_from_gslist (moo_edit_window_list_docs (window));
-}
-
 
 static gboolean
 close_window_handler (MooEditor     *editor,
@@ -1181,41 +1141,41 @@ close_window_handler (MooEditor     *editor,
                       gboolean       ask_confirm)
 {
     MooSaveChangesDialogResponse response;
-    DocList *modified;
-    DocList *docs;
+    MooEditArray *modified;
+    MooEditArray *docs;
     gboolean do_close = FALSE;
     MooEdit *busy = NULL;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
 
-    docs = window_list_docs (window);
+    docs = moo_edit_window_get_docs (window);
     busy = find_busy (docs);
 
     if (busy)
     {
         moo_editor_set_active_doc (editor, busy);
-        doc_list_free_links (docs);
+        moo_edit_array_free (docs);
         return TRUE;
     }
 
     modified = find_modified (docs);
 
-    if (!modified || !ask_confirm)
+    if (moo_edit_array_is_empty (modified) || !ask_confirm)
     {
         do_close = TRUE;
     }
-    else if (!modified->next)
+    else if (modified->n_elms == 1)
     {
         if (window)
-            moo_edit_window_set_active_doc (window, modified->data);
+            moo_edit_window_set_active_doc (window, modified->elms[0]);
 
-        response = _moo_edit_save_changes_dialog (modified->data);
+        response = _moo_edit_save_changes_dialog (modified->elms[0]);
 
         switch (response)
         {
             case MOO_SAVE_CHANGES_RESPONSE_SAVE:
-                if (_moo_editor_save (editor, modified->data, NULL))
+                if (_moo_editor_save (editor, modified->elms[0], NULL))
                     do_close = TRUE;
                 break;
 
@@ -1229,25 +1189,24 @@ close_window_handler (MooEditor     *editor,
     }
     else
     {
-        GSList *to_save = NULL, *l;
+        guint i;
+        MooEditArray *to_save;
         gboolean saved = TRUE;
 
-        response = _moo_edit_save_multiple_changes_dialog (doc_list_to_gslist (modified), &to_save);
+        to_save = moo_edit_array_new ();
+        response = _moo_edit_save_multiple_changes_dialog (modified, to_save);
 
         switch (response)
         {
             case MOO_SAVE_CHANGES_RESPONSE_SAVE:
-                for (l = to_save; l != NULL; l = l->next)
-                    if (!_moo_editor_save (editor, l->data, NULL))
+                for (i = 0; i < to_save->n_elms; ++i)
+                    if (!_moo_editor_save (editor, to_save->elms[i], NULL))
                     {
                         saved = FALSE;
                         break;
                     }
-
                 if (saved)
                     do_close = TRUE;
-
-                g_slist_free (to_save);
                 break;
 
             case MOO_SAVE_CHANGES_RESPONSE_CANCEL:
@@ -1257,10 +1216,12 @@ close_window_handler (MooEditor     *editor,
                 do_close = TRUE;
                 break;
         }
+
+        moo_edit_array_free (to_save);
     }
 
-    doc_list_free_links (modified);
-    doc_list_free_links (docs);
+    moo_edit_array_free (modified);
+    moo_edit_array_free (docs);
     return !do_close;
 }
 
@@ -1275,14 +1236,14 @@ moo_editor_close_window (MooEditor      *editor,
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
 
-    if (!window_list_find (editor->priv->windows, window))
+    if (moo_edit_window_array_find (editor->priv->windows, window) < 0)
         return TRUE;
 
     g_object_ref (window);
 
     g_signal_emit (editor, signals[CLOSE_WINDOW], 0, window, ask_confirm, &stopped);
 
-    if (!stopped && window_list_find (editor->priv->windows, window))
+    if (!stopped && moo_edit_window_array_find (editor->priv->windows, window) >= 0)
         do_close_window (editor, window);
 
     g_object_unref (window);
@@ -1295,20 +1256,20 @@ static void
 do_close_window (MooEditor      *editor,
                  MooEditWindow  *window)
 {
-    DocList *l, *list;
+    MooEditArray *docs;
+    guint i;
 
-    list = window_list_docs (window);
+    docs = moo_edit_window_get_docs (window);
 
-    for (l = list; l != NULL; l = l->next)
-        do_close_doc (editor, l->data);
+    for (i = 0; i < docs->n_elms; ++i)
+        do_close_doc (editor, docs->elms[i]);
 
-    editor->priv->windows =
-        window_list_remove (editor->priv->windows, window);
+    moo_edit_window_array_remove (editor->priv->windows, window);
 
     _moo_window_detach_plugins (window);
     gtk_widget_destroy (GTK_WIDGET (window));
 
-    doc_list_free_links (list);
+    moo_edit_array_free (docs);
 }
 
 
@@ -1322,8 +1283,8 @@ do_close_doc (MooEditor *editor,
 
     if (!window)
     {
-        g_assert (doc_list_find (editor->priv->windowless, doc));
-        editor->priv->windowless = doc_list_remove (editor->priv->windowless, doc);
+        g_assert (moo_edit_array_find (editor->priv->windowless, doc) >= 0);
+        moo_edit_array_remove (editor->priv->windowless, doc);
     }
 
     update_history_item_for_doc (editor, doc, TRUE);
@@ -1336,37 +1297,38 @@ do_close_doc (MooEditor *editor,
 
 
 gboolean
-moo_editor_close_doc (MooEditor      *editor,
-                      MooEdit        *doc,
-                      gboolean        ask_confirm)
+moo_editor_close_doc (MooEditor *editor,
+                      MooEdit   *doc,
+                      gboolean   ask_confirm)
 {
     gboolean result;
-    GSList *list;
+    MooEditArray *docs;
 
-    list = g_slist_prepend (NULL, doc);
-    result = moo_editor_close_docs (editor, list, ask_confirm);
-
-    g_slist_free (list);
+    docs = moo_edit_array_new ();
+    moo_edit_array_append (docs, doc);
+    result = moo_editor_close_docs (editor, docs, ask_confirm);
+    moo_edit_array_free (docs);
     return result;
 }
 
 
 gboolean
-moo_editor_close_docs (MooEditor *editor,
-                       GSList    *list,
-                       gboolean   ask_confirm)
+moo_editor_close_docs (MooEditor    *editor,
+                       MooEditArray *docs,
+                       gboolean      ask_confirm)
 {
-    GSList *l;
+    guint i;
     MooEditWindow *window;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
 
-    if (!list)
+    if (moo_edit_array_is_empty (docs))
         return TRUE;
 
-    for (l = list; l != NULL; l = l->next)
+    for (i = 0; i < docs->n_elms; ++i)
     {
-        MooEdit *doc = l->data;
+        MooEdit *doc = docs->elms[i];
+
         g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
 
         if (MOO_EDIT_IS_BUSY (doc))
@@ -1376,9 +1338,9 @@ moo_editor_close_docs (MooEditor *editor,
         }
     }
 
-    window = moo_edit_get_window (list->data);
+    window = moo_edit_get_window (docs->elms[0]);
 
-    if (close_docs_real (editor, doc_list_from_gslist (list), ask_confirm))
+    if (close_docs_real (editor, docs, ask_confirm))
     {
         if (window &&
             !moo_edit_window_num_docs (window) &&
@@ -1401,33 +1363,33 @@ moo_editor_close_docs (MooEditor *editor,
 
 
 static gboolean
-close_docs_real (MooEditor      *editor,
-                 DocList        *docs,
-                 gboolean        ask_confirm)
+close_docs_real (MooEditor    *editor,
+                 MooEditArray *docs,
+                 gboolean      ask_confirm)
 {
     MooSaveChangesDialogResponse response;
-    DocList *modified;
+    MooEditArray *modified;
     gboolean do_close = FALSE;
 
     modified = find_modified (docs);
 
-    if (!modified || !ask_confirm)
+    if (moo_edit_array_is_empty (modified) || !ask_confirm)
     {
         do_close = TRUE;
     }
-    else if (!modified->next)
+    else if (modified->n_elms == 1)
     {
-        MooEditWindow *window = moo_edit_get_window (modified->data);
+        MooEditWindow *window = moo_edit_get_window (modified->elms[0]);
 
         if (window)
-            moo_edit_window_set_active_doc (window, modified->data);
+            moo_edit_window_set_active_doc (window, modified->elms[0]);
 
-        response = _moo_edit_save_changes_dialog (modified->data);
+        response = _moo_edit_save_changes_dialog (modified->elms[0]);
 
         switch (response)
         {
             case MOO_SAVE_CHANGES_RESPONSE_SAVE:
-                if (_moo_editor_save (editor, modified->data, NULL))
+                if (_moo_editor_save (editor, modified->elms[0], NULL))
                     do_close = TRUE;
                 break;
 
@@ -1441,26 +1403,24 @@ close_docs_real (MooEditor      *editor,
     }
     else
     {
-        GSList *l;
-        GSList *to_save = NULL;
+        guint i;
+        MooEditArray *to_save;
         gboolean saved = TRUE;
 
-        response = _moo_edit_save_multiple_changes_dialog (doc_list_to_gslist (modified), &to_save);
+        to_save = moo_edit_array_new ();
+        response = _moo_edit_save_multiple_changes_dialog (modified, to_save);
 
         switch (response)
         {
             case MOO_SAVE_CHANGES_RESPONSE_SAVE:
-                for (l = to_save; l != NULL; l = l->next)
-                    if (!_moo_editor_save (editor, l->data, NULL))
+                for (i = 0; i < to_save->n_elms; ++i)
+                    if (!_moo_editor_save (editor, to_save->elms[i], NULL))
                 {
                     saved = FALSE;
                     break;
                 }
-
                 if (saved)
                     do_close = TRUE;
-
-                g_slist_free (to_save);
                 break;
 
             case MOO_SAVE_CHANGES_RESPONSE_CANCEL:
@@ -1470,66 +1430,69 @@ close_docs_real (MooEditor      *editor,
                 do_close = TRUE;
                 break;
         }
+
+        moo_edit_array_free (to_save);
     }
 
     if (do_close)
     {
-        DocList *l;
-        for (l = docs; l != NULL; l = l->next)
-            do_close_doc (editor, l->data);
+        guint i;
+        for (i = 0; i < docs->n_elms; ++i)
+            do_close_doc (editor, docs->elms[i]);
     }
 
-    doc_list_free_links (modified);
+    moo_edit_array_free (modified);
     return do_close;
 }
 
 
-static DocList*
-find_modified (DocList *docs)
+static MooEditArray *
+find_modified (MooEditArray *docs)
 {
-    DocList *modified = NULL, *l;
-    for (l = docs; l != NULL; l = l->next)
-        if (MOO_EDIT_IS_MODIFIED (l->data) && !MOO_EDIT_IS_CLEAN (l->data))
-            modified = doc_list_prepend (modified, l->data);
-    return doc_list_reverse (modified);
+    guint i;
+    MooEditArray *modified = moo_edit_array_new ();
+    for (i = 0; i < docs->n_elms; ++i)
+        if (MOO_EDIT_IS_MODIFIED (docs->elms[i]) && !MOO_EDIT_IS_CLEAN (docs->elms[i]))
+            moo_edit_array_append (modified, docs->elms[i]);
+    return modified;
 }
 
 
-/* XXX ask in each window, then close */
 gboolean
 moo_editor_close_all (MooEditor *editor,
                       gboolean   ask_confirm,
                       gboolean   leave_one)
 {
-    GSList *windows, *l;
+    guint i;
+    MooEditWindowArray *windows;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
 
-    windows = moo_editor_list_windows (editor);
+    windows = moo_editor_get_windows (editor);
 
-    for (l = windows; l != NULL; l = l->next)
+    for (i = 0; i < windows->n_elms; ++i)
     {
         gboolean closed = FALSE;
 
-        if (l->next || !leave_one || !ask_confirm)
+        if (i + 1 < windows->n_elms || !leave_one || !ask_confirm)
         {
-            closed = moo_editor_close_window (editor, l->data, ask_confirm);
+            closed = moo_editor_close_window (editor, windows->elms[i], ask_confirm);
         }
         else
         {
-            GSList *docs = moo_edit_window_list_docs (l->data);
+            MooEditArray *docs = moo_edit_window_get_docs (windows->elms[i]);
             closed = moo_editor_close_docs (editor, docs, ask_confirm);
-            g_slist_free (docs);
+            moo_edit_array_free (docs);
         }
 
         if (!closed)
         {
-            g_slist_free (windows);
+            moo_edit_window_array_free (windows);
             return FALSE;
         }
     }
 
-    g_slist_free (windows);
+    moo_edit_window_array_free (windows);
     return TRUE;
 }
 
@@ -1569,7 +1532,7 @@ load_doc_session (MooEditor     *editor,
     const char *encoding;
     char *freeme = NULL;
     MooEdit *doc = NULL;
-    MooEditFileInfo *info;
+    MooFileEnc *fenc;
 
     if (file_is_uri)
     {
@@ -1594,11 +1557,11 @@ load_doc_session (MooEditor     *editor,
     }
 
     encoding = moo_markup_get_prop (elm, "encoding");
-    info = moo_edit_file_info_new_uri (uri, encoding);
+    fenc = moo_file_enc_new_for_uri (uri, encoding);
 
-    moo_editor_load_file (editor, window, GTK_WIDGET (window), info, TRUE, FALSE, -1, &doc);
+    moo_editor_load_file (editor, window, GTK_WIDGET (window), fenc, TRUE, FALSE, -1, &doc);
 
-    moo_edit_file_info_free (info);
+    moo_file_enc_free (fenc);
     g_free (freeme);
     return doc;
 }
@@ -1666,26 +1629,26 @@ save_window_session (MooEditWindow *window,
 {
     MooMarkupNode *node;
     MooEdit *active_doc;
-    DocList *docs;
+    MooEditArray *docs;
+    guint i;
 
     active_doc = moo_edit_window_get_active_doc (window);
-    docs = window_list_docs (window);
+    docs = moo_edit_window_get_docs (window);
 
     node = moo_markup_create_element (elm, "window");
 
-    while (docs)
+    for (i = 0; i < docs->n_elms; ++i)
     {
         MooMarkupNode *doc_node;
-        MooEdit *doc = docs->data;
+        MooEdit *doc = docs->elms[i];
 
         doc_node = save_doc_session (doc, node);
 
         if (doc_node && doc == active_doc)
             moo_markup_set_bool_prop (doc_node, "active", TRUE);
-
-        docs = doc_list_delete_link (docs, docs);
     }
 
+    moo_edit_array_free (docs);
     return node;
 }
 
@@ -1739,60 +1702,60 @@ _moo_editor_save_session (MooEditor     *editor,
 {
     MooMarkupNode *node;
     MooEditWindow *active_window;
-    GSList *windows;
+    MooEditWindowArray *windows;
+    guint i;
 
     g_return_if_fail (MOO_IS_EDITOR (editor));
     g_return_if_fail (MOO_MARKUP_IS_ELEMENT (xml));
 
     active_window = moo_editor_get_active_window (editor);
-    windows = moo_editor_list_windows (editor);
+    windows = moo_editor_get_windows (editor);
 
     node = moo_markup_create_element (xml, "editor");
     moo_markup_set_prop (node, "version", CURRENT_SESSION_VERSION);
 
-    while (windows)
+    for (i = 0; i < windows->n_elms; ++i)
     {
-        MooEditWindow *window = windows->data;
+        MooEditWindow *window = windows->elms[i];
         MooMarkupNode *window_node;
 
         window_node = save_window_session (window, node);
 
         if (window_node && window == active_window)
             moo_markup_set_bool_prop (window_node, "active", TRUE);
-
-        windows = g_slist_delete_link (windows, windows);
     }
+
+    moo_edit_window_array_free (windows);
 }
 
 
-GSList *
-moo_editor_list_windows (MooEditor *editor)
+MooEditWindowArray *
+moo_editor_get_windows (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    return window_list_to_gslist (window_list_copy_links (editor->priv->windows));
+    return moo_edit_window_array_copy (editor->priv->windows);
 }
 
-
-GSList *
-moo_editor_list_docs (MooEditor *editor)
+MooEditArray *
+moo_editor_get_docs (MooEditor *editor)
 {
-    DocList *docs = NULL, *list;
-    WindowList *l;
+    guint i;
+    MooEditArray *docs;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 
-    for (l = editor->priv->windows; l != NULL; l = l->next)
+    docs = moo_edit_array_new ();
+
+    for (i = 0; i < editor->priv->windows->n_elms; ++i)
     {
-        list = window_list_docs (l->data);
-        list = doc_list_reverse (list);
-        docs = doc_list_concat (list, docs);
+        MooEditArray *docs_here = moo_edit_window_get_docs (editor->priv->windows->elms[i]);
+        moo_edit_array_append_array (docs, docs_here);
+        moo_edit_array_free (docs_here);
     }
 
-    list = doc_list_copy_links (editor->priv->windowless);
-    list = doc_list_reverse (list);
-    docs = doc_list_concat (list, docs);
+    moo_edit_array_append_array (docs, editor->priv->windowless);
 
-    return g_slist_reverse (doc_list_to_gslist (docs));
+    return docs;
 }
 
 
@@ -1815,16 +1778,14 @@ moo_editor_open_file (MooEditor      *editor,
     }
     else
     {
-        MooEditFileInfo *info;
-        GSList *list;
+        MooFileEncArray *list;
 
-        info = moo_edit_file_info_new_path (filename, encoding);
-        list = g_slist_prepend (NULL, info);
+        list = moo_file_enc_array_new ();
+        moo_file_enc_array_take (list, moo_file_enc_new_for_path (filename, encoding));
 
         result = moo_editor_open (editor, window, parent, list);
 
-        moo_edit_file_info_free (info);
-        g_slist_free (list);
+        moo_file_enc_array_free (list);
     }
 
     if (!result)
@@ -1842,7 +1803,7 @@ moo_editor_open_file_line (MooEditor      *editor,
 {
     MooEdit *doc = NULL;
     char *freeme = NULL;
-    MooEditFileInfo *info = NULL;
+    MooFileEnc *fenc = NULL;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     g_return_val_if_fail (filename != NULL, NULL);
@@ -1864,8 +1825,8 @@ moo_editor_open_file_line (MooEditor      *editor,
     if (!g_file_test (filename, G_FILE_TEST_EXISTS))
         goto out;
 
-    info = moo_edit_file_info_new_path (filename, NULL);
-    moo_editor_load_file (editor, window, NULL, info,
+    fenc = moo_file_enc_new_for_path (filename, NULL);
+    moo_editor_load_file (editor, window, NULL, fenc,
                           is_embedded (editor),
                           TRUE, line, &doc);
 
@@ -1876,7 +1837,7 @@ moo_editor_open_file_line (MooEditor      *editor,
     gtk_widget_grab_focus (GTK_WIDGET (doc));
 
 out:
-    moo_edit_file_info_free (info);
+    moo_file_enc_free (fenc);
     g_free (freeme);
     return doc;
 }
@@ -1901,7 +1862,7 @@ moo_editor_new_uri (MooEditor     *editor,
         return moo_editor_open_uri (editor, window, parent, NULL, NULL);
 
     file = g_file_new_for_uri (uri);
-    path = g_file_is_native (file) ? g_file_get_path (file) : NULL;
+    path = g_file_get_path (file);
 
     if (path && g_file_test (path, G_FILE_TEST_EXISTS))
     {
@@ -2143,7 +2104,7 @@ _moo_editor_save (MooEditor  *editor,
     if (moo_edit_is_untitled (doc))
         return _moo_editor_save_as (editor, doc, NULL, NULL, error);
 
-    file = _moo_edit_get_file (doc);
+    file = moo_edit_get_file (doc);
     encoding = g_strdup (moo_edit_get_encoding (doc));
 
     if (!is_embedded (editor) &&
@@ -2155,8 +2116,7 @@ _moo_editor_save (MooEditor  *editor,
 
     /* fall through */
 out:
-    if (file)
-        g_object_unref (file);
+    g_object_unref (file);
     g_free (encoding);
     return result;
 }
@@ -2169,7 +2129,7 @@ _moo_editor_save_as (MooEditor      *editor,
                      const char     *encoding,
                      GError        **error)
 {
-    MooEditFileInfo *file_info = NULL;
+    MooFileEnc *fenc = NULL;
     gboolean result = FALSE;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
@@ -2179,25 +2139,25 @@ _moo_editor_save_as (MooEditor      *editor,
 
     if (!filename)
     {
-        file_info = _moo_edit_save_as_dialog (doc, moo_edit_get_display_basename (doc));
+        fenc = _moo_edit_save_as_dialog (doc, moo_edit_get_display_basename (doc));
 
-        if (!file_info)
+        if (!fenc)
             goto out;
     }
     else
     {
         if (!encoding)
             encoding = moo_edit_get_encoding (doc);
-        file_info = moo_edit_file_info_new_path (filename, encoding);
+        fenc = moo_file_enc_new_for_path (filename, encoding);
     }
 
     update_history_item_for_doc (editor, doc, FALSE);
 
-    result = do_save (editor, doc, file_info->file, file_info->encoding, error);
+    result = do_save (editor, doc, fenc->file, fenc->encoding, error);
 
     /* fall through */
 out:
-    moo_edit_file_info_free (file_info);
+    moo_file_enc_free (fenc);
     return result;
 }
 
@@ -2224,23 +2184,25 @@ moo_editor_save_copy (MooEditor      *editor,
     return retval;
 }
 
-
 static MooEdit *
-doc_list_find_filename (DocList    *list,
-                        const char *filename)
+doc_array_find_filename (MooEditArray *docs,
+                         const char   *filename)
 {
-    while (list)
+    guint i;
+
+    for (i = 0; i < docs->n_elms; ++i)
     {
-        char *tmp = moo_edit_get_norm_filename (list->data);
+        MooEdit *doc = docs->elms[i];
+        char *tmp = moo_edit_get_norm_filename (doc);
         /* XXX */
         if (tmp && strcmp (tmp, filename) == 0)
         {
             g_free (tmp);
-            return list->data;
+            return doc;
         }
         g_free (tmp);
-        list = list->next;
     }
+
     return NULL;
 }
 
@@ -2251,7 +2213,7 @@ moo_editor_get_doc (MooEditor  *editor,
     char *freeme1 = NULL;
     char *freeme2 = NULL;
     MooEdit *doc = NULL;
-    WindowList *l;
+    guint i;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     g_return_val_if_fail (filename != NULL, NULL);
@@ -2260,14 +2222,14 @@ moo_editor_get_doc (MooEditor  *editor,
     freeme2 = _moo_edit_normalize_filename_for_comparison (freeme1);
     filename = freeme2;
 
-    if ((doc = doc_list_find_filename (editor->priv->windowless, filename)))
+    if ((doc = doc_array_find_filename (editor->priv->windowless, filename)))
         goto out;
 
-    for (l = editor->priv->windows; l != NULL; l = l->next)
+    for (i = 0; i < editor->priv->windows->n_elms; ++i)
     {
-        DocList *docs = window_list_docs (l->data);
-        doc = doc_list_find_filename (docs, filename);
-        doc_list_free_links (docs);
+        MooEditArray *docs = moo_edit_window_get_docs (editor->priv->windows->elms[i]);
+        doc = doc_array_find_filename (docs, filename);
+        moo_edit_array_free (docs);
         if (doc)
             goto out;
     }
@@ -2279,12 +2241,15 @@ out:
 }
 
 static MooEdit *
-doc_list_find_uri (DocList    *list,
-                   const char *uri)
+doc_array_find_uri (MooEditArray *docs,
+                    const char   *uri)
 {
-    while (list)
+    guint i;
+
+    for (i = 0; i < docs->n_elms; ++i)
     {
-        char *freeme1 = moo_edit_get_uri (list->data);
+        MooEdit *doc = docs->elms[i];
+        char *freeme1 = moo_edit_get_uri (doc);
         char *freeme2 = freeme1 ? _moo_edit_normalize_uri_for_comparison (freeme1) : NULL;
         const char *doc_uri = freeme2;
         /* XXX */
@@ -2292,12 +2257,12 @@ doc_list_find_uri (DocList    *list,
         {
             g_free (freeme2);
             g_free (freeme1);
-            return list->data;
+            return doc;
         }
         g_free (freeme2);
         g_free (freeme1);
-        list = list->next;
     }
+
     return NULL;
 }
 
@@ -2306,8 +2271,8 @@ moo_editor_get_doc_for_uri (MooEditor  *editor,
                             const char *uri)
 {
     MooEdit *doc = NULL;
-    WindowList *l;
     char *freeme = NULL;
+    guint i;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     g_return_val_if_fail (uri != NULL, NULL);
@@ -2315,14 +2280,14 @@ moo_editor_get_doc_for_uri (MooEditor  *editor,
     freeme = _moo_edit_normalize_uri_for_comparison (uri);
     uri = freeme;
 
-    if ((doc = doc_list_find_uri (editor->priv->windowless, uri)))
+    if ((doc = doc_array_find_uri (editor->priv->windowless, uri)))
         goto out;
 
-    for (l = editor->priv->windows; l != NULL; l = l->next)
+    for (i = 0; i < editor->priv->windows->n_elms; ++i)
     {
-        DocList *docs = window_list_docs (l->data);
-        doc = doc_list_find_uri (docs, uri);
-        doc_list_free_links (docs);
+        MooEditArray *docs = moo_edit_window_get_docs (editor->priv->windows->elms[i]);
+        doc = doc_array_find_uri (docs, uri);
+        moo_edit_array_free (docs);
         if (doc)
             goto out;
     }
@@ -2385,7 +2350,7 @@ moo_editor_queue_apply_prefs (MooEditor *editor)
 void
 moo_editor_apply_prefs (MooEditor *editor)
 {
-    GSList *docs;
+    MooEditArray *docs;
     gboolean backups;
     const char *color_scheme, *default_lang;
 
@@ -2412,9 +2377,9 @@ moo_editor_apply_prefs (MooEditor *editor)
     if (color_scheme)
         _moo_lang_mgr_set_active_scheme (editor->priv->lang_mgr, color_scheme);
 
-    docs = moo_editor_list_docs (editor);
-    g_slist_foreach (docs, (GFunc) _moo_edit_apply_prefs, NULL);
-    g_slist_free (docs);
+    docs = moo_editor_get_docs (editor);
+    moo_edit_array_foreach (docs, (MooEditArrayForeach) _moo_edit_apply_prefs, NULL);
+    moo_edit_array_free (docs);
 
     backups = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_MAKE_BACKUPS));
 

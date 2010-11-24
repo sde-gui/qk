@@ -49,7 +49,7 @@ moo_file_icon_for_file (MooFileIcon *icon,
 }
 
 GdkPixbuf *
-moo_get_icon_for_file (const char  *path,
+moo_get_icon_for_path (const char  *path,
                        GtkWidget   *widget,
                        GtkIconSize  size)
 {

@@ -7,7 +7,6 @@
 #define HELP_SECTION_DIALOG_FIND_IN_FILES "index.html"
 #define HELP_SECTION_DIALOG_REPLACE "index.html"
 #define HELP_SECTION_DOCUMENT "Document-object.html"
-#define HELP_SECTION_DOCUMENT_VIEW "DocumentView-object.html"
 #define HELP_SECTION_EDITING_OPTIONS "Options-for-editing-text.html"
 #define HELP_SECTION_FILE_SELECTOR "index.html"
 #define HELP_SECTION_LICENSE_GPL "GNU-GPL.html"

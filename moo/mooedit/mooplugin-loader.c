@@ -38,7 +38,6 @@
 #define KEY_DESCRIPTION "description"
 #define KEY_AUTHOR      "author"
 #define KEY_VERSION     "version"
-#define KEY_LANGS       "langs"
 #define KEY_ENABLED     "enabled"
 #define KEY_VISIBLE     "visible"
 
@@ -169,7 +168,6 @@ parse_plugin_info (GKeyFile         *key_file,
     char *description;
     char *author;
     char *version;
-    char *langs;
     gboolean enabled = TRUE;
     gboolean visible = TRUE;
 
@@ -177,7 +175,6 @@ parse_plugin_info (GKeyFile         *key_file,
     description = g_key_file_get_locale_string (key_file, GROUP_PLUGIN, KEY_DESCRIPTION, NULL, NULL);
     author = g_key_file_get_locale_string (key_file, GROUP_PLUGIN, KEY_AUTHOR, NULL, NULL);
     version = g_key_file_get_locale_string (key_file, GROUP_PLUGIN, KEY_VERSION, NULL, NULL);
-    langs = g_key_file_get_string (key_file, GROUP_PLUGIN, KEY_LANGS, NULL);
 
     if (g_key_file_has_key (key_file, GROUP_PLUGIN, KEY_ENABLED, NULL))
         enabled = g_key_file_get_boolean (key_file, GROUP_PLUGIN, KEY_ENABLED, NULL);
@@ -187,8 +184,7 @@ parse_plugin_info (GKeyFile         *key_file,
     info = moo_plugin_info_new (name ? name : plugin_id,
                                 description ? description : "",
                                 author ? author : "",
-                                version ? version : "",
-                                langs);
+                                version ? version : "");
     params = moo_plugin_params_new (enabled, visible);
 
     *info_p = info;
@@ -198,7 +194,6 @@ parse_plugin_info (GKeyFile         *key_file,
     g_free (description);
     g_free (author);
     g_free (version);
-    g_free (langs);
 
     return TRUE;
 }

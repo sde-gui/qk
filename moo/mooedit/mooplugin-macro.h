@@ -29,12 +29,11 @@ MOO_MODULE_INIT_FUNC (void)
 
 
 #define MOO_PLUGIN_DEFINE_INFO(plugin_name__,name__,                        \
-                               description__,author__,version__,            \
-                               langs__)                                     \
+                               description__,author__,version__)            \
                                                                             \
 static const MooPluginInfo plugin_name__##_plugin_info =                    \
     {(char*) name__, (char*) description__,                                 \
-     (char*) author__, (char*) version__, (char*) langs__};
+     (char*) author__, (char*) version__};
 
 
 #define MOO_PLUGIN_DEFINE_FULL(Name__,name__,                               \

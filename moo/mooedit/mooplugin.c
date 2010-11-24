@@ -191,9 +191,6 @@ moo_plugin_finalize (GObject *object)
 {
     MooPlugin *plugin = MOO_PLUGIN (object);
 
-    if (plugin->langs)
-        g_hash_table_destroy (plugin->langs);
-
     g_free (plugin->id);
     moo_plugin_info_free (plugin->info);
     moo_plugin_params_free (plugin->params);
@@ -219,7 +216,8 @@ moo_plugin_register (const char            *id,
     MooPluginClass *klass;
     MooPlugin *plugin;
     char *prefs_key;
-    GSList *l, *windows;
+    MooEditWindowArray *windows;
+    guint i;
 
     g_return_val_if_fail (id != NULL && id[0] != 0, FALSE);
     g_return_val_if_fail (g_utf8_validate (id, -1, NULL), FALSE);
@@ -249,43 +247,6 @@ moo_plugin_register (const char            *id,
     plugin->params = params ? moo_plugin_params_copy ((MooPluginParams*) params) :
                               moo_plugin_params_new (TRUE, TRUE);
 
-    if (info->langs)
-    {
-        char **langs, **p;
-        GHashTable *table;
-
-        /* XXX */
-        langs = g_strsplit_set (info->langs, " \t\r\n", 0);
-        table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-
-        for (p = langs; p && *p; ++p)
-        {
-            char *lang_id;
-
-            if (!**p)
-                continue;
-
-            lang_id = _moo_lang_id_from_name (*p);
-
-            if (!g_hash_table_lookup (table, lang_id))
-                g_hash_table_insert (table, lang_id, lang_id);
-            else
-                g_free (lang_id);
-        }
-
-        if (!g_hash_table_size (table))
-        {
-            g_warning ("%s: invalid langs string '%s'", G_STRLOC, info->langs);
-            g_hash_table_destroy (table);
-        }
-        else
-        {
-            plugin->langs = table;
-        }
-
-        g_strfreev (langs);
-    }
-
     if (moo_plugin_lookup (moo_plugin_id (plugin)))
     {
         _moo_message ("%s: plugin with id %s already registered",
@@ -309,10 +270,10 @@ moo_plugin_register (const char            *id,
 
     plugin_store_add (plugin);
 
-    windows = moo_editor_list_windows (plugin_store->editor);
-    for (l = windows; l != NULL; l = l->next)
-        plugin_attach_win (plugin, l->data);
-    g_slist_free (windows);
+    windows = moo_editor_get_windows (plugin_store->editor);
+    for (i = 0; i < windows->n_elms; ++i)
+        plugin_attach_win (plugin, windows->elms[i]);
+    moo_edit_window_array_free (windows);
 
     return TRUE;
 }
@@ -369,7 +330,8 @@ plugin_attach_win (MooPlugin      *plugin,
     MooWinPluginClass *wklass;
     MooWinPlugin *win_plugin;
     GType wtype;
-    GSList *l, *docs;
+    MooEditArray *docs;
+    guint i;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_PLUGIN (plugin));
@@ -399,10 +361,10 @@ plugin_attach_win (MooPlugin      *plugin,
             g_object_unref (win_plugin);
     }
 
-    docs = moo_edit_window_list_docs (window);
-    for (l = docs; l != NULL; l = l->next)
-        plugin_attach_doc (plugin, window, l->data);
-    g_slist_free (docs);
+    docs = moo_edit_window_get_docs (window);
+    for (i = 0; i < docs->n_elms; ++i)
+        plugin_attach_doc (plugin, window, docs->elms[i]);
+    moo_edit_array_free (docs);
 }
 
 
@@ -413,7 +375,8 @@ plugin_detach_win (MooPlugin      *plugin,
     MooPluginClass *klass;
     MooWinPluginClass *wklass;
     MooWinPlugin *win_plugin;
-    GSList *l, *docs;
+    MooEditArray *docs;
+    guint i;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_PLUGIN (plugin));
@@ -421,10 +384,10 @@ plugin_detach_win (MooPlugin      *plugin,
     if (!moo_plugin_enabled (plugin))
         return;
 
-    docs = moo_edit_window_list_docs (window);
-    for (l = docs; l != NULL; l = l->next)
-        plugin_detach_doc (plugin, window, l->data);
-    g_slist_free (docs);
+    docs = moo_edit_window_get_docs (window);
+    for (i = 0; i < docs->n_elms; ++i)
+        plugin_detach_doc (plugin, window, docs->elms[i]);
+    moo_edit_array_free (docs);
 
     win_plugin = window_get_plugin (window, plugin);
 
@@ -462,19 +425,6 @@ plugin_attach_doc (MooPlugin      *plugin,
 
     if (!moo_plugin_enabled (plugin))
         return;
-
-    /* XXX ! */
-    if (plugin->langs)
-    {
-        MooLang *lang;
-        const char *id;
-
-        lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
-        id = _moo_lang_id (lang);
-
-        if (!g_hash_table_lookup (plugin->langs, id))
-            return;
-    }
 
     plugin->docs = g_slist_prepend (plugin->docs, doc);
 
@@ -738,7 +688,8 @@ moo_plugin_enabled (MooPlugin *plugin)
 static gboolean
 plugin_enable (MooPlugin  *plugin)
 {
-    GSList *l, *windows;
+    MooEditWindowArray *windows;
+    guint i;
 
     g_return_val_if_fail (MOO_IS_PLUGIN (plugin), FALSE);
 
@@ -755,10 +706,10 @@ plugin_enable (MooPlugin  *plugin)
         return FALSE;
     }
 
-    windows = moo_editor_list_windows (plugin_store->editor);
-    for (l = windows; l != NULL; l = l->next)
-        plugin_attach_win (plugin, l->data);
-    g_slist_free (windows);
+    windows = moo_editor_get_windows (plugin_store->editor);
+    for (i = 0; i < windows->n_elms; ++i)
+        plugin_attach_win (plugin, windows->elms[i]);
+    moo_edit_window_array_free (windows);
 
     return TRUE;
 }
@@ -767,7 +718,8 @@ plugin_enable (MooPlugin  *plugin)
 static void
 plugin_disable (MooPlugin  *plugin)
 {
-    GSList *l, *windows;
+    MooEditWindowArray *windows;
+    guint i;
 
     g_return_if_fail (MOO_IS_PLUGIN (plugin));
 
@@ -776,10 +728,10 @@ plugin_disable (MooPlugin  *plugin)
 
     g_assert (plugin->initialized);
 
-    windows = moo_editor_list_windows (plugin_store->editor);
-    for (l = windows; l != NULL; l = l->next)
-        plugin_detach_win (plugin, l->data);
-    g_slist_free (windows);
+    windows = moo_editor_get_windows (plugin_store->editor);
+    for (i = 0; i < windows->n_elms; ++i)
+        plugin_detach_win (plugin, windows->elms[i]);
+    moo_edit_window_array_free (windows);
 
     plugin_deinit (plugin);
     plugin->params->enabled = FALSE;
@@ -998,35 +950,6 @@ _moo_window_detach_plugins (MooEditWindow *window)
 }
 
 
-static void
-doc_lang_changed (MooEdit *doc)
-{
-    GSList *l;
-    MooLang *lang;
-    const char *id;
-    MooEditWindow *window = NULL;
-
-    g_return_if_fail (MOO_IS_EDIT (doc));
-
-    window = moo_edit_get_window (doc);
-    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
-    id = _moo_lang_id (lang);
-
-    for (l = plugin_store->list; l != NULL; l = l->next)
-    {
-        MooPlugin *plugin = l->data;
-
-        if (moo_plugin_enabled (plugin) && plugin->langs)
-        {
-            if (g_hash_table_lookup (plugin->langs, id))
-                plugin_attach_doc (plugin, window, doc);
-            else
-                plugin_detach_doc (plugin, window, doc);
-        }
-    }
-}
-
-
 void
 _moo_doc_attach_plugins (MooEditWindow *window,
                          MooEdit       *doc)
@@ -1037,10 +960,6 @@ _moo_doc_attach_plugins (MooEditWindow *window,
     g_return_if_fail (MOO_IS_EDIT (doc));
 
     plugin_store_init ();
-
-    g_signal_connect (doc, "config-notify::lang",
-                      G_CALLBACK (doc_lang_changed),
-                      plugin_store);
 
     for (l = plugin_store->list; l != NULL; l = l->next)
         plugin_attach_doc (l->data, window, doc);
@@ -1057,10 +976,6 @@ _moo_doc_detach_plugins (MooEditWindow *window,
     g_return_if_fail (MOO_IS_EDIT (doc));
 
     plugin_store_init ();
-
-    g_signal_handlers_disconnect_by_func (doc,
-                                          (gpointer) doc_lang_changed,
-                                          plugin_store);
 
     for (l = plugin_store->list; l != NULL; l = l->next)
         plugin_detach_doc (l->data, window, doc);
@@ -1113,8 +1028,7 @@ MooPluginInfo *
 moo_plugin_info_new (const char     *name,
                      const char     *description,
                      const char     *author,
-                     const char     *version,
-                     const char     *langs)
+                     const char     *version)
 {
     MooPluginInfo *info;
 
@@ -1125,7 +1039,6 @@ moo_plugin_info_new (const char     *name,
     info->description = description ? g_strdup (description) : g_strdup ("");
     info->author = author ? g_strdup (author) : g_strdup ("");
     info->version = version ? g_strdup (version) : g_strdup ("");
-    info->langs = g_strdup (langs);
 
     return info;
 }
@@ -1136,7 +1049,7 @@ moo_plugin_info_copy (MooPluginInfo *info)
 {
     g_return_val_if_fail (info != NULL, NULL);
     return moo_plugin_info_new (info->name, info->description,
-                                info->author, info->version, info->langs);
+                                info->author, info->version);
 }
 
 
@@ -1149,7 +1062,6 @@ moo_plugin_info_free (MooPluginInfo *info)
         g_free (info->description);
         g_free (info->author);
         g_free (info->version);
-        g_free (info->langs);
         g_free (info);
     }
 }

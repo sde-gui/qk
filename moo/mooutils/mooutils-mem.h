@@ -44,12 +44,13 @@ G_STMT_START {                                              \
     gsize n_##name_;                                                \
     gsize n_##name_##_allocd__
 
-#define MOO_IP_ARRAY_INIT(c_,name_,len_)                            \
+#define MOO_IP_ARRAY_INIT(ElmType,c_,name_,len_)                    \
 G_STMT_START {                                                      \
     gsize use_len__ = len_;                                         \
     if (use_len__ == 0)                                             \
         use_len__ = 2;                                              \
-    (c_)->name_ = g_malloc0 (use_len__ * sizeof *(c_)->name_);      \
+    (c_)->name_ = (ElmType*)                                        \
+        g_malloc0 (use_len__ * sizeof *(c_)->name_);                \
     (c_)->n_##name_ = len_;                                         \
     (c_)->n_##name_##_allocd__ = use_len__;                         \
 } G_STMT_END
@@ -60,14 +61,14 @@ G_STMT_START {                                                      \
     (c_)->name_ = NULL;                                             \
 } G_STMT_END
 
-#define MOO_IP_ARRAY_GROW(c_,name_,howmuch_)                        \
+#define MOO_IP_ARRAY_GROW(ElmType,c_,name_,howmuch_)                \
 G_STMT_START {                                                      \
     if ((c_)->n_##name_ + howmuch_ > (c_)->n_##name_##_allocd__)    \
     {                                                               \
         gsize old_size__ = (c_)->n_##name_##_allocd__;              \
         gsize new_size__ = MAX(old_size__ * 1.2,                    \
                                (c_)->n_##name_ + howmuch_);         \
-        (c_)->name_ = g_realloc ((c_)->name_,                       \
+        (c_)->name_ = (ElmType*) g_realloc ((c_)->name_,            \
                                  new_size__ * sizeof *(c_)->name_); \
         (c_)->n_##name_##_allocd__ = new_size__;                    \
     }                                                               \
@@ -75,6 +76,17 @@ G_STMT_START {                                                      \
     memset ((c_)->name_ + (c_)->n_##name_, 0,                       \
             howmuch_ * sizeof *(c_)->name_);                        \
     (c_)->n_##name_ += howmuch_;                                    \
+} G_STMT_END
+
+#define MOO_IP_ARRAY_REMOVE_INDEX(c_,name_,idx_)                    \
+G_STMT_START {                                                      \
+    gsize idx__ = idx_;                                             \
+    g_assert ((c_)->n_##name_ > 0 && idx__ < (c_)->n_##name_);      \
+    if (idx__ + 1 < (c_)->n_##name_)                                \
+        MOO_ELMMOVE ((c_)->name_ + idx__,                           \
+                     (c_)->name_ + idx__ + 1,                       \
+                     (c_)->n_##name_ - idx__ - 1);                  \
+    (c_)->n_##name_ -= 1;                                           \
 } G_STMT_END
 
 

@@ -19,13 +19,15 @@
 
 #include "moofileselector.h"
 #include "mooedit/mooplugin-macro.h"
+#include "mooedit/mooeditwindow.h"
 #include "moofileview/moobookmarkmgr.h"
 #include "moofileview/moofileview-tools.h"
 #include "mooeditplugins.h"
 #include "marshals.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-fs.h"
-#include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooactionfactory.h"
@@ -64,7 +66,7 @@ enum {
 };
 
 static GtkTargetEntry targets[] = {
-    { (char*) "MOO_EDIT_TAB", GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB },
+    { (char*) MOO_EDIT_TAB_ATOM_NAME, GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB },
     { (char*) "text/uri-list", 0, TARGET_URI_LIST }
 };
 
@@ -72,66 +74,65 @@ static GtkTargetEntry targets[] = {
 
 G_DEFINE_TYPE (MooFileSelector, _moo_file_selector, MOO_TYPE_FILE_VIEW)
 
-#define MOO_EDIT_TAB_ATOM (moo_edit_tab_atom ())
-MOO_DEFINE_ATOM (MOO_EDIT_TAB, moo_edit_tab)
-
 enum {
     PROP_0,
     PROP_WINDOW
 };
 
 
-static void     moo_file_selector_set_property  (GObject        *object,
-                                                 guint           prop_id,
-                                                 const GValue   *value,
-                                                 GParamSpec     *pspec);
-static void     moo_file_selector_get_property  (GObject        *object,
-                                                 guint           prop_id,
-                                                 GValue         *value,
-                                                 GParamSpec     *pspec);
-static GObject *moo_file_selector_constructor   (GType           type,
-                                                 guint           n_props,
+static void     moo_file_selector_set_property  (GObject            *object,
+                                                 guint               prop_id,
+                                                 const GValue       *value,
+                                                 GParamSpec         *pspec);
+static void     moo_file_selector_get_property  (GObject            *object,
+                                                 guint               prop_id,
+                                                 GValue             *value,
+                                                 GParamSpec         *pspec);
+static GObject *moo_file_selector_constructor   (GType               type,
+                                                 guint               n_props,
                                                  GObjectConstructParam *props);
-static void     moo_file_selector_finalize      (GObject        *object);
+static void     moo_file_selector_finalize      (GObject            *object);
 
-static void     moo_file_selector_select_file   (MooFileSelector *filesel,
-                                                 const char     *filename);
-static gboolean moo_file_selector_chdir         (MooFileView    *fileview,
-                                                 const char     *dir,
-                                                 GError        **error);
-static void     moo_file_selector_activate      (MooFileView    *fileview,
-                                                 const char     *path);
-static void     moo_file_selector_populate_popup(MooFileView    *fileview,
-                                                 GList          *selected,
-                                                 GtkMenu        *menu);
+static void     moo_file_selector_select_file   (MooFileSelector    *filesel,
+                                                 GFile              *file);
+static void     moo_file_selector_select_path   (MooFileSelector    *filesel,
+                                                 const char         *filename);
+static gboolean moo_file_selector_chdir         (MooFileView        *fileview,
+                                                 const char         *dir,
+                                                 GError            **error);
+static void     moo_file_selector_activate      (MooFileView        *fileview,
+                                                 const char         *path);
+static void     moo_file_selector_populate_popup(MooFileView        *fileview,
+                                                 GList              *selected,
+                                                 GtkMenu            *menu);
 
-static void     goto_current_doc_dir            (MooFileSelector *filesel);
+static void     goto_current_doc_dir            (MooFileSelector    *filesel);
 
-static gboolean moo_file_selector_drop          (MooFileView    *fileview,
-                                                 const char     *path,
-                                                 GtkWidget      *widget,
-                                                 GdkDragContext *context,
-                                                 int             x,
-                                                 int             y,
-                                                 guint           time);
-static gboolean moo_file_selector_drop_data_received (MooFileView *fileview,
-                                                 const char     *path,
-                                                 GtkWidget      *widget,
-                                                 GdkDragContext *context,
-                                                 int             x,
-                                                 int             y,
-                                                 GtkSelectionData *data,
-                                                 guint           info,
-                                                 guint           time);
+static gboolean moo_file_selector_drop          (MooFileView        *fileview,
+                                                 const char         *path,
+                                                 GtkWidget          *widget,
+                                                 GdkDragContext     *context,
+                                                 int                 x,
+                                                 int                 y,
+                                                 guint               time);
+static gboolean moo_file_selector_drop_data_received (MooFileView   *fileview,
+                                                 const char         *path,
+                                                 GtkWidget          *widget,
+                                                 GdkDragContext     *context,
+                                                 int                 x,
+                                                 int                 y,
+                                                 GtkSelectionData   *data,
+                                                 guint               info,
+                                                 guint               time);
 
-static void     moo_file_selector_drop_doc      (MooFileSelector *filesel,
-                                                 MooEdit        *doc,
-                                                 const char     *destdir,
-                                                 GtkWidget      *widget,
-                                                 GdkDragContext *context,
-                                                 int             x,
-                                                 int             y,
-                                                 guint           time);
+static void     moo_file_selector_drop_doc      (MooFileSelector    *filesel,
+                                                 MooEdit            *doc,
+                                                 const char         *destdir,
+                                                 GtkWidget          *widget,
+                                                 GdkDragContext     *context,
+                                                 int                 x,
+                                                 int                 y,
+                                                 guint               time);
 
 
 static void
@@ -151,13 +152,9 @@ _moo_file_selector_class_init (MooFileSelectorClass *klass)
     fileview_class->drop_data_received = moo_file_selector_drop_data_received;
     fileview_class->populate_popup = moo_file_selector_populate_popup;
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_WINDOW,
-                                     g_param_spec_object ("window",
-                                             "window",
-                                             "window",
-                                             MOO_TYPE_EDIT_WINDOW,
-                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
+    g_object_class_install_property (gobject_class, PROP_WINDOW,
+        g_param_spec_object ("window", "window", "window",
+                             MOO_TYPE_EDIT_WINDOW, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
     _moo_signal_new_cb ("goto-current-doc-dir",
                         G_OBJECT_CLASS_TYPE (klass),
@@ -234,17 +231,11 @@ static void
 file_selector_go_home (MooFileView *fileview)
 {
     const char *dir;
-    char *real_dir = NULL;
 
-    dir = moo_prefs_get_string (DIR_PREFS);
+    dir = moo_prefs_get_filename (DIR_PREFS);
 
-    if (dir)
-        real_dir = g_filename_from_utf8 (dir, -1, NULL, NULL, NULL);
-
-    if (!real_dir || !moo_file_view_chdir (fileview, real_dir, NULL))
+    if (!dir || !moo_file_view_chdir_path (fileview, dir, NULL))
         g_signal_emit_by_name (fileview, "go-home");
-
-    g_free (real_dir);
 }
 
 
@@ -323,19 +314,16 @@ static void
 goto_current_doc_dir (MooFileSelector *filesel)
 {
     MooEdit *doc;
-    char *filename;
+    GFile *file, *parent_file;
     GError *error = NULL;
 
     doc = moo_edit_window_get_active_doc (filesel->window);
-    filename = doc ? moo_edit_get_filename (doc) : NULL;
+    file = doc ? moo_edit_get_file (doc) : NULL;
+    parent_file = file ? g_file_get_parent (file) : NULL;
 
-    if (filename)
-    {
-        char *dirname = g_path_get_dirname (filename);
-        if (moo_file_view_chdir (MOO_FILE_VIEW (filesel), dirname, &error))
-            moo_file_selector_select_file (filesel, filename);
-        g_free (dirname);
-    }
+    if (parent_file)
+        if (moo_file_view_chdir (MOO_FILE_VIEW (filesel), parent_file, &error))
+            moo_file_selector_select_file (filesel, file);
 
     if (error)
     {
@@ -343,7 +331,8 @@ goto_current_doc_dir (MooFileSelector *filesel)
         g_error_free (error);
     }
 
-    g_free (filename);
+    g_object_unref (parent_file);
+    g_object_unref (file);
 }
 
 
@@ -678,7 +667,7 @@ moo_file_selector_drop (MooFileView    *fileview,
 
 
 static gboolean
-moo_file_selector_drop_data_received (MooFileView *fileview,
+moo_file_selector_drop_data_received (MooFileView    *fileview,
                                       const char     *path,
                                       GtkWidget      *widget,
                                       GdkDragContext *context,
@@ -841,7 +830,7 @@ out:
 
 
 static void
-moo_file_selector_select_file (MooFileSelector *filesel,
+moo_file_selector_select_path (MooFileSelector *filesel,
                                const char      *filename)
 {
     char *basename;
@@ -854,12 +843,21 @@ moo_file_selector_select_file (MooFileSelector *filesel,
     g_free (basename);
 }
 
+static void
+moo_file_selector_select_file (MooFileSelector *filesel,
+                               GFile           *file)
+{
+    char *filename = g_file_get_path (file);
+    moo_file_selector_select_path (filesel, filename);
+    g_free (filename);
+}
+
 
 static gboolean
 drop_untitled (MooFileSelector *filesel,
-               MooEdit        *doc,
-               const char     *destdir,
-               GtkWidget      *widget,
+               MooEdit         *doc,
+               const char      *destdir,
+               GtkWidget       *widget,
                G_GNUC_UNUSED GdkDragContext *context,
                G_GNUC_UNUSED int             x,
                G_GNUC_UNUSED int             y,
@@ -878,7 +876,7 @@ drop_untitled (MooFileSelector *filesel,
     result = moo_edit_save_as (doc, name, NULL, NULL);
 
     if (result)
-        moo_file_selector_select_file (filesel, name);
+        moo_file_selector_select_path (filesel, name);
 
     g_free (name);
     return result;
@@ -899,8 +897,8 @@ doc_save_as (MooFileSelector *filesel,
 
     if (filename)
     {
-        if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc), NULL))
-            moo_file_selector_select_file (filesel, filename);
+        if (moo_edit_save_as (doc, filename, NULL, NULL))
+            moo_file_selector_select_path (filesel, filename);
         g_free (filename);
     }
 }
@@ -919,8 +917,8 @@ doc_save_copy (MooFileSelector *filesel,
 
     if (filename)
     {
-        if (moo_edit_save_copy (doc, filename, moo_edit_get_encoding (doc), NULL))
-            moo_file_selector_select_file (filesel, filename);
+        if (moo_edit_save_copy (doc, filename, NULL, NULL))
+            moo_file_selector_select_path (filesel, filename);
         g_free (filename);
     }
 }
@@ -931,11 +929,11 @@ doc_move (MooFileSelector *filesel,
           gboolean         ask_name,
           const char      *destdir)
 {
-    char *filename, *old_filename;
+    GFile *old_file;
+    char *filename;
 
-    old_filename = moo_edit_get_filename (doc);
-    /* XXX non-local */
-    g_return_if_fail (old_filename != NULL);
+    old_file = moo_edit_get_file (doc);
+    g_return_if_fail (old_file != NULL);
 
     filename = save_as_dialog (GTK_WIDGET (filesel), destdir,
                                moo_edit_get_display_basename (doc),
@@ -943,16 +941,16 @@ doc_move (MooFileSelector *filesel,
 
     if (filename)
     {
-        if (moo_edit_save_as (doc, filename, moo_edit_get_encoding (doc), NULL))
+        if (moo_edit_save_as (doc, filename, NULL, NULL))
         {
-            _moo_unlink (old_filename);
-            moo_file_selector_select_file (filesel, filename);
+            g_file_delete (old_file, NULL, NULL);
+            moo_file_selector_select_path (filesel, filename);
         }
 
         g_free (filename);
     }
 
-    g_free (old_filename);
+    g_object_unref (old_file);
 }
 
 
@@ -1122,13 +1120,13 @@ create_drop_doc_menu (MooFileSelector *filesel,
 
 static void
 moo_file_selector_drop_doc (MooFileSelector *filesel,
-                            MooEdit        *doc,
-                            const char     *destdir,
-                            GtkWidget      *widget,
-                            GdkDragContext *context,
-                            int             x,
-                            int             y,
-                            guint           time)
+                            MooEdit         *doc,
+                            const char      *destdir,
+                            GtkWidget       *widget,
+                            GdkDragContext  *context,
+                            int              x,
+                            int              y,
+                            guint            time)
 {
     GdkModifierType mods;
     DropDocAction action;
@@ -1210,11 +1208,8 @@ static void
 file_selector_plugin_attach (MooPlugin     *mplugin,
                              MooEditWindow *window)
 {
-    MooEditor *editor;
     GtkWidget *filesel;
     Plugin *plugin = FILE_SELECTOR_PLUGIN (mplugin);
-
-    editor = moo_edit_window_get_editor (window);
 
     if (!plugin->bookmark_mgr)
         plugin->bookmark_mgr = _moo_bookmark_mgr_new ();
@@ -1256,7 +1251,7 @@ MOO_PLUGIN_DEFINE_INFO (file_selector,
                         N_("File Selector"),
                         N_("File selector pane for editor window"),
                         "Yevgen Muntyan <emuntyan@sourceforge.net>",
-                        MOO_VERSION, NULL)
+                        MOO_VERSION)
 MOO_PLUGIN_DEFINE (FileSelector, file_selector,
                    file_selector_plugin_attach, file_selector_plugin_detach,
                    NULL, NULL,

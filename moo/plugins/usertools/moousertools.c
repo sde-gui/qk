@@ -1399,7 +1399,7 @@ MOO_PLUGIN_DEFINE_INFO (user_tools,
                         N_("User Tools"),
                         N_("Configurable tools"),
                         "Yevgen Muntyan <emuntyan@sourceforge.net>",
-                        MOO_VERSION, NULL)
+                        MOO_VERSION)
 
 MOO_PLUGIN_DEFINE (UserTools, user_tools,
                    NULL, NULL, NULL, NULL,

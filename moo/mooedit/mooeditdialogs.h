@@ -17,25 +17,25 @@
 #define MOO_EDIT_DIALOGS_H
 
 #include "mooutils/moodialogs.h"
-#include "mooedit/mooedit.h"
+#include "mooedit/mooedittypes.h"
 #include <gio/gio.h>
 
 G_BEGIN_DECLS
 
 
-MooEditFileInfo *_moo_edit_save_as_dialog           (MooEdit        *edit,
+MooFileEnc      *_moo_edit_save_as_dialog           (MooEdit        *doc,
                                                      const char     *display_basename);
-GSList          *_moo_edit_open_dialog              (GtkWidget      *widget,
+MooFileEncArray *_moo_edit_open_dialog              (GtkWidget      *widget,
                                                      MooEdit        *current_doc);
 
 MooSaveChangesDialogResponse
-                 _moo_edit_save_changes_dialog      (MooEdit        *edit);
+                 _moo_edit_save_changes_dialog      (MooEdit        *doc);
 MooSaveChangesDialogResponse
-                 _moo_edit_save_multiple_changes_dialog (GSList     *docs,
-                                                     GSList        **to_save);
+                 _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
+                                                     MooEditArray *to_save);
 
-gboolean         _moo_edit_reload_modified_dialog   (MooEdit        *edit);
-gboolean         _moo_edit_overwrite_modified_dialog (MooEdit        *edit);
+gboolean         _moo_edit_reload_modified_dialog   (MooEdit        *doc);
+gboolean         _moo_edit_overwrite_modified_dialog (MooEdit        *doc);
 
 void             _moo_edit_save_error_dialog        (GtkWidget      *widget,
                                                      GFile          *file,

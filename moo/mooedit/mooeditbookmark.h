@@ -1,5 +1,5 @@
 /*
- *   mooedit-bookmarks.h
+ *   mooeditbookmark.h
  *
  *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
  *
@@ -13,8 +13,8 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_EDIT_BOOKMARKS_H
-#define MOO_EDIT_BOOKMARKS_H
+#ifndef MOO_EDIT_BOOKMARK_H
+#define MOO_EDIT_BOOKMARK_H
 
 #include <mooedit/mooedit.h>
 #include <mooedit/moolinemark.h>
@@ -74,4 +74,4 @@ char            *_moo_edit_bookmark_get_text    (MooEditBookmark *bookmark);
 
 G_END_DECLS
 
-#endif /* MOO_EDIT_BOOKMARKS_H */
+#endif /* MOO_EDIT_BOOKMARK_H */

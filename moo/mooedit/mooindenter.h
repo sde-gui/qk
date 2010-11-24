@@ -16,7 +16,7 @@
 #ifndef MOO_INDENTER_H
 #define MOO_INDENTER_H
 
-#include <gtk/gtktextbuffer.h>
+#include <mooedit/mooedittypes.h>
 
 G_BEGIN_DECLS
 
@@ -29,20 +29,19 @@ G_BEGIN_DECLS
 #define MOO_INDENTER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_INDENTER, MooIndenterClass))
 
 
-typedef struct _MooIndenter         MooIndenter;
-typedef struct _MooIndenterClass    MooIndenterClass;
+typedef struct MooIndenter      MooIndenter;
+typedef struct MooIndenterClass MooIndenterClass;
 
-struct _MooIndenter
+struct MooIndenter
 {
     GObject parent;
-
-    gpointer doc; /* MooEdit* */
+    MooEdit *doc;
     gboolean use_tabs;
     guint tab_width;
     guint indent;
 };
 
-struct _MooIndenterClass
+struct MooIndenterClass
 {
     GObjectClass parent_class;
 
@@ -57,7 +56,7 @@ struct _MooIndenterClass
 
 GType        moo_indenter_get_type              (void) G_GNUC_CONST;
 
-MooIndenter *moo_indenter_new                   (gpointer        doc);
+MooIndenter *moo_indenter_new                   (MooEdit        *doc);
 
 char        *moo_indenter_make_space            (MooIndenter    *indenter,
                                                  guint           len,

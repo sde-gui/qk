@@ -1,5 +1,5 @@
 /*
- *   mooedit-tests.h
+ *   mooeditor-tests.h
  *
  *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
  *
@@ -13,8 +13,8 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_EDIT_TESTS_H
-#define MOO_EDIT_TESTS_H
+#ifndef MOO_EDITOR_TESTS_H
+#define MOO_EDITOR_TESTS_H
 
 #include "mooutils/moo-test-macros.h"
 
@@ -25,4 +25,4 @@ void    moo_test_editor             (void);
 
 G_END_DECLS
 
-#endif /* MOO_EDIT_TESTS_H */
+#endif /* MOO_EDITOR_TESTS_H */

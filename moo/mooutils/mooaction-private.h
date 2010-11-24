@@ -28,8 +28,6 @@ void        _moo_sync_toggle_action         (GtkAction          *action,
                                              const char         *prop,
                                              gboolean            invert);
 
-gpointer    _moo_action_get_window          (gpointer            action);
-
 /* defined in mooactionbase.c */
 gboolean    _moo_action_get_dead            (gpointer            action);
 gboolean    _moo_action_get_has_submenu     (gpointer            action);

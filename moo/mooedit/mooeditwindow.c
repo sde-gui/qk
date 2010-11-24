@@ -19,15 +19,16 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-impl.h"
+#include "mooedit/mooeditwindow-impl.h"
 #include "mooedit/mooedit-accels.h"
-#include "mooedit/mooeditor-private.h"
+#include "mooedit/mooeditor-impl.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/moolang.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooplugin.h"
 #include "mooedit/mooeditaction.h"
-#include "mooedit/mooedit-bookmarks.h"
+#include "mooedit/mooeditbookmark.h"
 #include "mooedit/moolangmgr.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/moostock.h"
@@ -39,7 +40,6 @@
 #include "mooutils/mooaction-private.h"
 #include "mooutils/moofiledialog.h"
 #include "mooutils/mooencodings.h"
-#include "mooutils/mooatom.h"
 #include "mooutils/moocompat.h"
 #include "moostatusbar-gxml.h"
 #include <string.h>
@@ -98,16 +98,17 @@ struct MooEditWindowPrivate {
     guint history_blocked : 1;
 };
 
+MOO_DEFINE_OBJECT_ARRAY (MooEditWindowArray, moo_edit_window_array, MooEditWindow)
+
 enum {
     TARGET_MOO_EDIT_TAB = 1,
     TARGET_URI_LIST = 2
 };
 
-#define MOO_EDIT_TAB_ATOM (moo_edit_tab_atom ())
-MOO_DEFINE_ATOM (MOO_EDIT_TAB, moo_edit_tab)
+MOO_DEFINE_ATOM_GLOBAL (MOO_EDIT_TAB, moo_edit_tab)
 
 static GtkTargetEntry dest_targets[] = {
-    {(char*) "MOO_EDIT_TAB", GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB},
+    {(char*) MOO_EDIT_TAB_ATOM_NAME, GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB},
     {(char*) "text/uri-list", 0, TARGET_URI_LIST}
 };
 
@@ -1106,15 +1107,15 @@ moo_edit_get_window (MooEdit *edit)
 gboolean
 moo_edit_window_close_all (MooEditWindow *window)
 {
-    GSList *docs;
+    MooEditArray *docs;
     gboolean result;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
 
-    docs = moo_edit_window_list_docs (window);
+    docs = moo_edit_window_get_docs (window);
     result = moo_editor_close_docs (window->priv->editor, docs, TRUE);
 
-    g_slist_free (docs);
+    moo_edit_array_free (docs);
     return result;
 }
 
@@ -1786,19 +1787,19 @@ static void
 close_others_activated (GtkWidget     *item,
                         MooEditWindow *window)
 {
-    GSList *list;
+    MooEditArray *others;
     MooEdit *edit = g_object_get_data (G_OBJECT (item), "moo-edit");
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (edit));
 
-    list = moo_edit_window_list_docs (window);
-    list = g_slist_remove (list, edit);
+    others = moo_edit_window_get_docs (window);
+    moo_edit_array_remove (others, edit);
 
-    if (list)
-        moo_editor_close_docs (window->priv->editor, list, TRUE);
+    if (!moo_edit_array_is_empty (others))
+        moo_editor_close_docs (window->priv->editor, others, TRUE);
 
-    g_slist_free (list);
+    moo_edit_array_free (others);
 }
 
 
@@ -2182,6 +2183,23 @@ moo_edit_window_list_docs (MooEditWindow *window)
         list = g_slist_prepend (list, get_nth_tab (window, i));
 
     return g_slist_reverse (list);
+}
+
+MooEditArray *
+moo_edit_window_get_docs (MooEditWindow *window)
+{
+    MooEditArray *docs;
+    int num, i;
+
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+
+    docs = moo_edit_array_new ();
+    num = moo_notebook_get_n_pages (window->priv->notebook);
+
+    for (i = 0; i < num; i++)
+        moo_edit_array_append (docs, get_nth_tab (window, i));
+
+    return docs;
 }
 
 
@@ -3315,33 +3333,6 @@ moo_edit_window_remove_action_check (const char        *action_id,
 }
 
 
-GSList *
-_moo_edit_parse_langs (const char *string)
-{
-    char **pieces, **p;
-    GSList *list = NULL;
-
-    if (!string)
-        return NULL;
-
-    pieces = g_strsplit_set (string, " \t\r\n;,", 0);
-
-    if (!pieces)
-        return NULL;
-
-    for (p = pieces; *p != NULL; ++p)
-    {
-        g_strstrip (*p);
-
-        if (**p)
-            list = g_slist_prepend (list, _moo_lang_id_from_name (*p));
-    }
-
-    g_strfreev (pieces);
-    return g_slist_reverse (list);
-}
-
-
 static gboolean
 check_action_filter (G_GNUC_UNUSED GtkAction *action,
                      G_GNUC_UNUSED MooEditWindow *window,
@@ -3627,9 +3618,10 @@ populate_window_menu (MooEditWindow *window,
                       GtkWidget     *no_docs_item)
 {
     MooEdit *active_doc;
-    GSList *docs;
+    MooEditArray *docs;
     GList *children, *l;
     int pos;
+    guint i;
     GtkWidget *item;
 
     children = g_list_copy (GTK_MENU_SHELL (menu)->children);
@@ -3646,24 +3638,26 @@ populate_window_menu (MooEditWindow *window,
 
     g_list_free (children);
 
+    docs = moo_edit_window_get_docs (window);
 
-    docs = moo_edit_window_list_docs (window);
-
-    if (!docs)
+    if (moo_edit_array_is_empty (docs))
+    {
+        moo_edit_array_free (docs);
         return;
+    }
 
     item = gtk_separator_menu_item_new ();
     g_object_set_data (G_OBJECT (item), "moo-document-menu-item", GINT_TO_POINTER (TRUE));
     gtk_widget_show (item);
     gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, ++pos);
 
-    docs = g_slist_sort (docs, (GCompareFunc) compare_docs_for_menu);
+    moo_edit_array_sort (docs, (GCompareFunc) compare_docs_for_menu);
     active_doc = ACTIVE_DOC (window);
 
-    while (docs)
+    for (i = 0; i < docs->n_elms; ++i)
     {
         int idx;
-        MooEdit *doc = docs->data;
+        MooEdit *doc = docs->elms[i];
 
         idx = get_page_num (window, doc);
 
@@ -3684,9 +3678,9 @@ populate_window_menu (MooEditWindow *window,
                                           gtk_action_get_accel_path (action));
             g_free (action_name);
         }
-
-        docs = g_slist_delete_link (docs, docs);
     }
+
+    moo_edit_array_free (docs);
 }
 
 static void

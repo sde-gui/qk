@@ -17,6 +17,7 @@
 #define MOO_FILE_ICON_H
 
 #include <gtk/gtkwidget.h>
+#include <mooutils/mooutils-file.h>
 
 G_BEGIN_DECLS
 
@@ -55,7 +56,7 @@ GdkPixbuf   *moo_file_icon_get_pixbuf   (MooFileIcon    *icon,
                                          GtkWidget      *widget,
                                          GtkIconSize     size);
 /* needs gtk lock */
-GdkPixbuf   *moo_get_icon_for_file      (const char     *path,
+GdkPixbuf   *moo_get_icon_for_path      (const char     *path,
                                          GtkWidget      *widget,
                                          GtkIconSize     size);
 

@@ -109,7 +109,7 @@ load_lua_module (const char *module_file,
 MOO_PLUGIN_DEFINE_INFO (moo_lua,
                         N_("Lua"), N_("Lua support"),
                         "Yevgen Muntyan <" MOO_EMAIL ">",
-                        MOO_VERSION, NULL)
+                        MOO_VERSION)
 MOO_PLUGIN_DEFINE (MooLua, moo_lua,
                    NULL, NULL, NULL, NULL, NULL,
                    0, 0)

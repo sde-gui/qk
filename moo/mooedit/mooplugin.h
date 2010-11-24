@@ -110,7 +110,6 @@ struct _MooPluginInfo
     char *description;
     char *author;
     char *version;
-    char *langs;
 };
 
 struct _MooPlugin
@@ -123,7 +122,6 @@ struct _MooPlugin
     GQuark id_quark;
     MooPluginInfo *info;
     MooPluginParams *params;
-    GHashTable *langs;
     GSList *docs;
     GType win_plugin_type;
     GType doc_plugin_type;
@@ -225,8 +223,7 @@ void        moo_plugin_set_win_plugin_type (MooPlugin   *plugin,
 MooPluginInfo *moo_plugin_info_new      (const char     *name,
                                          const char     *description,
                                          const char     *author,
-                                         const char     *version,
-                                         const char     *langs);
+                                         const char     *version);
 MooPluginInfo *moo_plugin_info_copy     (MooPluginInfo  *info);
 void         moo_plugin_info_free       (MooPluginInfo  *info);
 MooPluginParams *moo_plugin_params_new  (gboolean        enabled,

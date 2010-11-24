@@ -17,6 +17,7 @@
 #define MOO_FILE_VIEW_H
 
 #include <mooutils/moouixml.h>
+#include <mooutils/mooutils-file.h>
 
 G_BEGIN_DECLS
 
@@ -34,6 +35,9 @@ typedef struct MooFileViewClass MooFileViewClass;
 GType                   moo_file_view_get_type      (void) G_GNUC_CONST;
 
 gboolean                moo_file_view_chdir         (MooFileView    *fileview,
+                                                     GFile          *dir,
+                                                     GError        **error);
+gboolean                moo_file_view_chdir_path    (MooFileView    *fileview,
                                                      const char     *dir,
                                                      GError        **error);
 

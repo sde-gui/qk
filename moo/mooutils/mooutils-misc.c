@@ -16,7 +16,7 @@
 #include "config.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-fs.h"
-#include "mooutils/mooutils-file.h"
+#include "mooutils/moofilewriter.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooatom.h"
@@ -24,6 +24,7 @@
 #include "mooutils/mooutils-misc.h"
 #include <mooutils/mooutils-tests.h>
 #include "mooutils/moocompat.h"
+#include "mooutils/mootype-macros.h"
 #include "moologwindow-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gmappedfile.h>
@@ -52,6 +53,7 @@
 #include <shellapi.h>
 #endif
 
+MOO_DEFINE_QUARK (moo-error, moo_error_quark)
 
 G_LOCK_DEFINE_STATIC (moo_user_data_dir);
 static char *moo_app_instance_name;

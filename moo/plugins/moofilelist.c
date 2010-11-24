@@ -2217,15 +2217,23 @@ compare_docs_by_name (MooEdit *doc1,
 static gboolean
 do_update (WindowPlugin *plugin)
 {
-    GSList *docs;
+    MooEditArray *docs;
+    GSList *list;
+    guint i;
 
     plugin->update_idle = 0;
 
-    docs = moo_edit_window_list_docs (MOO_WIN_PLUGIN (plugin)->window);
-    docs = g_slist_sort (docs, (GCompareFunc) compare_docs_by_name);
-    file_list_update (plugin->list, docs);
-    g_slist_free (docs);
+    docs = moo_edit_window_get_docs (MOO_WIN_PLUGIN (plugin)->window);
 
+    for (i = 0, list = NULL; i < docs->n_elms; ++i)
+        list = g_slist_prepend (list, docs->elms[i]);
+
+    list = g_slist_sort (list, (GCompareFunc) compare_docs_by_name);
+
+    file_list_update (plugin->list, list);
+
+    g_slist_free (list);
+    moo_edit_array_free (docs);
     return FALSE;
 }
 
@@ -2405,7 +2413,7 @@ file_list_plugin_deinit (G_GNUC_UNUSED FileListPlugin *plugin)
 MOO_PLUGIN_DEFINE_INFO (file_list,
                         N_("File List"), N_("List of files"),
                         "Yevgen Muntyan <emuntyan@sourceforge.net>",
-                        MOO_VERSION, NULL)
+                        MOO_VERSION)
 MOO_WIN_PLUGIN_DEFINE (FileList, file_list)
 MOO_PLUGIN_DEFINE (FileList, file_list,
                    NULL, NULL, NULL, NULL, NULL,

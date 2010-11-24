@@ -333,15 +333,23 @@ moo_file_dialog (GtkWidget  *parent,
 {
     static char *filename;
     MooFileDialog *dialog;
+    GFile *start;
+    GFile *file;
 
-    dialog = moo_file_dialog_new (type, parent, FALSE, title, start_dir, start_name);
+    start = start_dir ? g_file_new_for_path (start_dir) : NULL;
+
+    dialog = moo_file_dialog_new (type, parent, FALSE, title, start, start_name);
     g_return_val_if_fail (dialog != NULL, NULL);
 
     moo_file_dialog_run (dialog);
 
-    g_free (filename);
-    filename = moo_file_dialog_get_filename (dialog);
+    file = moo_file_dialog_get_file (dialog);
 
+    g_free (filename);
+    filename = file ? g_file_get_path (file) : NULL;
+
+    g_object_unref (file);
+    g_object_unref (start);
     g_object_unref (dialog);
     return filename;
 }
@@ -442,23 +450,20 @@ string_slist_to_strv (GSList *list)
     return uris;
 }
 
-static char **
-uri_list_to_filenames (GSList *list)
+static MooFileArray *
+uri_list_to_files (GSList *list)
 {
-    guint len, i;
-    char **filenames;
+    MooFileArray *flocs;
 
     if (!list)
         return NULL;
 
-    len = g_slist_length (list);
-    filenames = g_new (char*, len + 1);
+    flocs = moo_file_array_new ();
 
-    for (i = 0; i < len; i++, list = list->next)
-        filenames[i] = g_filename_from_uri ((const char*) list->data, NULL, NULL); /* XXX check */
+    while (list)
+        moo_file_array_take (flocs, g_file_new_for_uri (list->data));
 
-    filenames[i] = NULL;
-    return filenames;
+    return flocs;
 }
 
 
@@ -726,12 +731,11 @@ moo_file_dialog_set_extra_widget (MooFileDialog *dialog,
 }
 
 
-char *
-moo_file_dialog_get_filename (MooFileDialog *dialog)
+GFile *
+moo_file_dialog_get_file (MooFileDialog *dialog)
 {
     g_return_val_if_fail (MOO_IS_FILE_DIALOG (dialog), NULL);
-    return dialog->priv->uri ?
-        g_filename_from_uri (dialog->priv->uri, NULL, NULL) : NULL;
+    return dialog->priv->uri ? g_file_new_for_uri (dialog->priv->uri) : NULL;
 }
 
 char *
@@ -741,11 +745,11 @@ moo_file_dialog_get_uri (MooFileDialog *dialog)
     return g_strdup (dialog->priv->uri);
 }
 
-char **
-moo_file_dialog_get_filenames (MooFileDialog *dialog)
+MooFileArray *
+moo_file_dialog_get_files (MooFileDialog *dialog)
 {
     g_return_val_if_fail (MOO_IS_FILE_DIALOG (dialog), NULL);
-    return uri_list_to_filenames (dialog->priv->uris);
+    return uri_list_to_files (dialog->priv->uris);
 }
 
 char **
@@ -808,14 +812,14 @@ moo_file_dialog_new (MooFileDialogType type,
                      GtkWidget      *parent,
                      gboolean        multiple,
                      const char     *title,
-                     const char     *start_dir,
+                     GFile          *start_loc,
                      const char     *start_name)
 {
     char *start_dir_uri = NULL;
     MooFileDialog *dialog;
 
-    if (start_dir)
-        start_dir_uri = g_filename_to_uri (start_dir, NULL, NULL);
+    if (start_loc)
+        start_dir_uri = g_file_get_uri (start_loc);
 
     dialog = MOO_FILE_DIALOG (
              g_object_new (MOO_TYPE_FILE_DIALOG,

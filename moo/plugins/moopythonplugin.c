@@ -57,7 +57,7 @@ load_python_module (const char *module_file,
 MOO_PLUGIN_DEFINE_INFO (moo_python,
                         N_("Python"), N_("Python support"),
                         "Yevgen Muntyan <" MOO_EMAIL ">",
-                        MOO_VERSION, NULL)
+                        MOO_VERSION)
 MOO_PLUGIN_DEFINE (MooPython, moo_python,
                    NULL, NULL, NULL, NULL, NULL,
                    0, 0)

@@ -17,7 +17,7 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
-#include "mooedit/mooedit-tests.h"
+#include "mooedit/mooeditor-tests.h"
 #include <string.h>
 
 
