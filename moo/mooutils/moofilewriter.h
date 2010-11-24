@@ -16,6 +16,7 @@
 #ifndef MOO_UTILS_FILE_H
 #define MOO_UTILS_FILE_H
 
+#include <mooutils/moofileloc.h>
 #include <gio/gio.h>
 
 G_BEGIN_DECLS
