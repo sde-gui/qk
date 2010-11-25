@@ -73,8 +73,9 @@ G_STMT_START {                                                      \
         (c_)->n_##name_##_allocd__ = new_size__;                    \
     }                                                               \
                                                                     \
-    memset ((c_)->name_ + (c_)->n_##name_, 0,                       \
-            howmuch_ * sizeof *(c_)->name_);                        \
+    if (howmuch_ > 0)                                               \
+        memset ((c_)->name_ + (c_)->n_##name_, 0,                   \
+                howmuch_ * sizeof *(c_)->name_);                    \
     (c_)->n_##name_ += howmuch_;                                    \
 } G_STMT_END
 
