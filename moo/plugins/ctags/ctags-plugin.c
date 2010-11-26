@@ -18,6 +18,7 @@
 #include "mooedit/mooplugin-macro.h"
 #include "mooeditplugins.h"
 #include "mooedit/mooeditwindow.h"
+#include "mooedit/mooeditview.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-gobject.h"
 #include "ctags-view.h"
@@ -81,15 +82,15 @@ entry_activated (CtagsWindowPlugin *plugin,
                  MooCtagsEntry     *entry)
 {
     MooEditWindow *window;
-    MooEdit *doc;
+    MooEditView *view;
 
     window = MOO_WIN_PLUGIN (plugin)->window;
-    doc = moo_edit_window_get_active_doc (window);
+    view = moo_edit_window_get_active_view (window);
 
-    if (doc && entry->line >= 0)
+    if (view && entry->line >= 0)
     {
-        gtk_widget_grab_focus (GTK_WIDGET (doc));
-        moo_text_view_move_cursor (doc, entry->line, -1, FALSE, FALSE);
+        gtk_widget_grab_focus (GTK_WIDGET (view));
+        moo_text_view_move_cursor (MOO_TEXT_VIEW (view), entry->line, -1, FALSE, FALSE);
     }
 }
 

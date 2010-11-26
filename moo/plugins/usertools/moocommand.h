@@ -17,6 +17,8 @@
 #define MOO_COMMAND_H
 
 #include <gtk/gtkwidget.h>
+#include "mooedit/mooedit.h"
+#include "mooedit/mooeditwindow.h"
 #include "moooutputfilter.h"
 #include "usertools/moousertools-enums.h"
 
@@ -74,8 +76,8 @@ struct _MooCommandClass {
     GObjectClass base_class;
 
     gboolean    (*check_sensitive)  (MooCommand         *cmd,
-                                     gpointer            doc,
-                                     gpointer            window);
+                                     MooEdit            *doc,
+                                     MooEditWindow      *window);
     void        (*run)              (MooCommand         *cmd,
                                      MooCommandContext  *ctx);
 };
@@ -122,8 +124,8 @@ void                moo_command_run                 (MooCommand         *cmd,
 gboolean            moo_command_check_context       (MooCommand         *cmd,
                                                      MooCommandContext  *ctx);
 gboolean            moo_command_check_sensitive     (MooCommand         *cmd,
-                                                     gpointer            doc,
-                                                     gpointer            window);
+                                                     MooEdit            *doc,
+                                                     MooEditWindow      *window);
 
 void                moo_command_set_options         (MooCommand         *cmd,
                                                      MooCommandOptions   options);
@@ -155,15 +157,15 @@ const char         *moo_command_data_get            (MooCommandData     *data,
 const char         *moo_command_data_get_code       (MooCommandData     *data);
 
 
-MooCommandContext  *moo_command_context_new         (gpointer            doc,
-                                                     gpointer            window);
+MooCommandContext  *moo_command_context_new         (MooEdit            *doc,
+                                                     MooEditWindow      *window);
 
 void                moo_command_context_set_doc     (MooCommandContext  *ctx,
-                                                     gpointer            doc);
+                                                     MooEdit            *doc);
 void                moo_command_context_set_window  (MooCommandContext  *ctx,
-                                                     gpointer            window);
-gpointer            moo_command_context_get_doc     (MooCommandContext  *ctx);
-gpointer            moo_command_context_get_window  (MooCommandContext  *ctx);
+                                                     MooEditWindow      *window);
+MooEdit            *moo_command_context_get_doc     (MooCommandContext  *ctx);
+MooEditWindow      *moo_command_context_get_window  (MooCommandContext  *ctx);
 
 void                moo_command_context_set         (MooCommandContext  *ctx,
                                                      const char         *name,

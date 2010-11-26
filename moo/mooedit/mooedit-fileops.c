@@ -55,14 +55,9 @@
 
 MOO_DEFINE_QUARK (MooEditFileErrorQuark, _moo_edit_file_error_quark)
 
-static GSList *UNTITLED = NULL;
-static GHashTable *UNTITLED_NO = NULL;
-
 static void     block_buffer_signals        (MooEdit        *edit);
 static void     unblock_buffer_signals      (MooEdit        *edit);
-static gboolean focus_in_cb                 (MooEdit        *edit);
-static void     check_file_status           (MooEdit        *edit,
-                                             gboolean        in_focus_only);
+static void     check_file_status           (MooEdit        *edit);
 static void     file_modified_on_disk       (MooEdit        *edit);
 static void     file_deleted                (MooEdit        *edit);
 static void     add_status                  (MooEdit        *edit,
@@ -311,6 +306,7 @@ try_load (MooEdit      *edit,
           const char   *encoding,
           GError      **error)
 {
+    MooEditView *view;
     GtkTextBuffer *buffer;
     gboolean enable_highlight;
     LoadResult result = ERROR_FILE;
@@ -319,13 +315,14 @@ try_load (MooEdit      *edit,
     moo_return_val_if_fail (G_IS_FILE (file), result);
     moo_return_val_if_fail (encoding && encoding[0], result);
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    view = moo_edit_get_view (edit);
+    buffer = GTK_TEXT_BUFFER (moo_edit_get_buffer (edit));
     gtk_text_buffer_set_text (buffer, "", 0);
 
-    g_object_get (edit, "enable-highlight", &enable_highlight, (char*) 0);
-    g_object_set (edit, "enable-highlight", FALSE, (char*) 0);
+    g_object_get (view, "enable-highlight", &enable_highlight, (char*) 0);
+    g_object_set (view, "enable-highlight", FALSE, (char*) 0);
     result = do_load (edit, file, encoding, error);
-    g_object_set (edit, "enable-highlight", enable_highlight, (char*) 0);
+    g_object_set (view, "enable-highlight", enable_highlight, (char*) 0);
 
     return result;
 }
@@ -384,8 +381,8 @@ moo_edit_load_local (MooEdit     *edit,
     else
         undo = TRUE;
 
-    view = MOO_TEXT_VIEW (edit);
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    view = MOO_TEXT_VIEW (moo_edit_get_view (edit));
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
 
     block_buffer_signals (edit);
 
@@ -518,7 +515,7 @@ do_load (MooEdit      *edit,
     }
 
     text = g_string_new (NULL);
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = GTK_TEXT_BUFFER (moo_edit_get_buffer (edit));
 
     while (TRUE)
     {
@@ -653,7 +650,7 @@ load_binary (MooEdit     *edit,
 
     moo_return_val_if_fail (filename != NULL, FALSE);
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
 
     file = g_io_channel_new_file (filename, "r", error);
 
@@ -731,26 +728,28 @@ moo_edit_reload_local (MooEdit    *edit,
     GtkTextBuffer *buffer;
     gboolean result, enable_highlight;
     GFile *file;
+    MooEditView *view;
 
     file = moo_edit_get_file (edit);
     moo_return_val_if_fail (G_IS_FILE (file), FALSE);
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    view = moo_edit_get_view (edit);
+    buffer = GTK_TEXT_BUFFER (moo_edit_get_buffer (edit));
 
     block_buffer_signals (edit);
     gtk_text_buffer_begin_user_action (buffer);
 
     gtk_text_buffer_get_bounds (buffer, &start, &end);
     gtk_text_buffer_delete (buffer, &start, &end);
-    g_object_get (edit, "enable-highlight", &enable_highlight, (char*) 0);
-    g_object_set (edit, "enable-highlight", FALSE, (char*) 0);
+    g_object_get (view, "enable-highlight", &enable_highlight, (char*) 0);
+    g_object_set (view, "enable-highlight", FALSE, (char*) 0);
 
     result = _moo_edit_load_file (edit, file,
                                   encoding ? encoding : edit->priv->encoding,
                                   NULL,
                                   error);
 
-    g_object_set (edit, "enable-highlight", enable_highlight, (char*) 0);
+    g_object_set (view, "enable-highlight", enable_highlight, (char*) 0);
     gtk_text_buffer_end_user_action (buffer);
     unblock_buffer_signals (edit);
 
@@ -845,7 +844,7 @@ get_contents (MooEdit *edit)
             moo_assert_not_reached ();
     }
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = GTK_TEXT_BUFFER (moo_edit_get_buffer (edit));
 
     if (normalize_le)
     {
@@ -1000,7 +999,7 @@ moo_edit_save_copy_local (MooEdit        *edit,
 static void
 block_buffer_signals (MooEdit *edit)
 {
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    MooEditBuffer *buffer = moo_edit_get_buffer (edit);
     g_signal_handler_block (buffer, edit->priv->modified_changed_handler_id);
 }
 
@@ -1008,7 +1007,7 @@ block_buffer_signals (MooEdit *edit)
 static void
 unblock_buffer_signals (MooEdit *edit)
 {
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    MooEditBuffer *buffer = moo_edit_get_buffer (edit);
     g_signal_handler_unblock (buffer, edit->priv->modified_changed_handler_id);
 }
 
@@ -1045,7 +1044,7 @@ file_watch_callback (G_GNUC_UNUSED MooFileWatch *watch,
             break;
     }
 
-    check_file_status (edit, FALSE);
+    check_file_status (edit);
 }
 
 
@@ -1083,12 +1082,6 @@ _moo_edit_start_file_watch (MooEdit *edit)
 
         return;
     }
-
-    if (!edit->priv->focus_in_handler_id)
-        edit->priv->focus_in_handler_id =
-                g_signal_connect (edit, "focus-in-event",
-                                  G_CALLBACK (focus_in_cb),
-                                  NULL);
 }
 
 
@@ -1103,30 +1096,12 @@ _moo_edit_stop_file_watch (MooEdit *edit)
     if (edit->priv->file_monitor_id)
         moo_file_watch_cancel_monitor (watch, edit->priv->file_monitor_id);
     edit->priv->file_monitor_id = 0;
-
-    if (edit->priv->focus_in_handler_id)
-    {
-        g_signal_handler_disconnect (edit, edit->priv->focus_in_handler_id);
-        edit->priv->focus_in_handler_id = 0;
-    }
-}
-
-
-static gboolean
-focus_in_cb (MooEdit *edit)
-{
-    check_file_status (edit, TRUE);
-    return FALSE;
 }
 
 
 static void
-check_file_status (MooEdit  *edit,
-                   gboolean  in_focus_only)
+check_file_status (MooEdit *edit)
 {
-    if (in_focus_only && !GTK_WIDGET_HAS_FOCUS (edit))
-        return;
-
     moo_return_if_fail (edit->priv->filename != NULL);
     moo_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
 
@@ -1135,7 +1110,6 @@ check_file_status (MooEdit  *edit,
     else if (edit->priv->modified_on_disk)
         file_modified_on_disk (edit);
 }
-
 
 static void
 file_modified_on_disk (MooEdit *edit)
@@ -1146,7 +1120,6 @@ file_modified_on_disk (MooEdit *edit)
     _moo_edit_stop_file_watch (edit);
     add_status (edit, MOO_EDIT_MODIFIED_ON_DISK);
 }
-
 
 static void
 file_deleted (MooEdit *edit)
@@ -1168,47 +1141,32 @@ add_status (MooEdit        *edit,
 }
 
 
-static void
-remove_untitled (gpointer    destroyed,
-                 MooEdit    *edit)
-{
-    gpointer n = g_hash_table_lookup (UNTITLED_NO, edit);
-
-    if (n)
-    {
-        UNTITLED = g_slist_remove (UNTITLED, n);
-        g_hash_table_remove (UNTITLED_NO, edit);
-        if (!destroyed)
-            g_object_weak_unref (G_OBJECT (edit),
-                                 (GWeakNotify) remove_untitled,
-                                 GINT_TO_POINTER (TRUE));
-    }
-}
-
-
 static int
-add_untitled (MooEdit *edit)
+get_untitled_no (MooEdit *edit)
 {
-    int n;
-
-    if (!(n = GPOINTER_TO_INT (g_hash_table_lookup (UNTITLED_NO, edit))))
+    if (!edit->priv->untitled_no)
     {
-        for (n = 1; ; ++n)
+        int i;
+        MooEditList *l;
+        GHashTable *nos = g_hash_table_new (g_direct_hash, g_direct_equal);
+
+        for (l = _moo_edit_instances; l != NULL; l = l->next)
         {
-            if (!g_slist_find (UNTITLED, GINT_TO_POINTER (n)))
-            {
-                UNTITLED = g_slist_prepend (UNTITLED, GINT_TO_POINTER (n));
-                break;
-            }
+            MooEdit *other = l->data;
+            if (other != edit && !other->priv->file && other->priv->untitled_no > 0)
+                g_hash_table_insert (nos, GINT_TO_POINTER (other->priv->untitled_no), other);
         }
 
-        g_hash_table_insert (UNTITLED_NO, edit, GINT_TO_POINTER (n));
-        g_object_weak_ref (G_OBJECT (edit),
-                           (GWeakNotify) remove_untitled,
-                           GINT_TO_POINTER (TRUE));
+        for (i = 1; ; ++i)
+            if (!g_hash_table_lookup (nos, GINT_TO_POINTER (i)))
+                break;
+
+        edit->priv->untitled_no = i;
+
+        g_hash_table_destroy (nos);
     }
 
-    return n;
+    return edit->priv->untitled_no;
 }
 
 
@@ -1274,12 +1232,9 @@ _moo_edit_set_file (MooEdit    *edit,
     free_list = g_slist_prepend (free_list, edit->priv->display_filename);
     free_list = g_slist_prepend (free_list, edit->priv->display_basename);
 
-    if (!UNTITLED_NO)
-        UNTITLED_NO = g_hash_table_new (g_direct_hash, g_direct_equal);
-
     if (!file)
     {
-        int n = add_untitled (edit);
+        int n = get_untitled_no (edit);
 
         edit->priv->file = NULL;
         edit->priv->filename = NULL;
@@ -1296,7 +1251,6 @@ _moo_edit_set_file (MooEdit    *edit,
     {
         char *norm_name_tmp;
 
-        remove_untitled (NULL, edit);
         edit->priv->file = g_file_dup (file);
         edit->priv->filename = g_file_get_path (file);
 

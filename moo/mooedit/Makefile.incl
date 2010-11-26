@@ -1,4 +1,12 @@
 moo_sources +=				\
+	mooedit/mooeditview.h		\
+	mooedit/mooeditview.c		\
+	mooedit/mooeditview-impl.h	\
+	mooedit/mooeditview-private.h	\
+	mooedit/mooeditbuffer.h		\
+	mooedit/mooeditbuffer.c		\
+	mooedit/mooeditbuffer-impl.h    \
+	mooedit/mooeditbuffer-private.h \
 	mooedit/mooedit-accels.h	\
 	mooedit/mooeditaction.c		\
 	mooedit/mooeditaction-factory.c	\

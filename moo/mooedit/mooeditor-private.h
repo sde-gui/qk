@@ -31,6 +31,7 @@ typedef enum {
 } MooEditorOptions;
 
 struct MooEditorPrivate {
+    MooEditArray        *docs;
     MooEditArray        *windowless;
     MooEditWindowArray  *windows;
     MooUiXml            *doc_ui_xml;

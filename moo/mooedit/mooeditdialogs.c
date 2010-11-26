@@ -100,8 +100,11 @@ _moo_edit_save_as_dialog (MooEdit    *doc,
     MooFileEnc *fenc;
     GFile *start = NULL;
     GFile *file = NULL;
+    MooEditView *view;
 
     g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+
+    view = moo_edit_get_view (doc);
 
     moo_prefs_create_key (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR),
                           MOO_PREFS_STATE, G_TYPE_STRING, NULL);
@@ -118,7 +121,7 @@ _moo_edit_save_as_dialog (MooEdit    *doc,
     if (!start)
         start = moo_prefs_get_file (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
 
-    dialog = moo_file_dialog_new (MOO_FILE_DIALOG_SAVE, GTK_WIDGET (doc),
+    dialog = moo_file_dialog_new (MOO_FILE_DIALOG_SAVE, GTK_WIDGET (view),
                                   FALSE, GTK_STOCK_SAVE_AS,
                                   start, display_basename);
     g_object_set (dialog, "enable-encodings", TRUE, NULL);
@@ -155,7 +158,7 @@ _moo_edit_save_changes_dialog (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), MOO_SAVE_CHANGES_RESPONSE_CANCEL);
     return moo_save_changes_dialog (moo_edit_get_display_basename (doc),
-                                    GTK_WIDGET (doc));
+                                    GTK_WIDGET (moo_edit_get_view (doc)));
 }
 
 
@@ -512,9 +515,11 @@ _moo_edit_reload_error_dialog (MooEdit *doc,
 {
     const char *filename;
     char *msg = NULL;
+    MooEditView *view;
 
     g_return_if_fail (MOO_IS_EDIT (doc));
 
+    view = moo_edit_get_view (doc);
     filename = moo_edit_get_display_basename (doc);
 
     if (!filename)
@@ -526,7 +531,7 @@ _moo_edit_reload_error_dialog (MooEdit *doc,
     /* Could not reload file foo.txt */
     msg = g_strdup_printf (_("Could not reload file\n%s"), filename);
     /* XXX */
-    moo_error_dialog (GTK_WIDGET (doc),
+    moo_error_dialog (GTK_WIDGET (view),
                       msg, error ? error->message : NULL);
 
     g_free (msg);
@@ -544,7 +549,8 @@ moo_edit_question_dialog (MooEdit    *doc,
                           const char *button)
 {
     int res;
-    GtkWindow *parent = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (doc)));
+    MooEditView *view = moo_edit_get_view (doc);
+    GtkWindow *parent = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view)));
     GtkWidget *dialog;
 
     dialog = gtk_message_dialog_new (parent, GTK_DIALOG_MODAL,

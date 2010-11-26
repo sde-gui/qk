@@ -23,31 +23,13 @@
 
 static void     sync_settings               (MooIndenter    *indenter);
 
-enum {
-    SETTING_USE_TABS,
-    SETTING_INDENT_WIDTH,
-    LAST_SETTING
-};
-
-static guint settings[LAST_SETTING];
-
 /* MOO_TYPE_INDENTER */
 G_DEFINE_TYPE (MooIndenter, moo_indenter, G_TYPE_OBJECT)
-
 
 static void
 moo_indenter_class_init (G_GNUC_UNUSED MooIndenterClass *klass)
 {
-    settings[SETTING_USE_TABS] = moo_edit_config_install_setting (
-        g_param_spec_boolean ("indent-use-tabs", "indent-use-tabs", "indent-use-tabs",
-                              TRUE, (GParamFlags) G_PARAM_READWRITE));
-    moo_edit_config_install_alias ("indent-use-tabs", "use-tabs");
-
-    settings[SETTING_INDENT_WIDTH] = moo_edit_config_install_setting (
-        g_param_spec_uint ("indent-width", "indent-width", "indent-width",
-                           1, G_MAXUINT, 8, (GParamFlags) G_PARAM_READWRITE));
 }
-
 
 static void
 moo_indenter_init (MooIndenter *indent)
@@ -56,7 +38,6 @@ moo_indenter_init (MooIndenter *indent)
     indent->use_tabs = TRUE;
     indent->indent = 8;
 }
-
 
 MooIndenter *
 moo_indenter_new (MooEdit *doc)

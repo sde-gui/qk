@@ -57,7 +57,7 @@ test_basic (void)
     TEST_ASSERT (moo_edit_save (doc, NULL));
     check_contents (filename, "");
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+    buffer = GTK_TEXT_BUFFER (moo_edit_get_buffer (doc));
 
     gtk_text_buffer_set_text (buffer, TT1, -1);
     TEST_ASSERT (moo_edit_save (doc, NULL));

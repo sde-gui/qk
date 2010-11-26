@@ -2,6 +2,7 @@
 #include "mooscript-classes-util.h"
 #include "mooapp/mooapp.h"
 #include "mooedit/moofileenc.h"
+#include "mooedit/mooeditview.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moodialogs.h"
 #include <string.h>
@@ -837,7 +838,7 @@ void DocumentWindow::set_active()
 
 static GtkTextBuffer *buffer(Document *doc)
 {
-    return gtk_text_view_get_buffer(GTK_TEXT_VIEW(doc->gobj()));
+    return gtk_text_view_get_buffer(GTK_TEXT_VIEW(moo_edit_get_view(doc->gobj())));
 }
 
 /// @item Document.filename()
@@ -968,28 +969,28 @@ bool Document::save_as(const String &filename)
 /// returns whether undo action is available.
 bool Document::can_undo()
 {
-    return moo_text_view_can_undo(MOO_TEXT_VIEW(gobj()));
+    return moo_text_view_can_undo(MOO_TEXT_VIEW(moo_edit_get_view(gobj())));
 }
 
 /// @item Document.can_redo()
 /// returns whether redo action is available.
 bool Document::can_redo()
 {
-    return moo_text_view_can_redo(MOO_TEXT_VIEW(gobj()));
+    return moo_text_view_can_redo(MOO_TEXT_VIEW(moo_edit_get_view(gobj())));
 }
 
 /// @item Document.undo()
 /// undo.
 void Document::undo()
 {
-    moo_text_view_undo(MOO_TEXT_VIEW(gobj()));
+    moo_text_view_undo(MOO_TEXT_VIEW(moo_edit_get_view(gobj())));
 }
 
 /// @item Document.redo()
 /// redo.
 void Document::redo()
 {
-    moo_text_view_redo(MOO_TEXT_VIEW(gobj()));
+    moo_text_view_redo(MOO_TEXT_VIEW(moo_edit_get_view(gobj())));
 }
 
 /// @item Document.begin_not_undoable_action()
@@ -997,14 +998,14 @@ void Document::redo()
 /// and undo will not be recorded until @method{end_not_undoable_action()} call.
 void Document::begin_not_undoable_action()
 {
-    moo_text_view_begin_not_undoable_action(MOO_TEXT_VIEW(gobj()));
+    moo_text_view_begin_not_undoable_action(MOO_TEXT_VIEW(moo_edit_get_view(gobj())));
 }
 
 /// @item Document.end_not_undoable_action()
 /// end the non-undoable operation started with @method{begin_not_undoable_action()}.
 void Document::end_not_undoable_action()
 {
-    moo_text_view_end_not_undoable_action(MOO_TEXT_VIEW(gobj()));
+    moo_text_view_end_not_undoable_action(MOO_TEXT_VIEW(moo_edit_get_view(gobj())));
 }
 
 /// @end table
@@ -1280,7 +1281,7 @@ void Document::clear()
 /// will happen, same as Ctrl-C key combination.
 void Document::copy()
 {
-    g_signal_emit_by_name(gobj(), "copy-clipboard");
+    g_signal_emit_by_name(moo_edit_get_view(gobj()), "copy-clipboard");
 }
 
 /// @item Document.cut()
@@ -1288,7 +1289,7 @@ void Document::copy()
 /// will happen, same as Ctrl-X key combination.
 void Document::cut()
 {
-    g_signal_emit_by_name(gobj(), "cut-clipboard");
+    g_signal_emit_by_name(moo_edit_get_view(gobj()), "cut-clipboard");
 }
 
 /// @item Document.paste()
@@ -1297,7 +1298,7 @@ void Document::cut()
 /// clipboard contents otherwise.
 void Document::paste()
 {
-    g_signal_emit_by_name(gobj(), "paste-clipboard");
+    g_signal_emit_by_name(moo_edit_get_view(gobj()), "paste-clipboard");
 }
 
 /// @item Document.select_text(bounds_as_list)

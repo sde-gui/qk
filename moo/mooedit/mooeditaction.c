@@ -211,9 +211,8 @@ get_current_line (MooEdit *doc)
     if (!line)
     {
         GtkTextIter line_start, line_end;
-        GtkTextBuffer *buffer;
+        GtkTextBuffer *buffer = GTK_TEXT_BUFFER (moo_edit_get_buffer (doc));
 
-        buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
         gtk_text_buffer_get_iter_at_mark (buffer, &line_start,
                                           gtk_text_buffer_get_insert (buffer));
         line_end = line_start;

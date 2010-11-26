@@ -494,7 +494,8 @@ init_grep_dialog (MooEditWindow *window,
 
     if (doc)
     {
-        char *sel = moo_text_view_get_selection (MOO_TEXT_VIEW (doc));
+        MooEditView *view = moo_edit_get_view (doc);
+        char *sel = moo_text_view_get_selection (GTK_TEXT_VIEW (view));
         if (sel && !strchr (sel, '\n'))
             gtk_entry_set_text (GTK_ENTRY (pattern_entry), sel);
         g_free (sel);

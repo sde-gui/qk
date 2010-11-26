@@ -16,16 +16,13 @@
 #ifndef MOO_EDIT_H
 #define MOO_EDIT_H
 
-#include <mooedit/mootextview.h>
 #include <mooedit/mooeditconfig.h>
 #include <mooedit/mooedit-enums.h>
 #include <mooedit/mooedittypes.h>
+#include <mooedit/moolang.h>
 #include <mooutils/mooprefs.h>
 
 G_BEGIN_DECLS
-
-
-#define MOO_TYPE_EDIT_FILE_INFO             (moo_edit_file_info_get_type ())
 
 #define MOO_TYPE_EDIT                       (moo_edit_get_type ())
 #define MOO_EDIT(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT, MooEdit))
@@ -43,14 +40,14 @@ typedef struct MooEditClass    MooEditClass;
 
 struct MooEdit
 {
-    MooTextView parent;
+    GObject parent;
     MooEditConfig *config;
     MooEditPrivate *priv;
 };
 
 struct MooEditClass
 {
-    MooTextViewClass parent_class;
+    GObjectClass parent_class;
 
     /* emitted when filename, modified status, or file on disk
        are changed. for use in editor to adjust title bar, etc. */
@@ -71,9 +68,11 @@ struct MooEditClass
 
 
 GType            moo_edit_get_type              (void) G_GNUC_CONST;
-GType            moo_edit_file_info_get_type    (void) G_GNUC_CONST;
 
-MooEditWindow   *moo_edit_get_window            (MooEdit        *edit);
+MooEditor       *moo_edit_get_editor            (MooEdit        *doc);
+MooEditBuffer   *moo_edit_get_buffer            (MooEdit        *doc);
+MooEditView     *moo_edit_get_view              (MooEdit        *doc);
+MooEditWindow   *moo_edit_get_window            (MooEdit        *doc);
 
 GFile           *moo_edit_get_file              (MooEdit        *edit);
 
@@ -90,8 +89,6 @@ void             moo_edit_set_encoding          (MooEdit        *edit,
 char            *moo_edit_get_utf8_filename     (MooEdit        *edit);
 
 MooLang         *moo_edit_get_lang              (MooEdit        *edit);
-
-MooEditor       *moo_edit_get_editor            (MooEdit        *doc);
 
 #ifdef __WIN32__
 #define MOO_LE_DEFAULT MOO_LE_WIN32
@@ -132,12 +129,6 @@ gboolean         moo_edit_save_copy             (MooEdit        *edit,
 
 void             moo_edit_comment               (MooEdit        *edit);
 void             moo_edit_uncomment             (MooEdit        *edit);
-
-void             moo_edit_ui_set_line_wrap_mode     (MooEdit        *edit,
-                                                     gboolean        enabled);
-void             moo_edit_ui_set_show_line_numbers  (MooEdit        *edit,
-                                                     gboolean        show);
-
 
 G_END_DECLS
 

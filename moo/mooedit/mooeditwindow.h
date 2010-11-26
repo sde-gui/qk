@@ -79,15 +79,19 @@ void             moo_edit_window_set_action_filter      (const char     *action_
 MooEdit         *moo_edit_window_get_active_doc         (MooEditWindow  *window);
 void             moo_edit_window_set_active_doc         (MooEditWindow  *window,
                                                          MooEdit        *edit);
+MooEditView     *moo_edit_window_get_active_view        (MooEditWindow  *window);
+void             moo_edit_window_set_active_view        (MooEditWindow  *window,
+                                                         MooEditView    *view);
 
 MooEditor       *moo_edit_window_get_editor             (MooEditWindow  *window);
 
+int              moo_edit_window_num_docs               (MooEditWindow  *window);
 MooEdit         *moo_edit_window_get_nth_doc            (MooEditWindow  *window,
                                                          guint           n);
+MooEditView     *moo_edit_window_get_nth_view           (MooEditWindow  *window,
+                                                         guint           n);
 MooEditArray    *moo_edit_window_get_docs               (MooEditWindow  *window);
-/* list must be freed, elements must not be unref'ed */
-GSList          *moo_edit_window_list_docs              (MooEditWindow  *window);
-int              moo_edit_window_num_docs               (MooEditWindow  *window);
+MooEditViewArray*moo_edit_window_get_views              (MooEditWindow  *window);
 
 void             moo_edit_window_set_title_prefix       (MooEditWindow  *window,
                                                          const char     *prefix);
