@@ -44,6 +44,8 @@ gboolean                moo_file_view_chdir_path    (MooFileView    *fileview,
 MooUiXml               *moo_file_view_get_ui_xml    (MooFileView    *fileview);
 MooActionCollection    *moo_file_view_get_actions   (MooFileView    *fileview);
 
+void                    moo_file_view_focus_files   (MooFileView    *fileview);
+
 
 G_END_DECLS
 
