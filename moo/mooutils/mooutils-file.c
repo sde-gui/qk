@@ -24,5 +24,5 @@ moo_file_fnmatch (GFile      *file,
     filename = g_file_get_path (file);
     moo_return_val_if_fail (filename != NULL, FALSE);
 
-    return fnmatch (glob, filename, 0);
+    return fnmatch (glob, filename, 0) == 0;
 }
