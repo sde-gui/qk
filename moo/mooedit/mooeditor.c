@@ -1847,6 +1847,8 @@ moo_editor_open_file_line (MooEditor      *editor,
                           is_embedded (editor),
                           TRUE, line, &doc);
 
+    view = moo_edit_get_view (doc);
+
     /* XXX */
     moo_editor_set_active_doc (editor, doc);
     if (line >= 0)
