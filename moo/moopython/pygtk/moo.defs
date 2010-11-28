@@ -1,0 +1,4 @@
+;; -*- scheme -*-
+(include "mooutils.defs")
+(include "mooedit.defs")
+(include "mooapp.defs")

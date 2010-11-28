@@ -35,7 +35,7 @@
 /* MooFileReader
  */
 
-struct MooFileReader {
+struct _MooFileReader {
     GObject base;
     FILE *file;
 };
@@ -229,7 +229,7 @@ moo_file_writer_close (MooFileWriter  *writer,
 /* MooLocalFileWriter
  */
 
-struct MooLocalFileWriter {
+struct _MooLocalFileWriter {
     MooFileWriter base;
     GFile *file;
     GOutputStream *stream;
@@ -470,7 +470,7 @@ moo_local_file_writer_init (MooLocalFileWriter *writer)
 /* MooStringWriter
  */
 
-struct MooStringWriter {
+struct _MooStringWriter {
     MooFileWriter base;
     GString *string;
 };

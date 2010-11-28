@@ -1,0 +1,33 @@
+moo_python_sources =
+built_moo_python_sources =
+
+include moopython/pygtk/Makefile.incl
+
+moo_python_sources +=				\
+	moopython/moopython-builtin.h		\
+	moopython/moopython-builtin.c		\
+	moopython/moopython-api.h		\
+	moopython/moopython-loader.h		\
+	moopython/moopython-loader.c		\
+	moopython/moopython-utils.h		\
+	moopython/moopython-utils.c
+
+if MOO_ENABLE_PYTHON
+moo_sources += $(moo_python_sources)
+built_moo_sources += $(built_moo_python_sources)
+endif
+
+EXTRA_DIST +=					\
+	$(moo_python_sources)			\
+	moopython/codegen/__init__.py		\
+	moopython/codegen/argtypes.py		\
+	moopython/codegen/argtypes_m.py		\
+	moopython/codegen/codegen.py		\
+	moopython/codegen/definitions.py	\
+	moopython/codegen/defsparser.py		\
+	moopython/codegen/docgen.py		\
+	moopython/codegen/mergedefs.py		\
+	moopython/codegen/mkskel.py		\
+	moopython/codegen/override.py		\
+	moopython/codegen/reversewrapper.py	\
+	moopython/codegen/scmexpr.py

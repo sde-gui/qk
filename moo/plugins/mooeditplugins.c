@@ -17,11 +17,17 @@
 #include "mooeditplugins.h"
 #include "mooutils/mooutils-misc.h"
 
+#ifdef MOO_ENABLE_PYTHON
+#include "moopython/moopython-builtin.h"
+#endif
+
 void
 moo_plugin_init_builtin (void)
 {
-    if (moo_getenv_bool ("MOO_ENABLE_PYTHON"))
-        _moo_python_plugin_init ();
+#ifdef MOO_ENABLE_PYTHON
+    if (!moo_getenv_bool ("MOO_DISABLE_PYTHON"))
+        _moo_python_builtin_init ();
+#endif
     if (!moo_getenv_bool ("MOO_DISABLE_LUA"))
         _moo_lua_plugin_init ();
     _moo_file_selector_plugin_init ();

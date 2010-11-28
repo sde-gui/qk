@@ -20,7 +20,7 @@
 
 G_BEGIN_DECLS
 
-struct MooEditBufferPrivate
+struct _MooEditBufferPrivate
 {
     MooEditView *view;
 };

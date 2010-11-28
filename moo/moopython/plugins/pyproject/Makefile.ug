@@ -1,0 +1,85 @@
+INI_IN_IN_FILES = project-plugin.ini.in.in
+
+inidir = ${MOO_PLUGINS_DIR}
+ini_DATA = $(INI_FILES)
+
+plugindir = $(inidir)/project
+nobase_plugin_DATA =			\
+	project-plugin.py		\
+	mprj/__init__.py		\
+	mprj/factory.py			\
+	mprj/factory.glade		\
+	mprj/manager.py			\
+	mprj/project.py			\
+	mprj/optdialog.py		\
+	mprj/session.py			\
+	mprj/settings.py		\
+	mprj/simple.py			\
+	mprj/simple.glade		\
+	mprj/test.py			\
+	mprj/utils.py			\
+	mprj/utils.glade		\
+	mprj/config/_config.py		\
+	mprj/config/_dict.py		\
+	mprj/config/_group.py		\
+	mprj/config/__init__.py		\
+	mprj/config/_item.py		\
+	mprj/config/_setting.py		\
+	mprj/config/_utils.py		\
+	mprj/config/view.py		\
+	mprj/config/_xml.py
+
+projectsdir = $(MOO_LIB_DIR)
+nobase_projects_DATA =			\
+	projects/c.py			\
+	projects/cproj/config.py	\
+	projects/cproj/__init__.py	\
+	projects/cproj/optdialog.py	\
+	projects/cproj/parser.py	\
+	projects/cproj/options.glade	\
+	projects/python.py		\
+	projects/pyproj/config.py	\
+	projects/pyproj/__init__.py	\
+	projects/pyproj/optdialog.py	\
+	projects/pyproj/options.glade
+
+EXTRA_DIST +=				\
+    $(nobase_plugin_DATA)		\
+    $(nobase_projects_DATA)
+
+
+###############################################################################
+#
+#  mime info
+#
+
+BUILT_SOURCES += medit-mprj.xml
+CLEANFILES += medit-mprj.xml
+@MOO_INTLTOOL_XML_RULE@
+
+mimedir = $(datadir)/mime
+packagesdir = $(mimedir)/packages
+packages_DATA = medit-mprj.xml
+EXTRA_DIST += medit-mprj.xml.in
+
+update_mime = update-mime-database $(DESTDIR)${mimedir}
+
+if MOO_ENABLE_GENERATED_FILES
+install-data-hook:
+	@if echo "Updating mime database... " &&				\
+	    echo $(update_mime) &&						\
+	    $(update_mime);							\
+	then									\
+		echo "Done.";							\
+	else									\
+		echo "*** ";							\
+		echo "*** Mime database not updated. After install, run this:";	\
+		echo $(update_mime);						\
+		echo "*** ";							\
+	fi
+uninstall-hook:
+	@echo "Updating mime database" && \
+	    echo $(update_mime) && \
+	    $(update_mime) && \
+	    echo "Done."
+endif

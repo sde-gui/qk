@@ -8,8 +8,7 @@ plugins_sources +=			\
 	plugins/mooeditplugins.c	\
 	plugins/moofilelist.c		\
 	plugins/moofind.c		\
-	plugins/mooluaplugin.cpp	\
-	plugins/moopythonplugin.c
+	plugins/mooluaplugin.cpp
 
 EXTRA_DIST +=						\
 	plugins/glade/moofileselector-prefs.glade	\

@@ -29,16 +29,16 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_VIEW_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_VIEW))
 #define MOO_EDIT_VIEW_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_VIEW, MooEditViewClass))
 
-typedef struct MooEditViewPrivate  MooEditViewPrivate;
-typedef struct MooEditViewClass    MooEditViewClass;
+typedef struct _MooEditViewPrivate MooEditViewPrivate;
+typedef struct _MooEditViewClass   MooEditViewClass;
 
-struct MooEditView
+struct _MooEditView
 {
     MooTextView parent;
     MooEditViewPrivate *priv;
 };
 
-struct MooEditViewClass
+struct _MooEditViewClass
 {
     MooTextViewClass parent_class;
 };

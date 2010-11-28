@@ -29,16 +29,16 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_BUFFER_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_BUFFER))
 #define MOO_EDIT_BUFFER_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_BUFFER, MooEditBufferClass))
 
-typedef struct MooEditBufferPrivate  MooEditBufferPrivate;
-typedef struct MooEditBufferClass    MooEditBufferClass;
+typedef struct _MooEditBufferPrivate  MooEditBufferPrivate;
+typedef struct _MooEditBufferClass    MooEditBufferClass;
 
-struct MooEditBuffer
+struct _MooEditBuffer
 {
     MooTextBuffer parent;
     MooEditBufferPrivate *priv;
 };
 
-struct MooEditBufferClass
+struct _MooEditBufferClass
 {
     MooTextBufferClass parent_class;
 };

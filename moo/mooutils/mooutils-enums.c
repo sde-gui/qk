@@ -3,6 +3,25 @@
 
 #include "mooutils-enums.h"
 
+#include "moodialogs.h"
+
+GType
+moo_save_changes_dialog_response_get_type (void)
+{
+    static GType etype;
+    if (G_UNLIKELY (!etype))
+    {
+        static const GEnumValue values[] = {
+            { MOO_SAVE_CHANGES_RESPONSE_CANCEL, (char*) "MOO_SAVE_CHANGES_RESPONSE_CANCEL", (char*) "cancel" },
+            { MOO_SAVE_CHANGES_RESPONSE_SAVE, (char*) "MOO_SAVE_CHANGES_RESPONSE_SAVE", (char*) "save" },
+            { MOO_SAVE_CHANGES_RESPONSE_DONT_SAVE, (char*) "MOO_SAVE_CHANGES_RESPONSE_DONT_SAVE", (char*) "dont-save" },
+            { 0, NULL, NULL }
+        };
+        etype = g_enum_register_static ("MooSaveChangesDialogResponse", values);
+    }
+    return etype;
+}
+
 #include "moofiledialog.h"
 
 GType

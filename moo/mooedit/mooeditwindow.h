@@ -33,17 +33,17 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_WINDOW))
 #define MOO_EDIT_WINDOW_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_WINDOW, MooEditWindowClass))
 
-typedef struct MooEditWindowPrivate MooEditWindowPrivate;
-typedef struct MooEditWindowClass   MooEditWindowClass;
+typedef struct _MooEditWindowPrivate MooEditWindowPrivate;
+typedef struct _MooEditWindowClass   MooEditWindowClass;
 
-struct MooEditWindow
+struct _MooEditWindow
 {
     MooWindow               parent;
     MooEditWindowPrivate   *priv;
     MooBigPaned            *paned;
 };
 
-struct MooEditWindowClass
+struct _MooEditWindowClass
 {
     MooWindowClass          parent_class;
 
@@ -92,9 +92,6 @@ MooEditView     *moo_edit_window_get_nth_view           (MooEditWindow  *window,
                                                          guint           n);
 MooEditArray    *moo_edit_window_get_docs               (MooEditWindow  *window);
 MooEditViewArray*moo_edit_window_get_views              (MooEditWindow  *window);
-
-void             moo_edit_window_set_title_prefix       (MooEditWindow  *window,
-                                                         const char     *prefix);
 
 /* sinks widget */
 MooPane         *moo_edit_window_add_pane               (MooEditWindow  *window,

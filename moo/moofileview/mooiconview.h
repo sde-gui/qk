@@ -36,17 +36,17 @@ G_BEGIN_DECLS
 #define MOO_ICON_VIEW_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_ICON_VIEW, MooIconViewClass))
 
 
-typedef struct MooIconView        MooIconView;
-typedef struct MooIconViewPrivate MooIconViewPrivate;
-typedef struct MooIconViewClass   MooIconViewClass;
+typedef struct _MooIconView        MooIconView;
+typedef struct _MooIconViewPrivate MooIconViewPrivate;
+typedef struct _MooIconViewClass   MooIconViewClass;
 
-struct MooIconView
+struct _MooIconView
 {
     GtkVBox             vbox;
     MooIconViewPrivate *priv;
 };
 
-struct MooIconViewClass
+struct _MooIconViewClass
 {
     GtkVBoxClass        vbox_class;
 

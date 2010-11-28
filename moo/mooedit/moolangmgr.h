@@ -27,7 +27,7 @@ G_BEGIN_DECLS
 #define MOO_LANG_MGR(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_LANG_MGR, MooLangMgr))
 #define MOO_IS_LANG_MGR(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_LANG_MGR))
 
-typedef struct MooLangMgr MooLangMgr;
+typedef struct _MooLangMgr MooLangMgr;
 
 
 GType           moo_lang_mgr_get_type               (void) G_GNUC_CONST;

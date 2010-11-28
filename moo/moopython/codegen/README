@@ -1,0 +1,4 @@
+This is pygtk's codegen (http://pygtk.org/), slightly
+modified for cross-compiling and compiling with pygtk-2.6
+(and it also removes senseless warnings about not-wrapped
+methods unless explicitly asked for those).

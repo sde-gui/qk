@@ -32,10 +32,10 @@ G_BEGIN_DECLS
 #define MOO_FILE_SELECTOR_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_SELECTOR, MooFileSelectorClass))
 
 
-typedef struct MooFileSelector      MooFileSelector;
-typedef struct MooFileSelectorClass MooFileSelectorClass;
+typedef struct _MooFileSelector      MooFileSelector;
+typedef struct _MooFileSelectorClass MooFileSelectorClass;
 
-struct MooFileSelector
+struct _MooFileSelector
 {
     MooFileView base;
 
@@ -45,7 +45,7 @@ struct MooFileSelector
     gboolean waiting_for_tab;
 };
 
-struct MooFileSelectorClass
+struct _MooFileSelectorClass
 {
     MooFileViewClass base_class;
 };

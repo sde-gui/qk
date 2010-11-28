@@ -54,7 +54,7 @@ static const char *NODE_TYPE_NAME[] = {
     "MOO_UI_NODE_PLACEHOLDER"
 };
 
-struct MooUiXmlPrivate {
+struct _MooUiXmlPrivate {
     Node *ui;
     GSList *toplevels;  /* Toplevel* */
     guint last_merge_id;

@@ -24,7 +24,7 @@ G_BEGIN_DECLS
 #define PROGRESS_WIDTH      300
 #define PROGRESS_HEIGHT     100
 
-struct MooEditViewPrivate
+struct _MooEditViewPrivate
 {
     MooEdit *doc;
     MooEditBuffer *buffer;

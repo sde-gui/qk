@@ -30,11 +30,11 @@ G_BEGIN_DECLS
 #define MOO_PREFS_PAGE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PREFS_PAGE, MooPrefsPageClass))
 
 
-typedef struct MooPrefsPage        MooPrefsPage;
-typedef struct MooPrefsPagePrivate MooPrefsPagePrivate;
-typedef struct MooPrefsPageClass   MooPrefsPageClass;
+typedef struct _MooPrefsPage        MooPrefsPage;
+typedef struct _MooPrefsPagePrivate MooPrefsPagePrivate;
+typedef struct _MooPrefsPageClass   MooPrefsPageClass;
 
-struct MooPrefsPage
+struct _MooPrefsPage
 {
     GtkVBox base;
     MooPrefsPagePrivate *priv;
@@ -42,7 +42,7 @@ struct MooPrefsPage
     char *label;
 };
 
-struct MooPrefsPageClass
+struct _MooPrefsPageClass
 {
     GtkVBoxClass base_class;
     void (*init)  (MooPrefsPage *page);

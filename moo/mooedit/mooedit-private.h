@@ -22,7 +22,7 @@ G_BEGIN_DECLS
 
 #define MOO_EDIT_IS_UNTITLED(edit) (!(edit)->priv->file)
 
-struct MooEditPrivate {
+struct _MooEditPrivate {
     MooEditView *view;
     MooEditor *editor;
 

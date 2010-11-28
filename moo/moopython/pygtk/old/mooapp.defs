@@ -1,0 +1,102 @@
+;; -*- scheme -*-
+
+(define-object App
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooApp")
+  (gtype-id "MOO_TYPE_APP")
+)
+
+;; From mooapp.h
+
+(define-function get_instance
+  (c-name "moo_app_get_instance")
+  (return-type "MooApp*")
+)
+
+(define-method init
+  (of-object "MooApp")
+  (c-name "moo_app_init")
+  (return-type "gboolean")
+)
+
+(define-method run
+  (of-object "MooApp")
+  (c-name "moo_app_run")
+  (return-type "int")
+)
+
+(define-method quit
+  (of-object "MooApp")
+  (c-name "moo_app_quit")
+  (return-type "gboolean")
+)
+
+(define-function prefs_dialog
+  (c-name "moo_app_prefs_dialog")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+  )
+)
+
+(define-function about_dialog
+  (c-name "moo_app_about_dialog")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+  )
+)
+
+(define-method get_system_info
+  (of-object "MooApp")
+  (c-name "moo_app_get_system_info")
+  (return-type "char*")
+)
+
+(define-method get_ui_xml
+  (of-object "MooApp")
+  (c-name "moo_app_get_ui_xml")
+  (return-type "MooUiXml*")
+)
+
+(define-method set_ui_xml
+  (of-object "MooApp")
+  (c-name "moo_app_set_ui_xml")
+  (return-type "none")
+  (parameters
+    '("MooUiXml*" "xml")
+  )
+)
+
+(define-function send_msg
+  (c-name "moo_app_send_msg")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "pid" (null-ok))
+    '("const-char*" "data")
+    '("int" "len")
+  )
+)
+
+; (define-function send_files
+;   (c-name "moo_app_send_files")
+;   (return-type "gboolean")
+;   (parameters
+;     '("strv" "files")
+;     '("const-char*" "encoding" (null-ok) (default "NULL"))
+;     '("int" "line" (default "-1"))
+;     '("guint32" "stamp" (default "0"))
+;     '("const-char*" "pid" (null-ok) (default "NULL"))
+;     '("guint" "options" (default "0"))
+;   )
+; )
+
+(define-function text_view_set_markup
+  (c-name "moo_text_view_set_markup")
+  (return-type "none")
+  (parameters
+    '("GtkTextView*" "text_view")
+    '("const-char*" "markup")
+  )
+)

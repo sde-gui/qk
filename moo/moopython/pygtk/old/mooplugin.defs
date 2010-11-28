@@ -1,0 +1,373 @@
+;; -*- scheme -*-
+
+(define-object Plugin
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooPlugin")
+  (gtype-id "MOO_TYPE_PLUGIN")
+  (fields
+    '("gboolean" "initialized")
+    '("char*" "id")
+    '("MooPluginInfo*" "info")
+    '("MooPluginParams*" "params")
+;     '("GSList*" "docs")
+    '("GType" "win_plugin_type")
+    '("GType" "doc_plugin_type")
+  )
+)
+
+(define-object WinPlugin
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooWinPlugin")
+  (gtype-id "MOO_TYPE_WIN_PLUGIN")
+  (fields
+    '("MooEditWindow*" "window")
+    '("MooPlugin*" "plugin")
+  )
+)
+
+(define-object DocPlugin
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooDocPlugin")
+  (gtype-id "MOO_TYPE_DOC_PLUGIN")
+  (fields
+    '("MooEditWindow*" "window")
+    '("MooPlugin*" "plugin")
+    '("MooEdit*" "doc")
+  )
+)
+
+(define-boxed PluginInfo
+  (in-module "Moo")
+  (c-name "MooPluginInfo")
+  (gtype-id "MOO_TYPE_PLUGIN_INFO")
+  (copy-func "moo_plugin_info_copy")
+  (release-func "moo_plugin_info_free")
+  (fields
+    '("char*" "name")
+    '("char*" "description")
+    '("char*" "author")
+    '("char*" "version")
+    '("char*" "langs")
+  )
+)
+
+(define-boxed PluginParams
+  (in-module "Moo")
+  (c-name "MooPluginParams")
+  (gtype-id "MOO_TYPE_PLUGIN_PARAMS")
+  (copy-func "moo_plugin_params_copy")
+  (release-func "moo_plugin_params_free")
+  (fields
+    '("gboolean" "enabled")
+    '("gboolean" "visible")
+  )
+)
+
+;; MooPlugin
+
+;(define-function moo_plugin_new
+;  (c-name "moo_plugin_new")
+;  (is-constructor-of "MooPlugin")
+;  (return-type "MooPlugin*")
+;  (properties)
+;)
+
+(define-method initialized
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_initialized")
+  (return-type "gboolean")
+)
+
+(define-method enabled
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_enabled")
+  (return-type "gboolean")
+)
+
+(define-method set_enabled
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_set_enabled")
+  (return-type "gboolean")
+  (parameters
+    '("gboolean" "enabled")
+  )
+)
+
+(define-method id
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_id")
+  (return-type "const-char*")
+)
+
+(define-method name
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_name")
+  (return-type "const-char*")
+)
+
+(define-method description
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_description")
+  (return-type "const-char*")
+)
+
+(define-method author
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_author")
+  (return-type "const-char*")
+)
+
+(define-method version
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_version")
+  (return-type "const-char*")
+)
+
+(define-method lookup_method
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_lookup_method")
+  (return-type "MooPluginMeth*")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+(define-method list_methods
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_list_methods")
+  (return-type "GSList*")
+)
+
+(define-method call_method
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_call_method")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+  )
+  (varargs #t)
+)
+
+(define-virtual init
+  (of-object "MooPlugin")
+  (return-type "gboolean")
+)
+
+(define-virtual deinit
+  (of-object "MooPlugin")
+  (return-type "none")
+)
+
+(define-virtual attach_win
+  (of-object "MooPlugin")
+  (return-type "none")
+  (parameters
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-virtual detach_win
+  (of-object "MooPlugin")
+  (return-type "none")
+  (parameters
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-virtual attach_doc
+  (of-object "MooPlugin")
+  (return-type "none")
+  (parameters
+    '("MooEdit*" "doc")
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-virtual detach_doc
+  (of-object "MooPlugin")
+  (return-type "none")
+  (parameters
+    '("MooEdit*" "doc")
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-virtual create_prefs_page
+  (of-object "MooPlugin")
+  (return-type "GtkWidget*")
+)
+
+
+(define-method set_info
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_set_info")
+  (return-type "none")
+  (parameters
+    '("MooPluginInfo*" "info")
+  )
+)
+
+(define-method set_win_plugin_type
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_set_win_plugin_type")
+  (return-type "none")
+  (parameters
+    '("GType" "type")
+  )
+)
+
+(define-method set_doc_plugin_type
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_set_doc_plugin_type")
+  (return-type "none")
+  (parameters
+    '("GType" "type")
+  )
+)
+
+
+;; MooWinPlugin
+
+(define-virtual create
+  (of-object "MooWinPlugin")
+  (return-type "gboolean")
+)
+
+(define-virtual destroy
+  (of-object "MooWinPlugin")
+  (return-type "none")
+)
+
+
+;; MooDocPlugin
+
+(define-virtual create
+  (of-object "MooDocPlugin")
+  (return-type "gboolean")
+)
+
+(define-virtual destroy
+  (of-object "MooDocPlugin")
+  (return-type "none")
+)
+
+
+;; MooPluginInfo, MooPluginParams
+
+(define-function moo_plugin_info_new
+  (c-name "moo_plugin_info_new")
+  (is-constructor-of "MooPluginInfo")
+  (return-type "MooPluginInfo*")
+  (parameters
+    '("const-char*" "name")
+    '("const-char*" "author" (null-ok) (default "NULL"))
+    '("const-char*" "description" (null-ok) (default "NULL"))
+    '("const-char*" "version" (null-ok) (default "NULL"))
+    '("const-char*" "langs" (null-ok) (default "NULL"))
+  )
+)
+
+(define-function moo_plugin_params_new
+  (c-name "moo_plugin_params_new")
+  (is-constructor-of "MooPluginParams")
+  (return-type "MooPluginParams*")
+  (parameters
+    '("gboolean" "enabled" (null-ok) (default "TRUE"))
+    '("gboolean" "visible" (null-ok) (default "TRUE"))
+  )
+)
+
+
+(define-function plugin_register
+  (c-name "moo_plugin_register")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "id")
+    '("GType" "type")
+    '("MooPluginInfo*" "info")
+    '("MooPluginParams*" "params" (null-ok) (default "NULL"))
+  )
+)
+
+(define-function plugin_lookup
+  (c-name "moo_plugin_lookup")
+  (return-type "MooPlugin*")
+  (parameters
+    '("const-char*" "plugin_id")
+  )
+)
+
+(define-function win_plugin_lookup
+  (c-name "moo_win_plugin_lookup")
+  (return-type "MooWinPlugin*")
+  (parameters
+    '("const-char*" "plugin_id")
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-function doc_plugin_lookup
+  (c-name "moo_doc_plugin_lookup")
+  (return-type "MooWinPlugin*")
+  (parameters
+    '("const-char*" "plugin_id")
+    '("MooEdit*" "doc")
+  )
+)
+
+(define-function list_plugins
+  (c-name "moo_list_plugins")
+  (return-type "GSList*")
+)
+
+(define-function plugin_get_dirs
+  (c-name "moo_plugin_get_dirs")
+  (return-type "strv")
+  (caller-owns-return "t")
+)
+
+(define-function plugin_read_dirs
+  (c-name "moo_plugin_read_dirs")
+  (return-type "none")
+)
+
+
+; (define-function plugin_method_new
+;   (c-name "moo_plugin_method_new")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "name")
+;     '("GType" "ptype")
+;     '("GCallback" "method")
+;     '("GClosureMarshal" "c_marshaller")
+;     '("GType" "return_type")
+;     '("guint" "n_params")
+;   )
+;   (varargs #t)
+; )
+
+; (define-function plugin_method_newv
+;   (c-name "moo_plugin_method_newv")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "name")
+;     '("GType" "ptype")
+;     '("GClosure*" "closure")
+;     '("GClosureMarshal" "c_marshaller")
+;     '("GType" "return_type")
+;     '("guint" "n_params")
+;     '("const-GType*" "param_types")
+;   )
+; )
+
+(define-function module_check_version
+  (c-name "moo_module_check_version")
+  (return-type "gboolean")
+  (parameters
+    '("guint" "major")
+    '("guint" "minor")
+  )
+)
