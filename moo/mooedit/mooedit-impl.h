@@ -23,7 +23,7 @@
 #include "mooedit/moolinemark.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootextview.h"
-#include "mooutils/mdhistorymgr.h"
+#include "mooutils/moohistorymgr.h"
 #include <gio/gio.h>
 
 G_BEGIN_DECLS
@@ -53,14 +53,6 @@ void        _moo_edit_line_mark_moved       (MooEdit        *edit,
 void        _moo_edit_line_mark_deleted     (MooEdit        *edit,
                                              MooLineMark    *mark);
 void        _moo_edit_update_bookmarks_style(MooEdit        *edit);
-
-void        _moo_edit_history_item_set_encoding (MdHistoryItem  *item,
-                                                 const char     *encoding);
-void        _moo_edit_history_item_set_line     (MdHistoryItem  *item,
-                                                 int             line);
-const char *_moo_edit_history_item_get_encoding (MdHistoryItem  *item);
-int         _moo_edit_history_item_get_line     (MdHistoryItem  *item);
-
 
 /***********************************************************************/
 /* Preferences

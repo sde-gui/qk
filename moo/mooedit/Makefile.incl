@@ -24,6 +24,8 @@ moo_sources +=				\
 	mooedit/mooedit-fileops.h	\
 	mooedit/mooeditfiltersettings.c	\
 	mooedit/mooeditfiltersettings.h	\
+	mooedit/mooedithistoryitem.c	\
+	mooedit/mooedithistoryitem.h	\
 	mooedit/mooedit-impl.h		\
 	mooedit/mooeditor.c		\
 	mooedit/mooeditor.h		\

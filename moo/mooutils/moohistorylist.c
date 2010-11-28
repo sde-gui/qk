@@ -22,7 +22,7 @@
 
 #define MAX_NUM_HISTORY_ITEMS 10
 
-typedef MooHistoryItem Item;
+typedef MooHistoryListItem Item;
 
 struct _MooHistoryListPrivate {
     GtkTreeModel *model;
@@ -47,7 +47,7 @@ struct _MooHistoryListPrivate {
     gboolean allow_empty;
 };
 
-MOO_DEFINE_BOXED_TYPE_C (MooHistoryItem, moo_history_item)
+MOO_DEFINE_BOXED_TYPE_C (MooHistoryListItem, moo_history_list_item)
 
 static GHashTable *named_lists;
 
@@ -81,7 +81,7 @@ static void     _list_delete_last               (MooHistoryList     *list);
 static void     list_save_recent                (MooHistoryList     *list);
 
 static void     menu_item_activated             (MooHistoryList     *list,
-                                                 MooHistoryItem     *entry,
+                                                 MooHistoryListItem *entry,
                                                  gpointer            menu_data);
 
 
@@ -239,11 +239,11 @@ moo_history_list_finalize (GObject *object)
 }
 
 
-MooHistoryItem *
+MooHistoryListItem *
 moo_history_list_get_item (MooHistoryList *list,
                            GtkTreeIter    *iter)
 {
-    MooHistoryItem *item = NULL;
+    MooHistoryListItem *item = NULL;
     gtk_tree_model_get (list->priv->model, iter, 0, &item, -1);
     return item;
 }
@@ -266,11 +266,11 @@ moo_history_list_find (MooHistoryList *list,
 
             if (entry && list->priv->compare_func (text, entry, list->priv->compare_data))
             {
-                moo_history_item_free (entry);
+                moo_history_list_item_free (entry);
                 return TRUE;
             }
 
-            moo_history_item_free (entry);
+            moo_history_list_item_free (entry);
         }
         while (gtk_tree_model_iter_next (list->priv->model, iter));
     }
@@ -291,9 +291,9 @@ default_compare_func (const char *text,
 
 
 Item*
-moo_history_item_new (const char     *data,
-                      const char     *display,
-                      gboolean        builtin)
+moo_history_list_item_new (const char     *data,
+                           const char     *display,
+                           gboolean        builtin)
 {
     Item *item;
 
@@ -311,17 +311,17 @@ moo_history_item_new (const char     *data,
 
 
 Item*
-moo_history_item_copy (const Item *item)
+moo_history_list_item_copy (const Item *item)
 {
     g_return_val_if_fail (item != NULL, NULL);
-    return moo_history_item_new (item->data,
-                                 item->display,
-                                 item->builtin);
+    return moo_history_list_item_new (item->data,
+                                      item->display,
+                                      item->builtin);
 }
 
 
 void
-moo_history_item_free (Item *item)
+moo_history_list_item_free (Item *item)
 {
     if (item)
     {
@@ -373,7 +373,7 @@ moo_history_list_add_builtin (MooHistoryList *list,
 
     g_return_if_fail (MOO_IS_HISTORY_LIST (list));
 
-    new_item = moo_history_item_new (item, display_item, TRUE);
+    new_item = moo_history_list_item_new (item, display_item, TRUE);
     g_return_if_fail (new_item != NULL);
 
     if (moo_history_list_find (list, item, &iter))
@@ -381,7 +381,7 @@ moo_history_list_add_builtin (MooHistoryList *list,
         Item *old = moo_history_list_get_item (list, &iter);
         if (!old->builtin)
             _list_remove (list, &iter);
-        moo_history_item_free (old);
+        moo_history_list_item_free (old);
     }
 
     _list_insert (list, list->priv->num_builtin++, new_item);
@@ -471,11 +471,11 @@ moo_history_list_add_full (MooHistoryList *list,
             g_signal_emit (list, signals[CHANGED], 0);
         }
 
-        moo_history_item_free (old);
+        moo_history_list_item_free (old);
         return;
     }
 
-    new_entry = moo_history_item_new (entry, display_entry, FALSE);
+    new_entry = moo_history_list_item_new (entry, display_entry, FALSE);
     g_return_if_fail (new_entry != NULL);
 
     if (list->priv->num_builtin &&
@@ -503,7 +503,7 @@ moo_history_list_add_full (MooHistoryList *list,
     if (was_empty)
         g_object_notify (G_OBJECT (list), "empty");
 
-    moo_history_item_free (new_entry);
+    moo_history_list_item_free (new_entry);
 }
 
 
@@ -528,7 +528,7 @@ moo_history_list_get_last_item (MooHistoryList *list)
 
     data = item->data;
     item->data = NULL;
-    moo_history_item_free (item);
+    moo_history_list_item_free (item);
     return data;
 }
 
@@ -570,7 +570,7 @@ moo_history_list_remove (MooHistoryList *list,
     if (moo_history_list_is_empty (list))
         g_object_notify (G_OBJECT (list), "empty");
 
-    moo_history_item_free (item);
+    moo_history_list_item_free (item);
     return;
 }
 
@@ -744,9 +744,9 @@ moo_history_list_get_model (MooHistoryList *list)
  */
 
 static void
-menu_item_activated (MooHistoryList *list,
-                     MooHistoryItem *entry,
-                     gpointer        menu_data)
+menu_item_activated (MooHistoryList     *list,
+                     MooHistoryListItem *entry,
+                     gpointer            menu_data)
 {
     g_signal_emit (list, signals[ACTIVATE_ITEM], 0, entry, menu_data);
 }
@@ -794,8 +794,8 @@ _list_insert (MooHistoryList     *list,
         moo_menu_mgr_insert (list->priv->mgr,
                              NULL, index, NULL,
                              entry->display, tip, MOO_MENU_ITEM_ACTIVATABLE,
-                             moo_history_item_copy (entry),
-                             (GDestroyNotify) moo_history_item_free);
+                             moo_history_list_item_copy (entry),
+                             (GDestroyNotify) moo_history_list_item_free);
     }
     else
     {
@@ -833,15 +833,15 @@ _list_move_on_top (MooHistoryList     *list,
         moo_menu_mgr_insert (list->priv->mgr,
                              NULL, new_index, NULL,
                              entry->display, tip, MOO_MENU_ITEM_ACTIVATABLE,
-                             moo_history_item_copy (entry),
-                             (GDestroyNotify) moo_history_item_free);
+                             moo_history_list_item_copy (entry),
+                             (GDestroyNotify) moo_history_list_item_free);
     else
         moo_menu_mgr_insert_separator (list->priv->mgr, NULL, new_index);
 
     gtk_list_store_remove (list->priv->store, iter);
     gtk_list_store_insert (list->priv->store, iter, new_index);
     gtk_list_store_set (list->priv->store, iter, 0, entry, -1);
-    moo_history_item_free (entry);
+    moo_history_list_item_free (entry);
     g_free (tip);
 }
 
@@ -939,7 +939,7 @@ save_one (GtkTreeModel  *model,
     if (!item->builtin)
         moo_markup_create_text_element (root, ELEMENT_ITEM, item->data);
 
-    moo_history_item_free (item);
+    moo_history_list_item_free (item);
     return FALSE;
 }
 

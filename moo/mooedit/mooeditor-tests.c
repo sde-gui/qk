@@ -2,7 +2,7 @@
 #include "mooedit/mooeditor-tests.h"
 #include "mooedit/mooeditor-impl.h"
 #include "mooutils/mooutils-fs.h"
-#include "mooutils/mdhistorymgr.h"
+#include "mooutils/moohistorymgr.h"
 
 static struct {
     char *working_dir;
@@ -235,7 +235,7 @@ test_suite_cleanup (G_GNUC_UNUSED gpointer data)
 
     editor = moo_editor_instance ();
 //     moo_editor_close_all (editor, FALSE, FALSE);
-    recent_file = _md_history_mgr_get_filename (_moo_editor_get_history_mgr (editor));
+    recent_file = _moo_history_mgr_get_filename (_moo_editor_get_history_mgr (editor));
 
     if (!g_file_test (recent_file, G_FILE_TEST_EXISTS))
         g_critical ("recent file %s does not exist", recent_file);
