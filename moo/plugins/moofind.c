@@ -690,9 +690,14 @@ process_grep_line (MooLineView *view,
     int line_no;
     guint64 line_no_64;
 
+    g_return_val_if_fail (line != NULL, FALSE);
+
     /* 'Binary file blah matches' */
     if (g_str_has_prefix (line, "Binary file "))
         return FALSE;
+
+    if (!*line)
+        return TRUE;
 
     p = line;
     if (!(colon = strchr (p, ':')) ||
