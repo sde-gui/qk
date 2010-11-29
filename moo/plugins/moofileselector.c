@@ -22,7 +22,7 @@
 #include "mooedit/mooeditwindow.h"
 #include "moofileview/moobookmarkmgr.h"
 #include "moofileview/moofileview-tools.h"
-#include "mooeditplugins.h"
+#include "plugins/mooplugin-builtin.h"
 #include "marshals.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooprefs.h"

@@ -16,7 +16,7 @@
 #ifndef MOO_COMMAND_EXE_H
 #define MOO_COMMAND_EXE_H
 
-#include "usertools/moocommand.h"
+#include "plugins/usertools/moocommand.h"
 #include <mooedit/mooeditwindow.h>
 
 G_BEGIN_DECLS

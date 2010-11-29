@@ -17,7 +17,7 @@
 #include "moousertools.h"
 #include "moousertools-prefs.h"
 #include "moocommand-private.h"
-#include "mooeditplugins.h"
+#include "plugins/mooplugin-builtin.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooeditaction.h"
 #include "mooedit/mooeditaction-factory.h"

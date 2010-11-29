@@ -20,7 +20,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
-#include "plugins/mooeditplugins.h"
+#include "plugins/mooplugin-builtin.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>

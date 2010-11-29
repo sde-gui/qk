@@ -16,7 +16,7 @@
 
 #include "ctags-view.h"
 #include "ctags-doc.h"
-#include "mooeditplugins.h"
+#include "plugins/mooplugin-builtin.h"
 #include "marshals.h"
 #include <mooutils/mooutils-gobject.h>
 #include <mooutils/mooutils-treeview.h>
