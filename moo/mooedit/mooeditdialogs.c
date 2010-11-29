@@ -354,7 +354,7 @@ _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
     xml = save_mult_dialog_xml_new ();
     dialog = GTK_WIDGET (xml->SaveMultDialog);
 
-    moo_window_set_parent (dialog, GTK_WIDGET (docs->elms[0]));
+    moo_window_set_parent (dialog, GTK_WIDGET (moo_edit_get_view (docs->elms[0])));
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                             MOO_STOCK_SAVE_NONE, GTK_RESPONSE_NO,
