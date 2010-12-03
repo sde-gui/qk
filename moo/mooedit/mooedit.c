@@ -230,11 +230,11 @@ moo_edit_init (MooEdit *edit)
     MooIndenter *indent;
     GtkTextBuffer *buffer;
 
+    edit->priv = G_TYPE_INSTANCE_GET_PRIVATE (edit, MOO_TYPE_EDIT, MooEditPrivate);
+
     edit->config = moo_edit_config_new ();
     g_signal_connect_swapped (edit->config, "notify",
                               G_CALLBACK (config_changed), edit);
-
-    edit->priv = G_TYPE_INSTANCE_GET_PRIVATE (edit, MOO_TYPE_EDIT, MooEditPrivate);
 
     edit->priv->actions = moo_action_collection_new ("MooEdit", "MooEdit");
     edit->priv->line_end_type = MOO_LE_NONE;
