@@ -1,7 +1,6 @@
 <?xml version="1.0" ?><!-- -%- indent-width:2; use-tabs:0 -%- -->
 <moduleset>
 
-  <!-- good -->
   <tarball id="zlib" version="1.2.5" supports-non-srcdir-builds="no">
     <source href="http://zlib.net/zlib-1.2.5.tar.gz"
             md5sum="c735eab2d659a96e5a594c9e8541ad63"/>
@@ -10,13 +9,11 @@
     </patches>
   </tarball>
 
-  <!-- good -->
   <tarball id="libiconv" version="1.13.1">
     <source href="http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.1.tar.gz"
             md5sum="7ab33ebd26687c744a37264a330bbe9a"/>
   </tarball>
 
-  <!-- good -->
   <tarball id="gettext" version="0.17">
     <source href="http://ftp.gnu.org/pub/gnu/gettext/gettext-0.17.tar.gz"
             md5sum="58a2bc6d39c0ba57823034d55d65d606"/>
@@ -38,7 +35,6 @@
     </dependencies>
   </tarball>
 
-  <!-- good -->
   <tarball id="libpng" version="1.4.1">
     <source href="http://download.sourceforge.net/libpng/libpng-1.4.1.tar.gz"
             md5sum="fa0b2a84733463f90d3ac9f43ccafabc"/>
@@ -50,7 +46,6 @@
     </patches>
   </tarball>
 
-  <!-- good -->
   <tarball id="libxml2" version="2.6.30">
     <source href="http://ftp.gnome.org/pub/gnome/sources/libxml2/2.6/libxml2-2.6.30.tar.bz2"
             md5sum="cbc6d381daaa836b90a7ab449c1bc1ae"/>
@@ -59,8 +54,7 @@
     </dependencies>
   </tarball>
 
-  <!-- good -->
-  <tarball id="glib-2.24.2">
+  <tarball id="glib">
     <source href="http://ftp.gnome.org/pub/gnome/sources/glib/2.24/glib-2.24.2.tar.bz2"
             sha256sum="3aeb521abd3642dd1224379f0e54915957e5010f888a4ae74afa0ad54da0160c"/>
     <dependencies>
@@ -75,13 +69,6 @@
     </patches>
   </tarball>
 
-  <metamodule id="glib">
-    <dependencies>
-      <dep package="glib-2.24.2"/>
-    </dependencies>
-  </metamodule>
-
-  <!-- good -->
   <tarball id="pkgconfig" version="0.23">
     <source href="http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz"
             md5sum="d922a88782b64441d06547632fd85744"/>
@@ -93,28 +80,25 @@
     </patches>
   </tarball>
 
-  <!-- good -->
-  <tarball id="pixman-0.17.14">
+<!--  <tarball id="pixman-0.17.14">
     <source href="http://cairographics.org/releases/pixman-0.17.14.tar.gz"
             md5sum="b0ad87c2cc9346056698eaf6af1933a6"/>
     <patches>
       <patch file="pixman-0.17.patch" strip="1"/>
     </patches>
-  </tarball>
+  </tarball>-->
 
-  <tarball id="pixman-0.19.2">
+<!--  <tarball id="pixman-0.19.2">
     <source href="http://cairographics.org/releases/pixman-0.19.2.tar.gz"
             md5sum="dfb84c9f402fbba5047f0e0a69c17518"/>
+  </tarball>-->
+
+  <tarball id="pixman">
+    <source href="http://cairographics.org/releases/pixman-0.21.2.tar.gz"
+            md5sum="9e09fd6e58cbf9717140891e0b7d4a7a"/>
   </tarball>
 
-  <metamodule id="pixman">
-    <dependencies>
-      <dep package="pixman-0.17.14"/>
-    </dependencies>
-  </metamodule>
-
-  <!-- good -->
-  <tarball id="cairo-1.8" supports-non-srcdir-builds="no">
+<!--  <tarball id="cairo-1.8" supports-non-srcdir-builds="no">
     <source href="http://cairographics.org/releases/cairo-1.8.4.tar.gz"
             md5sum="a5067e355e78294db2485aa97afd1115"/>
     <dependencies>
@@ -122,10 +106,9 @@
       <dep package="gettext"/>
       <dep package="libpng"/>
     </dependencies>
-  </tarball>
+  </tarball>-->
 
-  <!-- does not build -->
-  <tarball id="cairo-1.10" supports-non-srcdir-builds="no">
+  <tarball id="cairo" supports-non-srcdir-builds="no">
     <source href="http://cairographics.org/releases/cairo-1.10.0.tar.gz"
             md5sum="70a2ece66cf473d976e2db0f75bf199e"/>
     <dependencies>
@@ -133,15 +116,11 @@
       <dep package="gettext"/>
       <dep package="libpng"/>
     </dependencies>
+    <patches>
+      <patch file="cairo-1.10.patch" strip="1"/>
+    </patches>
   </tarball>
 
-  <metamodule id="cairo">
-    <dependencies>
-      <dep package="cairo-1.8"/>
-    </dependencies>
-  </metamodule>
-
-  <!-- good -->
   <tarball id="pango">
     <source href="http://ftp.acc.umu.se/pub/GNOME/sources/pango/1.28/pango-1.28.0.tar.bz2"
             sha256sum="68480485b714e3570a58c270add9e9785fa78068f7410949b478e8a9d3f5bc40"/>
@@ -154,7 +133,6 @@
     </dependencies>
   </tarball>
 
-  <!-- good -->
   <tarball id="atk" supports-non-srcdir-builds="no">
     <source href="http://ftp.gnome.org/pub/gnome/sources/atk/1.30/atk-1.30.0.tar.bz2"
             sha256sum="92b9b1213cafc68fe9c3806273b968c26423237d7b1f631dd83dc5270b8c268c"/>
@@ -163,8 +141,7 @@
     </dependencies>
   </tarball>
 
-  <!-- good -->
-  <tarball id="gtk+-2.16">
+  <tarball id="gtk+">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gtk+/2.16/gtk+-2.16.6.tar.bz2"
             sha256sum="18e0f9792028e6cc5108447678f17d396f9a2cdfec1e6ab5dca98cb844f954af"/>
     <dependencies>
@@ -179,7 +156,7 @@
     </patches>
   </tarball>
 
-  <tarball id="gtk+-2.18">
+<!--  <tarball id="gtk+-2.18">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gtk+/2.18/gtk+-2.18.9.tar.bz2"
             sha256sum="5dcd8c406acbb8779c0b081a089fa87dfd7ab4d7d4c6075db478997ce96aa9b4"/>
     <dependencies>
@@ -192,9 +169,9 @@
     <patches>
       <patch file="gtk-2.18.patch" strip="1"/>
     </patches>
-  </tarball>
+  </tarball>-->
 
-  <tarball id="gtk+-2.20">
+<!--  <tarball id="gtk+-2.20">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gtk+/2.20/gtk+-2.20.0.tar.bz2"
             sha256sum="8ea7e11ff88e9a8867b7d9221d40a3bfce5c648ce27cd6bac422ff8f6cca414d"/>
     <dependencies>
@@ -207,9 +184,9 @@
     <patches>
       <patch file="gtk-2.20.patch" strip="1"/>
     </patches>
-  </tarball>
+  </tarball>-->
 
-  <repository type="git" name="git.gnome.org" href="git://git.gnome.org/"/>
+<!--  <repository type="git" name="git.gnome.org" href="git://git.gnome.org/"/>
   <autotools id="gtk-2-20">
     <branch repo="git.gnome.org" module="gtk+" revision="gtk-2-20"/>
     <dependencies>
@@ -219,10 +196,10 @@
       <dep package="glib"/>
       <dep package="libpng"/>
     </dependencies>
-<!--    <patches>
+    <patches>
       <patch file="gtk-2.20.patch" strip="1"/>
-    </patches>-->
-  </autotools>
+    </patches>
+  </autotools>-->
 
   <tarball id="gtk-engines">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gtk-engines/2.20/gtk-engines-2.20.0.tar.bz2"
@@ -267,7 +244,6 @@
     </patches>
   </tarball>
 
-  <!-- good -->
   <tarball id="intltool">
     <source href="http://launchpadlibrarian.net/41841194/intltool-0.41.1.tar.gz"
             sha256sum="06d02133a85b9d6f29cd763050dc9267a6d73ef3008993f5b917cafc7ece96c0"/>
@@ -276,13 +252,73 @@
     </patches>
   </tarball>
 
-  <metamodule id="gtk+">
+<!--  <repository type="git" name="anongit.freedesktop.org" href="git://anongit.freedesktop.org/"/>
+  <autotools id="pycairo">
+    <branch repo="anongit.freedesktop.org"
+            module="py2cairo"/>
     <dependencies>
-      <dep package="gtk+-2.16"/>
-<!--      <dep package="gtk+-2.18"/>-->
-<!--      <dep package="gtk+-2.20"/>-->
+      <dep package="cairo"/>
     </dependencies>
-  </metamodule>
+    <patches>
+      <patch file="pycairo.patch" strip="1"/>
+    </patches>
+  </autotools>-->
+
+  <tarball id="pycairo">
+    <source href="file:///tmp/pycairo-mine-1.8.10.tar.gz"/>
+    <dependencies>
+      <dep package="cairo"/>
+    </dependencies>
+<!--    <patches>
+      <patch file="pycairo-1.8.10.patch" strip="1"/>
+    </patches>-->
+  </tarball>
+
+<!--  <tarball id="pycairo">
+    <source href="http://cairographics.org/releases/py2cairo-1.8.10.tar.gz"
+            md5sum="87421a6a70304120555ba7ba238f3dc3"/>
+    <dependencies>
+      <dep package="cairo"/>
+    </dependencies>
+    <patches>
+      <patch file="pycairo-1.8.10.patch" strip="1"/>
+    </patches>
+  </tarball>-->
+
+<!--  <tarball id="pycairo">
+    <source href="http://cairographics.org/releases/pycairo-1.8.8.tar.gz"
+            md5sum="054da6c125cb427a003f5fd6c54f853e"/>
+    <dependencies>
+      <dep package="cairo"/>
+    </dependencies>
+    <patches>
+      <patch file="pycairo-1.8.8.patch" strip="1"/>
+    </patches>
+  </tarball>-->
+
+  <tarball id="pygobject">
+    <source href="http://ftp.acc.umu.se/pub/GNOME/sources/pygobject/2.26/pygobject-2.26.0.tar.bz2"
+            md5sum="7e3352c4b83ce8dc15290e86dd9c2be0"/>
+    <dependencies>
+      <dep package="glib"/>
+    </dependencies>
+    <patches>
+      <patch file="pygobject-2.26.0.patch" strip="1"/>
+    </patches>
+  </tarball>
+
+  <tarball id="pygtk">
+    <source href="http://ftp.acc.umu.se/pub/GNOME/sources/pygtk/2.16/pygtk-2.16.0.tar.bz2"
+            md5sum="bd0d437fefd6d5390f5d770a495cd50c"/>
+    <dependencies>
+      <dep package="gtk+"/>
+      <dep package="pygobject"/>
+      <dep package="pycairo"/>
+    </dependencies>
+    <patches>
+      <patch file="pygtk-2.16.0.patch" strip="1"/>
+    </patches>
+  </tarball>
 
   <metamodule id="medit-gtk-win">
     <dependencies>
@@ -291,6 +327,7 @@
       <dep package="pkgconfig"/>
       <dep package="gtk+"/>
       <dep package="intltool"/>
+<!--      <dep package="pygtk"/>-->
     </dependencies>
   </metamodule>
 

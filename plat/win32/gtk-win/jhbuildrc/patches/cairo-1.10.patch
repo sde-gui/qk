@@ -1,0 +1,14 @@
+diff -r dca2ed886c01 src/cairo.c
+--- a/src/cairo.c	Sun Nov 28 22:13:27 2010 -0800
++++ b/src/cairo.c	Sun Nov 28 22:17:25 2010 -0800
+@@ -149,6 +149,10 @@
+ };
+ #include <assert.h>
+ 
++#ifdef __MINGW32__
++#define ffs __builtin_ffs
++#endif
++
+ /**
+  * _cairo_error:
+  * @status: a status value indicating an error, (eg. not
