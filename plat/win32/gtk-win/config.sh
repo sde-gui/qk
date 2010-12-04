@@ -14,6 +14,9 @@ case "$1" in
     ;;
 esac
 
+export mgwjhbuildsrcdir=$mgwbuildroot/jhbuild
+export mgwjhbuilddir=$mgwbuildroot/jhbuild-bin
+
 export mgwdestdir=$mgwbuildroot/bdist-$mgwconfig
 
 export mgwbuilddir=$mgwbuildroot/$mgwconfig

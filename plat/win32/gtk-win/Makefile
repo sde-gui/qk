@@ -10,16 +10,16 @@ build-gtk: check-make
 
 build-data: check-make
 	mkdir -p $(mgwtargetdir)
-	cp -R $(mgwdir)/extra/medit-data/* $(mgwtargetdir)/
+	cp -flR $(mgwdir)/extra/medit-data/* $(mgwtargetdir)/
 
 build-python: check-make
 	mkdir -p $(mgwtargetdir)/bin $(mgwtargetdir)/lib $(mgwtargetdir)/include/python
-	cp -f -l $(mgwpythoninstdir)/*.exe $(mgwtargetdir)/bin/
-	cp -f -l $(mgwpythonsystem32dir)/python2*.dll $(mgwtargetdir)/bin/
-	cp -f -l -R $(mgwpythoninstdir)/DLLs $(mgwpythoninstdir)/Lib $(mgwtargetdir)/bin/
-	cp -f -l $(mgwpythoninstdir)/libs/python2*.lib $(mgwtargetdir)/lib/
-	cp -f -l $(mgwpythoninstdir)/libs/libpython2*.a $(mgwtargetdir)/lib/
-	cp -f -l $(mgwpythoninstdir)/include/* $(mgwtargetdir)/include/python/
+# 	cp -fl $(mgwpythoninstdir)/*.exe $(mgwtargetdir)/bin/
+	cp -fl $(mgwpythonsystem32dir)/python2*.dll $(mgwtargetdir)/bin/
+# 	cp -flR $(mgwpythoninstdir)/DLLs $(mgwpythoninstdir)/Lib $(mgwtargetdir)/bin/
+	cp -fl $(mgwpythoninstdir)/libs/python2*.lib $(mgwtargetdir)/lib/
+	cp -fl $(mgwpythoninstdir)/libs/libpython2*.a $(mgwtargetdir)/lib/
+	cp -fl $(mgwpythoninstdir)/include/* $(mgwtargetdir)/include/python/
 
 build: build-gtk build-data
 

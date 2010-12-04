@@ -146,7 +146,7 @@ copy_icons() {
   do_or_die mkdir -p "$dstdir/share/icons"
   themes="hicolor"
   for theme in $themes; do
-    do_or_die cp -R -l "$srcdir/share/icons/$theme" "$dstdir/share/icons/"
+    do_or_die cp -flR "$srcdir/share/icons/$theme" "$dstdir/share/icons/"
     do_or_die rm -fr "$dstdir/share/icons/$theme/scalable"
     do_or_die gtk-update-icon-cache "$srcdir/share/icons/$theme"
   done
@@ -160,7 +160,7 @@ copy_icons() {
 }
 
 copy_mime() {
-  do_or_die cp -R /usr/share/mime "$dstdir/share/mime-tmp"
+  do_or_die cp -flR /usr/share/mime "$dstdir/share/mime-tmp"
   do_or_die update-mime-database "$dstdir/share/mime-tmp"
   do_or_die mkdir -p "$dstdir/share/mime"
   do_or_die mv "$dstdir/share/mime-tmp/mime.cache" "$dstdir/share/mime/"
