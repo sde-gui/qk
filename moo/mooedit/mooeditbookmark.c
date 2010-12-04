@@ -262,12 +262,15 @@ moo_edit_add_bookmark (MooEdit *edit,
                        guint    no)
 {
     MooEditBookmark *bk;
+    MooEditView *view;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_return_if_fail (line < get_line_count (edit));
     g_return_if_fail (moo_edit_get_bookmark_at_line (edit, line) == NULL);
 
-    g_object_set (edit, "show-line-marks", TRUE, (char*) 0);
+    view = moo_edit_get_view (edit);
+
+    g_object_set (view, "show-line-marks", TRUE, (char*) 0);
 
     bk = MOO_EDIT_BOOKMARK (g_object_new (MOO_TYPE_EDIT_BOOKMARK, "background", get_bookmark_color (edit), (char*) 0));
     moo_text_buffer_add_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bk), line);
