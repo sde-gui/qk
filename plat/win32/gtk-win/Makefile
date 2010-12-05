@@ -11,6 +11,7 @@ build-gtk: check-make
 build-data: check-make
 	mkdir -p $(mgwtargetdir)
 	cp -flR $(mgwdir)/extra/medit-data/* $(mgwtargetdir)/
+# 	cp -flR $(mgwdir)/extra/medit-data/etc/* $(mgwtargetdir)/etc/
 
 build-python: check-make
 	mkdir -p $(mgwtargetdir)/bin $(mgwtargetdir)/lib $(mgwtargetdir)/include/python

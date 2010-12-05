@@ -50,9 +50,16 @@ do_or_die() {
   "$@" || exit 1
 }
 
-bin_files='
+old_grep_bin_files='
 grep.exe
 intl.dll
+'
+
+new_grep_bin_files='
+grep.exe
+'
+
+bin_files='
 gspawn-win32-helper-console.exe
 gspawn-win32-helper.exe
 libatk-1.0-0.dll
@@ -115,12 +122,14 @@ copy_files_from_dir() {
       mkdir -p "$dstsubdir" || exit 1
     fi
     echo " -- $dstsubdir/`basename $f`"
-    cp -l $f "$dstsubdir/" || exit 1
+    cp -fl $f "$dstsubdir/" || exit 1
   done
 }
 
 copy_files() {
   copy_files_from_dir bin $bin_files
+  copy_files_from_dir bin $old_grep_bin_files
+#   copy_files_from_dir bin $new_grep_bin_files
   copy_files_from_dir etc $etc_files
   copy_files_from_dir lib $lib_files
   copy_files_from_dir share $share_files
@@ -135,7 +144,7 @@ copy_locale() {
 	mo=$locale/LC_MESSAGES/$module.mo
 	if [ -f $mo ]; then
 	  echo " -- $dstdir/share/locale/$mo"
-	  cp -l $mo "$dstdir/share/locale/$mo" || exit 1
+	  cp -fl $mo "$dstdir/share/locale/$mo" || exit 1
 	fi
       done
     fi
@@ -160,11 +169,15 @@ copy_icons() {
 }
 
 copy_mime() {
-  do_or_die cp -flR /usr/share/mime "$dstdir/share/mime-tmp"
+  do_or_die cp -R /usr/share/mime "$dstdir/share/mime-tmp"
   do_or_die update-mime-database "$dstdir/share/mime-tmp"
   do_or_die mkdir -p "$dstdir/share/mime"
   do_or_die mv "$dstdir/share/mime-tmp/mime.cache" "$dstdir/share/mime/"
   do_or_die rm -fr "$dstdir/share/mime-tmp"
+}
+
+copy_python() {
+  :
 }
 
 copy_files

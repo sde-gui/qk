@@ -28,9 +28,10 @@
   </tarball>
 
   <tarball id="grep">
-    <source href="http://ftp.gnu.org/pub/gnu/grep/grep-2.6.2.tar.gz"/>
+    <source href="http://ftp.gnu.org/pub/gnu/grep/grep-2.7.tar.gz"
+            md5sum="e848f07e3e79aa7899345d17c7e4115e"/>
     <patches>
-      <patch file="grep.patch" strip="1"/>
+      <patch file="grep-2.7.patch" strip="1"/>
     </patches>
     <dependencies>
       <dep package="gettext"/>
