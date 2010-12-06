@@ -12,7 +12,7 @@ import override
 import reversewrapper
 import warnings
 
-pygtk_version = 6
+pygtk_version = 16
 
 class Coverage(object):
     def __init__(self, name):
@@ -1681,11 +1681,6 @@ def main(argv):
             errorfilename = arg
         elif opt == '--platform':
             sys.platform = arg
-        elif opt == '--pygtk-version':
-            global pygtk_version
-            pygtk_version = int(arg)
-            if pygtk_version < 8:
-                defines['pygtk-2.6'] = '1'
         elif opt in ('-t', '--load-types'):
             globals = {}
             execfile(arg, globals)

@@ -72,27 +72,6 @@ Please check your Python installation.])
       AC_SUBST([PYTHON_LIBS])
   fi
 
-  # Check for Python extra linker flags
-  # if PYTHON_EXTRA_LIBS is set, do not do anything
-  if test $python_found = yes; then
-
-      if test "x$PYTHON_EXTRA_LIBS" = "x"; then
-          PYTHON_EXTRA_LIBS=`$PYTHON -c "import distutils.sysconfig; \
-                                         conf = distutils.sysconfig.get_config_var; \
-                                         print conf('LOCALMODLIBS'), conf('LIBS')"`
-          PYTHON_EXTRA_LDFLAGS=`$PYTHON -c "import distutils.sysconfig; \
-                                            conf = distutils.sysconfig.get_config_var; \
-                                            print conf('LDFLAGS')"`
-      fi
-
-      AC_MSG_CHECKING([Python extra libs])
-      AC_MSG_RESULT([$PYTHON_EXTRA_LIBS])
-      AC_MSG_CHECKING([Python extra linker flags])
-      AC_MSG_RESULT([$PYTHON_EXTRA_LDFLAGS])
-      AC_SUBST([PYTHON_EXTRA_LIBS])
-      AC_SUBST([PYTHON_EXTRA_LDFLAGS])
-  fi
-
   if test $python_found = yes; then
       m4_if([$1],[],[:],[$1])
   else
@@ -102,10 +81,10 @@ Please check your Python installation.])
 
 
 ##############################################################################
-# _MOO_AC_CHECK_PYTHON_UNIX(min-version,action-if-found,action-if-not-found)
+# MOO_AC_CHECK_PYTHON_NATIVE(min-version,action-if-found,action-if-not-found)
 # checks python stuff when building for unix
 #
-AC_DEFUN([_MOO_AC_CHECK_PYTHON_UNIX],[
+AC_DEFUN([MOO_AC_CHECK_PYTHON_NATIVE],[
     AM_PATH_PYTHON([$1],[
         _MOO_AC_PYTHON_DEVEL([
             python_found=yes
@@ -122,9 +101,27 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_UNIX],[
     else
         PYTHON_INCLUDES=""
         PYTHON_LIBS=""
-        PYTHON_EXTRA_LIBS=""
         m4_if([$3],[],[:],[$3])
     fi
+])
+
+
+AC_DEFUN([MOO_AM_PYTHON_DEVEL_CROSS_MINGW],[
+  if test x"$PYTHON_INCLUDES" = x; then
+    AC_MSG_ERROR([PYTHON_INCLUDES is not set])
+  fi
+  if test x"$PYTHON_LIBS" = x; then
+    AC_MSG_ERROR([PYTHON_LIBS is not set])
+  fi
+  AC_ARG_VAR([PYTHON_INCLUDES], [python preprocessor flags])
+  AC_ARG_VAR([PYTHON_LIBS], [python linker flags])
+  AC_SUBST(PYTHON_INCLUDES)
+  AC_SUBST(PYTHON_LIBS)
+  AC_MSG_CHECKING([for Python include path])
+  AC_MSG_RESULT([$PYTHON_INCLUDES])
+  AC_MSG_CHECKING([for Python linker flags])
+  AC_MSG_RESULT([$PYTHON_LIBS])
+  $1
 ])
 
 
@@ -133,13 +130,10 @@ AC_DEFUN([_MOO_AC_CHECK_PYTHON_UNIX],[
 # checks for python, python includes and libs
 #
 AC_DEFUN([MOO_AC_CHECK_PYTHON],[
-AC_MSG_NOTICE([checking for headers and libs required to compile python extensions])
-    AC_REQUIRE([MOO_AC_CHECK_OS])
-    if test x$MOO_OS_CYGWIN != xyes; then
-        if test x$MOO_OS_MINGW = xyes; then
-          MOO_AM_PYTHON_DEVEL_CROSS_MINGW([$2],[$3])
-        else
-          _MOO_AC_CHECK_PYTHON_UNIX([$1],[$2],[$3])
-        fi
-    fi
+  AC_REQUIRE([MOO_AC_CHECK_OS])
+  if test "$cross_compiling" = yes -a "$MOO_OS_WIN32" = true; then
+    MOO_AM_PYTHON_DEVEL_CROSS_MINGW([$2],[$3])
+  else
+    MOO_AC_CHECK_PYTHON_NATIVE([$1],[$2],[$3])
+  fi
 ])

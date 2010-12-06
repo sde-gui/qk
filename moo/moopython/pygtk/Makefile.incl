@@ -23,7 +23,7 @@ built_moo_python_sources +=			\
 	moopython/pygtk/moo-mod.c		\
 	moopython/pygtk/moo-mod.h
 
-if MOO_OS_MINGW
+if MOO_OS_WIN32
 codegen_platform = --platform win32
 endif
 
@@ -36,8 +36,8 @@ codegen_script = $(srcdir)/moopython/codegen/codegen.py
 codegen = $(PYTHON) $(codegen_script) $(codegen_platform) --pygtk-version=$(PYGTK_MINOR_VERSION)
 
 moopython/pygtk/moo-mod.c: $(moo_override_files) $(moo_defs_files) $(codegen_files)
-	$(MKDIR_P) moopython/pygtk
-	$(codegen) --prefix _moo \
+	$(AM_V_at)$(MKDIR_P) moopython/pygtk
+	$(AM_V_GEN)$(codegen) --prefix _moo \
 		--load-types $(srcdir)/moopython/codegen/argtypes_m.py \
 		--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
@@ -47,4 +47,5 @@ moopython/pygtk/moo-mod.c: $(moo_override_files) $(moo_defs_files) $(codegen_fil
 		mv $@.tmp $@
 
 moopython/pygtk/moo-mod.h: moopython/pygtk/moo.py $(top_srcdir)/tools/xml2h.py
+	$(AM_V_at)$(MKDIR_P) moopython/pygtk
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/moopython/pygtk/moo.py moopython/pygtk/moo-mod.h MOO_PY
