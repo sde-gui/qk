@@ -24,7 +24,7 @@ if __name__ == '__main__':
 import gobject
 import os.path
 import moo
-from moo.utils import _
+from moo import _
 
 import mprj.optdialog
 from mprj.config.view import *
@@ -41,9 +41,9 @@ class RunOptionsPage(mprj.optdialog.ConfigPage):
         self.xml.w_exe.set_setting(self.config.run['exe'])
         self.xml.w_args.set_setting(self.config.run['args'])
 
-class Dialog(moo.utils.PrefsDialog):
+class Dialog(moo.PrefsDialog):
     def __init__(self, project, title=_('Project Options')):
-        moo.utils.PrefsDialog.__init__(self, title)
+        moo.PrefsDialog.__init__(self, title)
         self.project = project
         self.config_copy = project.config.copy()
 #         self.append_page(mprj.simple.ConfigPage(self.config_copy))
@@ -51,7 +51,7 @@ class Dialog(moo.utils.PrefsDialog):
         self.append_page(RunOptionsPage('page_run', self.config_copy, glade_file))
 
     def do_apply(self):
-        moo.utils.PrefsDialog.do_apply(self)
+        moo.PrefsDialog.do_apply(self)
         self.project.config.copy_from(self.config_copy)
         self.project.save_config()
 #         print '============================='
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     from mprj.config import File
     from python import PyProject
 
-    editor = moo.edit.create_editor_instance()
+    editor = moo.create_editor_instance()
     file = File(_sample_file, '/tmp/fake/file')
     config = PyConfig(file)
     project = PyProject(None, config, file)

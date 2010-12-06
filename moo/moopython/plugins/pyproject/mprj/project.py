@@ -68,7 +68,7 @@ class Project(object):
         self.filename = os.path.abspath(file.path)
         self.topdir = os.path.dirname(self.filename)
 
-        editor = moo.edit.editor_instance()
+        editor = moo.editor_instance()
         xml = editor.get_ui_xml()
         if xml is not None:
             self.merge_id = xml.new_merge_id()
@@ -76,18 +76,18 @@ class Project(object):
         self.panes = []
 
     def add_action(self, id, **kwargs):
-        moo.utils.window_class_add_action(moo.edit.EditWindow, id, **kwargs)
+        moo.window_class_add_action(moo.EditWindow, id, **kwargs)
         self.actions.append(id)
 
     def init_ui(self):
         pass
 
     def deinit_ui(self):
-        editor = moo.edit.editor_instance()
+        editor = moo.editor_instance()
         xml = editor.get_ui_xml()
         xml.remove_ui(self.merge_id)
         for a in self.actions:
-            moo.utils.window_class_remove_action(moo.edit.EditWindow, a)
+            moo.window_class_remove_action(moo.EditWindow, a)
         if self.window:
             for p in self.panes:
                 self.window.remove_pane(p)

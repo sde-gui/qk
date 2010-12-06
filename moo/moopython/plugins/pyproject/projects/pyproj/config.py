@@ -15,7 +15,7 @@
 
 import os.path
 import moo
-from moo.utils import _
+from moo import _
 
 from mprj.settings import *
 from mprj.simple import SimpleConfig

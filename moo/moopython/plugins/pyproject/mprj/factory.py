@@ -17,7 +17,7 @@ import os
 import gtk
 import gobject
 import moo
-from moo.utils import _, N_
+from moo import _, N_
 
 import mprj.utils
 
@@ -80,11 +80,11 @@ class _Wizard(object):
         self.__check_sensitivity()
         self.__update_file_label()
     def __location_button_clicked(self, *whatever):
-        path = moo.utils.file_dialogp(self.xml.w_dialog,
-                                      moo.utils.FILE_DIALOG_OPEN_DIR,
-                                      self.xml.w_location.get_text(),
-                                      _("Choose Folder"),
-                                      mprj.utils.prefs_key('new_project_dir'))
+        path = moo.file_dialogp(self.xml.w_dialog,
+                                moo.FILE_DIALOG_OPEN_DIR,
+                                self.xml.w_location.get_text(),
+                                _("Choose Folder"),
+                                mprj.utils.prefs_key('new_project_dir'))
         if path:
             self.xml.w_location.set_text(path)
 
@@ -100,7 +100,7 @@ class _Wizard(object):
 
     def ask(self, factories, window):
         glade_file = os.path.join(os.path.dirname(__file__), "factory.glade")
-        xml = moo.utils.glade_xml_new_from_file(glade_file, domain=moo.utils.GETTEXT_PACKAGE)
+        xml = moo.glade_xml_new_from_file(glade_file, domain=moo.GETTEXT_PACKAGE)
         self.xml = xml
 
         self.__setup_type_list(factories, xml)
@@ -122,21 +122,21 @@ class _Wizard(object):
                 d, f = self.__get_project_file()
 
                 if os.path.lexists(d) and not os.path.isdir(d):
-                    moo.utils.error_dialog(dialog, '%s is not a directory' % (d,))
+                    moo.error_dialog(dialog, '%s is not a directory' % (d,))
                     continue
 
                 if os.path.exists(os.path.join(d, f)):
-                    if not moo.utils.overwrite_file_dialog(dialog, f, d):
+                    if not moo.overwrite_file_dialog(dialog, f, d):
                         continue
 
                 if os.path.exists(d) and not os.access(d, os.W_OK):
-                    moo.utils.error_dialog(dialog, '%s is not writable' % (d,))
+                    moo.error_dialog(dialog, '%s is not writable' % (d,))
                     continue
                 if not os.path.exists(d):
                     try:
                         os.mkdir(d)
                     except Exception, e:
-                        moo.utils.error_dialog(dialog, 'Could not create directory %s' % (d,), str(e))
+                        moo.error_dialog(dialog, 'Could not create directory %s' % (d,), str(e))
                         continue
 
                 model, iter = xml.w_type.get_selection().get_selected()
@@ -155,7 +155,7 @@ class _Wizard(object):
         try:
             pi.factory.create(pi)
         except Exception, e:
-            moo.utils.error_dialog(window, 'Could not create project', str(e))
+            moo.error_dialog(window, 'Could not create project', str(e))
             return None
         return os.path.join(pi.dir, pi.file)
 

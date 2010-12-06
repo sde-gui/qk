@@ -18,7 +18,7 @@ override moo_big_paned_find_pane kwargs
 static PyObject *
 _wrap_moo_big_paned_find_pane (PyGObject *self, PyObject *args, PyObject *kwargs)
 {
-    static char *kwlist[] = { "pane_widget", NULL };
+    static char *kwlist[] = { (char*) "pane_widget", NULL };
     PyGObject *widget;
     MooPaned *child;
     PyObject *ret;

@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
 import os.path
 import moo
-from moo.utils import _
+from moo import _
 
 from mprj.utils import expand_command
 from mprj.settings import *

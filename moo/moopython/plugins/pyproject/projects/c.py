@@ -27,7 +27,7 @@ import gobject
 import mprj.utils
 from mprj.simple import SimpleProject
 from mprj.utils import print_error
-from moo.utils import _, N_
+from moo import _, N_
 
 import cproj.config
 from cproj.config import CConfig
@@ -35,10 +35,10 @@ from cproj.parser import parse_make_error
 from cproj.optdialog import Dialog as OptionsDialog
 
 
-_STOCK_BUILD = moo.utils.STOCK_BUILD
-_STOCK_COMPILE = moo.utils.STOCK_COMPILE
-_STOCK_EXECUTE = moo.utils.STOCK_EXECUTE
-_STOCK_PROJECT_OPTIONS = moo.utils.STOCK_PROJECT_OPTIONS
+_STOCK_BUILD = moo.STOCK_BUILD
+_STOCK_COMPILE = moo.STOCK_COMPILE
+_STOCK_EXECUTE = moo.STOCK_EXECUTE
+_STOCK_PROJECT_OPTIONS = moo.STOCK_PROJECT_OPTIONS
 
 _BUILD_PANE_ID = "CProjectBuild"
 _OUTPUT_PANE_ID = "CProjectOutput"
@@ -90,7 +90,7 @@ class CProject(SimpleProject):
         self.add_action("CProjectBuildConfiguration",
                         factory=_BuildConfigurationActionFactory(self))
 
-        editor = moo.edit.editor_instance()
+        editor = moo.editor_instance()
         xml = editor.get_ui_xml()
         xml.insert_markup_after(self.merge_id, "Editor/Menubar",
                                 "Project", """
@@ -124,9 +124,9 @@ class CProject(SimpleProject):
     def get_build_pane(self, window):
         pane = window.get_pane(_BUILD_PANE_ID)
         if not pane:
-            label = moo.utils.PaneLabel(icon_name=_STOCK_BUILD,
-                                        label_text=_("Build Messages"))
-            output = moo.edit.CmdView()
+            label = moo.PaneLabel(icon_name=_STOCK_BUILD,
+                                  label_text=_("Build Messages"))
+            output = moo.CmdView()
             window.add_stop_client(output)
 
             if 1:
@@ -136,7 +136,7 @@ class CProject(SimpleProject):
                 output.set_property("highlight-current-line", False)
                 output.set_wrap_mode(gtk.WRAP_CHAR)
 
-            output.set_filter(moo.edit.command_filter_create('make'))
+            output.set_filter(moo.command_filter_create('make'))
 
             pane = gtk.ScrolledWindow()
             pane.set_shadow_type(gtk.SHADOW_ETCHED_IN)
@@ -145,15 +145,15 @@ class CProject(SimpleProject):
             pane.show_all()
 
             pane.output = output
-            window.add_pane(_BUILD_PANE_ID, pane, label, moo.utils.PANE_POS_BOTTOM)
+            window.add_pane(_BUILD_PANE_ID, pane, label, moo.PANE_POS_BOTTOM)
         return pane
 
     def get_output_pane(self, window):
         pane = window.get_pane(_OUTPUT_PANE_ID)
         if not pane:
-            label = moo.utils.PaneLabel(icon_name=_STOCK_EXECUTE,
-                                        label_text=_("Output"))
-            output = moo.edit.CmdView()
+            label = moo.PaneLabel(icon_name=_STOCK_EXECUTE,
+                                  label_text=_("Output"))
+            output = moo.CmdView()
             window.add_stop_client(output)
             output.set_property("highlight-current-line", False)
             output.set_wrap_mode(gtk.WRAP_CHAR)
@@ -165,7 +165,7 @@ class CProject(SimpleProject):
             pane.show_all()
 
             pane.output = output
-            window.add_pane(_OUTPUT_PANE_ID, pane, label, moo.utils.PANE_POS_BOTTOM)
+            window.add_pane(_OUTPUT_PANE_ID, pane, label, moo.PANE_POS_BOTTOM)
         return pane
 
     def get_file_path(self, file):
@@ -183,7 +183,7 @@ class CProject(SimpleProject):
     def save_all(self, window):
         docs = window.list_docs()
         for d in docs:
-            if d.get_filename() and d.get_status() & moo.edit.EDIT_MODIFIED:
+            if d.get_filename() and d.get_status() & moo.EDIT_MODIFIED:
                 d.save()
 
     def do_command(self, window, cmd):
@@ -276,7 +276,7 @@ class _BuildConfigurationActionFactory(object):
         object.__init__(self)
         self.project = project
     def __call__(self, window):
-        action = gobject.new(moo.utils.Action,
+        action = gobject.new(moo.Action,
                              name="CProjectBuildConfiguration",
                              label="Build Configuration",
                              no_accel="True")

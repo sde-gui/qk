@@ -30,7 +30,7 @@
 #
 # Console may subclass a type other than gtk.TextView, to allow syntax highlighting and stuff,
 # e.g.:
-#   console_type = pyconsole.ConsoleType(moo.edit.TextView)
+#   console_type = pyconsole.ConsoleType(moo.TextView)
 #   console = console_type(use_rlcompleter=False, start_script="import moo\nimport gtk\n")
 #
 # This widget is not a replacement for real terminal with python running
@@ -636,12 +636,12 @@ Console = ConsoleType()
 def _create_widget(start_script):
     try:
         import moo
-        console_type = ConsoleType(moo.edit.TextView)
+        console_type = ConsoleType(moo.TextView)
         console = console_type(banner="Hello there!",
                                use_rlcompleter=False,
                                start_script=start_script)
         console.set_property("highlight-current-line", False)
-        editor = moo.edit.create_editor_instance()
+        editor = moo.create_editor_instance()
         console.set_lang_by_id("python-console")
     except ImportError:
         console = Console(banner="Hello there!",

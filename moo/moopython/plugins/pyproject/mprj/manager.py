@@ -22,13 +22,13 @@ from mprj.simple import SimpleProject
 import mprj.utils
 import mprj.factory
 from mprj.utils import print_error, format_error
-from moo.utils import _, N_
+from moo import _, N_
 
 
-moo.utils.prefs_new_key('Plugins/Project/last', str, None, moo.utils.PREFS_STATE)
-moo.utils.prefs_new_key('Plugins/Project/last_dir', str, None, moo.utils.PREFS_STATE)
-# moo.utils.prefs_new_key_string('Plugins/Project/last', None)
-# moo.utils.prefs_new_key_string('Plugins/Project/last_dir', None)
+moo.prefs_new_key('Plugins/Project/last', str, None, moo.PREFS_STATE)
+moo.prefs_new_key('Plugins/Project/last_dir', str, None, moo.PREFS_STATE)
+# moo.prefs_new_key_string('Plugins/Project/last', None)
+# moo.prefs_new_key_string('Plugins/Project/last_dir', None)
 
 
 class _ProjectStore(object):
@@ -55,12 +55,12 @@ class _OpenRecent(object):
         self.mgr = mgr
 
     def __call__(self, window):
-        action = moo.utils.MenuAction("OpenRecentProject", _("Open Recent Project"))
+        action = moo.MenuAction("OpenRecentProject", _("Open Recent Project"))
         action.set_property('display-name', _("Open Recent Project"))
         action.set_mgr(self.mgr.recent_list.get_menu_mgr())
-        moo.utils.bind_bool_property(action, "sensitive",
-                                     self.mgr.recent_list, "empty",
-                                     True)
+        moo.bind_bool_property(action, "sensitive",
+                               self.mgr.recent_list, "empty",
+                               True)
         return action
 
 
@@ -70,41 +70,41 @@ class Manager(object):
         self.init(project)
 
     def init(self, project):
-        editor = moo.edit.editor_instance()
+        editor = moo.editor_instance()
         editor.set_property("allow-empty-window", True)
         editor.set_property("single-window", True)
 
-        moo.utils.window_class_add_action(moo.edit.EditWindow, "NewProject",
-                                          display_name=_("New Project"),
-                                          label=_("New Project..."),
-                                          stock_id=moo.utils.STOCK_NEW_PROJECT,
-                                          callback=self.new_project_cb)
-        moo.utils.window_class_add_action(moo.edit.EditWindow, "OpenProject",
-                                          display_name=_("Open Project"),
-                                          label=_("Open Project"),
-                                          stock_id=moo.utils.STOCK_OPEN_PROJECT,
-                                          callback=self.open_project_cb)
-        moo.utils.window_class_add_action(moo.edit.EditWindow, "ProjectOptions",
-                                          display_name=_("Project _Options"),
-                                          label=_("Project Options"),
-                                          stock_id=moo.utils.STOCK_PROJECT_OPTIONS,
-                                          callback=self.project_options_cb)
-        moo.utils.window_class_add_action(moo.edit.EditWindow, "CloseProject",
-                                          display_name=_("Close Project"),
-                                          label=_("Close Project"),
-                                          stock_id=moo.utils.STOCK_CLOSE_PROJECT,
-                                          callback=self.close_project_cb)
+        moo.window_class_add_action(moo.EditWindow, "NewProject",
+                                    display_name=_("New Project"),
+                                    label=_("New Project..."),
+                                    stock_id=moo.STOCK_NEW_PROJECT,
+                                    callback=self.new_project_cb)
+        moo.window_class_add_action(moo.EditWindow, "OpenProject",
+                                    display_name=_("Open Project"),
+                                    label=_("Open Project"),
+                                    stock_id=moo.STOCK_OPEN_PROJECT,
+                                    callback=self.open_project_cb)
+        moo.window_class_add_action(moo.EditWindow, "ProjectOptions",
+                                    display_name=_("Project _Options"),
+                                    label=_("Project Options"),
+                                    stock_id=moo.STOCK_PROJECT_OPTIONS,
+                                    callback=self.project_options_cb)
+        moo.window_class_add_action(moo.EditWindow, "CloseProject",
+                                    display_name=_("Close Project"),
+                                    label=_("Close Project"),
+                                    stock_id=moo.STOCK_CLOSE_PROJECT,
+                                    callback=self.close_project_cb)
 
         self.__init_project_types()
 
         self.project_to_open = project
         self.project = None
         self.window = None
-        self.recent_list = moo.utils.HistoryList("ProjectManager")
+        self.recent_list = moo.HistoryList("ProjectManager")
         self.recent_list.connect("activate_item", self.recent_item_activated)
-        moo.utils.window_class_add_action(moo.edit.EditWindow,
-                                          "OpenRecentProject",
-                                          factory=_OpenRecent(self))
+        moo.window_class_add_action(moo.EditWindow,
+                                    "OpenRecentProject",
+                                    factory=_OpenRecent(self))
 
         xml = editor.get_ui_xml()
         self.merge_id = xml.new_merge_id()
@@ -127,8 +127,8 @@ class Manager(object):
         self.close_project(True)
         for a in ["NewProject", "OpenProject", "CloseProject",
                   "ProjectOptions", "OpenRecentProject"]:
-            moo.utils.window_class_remove_action(moo.edit.EditWindow, a)
-        editor = moo.edit.editor_instance()
+            moo.window_class_remove_action(moo.EditWindow, a)
+        editor = moo.editor_instance()
         editor.get_ui_xml().remove_ui(self.merge_id)
         self.merge_id = 0
         del self.project_types
@@ -158,9 +158,9 @@ class Manager(object):
             project = self.project_to_open
             self.project_to_open = None
             if not project:
-                project = moo.utils.prefs_get_string("Plugins/Project/last")
+                project = moo.prefs_get_string("Plugins/Project/last")
             if not project:
-                project = os.path.join(moo.utils.get_user_data_dir(), "default.mprj")
+                project = os.path.join(moo.get_user_data_dir(), "default.mprj")
             if project and os.path.exists(project):
                 try:
                     self.open_project(self.window, project)
@@ -169,7 +169,7 @@ class Manager(object):
                     self.recent_list.remove(project)
 
     def __set_title_prefix(self, prefix):
-        editor = moo.edit.editor_instance()
+        editor = moo.editor_instance()
         editor.set_app_name(prefix or "medit")
 
     def detach_win(self, window):
@@ -184,8 +184,8 @@ class Manager(object):
             mprj.utils.oops(window, e)
 
     def open_project_cb(self, window):
-        filename = moo.utils.file_dialogp(parent=window, title=_("Open Project"),
-                                          prefs_key="Plugins/Project/last_dir")
+        filename = moo.file_dialogp(parent=window, title=_("Open Project"),
+                                    prefs_key="Plugins/Project/last_dir")
         if not filename:
             return
 
@@ -195,10 +195,10 @@ class Manager(object):
             self.bad_project(window, filename, e)
 
     def bad_project(self, parent, filename, error):
-        moo.utils.error_dialog(parent, _("Could not open project '%s'") % (filename,), str(error))
+        moo.error_dialog(parent, _("Could not open project '%s'") % (filename,), str(error))
 
     def fixme(self, parent, msg):
-        moo.utils.warning_dialog(parent, "FIXME", str(msg))
+        moo.warning_dialog(parent, "FIXME", str(msg))
 
     def close_window(self, window):
         return not self.close_project(False)
@@ -212,7 +212,7 @@ class Manager(object):
     def close_project_cb(self, window):
         if self.project:
             if self.close_project(False):
-                moo.utils.prefs_set_string("Plugins/Project/last", None)
+                moo.prefs_set_string("Plugins/Project/last", None)
         else:
             self.fixme(window, "disable Close Project command")
 
@@ -238,8 +238,8 @@ class Manager(object):
         f.close()
 
         if file.version != mprj.project_version:
-            moo.utils.error_dialog(window, _("Could not open project '%s'") % (filename,),
-                                   _("Invalid project version %s") % (file.version,))
+            moo.error_dialog(window, _("Could not open project '%s'") % (filename,),
+                             _("Invalid project version %s") % (file.version,))
 	    return
 
         file.path = filename
@@ -251,7 +251,7 @@ class Manager(object):
         self.project.load()
         self.__set_title_prefix(self.project.name)
         self.recent_list.add_filename(filename)
-        moo.utils.prefs_set_string("Plugins/Project/last", filename)
+        moo.prefs_set_string("Plugins/Project/last", filename)
 
         close = self.window.get_action("CloseProject")
         options = self.window.get_action("ProjectOptions")
@@ -313,7 +313,7 @@ class Manager(object):
         self.project_types = _ProjectStore()
         self.project_types.add("Simple", SimpleProject)
 
-        dirs = list(moo.utils.get_data_subdirs("projects", moo.utils.DATA_LIB))
+        dirs = list(moo.get_data_subdirs("projects", moo.DATA_LIB))
         dirs = filter(lambda d: os.path.isdir(d), dirs)
         dirs.reverse()
 

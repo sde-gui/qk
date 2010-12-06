@@ -154,7 +154,7 @@ class Wrapper:
 
     getter_tmpl = (
         'static PyObject *\n'
-        '%(funcname)s(G_GNUC_UNUSED PyObject *self, void *closure)\n'
+        '%(funcname)s(G_GNUC_UNUSED PyObject *self, G_GNUC_UNUSED void *closure)\n'
         '{\n'
         '%(varlist)s'
         '    ret = %(field)s;\n'
@@ -716,7 +716,7 @@ class Wrapper:
                         "Could not write getter for %s.%s: %s\n"
                         % (self.objinfo.c_name, fname, str(ex)))
             if gettername != '0' or settername != '0':
-                getsets.append('    { "%s", (getter)%s, (setter)%s },\n' %
+                getsets.append('    { (char*) "%s", (getter)%s, (setter)%s },\n' %
                                (fixname(fname), gettername, settername))
 
         if not getsets:

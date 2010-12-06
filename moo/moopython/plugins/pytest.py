@@ -18,9 +18,9 @@ import gobject
 
 PLUGIN_ID = "TestPythonPlugin"
 
-class Action(moo.edit.Action):
+class Action(moo.Action):
     def __init__(self):
-        moo.edit.Action.__init__(self)
+        moo.Action.__init__(self)
         self.set_property("label", "AnAction")
         #print "__init__"
 
@@ -33,7 +33,7 @@ class Action(moo.edit.Action):
         pass
 
 
-class Plugin(moo.edit.Plugin):
+class Plugin(moo.Plugin):
 
     def do_init(self):
         #print "do_init"
@@ -57,11 +57,11 @@ class Plugin(moo.edit.Plugin):
         pass
 
 
-if moo.edit.module_check_version(2, 0):
+if moo.module_check_version(2, 0):
     gobject.type_register(Action)
     gobject.type_register(Plugin)
 
-    info = moo.edit.PluginInfo("RealPythonPlugin", "Real Python Plugin",
-                               description="Plugin", author="Uknown",
-                               version="3.1415926")
-    moo.edit.plugin_register(Plugin, info)
+    info = moo.PluginInfo("RealPythonPlugin", "Real Python Plugin",
+                          description="Plugin", author="Uknown",
+                          version="3.1415926")
+    moo.plugin_register(Plugin, info)

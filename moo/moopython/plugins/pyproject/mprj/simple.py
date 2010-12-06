@@ -25,7 +25,7 @@ import os.path
 import tempfile
 
 import moo
-from moo.utils import _
+from moo import _
 
 from mprj.project import Project
 from mprj.config import Config, Dict, Group
@@ -68,7 +68,7 @@ class SimpleProject(Project):
         self.__filesel_cb_id = None
         self.__filesel_destroy_cb_id = None
     def __setup_file_selector(self):
-        plugin = moo.edit.plugin_lookup('FileSelector')
+        plugin = moo.plugin_lookup('FileSelector')
         if plugin:
             try:
                 self.filesel = plugin.call_method('get-widget', self.window)
@@ -133,16 +133,16 @@ class SimpleProject(Project):
             session.set_file_selector_dir(self.__file_selector_dir)
             session.save(file)
         except Exception, e:
-            moo.utils.error_dialog(self.window, 'Could not save session',
-                                   'Could not save file %s: %s' % (file, str(e)))
+            moo.error_dialog(self.window, 'Could not save session',
+                             'Could not save file %s: %s' % (file, str(e)))
 
     def save_config(self):
         content = self.config.format()
         try:
             mprj.utils.save_file(self.filename, content)
         except Exception, e:
-            moo.utils.error_dialog(self.window, 'Could not save project file',
-                                   'Could not save file %s: %s' % (self.filename, str(e)))
+            moo.error_dialog(self.window, 'Could not save project file',
+                             'Could not save file %s: %s' % (self.filename, str(e)))
 
     def options_dialog(self, window):
         dialog = self.create_options_dialog()

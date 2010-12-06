@@ -18,7 +18,7 @@ import os
 import re
 import gtk
 import moo
-from moo.utils import _
+from moo import _
 
 if os.name == 'nt':
     PYTHON_COMMAND = '"' + sys.exec_prefix + '\\pythonw.exe" -u'
@@ -39,11 +39,11 @@ class Runner(object):
     def __ensure_output(self):
         pane = self.__get_output()
         if pane is None:
-            label = self.pane_label or moo.utils.PaneLabel(icon_name=moo.utils.STOCK_EXECUTE,
-                                                           label_text=_("Python Output"))
-            output = moo.edit.CmdView()
+            label = self.pane_label or moo.PaneLabel(icon_name=moo.STOCK_EXECUTE,
+                                                     label_text=_("Python Output"))
+            output = moo.CmdView()
             output.set_property("highlight-current-line", True)
-            output.set_filter(moo.edit.command_filter_create("python"))
+            output.set_filter(moo.command_filter_create("python"))
 
             pane = gtk.ScrolledWindow()
             pane.set_shadow_type(gtk.SHADOW_ETCHED_IN)
@@ -52,7 +52,7 @@ class Runner(object):
             pane.show_all()
 
             pane.output = output
-            self.window.add_pane(self.pane_id, pane, label, moo.utils.PANE_POS_BOTTOM)
+            self.window.add_pane(self.pane_id, pane, label, moo.PANE_POS_BOTTOM)
             self.window.add_stop_client(output)
         return pane
 
@@ -67,7 +67,7 @@ class Runner(object):
 
             if not doc:
                 return
-            if not doc.get_filename() or doc.get_status() & moo.edit.EDIT_MODIFIED:
+            if not doc.get_filename() or doc.get_status() & moo.EDIT_MODIFIED:
                 if not doc.save():
                     return
 

@@ -203,19 +203,19 @@
 ;   (gtype-id "MOO_TYPE_ICON_VIEW")
 ; )
 
-(define-object LineView
-  (in-module "Moo")
-  (parent "MooTextView")
-  (c-name "MooLineView")
-  (gtype-id "MOO_TYPE_LINE_VIEW")
-)
-
-(define-object CmdView
-  (in-module "Moo")
-  (parent "MooLineView")
-  (c-name "MooCmdView")
-  (gtype-id "MOO_TYPE_CMD_VIEW")
-)
+; (define-object LineView
+;   (in-module "Moo")
+;   (parent "MooTextView")
+;   (c-name "MooLineView")
+;   (gtype-id "MOO_TYPE_LINE_VIEW")
+; )
+;
+; (define-object CmdView
+;   (in-module "Moo")
+;   (parent "MooLineView")
+;   (c-name "MooCmdView")
+;   (gtype-id "MOO_TYPE_CMD_VIEW")
+; )
 
 ; (define-object Menu
 ;   (in-module "Moo")
@@ -251,13 +251,6 @@
 ;   (c-name "MooNotebook")
 ;   (gtype-id "MOO_TYPE_NOTEBOOK")
 ; )
-
-(define-object OutputFilter
-  (in-module "Moo")
-  (parent "GObject")
-  (c-name "MooOutputFilter")
-  (gtype-id "MOO_TYPE_OUTPUT_FILTER")
-)
 
 (define-object Paned
   (in-module "Moo")
@@ -1754,7 +1747,7 @@
 (define-method get_uris
   (of-object "MooFileDialog")
   (c-name "moo_file_dialog_get_uris")
-  (return-type "char**")
+  (return-type "strv")
 )
 
 (define-method set_current_folder_uri
@@ -2929,38 +2922,19 @@
 ;; From mooi18n.h
 
 (define-function gettext
-  (c-name "moo_gettext")
+  (c-name "_")
   (return-type "const-char*")
   (parameters
     '("const-char*" "string")
   )
 )
 
-(define-function pgettext
-  (c-name "moo_pgettext")
+(define-function dgettext
+  (c-name "D_")
   (return-type "const-char*")
   (parameters
-    '("const-char*" "msgctxtid")
-    '("gsize" "msgidoffset")
-  )
-)
-
-(define-function pgettext2
-  (c-name "moo_pgettext2")
-  (return-type "const-char*")
-  (parameters
-    '("const-char*" "context")
-    '("const-char*" "msgctxtid")
-  )
-)
-
-(define-function dpgettext
-  (c-name "moo_dpgettext")
-  (return-type "const-char*")
-  (parameters
+    '("const-char*" "string")
     '("const-char*" "domain")
-    '("const-char*" "msgctxtid")
-    '("gsize" "msgidoffset")
   )
 )
 
@@ -3466,7 +3440,7 @@
 
 (define-function mime_type_list_parents
   (c-name "moo_mime_type_list_parents")
-  (return-type "const-char**")
+  (return-type "const-strv")
   (parameters
     '("const-char*" "mime_type")
   )
@@ -4107,7 +4081,7 @@
   (c-name "moo_prefs_load")
   (return-type "gboolean")
   (parameters
-    '("char**" "sys_files")
+    '("strv" "sys_files")
     '("const-char*" "file_rc")
     '("const-char*" "file_state")
     '("GError**" "error")
@@ -4933,17 +4907,17 @@
 
 (define-function get_data_dirs
   (c-name "moo_get_data_dirs")
-  (return-type "char**")
+  (return-type "strv")
 )
 
 (define-function get_lib_dirs
   (c-name "moo_get_lib_dirs")
-  (return-type "char**")
+  (return-type "strv")
 )
 
 (define-function get_data_subdirs
   (c-name "moo_get_data_subdirs")
-  (return-type "char**")
+  (return-type "strv")
   (parameters
     '("const-char*" "subdir")
   )
@@ -4951,7 +4925,7 @@
 
 (define-function get_sys_data_subdirs
   (c-name "moo_get_sys_data_subdirs")
-  (return-type "char**")
+  (return-type "strv")
   (parameters
     '("const-char*" "subdir")
   )
@@ -4959,7 +4933,7 @@
 
 (define-function get_lib_subdirs
   (c-name "moo_get_lib_subdirs")
-  (return-type "char**")
+  (return-type "strv")
   (parameters
     '("const-char*" "subdir")
   )
@@ -4967,7 +4941,7 @@
 
 (define-function get_data_and_lib_subdirs
   (c-name "moo_get_data_and_lib_subdirs")
-  (return-type "char**")
+  (return-type "strv")
   (parameters
     '("const-char*" "subdir")
   )
@@ -5048,7 +5022,7 @@
 
 ; (define-function strnsplit_lines
 ;   (c-name "moo_strnsplit_lines")
-;   (return-type "char**")
+;   (return-type "strv")
 ;   (parameters
 ;     '("const-char*" "string")
 ;     '("gssize" "len")
@@ -5058,7 +5032,7 @@
 
 ; (define-function splitlines
 ;   (c-name "moo_splitlines")
-;   (return-type "char**")
+;   (return-type "strv")
 ;   (parameters
 ;     '("const-char*" "string")
 ;   )
@@ -5208,6 +5182,11 @@
   )
 )
 
+(define-function _window_class_add_action
+  (c-name "moo_window_class_add_action")
+  (return-type "none")
+)
+
 (define-method find_action
   (of-object "MooWindowClass")
   (c-name "moo_window_class_find_action")
@@ -5303,359 +5282,242 @@
 
 
 
-;; From moocmdview.h
-
-(define-function cmd_view_get_type
-  (c-name "moo_cmd_view_get_type")
-  (return-type "GType")
-)
-
-(define-function cmd_view_new
-  (c-name "moo_cmd_view_new")
-  (is-constructor-of "MooCmdView")
-  (return-type "GtkWidget*")
-)
-
-(define-method set_filter
-  (of-object "MooCmdView")
-  (c-name "moo_cmd_view_set_filter")
-  (return-type "none")
-  (parameters
-    '("MooOutputFilter*" "filter")
-  )
-)
-
-(define-method add_filter_dirs
-  (of-object "MooCmdView")
-  (c-name "moo_cmd_view_add_filter_dirs")
-  (return-type "none")
-  (parameters
-    '("char**" "dirs")
-  )
-)
-
-(define-method run_command
-  (of-object "MooCmdView")
-  (c-name "moo_cmd_view_run_command")
-  (return-type "gboolean")
-  (parameters
-    '("const-char*" "cmd")
-    '("const-char*" "working_dir")
-    '("const-char*" "job_name")
-  )
-)
-
-(define-method run_command_full
-  (of-object "MooCmdView")
-  (c-name "moo_cmd_view_run_command_full")
-  (return-type "gboolean")
-  (parameters
-    '("const-char*" "cmd")
-    '("const-char*" "display_cmd")
-    '("const-char*" "working_dir")
-    '("char**" "envp")
-    '("const-char*" "job_name")
-  )
-)
-
-(define-method abort
-  (of-object "MooCmdView")
-  (c-name "moo_cmd_view_abort")
-  (return-type "none")
-)
-
-(define-method running
-  (of-object "MooCmdView")
-  (c-name "moo_cmd_view_running")
-  (return-type "gboolean")
-)
-
-
-
-;; From mooeditwindowoutput.h
-
-(define-method present_output
-  (of-object "MooEditWindow")
-  (c-name "moo_edit_window_present_output")
-  (return-type "none")
-)
-
-(define-method get_output
-  (of-object "MooEditWindow")
-  (c-name "moo_edit_window_get_output")
-  (return-type "GtkWidget*")
-)
-
-(define-method get_output_pane
-  (of-object "MooEditWindow")
-  (c-name "moo_edit_window_get_output_pane")
-  (return-type "GtkWidget*")
-)
+; ;; From moocmdview.h
+;
+; (define-function cmd_view_get_type
+;   (c-name "moo_cmd_view_get_type")
+;   (return-type "GType")
+; )
+;
+; (define-function cmd_view_new
+;   (c-name "moo_cmd_view_new")
+;   (is-constructor-of "MooCmdView")
+;   (return-type "GtkWidget*")
+; )
+;
+; (define-method set_filter
+;   (of-object "MooCmdView")
+;   (c-name "moo_cmd_view_set_filter")
+;   (return-type "none")
+;   (parameters
+;     '("MooOutputFilter*" "filter")
+;   )
+; )
+;
+; (define-method add_filter_dirs
+;   (of-object "MooCmdView")
+;   (c-name "moo_cmd_view_add_filter_dirs")
+;   (return-type "none")
+;   (parameters
+;     '("strv" "dirs")
+;   )
+; )
+;
+; (define-method run_command
+;   (of-object "MooCmdView")
+;   (c-name "moo_cmd_view_run_command")
+;   (return-type "gboolean")
+;   (parameters
+;     '("const-char*" "cmd")
+;     '("const-char*" "working_dir")
+;     '("const-char*" "job_name")
+;   )
+; )
+;
+; (define-method run_command_full
+;   (of-object "MooCmdView")
+;   (c-name "moo_cmd_view_run_command_full")
+;   (return-type "gboolean")
+;   (parameters
+;     '("const-char*" "cmd")
+;     '("const-char*" "display_cmd")
+;     '("const-char*" "working_dir")
+;     '("strv" "envp")
+;     '("const-char*" "job_name")
+;   )
+; )
+;
+; (define-method abort
+;   (of-object "MooCmdView")
+;   (c-name "moo_cmd_view_abort")
+;   (return-type "none")
+; )
+;
+; (define-method running
+;   (of-object "MooCmdView")
+;   (c-name "moo_cmd_view_running")
+;   (return-type "gboolean")
+; )
 
 
 
-;; From moolineview.h
-
-(define-function line_view_get_type
-  (c-name "moo_line_view_get_type")
-  (return-type "GType")
-)
-
-(define-function line_view_data_get_type
-  (c-name "moo_line_view_data_get_type")
-  (return-type "GType")
-)
-
-(define-function line_view_new
-  (c-name "moo_line_view_new")
-  (is-constructor-of "MooLineView")
-  (return-type "GtkWidget*")
-)
-
-(define-method set_data
-  (of-object "MooLineView")
-  (c-name "moo_line_view_set_data")
-  (return-type "none")
-  (parameters
-    '("int" "line")
-    '("gpointer" "data")
-    '("GDestroyNotify" "destroy")
-  )
-)
-
-(define-method set_line_data
-  (of-object "MooLineView")
-  (c-name "moo_line_view_set_line_data")
-  (return-type "none")
-  (parameters
-    '("int" "line")
-    '("const-GValue*" "data")
-  )
-)
-
-(define-method set_boxed
-  (of-object "MooLineView")
-  (c-name "moo_line_view_set_boxed")
-  (return-type "none")
-  (parameters
-    '("int" "line")
-    '("GType" "type")
-    '("gpointer" "data")
-  )
-)
-
-(define-method get_data
-  (of-object "MooLineView")
-  (c-name "moo_line_view_get_data")
-  (return-type "gpointer")
-  (parameters
-    '("int" "line")
-  )
-)
-
-(define-method get_line_data
-  (of-object "MooLineView")
-  (c-name "moo_line_view_get_line_data")
-  (return-type "gboolean")
-  (parameters
-    '("int" "line")
-    '("GValue*" "dest")
-  )
-)
-
-(define-method get_boxed
-  (of-object "MooLineView")
-  (c-name "moo_line_view_get_boxed")
-  (return-type "gpointer")
-  (parameters
-    '("int" "line")
-    '("GType" "type")
-  )
-)
-
-(define-method create_tag
-  (of-object "MooLineView")
-  (c-name "moo_line_view_create_tag")
-  (return-type "GtkTextTag*")
-  (parameters
-    '("const-char*" "tag_name")
-    '("const-char*" "first_property_name")
-  )
-  (varargs #t)
-)
-
-(define-method lookup_tag
-  (of-object "MooLineView")
-  (c-name "moo_line_view_lookup_tag")
-  (return-type "GtkTextTag*")
-  (parameters
-    '("const-char*" "tag_name")
-  )
-)
-
-(define-method clear
-  (of-object "MooLineView")
-  (c-name "moo_line_view_clear")
-  (return-type "none")
-)
-
-(define-method start_line
-  (of-object "MooLineView")
-  (c-name "moo_line_view_start_line")
-  (return-type "int")
-)
-
-(define-method write
-  (of-object "MooLineView")
-  (c-name "moo_line_view_write")
-  (return-type "none")
-  (parameters
-    '("const-char*" "text")
-    '("gssize" "len")
-    '("GtkTextTag*" "tag")
-  )
-)
-
-(define-method end_line
-  (of-object "MooLineView")
-  (c-name "moo_line_view_end_line")
-  (return-type "none")
-)
-
-(define-method write_line
-  (of-object "MooLineView")
-  (c-name "moo_line_view_write_line")
-  (return-type "int")
-  (parameters
-    '("const-char*" "text")
-    '("gssize" "len")
-    '("GtkTextTag*" "tag")
-  )
-)
-
-(define-method set_cursor
-  (of-object "MooLineView")
-  (c-name "moo_line_view_set_cursor")
-  (return-type "none")
-  (parameters
-    '("int" "line")
-    '("MooTextCursor" "cursor")
-  )
-)
+; ;; From mooeditwindowoutput.h
+;
+; (define-method present_output
+;   (of-object "MooEditWindow")
+;   (c-name "moo_edit_window_present_output")
+;   (return-type "none")
+; )
+;
+; (define-method get_output
+;   (of-object "MooEditWindow")
+;   (c-name "moo_edit_window_get_output")
+;   (return-type "GtkWidget*")
+; )
+;
+; (define-method get_output_pane
+;   (of-object "MooEditWindow")
+;   (c-name "moo_edit_window_get_output_pane")
+;   (return-type "GtkWidget*")
+; )
 
 
 
-;; From moooutputfilter.h
-
-(define-function output_filter_get_type
-  (c-name "moo_output_filter_get_type")
-  (return-type "GType")
-)
-
-(define-function file_line_data_get_type
-  (c-name "moo_file_line_data_get_type")
-  (return-type "GType")
-)
-
-(define-function file_line_data_new
-  (c-name "moo_file_line_data_new")
-  (is-constructor-of "MooFileLineData")
-  (return-type "MooFileLineData*")
-  (parameters
-    '("const-char*" "file")
-    '("int" "line")
-    '("int" "character")
-  )
-)
-
-(define-method free
-  (of-object "MooFileLineData")
-  (c-name "moo_file_line_data_free")
-  (return-type "none")
-)
-
-(define-method set_view
-  (of-object "MooOutputFilter")
-  (c-name "moo_output_filter_set_view")
-  (return-type "none")
-  (parameters
-    '("MooLineView*" "view")
-  )
-)
-
-(define-method get_view
-  (of-object "MooOutputFilter")
-  (c-name "moo_output_filter_get_view")
-  (return-type "MooLineView*")
-)
-
-(define-method stdout_line
-  (of-object "MooOutputFilter")
-  (c-name "moo_output_filter_stdout_line")
-  (return-type "gboolean")
-  (parameters
-    '("const-char*" "line")
-  )
-)
-
-(define-method stderr_line
-  (of-object "MooOutputFilter")
-  (c-name "moo_output_filter_stderr_line")
-  (return-type "gboolean")
-  (parameters
-    '("const-char*" "line")
-  )
-)
-
-(define-method cmd_start
-  (of-object "MooOutputFilter")
-  (c-name "moo_output_filter_cmd_start")
-  (return-type "none")
-  (parameters
-    '("const-char*" "working_dir")
-  )
-)
-
-(define-method cmd_exit
-  (of-object "MooOutputFilter")
-  (c-name "moo_output_filter_cmd_exit")
-  (return-type "gboolean")
-  (parameters
-    '("int" "status")
-  )
-)
-
-(define-method set_active_file
-  (of-object "MooOutputFilter")
-  (c-name "moo_output_filter_set_active_file")
-  (return-type "none")
-  (parameters
-    '("const-char*" "path")
-  )
-)
-
-(define-method add_active_dirs
-  (of-object "MooOutputFilter")
-  (c-name "moo_output_filter_add_active_dirs")
-  (return-type "none")
-  (parameters
-    '("char**" "dirs")
-  )
-)
-
-(define-method get_active_file
-  (of-object "MooOutputFilter")
-  (c-name "moo_output_filter_get_active_file")
-  (return-type "const-char*")
-)
-
-(define-method set_window
-  (of-object "MooOutputFilter")
-  (c-name "moo_output_filter_set_window")
-  (return-type "none")
-  (parameters
-    '("gpointer" "window")
-  )
-)
-
-
+; ;; From moolineview.h
+;
+; (define-function line_view_get_type
+;   (c-name "moo_line_view_get_type")
+;   (return-type "GType")
+; )
+;
+; (define-function line_view_data_get_type
+;   (c-name "moo_line_view_data_get_type")
+;   (return-type "GType")
+; )
+;
+; (define-function line_view_new
+;   (c-name "moo_line_view_new")
+;   (is-constructor-of "MooLineView")
+;   (return-type "GtkWidget*")
+; )
+;
+; (define-method set_data
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_set_data")
+;   (return-type "none")
+;   (parameters
+;     '("int" "line")
+;     '("gpointer" "data")
+;     '("GDestroyNotify" "destroy")
+;   )
+; )
+;
+; (define-method set_line_data
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_set_line_data")
+;   (return-type "none")
+;   (parameters
+;     '("int" "line")
+;     '("const-GValue*" "data")
+;   )
+; )
+;
+; (define-method set_boxed
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_set_boxed")
+;   (return-type "none")
+;   (parameters
+;     '("int" "line")
+;     '("GType" "type")
+;     '("gpointer" "data")
+;   )
+; )
+;
+; (define-method get_data
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_get_data")
+;   (return-type "gpointer")
+;   (parameters
+;     '("int" "line")
+;   )
+; )
+;
+; (define-method get_line_data
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_get_line_data")
+;   (return-type "gboolean")
+;   (parameters
+;     '("int" "line")
+;     '("GValue*" "dest")
+;   )
+; )
+;
+; (define-method get_boxed
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_get_boxed")
+;   (return-type "gpointer")
+;   (parameters
+;     '("int" "line")
+;     '("GType" "type")
+;   )
+; )
+;
+; (define-method create_tag
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_create_tag")
+;   (return-type "GtkTextTag*")
+;   (parameters
+;     '("const-char*" "tag_name")
+;     '("const-char*" "first_property_name")
+;   )
+;   (varargs #t)
+; )
+;
+; (define-method lookup_tag
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_lookup_tag")
+;   (return-type "GtkTextTag*")
+;   (parameters
+;     '("const-char*" "tag_name")
+;   )
+; )
+;
+; (define-method clear
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_clear")
+;   (return-type "none")
+; )
+;
+; (define-method start_line
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_start_line")
+;   (return-type "int")
+; )
+;
+; (define-method write
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_write")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "text")
+;     '("gssize" "len")
+;     '("GtkTextTag*" "tag")
+;   )
+; )
+;
+; (define-method end_line
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_end_line")
+;   (return-type "none")
+; )
+;
+; (define-method write_line
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_write_line")
+;   (return-type "int")
+;   (parameters
+;     '("const-char*" "text")
+;     '("gssize" "len")
+;     '("GtkTextTag*" "tag")
+;   )
+; )
+;
+; (define-method set_cursor
+;   (of-object "MooLineView")
+;   (c-name "moo_line_view_set_cursor")
+;   (return-type "none")
+;   (parameters
+;     '("int" "line")
+;     '("MooTextCursor" "cursor")
+;   )
+; )

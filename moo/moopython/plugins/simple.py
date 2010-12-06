@@ -17,21 +17,21 @@ import moo
 import gtk
 import gobject
 
-class Plugin(moo.edit.Plugin):
+class Plugin(moo.Plugin):
     # this method is called when plugin is loaded, once per session
     # (or after user checks Enabled in Preferences dialog)
     def do_init(self):
-        editor = moo.edit.editor_instance()
+        editor = moo.editor_instance()
         xml = editor.get_ui_xml()
         self.ui_merge_id = xml.new_merge_id()
         # Create a new action associated with editor windows
-        moo.utils.window_class_add_action(moo.edit.EditWindow,
-                                          "AnAction",                   # unique action id
-                                          display_name="Do Something",  # what user sees in Configure Shortcuts dialog
-                                          label="Do Something",         # menu item label
-                                          stock_id=gtk.STOCK_APPLY,     # stock icon
-                                          callback=self.do_stuff        # the action callback
-                                          )
+        moo.window_class_add_action(moo.EditWindow,
+                                    "AnAction",                   # unique action id
+                                    display_name="Do Something",  # what user sees in Configure Shortcuts dialog
+                                    label="Do Something",         # menu item label
+                                    stock_id=gtk.STOCK_APPLY,     # stock icon
+                                    callback=self.do_stuff        # the action callback
+                                    )
         # and add it into the xml, so it's actually persent in menu
         xml.add_item(self.ui_merge_id, "Editor/Menubar/Tools", action="AnAction")
 
@@ -39,10 +39,10 @@ class Plugin(moo.edit.Plugin):
 
     # this method is called when plugin is unloaded (on program exit or when plugin is disabled)
     def do_deinit(self):
-        editor = moo.edit.editor_instance()
+        editor = moo.editor_instance()
         xml = editor.get_ui_xml()
         xml.remove_ui(self.ui_merge_id)
-        moo.utils.window_class_remove_action(moo.edit.EditWindow, "AnAction")
+        moo.window_class_remove_action(moo.EditWindow, "AnAction")
 
     def do_stuff(self, window):
         doc = window.get_active_doc()

@@ -25,7 +25,7 @@ import gtk
 import os.path
 
 import moo
-from moo.utils import _
+from moo import _
 
 import mprj.optdialog
 import mprj.simple
@@ -171,8 +171,8 @@ class RunOptionsPage(mprj.optdialog.ConfigPage):
         else:
             self.xml.w_custom_dir.set_active(True)
             self.xml.w_custom_dir_entry.set_text(run_from)
-        moo.utils.bind_sensitive(self.xml.w_custom_dir,
-                                 self.xml.w_custom_dir_entry)
+        moo.bind_sensitive(self.xml.w_custom_dir,
+                           self.xml.w_custom_dir_entry)
 
     def do_apply(self):
         mprj.optdialog.ConfigPage.do_apply(self)
@@ -230,7 +230,7 @@ if __name__ == '__main__':
     from mprj.config import File
     from c import CProject
 
-    editor = moo.edit.create_editor_instance()
+    editor = moo.create_editor_instance()
     config_file = File(_sample_file, '/tmp/test-file.mprj')
     config = CConfig(config_file)
     project = CProject(None, config, config_file)
