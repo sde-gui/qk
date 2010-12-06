@@ -108,7 +108,6 @@ gboolean         moo_edit_get_clean             (MooEdit        *edit);
 void             moo_edit_set_clean             (MooEdit        *edit,
                                                  gboolean        clean);
 MooEditStatus    moo_edit_get_status            (MooEdit        *edit);
-void             moo_edit_status_changed        (MooEdit        *edit);
 MooEditState     moo_edit_get_state             (MooEdit        *edit);
 
 void             moo_edit_reload                (MooEdit        *edit,

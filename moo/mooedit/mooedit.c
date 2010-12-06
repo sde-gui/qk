@@ -404,17 +404,17 @@ moo_edit_set_modified (MooEdit            *edit,
 
     modify_status (edit, MOO_EDIT_MODIFIED, modified);
 
-    moo_edit_status_changed (edit);
+    _moo_edit_status_changed (edit);
 }
 
 
 void
-moo_edit_set_clean (MooEdit            *edit,
-                    gboolean            clean)
+moo_edit_set_clean (MooEdit  *edit,
+                    gboolean  clean)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
     modify_status (edit, MOO_EDIT_CLEAN, clean);
-    moo_edit_status_changed (edit);
+    _moo_edit_status_changed (edit);
 }
 
 
@@ -427,7 +427,7 @@ moo_edit_get_clean (MooEdit *edit)
 
 
 void
-moo_edit_status_changed (MooEdit *edit)
+_moo_edit_status_changed (MooEdit *edit)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_signal_emit (edit, signals[DOC_STATUS_CHANGED], 0, NULL);
@@ -443,7 +443,7 @@ _moo_edit_set_status (MooEdit        *edit,
     if (edit->priv->status != status)
     {
         edit->priv->status = status;
-        moo_edit_status_changed (edit);
+        _moo_edit_status_changed (edit);
     }
 }
 

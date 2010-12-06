@@ -1268,7 +1268,7 @@ _moo_edit_set_file (MooEdit    *edit,
         moo_edit_set_encoding (edit, encoding);
 
     g_signal_emit_by_name (edit, "filename-changed", edit->priv->filename, NULL);
-    moo_edit_status_changed (edit);
+    _moo_edit_status_changed (edit);
 
     moo_file_free (tmp);
 

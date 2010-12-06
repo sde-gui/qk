@@ -31,6 +31,7 @@ G_BEGIN_DECLS
 MOO_DEFINE_SLIST (MooEditList, moo_edit_list, MooEdit)
 extern MooEditList *_moo_edit_instances;
 
+void        _moo_edit_status_changed        (MooEdit        *edit);
 void        _moo_edit_closed                (MooEdit        *edit);
 void        _moo_edit_view_destroyed        (MooEdit        *edit);
 
