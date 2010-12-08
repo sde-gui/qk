@@ -30,6 +30,8 @@ void        _moo_edit_add_class_actions     (MooEdit        *edit);
 void        _moo_edit_check_actions         (MooEdit        *edit);
 void        _moo_edit_class_init_actions    (MooEditClass   *klass);
 
+void        _moo_edit_status_changed        (MooEdit        *edit);
+
 void        _moo_edit_do_popup              (MooEdit        *edit,
                                              GdkEventButton *event);
 

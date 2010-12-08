@@ -1365,12 +1365,6 @@
   (return-type "MooEditStatus")
 )
 
-(define-method status_changed
-  (of-object "MooEdit")
-  (c-name "moo_edit_status_changed")
-  (return-type "none")
-)
-
 (define-method get_state
   (of-object "MooEdit")
   (c-name "moo_edit_get_state")
