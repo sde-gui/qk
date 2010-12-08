@@ -18,7 +18,7 @@
 #endif
 
 #include "mooedit/mooplugin-macro.h"
-#include "plugins/mooplugin-builtin.h"
+#include "mooeditplugins.h"
 #include "moofileview/moofileentry.h"
 #include "moocmdview.h"
 #include "mooedit/mooedit-accels.h"
@@ -494,8 +494,7 @@ init_grep_dialog (MooEditWindow *window,
 
     if (doc)
     {
-        MooEditView *view = moo_edit_get_view (doc);
-        char *sel = moo_text_view_get_selection (GTK_TEXT_VIEW (view));
+        char *sel = moo_text_view_get_selection (MOO_TEXT_VIEW (doc));
         if (sel && !strchr (sel, '\n'))
             gtk_entry_set_text (GTK_ENTRY (pattern_entry), sel);
         g_free (sel);
@@ -690,14 +689,9 @@ process_grep_line (MooLineView *view,
     int line_no;
     guint64 line_no_64;
 
-    g_return_val_if_fail (line != NULL, FALSE);
-
     /* 'Binary file blah matches' */
     if (g_str_has_prefix (line, "Binary file "))
         return FALSE;
-
-    if (!*line)
-        return TRUE;
 
     p = line;
     if (!(colon = strchr (p, ':')) ||

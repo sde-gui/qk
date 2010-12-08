@@ -31,9 +31,9 @@ G_BEGIN_DECLS
 #define MOO_IS_LANG_MGR_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_LANG_MGR))
 #define MOO_LANG_MGR_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_LANG_MGR, MooLangMgrClass))
 
-typedef struct _MooLangMgrClass MooLangMgrClass;
+typedef struct MooLangMgrClass MooLangMgrClass;
 
-struct _MooLangMgr {
+struct MooLangMgr {
     GObject base;
 
     GtkSourceLanguageManager *lang_mgr;
@@ -50,7 +50,7 @@ struct _MooLangMgr {
     gboolean modified;
 };
 
-struct _MooLangMgrClass
+struct MooLangMgrClass
 {
     GObjectClass base_class;
 };

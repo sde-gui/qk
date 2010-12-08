@@ -15,7 +15,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mootextview-private.h"
-#include "mooedit/mooeditview-impl.h"
+#include "mooedit/mooedit-impl.h"
 #include "mooedit/mootextiter.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooutils/mooutils-misc.h"
@@ -884,9 +884,9 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
             else
                 view->priv->dnd.type = MOO_TEXT_VIEW_DRAG_SELECT_LINES;
         }
-        else if (event->button == 3 && MOO_IS_EDIT_VIEW (widget))
+        else if (event->button == 3 && MOO_IS_EDIT (widget))
         {
-            _moo_edit_view_do_popup (MOO_EDIT_VIEW (widget), event);
+            _moo_edit_do_popup (MOO_EDIT (widget), event);
             return TRUE;
         }
         else if (event->button == 2 || event->button == 3)

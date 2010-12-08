@@ -30,18 +30,18 @@ G_BEGIN_DECLS
 #define MOO_BIG_PANED_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_BIG_PANED, MooBigPanedClass))
 
 
-typedef struct _MooBigPaned        MooBigPaned;
-typedef struct _MooBigPanedPrivate MooBigPanedPrivate;
-typedef struct _MooBigPanedClass   MooBigPanedClass;
+typedef struct MooBigPaned        MooBigPaned;
+typedef struct MooBigPanedPrivate MooBigPanedPrivate;
+typedef struct MooBigPanedClass   MooBigPanedClass;
 
-struct _MooBigPaned
+struct MooBigPaned
 {
     GtkFrame base;
     MooBigPanedPrivate *priv;
     GtkWidget *paned[4]; /* indexed by PanePos */
 };
 
-struct _MooBigPanedClass
+struct MooBigPanedClass
 {
     GtkFrameClass base_class;
 };

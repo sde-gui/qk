@@ -29,8 +29,8 @@ G_BEGIN_DECLS
 #define MOO_IS_FILE_VIEW_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_VIEW))
 #define MOO_FILE_VIEW_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_VIEW, MooFileViewClass))
 
-typedef struct _MooFileView      MooFileView;
-typedef struct _MooFileViewClass MooFileViewClass;
+typedef struct MooFileView      MooFileView;
+typedef struct MooFileViewClass MooFileViewClass;
 
 GType                   moo_file_view_get_type      (void) G_GNUC_CONST;
 
@@ -43,8 +43,6 @@ gboolean                moo_file_view_chdir_path    (MooFileView    *fileview,
 
 MooUiXml               *moo_file_view_get_ui_xml    (MooFileView    *fileview);
 MooActionCollection    *moo_file_view_get_actions   (MooFileView    *fileview);
-
-void                    moo_file_view_focus_files   (MooFileView    *fileview);
 
 
 G_END_DECLS

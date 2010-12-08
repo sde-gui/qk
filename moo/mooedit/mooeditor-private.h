@@ -30,13 +30,12 @@ typedef enum {
     EMBEDDED            = 1 << 5
 } MooEditorOptions;
 
-struct _MooEditorPrivate {
-    MooEditArray        *docs;
+struct MooEditorPrivate {
     MooEditArray        *windowless;
     MooEditWindowArray  *windows;
     MooUiXml            *doc_ui_xml;
     MooUiXml            *ui_xml;
-    MooHistoryMgr       *history;
+    MdHistoryMgr        *history;
     MooFileWatch        *file_watch;
     MooEditorOptions     opts;
 

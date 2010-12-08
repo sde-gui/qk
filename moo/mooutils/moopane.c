@@ -87,7 +87,7 @@ _moo_window_set_icon_from_stock (GtkWindow  *window,
 #endif
 
 
-struct _MooPane {
+struct MooPane {
     GtkObject base;
 
     char         *id;
@@ -130,7 +130,7 @@ struct _MooPane {
     guint         params_changed_blocked : 1;
 };
 
-struct _MooPaneClass {
+struct MooPaneClass {
     GtkObjectClass base_class;
     gboolean (*remove) (MooPane *pane);
 };

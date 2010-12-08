@@ -11,7 +11,7 @@ export _GTKWINDIR=`cd $mgwdir && pwd`
 export _GTKWINCONFIG=$mgwconfig
 export _GTKWINBUILDROOT=$mgwbuildroot
 
-# JHBUILD=$mgwjhbuilddir/bin/jhbuild
+# JHBUILD=$mgwdir_s/jhbuild/bin/jhbuild
 JHBUILD=jhbuild
 
 chmod a-w $mgwdir/jhbuildrc/glib-win32.cache

@@ -6,7 +6,7 @@
 
 G_BEGIN_DECLS
 
-struct _MooFileEnc {
+struct MooFileEnc {
     GFile *file;
     char *encoding;
 };

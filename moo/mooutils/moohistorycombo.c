@@ -346,7 +346,7 @@ default_sort_func (GtkTreeModel       *model,
                    GtkTreeIter        *a,
                    GtkTreeIter        *b)
 {
-    MooHistoryListItem *e1 = NULL, *e2 = NULL;
+    MooHistoryItem *e1 = NULL, *e2 = NULL;
     int result;
 
     /* XXX 0 is not good */
@@ -364,8 +364,8 @@ default_sort_func (GtkTreeModel       *model,
     else
         result = strcmp (e1->data, e2->data);
 
-    moo_history_list_item_free (e1);
-    moo_history_list_item_free (e2);
+    moo_history_item_free (e1);
+    moo_history_item_free (e2);
     return result;
 }
 
@@ -454,7 +454,7 @@ default_filter_func (const char         *entry_text,
                      G_GNUC_UNUSED gpointer data)
 {
     gboolean visible;
-    MooHistoryListItem *e = NULL;
+    MooHistoryItem *e = NULL;
 
     gtk_tree_model_get (model, iter, 0, &e, -1);
 
@@ -470,7 +470,7 @@ default_filter_func (const char         *entry_text,
         visible = TRUE;
     }
 
-    moo_history_list_item_free (e);
+    moo_history_item_free (e);
     return visible ? TRUE : FALSE;
 }
 
@@ -507,7 +507,7 @@ moo_history_combo_commit (MooHistoryCombo *combo)
 {
     GtkTreeIter iter;
     const char *text;
-    MooHistoryListItem *freeme = NULL;
+    MooHistoryItem *freeme = NULL;
 
     g_return_if_fail (MOO_IS_HISTORY_COMBO (combo));
 
@@ -525,7 +525,7 @@ moo_history_combo_commit (MooHistoryCombo *combo)
     moo_history_combo_add_text (combo, text);
 
     if (freeme)
-        moo_history_list_item_free (freeme);
+        moo_history_item_free (freeme);
 }
 
 
@@ -580,14 +580,14 @@ cell_data_func (G_GNUC_UNUSED GtkCellLayout *cell_layout,
                 GtkTreeModel       *model,
                 GtkTreeIter        *iter)
 {
-    MooHistoryListItem *e = NULL;
+    MooHistoryItem *e = NULL;
 
     gtk_tree_model_get (model, iter, 0, &e, -1);
 
     if (e)
     {
         g_object_set (cell, "text", e->display, NULL);
-        moo_history_list_item_free (e);
+        moo_history_item_free (e);
     }
 }
 
@@ -598,10 +598,10 @@ row_separator_func (GtkTreeModel       *model,
                     G_GNUC_UNUSED gpointer data)
 {
     gboolean separator;
-    MooHistoryListItem *item = NULL;
+    MooHistoryItem *item = NULL;
     gtk_tree_model_get (model, iter, 0, &item, -1);
     separator = item == NULL;
-    moo_history_list_item_free (item);
+    moo_history_item_free (item);
     return separator;
 }
 
@@ -611,7 +611,7 @@ get_text_func (GtkTreeModel       *model,
                GtkTreeIter        *iter,
                G_GNUC_UNUSED gpointer data)
 {
-    MooHistoryListItem *e = NULL;
+    MooHistoryItem *e = NULL;
     char *text;
 
     gtk_tree_model_get (model, iter, 0, &e, -1);
@@ -620,6 +620,6 @@ get_text_func (GtkTreeModel       *model,
     g_return_val_if_fail (g_utf8_validate (e->data, -1, NULL), NULL);
 
     text = g_strdup (e->data);
-    moo_history_list_item_free (e);
+    moo_history_item_free (e);
     return text;
 }

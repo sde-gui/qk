@@ -27,9 +27,9 @@ G_BEGIN_DECLS
 #define MOO_IS_FILE_READER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_READER))
 #define MOO_FILE_READER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_READER, MooFileReaderClass))
 
-typedef struct _MooFileReaderClass MooFileReaderClass;
+typedef struct MooFileReaderClass MooFileReaderClass;
 
-struct _MooFileReaderClass {
+struct MooFileReaderClass {
     GObjectClass base_class;
 };
 
@@ -41,13 +41,13 @@ struct _MooFileReaderClass {
 #define MOO_IS_FILE_WRITER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_WRITER))
 #define MOO_FILE_WRITER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_WRITER, MooFileWriterClass))
 
-typedef struct _MooFileWriterClass MooFileWriterClass;
+typedef struct MooFileWriterClass MooFileWriterClass;
 
-struct _MooFileWriter {
+struct MooFileWriter {
     GObject base;
 };
 
-struct _MooFileWriterClass {
+struct MooFileWriterClass {
     GObjectClass base_class;
 
     gboolean (*meth_write)  (MooFileWriter *writer,
@@ -63,20 +63,20 @@ struct _MooFileWriterClass {
 
 #define MOO_TYPE_LOCAL_FILE_WRITER (moo_local_file_writer_get_type ())
 
-typedef struct _MooLocalFileWriter MooLocalFileWriter;
-typedef struct _MooLocalFileWriterClass MooLocalFileWriterClass;
+typedef struct MooLocalFileWriter MooLocalFileWriter;
+typedef struct MooLocalFileWriterClass MooLocalFileWriterClass;
 
-struct _MooLocalFileWriterClass {
+struct MooLocalFileWriterClass {
     MooFileWriterClass base_class;
 };
 
 
 #define MOO_TYPE_STRING_WRITER (moo_string_writer_get_type ())
 
-typedef struct _MooStringWriter MooStringWriter;
-typedef struct _MooStringWriterClass MooStringWriterClass;
+typedef struct MooStringWriter MooStringWriter;
+typedef struct MooStringWriterClass MooStringWriterClass;
 
-struct _MooStringWriterClass {
+struct MooStringWriterClass {
     MooFileWriterClass base_class;
 };
 

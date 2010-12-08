@@ -34,7 +34,7 @@ typedef struct VarArray VarArray;
 typedef struct Value    Value;
 
 
-struct _MooEditConfigPrivate {
+struct MooEditConfigPrivate {
     MOO_IP_ARRAY_ELMS (Value, values);
 };
 

@@ -2,8 +2,8 @@ moo_sources +=				\
 	mooutils/mooarray.h		\
 	mooutils/mooutils-thread.c	\
 	mooutils/mooutils-thread.h	\
-	mooutils/moohistorymgr.c	\
-	mooutils/moohistorymgr.h	\
+	mooutils/mdhistorymgr.c		\
+	mooutils/mdhistorymgr.h		\
 	mooutils/moo-environ.h		\
 	mooutils/mooaccel.c		\
 	mooutils/mooaccel.h		\

@@ -17,7 +17,7 @@
 #include "moousertools.h"
 #include "moousertools-prefs.h"
 #include "moocommand-private.h"
-#include "plugins/mooplugin-builtin.h"
+#include "mooeditplugins.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooeditaction.h"
 #include "mooedit/mooeditaction-factory.h"
@@ -74,8 +74,8 @@ typedef struct {
 
 typedef MooEditActionClass MooToolActionClass;
 
-static MooCommandContext   *create_command_context  (MooEditWindow  *window,
-                                                     MooEdit        *doc);
+static MooCommandContext   *create_command_context  (gpointer        window,
+                                                     gpointer        doc);
 static MooUserToolInfo     *_moo_user_tool_info_ref (MooUserToolInfo *info);
 static void                 add_info                (MooUserToolInfo *info,
                                                      GSList        **list,
@@ -1321,15 +1321,15 @@ get_extension (const char *string,
 }
 
 static MooCommandContext *
-create_command_context (MooEditWindow  *window,
-                        MooEdit        *doc)
+create_command_context (gpointer window,
+                        gpointer doc)
 {
     MooCommandContext *ctx;
     char *user_dir;
 
     ctx = moo_command_context_new (doc, window);
 
-    if (doc && !moo_edit_is_untitled (doc))
+    if (MOO_IS_EDIT (doc) && !moo_edit_is_untitled (doc))
     {
         char *filename, *basename;
         char *dirname, *base = NULL, *extension = NULL;
@@ -1351,14 +1351,14 @@ create_command_context (MooEditWindow  *window,
         g_free (filename);
     }
 
-    if (doc)
+    if (MOO_IS_EDIT (doc))
     {
-        MooEditView *view = moo_edit_get_view (doc);
-        GValue val = { 0 };
+        GValue val;
+        val.g_type = 0;
         g_value_init (&val, G_TYPE_INT);
-        g_value_set_int (&val, moo_text_view_get_cursor_line (GTK_TEXT_VIEW (view)));
+        g_value_set_int (&val, moo_text_view_get_cursor_line (doc));
         moo_command_context_set (ctx, "LINE0", &val);
-        g_value_set_int (&val, moo_text_view_get_cursor_line (GTK_TEXT_VIEW (view)) + 1);
+        g_value_set_int (&val, moo_text_view_get_cursor_line (doc) + 1);
         moo_command_context_set (ctx, "LINE", &val);
         g_value_unset (&val);
     }

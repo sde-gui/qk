@@ -9,10 +9,6 @@
 G_BEGIN_DECLS
 
 
-/* enumerations from moodialogs.h */
-GType moo_save_changes_dialog_response_get_type (void) G_GNUC_CONST;
-#define MOO_TYPE_SAVE_CHANGES_DIALOG_RESPONSE (moo_save_changes_dialog_response_get_type())
-
 /* enumerations from moofiledialog.h */
 GType moo_file_dialog_type_get_type (void) G_GNUC_CONST;
 #define MOO_TYPE_FILE_DIALOG_TYPE (moo_file_dialog_type_get_type())

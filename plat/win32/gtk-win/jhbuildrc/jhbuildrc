@@ -121,18 +121,18 @@ module_autogenargs['glib'] =    autogenargs + " --cache-file=" + _glib_win32_cac
 					    + " --with-threads=win32" \
 					    + " --disable-fam" \
 					    + " --disable-selinux"
-# module_autogenargs['glib-2.24.0'] = module_autogenargs['glib']
-# module_autogenargs['glib-2.24.2'] = module_autogenargs['glib']
+module_autogenargs['glib-2.24.0'] = module_autogenargs['glib']
+module_autogenargs['glib-2.24.2'] = module_autogenargs['glib']
 
 module_autogenargs['cairo'] =   autogenargs + " --without-x" \
 					    + " --disable-ft" \
 					    + " png_REQUIRES=libpng"
-# module_autogenargs['cairo-1.8'] = module_autogenargs['cairo']
-# module_autogenargs['cairo-1.10'] = module_autogenargs['cairo']
+module_autogenargs['cairo-1.8'] = module_autogenargs['cairo']
+module_autogenargs['cairo-1.10'] = module_autogenargs['cairo']
 
 module_autogenargs['pango'] =   autogenargs + " --with-included-modules"
 
-module_autogenargs['gtk+'] = autogenargs \
+module_autogenargs['gtk+-2.16'] = autogenargs \
                                             + " --without-libjpeg" \
                                             + " --without-libtiff" \
 					    + " --disable-cups" \
@@ -141,29 +141,20 @@ module_autogenargs['gtk+'] = autogenargs \
 					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
                                             + " --with-included-immodules" \
                                             + " --disable-introspection"
-# module_autogenargs['gtk+-2.18'] = autogenargs \
-#                                             + " --without-libjpeg" \
-#                                             + " --without-libtiff" \
-# 					    + " --disable-cups" \
-# 					    + " --without-libjasper" \
-# 					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
-#                                             + " --with-included-immodules" \
-#                                             + " --disable-introspection"
-# module_autogenargs['gtk+-2.20'] = autogenargs \
-#                                             + " --without-libjpeg" \
-#                                             + " --without-libtiff" \
-# 					    + " --disable-cups" \
-# 					    + " --without-libjasper" \
-# 					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
-#                                             + " --with-included-immodules" \
-#                                             + " --disable-introspection"
-# module_autogenargs['gtk-2-20'] = module_autogenargs['gtk+-2.20']
-
-module_autogenargs['pygobject'] =   autogenargs \
-                                            + " --disable-cairo" \
-                                            + " --disable-introspection" \
-                                            + " --disable-docs"
-
-module_autogenargs['pygobject'] =   autogenargs \
-                                            + " --disable-docs" \
-                                            + " --disable-numpy"
+module_autogenargs['gtk+-2.18'] = autogenargs \
+                                            + " --without-libjpeg" \
+                                            + " --without-libtiff" \
+					    + " --disable-cups" \
+					    + " --without-libjasper" \
+					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
+                                            + " --with-included-immodules" \
+                                            + " --disable-introspection"
+module_autogenargs['gtk+-2.20'] = autogenargs \
+                                            + " --without-libjpeg" \
+                                            + " --without-libtiff" \
+					    + " --disable-cups" \
+					    + " --without-libjasper" \
+					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
+                                            + " --with-included-immodules" \
+                                            + " --disable-introspection"
+module_autogenargs['gtk-2-20'] = module_autogenargs['gtk+-2.20']

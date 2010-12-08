@@ -68,7 +68,7 @@ moo_command_lua_run (MooCommand        *cmd_base,
     }
 
     if (moo_command_context_get_doc (ctx))
-        buffer = GTK_TEXT_BUFFER (moo_edit_get_buffer (moo_command_context_get_doc (ctx)));
+        buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (moo_command_context_get_doc (ctx)));
 
     if (buffer)
         gtk_text_buffer_begin_user_action (buffer);
@@ -166,7 +166,7 @@ lua_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
     xml = lua_page_xml_get (page);
     g_return_val_if_fail (xml != NULL, FALSE);
 
-    new_code = moo_text_view_get_text (GTK_TEXT_VIEW (xml->textview));
+    new_code = moo_text_view_get_text (xml->textview);
     code = moo_command_data_get_code (data);
 
     if (!_moo_str_equal (code, new_code))

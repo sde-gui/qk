@@ -29,10 +29,10 @@ G_BEGIN_DECLS
 #define MOO_PREFS_DIALOG_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PREFS_DIALOG, MooPrefsDialogClass))
 
 
-typedef struct _MooPrefsDialog      MooPrefsDialog;
-typedef struct _MooPrefsDialogClass MooPrefsDialogClass;
+typedef struct MooPrefsDialog      MooPrefsDialog;
+typedef struct MooPrefsDialogClass MooPrefsDialogClass;
 
-struct _MooPrefsDialog
+struct MooPrefsDialog
 {
     GtkDialog     dialog;
     GtkNotebook  *notebook;
@@ -42,7 +42,7 @@ struct _MooPrefsDialog
     gboolean      running;
 };
 
-struct _MooPrefsDialogClass
+struct MooPrefsDialogClass
 {
     GtkDialogClass parent_class;
 

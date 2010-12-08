@@ -29,10 +29,10 @@ G_BEGIN_DECLS
 #define MOO_INDENTER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_INDENTER, MooIndenterClass))
 
 
-typedef struct _MooIndenter      MooIndenter;
-typedef struct _MooIndenterClass MooIndenterClass;
+typedef struct MooIndenter      MooIndenter;
+typedef struct MooIndenterClass MooIndenterClass;
 
-struct _MooIndenter
+struct MooIndenter
 {
     GObject parent;
     MooEdit *doc;
@@ -41,7 +41,7 @@ struct _MooIndenter
     guint indent;
 };
 
-struct _MooIndenterClass
+struct MooIndenterClass
 {
     GObjectClass parent_class;
 

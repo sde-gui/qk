@@ -30,16 +30,16 @@ G_BEGIN_DECLS
 #define MOO_IS_EDITOR_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDITOR))
 #define MOO_EDITOR_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDITOR, MooEditorClass))
 
-typedef struct _MooEditorPrivate MooEditorPrivate;
-typedef struct _MooEditorClass   MooEditorClass;
+typedef struct MooEditorPrivate MooEditorPrivate;
+typedef struct MooEditorClass   MooEditorClass;
 
-struct _MooEditor
+struct MooEditor
 {
     GObject base;
     MooEditorPrivate *priv;
 };
 
-struct _MooEditorClass
+struct MooEditorClass
 {
     GObjectClass base_class;
 

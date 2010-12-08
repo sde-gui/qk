@@ -1,5 +1,5 @@
 /*
- *   moohistorymgr.h
+ *   mdhistorymgr.h
  *
  *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
  *
@@ -13,7 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "mooutils/moohistorymgr.h"
+#include "mooutils/mdhistorymgr.h"
 #include "mooutils/moofileicon.h"
 #include "mooutils/mooapp-ipc.h"
 #include "mooutils/moofilewatch.h"
@@ -33,13 +33,13 @@
 #define N_MENU_ITEMS 10
 #define MAX_ITEM_NUMBER 5000
 
-#define IPC_ID "MooHistoryMgr"
+#define IPC_ID "MdHistoryMgr"
 
-MOO_DEFINE_DLIST (WidgetList, widget_list, GtkWidget)
-MOO_DEFINE_QUEUE (MooHistoryItem, moo_history_item)
-MOO_DEFINE_QUARK (moo-history-mgr-parse-error, moo_history_mgr_parse_error_quark)
+MOO_DEFINE_DLIST(WidgetList, widget_list, GtkWidget)
+MOO_DEFINE_QUEUE(MdHistoryItem, md_history_item)
+MOO_DEFINE_QUARK(md-history-mgr-parse-error, md_history_mgr_parse_error_quark)
 
-struct _MooHistoryMgrPrivate {
+struct MdHistoryMgrPrivate {
     char *filename;
     char *basename;
     char *name;
@@ -50,18 +50,18 @@ struct _MooHistoryMgrPrivate {
     guint update_widgets_idle;
     WidgetList *widgets;
 
-    MooHistoryItemQueue *files;
+    MdHistoryItemQueue *files;
     GHashTable *hash;
     guint loaded : 1;
 };
 
 typedef struct {
-    MooHistoryCallback callback;
+    MdHistoryCallback callback;
     gpointer data;
     GDestroyNotify notify;
 } CallbackData;
 
-struct _MooHistoryItem {
+struct MdHistoryItem {
     char *uri;
     GData *data;
     MooFileIcon *icon;
@@ -73,49 +73,49 @@ typedef enum {
     UPDATE_ITEM_ADD
 } UpdateType;
 
-static GObject     *moo_history_mgr_constructor (GType           type,
+static GObject     *md_history_mgr_constructor  (GType           type,
                                                  guint           n_props,
                                                  GObjectConstructParam *props);
-static void         moo_history_mgr_dispose     (GObject        *object);
-static void         moo_history_mgr_set_property(GObject        *object,
+static void         md_history_mgr_dispose      (GObject        *object);
+static void         md_history_mgr_set_property (GObject        *object,
                                                  guint           property_id,
                                                  const GValue   *value,
                                                  GParamSpec     *pspec);
-static void         moo_history_mgr_get_property(GObject        *object,
+static void         md_history_mgr_get_property (GObject        *object,
                                                  guint           property_id,
                                                  GValue         *value,
                                                  GParamSpec     *pspec);
 
-static const char  *get_filename                (MooHistoryMgr   *mgr);
-static const char  *get_basename                (MooHistoryMgr   *mgr);
+static const char  *get_filename                (MdHistoryMgr   *mgr);
+static const char  *get_basename                (MdHistoryMgr   *mgr);
 
-static void         ensure_files                (MooHistoryMgr   *mgr);
-static void         schedule_save               (MooHistoryMgr   *mgr);
-static void         moo_history_mgr_save        (MooHistoryMgr   *mgr);
+static void         ensure_files                (MdHistoryMgr   *mgr);
+static void         schedule_save               (MdHistoryMgr   *mgr);
+static void         md_history_mgr_save         (MdHistoryMgr   *mgr);
 
-static void         populate_menu               (MooHistoryMgr   *mgr,
+static void         populate_menu               (MdHistoryMgr   *mgr,
                                                  GtkWidget      *menu);
-static void         schedule_update_widgets     (MooHistoryMgr   *mgr);
+static void         schedule_update_widgets     (MdHistoryMgr   *mgr);
 
-static void         moo_history_item_format     (MooHistoryItem  *item,
+static void         md_history_item_format      (MdHistoryItem  *item,
                                                  GString        *buffer);
-static gboolean     moo_history_item_equal      (MooHistoryItem  *item1,
-                                                 MooHistoryItem  *item2);
-static MooFileIcon *moo_history_item_get_icon   (MooHistoryItem  *item);
+static gboolean     md_history_item_equal       (MdHistoryItem  *item1,
+                                                 MdHistoryItem  *item2);
+static MooFileIcon *md_history_item_get_icon    (MdHistoryItem  *item);
 static char        *uri_get_basename            (const char     *uri);
 static char        *uri_get_display_name        (const char     *uri);
 
 static void         ipc_callback                (GObject        *obj,
                                                  const char     *data,
                                                  gsize           len);
-static void         ipc_notify_add_file         (MooHistoryMgr   *mgr,
-                                                 MooHistoryItem  *item);
-static void         ipc_notify_update_file      (MooHistoryMgr   *mgr,
-                                                 MooHistoryItem  *item);
-static void         ipc_notify_remove_file      (MooHistoryMgr   *mgr,
-                                                 MooHistoryItem  *item);
+static void         ipc_notify_add_file         (MdHistoryMgr   *mgr,
+                                                 MdHistoryItem  *item);
+static void         ipc_notify_update_file      (MdHistoryMgr   *mgr,
+                                                 MdHistoryItem  *item);
+static void         ipc_notify_remove_file      (MdHistoryMgr   *mgr,
+                                                 MdHistoryItem  *item);
 
-G_DEFINE_TYPE (MooHistoryMgr, moo_history_mgr, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MdHistoryMgr, md_history_mgr, G_TYPE_OBJECT)
 
 enum {
     PROP_0,
@@ -131,16 +131,16 @@ enum {
 static guint signals[N_SIGNALS];
 
 static void
-moo_history_mgr_class_init (MooHistoryMgrClass *klass)
+md_history_mgr_class_init (MdHistoryMgrClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-    g_type_class_add_private (klass, sizeof (MooHistoryMgrPrivate));
+    g_type_class_add_private (klass, sizeof (MdHistoryMgrPrivate));
 
-    object_class->constructor = moo_history_mgr_constructor;
-    object_class->set_property = moo_history_mgr_set_property;
-    object_class->get_property = moo_history_mgr_get_property;
-    object_class->dispose = moo_history_mgr_dispose;
+    object_class->constructor = md_history_mgr_constructor;
+    object_class->set_property = md_history_mgr_set_property;
+    object_class->get_property = md_history_mgr_get_property;
+    object_class->dispose = md_history_mgr_dispose;
 
     g_object_class_install_property (object_class, PROP_NAME,
         g_param_spec_string ("name", "name", "name",
@@ -152,7 +152,7 @@ moo_history_mgr_class_init (MooHistoryMgrClass *klass)
 
     signals[CHANGED] =
         _moo_signal_new_cb ("changed",
-                            MOO_TYPE_HISTORY_MGR,
+                            MD_TYPE_HISTORY_MGR,
                             G_SIGNAL_RUN_LAST,
                             G_CALLBACK (schedule_update_widgets),
                             NULL, NULL,
@@ -161,28 +161,28 @@ moo_history_mgr_class_init (MooHistoryMgrClass *klass)
 }
 
 static void
-moo_history_mgr_init (MooHistoryMgr *mgr)
+md_history_mgr_init (MdHistoryMgr *mgr)
 {
-    mgr->priv = G_TYPE_INSTANCE_GET_PRIVATE (mgr, MOO_TYPE_HISTORY_MGR, MooHistoryMgrPrivate);
+    mgr->priv = G_TYPE_INSTANCE_GET_PRIVATE (mgr, MD_TYPE_HISTORY_MGR, MdHistoryMgrPrivate);
     mgr->priv->filename = NULL;
     mgr->priv->basename = NULL;
-    mgr->priv->files = moo_history_item_queue_new ();
+    mgr->priv->files = md_history_item_queue_new ();
     mgr->priv->hash = g_hash_table_new_full (g_str_hash, g_str_equal,
                                              g_free, NULL);
     mgr->priv->loaded = FALSE;
 }
 
 static GObject *
-moo_history_mgr_constructor (GType           type,
-                             guint           n_props,
-                             GObjectConstructParam *props)
+md_history_mgr_constructor (GType           type,
+                            guint           n_props,
+                            GObjectConstructParam *props)
 {
     GObject *object;
-    MooHistoryMgr *mgr;
+    MdHistoryMgr *mgr;
 
-    object = G_OBJECT_CLASS (moo_history_mgr_parent_class)->
+    object = G_OBJECT_CLASS (md_history_mgr_parent_class)->
                 constructor (type, n_props, props);
-    mgr = MOO_HISTORY_MGR (object);
+    mgr = MD_HISTORY_MGR (object);
 
     if (mgr->priv->name)
     {
@@ -194,18 +194,18 @@ moo_history_mgr_constructor (GType           type,
 }
 
 static void
-moo_history_mgr_dispose (GObject *object)
+md_history_mgr_dispose (GObject *object)
 {
-    MooHistoryMgr *mgr = MOO_HISTORY_MGR (object);
+    MdHistoryMgr *mgr = MD_HISTORY_MGR (object);
 
     if (mgr->priv)
     {
-        moo_history_mgr_shutdown (mgr);
+        md_history_mgr_shutdown (mgr);
 
         if (mgr->priv->files)
         {
-            moo_history_item_queue_foreach (mgr->priv->files, (MooHistoryItemListFunc) moo_history_item_free, NULL);
-            moo_history_item_queue_free_links (mgr->priv->files);
+            md_history_item_queue_foreach (mgr->priv->files, (MdHistoryItemListFunc) md_history_item_free, NULL);
+            md_history_item_queue_free_links (mgr->priv->files);
             g_hash_table_destroy (mgr->priv->hash);
         }
 
@@ -216,13 +216,13 @@ moo_history_mgr_dispose (GObject *object)
         mgr->priv = NULL;
     }
 
-    G_OBJECT_CLASS (moo_history_mgr_parent_class)->dispose (object);
+    G_OBJECT_CLASS (md_history_mgr_parent_class)->dispose (object);
 }
 
 void
-moo_history_mgr_shutdown (MooHistoryMgr *mgr)
+md_history_mgr_shutdown (MdHistoryMgr *mgr)
 {
-    g_return_if_fail (MOO_IS_HISTORY_MGR (mgr));
+    g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
 
     if (!mgr->priv)
         return;
@@ -238,7 +238,7 @@ moo_history_mgr_shutdown (MooHistoryMgr *mgr)
     {
         g_source_remove (mgr->priv->save_idle);
         mgr->priv->save_idle = 0;
-        moo_history_mgr_save (mgr);
+        md_history_mgr_save (mgr);
     }
 
     if (mgr->priv->update_widgets_idle)
@@ -252,12 +252,12 @@ moo_history_mgr_shutdown (MooHistoryMgr *mgr)
 }
 
 static void
-moo_history_mgr_set_property (GObject      *object,
-                              guint         prop_id,
-                              const GValue *value,
-                              GParamSpec   *pspec)
+md_history_mgr_set_property (GObject      *object,
+                             guint         prop_id,
+                             const GValue *value,
+                             GParamSpec   *pspec)
 {
-    MooHistoryMgr *mgr = MOO_HISTORY_MGR (object);
+    MdHistoryMgr *mgr = MD_HISTORY_MGR (object);
 
     switch (prop_id)
     {
@@ -272,12 +272,12 @@ moo_history_mgr_set_property (GObject      *object,
 }
 
 static void
-moo_history_mgr_get_property (GObject    *object,
-                              guint       prop_id,
-                              GValue     *value,
-                              GParamSpec *pspec)
+md_history_mgr_get_property (GObject    *object,
+                         guint       prop_id,
+                         GValue     *value,
+                         GParamSpec *pspec)
 {
-    MooHistoryMgr *mgr = MOO_HISTORY_MGR (object);
+    MdHistoryMgr *mgr = MD_HISTORY_MGR (object);
 
     switch (prop_id)
     {
@@ -286,7 +286,7 @@ moo_history_mgr_get_property (GObject    *object,
             break;
 
         case PROP_EMPTY:
-            g_value_set_boolean (value, moo_history_mgr_get_n_items (mgr) == 0);
+            g_value_set_boolean (value, md_history_mgr_get_n_items (mgr) == 0);
             break;
 
         default:
@@ -297,7 +297,7 @@ moo_history_mgr_get_property (GObject    *object,
 
 
 static const char *
-get_basename (MooHistoryMgr *mgr)
+get_basename (MdHistoryMgr *mgr)
 {
     if (!mgr->priv->basename)
     {
@@ -317,7 +317,7 @@ get_basename (MooHistoryMgr *mgr)
 }
 
 static const char *
-get_filename (MooHistoryMgr *mgr)
+get_filename (MdHistoryMgr *mgr)
 {
     if (!mgr->priv->filename)
         mgr->priv->filename = moo_get_user_cache_file (get_basename (mgr));
@@ -325,9 +325,9 @@ get_filename (MooHistoryMgr *mgr)
 }
 
 char *
-_moo_history_mgr_get_filename (MooHistoryMgr *mgr)
+_md_history_mgr_get_filename (MdHistoryMgr *mgr)
 {
-    g_return_val_if_fail (MOO_IS_HISTORY_MGR (mgr), NULL);
+    g_return_val_if_fail (MD_IS_HISTORY_MGR (mgr), NULL);
     return g_strdup (get_filename (mgr));
 }
 
@@ -350,21 +350,21 @@ _moo_history_mgr_get_filename (MooHistoryMgr *mgr)
 #define ELM_RECENT_ITEMS "recent-items"
 
 static void
-add_file (MooHistoryMgr  *mgr,
-          MooHistoryItem *item)
+add_file (MdHistoryMgr  *mgr,
+          MdHistoryItem *item)
 {
     const char *uri;
 
-    uri = moo_history_item_get_uri (item);
+    uri = md_history_item_get_uri (item);
 
     if (g_hash_table_lookup (mgr->priv->hash, uri) != NULL)
     {
         g_critical ("%s: duplicated uri '%s'", G_STRLOC, uri);
-        moo_history_item_free (item);
+        md_history_item_free (item);
         return;
     }
 
-    moo_history_item_queue_push_tail (mgr->priv->files, item);
+    md_history_item_queue_push_tail (mgr->priv->files, item);
     g_hash_table_insert (mgr->priv->hash, g_strdup (uri),
                          mgr->priv->files->tail);
 }
@@ -372,10 +372,10 @@ add_file (MooHistoryMgr  *mgr,
 static gboolean
 parse_element (const char     *filename,
                MooMarkupNode  *elm,
-               MooHistoryItem **item_p)
+               MdHistoryItem **item_p)
 {
     const char *uri;
-    MooHistoryItem *item;
+    MdHistoryItem *item;
     MooMarkupNode *child;
 
     if (strcmp (elm->name, ELM_ITEM) != 0)
@@ -392,7 +392,7 @@ parse_element (const char     *filename,
         return FALSE;
     }
 
-    item = moo_history_item_new (uri, NULL);
+    item = md_history_item_new (uri, NULL);
     g_return_val_if_fail (item != NULL, FALSE);
 
     for (child = elm->children; child != NULL; child = child->next)
@@ -425,7 +425,7 @@ parse_element (const char     *filename,
             continue;
         }
 
-        moo_history_item_set (item, key, value);
+        md_history_item_set (item, key, value);
     }
 
     *item_p = item;
@@ -433,7 +433,7 @@ parse_element (const char     *filename,
 }
 
 static void
-load_legacy (MooHistoryMgr *mgr)
+load_legacy (MdHistoryMgr *mgr)
 {
     MooMarkupDoc *xml;
     MooMarkupNode *root, *node;
@@ -455,7 +455,7 @@ load_legacy (MooHistoryMgr *mgr)
     for (node = root->children; node != NULL; node = node->next)
     {
         char *uri = NULL;
-        MooHistoryItem *item = NULL;
+        MdHistoryItem *item = NULL;
 
         if (!MOO_MARKUP_IS_ELEMENT (node))
             continue;
@@ -467,7 +467,7 @@ load_legacy (MooHistoryMgr *mgr)
         }
 
         if (uri)
-            item = moo_history_item_new (uri, NULL);
+            item = md_history_item_new (uri, NULL);
 
         if (item)
             add_file (mgr, item);
@@ -488,8 +488,8 @@ typedef enum {
 typedef struct {
     gboolean seen_root;
     Element element;
-    MooHistoryItem *item;
-    MooHistoryMgr *mgr;
+    MdHistoryItem *item;
+    MdHistoryMgr *mgr;
 } ParserData;
 
 static void
@@ -504,16 +504,16 @@ start_element_root (const gchar  *element_name,
 
     if (data->seen_root)
     {
-        g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                     MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "invalid element '%s'", element_name);
         return;
     }
 
     if (strcmp (element_name, ELM_ROOT) != 0)
     {
-        g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                     MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "invalid element '%s'", element_name);
         return;
     }
@@ -522,16 +522,16 @@ start_element_root (const gchar  *element_name,
     {
         if (seen_version || strcmp (*p, PROP_VERSION) != 0)
         {
-            g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                         MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+            g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                         MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                          "invalid attribute '%s'", *p);
             return;
         }
 
         if (strcmp (*v, PROP_VERSION_VALUE) != 0)
         {
-            g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                         MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+            g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                         MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                          "invalid version value '%s'", *v);
             return;
         }
@@ -541,8 +541,8 @@ start_element_root (const gchar  *element_name,
 
     if (!seen_version)
     {
-        g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                     MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "version attribute missing");
         return;
     }
@@ -558,13 +558,13 @@ start_element_item (const gchar  *element_name,
                     ParserData   *data,
                     GError      **error)
 {
-    MooHistoryItem *item = NULL;
+    MdHistoryItem *item = NULL;
     const char **p, **v;
 
     if (strcmp (element_name, ELM_ITEM) != 0)
     {
-        g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                     MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "invalid element '%s'",
                      element_name);
         return;
@@ -576,28 +576,28 @@ start_element_item (const gchar  *element_name,
     {
         if (strcmp (*p, PROP_URI) != 0)
         {
-            g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                         MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+            g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                         MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                          "invalid attribute '%s'", *v);
             return;
         }
 
         if (item != NULL)
         {
-            g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                         MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+            g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                         MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                          "duplicate attribute '%s'", *v);
             return;
         }
 
-        item = moo_history_item_new (*v, NULL);
+        item = md_history_item_new (*v, NULL);
         g_return_if_fail (item != NULL);
     }
 
     if (!item)
     {
-        g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                     MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "missing attribute '%s'", PROP_URI);
         return;
     }
@@ -620,8 +620,8 @@ start_element_data (const gchar  *element_name,
 
     if (strcmp (element_name, ELM_DATA) != 0)
     {
-        g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                     MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "invalid element '%s'",
                      element_name);
         return;
@@ -641,8 +641,8 @@ start_element_data (const gchar  *element_name,
         }
         else
         {
-            g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                         MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+            g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                         MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                          "invalid attribute '%s'", *v);
             return;
         }
@@ -650,21 +650,21 @@ start_element_data (const gchar  *element_name,
 
     if (!key || !key[0])
     {
-        g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                     MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "missing attribute '%s'", PROP_KEY);
         return;
     }
 
     if (!value)
     {
-        g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                     MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+        g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                     MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                      "missing attribute '%s'", PROP_VALUE);
         return;
     }
 
-    moo_history_item_set (data->item, key, value);
+    md_history_item_set (data->item, key, value);
 }
 
 static void
@@ -690,8 +690,8 @@ parser_start_element (G_GNUC_UNUSED GMarkupParseContext *context,
                                 attribute_values, data, error);
             break;
         case ELEMENT_DATA:
-            g_set_error (error, MOO_HISTORY_MGR_PARSE_ERROR,
-                         MOO_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
+            g_set_error (error, MD_HISTORY_MGR_PARSE_ERROR,
+                         MD_HISTORY_MGR_PARSE_ERROR_INVALID_CONTENT,
                          "invalid element '%s'", element_name);
             break;
     }
@@ -726,7 +726,7 @@ parser_end_element (G_GNUC_UNUSED GMarkupParseContext *context,
 }
 
 static void
-load_file (MooHistoryMgr *mgr)
+load_file (MdHistoryMgr *mgr)
 {
     const char *filename;
     GMarkupParser parser = {0};
@@ -761,12 +761,12 @@ load_file (MooHistoryMgr *mgr)
     }
 
     if (data.item)
-        moo_history_item_free (data.item);
+        md_history_item_free (data.item);
 }
 
 static gboolean
 parse_update_item (MooMarkupDoc   *xml,
-                   MooHistoryItem **item,
+                   MdHistoryItem **item,
                    UpdateType     *type)
 {
     const char *version;
@@ -816,7 +816,7 @@ parse_update_item (MooMarkupDoc   *xml,
 }
 
 static void
-ensure_files (MooHistoryMgr *mgr)
+ensure_files (MdHistoryMgr *mgr)
 {
     if (!mgr->priv->loaded)
         load_file (mgr);
@@ -824,28 +824,28 @@ ensure_files (MooHistoryMgr *mgr)
 
 
 static gboolean
-save_in_idle (MooHistoryMgr *mgr)
+save_in_idle (MdHistoryMgr *mgr)
 {
     mgr->priv->save_idle = 0;
-    moo_history_mgr_save (mgr);
+    md_history_mgr_save (mgr);
     return FALSE;
 }
 
 static void
-schedule_save (MooHistoryMgr *mgr)
+schedule_save (MdHistoryMgr *mgr)
 {
     if (!mgr->priv->save_idle)
         mgr->priv->save_idle = g_idle_add ((GSourceFunc) save_in_idle, mgr);
 }
 
 static void
-moo_history_mgr_save (MooHistoryMgr *mgr)
+md_history_mgr_save (MdHistoryMgr *mgr)
 {
     const char *filename;
     GError *error = NULL;
     MooFileWriter *writer;
 
-    g_return_if_fail (MOO_IS_HISTORY_MGR (mgr));
+    g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
 
     if (!mgr->priv->files)
         return;
@@ -861,7 +861,7 @@ moo_history_mgr_save (MooHistoryMgr *mgr)
     if ((writer = moo_config_writer_new (filename, FALSE, &error)))
     {
         GString *string;
-        MooHistoryItemList *l;
+        MdHistoryItemList *l;
 
         moo_file_writer_write (writer, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", -1);
         moo_file_writer_write (writer, "<" ELM_ROOT " " PROP_VERSION "=\"" PROP_VERSION_VALUE "\">\n", -1);
@@ -870,9 +870,9 @@ moo_history_mgr_save (MooHistoryMgr *mgr)
 
         for (l = mgr->priv->files->head; l != NULL; l = l->next)
         {
-            MooHistoryItem *item = l->data;
+            MdHistoryItem *item = l->data;
             g_string_truncate (string, 0);
-            moo_history_item_format (item, string);
+            md_history_item_format (item, string);
             if (!moo_file_writer_write (writer, string->str, -1))
                 break;
         }
@@ -894,7 +894,7 @@ moo_history_mgr_save (MooHistoryMgr *mgr)
 
 
 static char *
-format_for_update (MooHistoryItem *item,
+format_for_update (MdHistoryItem *item,
                    UpdateType     type)
 {
     GString *buffer;
@@ -907,7 +907,7 @@ format_for_update (MooHistoryItem *item,
                             ELM_UPDATE, PROP_VERSION, PROP_VERSION_VALUE,
                             PROP_TYPE, update_types[type]);
 
-    moo_history_item_format (item, buffer);
+    md_history_item_format (item, buffer);
 
     g_string_append (buffer, "</" ELM_UPDATE ">\n");
 
@@ -916,71 +916,71 @@ format_for_update (MooHistoryItem *item,
 
 
 guint
-moo_history_mgr_get_n_items (MooHistoryMgr *mgr)
+md_history_mgr_get_n_items (MdHistoryMgr *mgr)
 {
-    g_return_val_if_fail (MOO_IS_HISTORY_MGR (mgr), 0);
+    g_return_val_if_fail (MD_IS_HISTORY_MGR (mgr), 0);
     ensure_files (mgr);
     return mgr->priv->files->length;
 }
 
 
 void
-moo_history_mgr_add_uri (MooHistoryMgr *mgr,
+md_history_mgr_add_uri (MdHistoryMgr *mgr,
                         const char   *uri)
 {
-    MooHistoryItem *freeme = NULL;
-    MooHistoryItem *item;
+    MdHistoryItem *freeme = NULL;
+    MdHistoryItem *item;
 
-    g_return_if_fail (MOO_IS_HISTORY_MGR (mgr));
+    g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
     g_return_if_fail (uri && uri[0]);
 
-    if (!(item = moo_history_mgr_find_uri (mgr, uri)))
+    if (!(item = md_history_mgr_find_uri (mgr, uri)))
     {
-        freeme = moo_history_item_new (uri, NULL);
+        freeme = md_history_item_new (uri, NULL);
         item = freeme;
     }
 
-    moo_history_mgr_add_file (mgr, item);
+    md_history_mgr_add_file (mgr, item);
 
-    moo_history_item_free (freeme);
+    md_history_item_free (freeme);
 }
 
 static void
-moo_history_mgr_add_file_real (MooHistoryMgr  *mgr,
-                              MooHistoryItem *item,
+md_history_mgr_add_file_real (MdHistoryMgr  *mgr,
+                              MdHistoryItem *item,
                               gboolean       notify)
 {
     const char *uri;
-    MooHistoryItemList *link;
-    MooHistoryItem *new_item = NULL;
+    MdHistoryItemList *link;
+    MdHistoryItem *new_item = NULL;
 
-    g_return_if_fail (MOO_IS_HISTORY_MGR (mgr));
+    g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
     g_return_if_fail (item != NULL);
 
     ensure_files (mgr);
 
-    uri = moo_history_item_get_uri (item);
-    link = (MooHistoryItemList*) g_hash_table_lookup (mgr->priv->hash, uri);
+    uri = md_history_item_get_uri (item);
+    link = (MdHistoryItemList*) g_hash_table_lookup (mgr->priv->hash, uri);
 
     if (!link)
     {
-        MooHistoryItem *copy = moo_history_item_copy (item);
-        moo_history_item_queue_push_head (mgr->priv->files, copy);
+        MdHistoryItem *copy = md_history_item_copy (item);
+        md_history_item_queue_push_head (mgr->priv->files, copy);
         new_item = copy;
         g_hash_table_insert (mgr->priv->hash, g_strdup (uri),
                              mgr->priv->files->head);
     }
     else if (link != mgr->priv->files->head ||
-            !moo_history_item_equal (item, link->data))
+            !md_history_item_equal (item, link->data))
     {
-        MooHistoryItem *tmp = link->data;
+        MdHistoryItem *tmp = link->data;
 
-        moo_history_item_queue_unlink (mgr->priv->files, link);
-        moo_history_item_queue_push_head_link (mgr->priv->files, link);
+        md_history_item_queue_unlink (mgr->priv->files, link);
+        md_history_item_queue_push_head_link (mgr->priv->files, link);
 
-        new_item = link->data = moo_history_item_copy (item);
+        new_item = link->data = md_history_item_copy (item);
 
-        moo_history_item_free (tmp);
+        md_history_item_free (tmp);
     }
 
     if (new_item)
@@ -998,42 +998,42 @@ moo_history_mgr_add_file_real (MooHistoryMgr  *mgr,
     }
 
     if (mgr->priv->files->length > MAX_ITEM_NUMBER)
-        moo_history_mgr_remove_uri (mgr,
-            moo_history_item_get_uri (mgr->priv->files->tail->data));
+        md_history_mgr_remove_uri (mgr,
+            md_history_item_get_uri (mgr->priv->files->tail->data));
 }
 
 void
-moo_history_mgr_add_file (MooHistoryMgr  *mgr,
-                         MooHistoryItem *item)
+md_history_mgr_add_file (MdHistoryMgr  *mgr,
+                         MdHistoryItem *item)
 {
-    moo_history_mgr_add_file_real (mgr, item, TRUE);
+    md_history_mgr_add_file_real (mgr, item, TRUE);
 }
 
 static void
-moo_history_mgr_update_file_real (MooHistoryMgr  *mgr,
-                                 MooHistoryItem *file,
+md_history_mgr_update_file_real (MdHistoryMgr  *mgr,
+                                 MdHistoryItem *file,
                                  gboolean       notify)
 {
     const char *uri;
-    MooHistoryItemList *link;
+    MdHistoryItemList *link;
 
-    g_return_if_fail (MOO_IS_HISTORY_MGR (mgr));
+    g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
     g_return_if_fail (file != NULL);
 
     ensure_files (mgr);
 
-    uri = moo_history_item_get_uri (file);
-    link = (MooHistoryItemList*) g_hash_table_lookup (mgr->priv->hash, uri);
+    uri = md_history_item_get_uri (file);
+    link = (MdHistoryItemList*) g_hash_table_lookup (mgr->priv->hash, uri);
 
     if (!link)
     {
-        moo_history_mgr_add_file (mgr, file);
+        md_history_mgr_add_file (mgr, file);
     }
-    else if (!moo_history_item_equal (link->data, file))
+    else if (!md_history_item_equal (link->data, file))
     {
-        MooHistoryItem *tmp = link->data;
-        link->data = moo_history_item_copy (file);
-        moo_history_item_free (tmp);
+        MdHistoryItem *tmp = link->data;
+        link->data = md_history_item_copy (file);
+        md_history_item_free (tmp);
         g_signal_emit (mgr, signals[CHANGED], 0);
 
         if (notify)
@@ -1045,42 +1045,42 @@ moo_history_mgr_update_file_real (MooHistoryMgr  *mgr,
 }
 
 void
-moo_history_mgr_update_file (MooHistoryMgr  *mgr,
-                            MooHistoryItem *file)
+md_history_mgr_update_file (MdHistoryMgr  *mgr,
+                            MdHistoryItem *file)
 {
-    moo_history_mgr_update_file_real (mgr, file, TRUE);
+    md_history_mgr_update_file_real (mgr, file, TRUE);
 }
 
-MooHistoryItem *
-moo_history_mgr_find_uri (MooHistoryMgr *mgr,
+MdHistoryItem *
+md_history_mgr_find_uri (MdHistoryMgr *mgr,
                          const char   *uri)
 {
-    MooHistoryItemList *link;
+    MdHistoryItemList *link;
 
-    g_return_val_if_fail (MOO_IS_HISTORY_MGR (mgr), NULL);
+    g_return_val_if_fail (MD_IS_HISTORY_MGR (mgr), NULL);
     g_return_val_if_fail (uri != NULL, NULL);
 
     ensure_files (mgr);
 
-    link = (MooHistoryItemList*) g_hash_table_lookup (mgr->priv->hash, uri);
+    link = (MdHistoryItemList*) g_hash_table_lookup (mgr->priv->hash, uri);
 
     return link ? link->data : NULL;
 }
 
 static void
-moo_history_mgr_remove_uri_real (MooHistoryMgr *mgr,
+md_history_mgr_remove_uri_real (MdHistoryMgr *mgr,
                                 const char   *uri,
                                 gboolean      notify)
 {
-    MooHistoryItemList *link;
-    MooHistoryItem *item;
+    MdHistoryItemList *link;
+    MdHistoryItem *item;
 
-    g_return_if_fail (MOO_IS_HISTORY_MGR (mgr));
+    g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
     g_return_if_fail (uri != NULL);
 
     ensure_files (mgr);
 
-    link = (MooHistoryItemList*) g_hash_table_lookup (mgr->priv->hash, uri);
+    link = (MdHistoryItemList*) g_hash_table_lookup (mgr->priv->hash, uri);
 
     if (!link)
         return;
@@ -1088,7 +1088,7 @@ moo_history_mgr_remove_uri_real (MooHistoryMgr *mgr,
     item = link->data;
 
     g_hash_table_remove (mgr->priv->hash, uri);
-    moo_history_item_queue_delete_link (mgr->priv->files, link);
+    md_history_item_queue_delete_link (mgr->priv->files, link);
 
     g_signal_emit (mgr, signals[CHANGED], 0);
 
@@ -1101,14 +1101,14 @@ moo_history_mgr_remove_uri_real (MooHistoryMgr *mgr,
     if (mgr->priv->files->length == 0)
         g_object_notify (G_OBJECT (mgr), "empty");
 
-    moo_history_item_free (item);
+    md_history_item_free (item);
 }
 
 void
-moo_history_mgr_remove_uri (MooHistoryMgr *mgr,
+md_history_mgr_remove_uri (MdHistoryMgr *mgr,
                            const char   *uri)
 {
-    moo_history_mgr_remove_uri_real (mgr, uri, TRUE);
+    md_history_mgr_remove_uri_real (mgr, uri, TRUE);
 }
 
 
@@ -1117,15 +1117,15 @@ ipc_callback (GObject    *obj,
               const char *data,
               gsize       len)
 {
-    MooHistoryMgr *mgr;
+    MdHistoryMgr *mgr;
     MooMarkupDoc *xml;
     GError *error = NULL;
-    MooHistoryItem *item;
+    MdHistoryItem *item;
     UpdateType type;
 
-    g_return_if_fail (MOO_IS_HISTORY_MGR (obj));
+    g_return_if_fail (MD_IS_HISTORY_MGR (obj));
 
-    mgr = MOO_HISTORY_MGR (obj);
+    mgr = MD_HISTORY_MGR (obj);
     ensure_files (mgr);
 
     xml = moo_markup_parse_memory (data, len, &error);
@@ -1145,25 +1145,25 @@ ipc_callback (GObject    *obj,
         switch (type)
         {
             case UPDATE_ITEM_UPDATE:
-                moo_history_mgr_update_file_real (mgr, item, FALSE);
+                md_history_mgr_update_file_real (mgr, item, FALSE);
                 break;
             case UPDATE_ITEM_ADD:
-                moo_history_mgr_add_file_real (mgr, item, FALSE);
+                md_history_mgr_add_file_real (mgr, item, FALSE);
                 break;
             case UPDATE_ITEM_REMOVE:
-                moo_history_mgr_remove_uri_real (mgr, moo_history_item_get_uri (item), FALSE);
+                md_history_mgr_remove_uri_real (mgr, md_history_item_get_uri (item), FALSE);
                 break;
         }
 
-        moo_history_item_free (item);
+        md_history_item_free (item);
     }
 
     moo_markup_doc_unref (xml);
 }
 
 static void
-ipc_notify (MooHistoryMgr  *mgr,
-            MooHistoryItem *item,
+ipc_notify (MdHistoryMgr  *mgr,
+            MdHistoryItem *item,
             UpdateType     type)
 {
     if (mgr->priv->ipc_id)
@@ -1175,22 +1175,22 @@ ipc_notify (MooHistoryMgr  *mgr,
 }
 
 static void
-ipc_notify_add_file (MooHistoryMgr  *mgr,
-                     MooHistoryItem *item)
+ipc_notify_add_file (MdHistoryMgr  *mgr,
+                     MdHistoryItem *item)
 {
     ipc_notify (mgr, item, UPDATE_ITEM_ADD);
 }
 
 static void
-ipc_notify_update_file (MooHistoryMgr  *mgr,
-                        MooHistoryItem *item)
+ipc_notify_update_file (MdHistoryMgr  *mgr,
+                        MdHistoryItem *item)
 {
     ipc_notify (mgr, item, UPDATE_ITEM_UPDATE);
 }
 
 static void
-ipc_notify_remove_file (MooHistoryMgr  *mgr,
-                        MooHistoryItem *item)
+ipc_notify_remove_file (MdHistoryMgr  *mgr,
+                        MdHistoryItem *item)
 {
     ipc_notify (mgr, item, UPDATE_ITEM_REMOVE);
 }
@@ -1213,14 +1213,14 @@ callback_data_free (CallbackData *data)
 
 static void
 view_destroyed (GtkWidget    *widget,
-                MooHistoryMgr *mgr)
+                MdHistoryMgr *mgr)
 {
-    g_object_set_data (G_OBJECT (widget), "moo-history-mgr-callback-data", NULL);
+    g_object_set_data (G_OBJECT (widget), "md-history-mgr-callback-data", NULL);
     mgr->priv->widgets = widget_list_remove (mgr->priv->widgets, widget);
 }
 
 static void
-update_menu (MooHistoryMgr *mgr,
+update_menu (MdHistoryMgr *mgr,
              GtkWidget    *menu)
 {
     WidgetList *children;
@@ -1231,7 +1231,7 @@ update_menu (MooHistoryMgr *mgr,
     {
         GtkWidget *item = children->data;
 
-        if (g_object_get_data (G_OBJECT (item), "moo-history-menu-item-file"))
+        if (g_object_get_data (G_OBJECT (item), "md-history-menu-item-file"))
             gtk_widget_destroy (item);
 
         children = widget_list_delete_link (children, children);
@@ -1241,15 +1241,15 @@ update_menu (MooHistoryMgr *mgr,
 }
 
 GtkWidget *
-moo_history_mgr_create_menu (MooHistoryMgr   *mgr,
-                            MooHistoryCallback callback,
+md_history_mgr_create_menu (MdHistoryMgr   *mgr,
+                            MdHistoryCallback callback,
                             gpointer        data,
                             GDestroyNotify  notify)
 {
     GtkWidget *menu;
     CallbackData *cb_data;
 
-    g_return_val_if_fail (MOO_IS_HISTORY_MGR (mgr), NULL);
+    g_return_val_if_fail (MD_IS_HISTORY_MGR (mgr), NULL);
     g_return_val_if_fail (callback != NULL, NULL);
 
     menu = gtk_menu_new ();
@@ -1260,7 +1260,7 @@ moo_history_mgr_create_menu (MooHistoryMgr   *mgr,
     cb_data->callback = callback;
     cb_data->data = data;
     cb_data->notify = notify;
-    g_object_set_data_full (G_OBJECT (menu), "moo-history-mgr-callback-data",
+    g_object_set_data_full (G_OBJECT (menu), "md-history-mgr-callback-data",
                             cb_data, (GDestroyNotify) callback_data_free);
 
     populate_menu (mgr, menu);
@@ -1274,27 +1274,27 @@ menu_item_activated (GtkWidget *menu_item)
 {
     GtkWidget *parent = menu_item->parent;
     CallbackData *data;
-    MooHistoryItem *item;
+    MdHistoryItem *item;
     GSList *list;
 
     g_return_if_fail (parent != NULL);
 
-    data = (CallbackData*) g_object_get_data (G_OBJECT (parent), "moo-history-mgr-callback-data");
-    item = (MooHistoryItem*) g_object_get_data (G_OBJECT (menu_item), "moo-history-menu-item-file");
+    data = (CallbackData*) g_object_get_data (G_OBJECT (parent), "md-history-mgr-callback-data");
+    item = (MdHistoryItem*) g_object_get_data (G_OBJECT (menu_item), "md-history-menu-item-file");
     g_return_if_fail (data && item);
 
-    list = g_slist_prepend (NULL, moo_history_item_copy (item));
+    list = g_slist_prepend (NULL, md_history_item_copy (item));
     data->callback (list, data->data);
-    moo_history_item_free ((MooHistoryItem*) list->data);
+    md_history_item_free ((MdHistoryItem*) list->data);
     g_slist_free (list);
 }
 
 static void
-populate_menu (MooHistoryMgr *mgr,
+populate_menu (MdHistoryMgr *mgr,
                GtkWidget    *menu)
 {
     guint n_items, i;
-    MooHistoryItemList *l;
+    MdHistoryItemList *l;
 
     ensure_files (mgr);
 
@@ -1303,7 +1303,7 @@ populate_menu (MooHistoryMgr *mgr,
     for (i = 0, l = mgr->priv->files->head; i < n_items; i++, l = l->next)
     {
         GtkWidget *item, *image;
-        MooHistoryItem *hist_item = l->data;
+        MdHistoryItem *hist_item = l->data;
         char *display_name, *display_basename;
         GdkPixbuf *pixbuf;
 
@@ -1316,15 +1316,15 @@ populate_menu (MooHistoryMgr *mgr,
         gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, i);
 
         /* XXX */
-        pixbuf = moo_file_icon_get_pixbuf (moo_history_item_get_icon (hist_item),
+        pixbuf = moo_file_icon_get_pixbuf (md_history_item_get_icon (hist_item),
                                            GTK_WIDGET (item),
                                            GTK_ICON_SIZE_MENU);
         image = gtk_image_new_from_pixbuf (pixbuf);
         gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (item), image);
 
-        g_object_set_data_full (G_OBJECT (item), "moo-history-menu-item-file",
-                                moo_history_item_copy (hist_item),
-                                (GDestroyNotify) moo_history_item_free);
+        g_object_set_data_full (G_OBJECT (item), "md-history-menu-item-file",
+                                md_history_item_copy (hist_item),
+                                (GDestroyNotify) md_history_item_free);
         g_signal_connect (item, "activate", G_CALLBACK (menu_item_activated), NULL);
 
         g_free (display_basename);
@@ -1348,14 +1348,14 @@ open_selected (GtkTreeView *tree_view)
     GtkTreeIter iter;
     GtkTreeModel *model;
     GtkTreeSelection *selection;
-    MooHistoryMgr *mgr;
+    MdHistoryMgr *mgr;
     GList *selected;
     GSList *items;
 
-    mgr = (MooHistoryMgr*) g_object_get_data (G_OBJECT (tree_view), "moo-history-mgr");
-    g_return_if_fail (MOO_IS_HISTORY_MGR (mgr));
+    mgr = (MdHistoryMgr*) g_object_get_data (G_OBJECT (tree_view), "md-history-mgr");
+    g_return_if_fail (MD_IS_HISTORY_MGR (mgr));
 
-    data = (CallbackData*) g_object_get_data (G_OBJECT (tree_view), "moo-history-mgr-callback-data");
+    data = (CallbackData*) g_object_get_data (G_OBJECT (tree_view), "md-history-mgr-callback-data");
     g_return_if_fail (data != NULL);
 
     selection = gtk_tree_view_get_selection (tree_view);
@@ -1364,15 +1364,15 @@ open_selected (GtkTreeView *tree_view)
     for (items = NULL; selected != NULL; )
     {
         char *uri = NULL;
-        MooHistoryItem *item;
+        MdHistoryItem *item;
         GtkTreePath *path = (GtkTreePath*) selected->data;
 
         gtk_tree_model_get_iter (model, &iter, path);
         gtk_tree_model_get (model, &iter, COLUMN_URI, &uri, -1);
-        item = moo_history_mgr_find_uri (mgr, uri);
+        item = md_history_mgr_find_uri (mgr, uri);
 
         if (item)
-            items = g_slist_prepend (items, moo_history_item_copy (item));
+            items = g_slist_prepend (items, md_history_item_copy (item));
 
         g_free (uri);
         gtk_tree_path_free (path);
@@ -1384,7 +1384,7 @@ open_selected (GtkTreeView *tree_view)
     if (items)
         data->callback (items, data->data);
 
-    g_slist_foreach (items, (GFunc) moo_history_item_free, NULL);
+    g_slist_foreach (items, (GFunc) md_history_item_free, NULL);
     g_slist_free (items);
 }
 
@@ -1428,7 +1428,7 @@ create_tree_view (void)
 #define LOADING_PRIORITY G_PRIORITY_DEFAULT_IDLE
 
 typedef struct {
-    MooHistoryItemList *items;
+    MdHistoryItemList *items;
     guint idle;
     GtkWidget *tree_view;
     GtkListStore *store;
@@ -1438,7 +1438,7 @@ static void
 cancel_idle_loading (GtkWidget *tree_view)
 {
     g_object_set_data (G_OBJECT (tree_view),
-                       "moo-history-mgr-idle-loader",
+                       "md-history-mgr-idle-loader",
                        NULL);
 }
 
@@ -1447,13 +1447,13 @@ idle_loader_free (IdleLoader *data)
 {
     if (data->idle)
         g_source_remove (data->idle);
-    moo_history_item_list_foreach (data->items, (MooHistoryItemListFunc) moo_history_item_free, NULL);
-    moo_history_item_list_free_links (data->items);
+    md_history_item_list_foreach (data->items, (MdHistoryItemListFunc) md_history_item_free, NULL);
+    md_history_item_list_free_links (data->items);
     g_free (data);
 }
 
 static void
-add_entry (MooHistoryItem *item,
+add_entry (MdHistoryItem *item,
            GtkListStore  *store,
            GtkWidget     *tree_view)
 {
@@ -1463,7 +1463,7 @@ add_entry (MooHistoryItem *item,
 
     display_basename = uri_get_basename (item->uri);
     display_name = uri_get_display_name (item->uri);
-    pixbuf = moo_file_icon_get_pixbuf (moo_history_item_get_icon (item),
+    pixbuf = moo_file_icon_get_pixbuf (md_history_item_get_icon (item),
                                        tree_view, GTK_ICON_SIZE_MENU);
 
     gtk_list_store_append (store, &iter);
@@ -1471,7 +1471,7 @@ add_entry (MooHistoryItem *item,
                         COLUMN_PIXBUF, pixbuf,
                         COLUMN_NAME, display_basename,
                         COLUMN_TOOLTIP, display_name,
-                        COLUMN_URI, moo_history_item_get_uri (item),
+                        COLUMN_URI, md_history_item_get_uri (item),
                         -1);
 
     g_free (display_basename);
@@ -1486,15 +1486,15 @@ idle_loader (IdleLoader *data)
     for (count = 0; data->items != NULL && count < CHUNK_SIZE; count++)
     {
         add_entry (data->items->data, data->store, data->tree_view);
-        moo_history_item_free (data->items->data);
-        data->items = moo_history_item_list_delete_link (data->items, data->items);
+        md_history_item_free (data->items->data);
+        data->items = md_history_item_list_delete_link (data->items, data->items);
     }
 
     if (!data->items)
     {
         data->idle = 0;
         g_object_set_data (G_OBJECT (data->tree_view),
-                           "moo-history-mgr-idle-loader",
+                           "md-history-mgr-idle-loader",
                            NULL);
         return FALSE;
     }
@@ -1505,12 +1505,12 @@ idle_loader (IdleLoader *data)
 }
 
 static void
-populate_tree_view (MooHistoryMgr *mgr,
+populate_tree_view (MdHistoryMgr *mgr,
                     GtkWidget    *tree_view)
 {
     GtkListStore *store;
     GtkTreeModel *model;
-    MooHistoryItemList *l;
+    MdHistoryItemList *l;
     int count;
 
     ensure_files (mgr);
@@ -1533,11 +1533,11 @@ populate_tree_view (MooHistoryMgr *mgr,
 
         while (l != NULL)
         {
-            data->items = moo_history_item_list_prepend (data->items, moo_history_item_copy (l->data));
+            data->items = md_history_item_list_prepend (data->items, md_history_item_copy (l->data));
             l = l->next;
         }
 
-        data->items = moo_history_item_list_reverse (data->items);
+        data->items = md_history_item_list_reverse (data->items);
         data->idle = g_timeout_add_full (LOADING_PRIORITY,
                                          LOADING_TIMEOUT,
                                          (GSourceFunc) idle_loader,
@@ -1546,13 +1546,13 @@ populate_tree_view (MooHistoryMgr *mgr,
         data->store = store;
 
         g_object_set_data_full (G_OBJECT (tree_view),
-                                "moo-history-mgr-idle-loader", data,
+                                "md-history-mgr-idle-loader", data,
                                 (GDestroyNotify) idle_loader_free);
     }
 }
 
 static void
-update_tree_view (MooHistoryMgr *mgr,
+update_tree_view (MdHistoryMgr *mgr,
                   GtkWidget    *tree_view)
 {
     GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (tree_view));
@@ -1561,15 +1561,15 @@ update_tree_view (MooHistoryMgr *mgr,
 }
 
 static GtkWidget *
-moo_history_mgr_create_tree_view (MooHistoryMgr   *mgr,
-                                  MooHistoryCallback callback,
-                                  gpointer        data,
-                                  GDestroyNotify  notify)
+md_history_mgr_create_tree_view (MdHistoryMgr   *mgr,
+                                 MdHistoryCallback callback,
+                                 gpointer        data,
+                                 GDestroyNotify  notify)
 {
     GtkWidget *tree_view;
     CallbackData *cb_data;
 
-    g_return_val_if_fail (MOO_IS_HISTORY_MGR (mgr), NULL);
+    g_return_val_if_fail (MD_IS_HISTORY_MGR (mgr), NULL);
     g_return_val_if_fail (callback != NULL, NULL);
 
     tree_view = create_tree_view ();
@@ -1580,9 +1580,9 @@ moo_history_mgr_create_tree_view (MooHistoryMgr   *mgr,
     cb_data->callback = callback;
     cb_data->data = data;
     cb_data->notify = notify;
-    g_object_set_data_full (G_OBJECT (tree_view), "moo-history-mgr-callback-data",
+    g_object_set_data_full (G_OBJECT (tree_view), "md-history-mgr-callback-data",
                             cb_data, (GDestroyNotify) callback_data_free);
-    g_object_set_data (G_OBJECT (tree_view), "moo-history-mgr", mgr);
+    g_object_set_data (G_OBJECT (tree_view), "md-history-mgr", mgr);
 
     populate_tree_view (mgr, tree_view);
     if (mgr->priv->files->head)
@@ -1607,14 +1607,14 @@ row_activated (GtkDialog *dialog)
 }
 
 GtkWidget *
-moo_history_mgr_create_dialog (MooHistoryMgr   *mgr,
-                               MooHistoryCallback callback,
-                               gpointer        data,
-                               GDestroyNotify  notify)
+md_history_mgr_create_dialog (MdHistoryMgr   *mgr,
+                              MdHistoryCallback callback,
+                              gpointer        data,
+                              GDestroyNotify  notify)
 {
     GtkWidget *dialog, *swin, *tree_view;
 
-    g_return_val_if_fail (MOO_IS_HISTORY_MGR (mgr), NULL);
+    g_return_val_if_fail (MD_IS_HISTORY_MGR (mgr), NULL);
     g_return_val_if_fail (callback != NULL, NULL);
 
     dialog = gtk_dialog_new_with_buttons ("", NULL, GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -1629,7 +1629,7 @@ moo_history_mgr_create_dialog (MooHistoryMgr   *mgr,
     swin = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (swin),
                                     GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-    tree_view = moo_history_mgr_create_tree_view (mgr, callback, data, notify);
+    tree_view = md_history_mgr_create_tree_view (mgr, callback, data, notify);
     gtk_container_add (GTK_CONTAINER (swin), tree_view);
     gtk_widget_show_all (swin);
 
@@ -1645,7 +1645,7 @@ moo_history_mgr_create_dialog (MooHistoryMgr   *mgr,
 
 
 static gboolean
-do_update_widgets (MooHistoryMgr *mgr)
+do_update_widgets (MdHistoryMgr *mgr)
 {
     WidgetList *l;
 
@@ -1667,7 +1667,7 @@ do_update_widgets (MooHistoryMgr *mgr)
 }
 
 static void
-schedule_update_widgets (MooHistoryMgr *mgr)
+schedule_update_widgets (MdHistoryMgr *mgr)
 {
     if (!mgr->priv->update_widgets_idle && mgr->priv->widgets)
         mgr->priv->update_widgets_idle =
@@ -1676,59 +1676,59 @@ schedule_update_widgets (MooHistoryMgr *mgr)
 
 
 void
-moo_history_item_free (MooHistoryItem *item)
+md_history_item_free (MdHistoryItem *item)
 {
     if (item)
     {
         g_free (item->uri);
         g_datalist_clear (&item->data);
         moo_file_icon_free (item->icon);
-        moo_free (MooHistoryItem, item);
+        moo_free (MdHistoryItem, item);
     }
 }
 
-static MooHistoryItem *
-moo_history_item_new_uri (const char *uri)
+static MdHistoryItem *
+md_history_item_new_uri (const char *uri)
 {
-    MooHistoryItem *item = moo_new (MooHistoryItem);
+    MdHistoryItem *item = moo_new (MdHistoryItem);
     item->uri = g_strdup (uri);
     item->data = NULL;
     item->icon = NULL;
     return item;
 }
 
-static MooHistoryItem *
-moo_history_item_newv (const char *uri,
-                       const char *first_key,
-                       va_list     args)
+static MdHistoryItem *
+md_history_item_newv (const char *uri,
+                      const char *first_key,
+                      va_list     args)
 {
     const char *key;
-    MooHistoryItem *item;
+    MdHistoryItem *item;
 
-    item = moo_history_item_new_uri (uri);
+    item = md_history_item_new_uri (uri);
 
     for (key = first_key; key != NULL; )
     {
         const char *value = va_arg (args, const char *);
-        moo_history_item_set (item, key, value);
+        md_history_item_set (item, key, value);
         key = va_arg (args, const char *);
     }
 
     return item;
 }
 
-MooHistoryItem *
-moo_history_item_new (const char *uri,
-                      const char *first_key,
-                      ...)
+MdHistoryItem *
+md_history_item_new (const char *uri,
+                     const char *first_key,
+                     ...)
 {
     va_list args;
-    MooHistoryItem *item;
+    MdHistoryItem *item;
 
     g_return_val_if_fail (uri != NULL, NULL);
 
     va_start (args, first_key);
-    item = moo_history_item_newv (uri, first_key, args);
+    item = md_history_item_newv (uri, first_key, args);
     va_end (args);
 
     return item;
@@ -1737,20 +1737,20 @@ moo_history_item_new (const char *uri,
 static void
 copy_data (GQuark         key,
            const char    *value,
-           MooHistoryItem *dest)
+           MdHistoryItem *dest)
 {
     g_datalist_id_set_data_full (&dest->data, key, g_strdup (value), g_free);
 }
 
-MooHistoryItem *
-moo_history_item_copy (MooHistoryItem *item)
+MdHistoryItem *
+md_history_item_copy (MdHistoryItem *item)
 {
-    MooHistoryItem *copy;
+    MdHistoryItem *copy;
 
     if (!item)
         return NULL;
 
-    copy = moo_history_item_new_uri (item->uri);
+    copy = md_history_item_new_uri (item->uri);
     g_datalist_foreach (&item->data, (GDataForeachFunc) copy_data, copy);
     copy->icon = moo_file_icon_copy (item->icon);
 
@@ -1758,7 +1758,7 @@ moo_history_item_copy (MooHistoryItem *item)
 }
 
 typedef struct {
-    MooHistoryItem *item;
+    MdHistoryItem *item;
     gboolean equal;
 } CmpData;
 
@@ -1778,8 +1778,8 @@ cmp_data (GQuark      key,
 }
 
 static gboolean
-moo_history_item_equal (MooHistoryItem *item1,
-                        MooHistoryItem *item2)
+md_history_item_equal (MdHistoryItem *item1,
+                       MdHistoryItem *item2)
 {
     CmpData data;
 
@@ -1806,9 +1806,9 @@ moo_history_item_equal (MooHistoryItem *item1,
 }
 
 void
-moo_history_item_set (MooHistoryItem *item,
-                      const char    *key,
-                      const char    *value)
+md_history_item_set (MdHistoryItem *item,
+                     const char    *key,
+                     const char    *value)
 {
     g_return_if_fail (item != NULL);
     g_return_if_fail (key != NULL);
@@ -1820,8 +1820,8 @@ moo_history_item_set (MooHistoryItem *item,
 }
 
 const char *
-moo_history_item_get (MooHistoryItem *item,
-                      const char    *key)
+md_history_item_get (MdHistoryItem *item,
+                     const char    *key)
 {
     g_return_val_if_fail (item != NULL, NULL);
     g_return_val_if_fail (key != NULL, NULL);
@@ -1829,14 +1829,14 @@ moo_history_item_get (MooHistoryItem *item,
 }
 
 const char *
-moo_history_item_get_uri (MooHistoryItem *item)
+md_history_item_get_uri (MdHistoryItem *item)
 {
     g_return_val_if_fail (item != NULL, NULL);
     return item->uri;
 }
 
 static MooFileIcon *
-moo_history_item_get_icon (MooHistoryItem *item)
+md_history_item_get_icon (MdHistoryItem *item)
 {
     g_return_val_if_fail (item != NULL, NULL);
 
@@ -1871,8 +1871,8 @@ format_data (GQuark      key_id,
 }
 
 static void
-moo_history_item_format (MooHistoryItem *item,
-                         GString       *dest)
+md_history_item_format (MdHistoryItem *item,
+                        GString       *dest)
 {
     char *uri_escaped;
 
@@ -1896,9 +1896,9 @@ moo_history_item_format (MooHistoryItem *item,
 }
 
 void
-moo_history_item_foreach (MooHistoryItem    *item,
-                          GDataForeachFunc  func,
-                          gpointer          user_data)
+md_history_item_foreach (MdHistoryItem    *item,
+                         GDataForeachFunc  func,
+                         gpointer          user_data)
 {
     g_return_if_fail (item != NULL);
     g_return_if_fail (func != NULL);

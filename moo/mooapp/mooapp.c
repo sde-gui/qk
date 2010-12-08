@@ -25,6 +25,7 @@
 #include "mooapp-info.h"
 #include "mooappabout.h"
 #include "mooscript/lua/moolua.h"
+#include "mooscript/python/moopython.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
@@ -76,7 +77,7 @@ static struct {
 
 static volatile int signal_received;
 
-struct _MooAppPrivate {
+struct MooAppPrivate {
     MooEditor  *editor;
     char       *rc_files[2];
 
@@ -492,10 +493,10 @@ moo_app_run_script (MooApp     *app,
         medit_lua_run_string (script + strlen (SCRIPT_PREFIX_LUA));
     else if (g_str_has_prefix (script, SCRIPT_PREFIX_LUA_FILE))
         medit_lua_run_file (script + strlen (SCRIPT_PREFIX_LUA_FILE));
-//     else if (g_str_has_prefix (script, SCRIPT_PREFIX_PYTHON))
-//         moo_python_run_string (script + strlen (SCRIPT_PREFIX_PYTHON));
-//     else if (g_str_has_prefix (script, SCRIPT_PREFIX_PYTHON_FILE))
-//         moo_python_run_file (script + strlen (SCRIPT_PREFIX_PYTHON_FILE));
+    else if (g_str_has_prefix (script, SCRIPT_PREFIX_PYTHON))
+        moo_python_run_string (script + strlen (SCRIPT_PREFIX_PYTHON));
+    else if (g_str_has_prefix (script, SCRIPT_PREFIX_PYTHON_FILE))
+        moo_python_run_file (script + strlen (SCRIPT_PREFIX_PYTHON_FILE));
     else
         medit_lua_run_string (script);
 }

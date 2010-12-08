@@ -100,11 +100,8 @@ _moo_edit_save_as_dialog (MooEdit    *doc,
     MooFileEnc *fenc;
     GFile *start = NULL;
     GFile *file = NULL;
-    MooEditView *view;
 
     g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
-
-    view = moo_edit_get_view (doc);
 
     moo_prefs_create_key (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR),
                           MOO_PREFS_STATE, G_TYPE_STRING, NULL);
@@ -121,7 +118,7 @@ _moo_edit_save_as_dialog (MooEdit    *doc,
     if (!start)
         start = moo_prefs_get_file (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
 
-    dialog = moo_file_dialog_new (MOO_FILE_DIALOG_SAVE, GTK_WIDGET (view),
+    dialog = moo_file_dialog_new (MOO_FILE_DIALOG_SAVE, GTK_WIDGET (doc),
                                   FALSE, GTK_STOCK_SAVE_AS,
                                   start, display_basename);
     g_object_set (dialog, "enable-encodings", TRUE, NULL);
@@ -158,7 +155,7 @@ _moo_edit_save_changes_dialog (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), MOO_SAVE_CHANGES_RESPONSE_CANCEL);
     return moo_save_changes_dialog (moo_edit_get_display_basename (doc),
-                                    GTK_WIDGET (moo_edit_get_view (doc)));
+                                    GTK_WIDGET (doc));
 }
 
 
@@ -354,7 +351,7 @@ _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
     xml = save_mult_dialog_xml_new ();
     dialog = GTK_WIDGET (xml->SaveMultDialog);
 
-    moo_window_set_parent (dialog, GTK_WIDGET (moo_edit_get_view (docs->elms[0])));
+    moo_window_set_parent (dialog, GTK_WIDGET (docs->elms[0]));
 
     gtk_dialog_add_buttons (GTK_DIALOG (dialog),
                             MOO_STOCK_SAVE_NONE, GTK_RESPONSE_NO,
@@ -515,11 +512,9 @@ _moo_edit_reload_error_dialog (MooEdit *doc,
 {
     const char *filename;
     char *msg = NULL;
-    MooEditView *view;
 
     g_return_if_fail (MOO_IS_EDIT (doc));
 
-    view = moo_edit_get_view (doc);
     filename = moo_edit_get_display_basename (doc);
 
     if (!filename)
@@ -531,7 +526,7 @@ _moo_edit_reload_error_dialog (MooEdit *doc,
     /* Could not reload file foo.txt */
     msg = g_strdup_printf (_("Could not reload file\n%s"), filename);
     /* XXX */
-    moo_error_dialog (GTK_WIDGET (view),
+    moo_error_dialog (GTK_WIDGET (doc),
                       msg, error ? error->message : NULL);
 
     g_free (msg);
@@ -549,8 +544,7 @@ moo_edit_question_dialog (MooEdit    *doc,
                           const char *button)
 {
     int res;
-    MooEditView *view = moo_edit_get_view (doc);
-    GtkWindow *parent = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view)));
+    GtkWindow *parent = GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (doc)));
     GtkWidget *dialog;
 
     dialog = gtk_message_dialog_new (parent, GTK_DIALOG_MODAL,
@@ -677,7 +671,17 @@ _moo_text_regex_error_dialog (GtkWidget  *parent,
     if (error)
     {
         if (error->domain != G_REGEX_ERROR)
+        {
             g_warning ("%s: unknown error domain", G_STRLOC);
+        }
+        else if (error->code != G_REGEX_ERROR_COMPILE &&
+                 error->code != G_REGEX_ERROR_OPTIMIZE &&
+                 error->code != G_REGEX_ERROR_REPLACE &&
+                 error->code != G_REGEX_ERROR_MATCH)
+        {
+            g_warning ("%s: unknown error code", G_STRLOC);
+        }
+
         msg_text = g_strdup (error->message);
     }
     else

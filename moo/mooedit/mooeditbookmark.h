@@ -17,7 +17,6 @@
 #define MOO_EDIT_BOOKMARK_H
 
 #include <mooedit/mooedit.h>
-#include <mooedit/mooeditview.h>
 #include <mooedit/moolinemark.h>
 
 G_BEGIN_DECLS
@@ -67,7 +66,7 @@ GSList          *moo_edit_get_bookmarks_in_range(MooEdit        *edit,
                                                  int             first_line,
                                                  int             last_line);
 
-void             moo_edit_view_goto_bookmark    (MooEditView     *view,
+void             moo_edit_goto_bookmark         (MooEdit        *edit,
                                                  MooEditBookmark *bookmark);
 
 char            *_moo_edit_bookmark_get_text    (MooEditBookmark *bookmark);

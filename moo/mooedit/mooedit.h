@@ -16,13 +16,16 @@
 #ifndef MOO_EDIT_H
 #define MOO_EDIT_H
 
+#include <mooedit/mootextview.h>
 #include <mooedit/mooeditconfig.h>
 #include <mooedit/mooedit-enums.h>
 #include <mooedit/mooedittypes.h>
-#include <mooedit/moolang.h>
 #include <mooutils/mooprefs.h>
 
 G_BEGIN_DECLS
+
+
+#define MOO_TYPE_EDIT_FILE_INFO             (moo_edit_file_info_get_type ())
 
 #define MOO_TYPE_EDIT                       (moo_edit_get_type ())
 #define MOO_EDIT(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT, MooEdit))
@@ -35,19 +38,19 @@ G_BEGIN_DECLS
 #define MOO_EDIT_IS_CLEAN(edit)     (moo_edit_get_status (edit) & MOO_EDIT_CLEAN)
 #define MOO_EDIT_IS_BUSY(edit)      (moo_edit_get_state (edit) != MOO_EDIT_STATE_NORMAL)
 
-typedef struct _MooEditPrivate MooEditPrivate;
-typedef struct _MooEditClass   MooEditClass;
+typedef struct MooEditPrivate  MooEditPrivate;
+typedef struct MooEditClass    MooEditClass;
 
-struct _MooEdit
+struct MooEdit
 {
-    GObject parent;
+    MooTextView parent;
     MooEditConfig *config;
     MooEditPrivate *priv;
 };
 
-struct _MooEditClass
+struct MooEditClass
 {
-    GObjectClass parent_class;
+    MooTextViewClass parent_class;
 
     /* emitted when filename, modified status, or file on disk
        are changed. for use in editor to adjust title bar, etc. */
@@ -68,11 +71,9 @@ struct _MooEditClass
 
 
 GType            moo_edit_get_type              (void) G_GNUC_CONST;
+GType            moo_edit_file_info_get_type    (void) G_GNUC_CONST;
 
-MooEditor       *moo_edit_get_editor            (MooEdit        *doc);
-MooEditBuffer   *moo_edit_get_buffer            (MooEdit        *doc);
-MooEditView     *moo_edit_get_view              (MooEdit        *doc);
-MooEditWindow   *moo_edit_get_window            (MooEdit        *doc);
+MooEditWindow   *moo_edit_get_window            (MooEdit        *edit);
 
 GFile           *moo_edit_get_file              (MooEdit        *edit);
 
@@ -89,6 +90,8 @@ void             moo_edit_set_encoding          (MooEdit        *edit,
 char            *moo_edit_get_utf8_filename     (MooEdit        *edit);
 
 MooLang         *moo_edit_get_lang              (MooEdit        *edit);
+
+MooEditor       *moo_edit_get_editor            (MooEdit        *doc);
 
 #ifdef __WIN32__
 #define MOO_LE_DEFAULT MOO_LE_WIN32
@@ -108,6 +111,7 @@ gboolean         moo_edit_get_clean             (MooEdit        *edit);
 void             moo_edit_set_clean             (MooEdit        *edit,
                                                  gboolean        clean);
 MooEditStatus    moo_edit_get_status            (MooEdit        *edit);
+void             moo_edit_status_changed        (MooEdit        *edit);
 MooEditState     moo_edit_get_state             (MooEdit        *edit);
 
 void             moo_edit_reload                (MooEdit        *edit,
@@ -128,6 +132,12 @@ gboolean         moo_edit_save_copy             (MooEdit        *edit,
 
 void             moo_edit_comment               (MooEdit        *edit);
 void             moo_edit_uncomment             (MooEdit        *edit);
+
+void             moo_edit_ui_set_line_wrap_mode     (MooEdit        *edit,
+                                                     gboolean        enabled);
+void             moo_edit_ui_set_show_line_numbers  (MooEdit        *edit,
+                                                     gboolean        show);
+
 
 G_END_DECLS
 

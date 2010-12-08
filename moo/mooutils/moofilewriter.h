@@ -21,7 +21,7 @@
 G_BEGIN_DECLS
 
 
-typedef struct _MooFileReader MooFileReader;
+typedef struct MooFileReader MooFileReader;
 
 MooFileReader  *moo_file_reader_new             (const char     *filename,
                                                  GError        **error);
@@ -34,7 +34,7 @@ gboolean        moo_file_reader_read            (MooFileReader  *reader,
                                                  GError        **error);
 void            moo_file_reader_close           (MooFileReader  *reader);
 
-typedef struct _MooFileWriter MooFileWriter;
+typedef struct MooFileWriter MooFileWriter;
 
 typedef enum /*< flags >*/
 {

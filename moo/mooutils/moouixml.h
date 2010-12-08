@@ -92,17 +92,17 @@ typedef enum {
 #define MOO_UI_XML_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_UI_XML, MooUiXmlClass))
 
 
-typedef struct _MooUiXml        MooUiXml;
-typedef struct _MooUiXmlPrivate MooUiXmlPrivate;
-typedef struct _MooUiXmlClass   MooUiXmlClass;
+typedef struct MooUiXml        MooUiXml;
+typedef struct MooUiXmlPrivate MooUiXmlPrivate;
+typedef struct MooUiXmlClass   MooUiXmlClass;
 
-struct _MooUiXml
+struct MooUiXml
 {
     GObject          object;
     MooUiXmlPrivate *priv;
 };
 
-struct _MooUiXmlClass
+struct MooUiXmlClass
 {
     GObjectClass parent_class;
 };

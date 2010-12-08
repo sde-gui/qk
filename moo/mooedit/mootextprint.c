@@ -17,7 +17,6 @@
 #include "mooedit/mootextprint-private.h"
 #include "mooedit/mooedit.h"
 #include "mooedit/mooedit-impl.h"
-#include "mooedit/mooeditview-impl.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootext-private.h"
 #include "mooedit/mooprintpreview.h"
@@ -1551,7 +1550,7 @@ update_progress (GtkPrintOperation *operation,
         moo_window_message (MOO_WINDOW (window), NULL);
 
     if (moo_edit_get_state (doc) == MOO_EDIT_STATE_PRINTING)
-        _moo_edit_view_set_progress_text (moo_edit_get_view (doc), text);
+        _moo_edit_set_progress_text (doc, text);
     else if (window)
         moo_window_message (MOO_WINDOW (window), text);
 

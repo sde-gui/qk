@@ -22,7 +22,7 @@
 G_BEGIN_DECLS
 
 
-#define MOO_TYPE_HISTORY_ITEM              (moo_history_list_item_get_type ())
+#define MOO_TYPE_HISTORY_ITEM              (moo_history_item_get_type ())
 #define MOO_TYPE_HISTORY_LIST              (moo_history_list_get_type ())
 #define MOO_HISTORY_LIST(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_HISTORY_LIST, MooHistoryList))
 #define MOO_HISTORY_LIST_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_HISTORY_LIST, MooHistoryListClass))
@@ -30,18 +30,18 @@ G_BEGIN_DECLS
 #define MOO_IS_HISTORY_LIST_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_HISTORY_LIST))
 #define MOO_HISTORY_LIST_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_HISTORY_LIST, MooHistoryListClass))
 
-typedef struct _MooHistoryListItem    MooHistoryListItem;
+typedef struct _MooHistoryItem        MooHistoryItem;
 typedef struct _MooHistoryList        MooHistoryList;
 typedef struct _MooHistoryListPrivate MooHistoryListPrivate;
 typedef struct _MooHistoryListClass   MooHistoryListClass;
 
-typedef char    *(*MooHistoryDisplayFunc) (const char         *item,
-                                           gpointer            data);
-typedef gboolean (*MooHistoryCompareFunc) (const char         *text,
-                                           MooHistoryListItem *item,
-                                           gpointer            data);
+typedef char    *(*MooHistoryDisplayFunc) (const char     *item,
+                                           gpointer        data);
+typedef gboolean (*MooHistoryCompareFunc) (const char     *text,
+                                           MooHistoryItem *item,
+                                           gpointer        data);
 
-struct _MooHistoryListItem
+struct _MooHistoryItem
 {
     char *data;
     char *display;
@@ -59,16 +59,16 @@ struct _MooHistoryListClass
 {
     GObjectClass parent_class;
 
-    void (*activate_item)   (MooHistoryList     *list,
-                             MooHistoryListItem *item,
-                             gpointer            menu_data);
+    void (*activate_item)   (MooHistoryList *list,
+                             MooHistoryItem *item,
+                             gpointer        menu_data);
 
     void (*changed)         (MooHistoryList *list);
 };
 
 
 GType            moo_history_list_get_type          (void) G_GNUC_CONST;
-GType            moo_history_list_item_get_type     (void) G_GNUC_CONST;
+GType            moo_history_item_get_type          (void) G_GNUC_CONST;
 
 MooHistoryList  *moo_history_list_new               (const char     *user_id);
 MooHistoryList  *moo_history_list_get               (const char     *user_id);
@@ -103,7 +103,7 @@ char            *moo_history_list_display_filename  (const char     *entry,
                                                      gpointer        data);
 
 /* must free the result */
-MooHistoryListItem *moo_history_list_get_item       (MooHistoryList *list,
+MooHistoryItem  *moo_history_list_get_item          (MooHistoryList *list,
                                                      GtkTreeIter    *iter);
 gboolean         moo_history_list_find              (MooHistoryList *list,
                                                      const char     *text,
@@ -123,11 +123,11 @@ void             moo_history_list_add_builtin       (MooHistoryList *list,
 
 MooMenuMgr      *moo_history_list_get_menu_mgr      (MooHistoryList *list);
 
-MooHistoryListItem *moo_history_list_item_new       (const char     *data,
+MooHistoryItem  *moo_history_item_new               (const char     *data,
                                                      const char     *display,
                                                      gboolean        builtin);
-MooHistoryListItem *moo_history_list_item_copy      (const MooHistoryListItem *item);
-void             moo_history_list_item_free         (MooHistoryListItem *item);
+MooHistoryItem  *moo_history_item_copy              (const MooHistoryItem *item);
+void             moo_history_item_free              (MooHistoryItem *item);
 
 
 G_END_DECLS

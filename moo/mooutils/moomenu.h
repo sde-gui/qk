@@ -27,15 +27,15 @@ G_BEGIN_DECLS
 #define MOO_IS_MENU_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_MENU))
 #define MOO_MENU_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_MENU, MooMenuClass))
 
-typedef struct _MooMenu      MooMenu;
-typedef struct _MooMenuClass MooMenuClass;
+typedef struct MooMenu        MooMenu;
+typedef struct MooMenuClass   MooMenuClass;
 
-struct _MooMenu
+struct MooMenu
 {
     GtkMenu base;
 };
 
-struct _MooMenuClass
+struct MooMenuClass
 {
     GtkMenuClass base_class;
 

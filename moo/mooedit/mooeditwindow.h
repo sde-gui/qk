@@ -33,17 +33,17 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_WINDOW))
 #define MOO_EDIT_WINDOW_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_WINDOW, MooEditWindowClass))
 
-typedef struct _MooEditWindowPrivate MooEditWindowPrivate;
-typedef struct _MooEditWindowClass   MooEditWindowClass;
+typedef struct MooEditWindowPrivate MooEditWindowPrivate;
+typedef struct MooEditWindowClass   MooEditWindowClass;
 
-struct _MooEditWindow
+struct MooEditWindow
 {
     MooWindow               parent;
     MooEditWindowPrivate   *priv;
     MooBigPaned            *paned;
 };
 
-struct _MooEditWindowClass
+struct MooEditWindowClass
 {
     MooWindowClass          parent_class;
 
@@ -79,19 +79,18 @@ void             moo_edit_window_set_action_filter      (const char     *action_
 MooEdit         *moo_edit_window_get_active_doc         (MooEditWindow  *window);
 void             moo_edit_window_set_active_doc         (MooEditWindow  *window,
                                                          MooEdit        *edit);
-MooEditView     *moo_edit_window_get_active_view        (MooEditWindow  *window);
-void             moo_edit_window_set_active_view        (MooEditWindow  *window,
-                                                         MooEditView    *view);
 
 MooEditor       *moo_edit_window_get_editor             (MooEditWindow  *window);
 
-int              moo_edit_window_num_docs               (MooEditWindow  *window);
 MooEdit         *moo_edit_window_get_nth_doc            (MooEditWindow  *window,
                                                          guint           n);
-MooEditView     *moo_edit_window_get_nth_view           (MooEditWindow  *window,
-                                                         guint           n);
 MooEditArray    *moo_edit_window_get_docs               (MooEditWindow  *window);
-MooEditViewArray*moo_edit_window_get_views              (MooEditWindow  *window);
+/* list must be freed, elements must not be unref'ed */
+GSList          *moo_edit_window_list_docs              (MooEditWindow  *window);
+int              moo_edit_window_num_docs               (MooEditWindow  *window);
+
+void             moo_edit_window_set_title_prefix       (MooEditWindow  *window,
+                                                         const char     *prefix);
 
 /* sinks widget */
 MooPane         *moo_edit_window_add_pane               (MooEditWindow  *window,

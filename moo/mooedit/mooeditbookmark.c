@@ -60,13 +60,13 @@ bookmarks_changed (MooEdit *edit)
 static MooTextBuffer *
 get_moo_buffer (MooEdit *edit)
 {
-    return MOO_TEXT_BUFFER (moo_edit_get_buffer (edit));
+    return MOO_TEXT_BUFFER (gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit)));
 }
 
 static guint
 get_line_count (MooEdit *edit)
 {
-    return gtk_text_buffer_get_line_count (GTK_TEXT_BUFFER (moo_edit_get_buffer (edit)));
+    return gtk_text_buffer_get_line_count (gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit)));
 }
 
 
@@ -262,15 +262,12 @@ moo_edit_add_bookmark (MooEdit *edit,
                        guint    no)
 {
     MooEditBookmark *bk;
-    MooEditView *view;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_return_if_fail (line < get_line_count (edit));
     g_return_if_fail (moo_edit_get_bookmark_at_line (edit, line) == NULL);
 
-    view = moo_edit_get_view (edit);
-
-    g_object_set (view, "show-line-marks", TRUE, (char*) 0);
+    g_object_set (edit, "show-line-marks", TRUE, (char*) 0);
 
     bk = MOO_EDIT_BOOKMARK (g_object_new (MOO_TYPE_EDIT_BOOKMARK, "background", get_bookmark_color (edit), (char*) 0));
     moo_text_buffer_add_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bk), line);
@@ -338,6 +335,15 @@ _moo_edit_line_mark_deleted (MooEdit     *edit,
         g_object_unref (mark);
         bookmarks_changed (edit);
     }
+}
+
+
+gboolean
+_moo_edit_line_mark_clicked (MooTextView *view,
+                             int          line)
+{
+    moo_edit_toggle_bookmark (MOO_EDIT (view), line);
+    return TRUE;
 }
 
 
@@ -430,16 +436,16 @@ moo_edit_get_bookmark (MooEdit *edit,
 
 
 void
-moo_edit_view_goto_bookmark (MooEditView     *view,
-                             MooEditBookmark *bk)
+moo_edit_goto_bookmark (MooEdit         *edit,
+                        MooEditBookmark *bk)
 {
     int cursor;
 
-    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
+    g_return_if_fail (MOO_IS_EDIT (edit));
     g_return_if_fail (MOO_IS_EDIT_BOOKMARK (bk));
 
     cursor = moo_line_mark_get_line (MOO_LINE_MARK (bk));
-    moo_text_view_move_cursor (MOO_TEXT_VIEW (view), cursor, 0, FALSE, FALSE);
+    moo_text_view_move_cursor (MOO_TEXT_VIEW (edit), cursor, 0, FALSE, FALSE);
 }
 
 
@@ -481,9 +487,8 @@ get_bookmark_color (MooEdit *doc)
 {
     MooTextStyle *style;
     MooTextStyleScheme *scheme;
-    MooEditView *view = moo_edit_get_view (doc);
 
-    scheme = moo_text_view_get_style_scheme (MOO_TEXT_VIEW (view));
+    scheme = moo_text_view_get_style_scheme (MOO_TEXT_VIEW (doc));
     if (!scheme)
         return NULL;
 

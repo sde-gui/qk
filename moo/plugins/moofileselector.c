@@ -22,7 +22,7 @@
 #include "mooedit/mooeditwindow.h"
 #include "moofileview/moobookmarkmgr.h"
 #include "moofileview/moofileview-tools.h"
-#include "plugins/mooplugin-builtin.h"
+#include "mooeditplugins.h"
 #include "marshals.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooprefs.h"
@@ -322,13 +322,8 @@ goto_current_doc_dir (MooFileSelector *filesel)
     parent_file = file ? g_file_get_parent (file) : NULL;
 
     if (parent_file)
-    {
         if (moo_file_view_chdir (MOO_FILE_VIEW (filesel), parent_file, &error))
-        {
-            moo_file_view_focus_files (MOO_FILE_VIEW (filesel));
             moo_file_selector_select_file (filesel, file);
-        }
-    }
 
     if (error)
     {
