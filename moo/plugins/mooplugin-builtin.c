@@ -1,5 +1,5 @@
 /*
- *   mooeditplugins.c
+ *   mooplugin-builtin.c
  *
  *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
  *
@@ -14,7 +14,7 @@
  */
 
 #include <config.h>
-#include "mooeditplugins.h"
+#include "plugins/mooplugin-builtin.h"
 #include "mooutils/mooutils-misc.h"
 
 #ifdef MOO_ENABLE_PYTHON

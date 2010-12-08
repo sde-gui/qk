@@ -18,7 +18,7 @@
 #endif
 
 #include "mooedit/mooplugin-macro.h"
-#include "mooeditplugins.h"
+#include "plugins/mooplugin-builtin.h"
 #include "moofileview/moofileentry.h"
 #include "moocmdview.h"
 #include "mooedit/mooedit-accels.h"

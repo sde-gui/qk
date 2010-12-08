@@ -1,5 +1,5 @@
 /*
- *   mooeditplugins.h
+ *   mooplugin-builtin.h
  *
  *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
  *

@@ -16,7 +16,7 @@
 
 #include "config.h"
 #include "mooedit/mooplugin-macro.h"
-#include "mooeditplugins.h"
+#include "plugins/mooplugin-builtin.h"
 #include "mooedit/mooeditwindow.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-gobject.h"

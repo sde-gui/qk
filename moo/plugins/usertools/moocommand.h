@@ -18,7 +18,7 @@
 
 #include <gtk/gtkwidget.h>
 #include "moooutputfilter.h"
-#include "usertools/moousertools-enums.h"
+#include "moousertools-enums.h"
 
 G_BEGIN_DECLS
 

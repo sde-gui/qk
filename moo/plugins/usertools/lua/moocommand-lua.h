@@ -16,7 +16,7 @@
 #ifndef MOO_COMMAND_LUA_H
 #define MOO_COMMAND_LUA_H
 
-#include "usertools/moocommand.h"
+#include "plugins/usertools/moocommand.h"
 
 G_BEGIN_DECLS
 

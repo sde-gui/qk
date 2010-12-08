@@ -1,11 +1,9 @@
-AM_CPPFLAGS += -I$(srcdir)/plugins
-
 plugins_sources +=			\
 	plugins/moofileselector-prefs.c	\
 	plugins/moofileselector.c	\
 	plugins/moofileselector.h	\
-	plugins/mooeditplugins.h	\
-	plugins/mooeditplugins.c	\
+	plugins/mooplugin-builtin.h	\
+	plugins/mooplugin-builtin.c	\
 	plugins/moofilelist.c		\
 	plugins/moofind.c		\
 	plugins/mooluaplugin.cpp
