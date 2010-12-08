@@ -262,7 +262,6 @@ static void size_data_func  (GObject            *column_or_iconview,
 #endif
 
 static void     init_gui                    (MooFileView    *fileview);
-static void     focus_to_file_view          (MooFileView    *fileview);
 static void     focus_to_filter_entry       (MooFileView    *fileview);
 static GtkWidget *create_toolbar            (MooFileView    *fileview);
 static GtkWidget *create_notebook           (MooFileView    *fileview);
@@ -675,7 +674,7 @@ moo_file_view_class_init (MooFileViewClass *klass)
             _moo_signal_new_cb("focus-to-file-view",
                                G_OBJECT_CLASS_TYPE (klass),
                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                               G_CALLBACK (focus_to_file_view),
+                               G_CALLBACK (moo_file_view_focus_files),
                                NULL, NULL,
                                _moo_marshal_VOID__VOID,
                                G_TYPE_NONE, 0);
@@ -1038,7 +1037,7 @@ moo_file_view_set_current_dir (MooFileView  *fileview,
         file_view_move_selection (fileview, &filter_iter);
 
     if (gtk_widget_is_focus (GTK_WIDGET (fileview->priv->entry)))
-        focus_to_file_view (fileview);
+        moo_file_view_focus_files (fileview);
 
     path = g_filename_display_name (_moo_folder_get_path (folder));
     path_entry_set_text (fileview, path);
@@ -1360,13 +1359,14 @@ init_gui (MooFileView *fileview)
                                            BOOKMARK_PAGE);
     }
 
-    focus_to_file_view (fileview);
+    moo_file_view_focus_files (fileview);
 }
 
 
-static void
-focus_to_file_view (MooFileView *fileview)
+void
+moo_file_view_focus_files (MooFileView *fileview)
 {
+    g_return_if_fail (MOO_IS_FILE_VIEW (fileview));
     gtk_widget_grab_focus (get_view_widget (fileview));
 }
 
@@ -2948,7 +2948,7 @@ filter_button_toggled (MooFileView *fileview)
 
     /* TODO check entry content */
     fileview_set_use_filter (fileview, active, TRUE);
-    focus_to_file_view (fileview);
+    moo_file_view_focus_files (fileview);
 }
 
 
@@ -2968,7 +2968,7 @@ filter_combo_changed (MooFileView *fileview)
     moo_filter_mgr_set_last_filter (mgr, &iter, "MooFileView");
 
     fileview_set_filter (fileview, filter);
-    focus_to_file_view (fileview);
+    moo_file_view_focus_files (fileview);
 }
 
 
@@ -2987,7 +2987,7 @@ filter_entry_activate (MooFileView *fileview)
         filter = NULL;
 
     fileview_set_filter (fileview, filter);
-    focus_to_file_view (fileview);
+    moo_file_view_focus_files (fileview);
 }
 
 
@@ -4556,7 +4556,7 @@ stop_path_entry (MooFileView    *fileview,
     path_entry_set_text (fileview, text);
 
     if (focus_file_list)
-        focus_to_file_view (fileview);
+        moo_file_view_focus_files (fileview);
 
     g_free (text);
 }
