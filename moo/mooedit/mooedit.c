@@ -360,8 +360,6 @@ moo_edit_dispose (GObject *object)
         edit->priv->apply_config_idle = 0;
     }
 
-    edit->priv->focus_in_handler_id = 0;
-
     if (edit->priv->file_monitor_id)
     {
         _moo_edit_stop_file_watch (edit);

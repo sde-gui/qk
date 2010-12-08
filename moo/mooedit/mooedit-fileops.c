@@ -60,9 +60,7 @@ static GHashTable *UNTITLED_NO = NULL;
 
 static void     block_buffer_signals        (MooEdit        *edit);
 static void     unblock_buffer_signals      (MooEdit        *edit);
-static gboolean focus_in_cb                 (MooEdit        *edit);
-static void     check_file_status           (MooEdit        *edit,
-                                             gboolean        in_focus_only);
+static void     check_file_status           (MooEdit        *edit);
 static void     file_modified_on_disk       (MooEdit        *edit);
 static void     file_deleted                (MooEdit        *edit);
 static void     add_status                  (MooEdit        *edit,
@@ -1045,7 +1043,7 @@ file_watch_callback (G_GNUC_UNUSED MooFileWatch *watch,
             break;
     }
 
-    check_file_status (edit, FALSE);
+    check_file_status (edit);
 }
 
 
@@ -1083,12 +1081,6 @@ _moo_edit_start_file_watch (MooEdit *edit)
 
         return;
     }
-
-    if (!edit->priv->focus_in_handler_id)
-        edit->priv->focus_in_handler_id =
-                g_signal_connect (edit, "focus-in-event",
-                                  G_CALLBACK (focus_in_cb),
-                                  NULL);
 }
 
 
@@ -1103,30 +1095,12 @@ _moo_edit_stop_file_watch (MooEdit *edit)
     if (edit->priv->file_monitor_id)
         moo_file_watch_cancel_monitor (watch, edit->priv->file_monitor_id);
     edit->priv->file_monitor_id = 0;
-
-    if (edit->priv->focus_in_handler_id)
-    {
-        g_signal_handler_disconnect (edit, edit->priv->focus_in_handler_id);
-        edit->priv->focus_in_handler_id = 0;
-    }
-}
-
-
-static gboolean
-focus_in_cb (MooEdit *edit)
-{
-    check_file_status (edit, TRUE);
-    return FALSE;
 }
 
 
 static void
-check_file_status (MooEdit  *edit,
-                   gboolean  in_focus_only)
+check_file_status (MooEdit *edit)
 {
-    if (in_focus_only && !GTK_WIDGET_HAS_FOCUS (edit))
-        return;
-
     moo_return_if_fail (edit->priv->filename != NULL);
     moo_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
 
