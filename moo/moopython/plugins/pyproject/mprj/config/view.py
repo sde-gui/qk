@@ -25,7 +25,7 @@ import gtk
 import gobject
 import pango
 
-from moo.utils import _
+from moo import _
 
 import mprj.config
 

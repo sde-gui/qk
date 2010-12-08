@@ -13,42 +13,7 @@
  *   You should have received a copy of the GNU Lesser General Public
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
-%%
-headers
-#include <Python.h>
-#define NO_IMPORT_PYGOBJECT
-#define NO_IMPORT_PYGTK
-#include <pygobject.h>
-#include <pygtk/pygtk.h>
-#include "mooutils/mooi18n.h"
-#include "mooutils/moofilewatch.h"
-#include "mooutils/moohistorycombo.h"
-#include "mooutils/mooutils-gobject.h"
-#include "mooutils/moouixml.h"
-#include "mooutils/moowindow.h"
-#include "mooutils/mooprefsdialog.h"
-#include "mooutils/mooprefs.h"
-#include "mooutils/mooglade.h"
-#include "mooutils/moobigpaned.h"
-#include "mooutils/mooentry.h"
-#include "mooutils/moofiltermgr.h"
-#include "mooutils/moonotebook.h"
-#include "mooutils/mooundo.h"
-#include "mooutils/moofiledialog.h"
-#include "mooutils/moomenuaction.h"
-#include "mooutils/moodialogs.h"
-#include "mooutils/mooutils-misc.h"
-#include "mooutils/mooaction.h"
-#include "mooutils/mooactionbase.h"
-#include "mooutils/moofontsel.h"
-#include "mooutils/mooutils-enums.h"
-#include "mooutils/moostock.h"
-#include "moofileview/moofileview.h"
-#include "moopython/moopython-utils.h"
-#include "moopython/pygtk/moo-pygtk.h"
 
-%%
-include moopaned.override
 %%
 override moo_window_class_add_action varargs
 static GtkAction*
@@ -514,13 +479,13 @@ _wrap_moo_prefs_new_key (G_GNUC_UNUSED PyObject *self, PyObject *args)
     const char *key;
     GType type;
     GValue default_value;
-    int prefs_type;
-    PyObject *py_prefs_type, *py_default, *py_type;
+    int prefs_kind;
+    PyObject *py_prefs_kind, *py_default, *py_type;
 
     if (!PyArg_ParseTuple (args, "sOOO:prefs_new_key", &key,
-                           &py_type, &py_default, &py_prefs_type))
+                           &py_type, &py_default, &py_prefs_kind))
         return NULL;
-    if (pyg_enum_get_value (MOO_TYPE_PREFS_TYPE, py_prefs_type, &prefs_type) != 0)
+    if (pyg_enum_get_value (MOO_TYPE_PREFS_KIND, py_prefs_kind, &prefs_kind) != 0)
         return NULL;
     if (!(type = pyg_type_from_object (py_type)))
         return NULL;
@@ -536,81 +501,81 @@ _wrap_moo_prefs_new_key (G_GNUC_UNUSED PyObject *self, PyObject *args)
         return_TypeError ("could not convert default value to given type");
     }
 
-    moo_prefs_new_key (key, type, &default_value, prefs_type);
+    moo_prefs_new_key (key, type, &default_value, prefs_kind);
 
     g_value_unset (&default_value);
     return_None;
 }
-%%
-override moo_get_data_dirs varargs
-static PyObject *
-_wrap_moo_get_data_dirs (G_GNUC_UNUSED PyObject *self, PyObject *args)
-{
-    int type;
-    PyObject *py_type = NULL;
-    PyObject *ret;
-    char **dirs;
-    guint n_dirs, i;
-
-    if (!PyArg_ParseTuple (args, "O:get_data_dirs", &py_type))
-        return NULL;
-    if (pyg_enum_get_value(MOO_TYPE_DATA_DIR_TYPE, py_type, &type))
-        return NULL;
-
-    dirs = moo_get_data_dirs (type, &n_dirs);
-
-    if (!dirs)
-        return_None;
-
-    ret = PyTuple_New (n_dirs);
-    g_return_val_if_fail (ret != NULL, NULL);
-
-    for (i = 0; i < n_dirs; ++i)
-        PyTuple_SET_ITEM (ret, i, PyString_FromString (dirs[i]));
-
-    g_strfreev (dirs);
-    return ret;
-}
-%%
-override moo_get_data_subdirs varargs
-static PyObject *
-_wrap_moo_get_data_subdirs (G_GNUC_UNUSED PyObject *self, PyObject *args)
-{
-    int type;
-    PyObject *py_type = NULL;
-    PyObject *ret;
-    char **dirs;
-    guint n_dirs, i;
-    char *subdir;
-
-    if (!PyArg_ParseTuple (args, "sO:get_data_dirs", &subdir, &py_type))
-        return NULL;
-    if (pyg_enum_get_value(MOO_TYPE_DATA_DIR_TYPE, py_type, &type))
-        return NULL;
-
-    dirs = moo_get_data_subdirs (subdir, type, &n_dirs);
-
-    if (!dirs)
-        return_None;
-
-    ret = PyTuple_New (n_dirs);
-    g_return_val_if_fail (ret != NULL, NULL);
-
-    for (i = 0; i < n_dirs; ++i)
-        PyTuple_SET_ITEM (ret, i, PyString_FromString (dirs[i]));
-
-    g_strfreev (dirs);
-    return ret;
-}
-%%
-override moo_get_data_files varargs
-static PyObject *
-_wrap_moo_get_data_subdirs (PyObject *self, PyObject *args);
-static PyObject *
-_wrap_moo_get_data_files (PyObject *self, PyObject *args)
-{
-    return _wrap_moo_get_data_subdirs (self, args);
-}
+// %%
+// override moo_get_data_dirs varargs
+// static PyObject *
+// _wrap_moo_get_data_dirs (G_GNUC_UNUSED PyObject *self, PyObject *args)
+// {
+//     int type;
+//     PyObject *py_type = NULL;
+//     PyObject *ret;
+//     char **dirs;
+//     guint n_dirs, i;
+//
+//     if (!PyArg_ParseTuple (args, "O:get_data_dirs", &py_type))
+//         return NULL;
+//     if (pyg_enum_get_value(MOO_TYPE_DATA_DIR_TYPE, py_type, &type))
+//         return NULL;
+//
+//     dirs = moo_get_data_dirs (type, &n_dirs);
+//
+//     if (!dirs)
+//         return_None;
+//
+//     ret = PyTuple_New (n_dirs);
+//     g_return_val_if_fail (ret != NULL, NULL);
+//
+//     for (i = 0; i < n_dirs; ++i)
+//         PyTuple_SET_ITEM (ret, i, PyString_FromString (dirs[i]));
+//
+//     g_strfreev (dirs);
+//     return ret;
+// }
+// %%
+// override moo_get_data_subdirs varargs
+// static PyObject *
+// _wrap_moo_get_data_subdirs (G_GNUC_UNUSED PyObject *self, PyObject *args)
+// {
+//     int type;
+//     PyObject *py_type = NULL;
+//     PyObject *ret;
+//     char **dirs;
+//     guint n_dirs, i;
+//     char *subdir;
+//
+//     if (!PyArg_ParseTuple (args, "sO:get_data_dirs", &subdir, &py_type))
+//         return NULL;
+//     if (pyg_enum_get_value(MOO_TYPE_DATA_DIR_TYPE, py_type, &type))
+//         return NULL;
+//
+//     dirs = moo_get_data_subdirs (subdir, type, &n_dirs);
+//
+//     if (!dirs)
+//         return_None;
+//
+//     ret = PyTuple_New (n_dirs);
+//     g_return_val_if_fail (ret != NULL, NULL);
+//
+//     for (i = 0; i < n_dirs; ++i)
+//         PyTuple_SET_ITEM (ret, i, PyString_FromString (dirs[i]));
+//
+//     g_strfreev (dirs);
+//     return ret;
+// }
+// %%
+// override moo_get_data_files varargs
+// static PyObject *
+// _wrap_moo_get_data_subdirs (PyObject *self, PyObject *args);
+// static PyObject *
+// _wrap_moo_get_data_files (PyObject *self, PyObject *args)
+// {
+//     return _wrap_moo_get_data_subdirs (self, args);
+// }
 %%
 override moo_file_watch_monitor_directory kwargs
 static PyObject *

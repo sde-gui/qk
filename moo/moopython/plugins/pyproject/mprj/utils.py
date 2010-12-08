@@ -81,10 +81,10 @@ def get_file_paths(filename, top_srcdir, top_builddir=None):
     }
 
 def implement_me(window, what):
-    moo.utils.warning_dialog(window, "IMPLEMENT ME", str(what))
+    moo.warning_dialog(window, "IMPLEMENT ME", str(what))
 
 def oops(window, error):
-    moo.utils.error_dialog(window, "OOPS", format_error(error))
+    moo.error_dialog(window, "OOPS", format_error(error))
 
 def print_error(error=None):
     print >> sys.stderr, format_error(error)
@@ -99,8 +99,8 @@ def format_error(error=None):
 
 def entry_dialog(parent=None, label=None, entry_content=None, title=None):
     glade_file = os.path.join(os.path.dirname(__file__), "utils.glade")
-    xml = moo.utils.glade_xml_new_from_file(glade_file, root='entry_dialog',
-                                            domain=moo.utils.GETTEXT_PACKAGE)
+    xml = moo.glade_xml_new_from_file(glade_file, root='entry_dialog',
+                                      domain=moo.GETTEXT_PACKAGE)
     xml.w_entry_dialog.set_title(title)
     if parent:
         parent = parent.get_toplevel()
@@ -120,7 +120,7 @@ def entry_dialog(parent=None, label=None, entry_content=None, title=None):
     return retval
 
 def error_dialog(text, secondary_text=None, parent=None):
-    moo.utils.error_dialog(parent, text, secondary_text)
+    moo.error_dialog(parent, text, secondary_text)
 
 def question_dialog(text, secondary_text=None, default_ok=False, parent=None):
     if parent:

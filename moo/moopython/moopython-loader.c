@@ -24,9 +24,6 @@
 #include "moopython/moopython-loader.h"
 #include "mooutils/mooutils-misc.h"
 
-#define LIBDIR "lib"
-
-
 static gboolean
 sys_path_add_dir (const char *dir)
 {
@@ -90,14 +87,10 @@ sys_path_add_plugin_dirs (void)
         return;
 
     been_here = TRUE;
-    dirs = moo_plugin_get_dirs ();
+    dirs = moo_get_data_and_lib_subdirs ("python");
 
     for (d = dirs; d && *d; ++d)
-    {
-        char *libdir = g_build_filename (*d, LIBDIR, NULL);
-        sys_path_add_dir (libdir);
-        g_free (libdir);
-    }
+        sys_path_add_dir (*d);
 
     g_strfreev (dirs);
 }

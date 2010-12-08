@@ -25,7 +25,7 @@ import os.path
 import gobject
 
 import moo
-from moo.utils import _, N_
+from moo import _, N_
 
 import medit
 import mprj.utils
@@ -37,8 +37,8 @@ from pyproj.config import PyConfig
 from pyproj.optdialog import Dialog as OptionsDialog
 
 
-_STOCK_EXECUTE = moo.utils.STOCK_EXECUTE
-_STOCK_PROJECT_OPTIONS = moo.utils.STOCK_PROJECT_OPTIONS
+_STOCK_EXECUTE = moo.STOCK_EXECUTE
+_STOCK_PROJECT_OPTIONS = moo.STOCK_PROJECT_OPTIONS
 
 _OUTPUT_PANE_ID   = "PythonOutput"
 _CMD_EXECUTE      = 'execute'
@@ -74,7 +74,7 @@ class PyProject(SimpleProject):
                             stock_id=c[2], default_accel=c[3],
                             callback=PyProject.DoCmd(self, c[4]))
 
-        editor = moo.edit.editor_instance()
+        editor = moo.editor_instance()
         xml = editor.get_ui_xml()
         xml.insert_markup_after(self.merge_id, "Editor/Menubar",
                                 "Project", """
@@ -104,7 +104,7 @@ class PyProject(SimpleProject):
     def save_all(self, window):
         docs = window.list_docs()
         for d in docs:
-            if d.get_filename() and d.get_status() & moo.edit.EDIT_MODIFIED:
+            if d.get_filename() and d.get_status() & moo.EDIT_MODIFIED:
                 d.save()
 
     def do_command(self, window, cmd):

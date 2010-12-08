@@ -23,14 +23,14 @@ if __name__ == '__main__':
 import gobject
 import os.path
 import moo
-from moo.utils import _
+from moo import _
 
 dir = os.path.dirname(__file__)
 
 def _init_page(page, page_id, config, glade_file):
     cls = page.__class__
 
-    xml = moo.utils.GladeXML(moo.utils.GETTEXT_PACKAGE)
+    xml = moo.GladeXML(moo.GETTEXT_PACKAGE)
     xml.map_id(page_id, cls)
 
     types = getattr(cls, '__types__', {})
@@ -55,9 +55,9 @@ def _init_page(page, page_id, config, glade_file):
     return page
 
 
-class ConfigPage(moo.utils.PrefsPage):
+class ConfigPage(moo.PrefsPage):
     def __init__(self, page_id, config, glade_file):
-        moo.utils.PrefsPage.__init__(self)
+        moo.PrefsPage.__init__(self)
         _init_page(self, page_id, config, glade_file)
 
     def do_init(self):
@@ -68,14 +68,14 @@ class ConfigPage(moo.utils.PrefsPage):
             widget.apply()
 
 
-class Dialog(moo.utils.PrefsDialog):
+class Dialog(moo.PrefsDialog):
     def __init__(self, project, title=_('Project Options')):
-        moo.utils.PrefsDialog.__init__(self, title)
+        moo.PrefsDialog.__init__(self, title)
         self.project = project
         self.config_copy = project.config.copy()
 
     def do_apply(self):
-        moo.utils.PrefsDialog.do_apply(self)
+        moo.PrefsDialog.do_apply(self)
         self.project.config.copy_from(self.config_copy)
         self.project.save_config()
 #         print '============================='

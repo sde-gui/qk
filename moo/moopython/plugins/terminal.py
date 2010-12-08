@@ -18,32 +18,32 @@ import moo
 import gtk
 import gobject
 import pango
-from moo.utils import _
-from moo.utils import D_
+from moo import _
+from moo import D_
 
 try:
     import vte
 except ImportError:
-    moo.edit.cancel_plugin_loading()
+    moo.cancel_plugin_loading()
 
 TERMINAL_PLUGIN_ID = "Terminal"
 COLOR_SCHEME_KEY = 'Plugins/Terminal/color_scheme'
 SHELL_KEY = 'Plugins/Terminal/shell'
 FONT_KEY = 'Plugins/Terminal/font'
-moo.utils.prefs_new_key_string(COLOR_SCHEME_KEY, 'Default')
-moo.utils.prefs_new_key_string(SHELL_KEY, None)
-moo.utils.prefs_new_key_string(FONT_KEY, None)
+moo.prefs_new_key_string(COLOR_SCHEME_KEY, 'Default')
+moo.prefs_new_key_string(SHELL_KEY, None)
+moo.prefs_new_key_string(FONT_KEY, None)
 
 class Terminal(vte.Terminal):
     def __init__(self):
         vte.Terminal.__init__(self)
 
-        cs_name = moo.utils.prefs_get_string(COLOR_SCHEME_KEY)
+        cs_name = moo.prefs_get_string(COLOR_SCHEME_KEY)
         cs = find_color_scheme(cs_name)
         self.set_color_scheme(cs)
         self.set_allow_bold(False)
 
-        font_name = moo.utils.prefs_get_string(FONT_KEY)
+        font_name = moo.prefs_get_string(FONT_KEY)
         if font_name:
             self.set_font_from_string(font_name)
 
@@ -55,12 +55,12 @@ class Terminal(vte.Terminal):
     def color_scheme_item_activated(self, item, color_scheme):
         self.set_color_scheme(color_scheme)
         if color_scheme.colors:
-            moo.utils.prefs_set_string(COLOR_SCHEME_KEY, color_scheme.name)
+            moo.prefs_set_string(COLOR_SCHEME_KEY, color_scheme.name)
         else:
-            moo.utils.prefs_set_string(COLOR_SCHEME_KEY, None)
+            moo.prefs_set_string(COLOR_SCHEME_KEY, None)
 
     def font_item_activated(self, *whatever):
-        dlg = moo.utils.FontSelectionDialog(D_("Pick a Font", "gtk20"))
+        dlg = moo.FontSelectionDialog(D_("Pick a Font", "gtk20"))
         dlg.fontsel.set_property('monospace', True)
         old_font = self.get_font()
         if old_font:
@@ -71,7 +71,7 @@ class Terminal(vte.Terminal):
                 new_font = pango.FontDescription(font_name)
                 if old_font != new_font:
                     self.set_font_from_string(font_name)
-                    moo.utils.prefs_set_string(FONT_KEY, font_name)
+                    moo.prefs_set_string(FONT_KEY, font_name)
         dlg.destroy()
 
     def fill_settings_menu(self, menu):
@@ -138,9 +138,9 @@ class Terminal(vte.Terminal):
         self.popup_menu()
         return True
 
-class Plugin(moo.edit.Plugin):
+class Plugin(moo.Plugin):
     def do_init(self):
-        editor = moo.edit.editor_instance()
+        editor = moo.editor_instance()
         xml = editor.get_ui_xml()
 
         if xml is None:
@@ -157,11 +157,11 @@ class Plugin(moo.edit.Plugin):
         window.paned.present_pane(pane)
 
 
-class WinPlugin(moo.edit.WinPlugin):
+class WinPlugin(moo.WinPlugin):
     def start(self, *whatever):
         self.terminal.reset(True, True)
 
-        shell = moo.utils.prefs_get_string(SHELL_KEY)
+        shell = moo.prefs_get_string(SHELL_KEY)
         if not shell:
             try:
                 import os
@@ -173,8 +173,8 @@ class WinPlugin(moo.edit.WinPlugin):
         self.terminal.fork_command(shell, [shell])
 
     def do_create(self):
-        label = moo.utils.PaneLabel(icon_name=moo.utils.STOCK_TERMINAL,
-                                    label_text=_("Terminal"))
+        label = moo.PaneLabel(icon_name=moo.STOCK_TERMINAL,
+                              label_text=_("Terminal"))
 
         self.terminal = Terminal()
         self.terminal.set_scrollback_lines(1000000)
@@ -192,7 +192,7 @@ class WinPlugin(moo.edit.WinPlugin):
         self.terminal.set_size(self.terminal.get_column_count(), 10)
         self.terminal.set_size_request(10, 10)
 
-        self.pane = self.window.add_pane(TERMINAL_PLUGIN_ID, frame, label, moo.utils.PANE_POS_BOTTOM)
+        self.pane = self.window.add_pane(TERMINAL_PLUGIN_ID, frame, label, moo.PANE_POS_BOTTOM)
         self.terminal.connect('icon-title-changed', self.terminal_icon_title_changed)
         self.terminal_icon_title_changed()
 

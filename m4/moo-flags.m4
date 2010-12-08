@@ -164,6 +164,9 @@ AC_DEFUN_ONCE([MOO_AC_SET_DIRS],[
   AC_DEFINE_UNQUOTED([MOO_PREFS_XML_FILE_NAME], "$MOO_PREFS_XML_FILE_NAME", [prefs.xml])
   AC_DEFINE_UNQUOTED([MOO_STATE_XML_FILE_NAME], "$MOO_STATE_XML_FILE_NAME", [state.xml])
   AC_DEFINE_UNQUOTED([MOO_SESSION_XML_FILE_NAME], "$MOO_SESSION_XML_FILE_NAME", [session.xml])
+
+  AC_SUBST(MOO_PYTHON_PLUGIN_DIR, "${MOO_DATA_DIR}/plugins")
+  AC_SUBST(MOO_PYTHON_LIB_DIR, "${MOO_DATA_DIR}/python")
 ])
 
 ##############################################################################

@@ -19,7 +19,7 @@ import traceback
 import gobject
 from mprj.manager import Manager
 
-class __plugin__(moo.edit.Plugin):
+class __plugin__(moo.Plugin):
     __gproperties__ = { 'project' : (str, 'project to open', 'project to open', None, gobject.PARAM_READWRITE) }
 
     def do_set_property(self, prop, value):

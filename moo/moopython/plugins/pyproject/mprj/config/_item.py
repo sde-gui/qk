@@ -15,7 +15,7 @@
 
 __all__ = ['Item']
 
-from moo.utils import _
+from moo import _
 
 
 def create_instance(descr, *args, **kwargs):

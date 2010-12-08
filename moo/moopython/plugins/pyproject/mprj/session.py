@@ -27,7 +27,7 @@ class Session(object):
         self.__active = None
 
         if data:
-            if isinstance(data, moo.edit.EditWindow):
+            if isinstance(data, moo.EditWindow):
                 self.__load_from_window(data)
             else:
                 file = open(data)
@@ -36,7 +36,7 @@ class Session(object):
                 self.__parse(contents)
 
     def attach(self, window):
-        editor = moo.edit.editor_instance()
+        editor = moo.editor_instance()
 #         saved_silent = editor.get_property("silent")
 #         editor.set_property("silent", True)
         for doc in self.__docs:

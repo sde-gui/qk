@@ -53,9 +53,12 @@ headers
 #include "mooedit/mooeditaction.h"
 #include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mootextbuffer.h"
+#include "mooedit/moolangmgr.h"
 
 #include "plugins/support/moocmdview.h"
 #include "plugins/support/mooeditwindowoutput.h"
+
+#include "plugins/usertools/moocommand.h"
 
 #include "mooapp/mooapp.h"
 
@@ -81,13 +84,16 @@ import gtk.FileChooser as PyGtkFileChooser_Type
 import gtk.TextTag as PyGtkTextTag_Type
 import gtk.TextTagTable as PyGtkTextTagTable_Type
 import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
+import gtk.Action as PyGtkAction_Type
 %%
 ignore-glob
   *_get_type
 %%
-// include mooutils.override
-// %%
-// include mooedit.override
-// %%
+include mooutils.override
+%%
+include moopaned.override
+%%
+include mooedit.override
+%%
 // include mooapp.override
 // %%

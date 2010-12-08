@@ -49,13 +49,13 @@ formats = [
     "%d/%m/%y %H:%M:%S",
 ]
 
-moo.utils.prefs_new_key_string('Tools/InsertDateAndTime', '%c')
+moo.prefs_new_key_string('Tools/InsertDateAndTime', '%c')
 
 def populate_tree_view(treeview):
     model = gtk.ListStore(str, str)
     curtime = time.localtime()
     default_iter = None
-    default_fmt = moo.utils.prefs_get_string('Tools/InsertDateAndTime')
+    default_fmt = moo.prefs_get_string('Tools/InsertDateAndTime')
 
     for fmt in formats:
         iter = model.append([time.strftime(fmt, curtime), fmt])
@@ -72,7 +72,7 @@ def populate_tree_view(treeview):
 def get_format_from_list(treeview):
     model, row = treeview.get_selection().get_selected()
     fmt = model[row][1]
-    moo.utils.prefs_set_string('Tools/InsertDateAndTime', fmt)
+    moo.prefs_set_string('Tools/InsertDateAndTime', fmt)
     return fmt
 
 def get_format(parent=None):
