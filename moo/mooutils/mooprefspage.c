@@ -24,7 +24,7 @@
 #include "marshals.h"
 #include <string.h>
 
-struct MooPrefsPagePrivate {
+struct _MooPrefsPagePrivate {
     GdkPixbuf   *icon;
     char        *icon_stock_id;
     GSList      *widgets;

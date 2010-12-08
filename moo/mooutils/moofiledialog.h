@@ -29,9 +29,9 @@ G_BEGIN_DECLS
 #define MOO_IS_FILE_DIALOG_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_DIALOG))
 #define MOO_FILE_DIALOG_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FILE_DIALOG, MooFileDialogClass))
 
-typedef struct MooFileDialog        MooFileDialog;
-typedef struct MooFileDialogPrivate MooFileDialogPrivate;
-typedef struct MooFileDialogClass   MooFileDialogClass;
+typedef struct _MooFileDialog        MooFileDialog;
+typedef struct _MooFileDialogPrivate MooFileDialogPrivate;
+typedef struct _MooFileDialogClass   MooFileDialogClass;
 
 typedef enum {
     MOO_FILE_DIALOG_OPEN,
@@ -42,13 +42,13 @@ typedef enum {
     /*  MOO_DIALOG_DIR_NEW,*/
 } MooFileDialogType;
 
-struct MooFileDialog
+struct _MooFileDialog
 {
     GObject parent;
     MooFileDialogPrivate *priv;
 };
 
-struct MooFileDialogClass
+struct _MooFileDialogClass
 {
     GObjectClass parent_class;
 };

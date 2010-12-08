@@ -29,17 +29,17 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_CONFIG_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_CONFIG))
 #define MOO_EDIT_CONFIG_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_CONFIG, MooEditConfigClass))
 
-typedef struct MooEditConfig         MooEditConfig;
-typedef struct MooEditConfigPrivate  MooEditConfigPrivate;
-typedef struct MooEditConfigClass    MooEditConfigClass;
+typedef struct _MooEditConfig         MooEditConfig;
+typedef struct _MooEditConfigPrivate  MooEditConfigPrivate;
+typedef struct _MooEditConfigClass    MooEditConfigClass;
 
-struct MooEditConfig
+struct _MooEditConfig
 {
     GObject object;
     MooEditConfigPrivate *priv;
 };
 
-struct MooEditConfigClass
+struct _MooEditConfigClass
 {
     GObjectClass object_class;
 };
@@ -91,9 +91,6 @@ void            moo_edit_config_unset_by_source (MooEditConfig  *config,
 
 gboolean        moo_edit_config_parse_bool      (const char     *string,
                                                  gboolean       *value);
-
-void            moo_edit_config_update          (MooEditConfig  *config,
-                                                 const char     *lang_id);
 
 
 G_END_DECLS

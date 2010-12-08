@@ -46,7 +46,7 @@ typedef struct {
     GdkRegion *def_region;
 } DZ;
 
-struct MooBigPanedPrivate {
+struct _MooBigPanedPrivate {
     MooPanePosition order[4]; /* inner is paned[order[3]] */
     GtkWidget   *inner;
     GtkWidget   *outer;

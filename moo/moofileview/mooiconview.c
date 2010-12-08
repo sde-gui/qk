@@ -82,7 +82,7 @@ struct DndInfo {
 };
 
 
-struct MooIconViewPrivate {
+struct _MooIconViewPrivate {
     GtkTreeModel    *model;
 
     CellInfo         pixbuf;

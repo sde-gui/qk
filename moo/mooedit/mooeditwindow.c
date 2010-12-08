@@ -75,7 +75,7 @@ typedef struct {
 static GHashTable *action_checks; /* char* -> ActionCheck* */
 static GSList *windows;
 
-struct MooEditWindowPrivate {
+struct _MooEditWindowPrivate {
     MooEditor *editor;
 
     guint statusbar_idle;

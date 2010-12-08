@@ -31,19 +31,19 @@ G_BEGIN_DECLS
 #define MOO_TYPE_PANE_LABEL         (moo_pane_label_get_type ())
 #define MOO_TYPE_PANE_PARAMS        (moo_pane_params_get_type ())
 
-typedef struct MooPane          MooPane;
-typedef struct MooPaneClass     MooPaneClass;
-typedef struct MooPaneLabel     MooPaneLabel;
-typedef struct MooPaneParams    MooPaneParams;
+typedef struct _MooPane          MooPane;
+typedef struct _MooPaneClass     MooPaneClass;
+typedef struct _MooPaneLabel     MooPaneLabel;
+typedef struct _MooPaneParams    MooPaneParams;
 
-struct MooPaneLabel {
+struct _MooPaneLabel {
     char *icon_stock_id;
     GdkPixbuf *icon_pixbuf;
     char *label;
     char *window_title;
 };
 
-struct MooPaneParams
+struct _MooPaneParams
 {
     GdkRectangle window_position;
     guint detached : 1;

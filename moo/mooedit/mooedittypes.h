@@ -7,11 +7,11 @@
 
 G_BEGIN_DECLS
 
-typedef struct MooFileEnc MooFileEnc;
+typedef struct _MooFileEnc MooFileEnc;
 
-typedef struct MooEdit MooEdit;
-typedef struct MooEditWindow MooEditWindow;
-typedef struct MooEditor MooEditor;
+typedef struct _MooEdit MooEdit;
+typedef struct _MooEditWindow MooEditWindow;
+typedef struct _MooEditor MooEditor;
 
 MOO_DECLARE_OBJECT_ARRAY (MooEditArray, moo_edit_array, MooEdit)
 MOO_DECLARE_OBJECT_ARRAY (MooEditWindowArray, moo_edit_window_array, MooEditWindow)

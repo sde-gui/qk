@@ -27,7 +27,7 @@
 #include <string.h>
 
 
-struct MooFileDialogPrivate {
+struct _MooFileDialogPrivate {
     gboolean multiple;
     char *title;
     char *current_dir;

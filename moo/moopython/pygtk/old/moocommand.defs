@@ -1,0 +1,434 @@
+;; -*- scheme -*-
+
+(define-object CommandContext
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooCommandContext")
+  (gtype-id "MOO_TYPE_COMMAND_CONTEXT")
+)
+
+(define-object CommandFactory
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooCommandFactory")
+  (gtype-id "MOO_TYPE_COMMAND_FACTORY")
+  (fields
+    '("char*" "name")
+    '("char*" "display_name")
+  )
+)
+
+(define-object Command
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooCommand")
+  (gtype-id "MOO_TYPE_COMMAND")
+  (fields
+    '("MooCommandOptions" "options")
+  )
+)
+
+(define-boxed CommandData
+  (in-module "Moo")
+  (c-name "MooCommandData")
+  (gtype-id "MOO_TYPE_COMMAND_DATA")
+)
+
+(define-flags CommandOptions
+  (in-module "Moo")
+  (c-name "MooCommandOptions")
+  (gtype-id "MOO_TYPE_COMMAND_OPTIONS")
+)
+
+
+(define-function parse_command_options
+  (c-name "moo_command_options_parse")
+  (return-type "MooCommandOptions")
+  (parameters
+    '("const-char*" "string" (null-ok))
+  )
+)
+
+(define-function command_create
+  (c-name "moo_command_create")
+  (return-type "MooCommand*")
+  (parameters
+    '("const-char*" "type")
+    '("const-char*" "options")
+    '("MooCommandData*" "data")
+  )
+)
+
+(define-function command_factory_register
+  (c-name "moo_command_factory_register")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+    '("const-char*" "display_name")
+    '("MooCommandFactory*" "factory")
+    '("strv" "data_keys" (null-ok))
+    '("const-char*" "extension" (null-ok) (default "NULL"))
+  )
+)
+
+(define-function command_factory_lookup
+  (c-name "moo_command_factory_lookup")
+  (return-type "MooCommandFactory*")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+
+(define-virtual create_command
+  (of-object "MooCommandFactory")
+  (return-type "MooCommand*")
+  (parameters
+    '("MooCommandData*" "data")
+    '("const-char*" "options" (null-ok))
+  )
+)
+
+(define-virtual create_widget
+  (of-object "MooCommandFactory")
+  (return-type "GtkWidget*")
+)
+
+(define-virtual load_data
+  (of-object "MooCommandFactory")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "widget")
+    '("MooCommandData*" "data")
+  )
+)
+
+(define-virtual save_data
+  (of-object "MooCommandFactory")
+  (return-type "gboolean")
+  (parameters
+    '("GtkWidget*" "widget")
+    '("MooCommandData*" "data")
+  )
+)
+
+(define-virtual data_equal
+  (of-object "MooCommandFactory")
+  (return-type "gboolean")
+  (parameters
+    '("MooCommandData*" "data1")
+    '("MooCommandData*" "data2")
+  )
+)
+
+
+(define-method run
+  (of-object "MooCommand")
+  (c-name "moo_command_run")
+  (return-type "none")
+  (parameters
+    '("MooCommandContext*" "ctx")
+  )
+)
+
+(define-virtual run
+  (of-object "MooCommand")
+  (return-type "none")
+  (parameters
+    '("MooCommandContext*" "ctx")
+  )
+)
+
+(define-method set_options
+  (of-object "MooCommand")
+  (c-name "moo_command_set_options")
+  (return-type "none")
+  (parameters
+    '("MooCommandOptions" "options")
+  )
+)
+
+(define-method get_options
+  (of-object "MooCommand")
+  (c-name "moo_command_get_options")
+  (return-type "MooCommandOptions")
+)
+
+
+(ifndef pygtk-2.6
+(define-function moo_command_context_new
+  (c-name "moo_command_context_new")
+  (is-constructor-of "MooCommandContext")
+  (return-type "MooCommandContext*")
+  (properties
+    '("doc" (optional))
+    '("window" (optional))
+  )
+)
+)
+
+(define-method set_doc
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_set_doc")
+  (return-type "none")
+  (parameters
+    '("GtkTextView*" "doc" (null-ok))
+  )
+)
+
+(define-method get_doc
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_get_doc")
+  (return-type "GtkTextView*")
+)
+
+(define-method set_window
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_set_window")
+  (return-type "none")
+  (parameters
+    '("GtkWindow*" "window" (null-ok))
+  )
+)
+
+(define-method get_window
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_get_window")
+  (return-type "GtkWindow*")
+)
+
+(define-method set
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_set")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+    '("const-GValue*" "value")
+  )
+)
+
+(define-method get
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_get")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "name")
+    '("GValue*" "value")
+  )
+)
+
+(define-method unset
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_unset")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+  )
+)
+
+(define-method foreach
+  (of-object "MooCommandContext")
+  (c-name "moo_command_context_foreach")
+  (return-type "none")
+  (parameters
+    '("MooCommandContextForeachFunc" "func")
+    '("gpointer" "data")
+  )
+)
+
+
+(define-function moo_command_data_new
+  (c-name "moo_command_data_new")
+  (is-constructor-of "MooCommandData")
+  (return-type "MooCommandData*")
+  (parameters
+    '("guint" "len")
+  )
+)
+
+(define-method set
+  (of-object "MooCommandData")
+  (c-name "moo_command_data_set")
+  (return-type "none")
+  (parameters
+    '("guint" "key")
+    '("const-char*" "value" (null-ok))
+  )
+)
+
+(define-method get
+  (of-object "MooCommandData")
+  (c-name "moo_command_data_get")
+  (return-type "const-char*")
+  (parameters
+    '("guint" "key")
+  )
+)
+
+(define-method set_code
+  (of-object "MooCommandData")
+  (c-name "moo_command_data_set_code")
+  (return-type "none")
+  (parameters
+    '("const-char*" "value" (null-ok))
+  )
+)
+
+(define-method get_code
+  (of-object "MooCommandData")
+  (c-name "moo_command_data_get_code")
+  (return-type "const-char*")
+)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MooOutputFilter
+;;
+
+(define-object OutputFilter
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooOutputFilter")
+  (gtype-id "MOO_TYPE_OUTPUT_FILTER")
+)
+
+(define-virtual attach
+  (of-object "MooOutputFilter")
+  (return-type "none")
+)
+
+(define-virtual detach
+  (of-object "MooOutputFilter")
+  (return-type "none")
+)
+
+(define-virtual stdout_line
+  (of-object "MooOutputFilter")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "line")
+  )
+)
+
+(define-virtual stderr_line
+  (of-object "MooOutputFilter")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "line")
+  )
+)
+
+(define-virtual cmd_start
+  (of-object "MooOutputFilter")
+  (return-type "none")
+)
+
+(define-virtual cmd_exit
+  (of-object "MooOutputFilter")
+  (return-type "gboolean")
+  (parameters
+    '("int" "status")
+  )
+)
+
+(define-method set_view
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_set_view")
+  (return-type "none")
+  (parameters
+    '("MooLineView*" "view" (null-ok))
+  )
+)
+
+(define-method get_view
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_get_view")
+  (return-type "MooLineView*")
+)
+
+(define-method stdout_line
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_stdout_line")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "line")
+  )
+)
+
+(define-method stderr_line
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_stderr_line")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "line")
+  )
+)
+
+(define-method cmd_start
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_cmd_start")
+  (return-type "none")
+  (parameters
+    '("const-char*" "working_dir")
+  )
+)
+
+(define-method add_active_dirs
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_add_active_dirs")
+  (return-type "none")
+  (parameters
+    '("strv" "dirs")
+  )
+)
+
+(define-method cmd_exit
+  (of-object "MooOutputFilter")
+  (c-name "moo_output_filter_cmd_exit")
+  (return-type "gboolean")
+  (parameters
+    '("int" "status")
+  )
+)
+
+
+; (define-function command_filter_register
+;   (c-name "moo_command_filter_register")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "id")
+;     '("const-char*" "name")
+;     '("MooCommandFilterFactory" "factory_func")
+;     '("gpointer" "data")
+;     '("GDestroyNotify" "data_notify")
+;   )
+; )
+
+(define-function command_filter_unregister
+  (c-name "moo_command_filter_unregister")
+  (return-type "none")
+  (parameters
+    '("const-char*" "id")
+  )
+)
+
+(define-function command_filter_lookup
+  (c-name "moo_command_filter_lookup")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "id")
+  )
+)
+
+(define-function command_filter_list
+  (c-name "moo_command_filter_list")
+  (return-type "string-slist")
+  (caller-owns-return "t")
+)
+
+(define-function command_filter_create
+  (c-name "moo_command_filter_create")
+  (return-type "MooOutputFilter*")
+  (parameters
+    '("const-char*" "id")
+  )
+)

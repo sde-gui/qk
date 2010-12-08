@@ -29,17 +29,17 @@ G_BEGIN_DECLS
 #define MOO_APP_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_APP, MooAppClass))
 
 
-typedef struct MooApp        MooApp;
-typedef struct MooAppPrivate MooAppPrivate;
-typedef struct MooAppClass   MooAppClass;
+typedef struct _MooApp        MooApp;
+typedef struct _MooAppPrivate MooAppPrivate;
+typedef struct _MooAppClass   MooAppClass;
 
-struct MooApp
+struct _MooApp
 {
     GObject          parent;
     MooAppPrivate   *priv;
 };
 
-struct MooAppClass
+struct _MooAppClass
 {
     GObjectClass parent_class;
 

@@ -38,17 +38,17 @@ G_BEGIN_DECLS
 #define MOO_EDIT_IS_CLEAN(edit)     (moo_edit_get_status (edit) & MOO_EDIT_CLEAN)
 #define MOO_EDIT_IS_BUSY(edit)      (moo_edit_get_state (edit) != MOO_EDIT_STATE_NORMAL)
 
-typedef struct MooEditPrivate  MooEditPrivate;
-typedef struct MooEditClass    MooEditClass;
+typedef struct _MooEditPrivate  MooEditPrivate;
+typedef struct _MooEditClass    MooEditClass;
 
-struct MooEdit
+struct _MooEdit
 {
     MooTextView parent;
     MooEditConfig *config;
     MooEditPrivate *priv;
 };
 
-struct MooEditClass
+struct _MooEditClass
 {
     MooTextViewClass parent_class;
 

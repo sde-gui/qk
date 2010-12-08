@@ -1,0 +1,667 @@
+/* -%- lang: C; indent-width: 4; use-tabs: no; strip: yes -%-
+ *
+ *   mooedit-pygtk.override
+ *
+ *   Copyright (C) 2004-2008 by Yevgen Muntyan <muntyan@tamu.edu>
+ *   Copyright (C) 2008 by Daniel Poelzleithner <mooedit@poelzi.org>
+ *
+ *   This file is part of medit.  medit is free software; you can
+ *   redistribute it and/or modify it under the terms of the
+ *   GNU Lesser General Public License as published by the
+ *   Free Software Foundation; either version 2.1 of the License,
+ *   or (at your option) any later version.
+ *
+ *   You should have received a copy of the GNU Lesser General Public
+ *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
+ */
+%%
+headers
+#include <Python.h>
+#define NO_IMPORT_PYGOBJECT
+#define NO_IMPORT_PYGTK
+#include <pygobject.h>
+#include <pygtk/pygtk.h>
+#include "plugins/support/moocmdview.h"
+#include "plugins/usertools/moocommand.h"
+#include "mooedit/mooedit.h"
+#include "mooedit/mooeditbookmark.h"
+#include "mooedit/mooedit-enums.h"
+#include "mooedit/mooeditaction.h"
+#include "mooedit/mooeditaction-factory.h"
+#include "mooedit/mooeditconfig.h"
+#include "mooedit/mooeditor.h"
+#include "mooedit/mooeditprefs.h"
+#include "mooedit/mootextsearch.h"
+#include "mooedit/mooeditwindow.h"
+#include "mooedit/mooindenter.h"
+#include "mooedit/moolang.h"
+#include "mooedit/moolangmgr.h"
+#include "mooedit/moolinemark.h"
+#include "plugins/support/moolineview.h"
+#include "plugins/support/moooutputfilter.h"
+#include "mooedit/mooplugin-macro.h"
+#include "mooedit/mooplugin.h"
+#include "mooedit/mootextbuffer.h"
+#include "mooedit/mootextiter.h"
+#include "mooedit/mootextstylescheme.h"
+#include "mooedit/mootextview.h"
+#include "mooedit/moolinemark.h"
+// #include "mooedit/mootextpopup.h"
+// #include "mooedit/mootextcompletion.h"
+#include "mooedit/mooedit-enums.h"
+#include "moopython/moopython-utils.h"
+#include "moopython/pygtk/moo-pygtk.h"
+
+%%
+override moo_python_plugin_register varargs
+static PyObject *
+_wrap_moo_python_plugin_register (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    PyObject *plugin_type, *win_plugin_type = NULL, *doc_plugin_type = NULL;
+
+    if (!PyArg_ParseTuple (args, "O|OO:plugin_register", &plugin_type,
+                           &win_plugin_type, &doc_plugin_type))
+        return NULL;
+
+    if (!PyType_Check (plugin_type))
+        return_TypeError ("argument must be a type");
+
+    if (win_plugin_type && win_plugin_type != Py_None && !PyType_Check (win_plugin_type))
+        return_TypeError ("argument must be a type");
+
+    if (doc_plugin_type && doc_plugin_type != Py_None && !PyType_Check (doc_plugin_type))
+        return_TypeError ("argument must be a type");
+
+    if (win_plugin_type == Py_None)
+        win_plugin_type = NULL;
+    if (doc_plugin_type == Py_None)
+        doc_plugin_type = NULL;
+
+    return _moo_python_plugin_register (plugin_type, win_plugin_type, doc_plugin_type);
+}
+%%
+override moo_plugin_list_methods noargs
+static PyObject *
+_wrap_moo_plugin_list_methods (PyGObject *self)
+{
+    PyObject *py_list;
+    GSList *list;
+    guint i;
+
+    list = moo_plugin_list_methods (self->obj);
+
+    if (!list)
+        return PyTuple_New (0);
+
+    i = 0;
+    py_list = PyTuple_New (g_slist_length (list));
+
+    while (list)
+    {
+        PyTuple_SET_ITEM (py_list, i, PyString_FromString (list->data));
+        g_free (list->data);
+        list = g_slist_delete_link (list, list);
+        i++;
+    }
+
+    return py_list;
+}
+%%
+override moo_list_plugins noargs
+static PyObject *
+_wrap_moo_list_plugins (G_GNUC_UNUSED PyGObject *self)
+{
+    PyObject *py_list;
+    GSList *list;
+    guint i;
+
+    list = moo_list_plugins ();
+
+    if (!list)
+        return PyTuple_New (0);
+
+    i = 0;
+    py_list = PyTuple_New (g_slist_length (list));
+
+    while (list)
+    {
+        PyTuple_SET_ITEM (py_list, i, pygobject_new (list->data));
+        list = g_slist_delete_link (list, list);
+        i++;
+    }
+
+    return py_list;
+}
+%%
+override moo_plugin_lookup_method kwargs
+static PyObject *
+_wrap_moo_plugin_lookup_method (PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = { "name", NULL };
+    char *name;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s:MooPlugin.lookup_method", kwlist, &name))
+        return NULL;
+
+    return PyBool_FromLong (moo_plugin_lookup_method (MOO_PLUGIN(self->obj), name) != 0);
+
+}
+%%
+override moo_edit_window_list_docs noargs
+static PyObject *
+_wrap_moo_edit_window_list_docs (PyObject *self)
+{
+    GSList *list;
+    PyObject *result;
+
+    list = moo_edit_window_list_docs (MOO_EDIT_WINDOW (pygobject_get (self)));
+    result = _moo_object_slist_to_pyobject (list);
+
+    g_slist_free (list);
+    return result;
+}
+%%
+override moo_editor_list_windows noargs
+static PyObject *
+_wrap_moo_editor_list_windows (PyObject *self)
+{
+    GSList *list;
+    PyObject *result;
+
+    list = moo_editor_list_windows (MOO_EDITOR (pygobject_get (self)));
+    result = _moo_object_slist_to_pyobject (list);
+
+    g_slist_free (list);
+    return result;
+}
+%%
+override moo_editor_list_docs noargs
+static PyObject *
+_wrap_moo_editor_list_docs (PyObject *self)
+{
+    GSList *list;
+    PyObject *result;
+
+    list = moo_editor_list_docs (MOO_EDITOR (pygobject_get (self)));
+    result = _moo_object_slist_to_pyobject (list);
+
+    g_slist_free (list);
+    return result;
+}
+%%
+override-attr MooLang.mime_types
+static PyObject *
+_wrap_moo_lang__get_mime_types (PyObject *self, G_GNUC_UNUSED void *closure)
+{
+    return moo_string_slist_to_pyobject (pyg_boxed_get (self, MooLang)->mime_types);
+}
+%%
+override-attr MooLang.extensions
+static PyObject *
+_wrap_moo_lang__get_extensions (PyObject *self, G_GNUC_UNUSED void *closure)
+{
+    return moo_string_slist_to_pyobject (pyg_boxed_get (self, MooLang)->extensions);
+}
+%%
+override moo_line_view_set_line_data varargs
+static PyObject *
+_wrap_moo_line_view_set_line_data (PyObject *self, PyObject *args)
+{
+    int line;
+    PyObject *py_data;
+    MooLineView *view;
+    GValue data;
+
+    if (!PyArg_ParseTuple (args, "iO:LineView.set_line_data", &line, &py_data))
+        return NULL;
+
+    view = MOO_LINE_VIEW (pygobject_get (self));
+
+    data.g_type = 0;
+    g_value_init (&data, MOO_TYPE_PY_OBJECT);
+
+    if (pyg_value_from_pyobject (&data, py_data))
+    {
+        g_critical ("%s: oops", G_STRLOC);
+        return NULL;
+    }
+
+    moo_line_view_set_line_data (view, line, &data);
+    g_value_unset (&data);
+
+    return_None;
+}
+%%
+override moo_line_view_get_line_data varargs
+static PyObject *
+_wrap_moo_line_view_get_line_data (PyObject *self, PyObject *args)
+{
+    int line;
+    MooLineView *view;
+    GValue data;
+    PyObject *obj;
+
+    if (!PyArg_ParseTuple (args, "i:LineView.get_line_data", &line))
+        return NULL;
+
+    view = MOO_LINE_VIEW (pygobject_get (self));
+    data.g_type = 0;
+
+    if (!moo_line_view_get_line_data (view, line, &data))
+        return_None;
+
+    obj = pyg_value_as_pyobject (&data, FALSE);
+
+    g_value_unset (&data);
+    return obj;
+}
+%%
+override moo_text_search_forward varargs
+static PyObject *
+_wrap_moo_text_search_forward (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    PyObject *py_start, *py_flags, *py_end = Py_None;
+    char *str;
+    int flags;
+    const GtkTextIter *start, *end = NULL;
+    GtkTextIter match_start, match_end;
+
+    if (!PyArg_ParseTuple(args, "OsO|O:search_forward", &py_start, &str, &py_flags, &py_end))
+        return NULL;
+
+    if (pyg_boxed_check (py_start, GTK_TYPE_TEXT_ITER))
+        start = pyg_boxed_get (py_start, GtkTextIter);
+    else
+        return_TypeError ("start should be a GtkTextIter");
+
+    if (pyg_flags_get_value (MOO_TYPE_TEXT_SEARCH_FLAGS, py_flags, &flags))
+        return NULL;
+
+    if (pyg_boxed_check(py_end, GTK_TYPE_TEXT_ITER))
+        end = pyg_boxed_get(py_end, GtkTextIter);
+    else if (py_end != Py_None)
+        return_TypeError ("end should be a GtkTextIter or None");
+
+    if (moo_text_search_forward (start, str, flags, &match_start, &match_end, end))
+    {
+        PyObject *ret = PyTuple_New (2);
+        PyTuple_SET_ITEM (ret, 0, pyg_boxed_new (GTK_TYPE_TEXT_ITER, &match_start, TRUE, TRUE));
+        PyTuple_SET_ITEM (ret, 1, pyg_boxed_new (GTK_TYPE_TEXT_ITER, &match_end, TRUE, TRUE));
+        return ret;
+    }
+    else
+    {
+        return_None;
+    }
+}
+%%
+override moo_text_search_backward varargs
+static PyObject *
+_wrap_moo_text_search_backward (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    PyObject *py_start, *py_flags, *py_end = Py_None;
+    char *str;
+    int flags;
+    const GtkTextIter *start, *end = NULL;
+    GtkTextIter match_start, match_end;
+
+    if (!PyArg_ParseTuple (args, "OsO|O:search_backward", &py_start, &str, &py_flags, &py_end))
+        return NULL;
+
+    if (pyg_boxed_check (py_start, GTK_TYPE_TEXT_ITER))
+        start = pyg_boxed_get (py_start, GtkTextIter);
+    else
+        return_TypeError ("start should be a GtkTextIter");
+
+    if (pyg_flags_get_value (MOO_TYPE_TEXT_SEARCH_FLAGS, py_flags, &flags))
+        return NULL;
+
+    if (pyg_boxed_check(py_end, GTK_TYPE_TEXT_ITER))
+        end = pyg_boxed_get(py_end, GtkTextIter);
+    else if (py_end != Py_None)
+        return_TypeError ("end should be a GtkTextIter or None");
+
+    if (moo_text_search_backward (start, str, flags, &match_start, &match_end, end))
+    {
+        PyObject *ret = PyTuple_New (2);
+        PyTuple_SET_ITEM (ret, 0, pyg_boxed_new (GTK_TYPE_TEXT_ITER, &match_start, TRUE, TRUE));
+        PyTuple_SET_ITEM (ret, 1, pyg_boxed_new (GTK_TYPE_TEXT_ITER, &match_end, TRUE, TRUE));
+        return ret;
+    }
+    else
+    {
+        return_None;
+    }
+}
+%%
+override moo_text_buffer_get_line_marks_at_line varargs
+static PyObject *
+_wrap_moo_text_buffer_get_line_marks_at_line (PyGObject *self, PyObject *args)
+{
+    GSList *list;
+    PyObject *result;
+    int line;
+
+    if (!PyArg_ParseTuple (args, "i", &line))
+        return NULL;
+
+    list = moo_text_buffer_get_line_marks_at_line (MOO_TEXT_BUFFER (pygobject_get (self)), line);
+    result = _moo_object_slist_to_pyobject (list);
+
+    g_slist_free (list);
+    return result;
+}
+%%
+override moo_text_buffer_get_line_marks_in_range varargs
+static PyObject *
+_wrap_moo_text_buffer_get_line_marks_in_range (PyGObject *self, PyObject *args)
+{
+    GSList *list;
+    PyObject *result;
+    int start, end;
+
+
+    if (!PyArg_ParseTuple (args, "ii", &start, &end))
+        return NULL;
+
+    list = moo_text_buffer_get_line_marks_in_range (MOO_TEXT_BUFFER (pygobject_get (self)), start, end);
+    result = _moo_object_slist_to_pyobject (list);
+
+    g_slist_free (list);
+    return result;
+}
+%%
+override moo_edit_class_add_action varargs
+static PyObject *
+_wrap_moo_edit_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
+{
+    PyObject *py_type, *py_id, *py_action_type;
+    GType type, action_type;
+    MooEditClass *klass;
+
+    if (PyTuple_GET_SIZE (args) < 3)
+        return_TypeError ("at least three arguments required");
+
+    py_type = PyTuple_GET_ITEM (args, 0);
+    py_id = PyTuple_GET_ITEM (args, 1);
+    py_action_type = PyTuple_GET_ITEM (args, 2);
+
+    if (!(type = pyg_type_from_object (py_type)))
+        return NULL;
+
+    if (!(action_type = pyg_type_from_object (py_action_type)))
+        return NULL;
+
+    if (!g_type_is_a (type, MOO_TYPE_EDIT))
+        return_TypeError ("type must be derived from MooEdit");
+
+    if (!g_type_is_a (action_type, MOO_TYPE_EDIT_ACTION))
+        return_TypeError ("action_type must be derived from MooEditAction");
+
+    if (!PyString_Check (py_id))
+        return_TypeError ("id must be a string");
+
+    klass = g_type_class_ref (type);
+
+    moo_edit_class_new_action_type (klass, PyString_AS_STRING (py_id), action_type);
+
+    g_type_class_unref (klass);
+    return_None;
+}
+%%
+override moo_edit_class_remove_action kwargs
+static PyObject *
+_wrap_moo_edit_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {"class", "id", NULL};
+    PyObject *py_type;
+    GType type;
+    const char *action_id;
+    MooEditClass *klass;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "Os:window_class_remove_action", kwlist, &py_type, &action_id))
+        return NULL;
+
+    type = pyg_type_from_object (py_type);
+
+    if (!type)
+        return NULL;
+
+    if (!g_type_is_a (type, MOO_TYPE_EDIT))
+        return_TypeError ("type must be derived from MooEdit");
+
+    klass = g_type_class_ref (type);
+    moo_edit_class_remove_action (klass, action_id);
+    g_type_class_unref (klass);
+
+    return_None;
+}
+%%
+override moo_lang_mgr_get_available_langs noargs
+static PyObject *
+_wrap_moo_lang_mgr_get_available_langs (PyGObject *self)
+{
+    GSList *list;
+    PyObject *result;
+
+    list = moo_lang_mgr_get_available_langs (MOO_LANG_MGR (pygobject_get (self)));
+    result = _moo_object_slist_to_pyobject (list);
+
+    g_slist_free (list);
+    return result;
+}
+%%
+override moo_plugin_call_method varargs
+static PyObject *
+_wrap_moo_plugin_call_method (PyGObject *self, PyObject *args)
+{
+    const char *name;
+    MooPluginMeth *meth;
+    GValue *params = NULL;
+    GValue retval;
+    PyObject *ret = NULL;
+    guint i;
+
+    if (!args || !PyTuple_GET_SIZE (args))
+        return_TypeError ("Plugin.call_method takes at least 1 argument");
+
+    name = PyString_AsString (PyTuple_GET_ITEM (args, 0));
+
+    if (!name)
+        return NULL;
+
+    meth = moo_plugin_lookup_method (self->obj, name);
+
+    if (!meth)
+    {
+        PyErr_Format (PyExc_TypeError, "in Plugin.call_method: unknown method '%s'", name);
+        return NULL;
+    }
+
+    if ((int) meth->n_params + 1 != PyTuple_GET_SIZE (args))
+    {
+        PyErr_Format (PyExc_TypeError, "in Plugin.call_method: method '%s' takes "
+                      "exactly %d arguments (%d given)", name, meth->n_params,
+                      PyTuple_GET_SIZE (args) - 1);
+        return NULL;
+    }
+
+    if (meth->return_type != G_TYPE_NONE)
+    {
+        retval.g_type = 0;
+        g_value_init (&retval, meth->return_type);
+    }
+
+    params = g_new0 (GValue, meth->n_params + 1);
+    g_value_init (params, G_OBJECT_TYPE (self->obj));
+    g_value_set_object (params, self->obj);
+
+    for (i = 0; i < meth->n_params; ++i)
+    {
+        g_value_init (&params[i+1], meth->param_types[i]);
+
+        if (pyg_value_from_pyobject (&params[i+1], PyTuple_GET_ITEM (args, i+1)))
+        {
+            PyObject *ps = PyObject_Str (PyTuple_GET_ITEM (args, i+1));
+            char *s = PyString_AsString (ps);
+            PyErr_Format(PyExc_TypeError, "could not convert object '%s' to type '%s'",
+                         s ? s : "(unknown)", g_type_name (meth->param_types[i]));
+            Py_XDECREF (ps);
+            goto out;
+        }
+    }
+
+    moo_plugin_call_methodv (params, name, &retval);
+
+    if (meth->return_type != G_TYPE_NONE)
+    {
+        ret = pyg_value_as_pyobject (&retval, TRUE);
+    }
+    else
+    {
+        ret = Py_None;
+        Py_INCREF (ret);
+    }
+
+out:
+    if (meth->return_type != G_TYPE_NONE)
+        g_value_unset (&retval);
+    for (i = 0; i < meth->n_params + 1; ++i)
+        if (G_IS_VALUE (&params[i]))
+            g_value_unset (&params[i]);
+    g_free (params);
+
+    return ret;
+}
+%%
+override moo_command_context_set kwargs
+static PyObject *
+_wrap_moo_command_context_set (PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {"name", "value", NULL};
+    char *name;
+    PyObject *py_value;
+    GValue value;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "sO:MooCommandContext.set", kwlist,
+                                      &name, &py_value))
+        return NULL;
+
+    if (py_value == Py_None)
+        return_TypeError ("MooCommandContext.set: value may not be None");
+
+    value.g_type = 0;
+    _moo_pyobject_to_gvalue (py_value, &value);
+
+    moo_command_context_set (MOO_COMMAND_CONTEXT (self->obj), name, &value);
+
+    g_value_unset (&value);
+    return_None;
+}
+%%
+override moo_command_context_get kwargs
+static PyObject *
+_wrap_moo_command_context_get (PyGObject *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwlist[] = {"name", NULL};
+    char *name;
+    PyObject *py_value;
+    GValue value;
+
+    if (!PyArg_ParseTupleAndKeywords (args, kwargs, "s:MooCommandContext.get",
+                                      kwlist, &name))
+        return NULL;
+
+    value.g_type = 0;
+
+    if (!moo_command_context_get (MOO_COMMAND_CONTEXT (self->obj), name, &value))
+        return_None;
+
+    py_value = _moo_gvalue_to_pyobject (&value);
+    g_assert (py_value || PyErr_Occurred ());
+
+    g_value_unset (&value);
+    return py_value;
+}
+%%
+override moo_command_context_foreach varargs
+static void
+context_foreach_func (const char   *name,
+                      const GValue *value,
+                      gpointer      user_data)
+{
+    PyObject *py_value, *ret;
+
+    struct {
+        PyObject *func;
+        PyObject *data;
+        gboolean error;
+    } *data = user_data;
+
+    if (data->error)
+        return;
+
+    py_value = pyg_value_as_pyobject (value, TRUE);
+
+    if (!py_value)
+    {
+        data->error = TRUE;
+        return;
+    }
+
+    PyTuple_SetItem (data->data, 0, PyString_FromString (name));
+    PyTuple_SetItem (data->data, 1, py_value);
+
+    ret = PyObject_CallObject (data->func, data->data);
+
+    if (ret != NULL)
+        Py_DECREF (ret);
+    else
+        data->error = TRUE;
+}
+
+static PyObject *
+_wrap_moo_command_context_foreach (PyGObject *self, PyObject *args)
+{
+    int len, i;
+    PyObject *py_func, *py_data;
+    struct {
+        PyObject *func;
+        PyObject *data;
+        gboolean error;
+    } data;
+
+    len = PyTuple_GET_SIZE (args);
+
+    if (len == 0)
+        return_ValueError ("MooCommandContext.foreach: at least one argument is requred");
+
+    py_func = PyTuple_GET_ITEM (args, 0);
+
+    if (!PyCallable_Check (py_func))
+        return_TypeError ("MooCommandContext.foreach: argument must be callable");
+
+    py_data = PyTuple_New (len + 1);
+
+    for (i = 1; i < len; ++i)
+    {
+        PyObject *item = PyTuple_GET_ITEM (args, i);
+        Py_INCREF (item);
+        PyTuple_SetItem (py_data, i + 1, item);
+    }
+
+    data.func = py_func;
+    data.data = py_data;
+    data.error = FALSE;
+
+    moo_command_context_foreach (MOO_COMMAND_CONTEXT (self->obj),
+                                 context_foreach_func,
+                                 &data);
+
+    Py_DECREF (py_data);
+
+    if (data.error)
+        return NULL;
+
+    return_None;
+}

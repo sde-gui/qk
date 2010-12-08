@@ -1,0 +1,13 @@
+[module]
+type=Python
+file=project/project-plugin.py
+version=@MOO_MODULE_MAJOR_VERSION@.@MOO_MODULE_MINOR_VERSION@
+
+[plugin]
+id=ProjectManager
+_name=Project Manager
+_description=Project manager
+author=Yevgen Muntyan <muntyan@tamu.edu>
+version=@MOO_VERSION_UNQUOTED@
+enabled=false
+visible=false
