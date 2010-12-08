@@ -6,12 +6,12 @@
 #endif
 
 #include "mooedit/mooeditor.h"
-#include "mooutils/mdhistorymgr.h"
+#include "mooutils/moohistorymgr.h"
 #include "mooutils/moofilewatch.h"
 
 G_BEGIN_DECLS
 
-MdHistoryMgr    *_moo_editor_get_history_mgr    (MooEditor      *editor);
+MooHistoryMgr   *_moo_editor_get_history_mgr    (MooEditor      *editor);
 
 void             _moo_editor_set_focused_doc    (MooEditor      *editor,
                                                  MooEdit        *doc);

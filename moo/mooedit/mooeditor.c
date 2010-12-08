@@ -24,6 +24,7 @@
 #include "mooedit/mooedit-accels.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/moofileenc.h"
+#include "mooedit/mooedithistoryitem.h"
 #include "mooedit-ui.h"
 #include "medit-ui.h"
 #include "mooutils/moomenuaction.h"
@@ -234,9 +235,10 @@ moo_editor_constructor (GType                  type,
 
     editor->priv->history = NULL;
     if (!is_embedded (editor))
-        editor->priv->history = MD_HISTORY_MGR (g_object_new (MD_TYPE_HISTORY_MGR,
-                                                              "name", "Editor",
-                                                              (const char*) NULL));
+        editor->priv->history = MOO_HISTORY_MGR (
+            g_object_new (MOO_TYPE_HISTORY_MGR,
+                          "name", "Editor",
+                          (const char*) NULL));
 
     moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG),
                               MOO_LANG_NONE);
@@ -585,7 +587,7 @@ moo_editor_set_ui_xml (MooEditor      *editor,
 }
 
 
-MdHistoryMgr *
+MooHistoryMgr *
 _moo_editor_get_history_mgr (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
@@ -597,7 +599,7 @@ add_recent_uri (MooEditor  *editor,
                 const char *uri)
 {
     if (!is_embedded (editor))
-        md_history_mgr_add_uri (editor->priv->history, uri);
+        moo_history_mgr_add_uri (editor->priv->history, uri);
 }
 
 static void
@@ -615,15 +617,15 @@ recent_item_activated (GSList   *items,
         const char *encoding;
         const char *uri;
         char *filename;
-        MdHistoryItem *item = items->data;
+        MooHistoryItem *item = items->data;
 
-        uri = md_history_item_get_uri (item);
+        uri = moo_history_item_get_uri (item);
         filename = g_filename_from_uri (uri, NULL, NULL);
         g_return_if_fail (filename != NULL);
 
         encoding = _moo_edit_history_item_get_encoding (item);
         if (!moo_editor_open_uri (editor, window, GTK_WIDGET (window), uri, encoding))
-            md_history_mgr_remove_uri (editor->priv->history, uri);
+            moo_history_mgr_remove_uri (editor->priv->history, uri);
 
         g_free (filename);
 
@@ -643,7 +645,7 @@ create_recent_menu (GtkAction *action)
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
 
     editor = moo_editor_instance ();
-    menu = md_history_mgr_create_menu (editor->priv->history,
+    menu = moo_history_mgr_create_menu (editor->priv->history,
                                        recent_item_activated,
                                        window, NULL);
     moo_bind_bool_property (action,
@@ -685,7 +687,7 @@ action_recent_dialog (MooEditWindow *window)
     editor = moo_editor_instance ();
     g_return_if_fail (MOO_IS_EDITOR (editor));
 
-    dialog = md_history_mgr_create_dialog (editor->priv->history,
+    dialog = moo_history_mgr_create_dialog (editor->priv->history,
                                            recent_item_activated,
                                            window, NULL);
     gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
@@ -869,7 +871,7 @@ update_history_item_for_doc (MooEditor *editor,
                              gboolean   add)
 {
     char *uri;
-    MdHistoryItem *item;
+    MooHistoryItem *item;
     int line;
     const char *enc;
 
@@ -879,7 +881,7 @@ update_history_item_for_doc (MooEditor *editor,
     if (!(uri = moo_edit_get_uri (doc)))
         return;
 
-    item = md_history_item_new (uri, NULL);
+    item = moo_history_item_new (uri, NULL);
 
     line = moo_text_view_get_cursor_line (MOO_TEXT_VIEW (doc));
     if (line != 0)
@@ -890,11 +892,11 @@ update_history_item_for_doc (MooEditor *editor,
         _moo_edit_history_item_set_encoding (item, enc);
 
     if (add)
-        md_history_mgr_add_file (editor->priv->history, item);
+        moo_history_mgr_add_file (editor->priv->history, item);
     else
-        md_history_mgr_update_file (editor->priv->history, item);
+        moo_history_mgr_update_file (editor->priv->history, item);
 
-    md_history_item_free (item);
+    moo_history_item_free (item);
     g_free (uri);
 }
 
@@ -948,7 +950,7 @@ moo_editor_load_file (MooEditor       *editor,
 
     if (!fenc->encoding)
     {
-        MdHistoryItem *hist_item = md_history_mgr_find_uri (editor->priv->history, uri);
+        MooHistoryItem *hist_item = moo_history_mgr_find_uri (editor->priv->history, uri);
         if (hist_item)
             recent_encoding = _moo_edit_history_item_get_encoding (hist_item);
     }
@@ -969,11 +971,11 @@ moo_editor_load_file (MooEditor       *editor,
     }
     else
     {
-        MdHistoryItem *hist_item;
+        MooHistoryItem *hist_item;
 
         if (line < 0)
         {
-            hist_item = md_history_mgr_find_uri (editor->priv->history, uri);
+            hist_item = moo_history_mgr_find_uri (editor->priv->history, uri);
             if (hist_item)
                 line = _moo_edit_history_item_get_line (hist_item);
         }

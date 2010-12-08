@@ -35,7 +35,7 @@ struct MooEditorPrivate {
     MooEditWindowArray  *windows;
     MooUiXml            *doc_ui_xml;
     MooUiXml            *ui_xml;
-    MdHistoryMgr        *history;
+    MooHistoryMgr       *history;
     MooFileWatch        *file_watch;
     MooEditorOptions     opts;
 
