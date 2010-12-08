@@ -14,6 +14,9 @@ case "$1" in
     ;;
 esac
 
+export mgwjhbuildsrcdir=$mgwbuildroot/jhbuild
+export mgwjhbuilddir=$mgwbuildroot/jhbuild-bin
+
 export mgwdestdir=$mgwbuildroot/bdist-$mgwconfig
 
 export mgwbuilddir=$mgwbuildroot/$mgwconfig
@@ -22,3 +25,6 @@ export mgwsourcedir=$mgwbuilddir/source
 export mgwtargetdir=$mgwbuilddir/target
 export mgwsourcedir_s=$mgwbuilddir_s/source
 export mgwtargetdir_s=$mgwbuilddir_s/target
+
+export mgwpythoninstdir=$HOME/.wine/drive_c/Python27
+export mgwpythonsystem32dir=$HOME/.wine/drive_c/windows/system32
