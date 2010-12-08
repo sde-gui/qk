@@ -32,6 +32,8 @@ AC_DEFUN_ONCE([MOO_AC_PYTHON],[
       AC_SUBST([PYGTK_DEFS_DIR],[`$PKG_CONFIG --variable=defsdir pygtk-2.0`])
     fi
 
+    MOO_ENABLE_PYTHON=false
+
     if $MOO_ENABLE_PYTHON; then
       AC_MSG_NOTICE([compiling python support])
     elif test "x$_moo_want_python" = "xyes"; then
