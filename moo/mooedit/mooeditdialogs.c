@@ -671,17 +671,7 @@ _moo_text_regex_error_dialog (GtkWidget  *parent,
     if (error)
     {
         if (error->domain != G_REGEX_ERROR)
-        {
             g_warning ("%s: unknown error domain", G_STRLOC);
-        }
-        else if (error->code != G_REGEX_ERROR_COMPILE &&
-                 error->code != G_REGEX_ERROR_OPTIMIZE &&
-                 error->code != G_REGEX_ERROR_REPLACE &&
-                 error->code != G_REGEX_ERROR_MATCH)
-        {
-            g_warning ("%s: unknown error code", G_STRLOC);
-        }
-
         msg_text = g_strdup (error->message);
     }
     else
