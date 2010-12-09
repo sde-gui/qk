@@ -9,6 +9,7 @@ usage() {
 }
 
 en_only=false
+no_python=false
 min=false
 
 for arg; do
@@ -18,6 +19,10 @@ for arg; do
       ;;
     --en)
       en_only=true
+      shift
+      ;;
+    --no-python)
+      no_python=true
       shift
       ;;
     --min)
@@ -177,12 +182,19 @@ copy_mime() {
 }
 
 copy_python() {
-  :
+  do_or_die cp -lfR $mgwpythoninstdir/*.exe "$dstdir/bin/"
+  do_or_die cp -lfR $mgwpythoninstdir/LICENSE.txt "$dstdir/bin/LICENSE-python.txt"
+  do_or_die cp -lfR $mgwpythoninstdir/DLLs $mgwpythoninstdir/Lib "$dstdir/bin/"
+  do_or_die cp -lfR $mgwpythonsystem32dir/python2*.dll "$dstdir/bin/"
+  do_or_die cp -lfR $srcdir/lib/python2.*/site-packages/* "$dstdir/bin/Lib/site-packages/"
 }
 
 copy_files
 if ! $en_only; then
   copy_locale
+fi
+if ! $no_python; then
+  copy_python
 fi
 copy_icons
 copy_mime
