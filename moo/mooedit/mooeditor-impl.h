@@ -24,7 +24,7 @@ void             _moo_editor_move_doc           (MooEditor      *editor,
                                                  gboolean        focus);
 
 MooFileWatch    *_moo_editor_get_file_watch     (MooEditor      *editor);
-void             _moo_editor_reload             (MooEditor      *editor,
+gboolean         _moo_editor_reload             (MooEditor      *editor,
                                                  MooEdit        *doc,
                                                  const char     *encoding,
                                                  GError        **error);

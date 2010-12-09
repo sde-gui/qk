@@ -137,6 +137,9 @@ GType type_name##_get_type (void)                                               
     return q;                                                                               \
 }
 
+#define MOO_DECLARE_QUARK(QuarkName,quark_func)                                             \
+GQuark quark_func (void) G_GNUC_CONST;
+
 #define MOO_DEFINE_QUARK(QuarkName,quark_func)                                              \
 GQuark quark_func (void)                                                                    \
     MOO_DEFINE_QUARK__(QuarkName)

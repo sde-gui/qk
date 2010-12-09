@@ -4,6 +4,7 @@
 #include <gtk/gtk.h>
 #include <mooutils/mooarray.h>
 #include <mooutils/moolist.h>
+#include <mooutils/mootype-macros.h>
 
 G_BEGIN_DECLS
 
@@ -22,6 +23,9 @@ MOO_DECLARE_PTR_ARRAY (MooFileEncArray, moo_file_enc_array, MooFileEnc)
 
 #define MOO_TYPE_LINE_END (moo_type_line_end ())
 GType   moo_type_line_end   (void) G_GNUC_CONST;
+
+#define MOO_EDIT_RELOAD_ERROR (moo_edit_reload_error_quark ())
+MOO_DECLARE_QUARK (moo-edit-reload-error, moo_edit_reload_error_quark)
 
 G_END_DECLS
 

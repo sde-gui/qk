@@ -27,6 +27,10 @@ G_BEGIN_DECLS
 
 #define MOO_TYPE_EDIT_FILE_INFO             (moo_edit_file_info_get_type ())
 
+/**
+ * class:MooEdit: (parent GObject)
+ **/
+
 #define MOO_TYPE_EDIT                       (moo_edit_get_type ())
 #define MOO_EDIT(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT, MooEdit))
 #define MOO_EDIT_CLASS(klass)               (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EDIT, MooEditClass))
@@ -113,7 +117,7 @@ void             moo_edit_set_clean             (MooEdit        *edit,
 MooEditStatus    moo_edit_get_status            (MooEdit        *edit);
 MooEditState     moo_edit_get_state             (MooEdit        *edit);
 
-void             moo_edit_reload                (MooEdit        *edit,
+gboolean         moo_edit_reload                (MooEdit        *edit,
                                                  const char     *encoding,
                                                  GError        **error);
 gboolean         moo_edit_close                 (MooEdit        *edit,

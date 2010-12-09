@@ -22,6 +22,11 @@
 
 G_BEGIN_DECLS
 
+enum {
+    MOO_EDIT_RELOAD_ERROR_BUSY = 1,
+    MOO_EDIT_RELOAD_ERROR_UNTITLED,
+    MOO_EDIT_RELOAD_ERROR_CANCELLED
+};
 
 #define MOO_TYPE_EDITOR                 (moo_editor_get_type ())
 #define MOO_EDITOR(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_EDITOR, MooEditor))

@@ -368,14 +368,14 @@ moo_edit_dispose (GObject *object)
 
     if (edit->priv->progress)
     {
-        g_critical ("%s: oops", G_STRLOC);
+        moo_critical ("oops");
         edit->priv->progress = NULL;
         edit->priv->progressbar = NULL;
     }
 
     if (edit->priv->progress_timeout)
     {
-        g_critical ("%s: oops", G_STRLOC);
+        moo_critical ("oops");
         g_source_remove (edit->priv->progress_timeout);
         edit->priv->progress_timeout = 0;
     }
@@ -486,6 +486,12 @@ _moo_edit_set_status (MooEdit        *edit,
 }
 
 
+/**
+ * moo_edit_is_empty:
+ *
+ * This function returns whether the document is "empty", i.e. is not modified,
+ * is untitled, and contains no text.
+ **/
 gboolean
 moo_edit_is_empty (MooEdit *edit)
 {
@@ -968,6 +974,11 @@ config_changed (MooEdit        *edit,
 }
 
 
+/**
+ * moo_edit_get_lang:
+ *
+ * Returns: language currently used in the document
+ */
 MooLang *
 moo_edit_get_lang (MooEdit *doc)
 {
@@ -1140,15 +1151,36 @@ moo_edit_filename_changed (MooEdit    *edit,
 }
 
 
-void
+/**
+ * moo_edit_reload:
+ *
+ * @edit:
+ * @encoding: (allow-none) (default NULL): encoding to use. If %NULL,
+ * current document encoding will be used.
+ * @error: (allow-none): location for returned error or %NULL
+ *
+ * Reload document from disk
+ *
+ * Returns: whether document was successfully reloaded
+ **/
+gboolean
 moo_edit_reload (MooEdit     *edit,
                  const char  *encoding,
                  GError     **error)
 {
-    _moo_editor_reload (edit->priv->editor, edit, encoding, error);
+    return _moo_editor_reload (edit->priv->editor, edit, encoding, error);
 }
 
 
+/**
+ * moo_edit_close:
+ *
+ * @edit:
+ * @ask_confirm: (default TRUE): whether user should be asked if he wants
+ * to save changes before cloing if the document is modified.
+ *
+ * Returns: whether document was closed
+ **/
 gboolean
 moo_edit_close (MooEdit        *edit,
                 gboolean        ask_confirm)

@@ -47,6 +47,8 @@
 
 #define CURRENT_SESSION_VERSION "2.0"
 
+MOO_DEFINE_QUARK (moo-edit-reload-error, moo_edit_reload_error_quark)
+
 static gpointer editor_instance = NULL;
 
 static void          set_single_window          (MooEditor      *editor,
@@ -1974,7 +1976,7 @@ moo_editor_open_uri (MooEditor      *editor,
 }
 
 
-void
+gboolean
 _moo_editor_reload (MooEditor   *editor,
                     MooEdit     *doc,
                     const char  *encoding,
@@ -1984,19 +1986,37 @@ _moo_editor_reload (MooEditor   *editor,
     int cursor_line, cursor_offset;
     GtkTextIter iter;
 
-    g_return_if_fail (MOO_IS_EDITOR (editor));
+    moo_return_error_if_fail (MOO_IS_EDITOR (editor));
 
     if (MOO_EDIT_IS_BUSY (doc))
-        return;
+    {
+        g_set_error (error,
+                     MOO_EDIT_RELOAD_ERROR,
+                     MOO_EDIT_RELOAD_ERROR_BUSY,
+                     "document is busy");
+        return FALSE;
+    }
 
-    /* XXX */
-    g_return_if_fail (!moo_edit_is_untitled (doc));
+    if (moo_edit_is_untitled (doc))
+    {
+        g_set_error (error,
+                     MOO_EDIT_RELOAD_ERROR,
+                     MOO_EDIT_RELOAD_ERROR_UNTITLED,
+                     "document is untitled");
+        return FALSE;
+    }
 
     if (!is_embedded (editor) &&
         !MOO_EDIT_IS_CLEAN (doc) &&
         MOO_EDIT_IS_MODIFIED (doc) &&
         !_moo_edit_reload_modified_dialog (doc))
-            return;
+    {
+        g_set_error (error,
+                     MOO_EDIT_RELOAD_ERROR,
+                     MOO_EDIT_RELOAD_ERROR_CANCELLED,
+                     "cancelled by user");
+        return FALSE;
+    }
 
     moo_text_view_get_cursor (MOO_TEXT_VIEW (doc), &iter);
     cursor_line = gtk_text_iter_get_line (&iter);
@@ -2016,11 +2036,12 @@ _moo_editor_reload (MooEditor   *editor,
 
         moo_text_view_undo (MOO_TEXT_VIEW (doc));
         g_object_set_data (G_OBJECT (doc), "moo-scroll-to", NULL);
-        return;
+        return FALSE;
     }
 
     moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), cursor_line,
                                cursor_offset, TRUE, FALSE);
+    return TRUE;
 }
 
 
