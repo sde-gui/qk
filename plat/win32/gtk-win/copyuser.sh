@@ -187,6 +187,7 @@ copy_python() {
   do_or_die cp -lfR $mgwpythoninstdir/DLLs $mgwpythoninstdir/Lib "$dstdir/bin/"
   do_or_die cp -lfR $mgwpythonsystem32dir/python2*.dll "$dstdir/bin/"
   do_or_die cp -lfR $srcdir/lib/python2.*/site-packages/* "$dstdir/bin/Lib/site-packages/"
+  do_or_die cp -lfR $srcdir/bin/libpyglib-*.dll "$dstdir/bin/"
 }
 
 copy_files
