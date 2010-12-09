@@ -40,6 +40,10 @@ headers
 #include "mooutils/moohelp.h"
 #include "mooutils/moofileicon.h"
 #include "mooutils/moodialogs.h"
+#include "mooutils/moofilewatch.h"
+#include "mooutils/moomenuaction.h"
+#include "mooutils/moonotebook.h"
+#include "mooutils/mooundo.h"
 
 #include "moofileview/moofileview.h"
 
@@ -85,6 +89,12 @@ import gtk.TextTag as PyGtkTextTag_Type
 import gtk.TextTagTable as PyGtkTextTagTable_Type
 import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
 import gtk.Action as PyGtkAction_Type
+import gtk.RadioAction as PyGtkRadioAction_Type
+import gtk.ToggleAction as PyGtkToggleAction_Type
+import gtk.Object as PyGtkObject_Type
+import gtk.Container as PyGtkContainer_Type
+import gtk.AccelGroup as PyGtkAccelGroup_Type
+import gio.File as PyGFile_Type
 %%
 ignore-glob
   *_get_type

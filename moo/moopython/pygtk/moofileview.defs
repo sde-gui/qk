@@ -18,6 +18,16 @@
   (c-name "moo_file_view_chdir")
   (return-type "gboolean")
   (parameters
+    '("GFile*" "dir")
+    '("GError**" "error")
+  )
+)
+
+(define-method chdir_path
+  (of-object "MooFileView")
+  (c-name "moo_file_view_chdir_path")
+  (return-type "gboolean")
+  (parameters
     '("const-char*" "dir")
     '("GError**" "error")
   )

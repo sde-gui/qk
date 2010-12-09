@@ -225,6 +225,31 @@ _moo_object_slist_to_pyobject (GSList *list)
 }
 
 
+PyObject *
+_moo_object_array_to_pyobject (MooObjectArray *array)
+{
+    guint i;
+    PyObject *result;
+
+    result = PyList_New (moo_object_array_get_size (array));
+
+    for (i = 0; array && i < array->n_elms; ++i)
+    {
+        PyObject *item = pygobject_new (array->elms[i]);
+
+        if (!item)
+        {
+            Py_DECREF (result);
+            return NULL;
+        }
+
+        PyList_SetItem (result, i, item);
+    }
+
+    return result;
+}
+
+
 static PyObject *
 string_to_pyobject (gpointer str)
 {

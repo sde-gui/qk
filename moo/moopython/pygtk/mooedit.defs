@@ -1123,16 +1123,18 @@
              "Brings top editor window to the front.")
 )
 
-(define-method list_windows
+(define-method get_windows
   (of-object "MooEditor")
-  (c-name "moo_editor_list_windows")
-  (return-type "GSList*")
+  (c-name "moo_editor_get_windows")
+  (return-type "MooEditWindowArray*")
+  (caller-owns-return #t)
 )
 
-(define-method list_docs
+(define-method get_docs
   (of-object "MooEditor")
-  (c-name "moo_editor_list_docs")
-  (return-type "GSList*")
+  (c-name "moo_editor_get_docs")
+  (return-type "MooEditArray*")
+  (caller-owns-return #t)
 )
 
 (define-method close_window
@@ -1513,10 +1515,11 @@
   )
 )
 
-(define-method list_docs
+(define-method get_docs
   (of-object "MooEditWindow")
-  (c-name "moo_edit_window_list_docs")
-  (return-type "GSList*")
+  (c-name "moo_edit_window_get_docs")
+  (return-type "MooEditArray*")
+  (caller-owns-return #t)
 )
 
 (define-method num_docs
@@ -1681,14 +1684,14 @@
   )
 )
 
-(define-virtual config_changed
-  (of-object "MooIndenter")
-  (return-type "none")
-  (parameters
-    '("guint" "setting_id")
-    '("GParamSpec*" "pspec")
-  )
-)
+; (define-virtual config_changed
+;   (of-object "MooIndenter")
+;   (return-type "none")
+;   (parameters
+;     '("guint" "setting_id")
+;     '("GParamSpec*" "pspec")
+;   )
+; )
 
 (define-virtual character
   (of-object "MooIndenter")

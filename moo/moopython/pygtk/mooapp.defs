@@ -99,27 +99,27 @@
   )
 )
 
-(define-function app_send_files
-  (c-name "moo_app_send_files")
-  (return-type "gboolean")
-  (parameters
-    '("MooAppFileInfo*" "files")
-    '("int" "n_files")
-    '("guint32" "stamp")
-    '("const-char*" "pid")
-  )
-)
+; (define-function app_send_files
+;   (c-name "moo_app_send_files")
+;   (return-type "gboolean")
+;   (parameters
+;     '("MooAppFileInfo*" "files")
+;     '("int" "n_files")
+;     '("guint32" "stamp")
+;     '("const-char*" "pid")
+;   )
+; )
 
-(define-method open_files
-  (of-object "MooApp")
-  (c-name "moo_app_open_files")
-  (return-type "none")
-  (parameters
-    '("MooAppFileInfo*" "files")
-    '("int" "n_files")
-    '("guint32" "stamp")
-  )
-)
+; (define-method open_files
+;   (of-object "MooApp")
+;   (c-name "moo_app_open_files")
+;   (return-type "none")
+;   (parameters
+;     '("MooAppFileInfo*" "files")
+;     '("int" "n_files")
+;     '("guint32" "stamp")
+;   )
+; )
 
 (define-method run_script
   (of-object "MooApp")

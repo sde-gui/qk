@@ -30,9 +30,8 @@ AC_DEFUN_ONCE([MOO_AC_PYTHON],[
 
     if $MOO_ENABLE_PYTHON; then
       AC_SUBST([PYGTK_DEFS_DIR],[`$PKG_CONFIG --variable=defsdir pygtk-2.0`])
+      AC_SUBST([PYGOBJECT_DEFS_DIR],[`$PKG_CONFIG --variable=defsdir pygobject-2.0`])
     fi
-
-    MOO_ENABLE_PYTHON=false
 
     if $MOO_ENABLE_PYTHON; then
       AC_MSG_NOTICE([compiling python support])

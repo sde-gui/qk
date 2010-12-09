@@ -18,6 +18,7 @@
 
 #include <Python.h>
 #include <glib-object.h>
+#include <mooutils/mooarray.h>
 
 G_BEGIN_DECLS
 
@@ -39,6 +40,7 @@ PyObject    *_moo_object_slist_to_pyobject  (GSList         *list);
 PyObject    *_moo_string_slist_to_pyobject  (GSList         *list);
 PyObject    *_moo_boxed_slist_to_pyobject   (GSList         *list,
                                              GType           type);
+PyObject    *_moo_object_array_to_pyobject  (MooObjectArray *array);
 
 PyObject    *_moo_gvalue_to_pyobject        (const GValue   *val);
 void         _moo_pyobject_to_gvalue        (PyObject       *object,
@@ -51,10 +53,9 @@ void         _moo_py_init_print_funcs       (void);
 #define return_Obj(obj) return Py_INCREF (obj), obj
 #define return_Self     return_Obj (self)
 #define return_None     return_Obj (Py_None)
-/* avoid strict aliasing warnings */
 #define return_True     return PyBool_FromLong (TRUE)
 #define return_False    return PyBool_FromLong (FALSE)
-#define return_Bool(v)  return PyBool_FromLong ((v) && TRUE)
+#define return_Bool(v)  return PyBool_FromLong (v)
 
 #define return_Int(v)   return PyInt_FromLong (v)
 

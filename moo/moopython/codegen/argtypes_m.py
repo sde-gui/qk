@@ -52,6 +52,23 @@ class ObjectSListArg(ArgType):
             info.varlist.add('GSList', '*ret')
             info.codeafter.append('    return _moo_object_slist_to_pyobject (ret);')
 
+class ObjectArrayArg(ArgType):
+    def __init__(self, c_type, c_prefix):
+        self.c_type = c_type
+        self.c_prefix = c_prefix
+
+    def write_return(self, ptype, ownsreturn, info):
+        if ownsreturn:
+            # have to free result ...
+            info.varlist.add(self.c_type, '*ret')
+            info.varlist.add('PyObject', '*py_ret')
+            info.codeafter.append(('    py_ret = _moo_object_array_to_pyobject ((MooObjectArray*) ret);\n' +
+                                   '    %s_free (ret);\n' +
+                                   '    return py_ret;') % (self.c_prefix,))
+        else:
+            info.varlist.add('self.c_type', '*ret')
+            info.codeafter.append('    return _moo_object_array_to_pyobject ((MooObjectArray*) ret);')
+
 class NoRefObjectSListArg(ArgType):
     def write_return(self, ptype, ownsreturn, info):
         if ownsreturn:
@@ -74,3 +91,9 @@ arg = ObjectSListArg()
 matcher.register('object-slist', arg)
 arg = NoRefObjectSListArg()
 matcher.register('no-ref-object-slist', arg)
+
+for typ, prefix in (('MooFileArray', 'moo_file_array'),
+                    ('MooEditArray', 'moo_edit_array'),
+                    ('MooEditWindowArray', 'moo_edit_window_array'),):
+    arg = ObjectArrayArg(typ, prefix)
+    matcher.register(typ + '*', arg)

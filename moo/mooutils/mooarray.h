@@ -193,4 +193,6 @@ int array_type##_find (const ArrayType *ar, ElmType *elm)               \
                           array_type##_ref_elm__,                       \
                           array_type##_unref_elm__)
 
+MOO_DECLARE_OBJECT_ARRAY (MooObjectArray, moo_object_array, GObject)
+
 #endif /* MOO_ARRAY_H */

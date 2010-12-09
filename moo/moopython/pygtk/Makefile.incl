@@ -9,6 +9,8 @@ moo_defs_files =				\
 	moopython/pygtk/mooedit.defs		\
 	moopython/pygtk/mooapp.defs		\
 	moopython/pygtk/mooutils.defs		\
+	moopython/pygtk/moofileview.defs	\
+	moopython/pygtk/moopaned.defs		\
 	moopython/pygtk/moo.defs
 
 moo_override_files =				\
@@ -42,6 +44,7 @@ moopython/pygtk/moo-mod.c: $(moo_override_files) $(moo_defs_files) $(codegen_fil
 	$(AM_V_at)$(MKDIR_P) moopython/pygtk
 	$(AM_V_GEN)$(codegen) --prefix _moo \
 		--load-types $(srcdir)/moopython/codegen/argtypes_m.py \
+		--register $(PYGOBJECT_DEFS_DIR)/gio-types.defs \
 		--register $(PYGTK_DEFS_DIR)/gtk-types.defs \
 		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 		--override $(srcdir)/moopython/pygtk/moo.override \

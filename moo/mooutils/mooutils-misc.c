@@ -25,6 +25,7 @@
 #include <mooutils/mooutils-tests.h>
 #include "mooutils/moocompat.h"
 #include "mooutils/mootype-macros.h"
+#include "mooutils/mooarray.h"
 #include "moologwindow-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gmappedfile.h>
@@ -53,6 +54,7 @@
 #include <shellapi.h>
 #endif
 
+MOO_DEFINE_OBJECT_ARRAY (MooObjectArray, moo_object_array, GObject)
 MOO_DEFINE_QUARK (moo-error, moo_error_quark)
 
 G_LOCK_DEFINE_STATIC (moo_user_data_dir);
