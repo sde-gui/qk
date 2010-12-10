@@ -743,9 +743,9 @@ out:
 
 
 static gboolean
-moo_command_exe_check_sensitive (MooCommand *cmd_base,
-                                 gpointer    doc,
-                                 gpointer    window)
+moo_command_exe_check_sensitive (MooCommand    *cmd_base,
+                                 MooEdit       *doc,
+                                 MooEditWindow *window)
 {
     MooCommandExe *cmd = MOO_COMMAND_EXE (cmd_base);
     MooCommandOptions options;

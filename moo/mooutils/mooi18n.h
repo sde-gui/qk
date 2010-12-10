@@ -67,6 +67,8 @@
 
 G_BEGIN_DECLS
 
+#define moo_dgettext(d,s) D_(d,s)
+
 const char *moo_gettext (const char *string) G_GNUC_FORMAT (1);
 const char *moo_pgettext (const char *msgctxtid, gsize msgidoffset) G_GNUC_FORMAT (1);
 const char *moo_pgettext2 (const char *context, const char *msgctxtid) G_GNUC_FORMAT (2);

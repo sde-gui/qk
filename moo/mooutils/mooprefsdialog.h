@@ -46,7 +46,9 @@ struct _MooPrefsDialogClass
 {
     GtkDialogClass parent_class;
 
+    /**vtable:MooPrefsDialog**/
     void (* init)   (MooPrefsDialog *dialog);
+    /**vtable:MooPrefsDialog**/
     void (* apply)  (MooPrefsDialog *dialog);
 };
 

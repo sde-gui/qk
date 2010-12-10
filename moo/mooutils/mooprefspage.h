@@ -45,7 +45,9 @@ struct _MooPrefsPage
 struct _MooPrefsPageClass
 {
     GtkVBoxClass base_class;
+    /**vtable:MooPrefsPage**/
     void (*init)  (MooPrefsPage *page);
+    /**vtable:MooPrefsPage**/
     void (*apply) (MooPrefsPage *page);
 };
 

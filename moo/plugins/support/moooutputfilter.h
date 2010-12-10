@@ -49,17 +49,24 @@ struct _MooOutputFilter {
 struct _MooOutputFilterClass {
     GObjectClass base_class;
 
+    /**vtable:MooOutputFilter**/
     void     (*attach)      (MooOutputFilter *filter);
+    /**vtable:MooOutputFilter**/
     void     (*detach)      (MooOutputFilter *filter);
 
+    /**vtable:MooOutputFilter**/
     void     (*activate)    (MooOutputFilter *filter,
                              int              line);
 
+    /**vtable:MooOutputFilter**/
     void     (*cmd_start)   (MooOutputFilter *filter);
+    /**vtable:MooOutputFilter**/
     gboolean (*cmd_exit)    (MooOutputFilter *filter,
                              int              status);
+    /**vtable:MooOutputFilter**/
     gboolean (*stdout_line) (MooOutputFilter *filter,
                              const char      *line);
+    /**vtable:MooOutputFilter**/
     gboolean (*stderr_line) (MooOutputFilter *filter,
                              const char      *line);
 };

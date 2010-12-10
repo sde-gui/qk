@@ -146,29 +146,46 @@ struct _MooPluginClass
 {
     GObjectClass parent_class;
 
-    MooPluginInitFunc init;
-    MooPluginDeinitFunc deinit;
-    MooPluginAttachWinFunc attach_win;
-    MooPluginDetachWinFunc detach_win;
-    MooPluginAttachDocFunc attach_doc;
-    MooPluginDetachDocFunc detach_doc;
-    MooPluginPrefsPageFunc create_prefs_page;
+    /**vtable:MooPlugin**/
+    gboolean    (*init)                 (MooPlugin      *plugin);
+    /**vtable:MooPlugin**/
+    void        (*deinit)               (MooPlugin      *plugin);
+    /**vtable:MooPlugin**/
+    void        (*attach_win)           (MooPlugin      *plugin,
+                                         MooEditWindow  *window);
+    /**vtable:MooPlugin**/
+    void        (*detach_win)           (MooPlugin      *plugin,
+                                         MooEditWindow  *window);
+    /**vtable:MooPlugin**/
+    void        (*attach_doc)           (MooPlugin      *plugin,
+                                         MooEdit        *doc,
+                                         MooEditWindow  *window);
+    /**vtable:MooPlugin**/
+    void        (*detach_doc)           (MooPlugin      *plugin,
+                                         MooEdit        *doc,
+                                         MooEditWindow  *window);
+    /**vtable:MooPlugin**/
+    GtkWidget  *(*create_prefs_page)    (MooPlugin      *plugin);
 };
 
 struct _MooWinPluginClass
 {
     GObjectClass parent_class;
 
-    MooWinPluginCreateFunc create;
-    MooWinPluginDestroyFunc destroy;
+    /**vtable:MooWinPlugin**/
+    gboolean (*create)  (MooWinPlugin *win_plugin);
+    /**vtable:MooWinPlugin**/
+    void     (*destroy) (MooWinPlugin *win_plugin);
 };
 
 struct _MooDocPluginClass
 {
     GObjectClass parent_class;
 
-    MooDocPluginCreateFunc create;
-    MooDocPluginDestroyFunc destroy;
+    /**vtable:MooDocPlugin**/
+    gboolean (*create)  (MooDocPlugin *doc_plugin);
+    /**vtable:MooDocPlugin**/
+    void     (*destroy) (MooDocPlugin *doc_plugin);
 };
 
 

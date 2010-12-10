@@ -19,6 +19,18 @@
 #include <glib.h>
 
 
+/**
+ * moo_dgettext:
+ *
+ * @domain: (type const-char*):
+ * @string: (type const-char*):
+ *
+ * Returns: (type const-char*):
+ **/
+
+const char *moo_gettext (const char *string) G_GNUC_FORMAT (1);
+
+
 #ifdef ENABLE_NLS
 static void
 init_gettext (void)
@@ -37,6 +49,10 @@ init_gettext (void)
     }
 }
 #endif /* ENABLE_NLS */
+
+/**
+ * moo_gettext:
+ **/
 
 const char *
 moo_gettext (const char *string)

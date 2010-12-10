@@ -13,6 +13,22 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooCommand: (parent GObject)
+ **/
+
+/**
+ * class:MooCommandContext: (parent GObject)
+ **/
+
+/**
+ * class:MooCommandFactory: (parent GObject)
+ **/
+
+/**
+ * boxed:MooCommandData:
+ **/
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -108,6 +124,16 @@ moo_command_create (const char     *name,
 }
 
 
+/**
+ * moo_command_factory_register:
+ *
+ * @name:
+ * @display_name:
+ * @factory:
+ * @keys: (type strv) (allow-none):
+ * @extension:
+ *
+ **/
 void
 moo_command_factory_register (const char        *name,
                               const char        *display_name,
@@ -360,9 +386,9 @@ moo_command_get_property (GObject *object,
 
 
 static gboolean
-moo_command_check_sensitive_real (MooCommand *cmd,
-                                  gpointer    doc,
-                                  gpointer    window)
+moo_command_check_sensitive_real (MooCommand    *cmd,
+                                  MooEdit       *doc,
+                                  MooEditWindow *window)
 {
     if ((cmd->options & MOO_COMMAND_NEED_WINDOW) && !MOO_IS_EDIT_WINDOW (window))
         return FALSE;
@@ -510,13 +536,13 @@ moo_command_run (MooCommand         *cmd,
 
 
 gboolean
-moo_command_check_sensitive (MooCommand *cmd,
-                             gpointer    doc,
-                             gpointer    window)
+moo_command_check_sensitive (MooCommand    *cmd,
+                             MooEdit       *doc,
+                             MooEditWindow *window)
 {
     g_return_val_if_fail (MOO_IS_COMMAND (cmd), FALSE);
-    g_return_val_if_fail (!doc || GTK_IS_TEXT_VIEW (doc), FALSE);
-    g_return_val_if_fail (!window || GTK_IS_WINDOW (window), FALSE);
+    g_return_val_if_fail (!doc || MOO_IS_EDIT (doc), FALSE);
+    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), FALSE);
     g_return_val_if_fail (MOO_COMMAND_GET_CLASS(cmd)->check_sensitive != NULL, FALSE);
     return MOO_COMMAND_GET_CLASS(cmd)->check_sensitive (cmd, doc, window);
 }

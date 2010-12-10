@@ -43,9 +43,12 @@ struct _MooEditActionClass
 {
     MooActionClass parent_class;
 
+    /**vtable:MooEditAction**/
     void     (*check_state)     (MooEditAction *action);
 
+    /**vtable:MooEditAction**/
     gboolean (*check_visible)   (MooEditAction *action);
+    /**vtable:MooEditAction**/
     gboolean (*check_sensitive) (MooEditAction *action);
 };
 

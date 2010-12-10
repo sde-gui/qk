@@ -451,7 +451,10 @@ moo_editor_create (gboolean embedded)
 }
 
 
-MooEditor*
+/**
+ * moo_editor_instance:
+ **/
+MooEditor *
 moo_editor_instance (void)
 {
     return editor_instance;

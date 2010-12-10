@@ -925,6 +925,12 @@ moo_prefs_new_key_int (const char *key,
 }
 
 
+/**
+ * moo_prefs_new_key_string:
+ *
+ * @key:
+ * @default_val: (allow-none) (default NULL):
+ **/
 void
 moo_prefs_new_key_string (const char *key,
                           const char *default_val)
