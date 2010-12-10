@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooMenuToolButton: (parent GtkToggleToolButton)
+ **/
+
 #include "mooutils/moomenutoolbutton.h"
 #include "mooutils/mooutils-misc.h"
 #include <gtk/gtk.h>

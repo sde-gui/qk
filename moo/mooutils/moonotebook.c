@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooNotebook: (parent GtkNotebook)
+ **/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooEditAction: (parent MooAction)
+ **/
+
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditaction.h"
 #include "mooedit/mooeditaction-factory.h"

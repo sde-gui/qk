@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooEditBookmark: (parent MooLineMark)
+ **/
+
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditbookmark.h"
 #include "mooedit/mooedit-private.h"

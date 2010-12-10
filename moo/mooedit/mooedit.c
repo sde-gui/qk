@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooEdit: (parent MooTextView)
+ **/
+
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mooedit-private.h"
@@ -975,15 +979,18 @@ config_changed (MooEdit        *edit,
 
 
 /**
- * moo_edit_get_lang:
+ * moo_edit_get_lang_id:
  *
- * Returns: language currently used in the document
+ * Returns: id of language currently used in the document. If no language
+ * is used, then string "none" is returned.
  */
-MooLang *
-moo_edit_get_lang (MooEdit *doc)
+const char *
+moo_edit_get_lang_id (MooEdit *doc)
 {
-    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
-    return moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
+    MooLang *lang;
+    g_return_val_if_fail (MOO_IS_EDIT (doc), _moo_lang_id (NULL));
+    lang = moo_text_view_get_lang (MOO_TEXT_VIEW (doc));
+    return _moo_lang_id (lang);
 }
 
 static void

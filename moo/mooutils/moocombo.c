@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooCombo: (parent GtkTable)
+ **/
+
 #include "marshals.h"
 #include "mooutils/moocombo.h"
 #include "mooutils/mooentry.h"

@@ -27,10 +27,6 @@ G_BEGIN_DECLS
 
 #define MOO_TYPE_EDIT_FILE_INFO             (moo_edit_file_info_get_type ())
 
-/**
- * class:MooEdit: (parent GObject)
- **/
-
 #define MOO_TYPE_EDIT                       (moo_edit_get_type ())
 #define MOO_EDIT(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT, MooEdit))
 #define MOO_EDIT_CLASS(klass)               (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EDIT, MooEditClass))
@@ -93,7 +89,7 @@ void             moo_edit_set_encoding          (MooEdit        *edit,
 
 char            *moo_edit_get_utf8_filename     (MooEdit        *edit);
 
-MooLang         *moo_edit_get_lang              (MooEdit        *edit);
+const char      *moo_edit_get_lang_id           (MooEdit        *edit);
 
 MooEditor       *moo_edit_get_editor            (MooEdit        *doc);
 

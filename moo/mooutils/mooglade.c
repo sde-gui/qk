@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooGladeXml: (parent GObject)
+ **/
+
 #ifdef GTK_DISABLE_DEPRECATED
 #undef GTK_DISABLE_DEPRECATED
 #include <gtk/gtkcombo.h>

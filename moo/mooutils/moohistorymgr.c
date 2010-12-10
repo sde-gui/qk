@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooHistoryMgr: (parent GObject)
+ **/
+
 #include "mooutils/moohistorymgr.h"
 #include "mooutils/moofileicon.h"
 #include "mooutils/mooapp-ipc.h"

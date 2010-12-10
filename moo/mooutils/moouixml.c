@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooUiXml: (parent GObject)
+ **/
+
 #include "mooutils/mooaction-private.h"
 #include "mooutils/moouixml.h"
 #include "marshals.h"

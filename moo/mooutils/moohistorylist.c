@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooHistoryList: (parent GObject)
+ **/
+
 #include "marshals.h"
 #include "mooutils/moohistorylist.h"
 #include "mooutils/mooprefs.h"

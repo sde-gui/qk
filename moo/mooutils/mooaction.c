@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooAction: (parent GtkAction)
+ **/
+
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooactionbase-private.h"
 #include "mooutils/mooutils-gobject.h"

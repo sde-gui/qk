@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooTextBuffer: (parent GtkTextBuffer)
+ **/
+
 #define MOOEDIT_COMPILATION
 #include "mooedit/mootextiter.h"
 #include "mooedit/mootext-private.h"

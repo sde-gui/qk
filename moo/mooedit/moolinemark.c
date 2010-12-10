@@ -14,6 +14,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooLineMark: (parent GObject)
+ **/
+
 #define MOOEDIT_COMPILATION
 #include "mooedit/mootext-private.h"
 #include "mooedit/mootextbuffer.h"

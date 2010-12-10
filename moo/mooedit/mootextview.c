@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooTextView: (parent GtkTextView)
+ **/
+
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-accels.h"
 #include "mooedit/mootextview-private.h"

@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooEntry: (parent GtkEntry)
+ **/
+
 #include "marshals.h"
 #include "mooutils/mooaccel.h"
 #include "mooutils/mooentry.h"

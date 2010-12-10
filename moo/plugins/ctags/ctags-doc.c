@@ -370,8 +370,7 @@ moo_ctags_doc_plugin_update (MooCtagsDocPlugin *plugin)
     if (filename)
     {
         GSList *list = NULL;
-        MooLang *lang = moo_edit_get_lang (doc);
-        MooCtagsLanguage *ctags_lang = _moo_ctags_language_find_for_name (_moo_lang_id (lang));
+        MooCtagsLanguage *ctags_lang = _moo_ctags_language_find_for_name (moo_edit_get_lang_id (doc));
 
         if (ctags_lang && (list = moo_ctags_parse_file (filename, ctags_lang->opts)))
             process_entries (plugin, list, ctags_lang);

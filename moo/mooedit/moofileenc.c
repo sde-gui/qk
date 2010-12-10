@@ -1,5 +1,11 @@
+/**
+ * boxed:MooFileEnc:
+ **/
+
 #include "config.h"
 #include "moofileenc.h"
+
+MOO_DEFINE_BOXED_TYPE_C (MooFileEnc, moo_file_enc)
 
 MOO_DEFINE_PTR_ARRAY (MooFileEncArray, moo_file_enc_array, MooFileEnc,
                       moo_file_enc_copy, moo_file_enc_free)

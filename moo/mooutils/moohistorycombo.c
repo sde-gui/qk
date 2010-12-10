@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooHistoryCombo: (parent MooCombo)
+ **/
+
 #include "marshals.h"
 #include "mooutils/moohistorycombo.h"
 #include "mooutils/mooutils-misc.h"

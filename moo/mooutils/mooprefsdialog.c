@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooPrefsDialog: (parent GtkDialog)
+ **/
+
 #include "config.h"
 #include "marshals.h"
 #include "mooutils/mooprefsdialog.h"

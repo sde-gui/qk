@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooMenuMgr: (parent GObject)
+ **/
+
 #include "mooutils/moomenumgr.h"
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"

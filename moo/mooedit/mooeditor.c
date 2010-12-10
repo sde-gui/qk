@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooEditor: (parent GObject)
+ **/
+
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditor-private.h"
 #include "mooedit/mooeditwindow-impl.h"

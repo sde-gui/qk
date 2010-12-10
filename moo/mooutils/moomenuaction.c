@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooMenuAction: (parent MooAction)
+ **/
+
 #include "mooutils/moomenuaction.h"
 #include "mooutils/mooaction-private.h"
 #include "marshals.h"

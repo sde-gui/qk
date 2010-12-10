@@ -6,10 +6,14 @@
 
 G_BEGIN_DECLS
 
+#define MOO_TYPE_FILE_ENC (moo_file_enc_get_type ())
+
 struct _MooFileEnc {
     GFile *file;
     char *encoding;
 };
+
+GType        moo_file_enc_get_type      (void) G_GNUC_CONST;
 
 MooFileEnc  *moo_file_enc_new           (GFile      *file,
                                          const char *encoding);

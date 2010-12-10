@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooWindow: (parent GtkWindow)
+ **/
+
 #include "mooutils/moowindow.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooactionbase-private.h"

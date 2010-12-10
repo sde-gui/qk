@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooPrefsPage: (parent GtkVBox)
+ **/
+
 #include "mooutils/mooprefspage.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooprefs.h"

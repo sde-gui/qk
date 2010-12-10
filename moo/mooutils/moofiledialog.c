@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooFileDialog: (parent GObject)
+ **/
+
 #include "config.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooprefs.h"

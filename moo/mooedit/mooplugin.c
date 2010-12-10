@@ -13,6 +13,18 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooPlugin: (parent GObject)
+ **/
+
+/**
+ * class:MooWinPlugin: (parent GObject)
+ **/
+
+/**
+ * class:MooDocPlugin: (parent GObject)
+ **/
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif

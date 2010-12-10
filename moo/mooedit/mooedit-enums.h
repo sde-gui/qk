@@ -54,6 +54,9 @@ typedef enum {
 GType moo_edit_state_get_type (void) G_GNUC_CONST;
 #define MOO_TYPE_EDIT_STATE (moo_edit_state_get_type())
 
+/**
+ * enum:MooLineEndType:
+ **/
 typedef enum {
     MOO_LE_NONE,
     MOO_LE_UNIX,
@@ -65,6 +68,9 @@ typedef enum {
 GType moo_line_end_type_get_type (void) G_GNUC_CONST;
 #define MOO_TYPE_LINE_END_TYPE (moo_line_end_type_get_type())
 
+/**
+ * flags:MooTextSearchFlags:
+ **/
 typedef enum {
     MOO_TEXT_SEARCH_CASELESS = 1 << 0,
     MOO_TEXT_SEARCH_REGEX = 1 << 1,
@@ -75,6 +81,9 @@ typedef enum {
 GType moo_text_search_flags_get_type (void) G_GNUC_CONST;
 #define MOO_TYPE_TEXT_SEARCH_FLAGS (moo_text_search_flags_get_type())
 
+/**
+ * flags:MooFindFlags:
+ **/
 typedef enum {
     MOO_FIND_REGEX = 1 << 0,
     MOO_FIND_CASELESS = 1 << 1,
@@ -89,6 +98,9 @@ typedef enum {
 GType moo_find_flags_get_type (void) G_GNUC_CONST;
 #define MOO_TYPE_FIND_FLAGS (moo_find_flags_get_type())
 
+/**
+ * flags:MooEditStatus:
+ **/
 typedef enum {
     MOO_EDIT_STATUS_NORMAL = 0,
     MOO_EDIT_MODIFIED_ON_DISK = 1 << 0,
