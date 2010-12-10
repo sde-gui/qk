@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooMenuMgr: (parent GObject)
+ * class:MooMenuMgr: (parent GObject) (constructable)
  **/
 
 #include "mooutils/moomenumgr.h"

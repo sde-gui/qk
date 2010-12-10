@@ -893,6 +893,12 @@ moo_prefs_save (const char  *file_rc,
 /* Helpers
  */
 
+/**
+ * moo_prefs_new_key_bool:
+ *
+ * @key:
+ * @default_val: (default FALSE):
+ */
 void
 moo_prefs_new_key_bool (const char *key,
                         gboolean    default_val)
@@ -909,6 +915,12 @@ moo_prefs_new_key_bool (const char *key,
 }
 
 
+/**
+ * moo_prefs_new_key_int:
+ *
+ * @key:
+ * @default_val: (default 0):
+ */
 void
 moo_prefs_new_key_int (const char *key,
                        int         default_val)
@@ -949,6 +961,9 @@ moo_prefs_new_key_string (const char *key,
 }
 
 
+/**
+ * moo_prefs_get_string:
+ */
 const char *
 moo_prefs_get_string (const char *key)
 {
@@ -961,6 +976,9 @@ moo_prefs_get_string (const char *key)
 }
 
 
+/**
+ * moo_prefs_get_filename:
+ */
 const char *
 moo_prefs_get_filename (const char *key)
 {
@@ -987,6 +1005,11 @@ moo_prefs_get_filename (const char *key)
     return val;
 }
 
+/**
+ * moo_prefs_get_file:
+ *
+ * Returns: (transfer full):
+ */
 GFile *
 moo_prefs_get_file (const char *key)
 {
@@ -995,6 +1018,9 @@ moo_prefs_get_file (const char *key)
 }
 
 
+/**
+ * moo_prefs_get_bool:
+ */
 gboolean
 moo_prefs_get_bool (const char *key)
 {
@@ -1011,6 +1037,9 @@ moo_prefs_get_bool (const char *key)
 }
 
 
+/**
+ * moo_prefs_get_int:
+ */
 int
 moo_prefs_get_int (const char *key)
 {
@@ -1027,6 +1056,12 @@ moo_prefs_get_int (const char *key)
 }
 
 
+/**
+ * moo_prefs_set_string:
+ *
+ * @key:
+ * @val: (allow-none)
+ */
 void
 moo_prefs_set_string (const char     *key,
                       const char     *val)
@@ -1043,6 +1078,12 @@ moo_prefs_set_string (const char     *key,
 }
 
 
+/**
+ * moo_prefs_set_filename:
+ *
+ * @key:
+ * @val: (allow-none)
+ */
 void
 moo_prefs_set_filename (const char     *key,
                         const char     *val)
@@ -1069,6 +1110,12 @@ moo_prefs_set_filename (const char     *key,
     g_free (utf8_val);
 }
 
+/**
+ * moo_prefs_set_file:
+ *
+ * @key:
+ * @val: (allow-none)
+ */
 void
 moo_prefs_set_file (const char *key,
                     GFile      *val)
@@ -1089,6 +1136,9 @@ moo_prefs_set_file (const char *key,
 }
 
 
+/**
+ * moo_prefs_set_int:
+ */
 void
 moo_prefs_set_int (const char *key,
                    int         val)
@@ -1104,6 +1154,9 @@ moo_prefs_set_int (const char *key,
 }
 
 
+/**
+ * moo_prefs_set_bool:
+ */
 void
 moo_prefs_set_bool (const char *key,
                     gboolean    val)

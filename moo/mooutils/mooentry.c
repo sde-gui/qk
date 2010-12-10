@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooEntry: (parent GtkEntry)
+ * class:MooEntry: (parent GtkEntry) (constructable)
  **/
 
 #include "marshals.h"

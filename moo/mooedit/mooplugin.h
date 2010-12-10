@@ -294,6 +294,11 @@ void        moo_plugin_method_new_valist(const char     *name,
                                          guint           n_params,
                                          va_list         args);
 
+MooEditWindow *moo_win_plugin_get_window    (MooWinPlugin *wplugin);
+MooPlugin     *moo_win_plugin_get_plugin    (MooWinPlugin *wplugin);
+MooEditWindow *moo_doc_plugin_get_window    (MooDocPlugin *dplugin);
+MooEdit       *moo_doc_plugin_get_doc       (MooDocPlugin *dplugin);
+MooPlugin     *moo_doc_plugin_get_plugin    (MooDocPlugin *dplugin);
 
 G_END_DECLS
 

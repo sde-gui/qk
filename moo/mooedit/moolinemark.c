@@ -15,7 +15,7 @@
  */
 
 /**
- * class:MooLineMark: (parent GObject)
+ * class:MooLineMark: (parent GObject) (constructable)
  **/
 
 #define MOOEDIT_COMPILATION

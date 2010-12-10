@@ -1,0 +1,348 @@
+<module name="Moo">
+  <class gtype_id="MOO_TYPE_EDITOR" name="MooEditor" parent="GObject" short_name="Editor">
+    <method c_name="moo_editor_get_ui_xml" name="get_ui_xml">
+      <retval type="MooUiXml*" />
+    </method>
+  </class>
+  <class gtype_id="MOO_TYPE_EDIT_WINDOW" name="MooEditWindow" parent="MooWindow" short_name="EditWindow">
+    <method c_name="moo_edit_window_add_pane" name="add_pane">
+      <param name="user_id" type="const-char*" />
+      <param name="widget" type="GtkWidget*" />
+      <param name="label" type="MooPaneLabel*" />
+      <param name="position" type="MooPanePosition" />
+      <retval type="MooPane*" />
+    </method>
+    <method c_name="moo_edit_window_remove_pane" name="remove_pane">
+      <param name="user_id" type="const-char*" />
+      <retval type="gboolean" />
+    </method>
+    <method c_name="moo_edit_window_get_pane" name="get_pane">
+      <param name="user_id" type="const-char*" />
+      <retval type="GtkWidget*" />
+    </method>
+  </class>
+  <class constructable="1" gtype_id="MOO_TYPE_TEXT_VIEW" name="MooTextView" parent="GtkTextView" short_name="TextView" />
+  <class gtype_id="MOO_TYPE_EDIT_BOOKMARK" name="MooEditBookmark" parent="MooLineMark" short_name="EditBookmark" />
+  <class gtype_id="MOO_TYPE_TEXT_BUFFER" name="MooTextBuffer" parent="GtkTextBuffer" short_name="TextBuffer" />
+  <class gtype_id="MOO_TYPE_PLUGIN" name="MooPlugin" parent="GObject" short_name="Plugin">
+    <virtual name="init">
+      <retval type="gboolean" />
+    </virtual>
+    <virtual name="deinit" />
+    <virtual name="attach_win">
+      <param name="window" type="MooEditWindow*" />
+    </virtual>
+    <virtual name="detach_win">
+      <param name="window" type="MooEditWindow*" />
+    </virtual>
+    <virtual name="attach_doc">
+      <param name="doc" type="MooEdit*" />
+      <param name="window" type="MooEditWindow*" />
+    </virtual>
+    <virtual name="detach_doc">
+      <param name="doc" type="MooEdit*" />
+      <param name="window" type="MooEditWindow*" />
+    </virtual>
+    <virtual name="create_prefs_page">
+      <retval type="GtkWidget*" />
+    </virtual>
+    <method c_name="moo_plugin_set_info" name="set_info">
+      <param name="info" type="MooPluginInfo*" />
+    </method>
+    <method c_name="moo_plugin_set_doc_plugin_type" name="set_doc_plugin_type">
+      <param name="type" type="GType" />
+    </method>
+    <method c_name="moo_plugin_set_win_plugin_type" name="set_win_plugin_type">
+      <param name="type" type="GType" />
+    </method>
+  </class>
+  <class gtype_id="MOO_TYPE_WIN_PLUGIN" name="MooWinPlugin" parent="GObject" short_name="WinPlugin">
+    <virtual name="create">
+      <retval type="gboolean" />
+    </virtual>
+    <virtual name="destroy" />
+    <method c_name="moo_win_plugin_get_window" name="get_window">
+      <retval type="MooEditWindow*" />
+    </method>
+    <method c_name="moo_win_plugin_get_plugin" name="get_plugin">
+      <retval type="MooPlugin*" />
+    </method>
+  </class>
+  <class gtype_id="MOO_TYPE_DOC_PLUGIN" name="MooDocPlugin" parent="GObject" short_name="DocPlugin">
+    <virtual name="create">
+      <retval type="gboolean" />
+    </virtual>
+    <virtual name="destroy" />
+    <method c_name="moo_doc_plugin_get_window" name="get_window">
+      <retval type="MooEditWindow*" />
+    </method>
+    <method c_name="moo_doc_plugin_get_doc" name="get_doc">
+      <retval type="MooEdit*" />
+    </method>
+    <method c_name="moo_doc_plugin_get_plugin" name="get_plugin">
+      <retval type="MooPlugin*" />
+    </method>
+  </class>
+  <class gtype_id="MOO_TYPE_EDIT" name="MooEdit" parent="MooTextView" short_name="Edit">
+    <method c_name="moo_edit_is_empty" name="is_empty">
+      <retval type="gboolean" />
+      <doc>This function returns whether the document is "empty", i.e. is not modified, is untitled, and contains no text.</doc>
+    </method>
+    <method c_name="moo_edit_get_lang_id" name="get_lang_id">
+      <retval type="const-char*">
+        <doc> id of language currently used in the document. If no language is used, then string "none" is returned.</doc>
+      </retval>
+    </method>
+    <method c_name="moo_edit_reload" name="reload">
+      <param allow_none="1" default_value="NULL" name="encoding" type="const-char*">
+        <doc>encoding to use. If %NULL, current document encoding will be used.</doc>
+      </param>
+      <param allow_none="1" name="error" type="GError**">
+        <doc>location for returned error or %NULL</doc>
+      </param>
+      <retval type="gboolean">
+        <doc> whether document was successfully reloaded</doc>
+      </retval>
+      <doc>Reload document from disk </doc>
+    </method>
+    <method c_name="moo_edit_close" name="close">
+      <param default_value="TRUE" name="ask_confirm" type="gboolean">
+        <doc>whether user should be asked if he wants to save changes before cloing if the document is modified.</doc>
+      </param>
+      <retval type="gboolean">
+        <doc> whether document was closed</doc>
+      </retval>
+    </method>
+  </class>
+  <class gtype_id="MOO_TYPE_EDIT_ACTION" name="MooEditAction" parent="MooAction" short_name="EditAction">
+    <virtual name="check_state" />
+    <virtual name="check_visible">
+      <retval type="gboolean" />
+    </virtual>
+    <virtual name="check_sensitive">
+      <retval type="gboolean" />
+    </virtual>
+  </class>
+  <class constructable="1" gtype_id="MOO_TYPE_LINE_MARK" name="MooLineMark" parent="GObject" short_name="LineMark" />
+  <class constructable="1" gtype_id="MOO_TYPE_PANED" name="MooPaned" parent="GtkBin" short_name="Paned" />
+  <class gtype_id="MOO_TYPE_MENU_ACTION" name="MooMenuAction" parent="MooAction" short_name="MenuAction" />
+  <class constructable="1" gtype_id="MOO_TYPE_PREFS_PAGE" name="MooPrefsPage" parent="GtkVBox" short_name="PrefsPage">
+    <virtual name="init" />
+    <virtual name="apply" />
+  </class>
+  <class gtype_id="MOO_TYPE_WINDOW" name="MooWindow" parent="GtkWindow" short_name="Window" />
+  <class constructable="1" gtype_id="MOO_TYPE_HISTORY_LIST" name="MooHistoryList" parent="GObject" short_name="HistoryList" />
+  <class constructable="1" gtype_id="MOO_TYPE_BIG_PANED" name="MooBigPaned" parent="GtkFrame" short_name="BigPaned" />
+  <class constructable="1" gtype_id="MOO_TYPE_UI_XML" name="MooUiXml" parent="GObject" short_name="UiXml">
+    <method c_name="moo_ui_xml_new_merge_id" name="new_merge_id">
+      <retval type="guint" />
+    </method>
+  </class>
+  <class constructable="1" gtype_id="MOO_TYPE_ENTRY" name="MooEntry" parent="GtkEntry" short_name="Entry" />
+  <class constructable="1" gtype_id="MOO_TYPE_NOTEBOOK" name="MooNotebook" parent="GtkNotebook" short_name="Notebook" />
+  <class gtype_id="MOO_TYPE_HISTORY_MGR" name="MooHistoryMgr" parent="GObject" short_name="HistoryMgr" />
+  <class constructable="1" gtype_id="MOO_TYPE_FILE_DIALOG" name="MooFileDialog" parent="GObject" short_name="FileDialog" />
+  <class gtype_id="MOO_TYPE_PANE" name="MooPane" parent="GtkObject" short_name="Pane">
+    <method c_name="moo_pane_set_label" name="set_label">
+      <param name="label" type="MooPaneLabel*" />
+    </method>
+    <method c_name="moo_pane_get_params" name="get_params">
+      <retval type="MooPaneParams*" />
+    </method>
+    <method c_name="moo_pane_get_label" name="get_label">
+      <retval type="MooPaneLabel*" />
+    </method>
+    <method c_name="moo_pane_set_params" name="set_params">
+      <param name="params" type="MooPaneParams*" />
+    </method>
+    <method c_name="moo_pane_set_detachable" name="set_detachable">
+      <param name="detachable" type="gboolean" />
+    </method>
+    <method c_name="moo_pane_set_removable" name="set_removable">
+      <param name="removable" type="gboolean" />
+    </method>
+    <method c_name="moo_pane_get_detachable" name="get_detachable">
+      <retval type="gboolean" />
+    </method>
+    <method c_name="moo_pane_get_removable" name="get_removable">
+      <retval type="gboolean" />
+    </method>
+    <method c_name="moo_pane_set_frame_markup" name="set_frame_markup">
+      <param allow_none="1" name="markup" type="const-char*" />
+    </method>
+    <method c_name="moo_pane_set_frame_text" name="set_frame_text">
+      <param allow_none="1" name="text" type="const-char*" />
+    </method>
+    <method c_name="moo_pane_set_drag_dest" name="set_drag_dest" />
+    <method c_name="moo_pane_unset_drag_dest" name="unset_drag_dest" />
+    <method c_name="moo_pane_get_id" name="get_id">
+      <retval type="const-char*" />
+    </method>
+    <method c_name="moo_pane_get_child" name="get_child">
+      <retval type="GtkWidget*" />
+    </method>
+    <method c_name="moo_pane_open" name="open" />
+    <method c_name="moo_pane_present" name="present" />
+    <method c_name="moo_pane_attach" name="attach" />
+    <method c_name="moo_pane_detach" name="detach" />
+    <method c_name="moo_pane_get_index" name="get_index">
+      <retval type="int" />
+    </method>
+  </class>
+  <class gtype_id="MOO_TYPE_MENU_TOOL_BUTTON" name="MooMenuToolButton" parent="GtkToggleToolButton" short_name="MenuToolButton" />
+  <class constructable="1" gtype_id="MOO_TYPE_MENU_MGR" name="MooMenuMgr" parent="GObject" short_name="MenuMgr" />
+  <class constructable="1" gtype_id="MOO_TYPE_COMBO" name="MooCombo" parent="GtkTable" short_name="Combo" />
+  <class gtype_id="MOO_TYPE_ACTION" name="MooAction" parent="GtkAction" short_name="Action" />
+  <class constructable="1" gtype_id="MOO_TYPE_HISTORY_COMBO" name="MooHistoryCombo" parent="MooCombo" short_name="HistoryCombo" />
+  <class constructable="1" gtype_id="MOO_TYPE_PREFS_DIALOG" name="MooPrefsDialog" parent="GtkDialog" short_name="PrefsDialog">
+    <virtual name="init" />
+    <virtual name="apply" />
+  </class>
+  <class gtype_id="MOO_TYPE_GLADE_XML" name="MooGladeXml" parent="GObject" short_name="GladeXml" />
+  <class gtype_id="MOO_TYPE_COMMAND" name="MooCommand" parent="GObject" short_name="Command">
+    <virtual name="check_sensitive">
+      <param name="doc" type="MooEdit*" />
+      <param name="window" type="MooEditWindow*" />
+      <retval type="gboolean" />
+    </virtual>
+    <virtual name="run">
+      <param name="ctx" type="MooCommandContext*" />
+    </virtual>
+  </class>
+  <class constructable="1" gtype_id="MOO_TYPE_COMMAND_CONTEXT" name="MooCommandContext" parent="GObject" short_name="CommandContext" />
+  <class gtype_id="MOO_TYPE_COMMAND_FACTORY" name="MooCommandFactory" parent="GObject" short_name="CommandFactory">
+    <virtual name="create_command">
+      <param name="data" type="MooCommandData*" />
+      <param name="options" type="const-char*" />
+      <retval type="MooCommand*" />
+    </virtual>
+    <virtual name="create_widget">
+      <retval type="GtkWidget*" />
+    </virtual>
+    <virtual name="load_data">
+      <param name="widget" type="GtkWidget*" />
+      <param name="data" type="MooCommandData*" />
+    </virtual>
+    <virtual name="save_data">
+      <param name="widget" type="GtkWidget*" />
+      <param name="data" type="MooCommandData*" />
+      <retval type="gboolean" />
+    </virtual>
+    <virtual name="data_equal">
+      <param name="data1" type="MooCommandData*" />
+      <param name="data2" type="MooCommandData*" />
+      <retval type="gboolean" />
+    </virtual>
+  </class>
+  <class constructable="1" gtype_id="MOO_TYPE_LINE_VIEW" name="MooLineView" parent="MooTextView" short_name="LineView" />
+  <class constructable="1" gtype_id="MOO_TYPE_CMD_VIEW" name="MooCmdView" parent="MooLineView" short_name="CmdView" />
+  <boxed gtype_id="MOO_TYPE_PLUGIN_INFO" name="MooPluginInfo" short_name="PluginInfo">
+    <constructor c_name="moo_plugin_info_new" name="plugin_info_new">
+      <param name="name" type="const-char*" />
+      <param name="description" type="const-char*" />
+      <param name="author" type="const-char*" />
+      <param name="version" type="const-char*" />
+      <retval type="MooPluginInfo*" />
+    </constructor>
+  </boxed>
+  <boxed gtype_id="MOO_TYPE_PLUGIN_PARAMS" name="MooPluginParams" short_name="PluginParams">
+    <constructor c_name="moo_plugin_params_new" name="plugin_params_new">
+      <param name="enabled" type="gboolean" />
+      <param name="visible" type="gboolean" />
+      <retval type="MooPluginParams*" />
+    </constructor>
+  </boxed>
+  <boxed gtype_id="MOO_TYPE_FILE_ENC" name="MooFileEnc" short_name="FileEnc">
+    <constructor c_name="moo_file_enc_new" name="file_enc_new">
+      <param name="file" type="GFile*" />
+      <param name="encoding" type="const-char*" />
+      <retval type="MooFileEnc*" />
+    </constructor>
+  </boxed>
+  <boxed gtype_id="MOO_TYPE_PANE_LABEL" name="MooPaneLabel" short_name="PaneLabel">
+    <constructor c_name="moo_pane_label_new" name="pane_label_new">
+      <param allow_none="1" default_value="NULL" name="icon_name" type="const-char*" />
+      <param allow_none="1" default_value="NULL" name="icon_pixbuf" type="GdkPixbuf*" />
+      <param allow_none="1" default_value="NULL" name="label_text" type="const-char*" />
+      <param allow_none="1" default_value="NULL" name="window_title" type="const-char*" />
+      <retval type="MooPaneLabel*" />
+    </constructor>
+  </boxed>
+  <boxed gtype_id="MOO_TYPE_COMMAND_DATA" name="MooCommandData" short_name="CommandData" />
+  <enum gtype_id="MOO_TYPE_LINE_END_TYPE" name="MooLineEndType" short_name="LineEndType" />
+  <flags gtype_id="MOO_TYPE_TEXT_SEARCH_FLAGS" name="MooTextSearchFlags" short_name="TextSearchFlags" />
+  <flags gtype_id="MOO_TYPE_FIND_FLAGS" name="MooFindFlags" short_name="FindFlags" />
+  <flags gtype_id="MOO_TYPE_EDIT_STATUS" name="MooEditStatus" short_name="EditStatus" />
+  <enum gtype_id="MOO_TYPE_PANE_POSITION" name="MooPanePosition" short_name="PanePosition" />
+  <function c_name="moo_editor_instance" name="editor_instance">
+    <retval type="MooEditor*" />
+  </function>
+  <function c_name="moo_prefs_new_key_bool" name="prefs_new_key_bool">
+    <param name="key" type="const-char*" />
+    <param default_value="FALSE" name="default_val" type="gboolean" />
+  </function>
+  <function c_name="moo_prefs_new_key_int" name="prefs_new_key_int">
+    <param name="key" type="const-char*" />
+    <param default_value="0" name="default_val" type="int" />
+  </function>
+  <function c_name="moo_prefs_new_key_string" name="prefs_new_key_string">
+    <param name="key" type="const-char*" />
+    <param allow_none="1" default_value="NULL" name="default_val" type="const-char*" />
+  </function>
+  <function c_name="moo_prefs_get_string" name="prefs_get_string">
+    <param name="key" type="const-char*" />
+    <retval type="const-char*" />
+  </function>
+  <function c_name="moo_prefs_get_filename" name="prefs_get_filename">
+    <param name="key" type="const-char*" />
+    <retval type="const-char*" />
+  </function>
+  <function c_name="moo_prefs_get_file" name="prefs_get_file">
+    <param name="key" type="const-char*" />
+    <retval transfer_mode="full" type="GFile*" />
+  </function>
+  <function c_name="moo_prefs_get_bool" name="prefs_get_bool">
+    <param name="key" type="const-char*" />
+    <retval type="gboolean" />
+  </function>
+  <function c_name="moo_prefs_get_int" name="prefs_get_int">
+    <param name="key" type="const-char*" />
+    <retval type="int" />
+  </function>
+  <function c_name="moo_prefs_set_string" name="prefs_set_string">
+    <param name="key" type="const-char*" />
+    <param allow_none="1" name="val" type="const-char*" />
+  </function>
+  <function c_name="moo_prefs_set_filename" name="prefs_set_filename">
+    <param name="key" type="const-char*" />
+    <param allow_none="1" name="val" type="const-char*" />
+  </function>
+  <function c_name="moo_prefs_set_file" name="prefs_set_file">
+    <param name="key" type="const-char*" />
+    <param allow_none="1" name="val" type="GFile*" />
+  </function>
+  <function c_name="moo_prefs_set_int" name="prefs_set_int">
+    <param name="key" type="const-char*" />
+    <param name="val" type="int" />
+  </function>
+  <function c_name="moo_prefs_set_bool" name="prefs_set_bool">
+    <param name="key" type="const-char*" />
+    <param name="val" type="gboolean" />
+  </function>
+  <function c_name="moo_dgettext" name="dgettext">
+    <param name="domain" type="const-char*" />
+    <param name="string" type="const-char*" />
+    <retval type="const-char*" />
+  </function>
+  <function c_name="moo_gettext" name="gettext">
+    <param name="string" type="const-char*" />
+    <retval type="const-char*" />
+  </function>
+  <function c_name="moo_command_factory_register" name="command_factory_register">
+    <param name="name" type="const-char*" />
+    <param name="display_name" type="const-char*" />
+    <param name="factory" type="MooCommandFactory*" />
+    <param allow_none="1" name="keys" type="strv" />
+    <param name="extension" type="const-char*" />
+  </function>
+</module>

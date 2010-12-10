@@ -14,7 +14,11 @@
  */
 
 /**
- * class:MooPaned: (parent GtkBin)
+ * class:MooPaned: (parent GtkBin) (constructable)
+ **/
+
+/**
+ * boxed:MooPaneLabel:
  **/
 
 #ifdef HAVE_CONFIG_H
@@ -3010,6 +3014,9 @@ moo_paned_is_open (MooPaned *paned)
 }
 
 
+/**
+ * enum:MooPanePosition
+ */
 GType
 moo_pane_position_get_type (void)
 {
@@ -3214,6 +3221,14 @@ moo_paned_set_handle_cursor_type (MooPaned     *paned,
 }
 
 
+/**
+ * moo_pane_label_new: (constructor-of MooPaneLabel)
+ *
+ * @icon_name: (allow-none) (default NULL):
+ * @icon_pixbuf: (allow-none) (default NULL):
+ * @label_text: (allow-none) (default NULL):
+ * @window_title: (allow-none) (default NULL):
+ */
 MooPaneLabel *
 moo_pane_label_new (const char     *icon_stock_id,
                     GdkPixbuf      *pixbuf,

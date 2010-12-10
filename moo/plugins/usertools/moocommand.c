@@ -18,7 +18,7 @@
  **/
 
 /**
- * class:MooCommandContext: (parent GObject)
+ * class:MooCommandContext: (parent GObject) (constructable)
  **/
 
 /**

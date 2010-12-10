@@ -547,6 +547,9 @@ get_top_window (MooEditor *editor)
 }
 
 
+/**
+ * moo_editor_get_ui_xml:
+ */
 MooUiXml *
 moo_editor_get_ui_xml (MooEditor *editor)
 {

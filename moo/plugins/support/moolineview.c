@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooLineView: (parent MooTextView) (constructable)
+ **/
+
 #include "moolineview.h"
 #include "marshals.h"
 #include "mooutils/mooutils-gobject.h"

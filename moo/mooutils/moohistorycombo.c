@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooHistoryCombo: (parent MooCombo)
+ * class:MooHistoryCombo: (parent MooCombo) (constructable)
  **/
 
 #include "marshals.h"

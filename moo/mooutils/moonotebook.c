@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooNotebook: (parent GtkNotebook)
+ * class:MooNotebook: (parent GtkNotebook) (constructable)
  **/
 
 #ifdef HAVE_CONFIG_H

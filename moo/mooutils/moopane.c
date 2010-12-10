@@ -202,6 +202,9 @@ update_label_widgets (MooPane *pane)
     set_pane_window_icon_and_title (pane);
 }
 
+/**
+ * moo_pane_set_label:
+ **/
 void
 moo_pane_set_label (MooPane      *pane,
                     MooPaneLabel *label)
@@ -221,6 +224,9 @@ moo_pane_set_label (MooPane      *pane,
 }
 
 
+/**
+ * moo_pane_get_params:
+ **/
 MooPaneParams *
 moo_pane_get_params (MooPane *pane)
 {
@@ -228,6 +234,9 @@ moo_pane_get_params (MooPane *pane)
     return moo_pane_params_copy (pane->params);
 }
 
+/**
+ * moo_pane_get_label:
+ **/
 MooPaneLabel *
 moo_pane_get_label (MooPane *pane)
 {
@@ -236,6 +245,9 @@ moo_pane_get_label (MooPane *pane)
 }
 
 
+/**
+ * moo_pane_set_params:
+ **/
 void
 moo_pane_set_params (MooPane       *pane,
                      MooPaneParams *params)
@@ -264,6 +276,9 @@ moo_pane_set_params (MooPane       *pane,
 }
 
 
+/**
+ * moo_pane_set_detachable:
+ **/
 void
 moo_pane_set_detachable (MooPane  *pane,
                          gboolean  detachable)
@@ -285,6 +300,9 @@ moo_pane_set_detachable (MooPane  *pane,
 }
 
 
+/**
+ * moo_pane_set_removable:
+ **/
 void
 moo_pane_set_removable (MooPane  *pane,
                         gboolean  removable)
@@ -303,6 +321,9 @@ moo_pane_set_removable (MooPane  *pane,
 }
 
 
+/**
+ * moo_pane_get_detachable:
+ **/
 gboolean
 moo_pane_get_detachable (MooPane *pane)
 {
@@ -310,6 +331,9 @@ moo_pane_get_detachable (MooPane *pane)
     return pane->detachable;
 }
 
+/**
+ * moo_pane_get_removable:
+ **/
 gboolean
 moo_pane_get_removable (MooPane *pane)
 {
@@ -543,6 +567,12 @@ update_sticky_button (MooPane *pane)
 }
 
 
+/**
+ * moo_pane_set_frame_markup:
+ *
+ * @pane:
+ * @markup: (allow-none):
+ **/
 void
 moo_pane_set_frame_markup (MooPane    *pane,
                            const char *text)
@@ -568,6 +598,12 @@ moo_pane_set_frame_markup (MooPane    *pane,
         gtk_label_set_markup (GTK_LABEL (pane->frame_label_window), text);
 }
 
+/**
+ * moo_pane_set_frame_text:
+ *
+ * @pane:
+ * @text: (allow-none):
+ **/
 void
 moo_pane_set_frame_text (MooPane    *pane,
                          const char *text)
@@ -928,6 +964,9 @@ setup_button_dnd (MooPane *pane)
                       G_CALLBACK (button_drag_leave), pane);
 }
 
+/**
+ * moo_pane_set_drag_dest:
+ **/
 void
 moo_pane_set_drag_dest (MooPane *pane)
 {
@@ -941,6 +980,9 @@ moo_pane_set_drag_dest (MooPane *pane)
         setup_button_dnd (pane);
 }
 
+/**
+ * moo_pane_unset_drag_dest:
+ **/
 void
 moo_pane_unset_drag_dest (MooPane *pane)
 {
@@ -1026,6 +1068,9 @@ _moo_pane_new (GtkWidget    *child,
     return pane;
 }
 
+/**
+ * moo_pane_get_id:
+ **/
 const char *
 moo_pane_get_id (MooPane *pane)
 {
@@ -1137,6 +1182,9 @@ _moo_pane_get_window (MooPane *pane)
     return pane->window;
 }
 
+/**
+ * moo_pane_get_child:
+ **/
 GtkWidget *
 moo_pane_get_child (MooPane *pane)
 {
@@ -1470,6 +1518,9 @@ _moo_pane_try_remove (MooPane *pane)
 }
 
 
+/**
+ * moo_pane_open:
+ **/
 void
 moo_pane_open (MooPane *pane)
 {
@@ -1478,6 +1529,9 @@ moo_pane_open (MooPane *pane)
     moo_paned_open_pane (pane->parent, pane);
 }
 
+/**
+ * moo_pane_present:
+ **/
 void
 moo_pane_present (MooPane *pane)
 {
@@ -1486,6 +1540,9 @@ moo_pane_present (MooPane *pane)
     moo_paned_present_pane (pane->parent, pane);
 }
 
+/**
+ * moo_pane_attach:
+ **/
 void
 moo_pane_attach (MooPane *pane)
 {
@@ -1494,6 +1551,9 @@ moo_pane_attach (MooPane *pane)
     moo_paned_attach_pane (pane->parent, pane);
 }
 
+/**
+ * moo_pane_detach:
+ **/
 void
 moo_pane_detach (MooPane *pane)
 {
@@ -1503,6 +1563,9 @@ moo_pane_detach (MooPane *pane)
 }
 
 
+/**
+ * moo_pane_get_index:
+ **/
 int
 moo_pane_get_index (MooPane *pane)
 {

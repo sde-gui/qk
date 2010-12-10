@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooUiXml: (parent GObject)
+ * class:MooUiXml: (parent GObject) (constructable)
  **/
 
 #include "mooutils/mooaction-private.h"
@@ -844,6 +844,9 @@ xml_add_markup (MooUiXml       *xml,
 }
 
 
+/**
+ * moo_ui_xml_new_merge_id:
+ */
 guint
 moo_ui_xml_new_merge_id (MooUiXml *xml)
 {

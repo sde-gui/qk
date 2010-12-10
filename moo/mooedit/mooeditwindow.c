@@ -2885,6 +2885,9 @@ moo_edit_window_add_pane_full (MooEditWindow  *window,
     return pane;
 }
 
+/**
+ * moo_edit_window_add_pane:
+ */
 MooPane *
 moo_edit_window_add_pane (MooEditWindow  *window,
                           const char     *user_id,
@@ -2897,6 +2900,9 @@ moo_edit_window_add_pane (MooEditWindow  *window,
 }
 
 
+/**
+ * moo_edit_window_remove_pane:
+ */
 gboolean
 moo_edit_window_remove_pane (MooEditWindow *window,
                              const char    *user_id)
@@ -2916,6 +2922,9 @@ moo_edit_window_remove_pane (MooEditWindow *window,
 }
 
 
+/**
+ * moo_edit_window_get_pane:
+ */
 GtkWidget*
 moo_edit_window_get_pane (MooEditWindow  *window,
                           const char     *user_id)

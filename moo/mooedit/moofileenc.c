@@ -10,6 +10,9 @@ MOO_DEFINE_BOXED_TYPE_C (MooFileEnc, moo_file_enc)
 MOO_DEFINE_PTR_ARRAY (MooFileEncArray, moo_file_enc_array, MooFileEnc,
                       moo_file_enc_copy, moo_file_enc_free)
 
+/**
+ * moo_file_enc_new: (constructor-of MooFileEnc)
+ **/
 MooFileEnc *
 moo_file_enc_new (GFile      *file,
                   const char *encoding)

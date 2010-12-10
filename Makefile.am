@@ -1,6 +1,10 @@
 ACLOCAL_AMFLAGS = -I m4 $(ACLOCAL_FLAGS)
 
-SUBDIRS = po po-gsv doc moo
+if MOO_ENABLE_MDP
+mdp_api_dir = api
+endif
+
+SUBDIRS = po po-gsv $(mdp_api_dir) doc moo
 
 unix_scripts =				\
 	plat/unix/xdg-open		\

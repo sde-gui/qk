@@ -827,6 +827,12 @@
   (return-type "none")
 )
 
+(define-method get_window
+  (of-object "MooWinPlugin")
+  (c-name "moo_win_plugin_get_window")
+  (return-type "MooEditWindow*")
+)
+
 
 ;; MooDocPlugin
 
@@ -2541,15 +2547,15 @@
 )
 
 
-(define-function _edit_class_add_action
-  (c-name "moo_edit_class_add_action")
-  (return-type "none")
-)
-
-(define-function edit_class_remove_action
-  (c-name "moo_edit_class_remove_action")
-  (return-type "none")
-  (parameters
-    '("const-char*" "id")
-  )
-)
+; (define-function _edit_class_add_action
+;   (c-name "moo_edit_class_add_action")
+;   (return-type "none")
+; )
+;
+; (define-function edit_class_remove_action
+;   (c-name "moo_edit_class_remove_action")
+;   (return-type "none")
+;   (parameters
+;     '("const-char*" "id")
+;   )
+; )

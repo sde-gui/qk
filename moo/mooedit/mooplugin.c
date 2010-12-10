@@ -25,6 +25,14 @@
  * class:MooDocPlugin: (parent GObject)
  **/
 
+/**
+ * boxed:MooPluginInfo:
+ **/
+
+/**
+ * boxed:MooPluginParams:
+ **/
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -642,6 +650,57 @@ moo_doc_plugin_lookup (const char     *plugin_id,
 }
 
 
+/**
+ * moo_win_plugin_get_window:
+ **/
+MooEditWindow *
+moo_win_plugin_get_window (MooWinPlugin *wplugin)
+{
+    moo_return_val_if_fail (MOO_IS_WIN_PLUGIN (wplugin), NULL);
+    return wplugin->window;
+}
+
+/**
+ * moo_win_plugin_get_plugin:
+ **/
+MooPlugin *
+moo_win_plugin_get_plugin (MooWinPlugin *wplugin)
+{
+    moo_return_val_if_fail (MOO_IS_WIN_PLUGIN (wplugin), NULL);
+    return wplugin->plugin;
+}
+
+/**
+ * moo_doc_plugin_get_window:
+ **/
+MooEditWindow *
+moo_doc_plugin_get_window (MooDocPlugin *dplugin)
+{
+    moo_return_val_if_fail (MOO_IS_DOC_PLUGIN (dplugin), NULL);
+    return dplugin->window;
+}
+
+/**
+ * moo_doc_plugin_get_doc:
+ **/
+MooEdit *
+moo_doc_plugin_get_doc (MooDocPlugin *dplugin)
+{
+    moo_return_val_if_fail (MOO_IS_DOC_PLUGIN (dplugin), NULL);
+    return dplugin->doc;
+}
+
+/**
+ * moo_doc_plugin_get_plugin:
+ **/
+MooPlugin *
+moo_doc_plugin_get_plugin (MooDocPlugin *dplugin)
+{
+    moo_return_val_if_fail (MOO_IS_DOC_PLUGIN (dplugin), NULL);
+    return dplugin->plugin;
+}
+
+
 static gboolean
 plugin_info_check (const MooPluginInfo *info)
 {
@@ -1002,6 +1061,9 @@ moo_plugin_visible (MooPlugin *plugin)
 }
 
 
+/**
+ * moo_plugin_set_info:
+ */
 void
 moo_plugin_set_info (MooPlugin     *plugin,
                      MooPluginInfo *info)
@@ -1016,6 +1078,9 @@ moo_plugin_set_info (MooPlugin     *plugin,
 }
 
 
+/**
+ * moo_plugin_set_doc_plugin_type:
+ */
 void
 moo_plugin_set_doc_plugin_type (MooPlugin   *plugin,
                                 GType        type)
@@ -1026,6 +1091,9 @@ moo_plugin_set_doc_plugin_type (MooPlugin   *plugin,
 }
 
 
+/**
+ * moo_plugin_set_win_plugin_type:
+ */
 void
 moo_plugin_set_win_plugin_type (MooPlugin *plugin,
                                 GType      type)
@@ -1036,6 +1104,9 @@ moo_plugin_set_win_plugin_type (MooPlugin *plugin,
 }
 
 
+/**
+ * moo_plugin_info_new: (constructor-of MooPluginInfo)
+ */
 MooPluginInfo *
 moo_plugin_info_new (const char     *name,
                      const char     *description,
@@ -1079,6 +1150,9 @@ moo_plugin_info_free (MooPluginInfo *info)
 }
 
 
+/**
+ * moo_plugin_params_new: (constructor-of MooPluginParams)
+ */
 MooPluginParams *
 moo_plugin_params_new (gboolean enabled,
                        gboolean visible)

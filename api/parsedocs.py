@@ -1,0 +1,48 @@
+#! /usr/bin/env python
+
+import os
+import re
+import sys
+import optparse
+import fnmatch
+
+from mdp.docparser import Parser
+from mdp.module import Module
+import mdp.xmlwriter
+
+def read_files(files):
+    p = Parser()
+    p.read_files(files)
+    mod = Module('Moo')
+    mod.init_from_dox(p.classes + p.enums + p.functions + p.vmethods)
+    return mod
+
+def parse_args():
+    op = optparse.OptionParser()
+    op.add_option("--source-dir", dest="source_dirs", action="append",
+                  help="parse source files from DIR", metavar="DIR")
+    op.add_option("--skip", dest="skip_globs", action="append",
+                  help="skip files which match pattern PAT", metavar="PAT")
+    op.add_option("--output", dest="output", action="store",
+                  help="write result to FILE", metavar="FILE")
+    (opts, args) = op.parse_args()
+    if args:
+        op.error("too many arguments")
+    source_files = []
+    skip_pat = None
+    if opts.skip_globs:
+        skip_pat = re.compile('|'.join([fnmatch.translate(g) for g in opts.skip_globs]))
+    for source_dir in opts.source_dirs:
+        for root, dirs, files in os.walk(source_dir):
+            for f in files:
+                if f.endswith('.c') or f.endswith('.h'):
+                    if skip_pat is None or not skip_pat.match(f):
+                        source_files.append(os.path.join(root, f))
+    if not source_files:
+        op.error("no input files")
+    return opts, source_files
+
+opts, files = parse_args()
+mod = read_files(files)
+with open(opts.output, 'w') as out:
+    mdp.xmlwriter.write_xml(mod, out)

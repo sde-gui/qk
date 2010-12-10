@@ -737,17 +737,17 @@
   )
 )
 
-(define-method fill_widget
-  (of-object "MooGladeXML")
-  (c-name "moo_glade_xml_fill_widget")
-  (return-type "gboolean")
-  (parameters
-    '("GtkWidget*" "target")
-    '("const-char*" "buffer")
-    '("const-char*" "target_name")
-    '("GError**" "error")
-  )
-)
+; (define-method fill_widget
+;   (of-object "MooGladeXML")
+;   (c-name "moo_glade_xml_fill_widget")
+;   (return-type "gboolean")
+;   (parameters
+;     '("GtkWidget*" "target")
+;     '("const-char*" "buffer")
+;     '("const-char*" "target_name")
+;     '("GError**" "error")
+;   )
+; )
 
 (define-function glade_xml_new_from_file
   (c-name "moo_glade_xml_new")
@@ -1827,11 +1827,11 @@
 
 ;; From moo/mooutils/mooclosure.h
 
-(define-function moo_closure_new
-  (c-name "moo_closure_new")
-  (is-constructor-of "MooClosure")
-  (return-type "MooClosure*")
-)
+; (define-function moo_closure_new
+;   (c-name "moo_closure_new")
+;   (is-constructor-of "MooClosure")
+;   (return-type "MooClosure*")
+; )
 
 (define-method invoke
   (of-object "MooClosure")
@@ -2315,16 +2315,16 @@
   (return-type "strv")
 )
 
-(define-function file_dialog
-  (c-name "moo_file_dialog")
-  (return-type "const-char*")
-  (parameters
-    '("MooFileDialogType" "type")
-    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
-    '("const-char*" "title" (null-ok) (default "NULL"))
-    '("const-char*" "start_dir" (null-ok) (default "NULL"))
-  )
-)
+; (define-function file_dialog
+;   (c-name "moo_file_dialog")
+;   (return-type "const-char*")
+;   (parameters
+;     '("MooFileDialogType" "type")
+;     '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+;     '("const-char*" "title" (null-ok) (default "NULL"))
+;     '("const-char*" "start_dir" (null-ok) (default "NULL"))
+;   )
+; )
 
 (define-function file_dialogp
   (c-name "moo_file_dialogp")

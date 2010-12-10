@@ -42,6 +42,7 @@ headers
 #include "mooutils/moodialogs.h"
 #include "mooutils/moofilewatch.h"
 #include "mooutils/moomenuaction.h"
+#include "mooutils/moomenutoolbutton.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/mooundo.h"
 
@@ -58,6 +59,7 @@ headers
 #include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/moolangmgr.h"
+#include "mooedit/moofileenc.h"
 
 #include "plugins/support/moocmdview.h"
 #include "plugins/support/mooeditwindowoutput.h"
@@ -91,9 +93,11 @@ import gtk.gdk.Pixbuf as PyGdkPixbuf_Type
 import gtk.Action as PyGtkAction_Type
 import gtk.RadioAction as PyGtkRadioAction_Type
 import gtk.ToggleAction as PyGtkToggleAction_Type
+import gtk.ToggleToolButton as PyGtkToggleToolButton_Type
 import gtk.Object as PyGtkObject_Type
 import gtk.Container as PyGtkContainer_Type
 import gtk.AccelGroup as PyGtkAccelGroup_Type
+import gtk.Notebook as PyGtkNotebook_Type
 import gio.File as PyGFile_Type
 %%
 ignore-glob

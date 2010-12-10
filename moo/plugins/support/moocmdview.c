@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooCmdView: (parent MooLineView) (constructable)
+ **/
+
 #include "moocmdview.h"
 #include "mooedit/mooeditwindow.h"
 #include "marshals.h"

@@ -1,0 +1,1112 @@
+; -*- scheme -*-
+
+; classes
+
+(define-object Editor
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooEditor")
+  (gtype-id "MOO_TYPE_EDITOR")
+)
+
+(define-object EditWindow
+  (in-module "Moo")
+  (parent "MooWindow")
+  (c-name "MooEditWindow")
+  (gtype-id "MOO_TYPE_EDIT_WINDOW")
+)
+
+(define-object TextView
+  (in-module "Moo")
+  (parent "GtkTextView")
+  (c-name "MooTextView")
+  (gtype-id "MOO_TYPE_TEXT_VIEW")
+)
+
+(define-object EditBookmark
+  (in-module "Moo")
+  (parent "MooLineMark")
+  (c-name "MooEditBookmark")
+  (gtype-id "MOO_TYPE_EDIT_BOOKMARK")
+)
+
+(define-object TextBuffer
+  (in-module "Moo")
+  (parent "GtkTextBuffer")
+  (c-name "MooTextBuffer")
+  (gtype-id "MOO_TYPE_TEXT_BUFFER")
+)
+
+(define-object Plugin
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooPlugin")
+  (gtype-id "MOO_TYPE_PLUGIN")
+)
+
+(define-object WinPlugin
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooWinPlugin")
+  (gtype-id "MOO_TYPE_WIN_PLUGIN")
+)
+
+(define-object DocPlugin
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooDocPlugin")
+  (gtype-id "MOO_TYPE_DOC_PLUGIN")
+)
+
+(define-object Edit
+  (in-module "Moo")
+  (parent "MooTextView")
+  (c-name "MooEdit")
+  (gtype-id "MOO_TYPE_EDIT")
+)
+
+(define-object EditAction
+  (in-module "Moo")
+  (parent "MooAction")
+  (c-name "MooEditAction")
+  (gtype-id "MOO_TYPE_EDIT_ACTION")
+)
+
+(define-object LineMark
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooLineMark")
+  (gtype-id "MOO_TYPE_LINE_MARK")
+)
+
+(define-object Paned
+  (in-module "Moo")
+  (parent "GtkBin")
+  (c-name "MooPaned")
+  (gtype-id "MOO_TYPE_PANED")
+)
+
+(define-object MenuAction
+  (in-module "Moo")
+  (parent "MooAction")
+  (c-name "MooMenuAction")
+  (gtype-id "MOO_TYPE_MENU_ACTION")
+)
+
+(define-object PrefsPage
+  (in-module "Moo")
+  (parent "GtkVBox")
+  (c-name "MooPrefsPage")
+  (gtype-id "MOO_TYPE_PREFS_PAGE")
+)
+
+(define-object Window
+  (in-module "Moo")
+  (parent "GtkWindow")
+  (c-name "MooWindow")
+  (gtype-id "MOO_TYPE_WINDOW")
+)
+
+(define-object HistoryList
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooHistoryList")
+  (gtype-id "MOO_TYPE_HISTORY_LIST")
+)
+
+(define-object BigPaned
+  (in-module "Moo")
+  (parent "GtkFrame")
+  (c-name "MooBigPaned")
+  (gtype-id "MOO_TYPE_BIG_PANED")
+)
+
+(define-object UiXml
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooUiXml")
+  (gtype-id "MOO_TYPE_UI_XML")
+)
+
+(define-object Entry
+  (in-module "Moo")
+  (parent "GtkEntry")
+  (c-name "MooEntry")
+  (gtype-id "MOO_TYPE_ENTRY")
+)
+
+(define-object Notebook
+  (in-module "Moo")
+  (parent "GtkNotebook")
+  (c-name "MooNotebook")
+  (gtype-id "MOO_TYPE_NOTEBOOK")
+)
+
+(define-object HistoryMgr
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooHistoryMgr")
+  (gtype-id "MOO_TYPE_HISTORY_MGR")
+)
+
+(define-object FileDialog
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooFileDialog")
+  (gtype-id "MOO_TYPE_FILE_DIALOG")
+)
+
+(define-object Pane
+  (in-module "Moo")
+  (parent "GtkObject")
+  (c-name "MooPane")
+  (gtype-id "MOO_TYPE_PANE")
+)
+
+(define-object MenuToolButton
+  (in-module "Moo")
+  (parent "GtkToggleToolButton")
+  (c-name "MooMenuToolButton")
+  (gtype-id "MOO_TYPE_MENU_TOOL_BUTTON")
+)
+
+(define-object MenuMgr
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooMenuMgr")
+  (gtype-id "MOO_TYPE_MENU_MGR")
+)
+
+(define-object Combo
+  (in-module "Moo")
+  (parent "GtkTable")
+  (c-name "MooCombo")
+  (gtype-id "MOO_TYPE_COMBO")
+)
+
+(define-object Action
+  (in-module "Moo")
+  (parent "GtkAction")
+  (c-name "MooAction")
+  (gtype-id "MOO_TYPE_ACTION")
+)
+
+(define-object HistoryCombo
+  (in-module "Moo")
+  (parent "MooCombo")
+  (c-name "MooHistoryCombo")
+  (gtype-id "MOO_TYPE_HISTORY_COMBO")
+)
+
+(define-object PrefsDialog
+  (in-module "Moo")
+  (parent "GtkDialog")
+  (c-name "MooPrefsDialog")
+  (gtype-id "MOO_TYPE_PREFS_DIALOG")
+)
+
+(define-object GladeXml
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooGladeXml")
+  (gtype-id "MOO_TYPE_GLADE_XML")
+)
+
+(define-object Command
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooCommand")
+  (gtype-id "MOO_TYPE_COMMAND")
+)
+
+(define-object CommandContext
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooCommandContext")
+  (gtype-id "MOO_TYPE_COMMAND_CONTEXT")
+)
+
+(define-object CommandFactory
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooCommandFactory")
+  (gtype-id "MOO_TYPE_COMMAND_FACTORY")
+)
+
+(define-object LineView
+  (in-module "Moo")
+  (parent "MooTextView")
+  (c-name "MooLineView")
+  (gtype-id "MOO_TYPE_LINE_VIEW")
+)
+
+(define-object CmdView
+  (in-module "Moo")
+  (parent "MooLineView")
+  (c-name "MooCmdView")
+  (gtype-id "MOO_TYPE_CMD_VIEW")
+)
+
+; boxed types
+
+(define-boxed PluginInfo
+  (in-module "Moo")
+  (c-name "MooPluginInfo")
+  (gtype-id "MOO_TYPE_PLUGIN_INFO")
+)
+
+(define-boxed PluginParams
+  (in-module "Moo")
+  (c-name "MooPluginParams")
+  (gtype-id "MOO_TYPE_PLUGIN_PARAMS")
+)
+
+(define-boxed FileEnc
+  (in-module "Moo")
+  (c-name "MooFileEnc")
+  (gtype-id "MOO_TYPE_FILE_ENC")
+)
+
+(define-boxed PaneLabel
+  (in-module "Moo")
+  (c-name "MooPaneLabel")
+  (gtype-id "MOO_TYPE_PANE_LABEL")
+)
+
+(define-boxed CommandData
+  (in-module "Moo")
+  (c-name "MooCommandData")
+  (gtype-id "MOO_TYPE_COMMAND_DATA")
+)
+
+; enums and flags
+
+(define-enum LineEndType
+  (in-module "Moo")
+  (c-name "MooLineEndType")
+  (gtype-id "MOO_TYPE_LINE_END_TYPE")
+)
+
+(define-flags TextSearchFlags
+  (in-module "Moo")
+  (c-name "MooTextSearchFlags")
+  (gtype-id "MOO_TYPE_TEXT_SEARCH_FLAGS")
+)
+
+(define-flags FindFlags
+  (in-module "Moo")
+  (c-name "MooFindFlags")
+  (gtype-id "MOO_TYPE_FIND_FLAGS")
+)
+
+(define-flags EditStatus
+  (in-module "Moo")
+  (c-name "MooEditStatus")
+  (gtype-id "MOO_TYPE_EDIT_STATUS")
+)
+
+(define-enum PanePosition
+  (in-module "Moo")
+  (c-name "MooPanePosition")
+  (gtype-id "MOO_TYPE_PANE_POSITION")
+)
+
+; methods of MooEditor
+
+(define-method get_ui_xml
+  (of-object "MooEditor")
+  (c-name "moo_editor_get_ui_xml")
+  (return-type "MooUiXml*")
+)
+
+; methods of MooEditWindow
+
+(define-method add_pane
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_add_pane")
+  (return-type "MooPane*")
+  (parameters
+    '("const-char*" "user_id")
+    '("GtkWidget*" "widget")
+    '("MooPaneLabel*" "label")
+    '("MooPanePosition" "position")
+  )
+)
+
+(define-method remove_pane
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_remove_pane")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "user_id")
+  )
+)
+
+(define-method get_pane
+  (of-object "MooEditWindow")
+  (c-name "moo_edit_window_get_pane")
+  (return-type "GtkWidget*")
+  (parameters
+    '("const-char*" "user_id")
+  )
+)
+
+; methods of MooTextView
+
+(define-function MooTextView__new
+  (c-name "MooTextView__new")
+  (return-type "none")
+  (is-constructor-of MooTextView)
+)
+
+; methods of MooEditBookmark
+
+; methods of MooTextBuffer
+
+; methods of MooPlugin
+
+(define-virtual init
+  (of-object "MooPlugin")
+  (return-type "gboolean")
+)
+
+(define-virtual deinit
+  (of-object "MooPlugin")
+  (return-type "none")
+)
+
+(define-virtual attach_win
+  (of-object "MooPlugin")
+  (return-type "none")
+  (parameters
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-virtual detach_win
+  (of-object "MooPlugin")
+  (return-type "none")
+  (parameters
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-virtual attach_doc
+  (of-object "MooPlugin")
+  (return-type "none")
+  (parameters
+    '("MooEdit*" "doc")
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-virtual detach_doc
+  (of-object "MooPlugin")
+  (return-type "none")
+  (parameters
+    '("MooEdit*" "doc")
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-virtual create_prefs_page
+  (of-object "MooPlugin")
+  (return-type "GtkWidget*")
+)
+
+(define-method set_info
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_set_info")
+  (return-type "none")
+  (parameters
+    '("MooPluginInfo*" "info")
+  )
+)
+
+(define-method set_doc_plugin_type
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_set_doc_plugin_type")
+  (return-type "none")
+  (parameters
+    '("GType" "type")
+  )
+)
+
+(define-method set_win_plugin_type
+  (of-object "MooPlugin")
+  (c-name "moo_plugin_set_win_plugin_type")
+  (return-type "none")
+  (parameters
+    '("GType" "type")
+  )
+)
+
+; methods of MooWinPlugin
+
+(define-virtual create
+  (of-object "MooWinPlugin")
+  (return-type "gboolean")
+)
+
+(define-virtual destroy
+  (of-object "MooWinPlugin")
+  (return-type "none")
+)
+
+(define-method get_window
+  (of-object "MooWinPlugin")
+  (c-name "moo_win_plugin_get_window")
+  (return-type "MooEditWindow*")
+)
+
+(define-method get_plugin
+  (of-object "MooWinPlugin")
+  (c-name "moo_win_plugin_get_plugin")
+  (return-type "MooPlugin*")
+)
+
+; methods of MooDocPlugin
+
+(define-virtual create
+  (of-object "MooDocPlugin")
+  (return-type "gboolean")
+)
+
+(define-virtual destroy
+  (of-object "MooDocPlugin")
+  (return-type "none")
+)
+
+(define-method get_window
+  (of-object "MooDocPlugin")
+  (c-name "moo_doc_plugin_get_window")
+  (return-type "MooEditWindow*")
+)
+
+(define-method get_doc
+  (of-object "MooDocPlugin")
+  (c-name "moo_doc_plugin_get_doc")
+  (return-type "MooEdit*")
+)
+
+(define-method get_plugin
+  (of-object "MooDocPlugin")
+  (c-name "moo_doc_plugin_get_plugin")
+  (return-type "MooPlugin*")
+)
+
+; methods of MooEdit
+
+(define-method is_empty
+  (of-object "MooEdit")
+  (c-name "moo_edit_is_empty")
+  (return-type "gboolean")
+)
+
+(define-method get_lang_id
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_lang_id")
+  (return-type "const-char*")
+)
+
+(define-method reload
+  (of-object "MooEdit")
+  (c-name "moo_edit_reload")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
+    '("GError**" "error" (null-ok))
+  )
+)
+
+(define-method close
+  (of-object "MooEdit")
+  (c-name "moo_edit_close")
+  (return-type "gboolean")
+  (parameters
+    '("gboolean" "ask_confirm" (default "TRUE"))
+  )
+)
+
+; methods of MooEditAction
+
+(define-virtual check_state
+  (of-object "MooEditAction")
+  (return-type "none")
+)
+
+(define-virtual check_visible
+  (of-object "MooEditAction")
+  (return-type "gboolean")
+)
+
+(define-virtual check_sensitive
+  (of-object "MooEditAction")
+  (return-type "gboolean")
+)
+
+; methods of MooLineMark
+
+(define-function MooLineMark__new
+  (c-name "MooLineMark__new")
+  (return-type "none")
+  (is-constructor-of MooLineMark)
+)
+
+; methods of MooPaned
+
+(define-function MooPaned__new
+  (c-name "MooPaned__new")
+  (return-type "none")
+  (is-constructor-of MooPaned)
+)
+
+; methods of MooMenuAction
+
+; methods of MooPrefsPage
+
+(define-function MooPrefsPage__new
+  (c-name "MooPrefsPage__new")
+  (return-type "none")
+  (is-constructor-of MooPrefsPage)
+)
+
+(define-virtual init
+  (of-object "MooPrefsPage")
+  (return-type "none")
+)
+
+(define-virtual apply
+  (of-object "MooPrefsPage")
+  (return-type "none")
+)
+
+; methods of MooWindow
+
+; methods of MooHistoryList
+
+(define-function MooHistoryList__new
+  (c-name "MooHistoryList__new")
+  (return-type "none")
+  (is-constructor-of MooHistoryList)
+)
+
+; methods of MooBigPaned
+
+(define-function MooBigPaned__new
+  (c-name "MooBigPaned__new")
+  (return-type "none")
+  (is-constructor-of MooBigPaned)
+)
+
+; methods of MooUiXml
+
+(define-function MooUiXml__new
+  (c-name "MooUiXml__new")
+  (return-type "none")
+  (is-constructor-of MooUiXml)
+)
+
+(define-method new_merge_id
+  (of-object "MooUiXml")
+  (c-name "moo_ui_xml_new_merge_id")
+  (return-type "guint")
+)
+
+; methods of MooEntry
+
+(define-function MooEntry__new
+  (c-name "MooEntry__new")
+  (return-type "none")
+  (is-constructor-of MooEntry)
+)
+
+; methods of MooNotebook
+
+(define-function MooNotebook__new
+  (c-name "MooNotebook__new")
+  (return-type "none")
+  (is-constructor-of MooNotebook)
+)
+
+; methods of MooHistoryMgr
+
+; methods of MooFileDialog
+
+(define-function MooFileDialog__new
+  (c-name "MooFileDialog__new")
+  (return-type "none")
+  (is-constructor-of MooFileDialog)
+)
+
+; methods of MooPane
+
+(define-method set_label
+  (of-object "MooPane")
+  (c-name "moo_pane_set_label")
+  (return-type "none")
+  (parameters
+    '("MooPaneLabel*" "label")
+  )
+)
+
+(define-method get_params
+  (of-object "MooPane")
+  (c-name "moo_pane_get_params")
+  (return-type "MooPaneParams*")
+)
+
+(define-method get_label
+  (of-object "MooPane")
+  (c-name "moo_pane_get_label")
+  (return-type "MooPaneLabel*")
+)
+
+(define-method set_params
+  (of-object "MooPane")
+  (c-name "moo_pane_set_params")
+  (return-type "none")
+  (parameters
+    '("MooPaneParams*" "params")
+  )
+)
+
+(define-method set_detachable
+  (of-object "MooPane")
+  (c-name "moo_pane_set_detachable")
+  (return-type "none")
+  (parameters
+    '("gboolean" "detachable")
+  )
+)
+
+(define-method set_removable
+  (of-object "MooPane")
+  (c-name "moo_pane_set_removable")
+  (return-type "none")
+  (parameters
+    '("gboolean" "removable")
+  )
+)
+
+(define-method get_detachable
+  (of-object "MooPane")
+  (c-name "moo_pane_get_detachable")
+  (return-type "gboolean")
+)
+
+(define-method get_removable
+  (of-object "MooPane")
+  (c-name "moo_pane_get_removable")
+  (return-type "gboolean")
+)
+
+(define-method set_frame_markup
+  (of-object "MooPane")
+  (c-name "moo_pane_set_frame_markup")
+  (return-type "none")
+  (parameters
+    '("const-char*" "markup" (null-ok))
+  )
+)
+
+(define-method set_frame_text
+  (of-object "MooPane")
+  (c-name "moo_pane_set_frame_text")
+  (return-type "none")
+  (parameters
+    '("const-char*" "text" (null-ok))
+  )
+)
+
+(define-method set_drag_dest
+  (of-object "MooPane")
+  (c-name "moo_pane_set_drag_dest")
+  (return-type "none")
+)
+
+(define-method unset_drag_dest
+  (of-object "MooPane")
+  (c-name "moo_pane_unset_drag_dest")
+  (return-type "none")
+)
+
+(define-method get_id
+  (of-object "MooPane")
+  (c-name "moo_pane_get_id")
+  (return-type "const-char*")
+)
+
+(define-method get_child
+  (of-object "MooPane")
+  (c-name "moo_pane_get_child")
+  (return-type "GtkWidget*")
+)
+
+(define-method open
+  (of-object "MooPane")
+  (c-name "moo_pane_open")
+  (return-type "none")
+)
+
+(define-method present
+  (of-object "MooPane")
+  (c-name "moo_pane_present")
+  (return-type "none")
+)
+
+(define-method attach
+  (of-object "MooPane")
+  (c-name "moo_pane_attach")
+  (return-type "none")
+)
+
+(define-method detach
+  (of-object "MooPane")
+  (c-name "moo_pane_detach")
+  (return-type "none")
+)
+
+(define-method get_index
+  (of-object "MooPane")
+  (c-name "moo_pane_get_index")
+  (return-type "int")
+)
+
+; methods of MooMenuToolButton
+
+; methods of MooMenuMgr
+
+(define-function MooMenuMgr__new
+  (c-name "MooMenuMgr__new")
+  (return-type "none")
+  (is-constructor-of MooMenuMgr)
+)
+
+; methods of MooCombo
+
+(define-function MooCombo__new
+  (c-name "MooCombo__new")
+  (return-type "none")
+  (is-constructor-of MooCombo)
+)
+
+; methods of MooAction
+
+; methods of MooHistoryCombo
+
+(define-function MooHistoryCombo__new
+  (c-name "MooHistoryCombo__new")
+  (return-type "none")
+  (is-constructor-of MooHistoryCombo)
+)
+
+; methods of MooPrefsDialog
+
+(define-function MooPrefsDialog__new
+  (c-name "MooPrefsDialog__new")
+  (return-type "none")
+  (is-constructor-of MooPrefsDialog)
+)
+
+(define-virtual init
+  (of-object "MooPrefsDialog")
+  (return-type "none")
+)
+
+(define-virtual apply
+  (of-object "MooPrefsDialog")
+  (return-type "none")
+)
+
+; methods of MooGladeXml
+
+; methods of MooCommand
+
+(define-virtual check_sensitive
+  (of-object "MooCommand")
+  (return-type "gboolean")
+  (parameters
+    '("MooEdit*" "doc")
+    '("MooEditWindow*" "window")
+  )
+)
+
+(define-virtual run
+  (of-object "MooCommand")
+  (return-type "none")
+  (parameters
+    '("MooCommandContext*" "ctx")
+  )
+)
+
+; methods of MooCommandContext
+
+(define-function MooCommandContext__new
+  (c-name "MooCommandContext__new")
+  (return-type "none")
+  (is-constructor-of MooCommandContext)
+)
+
+; methods of MooCommandFactory
+
+(define-virtual create_command
+  (of-object "MooCommandFactory")
+  (return-type "MooCommand*")
+  (parameters
+    '("MooCommandData*" "data")
+    '("const-char*" "options")
+  )
+)
+
+(define-virtual create_widget
+  (of-object "MooCommandFactory")
+  (return-type "GtkWidget*")
+)
+
+(define-virtual load_data
+  (of-object "MooCommandFactory")
+  (return-type "none")
+  (parameters
+    '("GtkWidget*" "widget")
+    '("MooCommandData*" "data")
+  )
+)
+
+(define-virtual save_data
+  (of-object "MooCommandFactory")
+  (return-type "gboolean")
+  (parameters
+    '("GtkWidget*" "widget")
+    '("MooCommandData*" "data")
+  )
+)
+
+(define-virtual data_equal
+  (of-object "MooCommandFactory")
+  (return-type "gboolean")
+  (parameters
+    '("MooCommandData*" "data1")
+    '("MooCommandData*" "data2")
+  )
+)
+
+; methods of MooLineView
+
+(define-function MooLineView__new
+  (c-name "MooLineView__new")
+  (return-type "none")
+  (is-constructor-of MooLineView)
+)
+
+; methods of MooCmdView
+
+(define-function MooCmdView__new
+  (c-name "MooCmdView__new")
+  (return-type "none")
+  (is-constructor-of MooCmdView)
+)
+
+; methods of MooPluginInfo
+
+(define-function plugin_info_new
+  (c-name "moo_plugin_info_new")
+  (return-type "MooPluginInfo*")
+  (is-constructor-of MooPluginInfo)
+  (parameters
+    '("const-char*" "name")
+    '("const-char*" "description")
+    '("const-char*" "author")
+    '("const-char*" "version")
+  )
+)
+
+; methods of MooPluginParams
+
+(define-function plugin_params_new
+  (c-name "moo_plugin_params_new")
+  (return-type "MooPluginParams*")
+  (is-constructor-of MooPluginParams)
+  (parameters
+    '("gboolean" "enabled")
+    '("gboolean" "visible")
+  )
+)
+
+; methods of MooFileEnc
+
+(define-function file_enc_new
+  (c-name "moo_file_enc_new")
+  (return-type "MooFileEnc*")
+  (is-constructor-of MooFileEnc)
+  (parameters
+    '("GFile*" "file")
+    '("const-char*" "encoding")
+  )
+)
+
+; methods of MooPaneLabel
+
+(define-function pane_label_new
+  (c-name "moo_pane_label_new")
+  (return-type "MooPaneLabel*")
+  (is-constructor-of MooPaneLabel)
+  (parameters
+    '("const-char*" "icon_name" (null-ok) (default "NULL"))
+    '("GdkPixbuf*" "icon_pixbuf" (null-ok) (default "NULL"))
+    '("const-char*" "label_text" (null-ok) (default "NULL"))
+    '("const-char*" "window_title" (null-ok) (default "NULL"))
+  )
+)
+
+; methods of MooCommandData
+
+; functions
+
+(define-function editor_instance
+  (c-name "moo_editor_instance")
+  (return-type "MooEditor*")
+)
+
+(define-function prefs_new_key_bool
+  (c-name "moo_prefs_new_key_bool")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("gboolean" "default_val" (default "FALSE"))
+  )
+)
+
+(define-function prefs_new_key_int
+  (c-name "moo_prefs_new_key_int")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("int" "default_val" (default "0"))
+  )
+)
+
+(define-function prefs_new_key_string
+  (c-name "moo_prefs_new_key_string")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("const-char*" "default_val" (null-ok) (default "NULL"))
+  )
+)
+
+(define-function prefs_get_string
+  (c-name "moo_prefs_get_string")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_filename
+  (c-name "moo_prefs_get_filename")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_file
+  (c-name "moo_prefs_get_file")
+  (return-type "GFile*")
+  (caller-owns-return #t)
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_bool
+  (c-name "moo_prefs_get_bool")
+  (return-type "gboolean")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_get_int
+  (c-name "moo_prefs_get_int")
+  (return-type "int")
+  (parameters
+    '("const-char*" "key")
+  )
+)
+
+(define-function prefs_set_string
+  (c-name "moo_prefs_set_string")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("const-char*" "val" (null-ok))
+  )
+)
+
+(define-function prefs_set_filename
+  (c-name "moo_prefs_set_filename")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("const-char*" "val" (null-ok))
+  )
+)
+
+(define-function prefs_set_file
+  (c-name "moo_prefs_set_file")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("GFile*" "val" (null-ok))
+  )
+)
+
+(define-function prefs_set_int
+  (c-name "moo_prefs_set_int")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("int" "val")
+  )
+)
+
+(define-function prefs_set_bool
+  (c-name "moo_prefs_set_bool")
+  (return-type "none")
+  (parameters
+    '("const-char*" "key")
+    '("gboolean" "val")
+  )
+)
+
+(define-function dgettext
+  (c-name "moo_dgettext")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "domain")
+    '("const-char*" "string")
+  )
+)
+
+(define-function gettext
+  (c-name "moo_gettext")
+  (return-type "const-char*")
+  (parameters
+    '("const-char*" "string")
+  )
+)
+
+(define-function command_factory_register
+  (c-name "moo_command_factory_register")
+  (return-type "none")
+  (parameters
+    '("const-char*" "name")
+    '("const-char*" "display_name")
+    '("MooCommandFactory*" "factory")
+    '("strv" "keys" (null-ok))
+    '("const-char*" "extension")
+  )
+)
+
