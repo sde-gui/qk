@@ -37,7 +37,7 @@ moo_edit_window_get_output (MooEditWindow *window)
             return NULL;
         }
 
-        moo_edit_window_add_stop_client (window, cmd_view);
+        moo_edit_window_add_stop_client (window, G_OBJECT (cmd_view));
 
         moo_pane_label_free (label);
         return cmd_view;

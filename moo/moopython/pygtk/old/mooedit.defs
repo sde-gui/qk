@@ -1062,9 +1062,9 @@
              "Opens a file and places cursor on the given line.")
 )
 
-(define-method get_doc
+(define-method get_doc_for_path
   (of-object "MooEditor")
-  (c-name "moo_editor_get_doc")
+  (c-name "moo_editor_get_doc_for_path")
   (return-type "MooEdit*")
   (parameters
     '("const-char*" "filename")
@@ -1178,8 +1178,8 @@
   (c-name "moo_editor_close_all")
   (return-type "gboolean")
   (parameters
+    '("gboolean" "leave_one")
     '("gboolean" "ask_confirm")
-    '("gboolean" "leave_one" (default "FALSE"))
   )
 )
 

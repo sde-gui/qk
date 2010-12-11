@@ -225,7 +225,7 @@ _moo_file_view_tools_load (MooFileView *fileview)
     MooUiXml *xml;
     MooActionCollection *actions;
     GtkActionGroup *group;
-    MooUINode *ph;
+    MooUiNode *ph;
     GSList *l;
 
     g_return_if_fail (MOO_IS_FILE_VIEW (fileview));

@@ -60,6 +60,15 @@ class Writer(object):
         self.out.write(type_template % dic)
         self.out.write('\n')
 
+    def __write_pointer_decl(self, cls):
+        dic = dict(name=cls.name,
+                   short_name=cls.short_name,
+                   module=self.module.name,
+                   gtype_id=cls.gtype_id,
+                   what='pointer')
+        self.out.write(type_template % dic)
+        self.out.write('\n')
+
     def __write_enum_decl(self, cls):
         dic = dict(name=cls.name,
                    short_name=cls.short_name,
@@ -134,12 +143,17 @@ class Writer(object):
         self.out.write('; boxed types\n\n')
         for cls in module.get_boxed():
             self.__write_boxed_decl(cls)
+        self.out.write('; pointer types\n\n')
+        for cls in module.get_pointers():
+            self.__write_pointer_decl(cls)
         self.out.write('; enums and flags\n\n')
         for enum in module.get_enums():
             self.__write_enum_decl(enum)
         for cls in module.get_classes():
             self.__write_class_methods(cls)
         for cls in module.get_boxed():
+            self.__write_class_methods(cls)
+        for cls in module.get_pointers():
             self.__write_class_methods(cls)
         self.out.write('; functions\n\n')
         for func in module.get_functions():

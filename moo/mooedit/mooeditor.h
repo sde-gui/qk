@@ -93,7 +93,7 @@ MooEdit             *moo_editor_open_uri        (MooEditor      *editor,
                                                  const char     *uri,
                                                  const char     *encoding);
 
-MooEdit             *moo_editor_get_doc         (MooEditor      *editor,
+MooEdit             *moo_editor_get_doc_for_path(MooEditor      *editor,
                                                  const char     *filename);
 MooEdit             *moo_editor_get_doc_for_uri (MooEditor      *editor,
                                                  const char     *uri);
@@ -122,8 +122,8 @@ gboolean             moo_editor_close_docs      (MooEditor      *editor,
                                                  MooEditArray   *docs,
                                                  gboolean        ask_confirm);
 gboolean             moo_editor_close_all       (MooEditor      *editor,
-                                                 gboolean        ask_confirm,
-                                                 gboolean        leave_one);
+                                                 gboolean        leave_one,
+                                                 gboolean        ask_confirm);
 
 MooUiXml            *moo_editor_get_ui_xml      (MooEditor      *editor);
 void                 moo_editor_set_ui_xml      (MooEditor      *editor,
@@ -132,7 +132,7 @@ MooUiXml            *moo_editor_get_doc_ui_xml  (MooEditor      *editor);
 
 void                 moo_editor_set_window_type (MooEditor      *editor,
                                                  GType           type);
-void                 moo_editor_set_edit_type   (MooEditor      *editor,
+void                 moo_editor_set_doc_type    (MooEditor      *editor,
                                                  GType           type);
 
 gboolean             moo_editor_save_copy       (MooEditor      *editor,

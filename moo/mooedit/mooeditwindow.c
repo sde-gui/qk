@@ -17,6 +17,10 @@
  * class:MooEditWindow: (parent MooWindow)
  **/
 
+/**
+ * enum:MooActionCheckType:
+ **/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -730,6 +734,9 @@ moo_edit_window_init (MooEditWindow *window)
 }
 
 
+/**
+ * moo_edit_window_get_editor:
+ */
 MooEditor *
 moo_edit_window_get_editor (MooEditWindow *window)
 {
@@ -1108,6 +1115,9 @@ moo_edit_get_window (MooEdit *edit)
 }
 
 
+/**
+ * moo_edit_window_close_all:
+ */
 gboolean
 moo_edit_window_close_all (MooEditWindow *window)
 {
@@ -2134,6 +2144,9 @@ proxy_boolean_property (MooEditWindow      *window,
 }
 
 
+/**
+ * moo_edit_window_get_active_doc:
+ */
 MooEdit *
 moo_edit_window_get_active_doc (MooEditWindow  *window)
 {
@@ -2155,6 +2168,9 @@ moo_edit_window_get_active_doc (MooEditWindow  *window)
 }
 
 
+/**
+ * moo_edit_window_set_active_doc:
+ */
 void
 moo_edit_window_set_active_doc (MooEditWindow *window,
                                 MooEdit       *edit)
@@ -2173,22 +2189,11 @@ moo_edit_window_set_active_doc (MooEditWindow *window,
 }
 
 
-GSList *
-moo_edit_window_list_docs (MooEditWindow *window)
-{
-    GSList *list = NULL;
-    int num, i;
-
-    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
-
-    num = moo_notebook_get_n_pages (window->priv->notebook);
-
-    for (i = 0; i < num; i++)
-        list = g_slist_prepend (list, get_nth_tab (window, i));
-
-    return g_slist_reverse (list);
-}
-
+/**
+ * moo_edit_window_get_docs:
+ *
+ * Returns: (transfer full)
+ */
 MooEditArray *
 moo_edit_window_get_docs (MooEditWindow *window)
 {
@@ -2207,6 +2212,9 @@ moo_edit_window_get_docs (MooEditWindow *window)
 }
 
 
+/**
+ * moo_edit_window_num_docs:
+ */
 int
 moo_edit_window_num_docs (MooEditWindow *window)
 {
@@ -2219,6 +2227,9 @@ moo_edit_window_num_docs (MooEditWindow *window)
 }
 
 
+/**
+ * moo_edit_window_get_nth_doc:
+ */
 MooEdit *
 moo_edit_window_get_nth_doc (MooEditWindow  *window,
                              guint           n)
@@ -3360,6 +3371,9 @@ check_action_filter (G_GNUC_UNUSED GtkAction *action,
     return value;
 }
 
+/**
+ * moo_edit_window_set_action_filter:
+ */
 void
 moo_edit_window_set_action_filter (const char        *action_id,
                                    MooActionCheckType type,
@@ -3443,9 +3457,12 @@ client_job_finished (gpointer        client,
 }
 
 
+/**
+ * moo_edit_window_add_stop_client:
+ */
 void
 moo_edit_window_add_stop_client (MooEditWindow  *window,
-                                 gpointer        client)
+                                 GObject        *client)
 {
     GType type, return_type;
     guint signal_abort, signal_started, signal_finished;
@@ -3490,9 +3507,12 @@ moo_edit_window_add_stop_client (MooEditWindow  *window,
 }
 
 
+/**
+ * moo_edit_window_remove_stop_client:
+ */
 void
 moo_edit_window_remove_stop_client (MooEditWindow  *window,
-                                    gpointer        client)
+                                    GObject        *client)
 {
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (g_slist_find (window->priv->stop_clients, client));
@@ -3511,6 +3531,9 @@ moo_edit_window_remove_stop_client (MooEditWindow  *window,
 }
 
 
+/**
+ * moo_edit_window_abort_jobs:
+ */
 void
 moo_edit_window_abort_jobs (MooEditWindow *window)
 {

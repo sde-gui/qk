@@ -188,7 +188,7 @@ ensure_output (WindowStuff *stuff)
                                   "highlight-current-line", TRUE,
                                   (const char*) NULL);
 
-    moo_edit_window_add_stop_client (window, stuff->output);
+    moo_edit_window_add_stop_client (window, G_OBJECT (stuff->output));
     g_signal_connect_swapped (stuff->output, "activate",
                               G_CALLBACK (output_activate), stuff);
 

@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooOutputFilter: (parent GObject)
+ */
+
 #include "moooutputfilter.h"
 #include "mooedit/mooeditor.h"
 #include "marshals.h"

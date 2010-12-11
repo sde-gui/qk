@@ -57,6 +57,19 @@ class ObjectArrayArg(ArgType):
         self.c_type = c_type
         self.c_prefix = c_prefix
 
+    def write_param(self, ptype, pname, pdflt, pnull, info):
+        if pdflt:
+            if pdflt != 'NULL': raise TypeError("Only NULL is supported as a default %s* value" % self.c_type)
+            info.varlist.add(self.c_type, '*' + pname + ' = ' + pdflt)
+        else:
+            info.varlist.add(self.c_type, '*' + pname)
+        info.arglist.append(pname)
+        if pnull:
+            info.add_parselist('O&', ['_moo_pyobject_to_object_array', '(MooObjectArray**) &' + pname], [pname])
+        else:
+            info.add_parselist('O&', ['_moo_pyobject_to_object_array_no_null', '(MooObjectArray**) &' + pname], [pname])
+        info.codeafter.append('    %s_free (%s);' % (self.c_prefix, pname))
+
     def write_return(self, ptype, ownsreturn, info):
         if ownsreturn:
             # have to free result ...
@@ -66,7 +79,7 @@ class ObjectArrayArg(ArgType):
                                    '    %s_free (ret);\n' +
                                    '    return py_ret;') % (self.c_prefix,))
         else:
-            info.varlist.add('self.c_type', '*ret')
+            info.varlist.add(self.c_type, '*ret')
             info.codeafter.append('    return _moo_object_array_to_pyobject ((MooObjectArray*) ret);')
 
 class NoRefObjectSListArg(ArgType):

@@ -58,7 +58,7 @@ class Plugin(moo.Plugin):
                                     stock_id=moo.STOCK_EXECUTE,
                                     default_accel="<shift>F9",
                                     callback=self.run_file)
-        moo.window_set_action_filter("RunFile", moo.ACTION_CHECK_SENSITIVE, "langs:python")
+        moo.edit_window_set_action_filter("RunFile", moo.ACTION_CHECK_SENSITIVE, "langs:python")
         xml.add_item(self.ui_merge_id, "ToolsMenu",
                      "RunFile", "RunFile", -1)
 

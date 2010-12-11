@@ -94,22 +94,23 @@ class Writer(object):
         self.__start_tag('class', dic)
         if cls.constructor is not None:
             self.__write_function(cls.constructor, 'constructor')
-        for meth in cls.vmethods:
+        for meth in sorted(cls.vmethods, lambda x, y: cmp(x.name, y.name)):
             self.__write_function(meth, 'virtual')
-        for meth in cls.methods:
+        for meth in sorted(cls.methods, lambda x, y: cmp(x.name, y.name)):
             self.__write_function(meth, 'method')
         self.__write_docs(cls.docs)
         self.__end_tag('class')
 
     def __write_boxed(self, cls):
         dic = dict(name=cls.name, short_name=cls.short_name, gtype_id=cls.gtype_id)
-        self.__start_tag('boxed', dic)
+        tag = 'boxed' if isinstance(cls, module.Boxed) else 'pointer'
+        self.__start_tag(tag, dic)
         if cls.constructor is not None:
             self.__write_function(cls.constructor, 'constructor')
         for meth in cls.methods:
             self.__write_function(meth, 'method')
         self.__write_docs(cls.docs)
-        self.__end_tag('boxed')
+        self.__end_tag(tag)
 
     def __write_enum(self, enum):
         if isinstance(enum, module.Enum):
@@ -135,13 +136,13 @@ class Writer(object):
 
     def write(self, module):
         self.__start_tag('module', dict(name=module.name))
-        for cls in module.classes:
+        for cls in sorted(module.classes, lambda x, y: cmp(x.name, y.name)):
             self.__write_class(cls)
-        for cls in module.boxed:
+        for cls in sorted(module.boxed, lambda x, y: cmp(x.name, y.name)):
             self.__write_boxed(cls)
-        for enum in module.enums:
+        for enum in sorted(module.enums, lambda x, y: cmp(x.name, y.name)):
             self.__write_enum(enum)
-        for func in module.functions:
+        for func in sorted(module.functions, lambda x, y: cmp(x.name, y.name)):
             self.__write_function(func, 'function')
         self.__end_tag('module')
         elm = self.xml.close()

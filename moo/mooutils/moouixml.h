@@ -28,43 +28,43 @@ typedef enum {
     MOO_UI_NODE_ITEM,
     MOO_UI_NODE_SEPARATOR,
     MOO_UI_NODE_PLACEHOLDER
-} MooUINodeType;
+} MooUiNodeType;
 
 typedef enum {
     MOO_UI_NODE_ENABLE_EMPTY = 1 << 0
-} MooUINodeFlags;
+} MooUiNodeFlags;
 
-typedef struct MooUINode            MooUINode;
-typedef struct MooUIWidgetNode      MooUIWidgetNode;
-typedef struct MooUIItemNode        MooUIItemNode;
-typedef struct MooUISeparatorNode   MooUISeparatorNode;
-typedef struct MooUIPlaceholderNode MooUIPlaceholderNode;
+typedef struct MooUiNode            MooUiNode;
+typedef struct MooUiWidgetNode      MooUiWidgetNode;
+typedef struct MooUiItemNode        MooUiItemNode;
+typedef struct MooUiSeparatorNode   MooUiSeparatorNode;
+typedef struct MooUiPlaceholderNode MooUiPlaceholderNode;
 
 
 #define MOO_UI_NODE_STRUCT      \
-    MooUINodeType type;         \
+    MooUiNodeType type;         \
     char *name;                 \
-    MooUINode *parent;          \
+    MooUiNode *parent;          \
     GSList *children;           \
     guint flags : 1
 
-struct MooUINode {
+struct MooUiNode {
     MOO_UI_NODE_STRUCT;
 };
 
-struct MooUIWidgetNode {
+struct MooUiWidgetNode {
     MOO_UI_NODE_STRUCT;
 };
 
-struct MooUISeparatorNode {
+struct MooUiSeparatorNode {
     MOO_UI_NODE_STRUCT;
 };
 
-struct MooUIPlaceholderNode {
+struct MooUiPlaceholderNode {
     MOO_UI_NODE_STRUCT;
 };
 
-struct MooUIItemNode {
+struct MooUiItemNode {
     MOO_UI_NODE_STRUCT;
 
     char *action;
@@ -79,7 +79,7 @@ typedef enum {
     MOO_UI_MENUBAR = 1,
     MOO_UI_MENU,
     MOO_UI_TOOLBAR
-} MooUIWidgetType;
+} MooUiWidgetType;
 
 
 #define MOO_TYPE_UI_NODE             (moo_ui_node_get_type ())
@@ -117,16 +117,16 @@ void        moo_ui_xml_add_ui_from_string   (MooUiXml       *xml,
                                              const char     *buffer,
                                              gssize          length);
 
-MooUINode  *moo_ui_xml_get_node             (MooUiXml       *xml,
+MooUiNode  *moo_ui_xml_get_node             (MooUiXml       *xml,
                                              const char     *path);
-MooUINode  *moo_ui_xml_find_placeholder     (MooUiXml       *xml,
+MooUiNode  *moo_ui_xml_find_placeholder     (MooUiXml       *xml,
                                              const char     *name);
-char       *moo_ui_node_get_path            (MooUINode      *node);
-MooUINode  *moo_ui_node_get_child           (MooUINode      *node,
+char       *moo_ui_node_get_path            (MooUiNode      *node);
+MooUiNode  *moo_ui_node_get_child           (MooUiNode      *node,
                                              const char     *path);
 
 gpointer    moo_ui_xml_create_widget        (MooUiXml       *xml,
-                                             MooUIWidgetType type,
+                                             MooUiWidgetType type,
                                              const char     *path,
                                              MooActionCollection *actions,
                                              GtkAccelGroup  *accel_group);
@@ -136,7 +136,7 @@ GtkWidget  *moo_ui_xml_get_widget           (MooUiXml       *xml,
 
 guint       moo_ui_xml_new_merge_id         (MooUiXml       *xml);
 
-MooUINode  *moo_ui_xml_add_item             (MooUiXml       *xml,
+MooUiNode  *moo_ui_xml_add_item             (MooUiXml       *xml,
                                              guint           merge_id,
                                              const char     *parent_path,
                                              const char     *name,
@@ -145,17 +145,17 @@ MooUINode  *moo_ui_xml_add_item             (MooUiXml       *xml,
 
 void        moo_ui_xml_insert_after         (MooUiXml       *xml,
                                              guint           merge_id,
-                                             MooUINode      *parent,
-                                             MooUINode      *after,
+                                             MooUiNode      *parent,
+                                             MooUiNode      *after,
                                              const char     *markup);
 void        moo_ui_xml_insert_before        (MooUiXml       *xml,
                                              guint           merge_id,
-                                             MooUINode      *parent,
-                                             MooUINode      *before,
+                                             MooUiNode      *parent,
+                                             MooUiNode      *before,
                                              const char     *markup);
 void        moo_ui_xml_insert               (MooUiXml       *xml,
                                              guint           merge_id,
-                                             MooUINode      *parent,
+                                             MooUiNode      *parent,
                                              int             position,
                                              const char     *markup);
 
@@ -179,7 +179,7 @@ void        moo_ui_xml_remove_ui            (MooUiXml       *xml,
                                              guint           merge_id);
 
 void        moo_ui_xml_remove_node          (MooUiXml       *xml,
-                                             MooUINode      *node);
+                                             MooUiNode      *node);
 
 
 G_END_DECLS

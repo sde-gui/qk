@@ -180,6 +180,10 @@ class _InstanceType(_GTypedType):
         else:
             _GTypedType._parse_xml_element(self, elm)
 
+class Pointer(_InstanceType):
+    def __init__(self):
+        _InstanceType.__init__(self)
+
 class Boxed(_InstanceType):
     def __init__(self):
         _InstanceType.__init__(self)
@@ -223,6 +227,7 @@ class Module(object):
         self.name = None
         self.__classes = []
         self.__boxed = []
+        self.__pointers = []
         self.__enums = []
         self.__class_hash = {}
         self.__functions = []
@@ -248,6 +253,10 @@ class Module(object):
         self.__finish_parsing()
         return list(self.__boxed)
 
+    def get_pointers(self):
+        self.__finish_parsing()
+        return list(self.__pointers)
+
     def get_enums(self):
         self.__finish_parsing()
         return list(self.__enums)
@@ -265,6 +274,10 @@ class Module(object):
             cls = Boxed.from_xml(elm)
             self.__add_type(cls)
             self.__boxed.append(cls)
+        elif elm.tag == 'pointer':
+            cls = Pointer.from_xml(elm)
+            self.__add_type(cls)
+            self.__pointers.append(cls)
         elif elm.tag == 'enum':
             enum = Enum.from_xml(elm)
             self.__add_type(enum)

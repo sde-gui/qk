@@ -17,6 +17,14 @@
  * class:MooUiXml: (parent GObject) (constructable)
  **/
 
+/**
+ * pointer:MooUiNode:
+ */
+
+/**
+ * enum:MooUiWidgetType:
+ */
+
 #include "mooutils/mooaction-private.h"
 #include "mooutils/moouixml.h"
 #include "marshals.h"
@@ -35,12 +43,12 @@
 
 /* XXX weak ref actions */
 
-typedef MooUINodeType NodeType;
-typedef MooUINode Node;
-typedef MooUIWidgetNode Widget;
-typedef MooUIItemNode Item;
-typedef MooUISeparatorNode Separator;
-typedef MooUIPlaceholderNode Placeholder;
+typedef MooUiNodeType NodeType;
+typedef MooUiNode Node;
+typedef MooUiWidgetNode Widget;
+typedef MooUiItemNode Item;
+typedef MooUiSeparatorNode Separator;
+typedef MooUiPlaceholderNode Placeholder;
 
 #define CONTAINER MOO_UI_NODE_CONTAINER
 #define WIDGET MOO_UI_NODE_WIDGET
@@ -175,7 +183,7 @@ static void     create_menu_item        (MooUiXml       *xml,
                                          int             index);
 static gboolean create_menu_shell       (MooUiXml       *xml,
                                          Toplevel       *toplevel,
-                                         MooUIWidgetType type);
+                                         MooUiWidgetType type);
 static gboolean fill_menu_shell         (MooUiXml       *xml,
                                          Toplevel       *toplevel,
                                          Node           *menu_node,
@@ -204,7 +212,7 @@ static gboolean fill_toolbar            (MooUiXml       *xml,
 static gboolean create_toolbar          (MooUiXml       *xml,
                                          Toplevel       *toplevel);
 
-static MooUINode *moo_ui_xml_find_node  (MooUiXml       *xml,
+static MooUiNode *moo_ui_xml_find_node  (MooUiXml       *xml,
                                          const char     *path_or_placeholder);
 
 
@@ -230,19 +238,19 @@ node_new (NodeType type, const char *name)
     switch (type)
     {
         case MOO_UI_NODE_CONTAINER:
-            size = sizeof (MooUINode);
+            size = sizeof (MooUiNode);
             break;
         case MOO_UI_NODE_WIDGET:
-            size = sizeof (MooUIWidgetNode);
+            size = sizeof (MooUiWidgetNode);
             break;
         case MOO_UI_NODE_ITEM:
-            size = sizeof (MooUIItemNode);
+            size = sizeof (MooUiItemNode);
             break;
         case MOO_UI_NODE_SEPARATOR:
-            size = sizeof (MooUISeparatorNode);
+            size = sizeof (MooUiSeparatorNode);
             break;
         case MOO_UI_NODE_PLACEHOLDER:
-            size = sizeof (MooUIPlaceholderNode);
+            size = sizeof (MooUiPlaceholderNode);
             break;
     }
 
@@ -608,6 +616,9 @@ node_free (Node *node)
 }
 
 
+/**
+ * moo_ui_xml_add_ui_from_string:
+ */
 void
 moo_ui_xml_add_ui_from_string (MooUiXml       *xml,
                                const char     *buffer,
@@ -882,7 +893,10 @@ lookup_merge (MooUiXml *xml,
 }
 
 
-MooUINode*
+/**
+ * moo_ui_xml_add_item:
+ */
+MooUiNode*
 moo_ui_xml_add_item (MooUiXml       *xml,
                      guint           merge_id,
                      const char     *parent_path,
@@ -891,7 +905,7 @@ moo_ui_xml_add_item (MooUiXml       *xml,
                      int             position)
 {
     Merge *merge;
-    MooUINode *parent;
+    MooUiNode *parent;
     Item *item;
 
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
@@ -930,10 +944,13 @@ moo_ui_xml_add_item (MooUiXml       *xml,
 }
 
 
+/**
+ * moo_ui_xml_insert:
+ */
 void
 moo_ui_xml_insert (MooUiXml       *xml,
                    guint           merge_id,
-                   MooUINode      *parent,
+                   MooUiNode      *parent,
                    int             position,
                    const char     *markup)
 {
@@ -1035,11 +1052,14 @@ moo_ui_xml_insert (MooUiXml       *xml,
 }
 
 
+/**
+ * moo_ui_xml_insert_after:
+ */
 void
 moo_ui_xml_insert_after (MooUiXml       *xml,
                          guint           merge_id,
-                         MooUINode      *parent,
-                         MooUINode      *after,
+                         MooUiNode      *parent,
+                         MooUiNode      *after,
                          const char     *markup)
 {
     int position;
@@ -1060,11 +1080,14 @@ moo_ui_xml_insert_after (MooUiXml       *xml,
 }
 
 
+/**
+ * moo_ui_xml_insert_before:
+ */
 void
 moo_ui_xml_insert_before (MooUiXml       *xml,
                           guint           merge_id,
-                          MooUINode      *parent,
-                          MooUINode      *before,
+                          MooUiNode      *parent,
+                          MooUiNode      *before,
                           const char     *markup)
 {
     int position;
@@ -1085,6 +1108,9 @@ moo_ui_xml_insert_before (MooUiXml       *xml,
 }
 
 
+/**
+ * moo_ui_xml_insert_markup_after:
+ */
 void
 moo_ui_xml_insert_markup_after (MooUiXml       *xml,
                                 guint           merge_id,
@@ -1117,6 +1143,9 @@ moo_ui_xml_insert_markup_after (MooUiXml       *xml,
 }
 
 
+/**
+ * moo_ui_xml_insert_markup_before:
+ */
 void
 moo_ui_xml_insert_markup_before (MooUiXml       *xml,
                                  guint           merge_id,
@@ -1149,6 +1178,9 @@ moo_ui_xml_insert_markup_before (MooUiXml       *xml,
 }
 
 
+/**
+ * moo_ui_xml_insert_markup:
+ */
 void
 moo_ui_xml_insert_markup (MooUiXml       *xml,
                           guint           merge_id,
@@ -1192,6 +1224,9 @@ node_is_ancestor (Node           *node,
 }
 
 
+/**
+ * moo_ui_xml_remove_ui:
+ */
 void
 moo_ui_xml_remove_ui (MooUiXml       *xml,
                       guint           merge_id)
@@ -1217,9 +1252,12 @@ moo_ui_xml_remove_ui (MooUiXml       *xml,
 }
 
 
+/**
+ * moo_ui_xml_remove_node:
+ */
 void
 moo_ui_xml_remove_node (MooUiXml       *xml,
-                        MooUINode      *node)
+                        MooUiNode      *node)
 {
     Node *parent;
 
@@ -1296,7 +1334,10 @@ merge_remove_node (Merge          *merge,
 }
 
 
-MooUINode *
+/**
+ * moo_ui_xml_get_node:
+ */
+MooUiNode *
 moo_ui_xml_get_node (MooUiXml       *xml,
                      const char     *path)
 {
@@ -1307,11 +1348,11 @@ moo_ui_xml_get_node (MooUiXml       *xml,
 }
 
 
-static MooUINode *
+static MooUiNode *
 moo_ui_xml_find_node (MooUiXml       *xml,
                       const char     *path)
 {
-    MooUINode *node;
+    MooUiNode *node;
 
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
     g_return_val_if_fail (path != NULL, NULL);
@@ -1346,7 +1387,10 @@ find_placeholder_func (Node    *node,
     return FALSE;
 }
 
-MooUINode*
+/**
+ * moo_ui_xml_find_placeholder:
+ */
+MooUiNode*
 moo_ui_xml_find_placeholder (MooUiXml       *xml,
                              const char     *name)
 {
@@ -1366,8 +1410,11 @@ moo_ui_xml_find_placeholder (MooUiXml       *xml,
 }
 
 
-char*
-moo_ui_node_get_path (MooUINode *node)
+/**
+ * moo_ui_node_get_path:
+ */
+char *
+moo_ui_node_get_path (MooUiNode *node)
 {
     GString *path;
 
@@ -1387,8 +1434,11 @@ moo_ui_node_get_path (MooUINode *node)
 }
 
 
-MooUINode*
-moo_ui_node_get_child (MooUINode      *node,
+/**
+ * moo_ui_node_get_child:
+ */
+MooUiNode *
+moo_ui_node_get_child (MooUiNode      *node,
                        const char     *path)
 {
     char **pieces, **p;
@@ -2001,7 +2051,7 @@ fill_menu_shell (MooUiXml       *xml,
 static gboolean
 create_menu_shell (MooUiXml       *xml,
                    Toplevel       *toplevel,
-                   MooUIWidgetType type)
+                   MooUiWidgetType type)
 {
     g_return_val_if_fail (toplevel != NULL, FALSE);
     g_return_val_if_fail (toplevel->widget == NULL, FALSE);
@@ -2227,9 +2277,14 @@ create_toolbar (MooUiXml       *xml,
 }
 
 
+/**
+ * moo_ui_xml_create_widget:
+ *
+ * Returns: (type GtkWidget*)
+ */
 gpointer
 moo_ui_xml_create_widget (MooUiXml            *xml,
-                          MooUIWidgetType      type,
+                          MooUiWidgetType      type,
                           const char          *path,
                           MooActionCollection *actions,
                           GtkAccelGroup       *accel_group)
@@ -2288,13 +2343,16 @@ moo_ui_xml_create_widget (MooUiXml            *xml,
 }
 
 
+/**
+ * moo_ui_xml_get_widget:
+ */
 GtkWidget*
 moo_ui_xml_get_widget (MooUiXml       *xml,
                        GtkWidget      *widget,
                        const char     *path)
 {
     Toplevel *toplevel;
-    MooUINode *node;
+    MooUiNode *node;
 
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
     g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
@@ -2566,7 +2624,7 @@ moo_ui_node_get_type (void)
     static GType type = 0;
 
     if (G_UNLIKELY (!type))
-        type = g_pointer_type_register_static ("MooUINode");
+        type = g_pointer_type_register_static ("MooUiNode");
 
     return type;
 }

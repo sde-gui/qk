@@ -85,8 +85,6 @@ MooEditor       *moo_edit_window_get_editor             (MooEditWindow  *window)
 MooEdit         *moo_edit_window_get_nth_doc            (MooEditWindow  *window,
                                                          guint           n);
 MooEditArray    *moo_edit_window_get_docs               (MooEditWindow  *window);
-/* list must be freed, elements must not be unref'ed */
-GSList          *moo_edit_window_list_docs              (MooEditWindow  *window);
 int              moo_edit_window_num_docs               (MooEditWindow  *window);
 
 /* sinks widget */
@@ -103,9 +101,9 @@ GtkWidget       *moo_edit_window_get_pane               (MooEditWindow  *window,
 typedef void (*MooAbortJobFunc) (gpointer job);
 
 void             moo_edit_window_add_stop_client        (MooEditWindow  *window,
-                                                         gpointer        client);
+                                                         GObject        *client);
 void             moo_edit_window_remove_stop_client     (MooEditWindow  *window,
-                                                         gpointer        client);
+                                                         GObject        *client);
 void             moo_edit_window_abort_jobs             (MooEditWindow  *window);
 
 

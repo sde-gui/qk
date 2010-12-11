@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooActionCollection: (parent GObject)
+ */
+
 #include "mooutils/mooactiongroup.h"
 #include "mooutils/mooactionbase.h"
 #include "mooutils/mooutils-misc.h"

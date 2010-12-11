@@ -432,6 +432,11 @@ _moo_editor_get_file_watch (MooEditor *editor)
 }
 
 
+/**
+ * moo_editor_create:
+ *
+ * Returns: (transfer full)
+ */
 MooEditor *
 moo_editor_create (gboolean embedded)
 {
@@ -565,6 +570,9 @@ moo_editor_get_ui_xml (MooEditor *editor)
 }
 
 
+/**
+ * moo_editor_get_doc_ui_xml:
+ */
 MooUiXml *
 moo_editor_get_doc_ui_xml (MooEditor *editor)
 {
@@ -573,6 +581,9 @@ moo_editor_get_doc_ui_xml (MooEditor *editor)
 }
 
 
+/**
+ * moo_editor_set_ui_xml:
+ */
 void
 moo_editor_set_ui_xml (MooEditor      *editor,
                        MooUiXml       *xml)
@@ -750,6 +761,9 @@ moo_editor_add_doc (MooEditor      *editor,
 }
 
 
+/**
+ * moo_editor_new_window:
+ */
 MooEditWindow *
 moo_editor_new_window (MooEditor *editor)
 {
@@ -805,6 +819,12 @@ moo_editor_create_doc (MooEditor      *editor,
 }
 
 
+/**
+ * moo_editor_new_doc:
+ *
+ * @editor:
+ * @window: (allow-none) (default NULL)
+ */
 MooEdit *
 moo_editor_new_doc (MooEditor      *editor,
                     MooEditWindow  *window)
@@ -1078,7 +1098,10 @@ moo_editor_open (MooEditor       *editor,
 }
 
 
-MooEdit*
+/**
+ * moo_editor_get_active_doc:
+ */
+MooEdit *
 moo_editor_get_active_doc (MooEditor *editor)
 {
     MooEditWindow *window = moo_editor_get_active_window (editor);
@@ -1086,7 +1109,10 @@ moo_editor_get_active_doc (MooEditor *editor)
 }
 
 
-MooEditWindow*
+/**
+ * moo_editor_get_active_window:
+ */
+MooEditWindow *
 moo_editor_get_active_window (MooEditor *editor)
 {
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
@@ -1112,6 +1138,9 @@ moo_editor_present (MooEditor *editor,
 }
 
 
+/**
+ * moo_editor_set_active_window:
+ */
 void
 moo_editor_set_active_window (MooEditor      *editor,
                               MooEditWindow  *window)
@@ -1122,6 +1151,9 @@ moo_editor_set_active_window (MooEditor      *editor,
 }
 
 
+/**
+ * moo_editor_set_active_doc:
+ */
 void
 moo_editor_set_active_doc (MooEditor      *editor,
                            MooEdit        *doc)
@@ -1240,6 +1272,13 @@ close_window_handler (MooEditor     *editor,
 }
 
 
+/**
+ * moo_editor_close_window:
+ *
+ * @editor:
+ * @window:
+ * @ask_confirm: (default TRUE)
+ */
 gboolean
 moo_editor_close_window (MooEditor      *editor,
                          MooEditWindow  *window,
@@ -1310,6 +1349,13 @@ do_close_doc (MooEditor *editor,
 }
 
 
+/**
+ * moo_editor_close_doc:
+ *
+ * @editor:
+ * @doc:
+ * @ask_confirm: (default TRUE)
+ */
 gboolean
 moo_editor_close_doc (MooEditor *editor,
                       MooEdit   *doc,
@@ -1326,6 +1372,13 @@ moo_editor_close_doc (MooEditor *editor,
 }
 
 
+/**
+ * moo_editor_close_docs:
+ *
+ * @editor:
+ * @docs:
+ * @ask_confirm: (default TRUE)
+ */
 gboolean
 moo_editor_close_docs (MooEditor    *editor,
                        MooEditArray *docs,
@@ -1472,6 +1525,13 @@ find_modified (MooEditArray *docs)
 }
 
 
+/**
+ * moo_editor_close_all:
+ *
+ * @editor:
+ * @leave_one:
+ * @ask_confirm: (default TRUE)
+ */
 gboolean
 moo_editor_close_all (MooEditor *editor,
                       gboolean   ask_confirm,
@@ -1743,6 +1803,11 @@ _moo_editor_save_session (MooEditor     *editor,
 }
 
 
+/**
+ * moo_editor_get_windows:
+ *
+ * Returns: (transfer full)
+ */
 MooEditWindowArray *
 moo_editor_get_windows (MooEditor *editor)
 {
@@ -1750,6 +1815,11 @@ moo_editor_get_windows (MooEditor *editor)
     return moo_edit_window_array_copy (editor->priv->windows);
 }
 
+/**
+ * moo_editor_get_docs:
+ *
+ * Returns: (transfer full)
+ */
 MooEditArray *
 moo_editor_get_docs (MooEditor *editor)
 {
@@ -1805,7 +1875,7 @@ moo_editor_open_file (MooEditor      *editor,
     if (!result)
         return NULL;
 
-    return moo_editor_get_doc (editor, filename);
+    return moo_editor_get_doc_for_path (editor, filename);
 }
 
 
@@ -1822,7 +1892,7 @@ moo_editor_open_file_line (MooEditor      *editor,
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     g_return_val_if_fail (filename != NULL, NULL);
 
-    doc = moo_editor_get_doc (editor, filename);
+    doc = moo_editor_get_doc_for_path (editor, filename);
 
     if (doc)
     {
@@ -2239,9 +2309,12 @@ doc_array_find_filename (MooEditArray *docs,
     return NULL;
 }
 
+/**
+ * moo_editor_get_doc_for_path:
+ */
 MooEdit *
-moo_editor_get_doc (MooEditor  *editor,
-                    const char *filename)
+moo_editor_get_doc_for_path (MooEditor  *editor,
+                             const char *filename)
 {
     char *freeme1 = NULL;
     char *freeme2 = NULL;
@@ -2299,6 +2372,9 @@ doc_array_find_uri (MooEditArray *docs,
     return NULL;
 }
 
+/**
+ * moo_editor_get_doc_for_uri:
+ */
 MooEdit *
 moo_editor_get_doc_for_uri (MooEditor  *editor,
                             const char *uri)
@@ -2331,6 +2407,9 @@ out:
 }
 
 
+/**
+ * moo_editor_set_window_type:
+ */
 void
 moo_editor_set_window_type (MooEditor      *editor,
                             GType           type)
@@ -2341,9 +2420,12 @@ moo_editor_set_window_type (MooEditor      *editor,
 }
 
 
+/**
+ * moo_editor_set_doc_type:
+ */
 void
-moo_editor_set_edit_type (MooEditor      *editor,
-                          GType           type)
+moo_editor_set_doc_type (MooEditor      *editor,
+                         GType           type)
 {
     g_return_if_fail (MOO_IS_EDITOR (editor));
     g_return_if_fail (g_type_is_a (type, MOO_TYPE_EDIT));

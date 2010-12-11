@@ -25,6 +25,22 @@
 
 MOO_DEFINE_BOXED_TYPE_R (MooPyObject, _moo_py_object)
 
+static PyTypeObject *
+moo_get_pygobject_type (void)
+{
+    static PyTypeObject *type;
+
+    if (G_UNLIKELY (!type))
+    {
+        PyObject *module = PyImport_ImportModule ("gobject");
+        g_return_val_if_fail (module != NULL, NULL);
+        type = (PyTypeObject*) PyObject_GetAttrString (module, "GObject");
+        g_return_val_if_fail (type != NULL, NULL);
+    }
+
+    return type;
+}
+
 PyObject *
 _moo_strv_to_pyobject (char **strv)
 {
@@ -121,7 +137,6 @@ int _moo_pyobject_to_strv (PyObject *obj, char ***dest)
     return TRUE;
 }
 
-
 int
 _moo_pyobject_to_strv_no_null (PyObject  *obj,
                                char    ***dest)
@@ -134,6 +149,90 @@ _moo_pyobject_to_strv_no_null (PyObject  *obj,
     }
 
     return _moo_pyobject_to_strv (obj, dest);
+}
+
+
+static MooObjectArray *
+_moo_pyobject_to_object_array_no_check (PyObject *seq,
+                                        int       len)
+{
+    int i;
+    MooObjectArray *ar;
+
+    ar = moo_object_array_new ();
+
+    for (i = 0; i < len; ++i)
+    {
+        PyObject *item = PySequence_ITEM (seq, i);
+        moo_object_array_append (ar, pygobject_get (item));
+    }
+
+    return ar;
+}
+
+int
+_moo_pyobject_to_object_array (PyObject        *obj,
+                               MooObjectArray **dest)
+{
+    int len, i;
+    PyTypeObject *type;
+
+    type = moo_get_pygobject_type ();
+    g_return_val_if_fail (type != NULL, FALSE);
+
+    if (obj == Py_None)
+    {
+        *dest = NULL;
+        return TRUE;
+    }
+
+    if (!PySequence_Check (obj))
+    {
+        PyErr_SetString (PyExc_TypeError,
+                         "argument must be a sequence");
+        return FALSE;
+    }
+
+    len = PySequence_Size (obj);
+
+    if (len < 0)
+    {
+        PyErr_SetString (PyExc_RuntimeError,
+                         "got negative length of a sequence");
+        return FALSE;
+    }
+
+    for (i = 0; i < len; ++i)
+    {
+        PyObject *item = PySequence_ITEM (obj, i);
+
+        g_return_val_if_fail (item != NULL, FALSE);
+
+        if (!pygobject_check (item, type))
+        {
+            PyErr_SetString (PyExc_TypeError,
+                             "argument must be a sequence of objects");
+            return FALSE;
+        }
+    }
+
+    *dest = _moo_pyobject_to_object_array_no_check (obj, len);
+
+    return TRUE;
+}
+
+int
+_moo_pyobject_to_object_array_no_null (PyObject        *obj,
+                                       MooObjectArray **dest)
+{
+    if (obj == Py_None)
+    {
+        PyErr_SetString (PyExc_TypeError,
+                         "argument must be a sequence, not None");
+        return FALSE;
+    }
+
+    return _moo_pyobject_to_object_array (obj, dest);
 }
 
 

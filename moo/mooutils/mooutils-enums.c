@@ -96,7 +96,7 @@ moo_ui_node_type_get_type (void)
             { MOO_UI_NODE_PLACEHOLDER, (char*) "MOO_UI_NODE_PLACEHOLDER", (char*) "placeholder" },
             { 0, NULL, NULL }
         };
-        etype = g_enum_register_static ("MooUINodeType", values);
+        etype = g_enum_register_static ("MooUiNodeType", values);
     }
     return etype;
 }
@@ -111,7 +111,7 @@ moo_ui_node_flags_get_type (void)
             { MOO_UI_NODE_ENABLE_EMPTY, (char*) "MOO_UI_NODE_ENABLE_EMPTY", (char*) "empty" },
             { 0, NULL, NULL }
         };
-        etype = g_flags_register_static ("MooUINodeFlags", values);
+        etype = g_flags_register_static ("MooUiNodeFlags", values);
     }
     return etype;
 }
@@ -128,7 +128,7 @@ moo_ui_widget_type_get_type (void)
             { MOO_UI_TOOLBAR, (char*) "MOO_UI_TOOLBAR", (char*) "toolbar" },
             { 0, NULL, NULL }
         };
-        etype = g_enum_register_static ("MooUIWidgetType", values);
+        etype = g_enum_register_static ("MooUiWidgetType", values);
     }
     return etype;
 }

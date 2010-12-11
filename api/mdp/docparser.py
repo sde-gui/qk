@@ -134,6 +134,10 @@ class Boxed(Symbol):
     def __init__(self, name, annotations, docs, block):
         Symbol.__init__(self, name, annotations, docs, block)
 
+class Pointer(Symbol):
+    def __init__(self, name, annotations, docs, block):
+        Symbol.__init__(self, name, annotations, docs, block)
+
 class Enum(Symbol):
     def __init__(self, name, annotations, docs, block):
         Symbol.__init__(self, name, annotations, docs, block)
@@ -304,18 +308,25 @@ class Parser(object):
         self.classes.append(cls)
 
     def __parse_boxed(self, block):
+        What = None
         db = DoxBlock(block)
 
         name = db.symbol
         if name.startswith('boxed:'):
+            What = Boxed
             name = name[len('boxed:'):]
+        elif name.startswith('pointer:'):
+            What = Pointer
+            name = name[len('pointer:'):]
+        else:
+            raise ParseError('bad id', block)
 
         if db.params:
             raise ParseError('boxed params', block)
         if db.attributes:
             raise ParseError('boxed attributes', block)
 
-        cls = Boxed(name, db.annotations, db.docs, block)
+        cls = What(name, db.annotations, db.docs, block)
         self.classes.append(cls)
 
     def __parse_enum(self, block):
@@ -353,6 +364,8 @@ class Parser(object):
         if line.startswith('class:'):
             self.__parse_class(block)
         elif line.startswith('boxed:'):
+            self.__parse_boxed(block)
+        elif line.startswith('pointer:'):
             self.__parse_boxed(block)
         elif line.startswith('enum:'):
             self.__parse_enum(block)

@@ -6,7 +6,6 @@ docparser_files =		\
 	mdp/xmlwriter.py
 
 mpi_files =			\
-	parsexml.py		\
 	gendefs.py		\
 	mpi/__init__.py		\
 	mpi/module.py		\

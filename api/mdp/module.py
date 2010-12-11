@@ -3,6 +3,8 @@ import re
 
 import mdp.docparser as dparser
 
+DEBUG = False
+
 def split_camel_case_name(name):
     comps = []
     cur = ''
@@ -87,6 +89,10 @@ class Boxed(_InstanceType):
     def __init__(self, name, short_name, gtype_id, docs):
         _InstanceType.__init__(self, name, short_name, gtype_id, docs)
 
+class Pointer(_InstanceType):
+    def __init__(self, name, short_name, gtype_id, docs):
+        _InstanceType.__init__(self, name, short_name, gtype_id, docs)
+
 class Symbol(object):
     def __init__(self, name, c_name, docs):
         object.__init__(self)
@@ -151,7 +157,6 @@ class Module(object):
         self.classes = []
         self.boxed = []
         self.__class_dict = {}
-        self.boxed = []
         self.functions = []
         self.__methods = {}
         self.__constructors = {}
@@ -182,23 +187,24 @@ class Module(object):
         self.classes.append(cls)
         self.__class_dict[name] = cls
 
-    def __add_boxed(self, pcls):
+    def __add_boxed_or_pointer(self, pcls, What):
         name = pcls.name
         short_name = getattr(pcls, 'short_name', strip_module_prefix_from_class(pcls.name, self.name))
         gtype_id = getattr(pcls, 'gtype_id', make_gtype_id(pcls.name))
         docs = pcls.docs
-#         for a in pcls.annotations:
-#             m = re.match(r'^parent\s+(\S+)\s*$', a)
-#             if m:
-#                 parent = m.group(1)
-#             else:
-#                 raise RuntimeError("unknown annotation '%s' in class %s" % (a, name))
-        cls = Boxed(name, short_name, gtype_id, docs)
+        cls = What(name, short_name, gtype_id, docs)
         self.boxed.append(cls)
         self.__class_dict[name] = cls
 
+    def __add_boxed(self, pcls):
+        self.__add_boxed_or_pointer(pcls, Boxed)
+
+    def __add_pointer(self, pcls):
+        self.__add_boxed_or_pointer(pcls, Pointer)
+
     def __add_enum(self, ptyp):
-        print 'enum', ptyp.name
+        if DEBUG:
+            print 'enum', ptyp.name
         name = ptyp.name
         short_name = getattr(ptyp, 'short_name', strip_module_prefix_from_class(ptyp.name, self.name))
         gtype_id = getattr(ptyp, 'gtype_id', make_gtype_id(ptyp.name))
@@ -318,7 +324,8 @@ class Module(object):
         return retval
 
     def __parse_param(self, pp):
-        print pp.name, pp.type, pp.docs
+        if DEBUG:
+            print pp.name, pp.type, pp.docs
         param = Param(pp.name, pp.type, pp.docs)
         if pp.annotations:
             for a in pp.annotations:
@@ -418,6 +425,8 @@ class Module(object):
                 self.__add_class(b)
             elif isinstance(b, dparser.Boxed):
                 self.__add_boxed(b)
+            elif isinstance(b, dparser.Pointer):
+                self.__add_pointer(b)
             elif isinstance(b, dparser.Enum) or isinstance(b, dparser.Flags):
                 self.__add_enum(b)
             elif isinstance(b, dparser.Flags):
@@ -438,7 +447,7 @@ class Module(object):
         for cls in self.__constructors:
             func = self.__constructors[cls]
             if not cls in instance_types:
-                print >> sys.stderr, "Constructor of unknown class %s" % (cls,)
+                raise RuntimeError('Constructor of unknown class %s' % cls)
             else:
                 cls = instance_types[cls]
                 if cls.constructor is not None:
@@ -448,7 +457,7 @@ class Module(object):
         for cls in self.__methods:
             methods = self.__methods[cls]
             if not cls in instance_types:
-                print >> sys.stderr, "Methods of unknown class %s" % (cls,)
+                raise RuntimeError('Methods of unknown class %s' % cls)
             else:
                 cls = instance_types[cls]
                 for m in methods:
@@ -458,7 +467,7 @@ class Module(object):
         for cls in self.__vmethods:
             methods = self.__vmethods[cls]
             if not cls in instance_types:
-                print >> sys.stderr, "Virtual methods of unknown class %s" % (cls,)
+                raise RuntimeError('Virtual methods of unknown class %s' % cls)
             else:
                 cls = instance_types[cls]
                 for m in methods:
@@ -480,9 +489,10 @@ class Module(object):
             s += ')'
             return s
 
-        for cls in self.classes:
-            print 'class %s' % (cls.name,)
-            for meth in cls.methods:
-                print '  %s' % (format_func(meth),)
-        for func in self.functions:
-            print format_func(func)
+        if DEBUG:
+            for cls in self.classes:
+                print 'class %s' % (cls.name,)
+                for meth in cls.methods:
+                    print '  %s' % (format_func(meth),)
+            for func in self.functions:
+                print format_func(func)

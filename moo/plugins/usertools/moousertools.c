@@ -317,7 +317,7 @@ parse_name (MooUserToolInfo  *info,
 
     if (!moo_ui_xml_get_node (ui_xml, *ui_path))
     {
-        MooUINode *parent;
+        MooUiNode *parent;
         GString *markup;
         char **comps, **p;
         int i;

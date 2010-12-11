@@ -586,7 +586,7 @@ DocumentWindow *Editor::new_window()
 /// returns document with path @param{path} or @null{}.
 Document *Editor::get_document_by_path(const String &path)
 {
-    return Document::wrap(moo_editor_get_doc(moo_editor_instance(), path));
+    return Document::wrap(moo_editor_get_doc_for_path(moo_editor_instance(), path));
 }
 
 /// @item Editor.get_document_by_uri(path)

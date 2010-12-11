@@ -120,14 +120,6 @@ AC_ARG_ENABLE(install-hooks,
 ])
 AM_CONDITIONAL(MOO_ENABLE_INSTALL_HOOKS, test "x$MOO_ENABLE_INSTALL_HOOKS" = "xyes")
 
-AC_ARG_ENABLE(mdp,
-  AC_HELP_STRING([--enable-mdp],[enable fun stuff]),[
-  MOO_ENABLE_MDP="$enable_mdp"
-  ],[
-  MOO_ENABLE_MDP="no"
-])
-AM_CONDITIONAL(MOO_ENABLE_MDP, test "x$MOO_ENABLE_MDP" = "xyes")
-
 AC_CONFIG_FILES([
   Makefile
   api/Makefile

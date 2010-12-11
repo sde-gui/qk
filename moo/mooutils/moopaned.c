@@ -21,6 +21,10 @@
  * boxed:MooPaneLabel:
  **/
 
+/**
+ * boxed:MooPaneParams:
+ **/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -3355,6 +3359,9 @@ _moo_paned_attach_pane (MooPaned *paned,
 }
 
 
+/**
+ * moo_pane_params_new: (constructor-of MooPaneParams)
+ */
 MooPaneParams *
 moo_pane_params_new (GdkRectangle *window_position,
                      gboolean      detached,

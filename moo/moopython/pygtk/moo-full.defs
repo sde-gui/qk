@@ -1,0 +1,18 @@
+;; -*- scheme -*-
+
+(include "../../../api/moo.defs")
+
+(define-function _window_class_add_action
+  (c-name "moo_window_class_add_action")
+  (return-type "none")
+)
+
+(define-function window_class_find_action
+  (c-name "moo_window_class_find_action")
+  (return-type "none")
+)
+
+(define-function window_class_remove_action
+  (c-name "moo_window_class_remove_action")
+  (return-type "none")
+)
