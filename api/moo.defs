@@ -1181,6 +1181,15 @@
   (is-constructor-of MooTextView)
 )
 
+(define-method set_lang_by_id
+  (of-object "MooTextView")
+  (c-name "moo_text_view_set_lang_by_id")
+  (return-type "none")
+  (parameters
+    '("const-char*" "id")
+  )
+)
+
 ; methods of MooUiXml
 
 (define-function MooUiXml__new

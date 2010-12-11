@@ -332,7 +332,11 @@
     <virtual name="init" />
   </class>
   <class gtype_id="MOO_TYPE_TEXT_BUFFER" name="MooTextBuffer" parent="GtkTextBuffer" short_name="TextBuffer" />
-  <class constructable="1" gtype_id="MOO_TYPE_TEXT_VIEW" name="MooTextView" parent="GtkTextView" short_name="TextView" />
+  <class constructable="1" gtype_id="MOO_TYPE_TEXT_VIEW" name="MooTextView" parent="GtkTextView" short_name="TextView">
+    <method c_name="moo_text_view_set_lang_by_id" name="set_lang_by_id">
+      <param name="id" type="const-char*" />
+    </method>
+  </class>
   <class constructable="1" gtype_id="MOO_TYPE_UI_XML" name="MooUiXml" parent="GObject" short_name="UiXml">
     <method c_name="moo_ui_xml_add_item" name="add_item">
       <param name="merge_id" type="guint" />

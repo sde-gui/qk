@@ -2607,6 +2607,9 @@ moo_text_view_set_lang (MooTextView    *view,
 }
 
 
+/**
+ * moo_text_view_set_lang_by_id:
+ */
 void
 moo_text_view_set_lang_by_id (MooTextView *view,
                               const char  *lang_id)
