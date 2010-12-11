@@ -103,6 +103,7 @@ moo_sources +=				\
 	mooutils/moouixml.h		\
 	mooutils/mooundo.c		\
 	mooutils/mooundo.h		\
+	mooutils/mooutils.h		\
 	mooutils/mooutils-debug.h	\
 	mooutils/mooutils-enums.c	\
 	mooutils/mooutils-enums.h	\

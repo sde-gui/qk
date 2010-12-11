@@ -14,6 +14,8 @@ mpi_files =			\
 EXTRA_DIST =			\
 	$(docparser_files)	\
 	$(xmlparser_files)	\
+	sourcefiles.mak		\
+	moo.defs		\
 	moo.xml
 
 BUILT_SOURCES =
