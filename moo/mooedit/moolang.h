@@ -28,7 +28,7 @@ G_BEGIN_DECLS
 #define MOO_LANG_NONE       "none"
 #define MOO_LANG_NONE_NAME  "None"
 
-typedef struct _MooLang MooLang;
+typedef struct MooLang MooLang;
 
 GType        moo_lang_get_type                  (void) G_GNUC_CONST;
 

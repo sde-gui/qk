@@ -42,7 +42,7 @@
 #define KEY_ENCODING "encoding"
 #define KEY_LINE "line"
 
-MOO_DEFINE_OBJECT_ARRAY (MooEditArray, moo_edit_array, MooEdit)
+MOO_DEFINE_OBJECT_ARRAY (MooEdit, moo_edit)
 
 MooEditList *_moo_edit_instances = NULL;
 
@@ -221,7 +221,7 @@ moo_edit_class_init (MooEditClass *klass)
             _moo_signal_new_cb ("comment",
                                 G_OBJECT_CLASS_TYPE (klass),
                                 (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
-                                G_CALLBACK (moo_edit_comment),
+                                G_CALLBACK (_moo_edit_comment),
                                 NULL, NULL,
                                 _moo_marshal_VOID__VOID,
                                 G_TYPE_NONE, 0);
@@ -230,7 +230,7 @@ moo_edit_class_init (MooEditClass *klass)
             _moo_signal_new_cb ("uncomment",
                                 G_OBJECT_CLASS_TYPE (klass),
                                 (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
-                                G_CALLBACK (moo_edit_uncomment),
+                                G_CALLBACK (_moo_edit_uncomment),
                                 NULL, NULL,
                                 _moo_marshal_VOID__VOID,
                                 G_TYPE_NONE, 0);
@@ -332,7 +332,7 @@ moo_edit_finalize (GObject *object)
 
     moo_file_free (edit->priv->file);
     g_free (edit->priv->filename);
-    g_free (edit->priv->norm_filename);
+    g_free (edit->priv->norm_name);
     g_free (edit->priv->display_filename);
     g_free (edit->priv->display_basename);
     g_free (edit->priv->encoding);
@@ -450,6 +450,9 @@ moo_edit_set_modified (MooEdit            *edit,
 }
 
 
+/**
+ * moo_edit_set_clean:
+ **/
 void
 moo_edit_set_clean (MooEdit  *edit,
                     gboolean  clean)
@@ -459,7 +462,9 @@ moo_edit_set_clean (MooEdit  *edit,
     _moo_edit_status_changed (edit);
 }
 
-
+/**
+ * moo_edit_get_clean:
+ **/
 gboolean
 moo_edit_get_clean (MooEdit *edit)
 {
@@ -511,6 +516,9 @@ moo_edit_is_empty (MooEdit *edit)
     return !gtk_text_iter_compare (&start, &end);
 }
 
+/**
+ * moo_edit_is_untitled:
+ **/
 gboolean
 moo_edit_is_untitled (MooEdit *edit)
 {
@@ -519,6 +527,9 @@ moo_edit_is_untitled (MooEdit *edit)
 }
 
 
+/**
+ * moo_edit_get_status:
+ **/
 MooEditStatus
 moo_edit_get_status (MooEdit *edit)
 {
@@ -638,6 +649,9 @@ moo_edit_focus_out (GtkWidget     *widget,
 }
 
 
+/**
+ * moo_edit_get_file:
+ **/
 GFile *
 moo_edit_get_file (MooEdit *edit)
 {
@@ -645,6 +659,9 @@ moo_edit_get_file (MooEdit *edit)
     return edit->priv->file ? g_file_dup (edit->priv->file) : NULL;
 }
 
+/**
+ * moo_edit_get_filename:
+ **/
 char *
 moo_edit_get_filename (MooEdit *edit)
 {
@@ -653,19 +670,22 @@ moo_edit_get_filename (MooEdit *edit)
 }
 
 char *
-moo_edit_get_norm_filename (MooEdit *edit)
+_moo_edit_get_normalized_name (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return g_strdup (edit->priv->norm_filename);
+    return g_strdup (edit->priv->norm_name);
 }
 
 char *
-moo_edit_get_utf8_filename (MooEdit *edit)
+_moo_edit_get_utf8_filename (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
     return edit->priv->filename ? g_strdup (edit->priv->display_filename) : NULL;
 }
 
+/**
+ * moo_edit_get_display_name:
+ **/
 const char *
 moo_edit_get_display_name (MooEdit *edit)
 {
@@ -673,6 +693,9 @@ moo_edit_get_display_name (MooEdit *edit)
     return edit->priv->display_filename;
 }
 
+/**
+ * moo_edit_get_display_basename:
+ **/
 const char *
 moo_edit_get_display_basename (MooEdit *edit)
 {
@@ -680,6 +703,9 @@ moo_edit_get_display_basename (MooEdit *edit)
     return edit->priv->display_basename;
 }
 
+/**
+ * moo_edit_get_uri:
+ **/
 char *
 moo_edit_get_uri (MooEdit *edit)
 {
@@ -687,6 +713,9 @@ moo_edit_get_uri (MooEdit *edit)
     return edit->priv->file ? g_file_get_uri (edit->priv->file) : NULL;
 }
 
+/**
+ * moo_edit_get_encoding:
+ **/
 const char *
 moo_edit_get_encoding (MooEdit *edit)
 {
@@ -694,6 +723,9 @@ moo_edit_get_encoding (MooEdit *edit)
     return edit->priv->encoding;
 }
 
+/**
+ * moo_edit_set_encoding:
+ **/
 void
 moo_edit_set_encoding (MooEdit    *edit,
                        const char *encoding)
@@ -1171,13 +1203,13 @@ moo_edit_filename_changed (MooEdit    *edit,
  * Returns: whether document was successfully reloaded
  **/
 gboolean
-moo_edit_reload (MooEdit     *edit,
-                 const char  *encoding,
-                 GError     **error)
+moo_edit_reload (MooEdit            *doc,
+                 MooEditReloadInfo  *info,
+                 GError            **error)
 {
-    return _moo_editor_reload (edit->priv->editor, edit, encoding, error);
+    moo_return_error_if_fail (MOO_IS_EDIT (doc));
+    return moo_editor_reload (doc->priv->editor, doc, info, error);
 }
-
 
 /**
  * moo_edit_close:
@@ -1196,36 +1228,30 @@ moo_edit_close (MooEdit        *edit,
     return moo_editor_close_doc (edit->priv->editor, edit, ask_confirm);
 }
 
-
 gboolean
-moo_edit_save (MooEdit *edit,
+moo_edit_save (MooEdit *doc,
                GError **error)
 {
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return _moo_editor_save (edit->priv->editor, edit, error);
+    moo_return_error_if_fail (MOO_IS_EDIT (doc));
+    return moo_editor_save (doc->priv->editor, doc, error);
 }
 
-
 gboolean
-moo_edit_save_as (MooEdit        *edit,
-                  const char     *filename,
-                  const char     *encoding,
-                  GError        **error)
+moo_edit_save_as (MooEdit          *doc,
+                  MooEditSaveInfo  *info,
+                  GError          **error)
 {
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return _moo_editor_save_as (edit->priv->editor, edit, filename, encoding, error);
+    moo_return_error_if_fail (MOO_IS_EDIT (doc));
+    return moo_editor_save_as (doc->priv->editor, doc, info, error);
 }
 
-
 gboolean
-moo_edit_save_copy (MooEdit        *edit,
-                    const char     *filename,
-                    const char     *encoding,
-                    GError        **error)
+moo_edit_save_copy (MooEdit          *doc,
+                    MooEditSaveInfo  *info,
+                    GError          **error)
 {
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return moo_editor_save_copy (edit->priv->editor, edit,
-                                 filename, encoding, error);
+    moo_return_error_if_fail (MOO_IS_EDIT (doc));
+    return moo_editor_save_copy (doc->priv->editor, doc, info, error);
 }
 
 
@@ -1504,7 +1530,7 @@ block_uncomment (GtkTextBuffer *buffer,
 
 
 void
-moo_edit_comment (MooEdit *edit)
+_moo_edit_comment (MooEdit *edit)
 {
     MooLang *lang;
     GtkTextIter start, end;
@@ -1560,7 +1586,7 @@ moo_edit_comment (MooEdit *edit)
 
 
 void
-moo_edit_uncomment (MooEdit *edit)
+_moo_edit_uncomment (MooEdit *edit)
 {
     MooLang *lang;
     GtkTextIter start, end;
@@ -1892,8 +1918,8 @@ _moo_edit_set_state (MooEdit        *edit,
 
 
 void
-moo_edit_ui_set_line_wrap_mode (MooEdit  *doc,
-                                gboolean  enabled)
+_moo_edit_ui_set_line_wrap_mode (MooEdit  *doc,
+                                 gboolean  enabled)
 {
     GtkWrapMode mode;
     gboolean old_enabled;
@@ -1919,8 +1945,8 @@ moo_edit_ui_set_line_wrap_mode (MooEdit  *doc,
 }
 
 void
-moo_edit_ui_set_show_line_numbers (MooEdit  *doc,
-                                   gboolean  show)
+_moo_edit_ui_set_show_line_numbers (MooEdit  *doc,
+                                    gboolean  show)
 {
     gboolean old_show;
 

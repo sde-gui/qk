@@ -29,17 +29,17 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_ACTION_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_ACTION))
 #define MOO_EDIT_ACTION_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_ACTION, MooEditActionClass))
 
-typedef struct _MooEditAction        MooEditAction;
-typedef struct _MooEditActionPrivate MooEditActionPrivate;
-typedef struct _MooEditActionClass   MooEditActionClass;
+typedef struct MooEditAction        MooEditAction;
+typedef struct MooEditActionPrivate MooEditActionPrivate;
+typedef struct MooEditActionClass   MooEditActionClass;
 
-struct _MooEditAction
+struct MooEditAction
 {
     MooAction parent;
     MooEditActionPrivate *priv;
 };
 
-struct _MooEditActionClass
+struct MooEditActionClass
 {
     MooActionClass parent_class;
 

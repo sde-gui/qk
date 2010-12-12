@@ -33,10 +33,10 @@ G_BEGIN_DECLS
 #define MOO_FIND_GET_CLASS(obj)     (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_FIND, MooFindClass))
 
 
-typedef struct _MooFind       MooFind;
-typedef struct _MooFindClass  MooFindClass;
+typedef struct MooFind       MooFind;
+typedef struct MooFindClass  MooFindClass;
 
-struct _MooFind
+struct MooFind
 {
     GtkDialog base;
     struct MooFindBoxXml *xml;
@@ -44,7 +44,7 @@ struct _MooFind
     guint replace : 1;
 };
 
-struct _MooFindClass
+struct MooFindClass
 {
     GtkDialogClass base_class;
 };

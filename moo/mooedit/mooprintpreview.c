@@ -44,7 +44,7 @@ MOO_DEBUG_INIT(printing, TRUE)
 #define PRINTER_SCALE (1.)
 #endif
 
-struct _MooPrintPreviewPrivate {
+struct MooPrintPreviewPrivate {
     MooPrintOperation *op;
     GtkPrintContext *context;
     GtkPrintOperationPreview *gtk_preview;

@@ -644,7 +644,7 @@ class Wrapper:
                                                      if cname is not None]
             self.fp.write(
             ('\nstatic int\n'
-             '%(funcname)s(gpointer gclass, PyTypeObject *pyclass)\n'
+             '%(funcname)s(G_GNUC_UNUSED gpointer gclass, G_GNUC_UNUSED PyTypeObject *pyclass)\n'
              '{\n') % vars())
 
             if have_implemented_virtuals:

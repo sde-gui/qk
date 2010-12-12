@@ -23,7 +23,6 @@ EXTRA_DIST =			\
 	$(genlua_files)		\
 	sourcefiles.mak		\
 	moo.defs		\
-	moo-lua.cpp		\
 	moo.xml
 
 BUILT_SOURCES =
@@ -53,12 +52,5 @@ moo.defs.stamp: $(gendefs_files) moo.xml Makefile
 	(cmp -s moo.defs.tmp $(srcdir)/moo.defs || mv moo.defs.tmp $(srcdir)/moo.defs)
 	rm -f moo.defs.tmp
 	echo stamp > moo.defs.stamp
-
-BUILT_SOURCES += moo-lua.cpp.stamp
-moo-lua.cpp.stamp: $(genlua_files) moo.xml Makefile
-	$(PYTHON) $(srcdir)/genlua.py $(srcdir)/moo.xml > moo-lua.cpp.tmp && \
-	(cmp -s moo-lua.cpp.tmp $(srcdir)/moo-lua.cpp || mv moo-lua.cpp.tmp $(srcdir)/moo-lua.cpp)
-	rm -f moo-lua.cpp.tmp
-	echo stamp > moo-lua.cpp.stamp
 
 endif

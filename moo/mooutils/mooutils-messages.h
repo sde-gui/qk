@@ -162,7 +162,7 @@ enum {
     MOO_ERROR_UNEXPECTED = 1
 };
 
-#define moo_return_error_if_fail(cond)                      \
+#define moo_return_error_if_fail_val(cond, val)             \
 do {                                                        \
     if (cond)                                               \
     {                                                       \
@@ -172,10 +172,15 @@ do {                                                        \
         moo_critical("Condition '%s' failed", #cond);       \
         g_set_error (error, MOO_ERROR, MOO_ERROR_UNEXPECTED,\
                      "unexpected error");                   \
-        return FALSE;                                       \
+        return val;                                         \
     }                                                       \
 } while (0)
 
+#define moo_return_error_if_fail(cond)                      \
+    moo_return_error_if_fail_val (cond, FALSE)
+
+#define moo_return_error_if_fail_p(cond)                    \
+    moo_return_error_if_fail_val (cond, NULL)
 
 /*
  * Suppress warnings when GCC is in -pedantic mode and not -std=c99

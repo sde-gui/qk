@@ -27,6 +27,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-impl.h"
+#include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditwindow-impl.h"
 #include "mooedit/mooedit-accels.h"
 #include "mooedit/mooeditor-impl.h"
@@ -83,7 +84,7 @@ typedef struct {
 static GHashTable *action_checks; /* char* -> ActionCheck* */
 static GSList *windows;
 
-struct _MooEditWindowPrivate {
+struct MooEditWindowPrivate {
     MooEditor *editor;
 
     guint statusbar_idle;
@@ -106,7 +107,7 @@ struct _MooEditWindowPrivate {
     guint history_blocked : 1;
 };
 
-MOO_DEFINE_OBJECT_ARRAY (MooEditWindowArray, moo_edit_window_array, MooEditWindow)
+MOO_DEFINE_OBJECT_ARRAY (MooEditWindow, moo_edit_window)
 
 enum {
     TARGET_MOO_EDIT_TAB = 1,
@@ -629,7 +630,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "display-name", _("Comment"),
                                  "label", _("Comment"),
                                  "tooltip", _("Comment"),
-                                 "closure-callback", moo_edit_comment,
+                                 "closure-callback", _moo_edit_comment,
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-comments",
                                  NULL);
@@ -639,7 +640,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "display-name", _("Uncomment"),
                                  "label", _("Uncomment"),
                                  "tooltip", _("Uncomment"),
-                                 "closure-callback", moo_edit_uncomment,
+                                 "closure-callback", _moo_edit_uncomment,
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-comments",
                                  NULL);
@@ -1157,7 +1158,10 @@ action_new_doc (MooEditWindow *window)
 static void
 action_open (MooEditWindow *window)
 {
-    moo_editor_open (window->priv->editor, window, GTK_WIDGET (window), NULL);
+    MooEdit *active = moo_edit_window_get_active_doc (window);
+    MooEditOpenInfoArray *files = _moo_edit_open_dialog (GTK_WIDGET (window), active);
+    moo_editor_open_files (window->priv->editor, files, GTK_WIDGET (window), NULL);
+    moo_edit_open_info_array_free (files);
 }
 
 
@@ -1166,7 +1170,7 @@ action_reload (MooEditWindow *window)
 {
     MooEdit *edit = ACTIVE_DOC (window);
     g_return_if_fail (edit != NULL);
-    _moo_editor_reload (window->priv->editor, edit, NULL, NULL);
+    moo_edit_reload (edit, NULL, NULL);
 }
 
 
@@ -1176,11 +1180,13 @@ reopen_encoding_item_activated (const char *encoding,
 {
     MooEditWindow *window = data;
     MooEdit *doc;
+    MooEditReloadInfo *info;
 
     doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
 
-    _moo_editor_reload (window->priv->editor, doc, encoding, NULL);
+    info = moo_edit_reload_info_new (encoding);
+    moo_edit_reload (doc, info, NULL);
 }
 
 static GtkAction *
@@ -1333,7 +1339,7 @@ action_save (MooEditWindow *window)
 {
     MooEdit *edit = ACTIVE_DOC (window);
     g_return_if_fail (edit != NULL);
-    _moo_editor_save (window->priv->editor, edit, NULL);
+    moo_editor_save (window->priv->editor, edit, NULL);
 }
 
 
@@ -1342,7 +1348,7 @@ action_save_as (MooEditWindow *window)
 {
     MooEdit *edit = ACTIVE_DOC (window);
     g_return_if_fail (edit != NULL);
-    _moo_editor_save_as (window->priv->editor, edit, NULL, NULL, NULL);
+    moo_editor_save_as (window->priv->editor, edit, NULL, NULL);
 }
 
 
@@ -1768,7 +1774,7 @@ wrap_text_toggled (MooEditWindow *window,
 {
     MooEdit *doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
-    moo_edit_ui_set_line_wrap_mode (doc, active);
+    _moo_edit_ui_set_line_wrap_mode (doc, active);
 }
 
 
@@ -1778,7 +1784,7 @@ line_numbers_toggled (MooEditWindow *window,
 {
     MooEdit *doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
-    moo_edit_ui_set_show_line_numbers (doc, active);
+    _moo_edit_ui_set_show_line_numbers (doc, active);
 }
 
 
@@ -3864,8 +3870,7 @@ notebook_drag_data_recv (GtkWidget          *widget,
             {
                 char *filename = g_filename_from_uri (*u, NULL, NULL);
                 if (!filename || !g_file_test (filename, G_FILE_TEST_IS_DIR))
-                    moo_editor_open_uri (window->priv->editor, window,
-                                         NULL, *u, NULL);
+                    moo_editor_open_uri (window->priv->editor, *u, NULL, -1, window);
                 g_free (filename);
             }
 

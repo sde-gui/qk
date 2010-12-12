@@ -36,22 +36,22 @@ G_BEGIN_DECLS
 #define MOO_LINE_MARK_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_LINE_MARK, MooLineMarkClass))
 
 
-typedef struct _MooTextBuffer       MooTextBuffer;
+typedef struct MooTextBuffer       MooTextBuffer;
 
-typedef struct _MooFold             MooFold;
-typedef struct _MooFoldClass        MooFoldClass;
+typedef struct MooFold             MooFold;
+typedef struct MooFoldClass        MooFoldClass;
 
-typedef struct _MooLineMark         MooLineMark;
-typedef struct _MooLineMarkPrivate  MooLineMarkPrivate;
-typedef struct _MooLineMarkClass    MooLineMarkClass;
+typedef struct MooLineMark         MooLineMark;
+typedef struct MooLineMarkPrivate  MooLineMarkPrivate;
+typedef struct MooLineMarkClass    MooLineMarkClass;
 
-struct _MooLineMark
+struct MooLineMark
 {
     GObject parent;
     MooLineMarkPrivate *priv;
 };
 
-struct _MooLineMarkClass
+struct MooLineMarkClass
 {
     GObjectClass parent_class;
 

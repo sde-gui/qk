@@ -64,44 +64,38 @@ GType            moo_app_get_type               (void) G_GNUC_CONST;
 
 MooApp          *moo_app_get_instance           (void);
 
-gboolean         moo_app_init                   (MooApp     *app);
-int              moo_app_run                    (MooApp     *app);
-gboolean         moo_app_quit                   (MooApp     *app);
+gboolean         moo_app_init                   (MooApp                 *app);
+int              moo_app_run                    (MooApp                 *app);
+gboolean         moo_app_quit                   (MooApp                 *app);
 
-void             moo_app_load_session           (MooApp     *app);
+void             moo_app_set_exit_status        (MooApp                 *app,
+                                                 int                     value);
 
-MooEditor       *moo_app_get_editor             (MooApp     *app);
+void             moo_app_load_session           (MooApp                 *app);
 
-void             moo_app_prefs_dialog           (GtkWidget  *parent);
-void             moo_app_about_dialog           (GtkWidget  *parent);
+MooEditor       *moo_app_get_editor             (MooApp                 *app);
 
-char            *moo_app_get_system_info        (MooApp     *app);
+void             moo_app_prefs_dialog           (GtkWidget              *parent);
+void             moo_app_about_dialog           (GtkWidget              *parent);
 
-MooUiXml        *moo_app_get_ui_xml             (MooApp     *app);
-void             moo_app_set_ui_xml             (MooApp     *app,
-                                                 MooUiXml   *xml);
+char            *moo_app_get_system_info        (MooApp                 *app);
 
-gboolean         moo_app_send_msg               (const char *pid,
-                                                 const char *data,
-                                                 int         len);
+MooUiXml        *moo_app_get_ui_xml             (MooApp                 *app);
+void             moo_app_set_ui_xml             (MooApp                 *app,
+                                                 MooUiXml               *xml);
 
-typedef struct {
-    char *uri;
-    char *encoding;
-    guint line : 24; /* 0 means unset */
-    guint options : 7;
-} MooAppFileInfo;
+gboolean         moo_app_send_msg               (const char             *pid,
+                                                 const char             *data,
+                                                 int                     len);
 
-gboolean         moo_app_send_files             (MooAppFileInfo *files,
-                                                 int             n_files,
-                                                 guint32         stamp,
-                                                 const char     *pid);
-void             moo_app_open_files             (MooApp         *app,
-                                                 MooAppFileInfo *files,
-                                                 int             n_files,
-                                                 guint32         stamp);
-void             moo_app_run_script             (MooApp         *app,
-                                                 const char     *script);
+gboolean         moo_app_send_files             (MooEditOpenInfoArray   *files,
+                                                 guint32                 stamp,
+                                                 const char             *pid);
+void             moo_app_open_files             (MooApp                 *app,
+                                                 MooEditOpenInfoArray   *files,
+                                                 guint32                 stamp);
+void             moo_app_run_script             (MooApp                 *app,
+                                                 const char             *script);
 
 
 G_END_DECLS

@@ -303,8 +303,8 @@ moo_file_selector_activate (MooFileView    *fileview,
     }
 
     if (is_text)
-        moo_editor_open_file (moo_edit_window_get_editor (filesel->window),
-                              filesel->window, GTK_WIDGET (filesel), path, NULL);
+        moo_editor_open_path (moo_edit_window_get_editor (filesel->window),
+                              path, NULL, -1, filesel->window);
     else if (!is_exe)
         moo_open_file (path);
 }
@@ -475,6 +475,7 @@ file_selector_create_file (MooFileSelector *filesel)
     char *path = NULL, *dir = NULL;
     MooEdit *doc;
     GList *selected = NULL;
+    MooEditOpenInfo *info;
 
     selected = _moo_file_view_get_filenames (MOO_FILE_VIEW (filesel));
 
@@ -510,8 +511,10 @@ file_selector_create_file (MooFileSelector *filesel)
     if (!path)
         goto out;
 
+    info = moo_edit_open_info_new_path (path, NULL);
     doc = moo_editor_new_file (moo_edit_window_get_editor (filesel->window),
-                               filesel->window, GTK_WIDGET (filesel), path, NULL);
+                               info, GTK_WIDGET (filesel), NULL);
+    g_object_unref (info);
 
     if (doc)
         moo_edit_save (doc, NULL);
@@ -554,9 +557,8 @@ file_selector_open_files (MooFileSelector *filesel)
 
     while (files)
     {
-        moo_editor_open_file (moo_edit_window_get_editor (filesel->window),
-                              filesel->window, GTK_WIDGET (filesel),
-                              files->data, NULL);
+        moo_editor_open_path (moo_edit_window_get_editor (filesel->window),
+                              files->data, NULL, -1, filesel->window);
         g_free (files->data);
         files = g_list_delete_link (files, files);
     }
@@ -859,6 +861,19 @@ moo_file_selector_select_file (MooFileSelector *filesel,
 
 
 static gboolean
+save_as_path (MooEdit    *doc,
+              const char *path)
+{
+    MooEditSaveInfo *info;
+    gboolean result;
+    info = moo_edit_save_info_new_path (path, NULL);
+    result = moo_edit_save_as (doc, info, NULL);
+    g_object_unref (info);
+    return result;
+}
+
+
+static gboolean
 drop_untitled (MooFileSelector *filesel,
                MooEdit         *doc,
                const char      *destdir,
@@ -868,22 +883,22 @@ drop_untitled (MooFileSelector *filesel,
                G_GNUC_UNUSED int             y,
                G_GNUC_UNUSED guint time)
 {
-    char *name;
+    char *filename;
     gboolean result;
 
-    name = save_as_dialog (widget, destdir,
-                           moo_edit_get_display_basename (doc),
-                           TRUE, _("Save As"));
+    filename = save_as_dialog (widget, destdir,
+                               moo_edit_get_display_basename (doc),
+                               TRUE, _("Save As"));
 
-    if (!name)
+    if (!filename)
         return FALSE;
 
-    result = moo_edit_save_as (doc, name, NULL, NULL);
+    result = save_as_path (doc, filename);
 
     if (result)
-        moo_file_selector_select_path (filesel, name);
+        moo_file_selector_select_path (filesel, filename);
 
-    g_free (name);
+    g_free (filename);
     return result;
 }
 
@@ -902,7 +917,7 @@ doc_save_as (MooFileSelector *filesel,
 
     if (filename)
     {
-        if (moo_edit_save_as (doc, filename, NULL, NULL))
+        if (save_as_path (doc, filename))
             moo_file_selector_select_path (filesel, filename);
         g_free (filename);
     }
@@ -922,8 +937,10 @@ doc_save_copy (MooFileSelector *filesel,
 
     if (filename)
     {
-        if (moo_edit_save_copy (doc, filename, NULL, NULL))
+        MooEditSaveInfo *info = moo_edit_save_info_new_path (filename, NULL);
+        if (moo_edit_save_copy (doc, info, NULL))
             moo_file_selector_select_path (filesel, filename);
+        g_object_unref (info);
         g_free (filename);
     }
 }
@@ -946,7 +963,7 @@ doc_move (MooFileSelector *filesel,
 
     if (filename)
     {
-        if (moo_edit_save_as (doc, filename, NULL, NULL))
+        if (save_as_path (doc, filename))
         {
             g_file_delete (old_file, NULL, NULL);
             moo_file_selector_select_path (filesel, filename);

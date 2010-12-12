@@ -31,15 +31,15 @@ G_BEGIN_DECLS
 #define MOO_IS_LANG_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_LANG))
 #define MOO_LANG_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_LANG, MooLangClass))
 
-typedef struct _MooLangPrivate MooLangPrivate;
-typedef struct _MooLangClass   MooLangClass;
+typedef struct MooLangPrivate MooLangPrivate;
+typedef struct MooLangClass   MooLangClass;
 
-struct _MooLang {
+struct MooLang {
     GtkSourceLanguage base;
     MooLangPrivate *priv;
 };
 
-struct _MooLangClass {
+struct MooLangClass {
     GtkSourceLanguageClass base_class;
 };
 

@@ -22,44 +22,39 @@
 
 G_BEGIN_DECLS
 
+MooEditSaveInfo                *_moo_edit_save_as_dialog                (MooEdit        *doc,
+                                                                         const char     *display_basename);
+MooEditOpenInfoArray           *_moo_edit_open_dialog                   (GtkWidget      *widget,
+                                                                         MooEdit        *current_doc);
 
-MooFileEnc      *_moo_edit_save_as_dialog           (MooEdit        *doc,
-                                                     const char     *display_basename);
-MooFileEncArray *_moo_edit_open_dialog              (GtkWidget      *widget,
-                                                     MooEdit        *current_doc);
+MooSaveChangesDialogResponse    _moo_edit_save_changes_dialog           (MooEdit        *doc);
+MooSaveChangesDialogResponse    _moo_edit_save_multiple_changes_dialog  (MooEditArray   *docs,
+                                                                         MooEditArray   *to_save);
 
-MooSaveChangesDialogResponse
-                 _moo_edit_save_changes_dialog      (MooEdit        *doc);
-MooSaveChangesDialogResponse
-                 _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
-                                                     MooEditArray *to_save);
+gboolean                        _moo_edit_reload_modified_dialog        (MooEdit        *doc);
+gboolean                        _moo_edit_overwrite_modified_dialog     (MooEdit        *doc);
 
-gboolean         _moo_edit_reload_modified_dialog   (MooEdit        *doc);
-gboolean         _moo_edit_overwrite_modified_dialog (MooEdit        *doc);
+void                            _moo_edit_save_error_dialog             (GtkWidget      *widget,
+                                                                         GFile          *file,
+                                                                         GError         *error);
+void                            _moo_edit_save_error_enc_dialog         (GtkWidget      *widget,
+                                                                         GFile          *file,
+                                                                         const char     *encoding);
+void                            _moo_edit_open_error_dialog             (GtkWidget      *widget,
+                                                                         GFile          *file,
+                                                                         const char     *encoding,
+                                                                         GError         *error);
+void                            _moo_edit_reload_error_dialog           (MooEdit        *doc,
+                                                                         GError         *error);
 
-void             _moo_edit_save_error_dialog        (GtkWidget      *widget,
-                                                     GFile          *file,
-                                                     GError         *error);
-void             _moo_edit_save_error_enc_dialog    (GtkWidget      *widget,
-                                                     GFile          *file,
-                                                     const char     *encoding);
-void             _moo_edit_open_error_dialog        (GtkWidget      *widget,
-                                                     GFile          *file,
-                                                     const char     *encoding,
-                                                     GError         *error);
-void             _moo_edit_reload_error_dialog      (MooEdit        *doc,
-                                                     GError         *error);
+gboolean                        _moo_text_search_from_start_dialog      (GtkWidget      *parent,
+                                                                         gboolean        backwards);
+void                            _moo_text_regex_error_dialog            (GtkWidget      *parent,
+                                                                         GError         *error);
 
-
-gboolean         _moo_text_search_from_start_dialog (GtkWidget      *parent,
-                                                     gboolean        backwards);
-void             _moo_text_regex_error_dialog       (GtkWidget      *parent,
-                                                     GError         *error);
-
-gboolean         _moo_text_replace_from_start_dialog(GtkWidget      *parent,
-                                                     int             replaced);
-GtkWidget       *_moo_text_prompt_on_replace_dialog (GtkWidget      *parent);
-
+gboolean                        _moo_text_replace_from_start_dialog     (GtkWidget      *parent,
+                                                                         int             replaced);
+GtkWidget                      *_moo_text_prompt_on_replace_dialog      (GtkWidget      *parent);
 
 G_END_DECLS
 

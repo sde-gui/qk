@@ -45,26 +45,6 @@ const char  *lua_check_utf8string   (lua_State  *L,
 
 void         moo_lua_add_user_path  (lua_State  *L);
 
-lua_State   *medit_lua_new          (bool        default_init,
-                                     bool        enable_callbacks);
-void         medit_lua_free         (lua_State  *L);
-
-bool         medit_lua_do_string    (lua_State  *L,
-                                     const char *string);
-bool         medit_lua_do_file      (lua_State  *L,
-                                     const char *filename);
-
 #endif /* __cplusplus */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void         medit_lua_run_string   (const char *string);
-void         medit_lua_run_file     (const char *filename);
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
 
 #endif /* MOO_LUA_H */

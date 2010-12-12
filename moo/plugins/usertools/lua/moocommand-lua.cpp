@@ -16,14 +16,13 @@
 #define MOOEDIT_COMPILATION
 #include "moocommand-lua.h"
 #include "lua-tool-setup.h"
-#include "mooscript/mooscript-lua.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootext-private.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
 #include "mooedittools-lua-gxml.h"
-#include "mooscript/lua/moolua.h"
+#include "moolua/medit-lua.h"
 #include <string.h>
 
 
@@ -50,7 +49,7 @@ moo_command_lua_run (MooCommand        *cmd_base,
 
     g_return_if_fail (cmd->priv->code != NULL);
 
-    L = medit_lua_new (TRUE, FALSE);
+    L = medit_lua_new (TRUE);
     g_return_if_fail (L != NULL);
 
     if (!medit_lua_do_string (L, LUA_SETUP_CODE))

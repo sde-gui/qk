@@ -3,7 +3,7 @@
 #include "mooutils.h"
 #include <fnmatch.h>
 
-MOO_DEFINE_OBJECT_ARRAY (MooFileArray, moo_file_array, GFile)
+MOO_DEFINE_OBJECT_ARRAY_FULL (MooFileArray, moo_file_array, GFile)
 
 char *
 moo_file_get_display_name (GFile *file)

@@ -71,7 +71,7 @@ typedef struct {
     double ln_space;
 } Page;
 
-struct _MooPrintOperationPrivate {
+struct MooPrintOperationPrivate {
     GtkWindow *parent;
     GtkTextView *doc;
     GtkTextBuffer *buffer;
@@ -107,7 +107,7 @@ G_STMT_START {                                      \
 #define GET_OPTION(op, opt) (((op)->priv->settings->flags & (opt)) != 0)
 
 
-typedef struct _HFFormat HFFormat;
+typedef struct HFFormat HFFormat;
 static HFFormat *hf_format_parse    (const char         *strformat);
 static void      hf_format_free     (HFFormat           *format);
 static char     *hf_format_eval     (HFFormat           *format,
@@ -1984,7 +1984,7 @@ typedef struct {
     char *string;
 } HFFormatChunk;
 
-struct _HFFormat {
+struct HFFormat {
     GSList *chunks;
 };
 

@@ -33,7 +33,7 @@ include gtksourceview/Makefile.incl
 include mooedit/Makefile.incl
 include eggsmclient/Makefile.incl
 include mooapp/Makefile.incl
-include mooscript/Makefile.incl
+include moolua/Makefile.incl
 include moopython/Makefile.incl
 include plugins/Makefile.incl
 include medit-app/Makefile.incl

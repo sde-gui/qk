@@ -32,17 +32,17 @@ G_BEGIN_DECLS
 #define MOO_IS_PRINT_OPERATION_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_PRINT_OPERATION))
 #define MOO_PRINT_OPERATION_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PRINT_OPERATION, MooPrintOperationClass))
 
-typedef struct _MooPrintOperation         MooPrintOperation;
-typedef struct _MooPrintOperationPrivate  MooPrintOperationPrivate;
-typedef struct _MooPrintOperationClass    MooPrintOperationClass;
+typedef struct MooPrintOperation         MooPrintOperation;
+typedef struct MooPrintOperationPrivate  MooPrintOperationPrivate;
+typedef struct MooPrintOperationClass    MooPrintOperationClass;
 
-struct _MooPrintOperation
+struct MooPrintOperation
 {
     GtkPrintOperation base;
     MooPrintOperationPrivate *priv;
 };
 
-struct _MooPrintOperationClass
+struct MooPrintOperationClass
 {
     GtkPrintOperationClass base_class;
 };

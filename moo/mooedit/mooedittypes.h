@@ -8,24 +8,28 @@
 
 G_BEGIN_DECLS
 
-typedef struct _MooFileEnc MooFileEnc;
+typedef struct MooEditOpenInfo MooEditOpenInfo;
+typedef struct MooEditSaveInfo MooEditSaveInfo;
+typedef struct MooEditReloadInfo MooEditReloadInfo;
 
-typedef struct _MooEdit MooEdit;
-typedef struct _MooEditWindow MooEditWindow;
-typedef struct _MooEditor MooEditor;
+typedef struct MooEdit MooEdit;
+typedef struct MooEditWindow MooEditWindow;
+typedef struct MooEditor MooEditor;
 
-MOO_DECLARE_OBJECT_ARRAY (MooEditArray, moo_edit_array, MooEdit)
-MOO_DECLARE_OBJECT_ARRAY (MooEditWindowArray, moo_edit_window_array, MooEditWindow)
+MOO_DECLARE_OBJECT_ARRAY (MooEdit, moo_edit)
+MOO_DECLARE_OBJECT_ARRAY (MooEditWindow, moo_edit_window)
 MOO_DEFINE_SLIST (MooEditList, moo_edit_list, MooEdit)
-MOO_DEFINE_SLIST (MooEditWindowList, moo_edit_window_list, MooEditWindow)
 
-MOO_DECLARE_PTR_ARRAY (MooFileEncArray, moo_file_enc_array, MooFileEnc)
+MOO_DECLARE_OBJECT_ARRAY (MooEditOpenInfo, moo_edit_open_info)
 
 #define MOO_TYPE_LINE_END (moo_type_line_end ())
 GType   moo_type_line_end   (void) G_GNUC_CONST;
 
 #define MOO_EDIT_RELOAD_ERROR (moo_edit_reload_error_quark ())
+#define MOO_EDIT_SAVE_ERROR (moo_edit_save_error_quark ())
+
 MOO_DECLARE_QUARK (moo-edit-reload-error, moo_edit_reload_error_quark)
+MOO_DECLARE_QUARK (moo-edit-save-error, moo_edit_save_error_quark)
 
 G_END_DECLS
 

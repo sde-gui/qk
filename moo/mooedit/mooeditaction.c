@@ -33,7 +33,7 @@ typedef enum {
 
 #define N_FILTERS 2
 
-struct _MooEditActionPrivate {
+struct MooEditActionPrivate {
     MooEdit *doc;
     MooEditFilter *file_filter;
     GRegex *filters[N_FILTERS];

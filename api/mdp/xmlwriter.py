@@ -88,6 +88,8 @@ class Writer(object):
         self.__end_tag('retval')
 
     def __write_class(self, cls):
+        if not cls.parent:
+            raise RuntimeError('parent missing in class %s' % (cls.name,))
         dic = dict(name=cls.name, short_name=cls.short_name, parent=cls.parent, gtype_id=cls.gtype_id)
         if cls.constructable:
             dic['constructable'] = '1'

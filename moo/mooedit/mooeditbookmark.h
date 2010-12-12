@@ -29,16 +29,16 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_BOOKMARK_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_BOOKMARK))
 #define MOO_EDIT_BOOKMARK_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_BOOKMARK, MooEditBookmarkClass))
 
-typedef struct _MooEditBookmark MooEditBookmark;
-typedef struct _MooEditBookmarkClass MooEditBookmarkClass;
+typedef struct MooEditBookmark MooEditBookmark;
+typedef struct MooEditBookmarkClass MooEditBookmarkClass;
 
-struct _MooEditBookmark
+struct MooEditBookmark
 {
     MooLineMark mark;
     guint no;
 };
 
-struct _MooEditBookmarkClass
+struct MooEditBookmarkClass
 {
     MooLineMarkClass mark_class;
 };

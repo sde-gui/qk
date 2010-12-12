@@ -31,17 +31,17 @@ G_BEGIN_DECLS
 #define MOO_TEXT_BUFFER_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_TEXT_BUFFER, MooTextBufferClass))
 
 
-typedef struct _MooTextBufferPrivate  MooTextBufferPrivate;
-typedef struct _MooTextBufferClass    MooTextBufferClass;
+typedef struct MooTextBufferPrivate  MooTextBufferPrivate;
+typedef struct MooTextBufferClass    MooTextBufferClass;
 
-struct _MooTextBuffer
+struct MooTextBuffer
 {
     GtkTextBuffer  parent;
 
     MooTextBufferPrivate *priv;
 };
 
-struct _MooTextBufferClass
+struct MooTextBufferClass
 {
     GtkTextBufferClass parent_class;
 

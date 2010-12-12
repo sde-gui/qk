@@ -98,6 +98,17 @@ normalize_encoding (const char *encoding,
 
 
 gboolean
+_moo_edit_file_is_new (GFile *file)
+{
+    char *filename;
+    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
+    filename = g_file_get_path (file);
+    moo_return_val_if_fail (filename != NULL, FALSE);
+    return !g_file_test (filename, G_FILE_TEST_EXISTS);
+}
+
+
+gboolean
 _moo_edit_load_file (MooEdit      *edit,
                      GFile        *file,
                      const char   *encoding,
@@ -1233,6 +1244,34 @@ char *_moo_edit_normalize_uri_for_comparison (const char *uri)
     return _moo_edit_normalize_filename_for_comparison (uri);
 }
 
+char *
+_moo_file_get_normalized_name (GFile *file)
+{
+    char *ret;
+    char *tmp = NULL;
+    char *tmp2 = NULL;
+
+    moo_return_val_if_fail (G_IS_FILE (file), NULL);
+
+    tmp = g_file_get_path (file);
+
+    if (tmp)
+    {
+        tmp2 = _moo_normalize_file_path (tmp);
+        ret = _moo_edit_normalize_filename_for_comparison (tmp2);
+    }
+    else
+    {
+        tmp = g_file_get_uri (file);
+        moo_return_val_if_fail (tmp != NULL, NULL);
+        ret = _moo_edit_normalize_uri_for_comparison (tmp);
+    }
+
+    g_free (tmp2);
+    g_free (tmp);
+    return ret;
+}
+
 void
 _moo_edit_set_file (MooEdit    *edit,
                     GFile      *file,
@@ -1244,7 +1283,7 @@ _moo_edit_set_file (MooEdit    *edit,
     tmp = edit->priv->file;
 
     free_list = g_slist_prepend (free_list, edit->priv->filename);
-    free_list = g_slist_prepend (free_list, edit->priv->norm_filename);
+    free_list = g_slist_prepend (free_list, edit->priv->norm_name);
     free_list = g_slist_prepend (free_list, edit->priv->display_filename);
     free_list = g_slist_prepend (free_list, edit->priv->display_basename);
 
@@ -1257,7 +1296,7 @@ _moo_edit_set_file (MooEdit    *edit,
 
         edit->priv->file = NULL;
         edit->priv->filename = NULL;
-        edit->priv->norm_filename = NULL;
+        edit->priv->norm_name = NULL;
 
         if (n == 1)
             edit->priv->display_filename = g_strdup (_("Untitled"));
@@ -1268,18 +1307,13 @@ _moo_edit_set_file (MooEdit    *edit,
     }
     else
     {
-        char *norm_name_tmp;
-
         remove_untitled (NULL, edit);
         edit->priv->file = g_file_dup (file);
         edit->priv->filename = g_file_get_path (file);
-
-        norm_name_tmp = _moo_normalize_file_path (edit->priv->filename);
-        edit->priv->norm_filename = _moo_edit_normalize_filename_for_comparison (norm_name_tmp);
-        free_list = g_slist_prepend (free_list, norm_name_tmp);
-
+        edit->priv->norm_name = _moo_file_get_normalized_name (file);
         edit->priv->display_filename = moo_file_get_display_name (file);
         edit->priv->display_basename = moo_file_get_display_basename (file);
+// _moo_edit_normalize_filename_for_comparison (_moo_normalize_file_path (edit->priv->filename));
     }
 
     if (!encoding)

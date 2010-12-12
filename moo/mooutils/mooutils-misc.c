@@ -54,7 +54,7 @@
 #include <shellapi.h>
 #endif
 
-MOO_DEFINE_OBJECT_ARRAY (MooObjectArray, moo_object_array, GObject)
+MOO_DEFINE_OBJECT_ARRAY_FULL (MooObjectArray, moo_object_array, GObject)
 MOO_DEFINE_QUARK (moo-error, moo_error_quark)
 
 G_LOCK_DEFINE_STATIC (moo_user_data_dir);

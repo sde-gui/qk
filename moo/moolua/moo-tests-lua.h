@@ -17,6 +17,9 @@
 #define MOO_TESTS_LUA_H
 
 #include "mooutils/moo-test-macros.h"
+#include "moolua/lua/lua.h"
+#include "moolua/lua/lauxlib.h"
+#include "medit-lua.h"
 
 G_BEGIN_DECLS
 
@@ -99,7 +102,7 @@ moo_test_run_lua_file (const char *basename)
 
     if ((contents = moo_test_load_data_file (basename)))
     {
-        lua_State *L = medit_lua_new (NULL, false);
+        lua_State *L = medit_lua_new (NULL);
         moo_return_if_fail (L != NULL);
 
         g_assert (lua_gettop (L) == 0);

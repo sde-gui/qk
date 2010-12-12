@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * class:MooApp: (parent GObject)
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -24,10 +28,11 @@
 #include "mooapp-accels.h"
 #include "mooapp-info.h"
 #include "mooappabout.h"
-#include "mooscript/lua/moolua.h"
+#include "moolua/medit-lua.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
+#include "mooedit/mooeditfileinfo.h"
 #include "mooutils/mooprefsdialog.h"
 #include "marshals.h"
 #include "mooutils/mooappinput.h"
@@ -85,6 +90,7 @@ struct _MooAppPrivate {
 
     gboolean    running;
     gboolean    in_try_quit;
+    int         exit_status;
 
     int         use_session;
     EggSMClient *sm_client;
@@ -541,6 +547,9 @@ moo_app_run_script (MooApp     *app,
 // }
 
 
+/**
+ * moo_app_get_editor:
+ */
 MooEditor *
 moo_app_get_editor (MooApp *app)
 {
@@ -827,7 +836,16 @@ moo_app_run_real (MooApp *app)
 
     gtk_main ();
 
-    return 0;
+    return app->priv->exit_status;
+}
+
+
+void
+moo_app_set_exit_status (MooApp *app,
+                         int     value)
+{
+    moo_return_if_fail (MOO_IS_APP (app));
+    app->priv->exit_status = value;
 }
 
 
@@ -840,7 +858,7 @@ moo_app_try_quit_real (MooApp *app)
     moo_app_save_session (app);
 
 #ifdef MOO_BUILD_EDIT
-    if (!moo_editor_close_all (app->priv->editor, TRUE, TRUE))
+    if (!_moo_editor_close_all (app->priv->editor, TRUE, TRUE))
         return TRUE;
 #endif /* MOO_BUILD_EDIT */
 
@@ -881,7 +899,7 @@ moo_app_quit_real (MooApp *app)
     app->priv->sm_client = NULL;
 
 #ifdef MOO_BUILD_EDIT
-    moo_editor_close_all (app->priv->editor, FALSE, FALSE);
+    _moo_editor_close_all (app->priv->editor, FALSE, FALSE);
 
     moo_plugin_shutdown ();
 
@@ -1270,16 +1288,13 @@ moo_app_load_session (MooApp *app)
 // }
 
 void
-moo_app_open_files (MooApp         *app,
-                    MooAppFileInfo *files,
-                    int             n_files,
-                    guint32         stamp)
+moo_app_open_files (MooApp               *app,
+                    MooEditOpenInfoArray *files,
+                    guint32               stamp)
 {
-    int i;
-
     g_return_if_fail (MOO_IS_APP (app));
 
-    if (!n_files)
+    if (moo_edit_open_info_array_is_empty (files))
     {
         MooEdit *doc;
 
@@ -1291,13 +1306,7 @@ moo_app_open_files (MooApp         *app,
         return;
     }
 
-    for (i = 0; i < n_files; ++i)
-        _moo_editor_open_uri (app->priv->editor,
-                              files[i].uri,
-                              files[i].encoding,
-                              files[i].line,
-                              files[i].options);
-
+    moo_editor_open_files (app->priv->editor, files, NULL, NULL);
     moo_editor_present (app->priv->editor, stamp);
 }
 
@@ -1473,17 +1482,15 @@ moo_app_save_prefs (MooApp *app)
 
 #define MOO_APP_CMD_VERSION "1.0"
 
-static gboolean
+static MooEditOpenInfoArray *
 moo_app_parse_files (const char      *data,
-                     guint32         *stamp,
-                     MooAppFileInfo **filesp,
-                     int             *n_files)
+                     guint32         *stamp)
 {
-    GArray *files = NULL;
     MooMarkupDoc *xml;
     MooMarkupNode *root;
     MooMarkupNode *node;
     const char *version;
+    MooEditOpenInfoArray *files;
 
     xml = moo_markup_parse_memory (data, -1, NULL);
     g_return_val_if_fail (xml != NULL, FALSE);
@@ -1494,16 +1501,18 @@ moo_app_parse_files (const char      *data,
     {
         g_warning ("%s: invalid markup", G_STRFUNC);
         moo_markup_doc_unref (xml);
-        return FALSE;
+        return NULL;
     }
 
     *stamp = moo_markup_uint_prop (root, "stamp", 0);
+    files = moo_edit_open_info_array_new ();
 
     for (node = root->children; node != NULL; node = node->next)
     {
         const char *uri;
         const char *encoding;
-        MooAppFileInfo file = {0};
+        MooEditOpenInfo *info;
+        int line;
 
         if (!MOO_MARKUP_IS_ELEMENT (node))
             continue;
@@ -1516,53 +1525,43 @@ moo_app_parse_files (const char      *data,
             continue;
         }
 
-        file.uri = g_strdup (uri);
         encoding = moo_markup_get_prop (node, "encoding");
-        if (encoding && encoding[0])
-            file.encoding = g_strdup (encoding);
+        if (!encoding || !encoding[0])
+            encoding = NULL;
 
-        file.line = moo_markup_int_prop (node, "line", 0);
+        info = moo_edit_open_info_new_uri (uri, encoding);
+
+        line = moo_markup_int_prop (node, "line", 0);
+        if (line > 0)
+            info->line = line - 1;
+
         if (moo_markup_bool_prop (node, "new-window", FALSE))
-            file.options |= MOO_EDIT_OPEN_NEW_WINDOW;
+            info->flags |= MOO_EDIT_OPEN_NEW_WINDOW;
         if (moo_markup_bool_prop (node, "new-tab", FALSE))
-            file.options |= MOO_EDIT_OPEN_NEW_TAB;
+            info->flags |= MOO_EDIT_OPEN_NEW_TAB;
         if (moo_markup_bool_prop (node, "reload", FALSE))
-            file.options |= MOO_EDIT_OPEN_RELOAD;
+            info->flags |= MOO_EDIT_OPEN_RELOAD;
 
-        if (!files)
-            files = g_array_new (FALSE, FALSE, sizeof (MooAppFileInfo));
-        g_array_append_val (files, file);
-    }
-
-    if (files)
-    {
-        *n_files = files->len;
-        *filesp = (MooAppFileInfo *) g_array_free (files, FALSE);
+        moo_edit_open_info_array_take (files, info);
     }
 
     moo_markup_doc_unref (xml);
-    return TRUE;
+    return files;
 }
 
 static void
 moo_app_cmd_open_files (MooApp     *app,
                         const char *data)
 {
-    MooAppFileInfo *files = NULL;
-    int n_files = 0;
-    int i;
+    MooEditOpenInfoArray *files;
     guint32 stamp;
 
-    if (moo_app_parse_files (data, &stamp, &files, &n_files))
-        moo_app_open_files (app, files, n_files, stamp);
+    files = moo_app_parse_files (data, &stamp);
 
-    for (i = 0; i < n_files; ++i)
-    {
-        g_free (files[i].uri);
-        g_free (files[i].encoding);
-    }
+    if (!moo_edit_open_info_array_is_empty (files))
+        moo_app_open_files (app, files, stamp);
 
-    g_free (files);
+    moo_edit_open_info_array_free (files);
 }
 
 G_GNUC_PRINTF(2, 3) static void
@@ -1581,14 +1580,13 @@ append_escaped (GString *str, const char *format, ...)
 }
 
 gboolean
-moo_app_send_files (MooAppFileInfo *files,
-                    int             n_files,
-                    guint32         stamp,
-                    const char     *pid)
+moo_app_send_files (MooEditOpenInfoArray *files,
+                    guint32               stamp,
+                    const char           *pid)
 {
     gboolean result;
     GString *msg;
-    int i;
+    int i, c;
 
 #if 0
     _moo_message ("moo_app_send_files: got %d files to pid %s",
@@ -1599,20 +1597,27 @@ moo_app_send_files (MooAppFileInfo *files,
     g_string_append_printf (msg, "%s<moo-app-open-files version=\"%s\" stamp=\"%u\">",
                             CMD_OPEN_FILES_S, MOO_APP_CMD_VERSION, stamp);
 
-    for (i = 0; i < n_files; ++i)
+    for (i = 0, c = moo_edit_open_info_array_get_size (files); i < c; ++i)
     {
+        MooEditOpenInfo *info = files->elms[i];
+        char *uri;
+
         g_string_append (msg, "<file");
-        if (files[i].encoding)
-            g_string_append_printf (msg, " encoding=\"%s\"", files[i].encoding);
-        if (files[i].line)
-            g_string_append_printf (msg, " line=\"%u\"", (guint) files[i].line);
-        if (files[i].options & MOO_EDIT_OPEN_NEW_WINDOW)
+
+        if (info->encoding)
+            g_string_append_printf (msg, " encoding=\"%s\"", info->encoding);
+        if (info->line >= 0)
+            g_string_append_printf (msg, " line=\"%u\"", (guint) info->line + 1);
+        if (info->flags & MOO_EDIT_OPEN_NEW_WINDOW)
             g_string_append_printf (msg, " new-window=\"true\"");
-        if (files[i].options & MOO_EDIT_OPEN_NEW_TAB)
+        if (info->flags & MOO_EDIT_OPEN_NEW_TAB)
             g_string_append_printf (msg, " new-tab=\"true\"");
-        if (files[i].options & MOO_EDIT_OPEN_RELOAD)
+        if (info->flags & MOO_EDIT_OPEN_RELOAD)
             g_string_append_printf (msg, " reload=\"true\"");
-        append_escaped (msg, ">%s</file>", files[i].uri);
+
+        uri = g_file_get_uri (info->file);
+        append_escaped (msg, ">%s</file>", uri);
+        g_free (uri);
     }
 
     g_string_append (msg, "</moo-app-open-files>");

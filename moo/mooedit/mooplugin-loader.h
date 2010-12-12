@@ -21,7 +21,7 @@
 G_BEGIN_DECLS
 
 
-typedef struct _MooPluginLoader         MooPluginLoader;
+typedef struct MooPluginLoader MooPluginLoader;
 
 typedef void (*MooLoadModuleFunc) (const char      *module_file,
                                    const char      *ini_file,
@@ -34,7 +34,7 @@ typedef void (*MooLoadPluginFunc) (const char      *plugin_file,
                                    gpointer         data);
 
 
-struct _MooPluginLoader
+struct MooPluginLoader
 {
     MooLoadModuleFunc load_module;
     MooLoadPluginFunc load_plugin;

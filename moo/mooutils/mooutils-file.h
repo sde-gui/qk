@@ -6,7 +6,7 @@
 
 G_BEGIN_DECLS
 
-MOO_DECLARE_OBJECT_ARRAY (MooFileArray, moo_file_array, GFile)
+MOO_DECLARE_OBJECT_ARRAY_FULL (MooFileArray, moo_file_array, GFile)
 
 inline static void
 moo_file_free (GFile *file)

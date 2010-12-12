@@ -24,18 +24,9 @@ void             _moo_editor_move_doc           (MooEditor      *editor,
                                                  gboolean        focus);
 
 MooFileWatch    *_moo_editor_get_file_watch     (MooEditor      *editor);
-gboolean         _moo_editor_reload             (MooEditor      *editor,
-                                                 MooEdit        *doc,
-                                                 const char     *encoding,
-                                                 GError        **error);
-gboolean         _moo_editor_save               (MooEditor      *editor,
-                                                 MooEdit        *doc,
-                                                 GError        **error);
-gboolean         _moo_editor_save_as            (MooEditor      *editor,
-                                                 MooEdit        *doc,
-                                                 const char     *filename,
-                                                 const char     *encoding,
-                                                 GError        **error);
+
+void             _moo_editor_apply_prefs        (MooEditor      *editor);
+void             _moo_editor_queue_apply_prefs  (MooEditor      *editor);
 
 G_END_DECLS
 

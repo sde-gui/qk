@@ -33,14 +33,17 @@ typedef enum {
 } MooEditSaveFlags;
 
 #define MOO_EDIT_FILE_ERROR (_moo_edit_file_error_quark ())
+
 enum {
-    MOO_EDIT_FILE_ERROR_ENCODING,
+    MOO_EDIT_FILE_ERROR_ENCODING = 1,
     MOO_EDIT_FILE_ERROR_FAILED,
-    MOO_EDIT_FILE_ERROR_NOT_IMPLEMENTED
+    MOO_EDIT_FILE_ERROR_NOT_IMPLEMENTED,
+    MOO_EDIT_FILE_ERROR_NOENT
 };
 
 GQuark           _moo_edit_file_error_quark     (void) G_GNUC_CONST;
 
+gboolean         _moo_edit_file_is_new          (GFile          *file);
 gboolean         _moo_edit_load_file            (MooEdit        *edit,
                                                  GFile          *file,
                                                  const char     *encoding,

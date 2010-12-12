@@ -2,8 +2,9 @@
 #define MOO_ARRAY_H
 
 #include <mooutils/mooutils-mem.h>
+#include <glib-object.h>
 
-#define MOO_DECLARE_PTR_ARRAY(ArrayType, array_type, ElmType)           \
+#define MOO_DECLARE_PTR_ARRAY_FULL(ArrayType, array_type, ElmType)      \
                                                                         \
 typedef struct ArrayType ArrayType;                                     \
                                                                         \
@@ -48,8 +49,11 @@ inline static gsize array_type##_get_size (ArrayType *ar)               \
     return ar ? ar->n_elms : 0;                                         \
 }
 
-#define MOO_DEFINE_PTR_ARRAY(ArrayType, array_type, ElmType,            \
-                             copy_elm, free_elm)                        \
+#define MOO_DECLARE_PTR_ARRAY(Element, element)                         \
+    MOO_DECLARE_PTR_ARRAY_FULL(Element##Array, element##_array, Element)
+
+#define MOO_DEFINE_PTR_ARRAY_FULL(ArrayType, array_type, ElmType,       \
+                                  copy_elm, free_elm)                   \
                                                                         \
 ArrayType *                                                             \
 array_type##_new (void)                                                 \
@@ -172,11 +176,16 @@ int array_type##_find (const ArrayType *ar, ElmType *elm)               \
     return -1;                                                          \
 }
 
+#define MOO_DEFINE_PTR_ARRAY_C(Element, element)                        \
+    MOO_DEFINE_PTR_ARRAY_FULL (Element##Array, element##_array, Element, element##_copy, element##_free)
 
-#define MOO_DECLARE_OBJECT_ARRAY(ArrayType, array_type, ElmType)        \
-    MOO_DECLARE_PTR_ARRAY (ArrayType, array_type, ElmType)
+#define MOO_DECLARE_OBJECT_ARRAY_FULL(ArrayType, array_type, ElmType)   \
+    MOO_DECLARE_PTR_ARRAY_FULL (ArrayType, array_type, ElmType)
 
-#define MOO_DEFINE_OBJECT_ARRAY(ArrayType, array_type, ElmType)         \
+#define MOO_DECLARE_OBJECT_ARRAY(Element, element)                      \
+    MOO_DECLARE_OBJECT_ARRAY_FULL (Element##Array, element##_array, Element)
+
+#define MOO_DEFINE_OBJECT_ARRAY_FULL(ArrayType, array_type, ElmType)    \
     inline static ElmType *                                             \
     array_type##_ref_elm__ (ElmType *elm)                               \
     {                                                                   \
@@ -189,10 +198,18 @@ int array_type##_find (const ArrayType *ar, ElmType *elm)               \
         g_object_unref (elm);                                           \
     }                                                                   \
                                                                         \
-    MOO_DEFINE_PTR_ARRAY (ArrayType, array_type, ElmType,               \
-                          array_type##_ref_elm__,                       \
-                          array_type##_unref_elm__)
+    MOO_DEFINE_PTR_ARRAY_FULL (ArrayType, array_type, ElmType,          \
+                               array_type##_ref_elm__,                  \
+                               array_type##_unref_elm__)
 
-MOO_DECLARE_OBJECT_ARRAY (MooObjectArray, moo_object_array, GObject)
+#define MOO_DEFINE_OBJECT_ARRAY(Element, element)                       \
+    MOO_DEFINE_OBJECT_ARRAY_FULL (Element##Array, element##_array, Element)
+
+G_BEGIN_DECLS
+
+MOO_DECLARE_OBJECT_ARRAY_FULL (MooObjectArray, moo_object_array, GObject)
+MOO_DECLARE_PTR_ARRAY_FULL (MooPtrArray, moo_ptr_array, gpointer)
+
+G_END_DECLS
 
 #endif /* MOO_ARRAY_H */

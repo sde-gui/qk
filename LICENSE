@@ -25,7 +25,7 @@ do have copyright notice inside; WTFPL will work fine for the rest.
 Third-party stuff, for debian/copyright. Everything below
 is under LGPL unless noted otherwise.
 
-moo/mooscript/lua/*:
+moo/moolua/lua/*:
     Lua, LuaFileSystem. Distributed under MIT
     license, see moo/moolua/COPYRIGHT, moo/moolua/ext/README.lfs.
     Copyright (C) 1994-2007 Lua.org, PUC-Rio.

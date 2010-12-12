@@ -78,11 +78,17 @@ class Writer(object):
         self.out.write(type_template % dic)
         self.out.write('\n')
 
-    def __write_function_or_method(self, meth, cls):
-        if meth.retval:
-            return_type = meth.retval.type
+    def __get_pygtk_type_name(self, typ):
+        if isinstance(typ, InstanceType):
+            return typ.name + '*'
         else:
+            return typ.name
+
+    def __write_function_or_method(self, meth, cls):
+        if meth.retval is None:
             return_type = 'none'
+        else:
+            return_type = self.__get_pygtk_type_name(meth.retval.type)
         dic = dict(name=meth.name, c_name=meth.c_name, return_type=return_type)
         if not cls:
             self.out.write(function_start_template % dic)
@@ -104,7 +110,7 @@ class Writer(object):
         if meth.params:
             self.out.write('  (parameters\n')
             for p in meth.params:
-                self.out.write('    \'("%s" "%s"' % (p.type, p.name))
+                self.out.write('    \'("%s" "%s"' % (self.__get_pygtk_type_name(p.type), p.name))
                 if p.allow_none:
                     self.out.write(' (null-ok)')
                 if p.default_value is not None:

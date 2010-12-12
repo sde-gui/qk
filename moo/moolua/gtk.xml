@@ -1,0 +1,8 @@
+<module name="Gtk">
+  <class gtype_id="G_TYPE_OBJECT" name="GObject" parent="null" short_name='Object'/>
+  <class gtype_id="G_TYPE_FILE" name="GFile" parent="GObject" short_name='File'/>
+  <class gtype_id="GDK_TYPE_PIXBUF" name="GdkPixbuf" parent="GObject" short_name='Pixbuf'/>
+  <class gtype_id="GTK_TYPE_OBJECT" name="GtkObject" parent="GObject" short_name='Object'/>
+  <class gtype_id="GTK_TYPE_ACCEL_GROUP" name="GtkAccelGroup" parent="GObject" short_name='AccelGroup'/>
+  <class gtype_id="GTK_TYPE_WIDGET" name="GtkWidget" parent="GtkObject" short_name='Widget'/>
+</module>

@@ -28,7 +28,7 @@
 #include <string.h>
 
 
-struct _MooTextBufferPrivate {
+struct MooTextBufferPrivate {
     gboolean has_selection;
     gboolean has_text;
 

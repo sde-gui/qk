@@ -1107,7 +1107,7 @@ output_activate (WindowStuff    *stuff,
         return FALSE;
 
     editor = moo_edit_window_get_editor (stuff->window);
-    moo_editor_open_file_line (editor, line_data->filename, line_data->line, stuff->window);
+    moo_editor_open_path (editor, line_data->filename, NULL, line_data->line, stuff->window);
 
     return TRUE;
 }

@@ -1953,10 +1953,8 @@ open_file (WindowPlugin *plugin,
         else
         {
             moo_editor_open_uri (moo_editor_instance (),
-                                 MOO_WIN_PLUGIN (plugin)->window,
-                                 NULL,
-                                 FILE_ITEM (item)->uri,
-                                 NULL);
+                                 FILE_ITEM (item)->uri, NULL, -1,
+                                 MOO_WIN_PLUGIN (plugin)->window);
         }
     }
     else if (ITEM_IS_GROUP (item))

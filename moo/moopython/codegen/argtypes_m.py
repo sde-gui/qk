@@ -82,6 +82,38 @@ class ObjectArrayArg(ArgType):
             info.varlist.add(self.c_type, '*ret')
             info.codeafter.append('    return _moo_object_array_to_pyobject ((MooObjectArray*) ret);')
 
+class BoxedArrayArg(ArgType):
+    def __init__(self, elm_c_type, elm_c_prefix, elm_g_type):
+        self.elm_c_type = elm_c_type
+        self.elm_c_prefix = elm_c_prefix
+        self.elm_g_type = elm_g_type
+        self.c_type = elm_c_type + 'Array'
+
+    def write_param(self, ptype, pname, pdflt, pnull, info):
+        if pdflt:
+            if pdflt != 'NULL': raise TypeError("Only NULL is supported as a default %s* value" % self.c_type)
+            info.varlist.add(self.c_type, '*' + pname + ' = ' + pdflt)
+        else:
+            info.varlist.add(self.c_type, '*' + pname)
+        info.arglist.append(pname)
+        if pnull:
+            info.add_parselist('O&', ['_moo_pyobject_to_boxed_array', self.elm_g_type + ', (MooPtrArray**) &' + pname], [pname])
+        else:
+            info.add_parselist('O&', ['_moo_pyobject_to_boxed_array_no_null', self.elm_g_type + ', (MooPtrArray**) &' + pname], [pname])
+        info.codeafter.append('    _moo_boxed_array_free (%s, (MooPtrArray*) %s);' % (self.elm_g_type, pname))
+
+    def write_return(self, ptype, ownsreturn, info):
+        if ownsreturn:
+            # have to free result ...
+            info.varlist.add(self.c_type, '*ret')
+            info.varlist.add('PyObject', '*py_ret')
+            info.codeafter.append(('    py_ret = _moo_boxed_array_to_pyobject (%s, (MooPtrArray*) ret);\n' +
+                                   '    _moo_boxed_array_free (%s, ret);\n' +
+                                   '    return py_ret;') % (self.elm_g_type, self.elm_g_type))
+        else:
+            info.varlist.add(self.c_type, '*ret')
+            info.codeafter.append('    return _moo_boxed_array_to_pyobject (%s, (MooPtrArray*) ret);' % (self.elm_g_type,))
+
 class NoRefObjectSListArg(ArgType):
     def write_return(self, ptype, ownsreturn, info):
         if ownsreturn:
@@ -107,6 +139,8 @@ matcher.register('no-ref-object-slist', arg)
 
 for typ, prefix in (('MooFileArray', 'moo_file_array'),
                     ('MooEditArray', 'moo_edit_array'),
-                    ('MooEditWindowArray', 'moo_edit_window_array'),):
+                    ('MooEditWindowArray', 'moo_edit_window_array'),
+                    ('MooEditOpenInfoArray', 'moo_edit_open_info_array'),
+                    ):
     arg = ObjectArrayArg(typ, prefix)
     matcher.register(typ + '*', arg)

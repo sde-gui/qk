@@ -521,7 +521,8 @@ static gboolean
 unit_test_func (void)
 {
     MooTestOptions opts = 0;
-    unit_tests_main (opts, medit_opts.ut_tests, medit_opts.ut_dir);
+    int status = unit_tests_main (opts, medit_opts.ut_tests, medit_opts.ut_dir);
+    moo_app_set_exit_status (moo_app_get_instance (), status);
     moo_app_quit (moo_app_get_instance ());
     return FALSE;
 }
@@ -547,8 +548,7 @@ medit_main (int argc, char *argv[])
     const char *name = NULL;
     char pid_buf[32];
     GOptionContext *ctx;
-    MooAppFileInfo *files;
-    int n_files;
+    MooEditOpenInfoArray *files;
 
     init_mem_stuff ();
     g_thread_init (NULL);
@@ -609,11 +609,11 @@ medit_main (int argc, char *argv[])
         exit (0);
     }
 
-    parse_files (&files, &n_files);
+    files = parse_files ();
 
     if (name)
     {
-        if (moo_app_send_files (files, n_files, stamp, name))
+        if (moo_app_send_files (files, stamp, name))
             exit (0);
 
         if (!medit_opts.instance_name)
@@ -624,7 +624,7 @@ medit_main (int argc, char *argv[])
     }
 
     if (!new_instance && !medit_opts.instance_name &&
-         moo_app_send_files (files, n_files, stamp, NULL))
+         moo_app_send_files (files, stamp, NULL))
     {
         notify_startup_complete ();
         exit (0);
@@ -677,9 +677,9 @@ medit_main (int argc, char *argv[])
         moo_editor_new_window (editor);
 
     if (files)
-        moo_app_open_files (app, files, n_files, stamp);
+        moo_app_open_files (app, files, stamp);
 
-    free_files (files, n_files);
+    moo_edit_open_info_array_free (files);
     g_option_context_free (ctx);
 
     if (medit_opts.ut)

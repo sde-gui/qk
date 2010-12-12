@@ -32,19 +32,19 @@ G_BEGIN_DECLS
 #define MOO_IS_PRINT_PREVIEW_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_PRINT_PREVIEW))
 #define MOO_PRINT_PREVIEW_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_PRINT_PREVIEW, MooPrintPreviewClass))
 
-typedef struct _MooPrintPreview           MooPrintPreview;
-typedef struct _MooPrintPreviewPrivate  MooPrintPreviewPrivate;
-typedef struct _MooPrintPreviewClass    MooPrintPreviewClass;
+typedef struct MooPrintPreview           MooPrintPreview;
+typedef struct MooPrintPreviewPrivate  MooPrintPreviewPrivate;
+typedef struct MooPrintPreviewClass    MooPrintPreviewClass;
 
 #define MOO_PRINT_PREVIEW_RESPONSE_PRINT GTK_RESPONSE_APPLY
 
-struct _MooPrintPreview
+struct MooPrintPreview
 {
     GtkDialog base;
     MooPrintPreviewPrivate *priv;
 };
 
-struct _MooPrintPreviewClass
+struct MooPrintPreviewClass
 {
     GtkDialogClass base_class;
 };

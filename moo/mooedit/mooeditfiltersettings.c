@@ -39,7 +39,7 @@ typedef enum {
     MOO_EDIT_FILTER_REGEX
 } MooEditFilterType;
 
-struct _MooEditFilter {
+struct MooEditFilter {
     MooEditFilterType type;
     union {
         GSList *langs;

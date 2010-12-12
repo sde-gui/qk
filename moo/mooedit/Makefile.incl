@@ -21,13 +21,8 @@ moo_sources +=				\
 	mooedit/mooedithistoryitem.c	\
 	mooedit/mooedithistoryitem.h	\
 	mooedit/mooedit-impl.h		\
-	mooedit/mooeditor.c		\
-	mooedit/mooeditor.h		\
-	mooedit/mooeditor-impl.h	\
-	mooedit/mooeditor-private.h	\
-	mooedit/mooeditor-tests.c	\
-	mooedit/mooeditor-tests.h	\
-	mooedit/mooeditor-tests.h	\
+	mooedit/mooedit-script.c	\
+	mooedit/mooedit-script.h	\
 	mooedit/mooeditprefs.c		\
 	mooedit/mooeditprefs.h		\
 	mooedit/mooeditprefspage.c	\
@@ -36,8 +31,8 @@ moo_sources +=				\
 	mooedit/mooeditwindow.c		\
 	mooedit/mooeditwindow.h		\
 	mooedit/mooeditwindow-impl.h	\
-	mooedit/moofileenc.c		\
-	mooedit/moofileenc.h		\
+	mooedit/mooeditfileinfo.c	\
+	mooedit/mooeditfileinfo.h	\
 	mooedit/moofold.c		\
 	mooedit/moofold.h		\
 	mooedit/mooindenter.c		\
@@ -78,7 +73,14 @@ moo_sources +=				\
 	mooedit/mootextview.c		\
 	mooedit/mootextview.h		\
 	mooedit/mootextview-input.c	\
-	mooedit/mootextview-private.h
+	mooedit/mootextview-private.h   \
+	mooedit/mooeditor.c		\
+	mooedit/mooeditor.h		\
+	mooedit/mooeditor-impl.h	\
+	mooedit/mooeditor-private.h	\
+	mooedit/mooeditor-tests.c	\
+	mooedit/mooeditor-tests.h	\
+	mooedit/mooeditor-tests.h
 
 EXTRA_DIST +=						\
 	mooedit/glade/mooprintpreview.glade		\

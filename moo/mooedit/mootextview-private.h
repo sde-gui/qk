@@ -97,7 +97,7 @@ typedef struct {
     char *text;
 } MooTextViewClipboard;
 
-struct _MooTextViewPrivate {
+struct MooTextViewPrivate {
     gboolean constructed;
     GType buffer_type;
     GtkTextBuffer *buffer;

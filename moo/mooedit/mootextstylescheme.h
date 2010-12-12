@@ -30,8 +30,8 @@ G_BEGIN_DECLS
 #define MOO_TEXT_STYLE(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), MOO_TYPE_TEXT_STYLE, MooTextStyle))
 #define MOO_IS_TEXT_STYLE(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MOO_TYPE_TEXT_STYLE))
 
-typedef struct _MooTextStyle MooTextStyle;
-typedef struct _MooTextStyleScheme MooTextStyleScheme;
+typedef struct MooTextStyle MooTextStyle;
+typedef struct MooTextStyleScheme MooTextStyleScheme;
 
 GType               moo_text_style_scheme_get_type      (void) G_GNUC_CONST;
 GType               moo_text_style_get_type             (void) G_GNUC_CONST;

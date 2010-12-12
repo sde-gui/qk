@@ -20,7 +20,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-messages.h"
 #include "lua-module-setup.h"
-#include "mooscript/mooscript-lua.h"
+#include "moolua/medit-lua.h"
 #include "mooutils/moolist.h"
 
 #define MOO_LUA_PLUGIN_ID "MooLua"
@@ -39,7 +39,7 @@ struct MooLuaPlugin {
 static MooLuaModule *
 moo_lua_module_load (const char *filename)
 {
-    lua_State *L = medit_lua_new (true, true);
+    lua_State *L = medit_lua_new (true);
     if (!L)
         return NULL;
 

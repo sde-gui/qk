@@ -26,7 +26,7 @@
 #include "mooutils/moocompat.h"
 
 
-struct _MooLineMarkPrivate {
+struct MooLineMarkPrivate {
     GdkColor background;
     GdkGC *background_gc;
 

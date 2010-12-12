@@ -1,3 +1,4 @@
+import re
 import xml.etree.ElementTree as _etree
 
 class Doc(object):
@@ -130,22 +131,44 @@ class VMethod(_FunctionBase):
         _FunctionBase.__init__(self)
         self.c_name = "fake"
 
-class _GTypedType(_XmlObject):
+class Type(_XmlObject):
     def __init__(self):
         _XmlObject.__init__(self)
         self.name = None
-        self.short_name = None
+        self.c_name = None
         self.gtype_id = None
+
+class BasicType(Type):
+    def __init__(self, name):
+        Type.__init__(self)
+        self.name = name
+
+class ArrayType(Type):
+    def __init__(self, elm_type):
+        Type.__init__(self)
+        self.elm_type = elm_type
+        self.name = '%sArray*' % elm_type.name
+        self.c_name = '%sArray*' % elm_type.name
+
+class GErrorReturnType(Type):
+    def __init__(self):
+        Type.__init__(self)
+        self.name = 'GError**'
+
+class GTypedType(Type):
+    def __init__(self):
+        Type.__init__(self)
+        self.short_name = None
 
     def _parse_attribute(self, attr, value):
         if attr in ('short_name', 'name', 'gtype_id'):
             _set_unique_attribute(self, attr, value)
         else:
-            return _XmlObject._parse_attribute(self, attr, value)
+            return Type._parse_attribute(self, attr, value)
         return True
 
     def _parse_xml(self, elm, *args):
-        _XmlObject._parse_xml(self, elm, *args)
+        Type._parse_xml(self, elm, *args)
         if self.name is None:
             raise RuntimeError('class name missing')
         if self.short_name is None:
@@ -153,17 +176,17 @@ class _GTypedType(_XmlObject):
         if self.gtype_id is None:
             raise RuntimeError('class gtype missing')
 
-class Enum(_GTypedType):
+class Enum(GTypedType):
     def __init__(self):
-        _GTypedType.__init__(self)
+        GTypedType.__init__(self)
 
-class Flags(_GTypedType):
+class Flags(GTypedType):
     def __init__(self):
-        _GTypedType.__init__(self)
+        GTypedType.__init__(self)
 
-class _InstanceType(_GTypedType):
+class InstanceType(GTypedType):
     def __init__(self):
-        _GTypedType.__init__(self)
+        GTypedType.__init__(self)
         self.constructor = None
         self.methods = []
         self.__method_hash = {}
@@ -178,19 +201,19 @@ class _InstanceType(_GTypedType):
             assert not self.constructor
             self.constructor = Constructor.from_xml(elm)
         else:
-            _GTypedType._parse_xml_element(self, elm)
+            GTypedType._parse_xml_element(self, elm)
 
-class Pointer(_InstanceType):
+class Pointer(InstanceType):
     def __init__(self):
-        _InstanceType.__init__(self)
+        InstanceType.__init__(self)
 
-class Boxed(_InstanceType):
+class Boxed(InstanceType):
     def __init__(self):
-        _InstanceType.__init__(self)
+        InstanceType.__init__(self)
 
-class Class(_InstanceType):
+class Class(InstanceType):
     def __init__(self):
-        _InstanceType.__init__(self)
+        InstanceType.__init__(self)
         self.parent = None
         self.vmethods = []
         self.constructable = None
@@ -202,7 +225,7 @@ class Class(_InstanceType):
         elif attr in ('constructable'):
             _set_unique_attribute_bool(self, attr, value)
         else:
-            return _InstanceType._parse_attribute(self, attr, value)
+            return InstanceType._parse_attribute(self, attr, value)
         return True
 
     def _parse_xml_element(self, elm):
@@ -212,10 +235,10 @@ class Class(_InstanceType):
             self.__vmethod_hash[meth.name] = meth
             self.vmethods.append(meth)
         else:
-            _InstanceType._parse_xml_element(self, elm)
+            InstanceType._parse_xml_element(self, elm)
 
     def _parse_xml(self, elm, *args):
-        _InstanceType._parse_xml(self, elm, *args)
+        InstanceType._parse_xml(self, elm, *args)
         if self.parent is None:
             raise RuntimeError('class parent name missing')
         if self.constructable and self.constructor:
@@ -234,15 +257,70 @@ class Module(object):
         self.__function_hash = {}
         self.__import_modules = []
         self.__parsing_done = False
+        self.__types = {}
 
     def __add_type(self, typ):
         if typ.name in self.__class_hash:
             raise RuntimeError('duplicated type %s' % typ.name)
         self.__class_hash[typ.name] = typ
 
+    def __finish_type(self, typ):
+        if isinstance(typ, Type):
+            return typ
+        if typ in self.__types:
+            return self.__types[typ]
+        if typ == 'GError**':
+            return GErrorReturnType()
+        m = re.match(r'([\w\d_]+)\*', typ)
+        if m:
+            name = m.group(1)
+            if name in self.__types:
+                obj_type = self.__types[name]
+                if isinstance(obj_type, InstanceType):
+                    return obj_type
+        m = re.match(r'Array<([\w\d_]+)>\*', typ)
+        if m:
+            elm_type = self.__finish_type(m.group(1))
+            return ArrayType(elm_type)
+        m = re.match(r'([\w\d_]+)Array\*', typ)
+        if m:
+            elm_type = self.__finish_type(m.group(1))
+            return ArrayType(elm_type)
+        return BasicType(typ)
+
+    def __finish_parsing_method(self, meth, typ):
+        for p in meth.params:
+            p.type = self.__finish_type(p.type)
+        if meth.retval:
+            meth.retval.type = self.__finish_type(meth.retval.type)
+
+    def __finish_parsing_type(self, typ):
+        if hasattr(typ, 'constructor') and typ.constructor is not None:
+            self.__finish_parsing_method(typ.constructor, typ)
+        for meth in typ.methods:
+            self.__finish_parsing_method(meth, typ)
+        if hasattr(typ, 'vmethods'):
+            for meth in typ.vmethods:
+                self.__finish_parsing_method(meth, typ)
+
     def __finish_parsing(self):
         if self.__parsing_done:
             return
+
+        for typ in self.__classes + self.__boxed + self.__pointers + self.__enums:
+            self.__types[typ.name] = typ
+
+        for module in self.__import_modules:
+            for typ in module.get_classes() + module.get_boxed() + \
+                       module.get_pointers() + module.get_enums():
+                self.__types[typ.name] = typ
+
+        for typ in self.__classes + self.__boxed + self.__pointers:
+            self.__finish_parsing_type(typ)
+
+        for func in self.__functions:
+            self.__finish_parsing_method(func, None)
+
         self.__parsing_done = True
 
     def get_classes(self):

@@ -27,10 +27,10 @@
 G_BEGIN_DECLS
 
 
-typedef struct _LineBuffer LineBuffer;
-typedef struct _BTData Line;
+typedef struct LineBuffer LineBuffer;
+typedef struct BTData Line;
 
-struct _LineBuffer {
+struct LineBuffer {
     BTree *tree;
 };
 

@@ -12,7 +12,7 @@
 
 #include "lualib.h"
 #include "lauxlib.h"
-#include "ext/lfs.h"
+#include "lfs.h"
 #include "moolua.h"
 
 

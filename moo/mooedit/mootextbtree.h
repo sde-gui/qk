@@ -31,15 +31,15 @@ G_BEGIN_DECLS
 #define BTREE_MAX_DEPTH 9 /* 2^(3*(9-1)) == 2^24 > 16,777,216 - more than enough */
 #define BTREE_MAX_DEPTH_EXP 4 /* 2^4 > 8 */
 
-typedef struct _BTNode BTNode;
-typedef struct _BTData BTData;
-typedef struct _BTIter BTIter;
-typedef struct _BTree BTree;
+typedef struct BTNode BTNode;
+typedef struct BTData BTData;
+typedef struct BTIter BTIter;
+typedef struct BTree BTree;
 
-struct _MooLineMark;
+struct MooLineMark;
 
 
-struct _BTNode {
+struct BTNode {
     BTNode *parent;
     guint n_marks;
 
@@ -53,14 +53,14 @@ struct _BTNode {
     guint count : (30 - BTREE_NODE_EXP);
 };
 
-struct _BTData {
+struct BTData {
     BTNode *parent;
     guint n_marks;
 
-    struct _MooLineMark **marks;
+    struct MooLineMark **marks;
 };
 
-struct _BTree {
+struct BTree {
     BTNode *root;
     guint depth;
     guint stamp;

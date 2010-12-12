@@ -26,7 +26,7 @@ G_BEGIN_DECLS
 
 #define MOO_EDIT_IS_UNTITLED(edit) (!(edit)->priv->file)
 
-struct _MooEditPrivate {
+struct MooEditPrivate {
     MooEditor *editor;
 
     gulong modified_changed_handler_id;
@@ -37,7 +37,7 @@ struct _MooEditPrivate {
      */
     GFile *file;
     char *filename;
-    char *norm_filename;
+    char *norm_name;
     char *display_filename;
     char *display_basename;
 

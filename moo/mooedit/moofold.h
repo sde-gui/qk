@@ -27,9 +27,9 @@ G_BEGIN_DECLS
 
 #define MOO_FOLD_TAG "moo-fold-invisible"
 
-typedef struct _MooFoldTree     MooFoldTree;
+typedef struct MooFoldTree MooFoldTree;
 
-struct _MooFoldTree
+struct MooFoldTree
 {
     MooFold *folds;
     guint n_folds;
@@ -37,7 +37,7 @@ struct _MooFoldTree
     guint consistent : 1;
 };
 
-struct _MooFold
+struct MooFold
 {
     GObject object;
 
@@ -54,7 +54,7 @@ struct _MooFold
     guint deleted : 1;  /* alive just because of reference count */
 };
 
-struct _MooFoldClass
+struct MooFoldClass
 {
     GObjectClass object_class;
 };

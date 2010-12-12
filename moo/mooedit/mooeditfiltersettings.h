@@ -25,7 +25,7 @@
 G_BEGIN_DECLS
 
 
-typedef struct _MooEditFilter MooEditFilter;
+typedef struct MooEditFilter MooEditFilter;
 
 MooEditFilter  *_moo_edit_filter_new                    (const char     *string);
 MooEditFilter  *_moo_edit_filter_new_langs              (const char     *string);

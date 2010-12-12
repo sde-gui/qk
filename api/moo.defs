@@ -16,6 +16,13 @@
   (gtype-id "MOO_TYPE_ACTION_COLLECTION")
 )
 
+(define-object App
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooApp")
+  (gtype-id "MOO_TYPE_APP")
+)
+
 (define-object BigPaned
   (in-module "Moo")
   (parent "GtkFrame")
@@ -84,6 +91,27 @@
   (parent "MooLineMark")
   (c-name "MooEditBookmark")
   (gtype-id "MOO_TYPE_EDIT_BOOKMARK")
+)
+
+(define-object EditOpenInfo
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooEditOpenInfo")
+  (gtype-id "MOO_TYPE_EDIT_OPEN_INFO")
+)
+
+(define-object EditReloadInfo
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooEditReloadInfo")
+  (gtype-id "MOO_TYPE_EDIT_RELOAD_INFO")
+)
+
+(define-object EditSaveInfo
+  (in-module "Moo")
+  (parent "GObject")
+  (c-name "MooEditSaveInfo")
+  (gtype-id "MOO_TYPE_EDIT_SAVE_INFO")
 )
 
 (define-object EditWindow
@@ -269,12 +297,6 @@
   (gtype-id "MOO_TYPE_COMMAND_DATA")
 )
 
-(define-boxed FileEnc
-  (in-module "Moo")
-  (c-name "MooFileEnc")
-  (gtype-id "MOO_TYPE_FILE_ENC")
-)
-
 (define-boxed PaneLabel
   (in-module "Moo")
   (c-name "MooPaneLabel")
@@ -354,6 +376,14 @@
 ; methods of MooAction
 
 ; methods of MooActionCollection
+
+; methods of MooApp
+
+(define-method get_editor
+  (of-object "MooApp")
+  (c-name "moo_app_get_editor")
+  (return-type "MooEditor*")
+)
 
 ; methods of MooBigPaned
 
@@ -490,10 +520,102 @@
   )
 )
 
+(define-method get_clean
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_clean")
+  (return-type "gboolean")
+)
+
+(define-method get_cursor_pos
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_cursor_pos")
+  (return-type "int")
+)
+
+(define-method get_display_basename
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_display_basename")
+  (return-type "const-char*")
+)
+
+(define-method get_display_name
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_display_name")
+  (return-type "const-char*")
+)
+
+(define-method get_encoding
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_encoding")
+  (return-type "const-char*")
+)
+
+(define-method get_file
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_file")
+  (return-type "GFile*")
+)
+
+(define-method get_filename
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_filename")
+  (return-type "char*")
+  (caller-owns-return #t)
+)
+
 (define-method get_lang_id
   (of-object "MooEdit")
   (c-name "moo_edit_get_lang_id")
   (return-type "const-char*")
+)
+
+(define-method get_selected_lines
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_selected_lines")
+  (return-type "strv")
+  (caller-owns-return #t)
+)
+
+(define-method get_selected_text
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_selected_text")
+  (return-type "char*")
+  (caller-owns-return #t)
+)
+
+(define-method get_status
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_status")
+  (return-type "MooEditStatus")
+)
+
+(define-method get_text
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_text")
+  (return-type "char*")
+  (caller-owns-return #t)
+)
+
+(define-method get_uri
+  (of-object "MooEdit")
+  (c-name "moo_edit_get_uri")
+  (return-type "char*")
+  (caller-owns-return #t)
+)
+
+(define-method has_selection
+  (of-object "MooEdit")
+  (c-name "moo_edit_has_selection")
+  (return-type "gboolean")
+)
+
+(define-method insert_text
+  (of-object "MooEdit")
+  (c-name "moo_edit_insert_text")
+  (return-type "none")
+  (parameters
+    '("const-char*" "text")
+  )
 )
 
 (define-method is_empty
@@ -502,13 +624,65 @@
   (return-type "gboolean")
 )
 
+(define-method is_untitled
+  (of-object "MooEdit")
+  (c-name "moo_edit_is_untitled")
+  (return-type "gboolean")
+)
+
 (define-method reload
   (of-object "MooEdit")
   (c-name "moo_edit_reload")
   (return-type "gboolean")
   (parameters
-    '("const-char*" "encoding" (null-ok) (default "NULL"))
+    '("MooEditReloadInfo*" "encoding" (null-ok) (default "NULL"))
     '("GError**" "error" (null-ok))
+  )
+)
+
+(define-method replace_selected_lines
+  (of-object "MooEdit")
+  (c-name "moo_edit_replace_selected_lines")
+  (return-type "none")
+  (parameters
+    '("strv" "replacement")
+  )
+)
+
+(define-method replace_selected_text
+  (of-object "MooEdit")
+  (c-name "moo_edit_replace_selected_text")
+  (return-type "none")
+  (parameters
+    '("const-char*" "replacement")
+  )
+)
+
+(define-method set_clean
+  (of-object "MooEdit")
+  (c-name "moo_edit_set_clean")
+  (return-type "none")
+  (parameters
+    '("gboolean" "clean")
+  )
+)
+
+(define-method set_encoding
+  (of-object "MooEdit")
+  (c-name "moo_edit_set_encoding")
+  (return-type "none")
+  (parameters
+    '("const-char*" "encoding")
+  )
+)
+
+(define-method set_selection
+  (of-object "MooEdit")
+  (c-name "moo_edit_set_selection")
+  (return-type "none")
+  (parameters
+    '("int" "pos_start")
+    '("int" "pos_end")
   )
 )
 
@@ -530,6 +704,62 @@
 )
 
 ; methods of MooEditBookmark
+
+; methods of MooEditOpenInfo
+
+(define-function edit_open_info_new
+  (c-name "moo_edit_open_info_new")
+  (return-type "MooEditOpenInfo*")
+  (is-constructor-of MooEditOpenInfo)
+  (parameters
+    '("GFile*" "file")
+    '("const-char*" "encoding")
+  )
+)
+
+(define-method dup
+  (of-object "MooEditOpenInfo")
+  (c-name "moo_edit_open_info_dup")
+  (return-type "MooEditOpenInfo*")
+  (caller-owns-return #t)
+)
+
+; methods of MooEditReloadInfo
+
+(define-function edit_reload_info_new
+  (c-name "moo_edit_reload_info_new")
+  (return-type "MooEditReloadInfo*")
+  (is-constructor-of MooEditReloadInfo)
+  (parameters
+    '("const-char*" "encoding")
+  )
+)
+
+(define-method dup
+  (of-object "MooEditReloadInfo")
+  (c-name "moo_edit_reload_info_dup")
+  (return-type "MooEditReloadInfo*")
+  (caller-owns-return #t)
+)
+
+; methods of MooEditSaveInfo
+
+(define-function edit_save_info_new
+  (c-name "moo_edit_save_info_new")
+  (return-type "MooEditSaveInfo*")
+  (is-constructor-of MooEditSaveInfo)
+  (parameters
+    '("GFile*" "file")
+    '("const-char*" "encoding")
+  )
+)
+
+(define-method dup
+  (of-object "MooEditSaveInfo")
+  (c-name "moo_edit_save_info_dup")
+  (return-type "MooEditSaveInfo*")
+  (caller-owns-return #t)
+)
 
 ; methods of MooEditWindow
 
@@ -638,16 +868,6 @@
 
 ; methods of MooEditor
 
-(define-method close_all
-  (of-object "MooEditor")
-  (c-name "moo_editor_close_all")
-  (return-type "gboolean")
-  (parameters
-    '("gboolean" "leave_one")
-    '("gboolean" "ask_confirm" (default "TRUE"))
-  )
-)
-
 (define-method close_doc
   (of-object "MooEditor")
   (c-name "moo_editor_close_doc")
@@ -690,12 +910,21 @@
   (return-type "MooEditWindow*")
 )
 
+(define-method get_doc
+  (of-object "MooEditor")
+  (c-name "moo_editor_get_doc")
+  (return-type "MooEdit*")
+  (parameters
+    '("GFile*" "file")
+  )
+)
+
 (define-method get_doc_for_path
   (of-object "MooEditor")
   (c-name "moo_editor_get_doc_for_path")
   (return-type "MooEdit*")
   (parameters
-    '("const-char*" "filename")
+    '("const-char*" "path")
   )
 )
 
@@ -743,10 +972,110 @@
   )
 )
 
+(define-method new_file
+  (of-object "MooEditor")
+  (c-name "moo_editor_new_file")
+  (return-type "MooEdit*")
+  (parameters
+    '("MooEditOpenInfo*" "info")
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("GError**" "error")
+  )
+)
+
 (define-method new_window
   (of-object "MooEditor")
   (c-name "moo_editor_new_window")
   (return-type "MooEditWindow*")
+)
+
+(define-method open_file
+  (of-object "MooEditor")
+  (c-name "moo_editor_open_file")
+  (return-type "MooEdit*")
+  (parameters
+    '("MooEditOpenInfo*" "info")
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("GError**" "error")
+  )
+)
+
+(define-method open_files
+  (of-object "MooEditor")
+  (c-name "moo_editor_open_files")
+  (return-type "gboolean")
+  (parameters
+    '("MooEditOpenInfoArray*" "files")
+    '("GtkWidget*" "parent" (null-ok) (default "NULL"))
+    '("GError**" "error")
+  )
+)
+
+(define-method open_path
+  (of-object "MooEditor")
+  (c-name "moo_editor_open_path")
+  (return-type "MooEdit*")
+  (parameters
+    '("const-char*" "path")
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
+    '("int" "line" (default "-1"))
+    '("MooEditWindow*" "window" (null-ok) (default "NULL"))
+  )
+)
+
+(define-method open_uri
+  (of-object "MooEditor")
+  (c-name "moo_editor_open_uri")
+  (return-type "MooEdit*")
+  (parameters
+    '("const-char*" "uri")
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
+    '("int" "line" (default "-1"))
+    '("MooEditWindow*" "window" (null-ok) (default "NULL"))
+  )
+)
+
+(define-method reload
+  (of-object "MooEditor")
+  (c-name "moo_editor_reload")
+  (return-type "gboolean")
+  (parameters
+    '("MooEdit*" "doc")
+    '("MooEditReloadInfo*" "info")
+    '("GError**" "error")
+  )
+)
+
+(define-method save
+  (of-object "MooEditor")
+  (c-name "moo_editor_save")
+  (return-type "gboolean")
+  (parameters
+    '("MooEdit*" "doc")
+    '("GError**" "error")
+  )
+)
+
+(define-method save_as
+  (of-object "MooEditor")
+  (c-name "moo_editor_save_as")
+  (return-type "gboolean")
+  (parameters
+    '("MooEdit*" "doc")
+    '("MooEditSaveInfo*" "info")
+    '("GError**" "error")
+  )
+)
+
+(define-method save_copy
+  (of-object "MooEditor")
+  (c-name "moo_editor_save_copy")
+  (return-type "gboolean")
+  (parameters
+    '("MooEdit*" "doc")
+    '("MooEditSaveInfo*" "info")
+    '("GError**" "error")
+  )
 )
 
 (define-method set_active_doc
@@ -1385,18 +1714,6 @@
 
 ; methods of MooCommandData
 
-; methods of MooFileEnc
-
-(define-function file_enc_new
-  (c-name "moo_file_enc_new")
-  (return-type "MooFileEnc*")
-  (is-constructor-of MooFileEnc)
-  (parameters
-    '("GFile*" "file")
-    '("const-char*" "encoding")
-  )
-)
-
 ; methods of MooPaneLabel
 
 (define-function pane_label_new
@@ -1457,6 +1774,7 @@
   (of-object "MooUiNode")
   (c-name "moo_ui_node_get_path")
   (return-type "char*")
+  (caller-owns-return #t)
 )
 
 (define-method get_child
@@ -1488,6 +1806,46 @@
   (parameters
     '("const-char*" "domain")
     '("const-char*" "string")
+  )
+)
+
+(define-function edit_open_info_new_path
+  (c-name "moo_edit_open_info_new_path")
+  (return-type "MooEditOpenInfo*")
+  (caller-owns-return #t)
+  (parameters
+    '("const-char*" "path")
+    '("const-char*" "encoding")
+  )
+)
+
+(define-function edit_open_info_new_uri
+  (c-name "moo_edit_open_info_new_uri")
+  (return-type "MooEditOpenInfo*")
+  (caller-owns-return #t)
+  (parameters
+    '("const-char*" "uri")
+    '("const-char*" "encoding")
+  )
+)
+
+(define-function edit_save_info_new_path
+  (c-name "moo_edit_save_info_new_path")
+  (return-type "MooEditSaveInfo*")
+  (caller-owns-return #t)
+  (parameters
+    '("const-char*" "path")
+    '("const-char*" "encoding")
+  )
+)
+
+(define-function edit_save_info_new_uri
+  (c-name "moo_edit_save_info_new_uri")
+  (return-type "MooEditSaveInfo*")
+  (caller-owns-return #t)
+  (parameters
+    '("const-char*" "uri")
+    '("const-char*" "encoding")
   )
 )
 

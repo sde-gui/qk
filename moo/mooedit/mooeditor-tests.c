@@ -49,10 +49,13 @@ test_basic (void)
     MooEdit *doc, *doc2;
     GtkTextBuffer *buffer;
     char *filename;
+    MooEditOpenInfo *info;
 
     editor = moo_editor_instance ();
     filename = g_build_filename (test_data.working_dir, "test.txt", NULL);
-    doc = moo_editor_new_file (editor, NULL, NULL, filename, NULL);
+    info = moo_edit_open_info_new_path (filename, NULL);
+    doc = moo_editor_new_file (editor, info, NULL, NULL);
+
     TEST_ASSERT (doc != NULL);
     TEST_ASSERT (moo_edit_save (doc, NULL));
     check_contents (filename, "");
@@ -75,33 +78,34 @@ test_basic (void)
     TEST_ASSERT (moo_edit_save (doc, NULL));
     check_contents (filename, TT3);
 
-    doc2 = moo_editor_open_file (editor, NULL, NULL, filename, NULL);
+    doc2 = moo_editor_open_path (editor, filename, NULL, -1, NULL);
     TEST_ASSERT (doc2 == doc);
 
     TEST_ASSERT (moo_edit_close (doc, TRUE));
     TEST_ASSERT (moo_editor_get_doc_for_path (editor, filename) == NULL);
 
     g_file_set_contents (filename, TT4, -1, NULL);
-    doc = moo_editor_open_file (editor, NULL, NULL, filename, NULL);
+    doc = moo_editor_open_path (editor, filename, NULL, -1, NULL);
     TEST_ASSERT (doc != NULL);
     TEST_ASSERT (moo_edit_save (doc, NULL));
     check_contents (filename, TT4);
     TEST_ASSERT (moo_edit_close (doc, TRUE));
 
     g_file_set_contents (filename, TT5, -1, NULL);
-    doc = moo_editor_open_file (editor, NULL, NULL, filename, NULL);
+    doc = moo_editor_open_path (editor, filename, NULL, -1, NULL);
     TEST_ASSERT (doc != NULL);
     TEST_ASSERT (moo_edit_save (doc, NULL));
     check_contents (filename, TT5);
     TEST_ASSERT (moo_edit_close (doc, TRUE));
 
     g_file_set_contents (filename, TT6, -1, NULL);
-    doc = moo_editor_open_file (editor, NULL, NULL, filename, NULL);
+    doc = moo_editor_open_path (editor, filename, NULL, -1, NULL);
     TEST_ASSERT (doc != NULL);
     TEST_ASSERT (moo_edit_save (doc, NULL));
     check_contents (filename, TT6);
     TEST_ASSERT (moo_edit_close (doc, TRUE));
 
+    g_object_unref (info);
     g_free (filename);
 }
 
@@ -149,7 +153,7 @@ test_encodings_1 (const char *name,
     filename2 = g_build_filename (working_dir, name, (char*)0);
 
     editor = moo_editor_instance ();
-    doc = moo_editor_open_file (editor, NULL, NULL, filename, encoding);
+    doc = moo_editor_open_path (editor, filename, encoding, -1, NULL);
     TEST_ASSERT_MSG (doc != NULL,
                      "file '%s', encoding '%s'",
                      TEST_FMT_STR (filename),
@@ -157,9 +161,11 @@ test_encodings_1 (const char *name,
 
     if (doc)
     {
-        TEST_ASSERT (moo_edit_save_as (doc, filename2, NULL, NULL));
+        MooEditSaveInfo *info = moo_edit_save_info_new_path (filename2, NULL);
+        TEST_ASSERT (moo_edit_save_as (doc, info, NULL));
         TEST_ASSERT_SAME_FILE_CONTENT (filename2, filename);
         TEST_ASSERT (moo_edit_close (doc, TRUE));
+        g_object_unref (info);
     }
 
     g_free (encoding);

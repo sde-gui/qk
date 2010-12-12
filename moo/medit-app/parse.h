@@ -1,12 +1,14 @@
 #include <errno.h>
+#include <mooedit/mooeditfileinfo.h>
 
-static gboolean
-parse_filename (const char     *filename,
-                MooAppFileInfo *file)
+static MooEditOpenInfo *
+parse_filename (const char *filename)
 {
     char *freeme2 = NULL;
     char *freeme1 = NULL;
     char *uri;
+    int line = -1;
+    MooEditOpenInfo *info;
 
     freeme1 = _moo_normalize_file_path (filename);
     filename = freeme1;
@@ -19,7 +21,7 @@ parse_filename (const char     *filename,
     {
         g_free (freeme1);
         g_free (freeme2);
-        return FALSE;
+        return NULL;
     }
 
     if (g_utf8_validate (filename, -1, NULL))
@@ -39,21 +41,21 @@ parse_filename (const char     *filename,
             if (g_regex_match (re, filename, 0, &match_info))
             {
                 char *path = g_match_info_fetch_named (match_info, "path");
-                char *line = g_match_info_fetch_named (match_info, "line");
+                char *line_string = g_match_info_fetch_named (match_info, "line");
                 if (path && *path)
                 {
                     filename = path;
                     freeme2 = path;
                     path = NULL;
-                    if (line && *line)
+                    if (line_string && *line_string)
                     {
                         errno = 0;
-                        file->line = strtol (line, NULL, 10);
+                        line = strtol (line_string, NULL, 10);
                         if (errno)
-                            file->line = 0;
+                            line = -1;
                     }
                 }
-                g_free (line);
+                g_free (line_string);
                 g_free (path);
             }
 
@@ -67,20 +69,22 @@ parse_filename (const char     *filename,
         g_critical ("could not convert filename to URI");
         g_free (freeme1);
         g_free (freeme2);
-        return FALSE;
+        return NULL;
     }
 
-    g_free (file->uri);
-    file->uri = uri;
+    info = moo_edit_open_info_new_uri (uri, NULL);
 
+    info->line = line;
+
+    g_free (uri);
     g_free (freeme1);
     g_free (freeme2);
-    return TRUE;
+    return info;
 }
 
 static void
-parse_options_from_uri (const char     *optstring,
-                        MooAppFileInfo *file)
+parse_options_from_uri (const char      *optstring,
+                        MooEditOpenInfo *info)
 {
     char **p, **comps;
 
@@ -91,7 +95,7 @@ parse_options_from_uri (const char     *optstring,
         if (!strncmp (*p, "line=", strlen ("line=")))
         {
             /* doesn't matter if there is an error */
-            file->line = strtoul (*p + strlen ("line="), NULL, 10);
+            info->line = strtoul (*p + strlen ("line="), NULL, 10) - 1;
         }
         else if (!strncmp (*p, "options=", strlen ("options=")))
         {
@@ -100,9 +104,9 @@ parse_options_from_uri (const char     *optstring,
             for (op = opts; op && *op; ++op)
             {
                 if (!strcmp (*op, "new-window"))
-                    file->options |= MOO_EDIT_OPEN_NEW_WINDOW;
+                    info->flags |= MOO_EDIT_OPEN_NEW_WINDOW;
                 else if (!strcmp (*op, "new-tab"))
-                    file->options |= MOO_EDIT_OPEN_NEW_TAB;
+                    info->flags |= MOO_EDIT_OPEN_NEW_TAB;
             }
             g_strfreev (opts);
         }
@@ -111,36 +115,37 @@ parse_options_from_uri (const char     *optstring,
     g_strfreev (comps);
 }
 
-static gboolean
-parse_uri (const char     *scheme,
-           const char     *uri,
-           MooAppFileInfo *file)
+static MooEditOpenInfo *
+parse_uri (const char *scheme,
+           const char *uri)
 {
     const char *question_mark;
     const char *optstring = NULL;
+    MooEditOpenInfo *info;
+    char *real_uri;
 
     if (strcmp (scheme, "file") != 0)
-    {
-        file->uri = g_strdup (uri);
-        return TRUE;
-    }
+        return moo_edit_open_info_new_uri (uri, NULL);
 
     question_mark = strchr (uri, '?');
 
     if (question_mark && question_mark > uri)
     {
-        file->uri = g_strndup (uri, question_mark - uri);
+        real_uri = g_strndup (uri, question_mark - uri);
         optstring = question_mark + 1;
     }
     else
     {
-        file->uri = g_strdup (uri);
+        real_uri = g_strdup (uri);
     }
 
-    if (optstring)
-        parse_options_from_uri (optstring, file);
+    info = moo_edit_open_info_new_uri (real_uri, NULL);
 
-    return TRUE;
+    if (optstring)
+        parse_options_from_uri (optstring, info);
+
+    g_free (real_uri);
+    return info;
 }
 
 static char *
@@ -166,21 +171,20 @@ parse_uri_scheme (const char *string)
     return NULL;
 }
 
-static gboolean
-parse_file (const char      *string,
-            MooAppFileInfo  *file,
-            char           **current_dir)
+static MooEditOpenInfo *
+parse_file (const char  *string,
+            char       **current_dir)
 {
     char *uri_scheme;
     char *filename;
-    gboolean ret;
+    MooEditOpenInfo *ret;
 
     if (g_path_is_absolute (string))
-        return parse_filename (string, file);
+        return parse_filename (string);
 
     if ((uri_scheme = parse_uri_scheme (string)))
     {
-        ret = parse_uri (uri_scheme, string, file);
+        ret = parse_uri (uri_scheme, string);
         g_free (uri_scheme);
         return ret;
     }
@@ -189,63 +193,50 @@ parse_file (const char      *string,
         *current_dir = g_get_current_dir ();
 
     filename = g_build_filename (*current_dir, string, NULL);
-    ret = parse_filename (filename, file);
+    ret = parse_filename (filename);
 
     g_free (filename);
     return ret;
 }
 
-static void
-parse_files (MooAppFileInfo **files,
-             int             *n_files)
+static MooEditOpenInfoArray *
+parse_files (void)
 {
     int i;
-    int count;
+    int n_files;
     char *current_dir = NULL;
+    MooEditOpenInfoArray *files;
 
-    *files = NULL;
-    *n_files = 0;
+    if (!medit_opts.files || !(n_files = g_strv_length (medit_opts.files)))
+        return NULL;
 
-    if (!medit_opts.files || !(*n_files = g_strv_length (medit_opts.files)))
-        return;
-
-    *files = g_new0 (MooAppFileInfo, *n_files);
-
-    for (i = 0, count = 0; i < *n_files; ++i)
-    {
-        if (i == 0)
-        {
-            if (medit_opts.new_window)
-                (*files)[i].options |= MOO_EDIT_OPEN_NEW_WINDOW;
-            if (medit_opts.new_tab)
-                (*files)[i].options |= MOO_EDIT_OPEN_NEW_TAB;
-            if (medit_opts.reload)
-                (*files)[i].options |= MOO_EDIT_OPEN_RELOAD;
-            (*files)[i].line = medit_opts.line;
-            if (medit_opts.encoding && medit_opts.encoding[0])
-                (*files)[i].encoding = g_strdup (medit_opts.encoding);
-        }
-
-        if (parse_file (medit_opts.files[i], *files + count, &current_dir))
-            count++;
-    }
-
-    *n_files = count;
-
-    g_free (current_dir);
-}
-
-static void
-free_files (MooAppFileInfo *files,
-            int             n_files)
-{
-    int i;
+    files = moo_edit_open_info_array_new ();
 
     for (i = 0; i < n_files; ++i)
     {
-        g_free (files[i].uri);
-        g_free (files[i].encoding);
+        MooEditOpenInfo *info;
+
+        info = parse_file (medit_opts.files[i], &current_dir);
+
+        if (!info)
+            continue;
+
+        if (medit_opts.new_window)
+            info->flags |= MOO_EDIT_OPEN_NEW_WINDOW;
+        if (medit_opts.new_tab)
+            info->flags |= MOO_EDIT_OPEN_NEW_TAB;
+        if (medit_opts.reload)
+            info->flags |= MOO_EDIT_OPEN_RELOAD;
+
+        if (info->line < 0)
+            info->line = medit_opts.line - 1;
+
+        if (!info->encoding && medit_opts.encoding && medit_opts.encoding[0])
+            info->encoding = g_strdup (medit_opts.encoding);
+
+        moo_edit_open_info_array_take (files, info);
     }
 
-    g_free (files);
+    g_free (current_dir);
+    return files;
 }

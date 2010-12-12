@@ -1,0 +1,46 @@
+moo_sources +=				\
+	moolua/medit-lua.h		\
+	moolua/medit-lua.cpp		\
+	moolua/moolua-tests.h		\
+	moolua/moolua-tests.cpp		\
+	moolua/moo-tests-lua.h		\
+	moolua/moo-lua-api-util.h	\
+	moolua/moo-lua-api-util.cpp	\
+	moolua/moo-lua-api.cpp		\
+	moolua/gtk-lua-api.cpp
+
+genlua_files =					\
+	$(top_srcdir)/api/genlua.py		\
+	$(top_srcdir)/api/mpi/__init__.py	\
+	$(top_srcdir)/api/mpi/module.py		\
+	$(top_srcdir)/api/mpi/luawriter.py
+
+include moolua/lua/Makefile.incl
+
+EXTRA_DIST += moolua/lua-default-init.lua
+built_moo_sources += moolua/lua-default-init.h
+moolua/lua-default-init.h: moolua/lua-default-init.lua $(top_srcdir)/tools/xml2h.py
+	$(AM_V_at)$(MKDIR_P) moolua
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/moolua/lua-default-init.lua moolua/lua-default-init.h.tmp LUA_DEFAULT_INIT \
+		&& mv moolua/lua-default-init.h.tmp moolua/lua-default-init.h
+
+if MOO_DEV_MODE
+
+BUILT_SOURCES += moolua/moo-lua-api.cpp
+moolua/moo-lua-api.cpp: $(genlua_files) $(top_srcdir)/api/moo.xml $(srcdir)/moolua/gtk.xml
+	$(AM_V_at)$(MKDIR_P) moolua
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/genlua.py \
+                --include-header moo-lua-api.h \
+		--import $(srcdir)/moolua/gtk.xml \
+		$(top_srcdir)/api/moo.xml > moolua/moo-lua-api.cpp.tmp && \
+	mv moolua/moo-lua-api.cpp.tmp $(srcdir)/moolua/moo-lua-api.cpp
+	$(AM_V_at)rm -f moolua/moo-lua-api.cpp.tmp
+
+BUILT_SOURCES += moolua/gtk-lua-api.cpp
+moolua/gtk-lua-api.cpp: $(genlua_files) $(srcdir)/moolua/gtk.xml
+	$(AM_V_at)$(MKDIR_P) moolua
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/genlua.py $(srcdir)/moolua/gtk.xml > moolua/gtk-lua-api.cpp.tmp && \
+	mv moolua/gtk-lua-api.cpp.tmp $(srcdir)/moolua/gtk-lua-api.cpp
+	$(AM_V_at)rm -f moolua/gtk-lua-api.cpp.tmp
+
+endif

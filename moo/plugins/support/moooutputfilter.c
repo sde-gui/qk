@@ -410,7 +410,7 @@ moo_output_filter_open_file_line (MooOutputFilter *filter,
         if (g_file_test (path, G_FILE_TEST_EXISTS))
         {
             MooEditor *editor = moo_editor_instance ();
-            moo_editor_open_file_line (editor, path, data->line, filter->priv->window);
+            moo_editor_open_path (editor, path, NULL, data->line, filter->priv->window);
         }
         else
         {

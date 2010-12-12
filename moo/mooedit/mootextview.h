@@ -34,18 +34,18 @@ G_BEGIN_DECLS
 #define MOO_TEXT_VIEW_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_TEXT_VIEW, MooTextViewClass))
 
 
-typedef struct _MooTextView         MooTextView;
-typedef struct _MooTextViewPrivate  MooTextViewPrivate;
-typedef struct _MooTextViewClass    MooTextViewClass;
+typedef struct MooTextView         MooTextView;
+typedef struct MooTextViewPrivate  MooTextViewPrivate;
+typedef struct MooTextViewClass    MooTextViewClass;
 
-struct _MooTextView
+struct MooTextView
 {
     GtkTextView  parent;
 
     MooTextViewPrivate *priv;
 };
 
-struct _MooTextViewClass
+struct MooTextViewClass
 {
     GtkTextViewClass parent_class;
 

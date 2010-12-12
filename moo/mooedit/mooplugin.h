@@ -53,15 +53,15 @@ G_BEGIN_DECLS
 #define MOO_TYPE_PLUGIN_PARAMS          (moo_plugin_params_get_type ())
 
 
-typedef struct _MooPlugin            MooPlugin;
-typedef struct _MooPluginInfo        MooPluginInfo;
-typedef struct _MooPluginParams      MooPluginParams;
-typedef struct _MooPluginClass       MooPluginClass;
-typedef struct _MooWinPlugin         MooWinPlugin;
-typedef struct _MooWinPluginClass    MooWinPluginClass;
-typedef struct _MooDocPlugin         MooDocPlugin;
-typedef struct _MooDocPluginClass    MooDocPluginClass;
-typedef struct _MooPluginMeth        MooPluginMeth;
+typedef struct MooPlugin            MooPlugin;
+typedef struct MooPluginInfo        MooPluginInfo;
+typedef struct MooPluginParams      MooPluginParams;
+typedef struct MooPluginClass       MooPluginClass;
+typedef struct MooWinPlugin         MooWinPlugin;
+typedef struct MooWinPluginClass    MooWinPluginClass;
+typedef struct MooDocPlugin         MooDocPlugin;
+typedef struct MooDocPluginClass    MooDocPluginClass;
+typedef struct MooPluginMeth        MooPluginMeth;
 
 
 typedef gboolean    (*MooModuleInitFunc)        (void);
@@ -88,7 +88,7 @@ typedef gboolean    (*MooDocPluginCreateFunc)   (MooDocPlugin   *doc_plugin);
 typedef void        (*MooDocPluginDestroyFunc)  (MooDocPlugin   *doc_plugin);
 
 
-struct _MooPluginMeth
+struct MooPluginMeth
 {
     GType ptype;
     GType return_type;
@@ -98,13 +98,13 @@ struct _MooPluginMeth
 };
 
 
-struct _MooPluginParams
+struct MooPluginParams
 {
     gboolean enabled;
     gboolean visible;
 };
 
-struct _MooPluginInfo
+struct MooPluginInfo
 {
     char *name;
     char *description;
@@ -112,7 +112,7 @@ struct _MooPluginInfo
     char *version;
 };
 
-struct _MooPlugin
+struct MooPlugin
 {
     GObject parent;
 
@@ -127,14 +127,14 @@ struct _MooPlugin
     GType doc_plugin_type;
 };
 
-struct _MooWinPlugin
+struct MooWinPlugin
 {
     GObject parent;
     MooEditWindow *window;
     MooPlugin *plugin;
 };
 
-struct _MooDocPlugin
+struct MooDocPlugin
 {
     GObject parent;
     MooEditWindow *window;
@@ -142,7 +142,7 @@ struct _MooDocPlugin
     MooPlugin *plugin;
 };
 
-struct _MooPluginClass
+struct MooPluginClass
 {
     GObjectClass parent_class;
 
@@ -168,7 +168,7 @@ struct _MooPluginClass
     GtkWidget  *(*create_prefs_page)    (MooPlugin      *plugin);
 };
 
-struct _MooWinPluginClass
+struct MooWinPluginClass
 {
     GObjectClass parent_class;
 
@@ -178,7 +178,7 @@ struct _MooWinPluginClass
     void     (*destroy) (MooWinPlugin *win_plugin);
 };
 
-struct _MooDocPluginClass
+struct MooDocPluginClass
 {
     GObjectClass parent_class;
 

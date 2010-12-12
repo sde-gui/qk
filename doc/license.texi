@@ -29,7 +29,7 @@ in @medit{}, can be found in this section.
 @node Lua License
 @section Lua License
 @helpsection{LICENSE_LUA}
-@verbatiminclude ../moo/mooscript/lua/COPYRIGHT
+@verbatiminclude ../moo/moolua/lua/COPYRIGHT
 
 @node LuaFileSystem License
 @section LuaFileSystem License

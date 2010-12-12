@@ -105,10 +105,7 @@ class DoxBlock(object):
                 ann_start = -1
         if ann_start >= 0:
             raise ParseError('unterminated annotation')
-        if annotations:
-            return annotations, None
-        else:
-            return None, None
+        return annotations, None
 
 class Block(object):
     def __init__(self, lines, filename, first_line, last_line):
@@ -122,7 +119,7 @@ class Symbol(object):
     def __init__(self, name, annotations, docs, block):
         object.__init__(self)
         self.name = name
-        self.annotations = annotations
+        self.annotations = annotations or []
         self.docs = docs
         self.block = block
 
@@ -157,11 +154,11 @@ class VMethod(Function):
         Function.__init__(self, name, annotations, params, retval, docs, block)
 
 class ParamBase(object):
-    def __init__(self, annotations=None, docs=None):
+    def __init__(self, annotations=[], docs=None):
         object.__init__(self)
         self.docs = docs
         self.type = None
-        self.annotations = annotations
+        self.annotations = annotations or []
 
 class Param(ParamBase):
     def __init__(self, name=None, annotations=None, docs=None):
@@ -427,8 +424,9 @@ class Parser(object):
             print >> sys.stderr, 'parsing gtk-doc comments in file', f
             self.__read_comments(f)
         for f in filenames:
-            print >> sys.stderr, 'parsing declarations in file', f
-            self.__read_declarations(f)
+            if f.endswith('.h'):
+                print >> sys.stderr, 'parsing declarations in file', f
+                self.__read_declarations(f)
 
     # Code copied from h2def.py by Toby D. Reeves <toby@max.rl.plh.af.mil>
 
@@ -604,6 +602,8 @@ class Parser(object):
                     func.retval = Retval()
                 if func.retval.type is None:
                     func.retval.type = ret
+                if ret in ('char*', 'strv', 'char**'):
+                    func.retval.annotations.insert(0, 'transfer full')
 
             is_varargs = 0
             has_args = len(args) > 0
