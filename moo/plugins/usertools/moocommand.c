@@ -130,9 +130,8 @@ moo_command_create (const char     *name,
  * @name:
  * @display_name:
  * @factory:
- * @keys: (type strv) (allow-none):
- * @extension:
- *
+ * @keys: (type strv) (allow-none) (default "NULL")
+ * @extension: (allow-none) (default "NULL")
  **/
 void
 moo_command_factory_register (const char        *name,

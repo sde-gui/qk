@@ -1216,7 +1216,7 @@ moo_edit_reload (MooEdit            *doc,
  *
  * @edit:
  * @ask_confirm: (default TRUE): whether user should be asked if he wants
- * to save changes before cloing if the document is modified.
+ * to save changes before closing if the document is modified.
  *
  * Returns: whether document was closed
  **/

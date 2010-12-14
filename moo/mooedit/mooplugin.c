@@ -227,6 +227,14 @@ moo_plugin_class_init (MooPluginClass *klass)
 }
 
 
+/**
+ * moo_plugin_register:
+ *
+ * @id:
+ * @type:
+ * @info:
+ * @params: (allow-none) (default "NULL")
+ **/
 gboolean
 moo_plugin_register (const char            *id,
                      GType                  type,
@@ -1106,6 +1114,11 @@ moo_plugin_set_win_plugin_type (MooPlugin *plugin,
 
 /**
  * moo_plugin_info_new: (constructor-of MooPluginInfo)
+ *
+ * @name:
+ * @description: (allow-none) (default "NULL")
+ * @author: (allow-none) (default "NULL")
+ * @version: (allow-none) (default "NULL")
  */
 MooPluginInfo *
 moo_plugin_info_new (const char     *name,
@@ -1152,6 +1165,9 @@ moo_plugin_info_free (MooPluginInfo *info)
 
 /**
  * moo_plugin_params_new: (constructor-of MooPluginParams)
+ *
+ * @enabled: (default "TRUE")
+ * @visible: (default "TRUE")
  */
 MooPluginParams *
 moo_plugin_params_new (gboolean enabled,
