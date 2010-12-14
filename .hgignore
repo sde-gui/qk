@@ -35,7 +35,8 @@ plat/win32/gtk-win/debug/
 plat/win32/gtk-win/release/
 plat/win32/gtk-win/bdist-debug/
 plat/win32/gtk-win/bdist-release/
-
+moo/moolua/moo-lua-api.cpp
+moo/moolua/gtk-lua-api.cpp
 doc/help/*.html
 doc/man-medit.t2t
 doc/medit.texi
