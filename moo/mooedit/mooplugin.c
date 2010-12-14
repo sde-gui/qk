@@ -233,7 +233,7 @@ moo_plugin_class_init (MooPluginClass *klass)
  * @id:
  * @type:
  * @info:
- * @params: (allow-none) (default "NULL")
+ * @params: (allow-none) (default NULL)
  **/
 gboolean
 moo_plugin_register (const char            *id,
@@ -1116,9 +1116,9 @@ moo_plugin_set_win_plugin_type (MooPlugin *plugin,
  * moo_plugin_info_new: (constructor-of MooPluginInfo)
  *
  * @name:
- * @description: (allow-none) (default "NULL")
- * @author: (allow-none) (default "NULL")
- * @version: (allow-none) (default "NULL")
+ * @description: (allow-none) (default NULL)
+ * @author: (allow-none) (default NULL)
+ * @version: (allow-none) (default NULL)
  */
 MooPluginInfo *
 moo_plugin_info_new (const char     *name,

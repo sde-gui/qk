@@ -168,7 +168,7 @@
   <class gtype_id="MOO_TYPE_EDIT_OPEN_INFO" name="MooEditOpenInfo" parent="GObject" short_name="EditOpenInfo">
     <constructor c_name="moo_edit_open_info_new" name="edit_open_info_new">
       <param name="file" type="GFile*" />
-      <param allow_none="1" default_value="&quot;NULL&quot;" name="encoding" type="const-char*" />
+      <param allow_none="1" default_value="NULL" name="encoding" type="const-char*" />
       <retval type="MooEditOpenInfo*" />
     </constructor>
     <method c_name="moo_edit_open_info_dup" name="dup">
@@ -177,7 +177,7 @@
   </class>
   <class gtype_id="MOO_TYPE_EDIT_RELOAD_INFO" name="MooEditReloadInfo" parent="GObject" short_name="EditReloadInfo">
     <constructor c_name="moo_edit_reload_info_new" name="edit_reload_info_new">
-      <param allow_none="1" default_value="&quot;NULL&quot;" name="encoding" type="const-char*" />
+      <param allow_none="1" default_value="NULL" name="encoding" type="const-char*" />
       <retval type="MooEditReloadInfo*" />
     </constructor>
     <method c_name="moo_edit_reload_info_dup" name="dup">
@@ -187,7 +187,7 @@
   <class gtype_id="MOO_TYPE_EDIT_SAVE_INFO" name="MooEditSaveInfo" parent="GObject" short_name="EditSaveInfo">
     <constructor c_name="moo_edit_save_info_new" name="edit_save_info_new">
       <param name="file" type="GFile*" />
-      <param allow_none="1" default_value="&quot;NULL&quot;" name="encoding" type="const-char*" />
+      <param allow_none="1" default_value="NULL" name="encoding" type="const-char*" />
       <retval type="MooEditSaveInfo*" />
     </constructor>
     <method c_name="moo_edit_save_info_dup" name="dup">
@@ -501,7 +501,7 @@
     </method>
     <method c_name="moo_ui_xml_add_ui_from_string" name="add_ui_from_string">
       <param name="buffer" type="const-char*" />
-      <param name="length" type="gssize" />
+      <param default_value="-1" name="length" type="int" />
     </method>
     <method c_name="moo_ui_xml_create_widget" name="create_widget">
       <param name="type" type="MooUiWidgetType" />
@@ -604,9 +604,9 @@
   <boxed gtype_id="MOO_TYPE_PLUGIN_INFO" name="MooPluginInfo" short_name="PluginInfo">
     <constructor c_name="moo_plugin_info_new" name="plugin_info_new">
       <param name="name" type="const-char*" />
-      <param allow_none="1" default_value="&quot;NULL&quot;" name="description" type="const-char*" />
-      <param allow_none="1" default_value="&quot;NULL&quot;" name="author" type="const-char*" />
-      <param allow_none="1" default_value="&quot;NULL&quot;" name="version" type="const-char*" />
+      <param allow_none="1" default_value="NULL" name="description" type="const-char*" />
+      <param allow_none="1" default_value="NULL" name="author" type="const-char*" />
+      <param allow_none="1" default_value="NULL" name="version" type="const-char*" />
       <retval type="MooPluginInfo*" />
     </constructor>
   </boxed>
@@ -637,8 +637,8 @@
     <param name="name" type="const-char*" />
     <param name="display_name" type="const-char*" />
     <param name="factory" type="MooCommandFactory*" />
-    <param allow_none="1" default_value="&quot;NULL&quot;" name="keys" type="strv" />
-    <param allow_none="1" default_value="&quot;NULL&quot;" name="extension" type="const-char*" />
+    <param allow_none="1" default_value="NULL" name="keys" type="strv" />
+    <param allow_none="1" default_value="NULL" name="extension" type="const-char*" />
   </function>
   <function c_name="moo_dgettext" name="dgettext">
     <param name="domain" type="const-char*" />
@@ -647,22 +647,22 @@
   </function>
   <function c_name="moo_edit_open_info_new_path" name="edit_open_info_new_path">
     <param name="path" type="const-char*" />
-    <param allow_none="1" default_value="&quot;NULL&quot;" name="encoding" type="const-char*" />
+    <param allow_none="1" default_value="NULL" name="encoding" type="const-char*" />
     <retval transfer_mode="full" type="MooEditOpenInfo*" />
   </function>
   <function c_name="moo_edit_open_info_new_uri" name="edit_open_info_new_uri">
     <param name="uri" type="const-char*" />
-    <param allow_none="1" default_value="&quot;NULL&quot;" name="encoding" type="const-char*" />
+    <param allow_none="1" default_value="NULL" name="encoding" type="const-char*" />
     <retval transfer_mode="full" type="MooEditOpenInfo*" />
   </function>
   <function c_name="moo_edit_save_info_new_path" name="edit_save_info_new_path">
     <param name="path" type="const-char*" />
-    <param allow_none="1" default_value="&quot;NULL&quot;" name="encoding" type="const-char*" />
+    <param allow_none="1" default_value="NULL" name="encoding" type="const-char*" />
     <retval transfer_mode="full" type="MooEditSaveInfo*" />
   </function>
   <function c_name="moo_edit_save_info_new_uri" name="edit_save_info_new_uri">
     <param name="uri" type="const-char*" />
-    <param allow_none="1" default_value="&quot;NULL&quot;" name="encoding" type="const-char*" />
+    <param allow_none="1" default_value="NULL" name="encoding" type="const-char*" />
     <retval transfer_mode="full" type="MooEditSaveInfo*" />
   </function>
   <function c_name="moo_edit_window_set_action_filter" name="edit_window_set_action_filter">
@@ -685,7 +685,7 @@
     <param name="id" type="const-char*" />
     <param name="type" type="GType" />
     <param name="info" type="const-MooPluginInfo*" />
-    <param allow_none="1" default_value="&quot;NULL&quot;" name="params" type="const-MooPluginParams*" />
+    <param allow_none="1" default_value="NULL" name="params" type="const-MooPluginParams*" />
     <retval type="gboolean" />
   </function>
   <function c_name="moo_prefs_get_bool" name="prefs_get_bool">

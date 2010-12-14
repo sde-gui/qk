@@ -713,7 +713,7 @@
   (is-constructor-of MooEditOpenInfo)
   (parameters
     '("GFile*" "file")
-    '("const-char*" "encoding" (null-ok) (default ""NULL""))
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
   )
 )
 
@@ -731,7 +731,7 @@
   (return-type "MooEditReloadInfo*")
   (is-constructor-of MooEditReloadInfo)
   (parameters
-    '("const-char*" "encoding" (null-ok) (default ""NULL""))
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
   )
 )
 
@@ -750,7 +750,7 @@
   (is-constructor-of MooEditSaveInfo)
   (parameters
     '("GFile*" "file")
-    '("const-char*" "encoding" (null-ok) (default ""NULL""))
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
   )
 )
 
@@ -1546,7 +1546,7 @@
   (return-type "none")
   (parameters
     '("const-char*" "buffer")
-    '("gssize" "length")
+    '("int" "length" (default "-1"))
   )
 )
 
@@ -1750,9 +1750,9 @@
   (is-constructor-of MooPluginInfo)
   (parameters
     '("const-char*" "name")
-    '("const-char*" "description" (null-ok) (default ""NULL""))
-    '("const-char*" "author" (null-ok) (default ""NULL""))
-    '("const-char*" "version" (null-ok) (default ""NULL""))
+    '("const-char*" "description" (null-ok) (default "NULL"))
+    '("const-char*" "author" (null-ok) (default "NULL"))
+    '("const-char*" "version" (null-ok) (default "NULL"))
   )
 )
 
@@ -1795,8 +1795,8 @@
     '("const-char*" "name")
     '("const-char*" "display_name")
     '("MooCommandFactory*" "factory")
-    '("strv" "keys" (null-ok) (default ""NULL""))
-    '("const-char*" "extension" (null-ok) (default ""NULL""))
+    '("strv" "keys" (null-ok) (default "NULL"))
+    '("const-char*" "extension" (null-ok) (default "NULL"))
   )
 )
 
@@ -1815,7 +1815,7 @@
   (caller-owns-return #t)
   (parameters
     '("const-char*" "path")
-    '("const-char*" "encoding" (null-ok) (default ""NULL""))
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
   )
 )
 
@@ -1825,7 +1825,7 @@
   (caller-owns-return #t)
   (parameters
     '("const-char*" "uri")
-    '("const-char*" "encoding" (null-ok) (default ""NULL""))
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
   )
 )
 
@@ -1835,7 +1835,7 @@
   (caller-owns-return #t)
   (parameters
     '("const-char*" "path")
-    '("const-char*" "encoding" (null-ok) (default ""NULL""))
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
   )
 )
 
@@ -1845,7 +1845,7 @@
   (caller-owns-return #t)
   (parameters
     '("const-char*" "uri")
-    '("const-char*" "encoding" (null-ok) (default ""NULL""))
+    '("const-char*" "encoding" (null-ok) (default "NULL"))
   )
 )
 
@@ -1888,7 +1888,7 @@
     '("const-char*" "id")
     '("GType" "type")
     '("const-MooPluginInfo*" "info")
-    '("const-MooPluginParams*" "params" (null-ok) (default ""NULL""))
+    '("const-MooPluginParams*" "params" (null-ok) (default "NULL"))
   )
 )
 

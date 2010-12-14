@@ -807,6 +807,16 @@ cfunc_MooUiXml_add_item (gpointer pself, G_GNUC_UNUSED lua_State *L, G_GNUC_UNUS
 }
 
 static int
+cfunc_MooUiXml_add_ui_from_string (gpointer pself, G_GNUC_UNUSED lua_State *L, G_GNUC_UNUSED int first_arg)
+{
+    MooUiXml *self = (MooUiXml*) pself;
+    const char* arg0 = moo_lua_get_arg_string (L, first_arg + 0, "buffer");
+    int arg1 = moo_lua_get_arg_int_opt (L, first_arg + 1, "length", -1);
+    moo_ui_xml_add_ui_from_string (self, arg0, arg1);
+    return 0;
+}
+
+static int
 cfunc_MooUiXml_create_widget (gpointer pself, G_GNUC_UNUSED lua_State *L, G_GNUC_UNUSED int first_arg)
 {
     MooUiXml *self = (MooUiXml*) pself;
@@ -1114,6 +1124,7 @@ moo_lua_api_register (void)
 
     MooLuaMethodEntry methods_MooUiXml[] = {
         { "add_item", cfunc_MooUiXml_add_item },
+        { "add_ui_from_string", cfunc_MooUiXml_add_ui_from_string },
         { "create_widget", cfunc_MooUiXml_create_widget },
         { "find_placeholder", cfunc_MooUiXml_find_placeholder },
         { "get_node", cfunc_MooUiXml_get_node },
