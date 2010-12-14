@@ -5,12 +5,17 @@ moo_python_sources +=				\
 built_moo_python_sources +=			\
 	moopython/pygtk/moo-mod.h
 
-moo_main_defs_file =				\
-	$(srcdir)/moopython/pygtk/moo-full.defs
-
-moo_defs_files =				\
-	$(top_srcdir)/api/moo.defs		\
+moo_main_defs_file =					\
+	$(srcdir)/moopython/pygtk/moo.defs
+moo_defs_files =					\
+	$(srcdir)/moopython/pygtk/moo-generated.defs	\
 	$(moo_main_defs_file)
+
+gendefs_files =					\
+	$(top_srcdir)/api/gendefs.py		\
+	$(top_srcdir)/api/mpi/__init__.py	\
+	$(top_srcdir)/api/mpi/module.py		\
+	$(top_srcdir)/api/mpi/defswriter.py
 
 moo_override_files =				\
 	moopython/pygtk/mooutils.override	\
@@ -29,6 +34,19 @@ built_moo_python_sources +=			\
 
 if MOO_OS_WIN32
 codegen_platform = --platform win32
+endif
+
+if MOO_DEV_MODE
+
+built_moo_sources += moopython/pygtk/moo-generated.defs.stamp
+moopython/pygtk/moo-generated.defs.stamp: $(gendefs_files) $(top_srcdir)/api/moo.xml Makefile
+	$(AM_V_at)$(MKDIR_P) moopython/pygtk
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendefs.py $(top_srcdir)/api/moo.xml > moopython/pygtk/moo-generated.defs.tmp && \
+		(cmp -s moopython/pygtk/moo-generated.defs.tmp $(srcdir)/moopython/pygtk/moo-generated.defs || \
+			mv moopython/pygtk/moo-generated.defs.tmp $(srcdir)/moopython/pygtk/moo-generated.defs)
+	$(AM_V_at)rm -f moopython/pygtk/moo-generated.defs.tmp
+	$(AM_V_at)echo stamp > moopython/pygtk/moo-generated.defs.stamp
+
 endif
 
 codegen_files =						\

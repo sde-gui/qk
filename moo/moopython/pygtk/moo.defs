@@ -1,6 +1,6 @@
 ;; -*- scheme -*-
 
-(include "../../../api/moo.defs")
+(include "moo-generated.defs")
 
 (define-function _window_class_add_action
   (c-name "moo_window_class_add_action")

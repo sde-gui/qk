@@ -22,7 +22,6 @@ EXTRA_DIST =			\
 	$(gendefs_files)	\
 	$(genlua_files)		\
 	sourcefiles.mak		\
-	moo.defs		\
 	moo.xml
 
 BUILT_SOURCES =
@@ -45,12 +44,5 @@ moo.xml.stamp: $(docparser_files) $(source_files)
 	(cmp -s moo.xml.tmp $(srcdir)/moo.xml || mv moo.xml.tmp $(srcdir)/moo.xml)
 	rm -f moo.xml.tmp
 	echo stamp > moo.xml.stamp
-
-BUILT_SOURCES += moo.defs.stamp
-moo.defs.stamp: $(gendefs_files) moo.xml Makefile
-	$(PYTHON) $(srcdir)/gendefs.py $(srcdir)/moo.xml > moo.defs.tmp && \
-	(cmp -s moo.defs.tmp $(srcdir)/moo.defs || mv moo.defs.tmp $(srcdir)/moo.defs)
-	rm -f moo.defs.tmp
-	echo stamp > moo.defs.stamp
 
 endif
