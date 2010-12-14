@@ -148,6 +148,12 @@ class Writer(object):
     def __write_function(self, meth, cls, method_cfuncs):
         assert not isinstance(meth, Constructor) and not isinstance(meth, VMethod)
 
+        bind = meth.annotations.get('moo.lua', '1')
+        if bind == '0':
+            return
+        elif bind != '1':
+            raise RuntimeError('invalid value %s for moo.lua annotation' % (bind,))
+
         has_gerror_return = False
         params = []
         for i in range(len(meth.params)):

@@ -128,6 +128,8 @@ class Writer(object):
         dic = dict(name=func.name)
         if tag != 'virtual':
             dic['c_name'] = func.c_name
+        for k in func.annotations:
+            dic[k] = func.annotations[k]
         self.__start_tag(tag, dic)
         for p in func.params:
             self.__write_param(p)

@@ -65,6 +65,7 @@ class _GTypedType(Type):
         self.methods = []
         self.gtype_id = gtype_id
         self.short_name = short_name
+        self.annotations = {}
 
 class Enum(_GTypedType):
     def __init__(self, name, short_name, gtype_id, docs):
@@ -99,6 +100,7 @@ class Symbol(object):
         self.name = name
         self.c_name = c_name
         self.docs = docs
+        self.annotations = {}
 
 class FunctionBase(Symbol):
     def __init__(self, name, c_name, params, retval, docs):
@@ -171,6 +173,7 @@ class Module(object):
         docs = pcls.docs
         parent = None
         constructable = False
+        annotations = {}
         for a in pcls.annotations:
             pieces = a.split()
             prefix = pieces[0]
@@ -180,9 +183,12 @@ class Module(object):
             elif prefix == 'constructable':
                 assert len(pieces) == 1
                 constructable = True
+            elif prefix.find('.') >= 0:
+                annotations[prefix] = ' '.join(pieces[1:])
             else:
                 raise RuntimeError("unknown annotation '%s' in class %s" % (a, name))
         cls = Class(name, short_name, parent, gtype_id, docs)
+        cls.annotations = annotations
         cls.constructable = constructable
         self.classes.append(cls)
         self.__class_dict[name] = cls
@@ -192,7 +198,16 @@ class Module(object):
         short_name = getattr(pcls, 'short_name', strip_module_prefix_from_class(pcls.name, self.name))
         gtype_id = getattr(pcls, 'gtype_id', make_gtype_id(pcls.name))
         docs = pcls.docs
+        annotations = {}
+        for a in pcls.annotations:
+            pieces = a.split()
+            prefix = pieces[0]
+            if prefix.find('.') >= 0:
+                annotations[prefix] = ' '.join(pieces[1:])
+            else:
+                raise RuntimeError("unknown annotation '%s' in class %s" % (a, name))
         cls = What(name, short_name, gtype_id, docs)
+        cls.annotations = annotations
         self.boxed.append(cls)
         self.__class_dict[name] = cls
 
@@ -209,13 +224,19 @@ class Module(object):
         short_name = getattr(ptyp, 'short_name', strip_module_prefix_from_class(ptyp.name, self.name))
         gtype_id = getattr(ptyp, 'gtype_id', make_gtype_id(ptyp.name))
         docs = ptyp.docs
-        if ptyp.annotations:
-            for a in ptyp.annotations:
+        annotations = {}
+        for a in ptyp.annotations:
+            pieces = a.split()
+            prefix = pieces[0]
+            if prefix.find('.') >= 0:
+                annotations[prefix] = ' '.join(pieces[1:])
+            else:
                 raise RuntimeError("unknown annotation '%s' in class %s" % (a, name))
         if isinstance(ptyp, dparser.Enum):
             enum = Enum(name, short_name, gtype_id, docs)
         else:
             enum = Flags(name, short_name, gtype_id, docs)
+        enum.annotations = annotations
         self.enums.append(enum)
 
     def __parse_param_or_retval_annotation(self, annotation, param):
@@ -371,6 +392,7 @@ class Module(object):
         docs = pfunc.docs
         cls = None
         constructor_of = None
+        annotations = {}
 
         if pfunc.annotations:
             for a in pfunc.annotations:
@@ -379,6 +401,8 @@ class Module(object):
                 if prefix == 'constructor-of':
                     assert len(pieces) == 2
                     constructor_of = pieces[1]
+                elif prefix.find('.') >= 0:
+                    annotations[prefix] = ' '.join(pieces[1:])
                 else:
                     raise RuntimeError("unknown annotation '%s' in function %s" % (a, name))
 
@@ -405,11 +429,13 @@ class Module(object):
 
         if constructor_of:
             func = Function(name, c_name, params, retval, docs)
+            func.annotations = annotations
             if constructor_of in self.__constructors:
                 raise RuntimeError('duplicated constructor of class %s' % constructor_of)
             self.__constructors[constructor_of] = func
         elif cls:
             meth = Method(name, c_name, cls, params[1:], retval, docs)
+            meth.annotations = annotations
             this_class_methods = self.__methods.get(cls)
             if not this_class_methods:
                 this_class_methods = []
@@ -417,6 +443,7 @@ class Module(object):
             this_class_methods.append(meth)
         else:
             func = Function(name, c_name, params, retval, docs)
+            func.annotations = annotations
             self.functions.append(func)
 
     def init_from_dox(self, blocks):

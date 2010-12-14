@@ -673,7 +673,7 @@
     <param name="type" type="MooActionCheckType" />
     <param name="filter" type="const-char*" />
   </function>
-  <function c_name="moo_editor_create" name="editor_create">
+  <function c_name="moo_editor_create" moo.lua="0" name="editor_create">
     <param name="embedded" type="gboolean" />
     <retval transfer_mode="full" type="MooEditor*" />
   </function>

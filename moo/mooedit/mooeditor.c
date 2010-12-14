@@ -457,7 +457,7 @@ _moo_editor_get_file_watch (MooEditor *editor)
 
 
 /**
- * moo_editor_create:
+ * moo_editor_create: (moo.lua 0)
  *
  * Returns: (transfer full)
  */

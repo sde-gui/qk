@@ -28,6 +28,7 @@ class _XmlObject(object):
     def __init__(self):
         object.__init__(self)
         self.doc = None
+        self.annotations = {}
 
     @classmethod
     def from_xml(cls, elm, *args):
@@ -42,7 +43,11 @@ class _XmlObject(object):
             raise RuntimeError('unknown element %s' % (elm.tag,))
 
     def _parse_attribute(self, attr, value):
-        return False
+        if attr.find('.') >= 0:
+            self.annotations[attr] = value
+            return True
+        else:
+            return False
 
     def _parse_xml(self, elm, *args):
         for attr, value in elm.items():
