@@ -974,6 +974,35 @@ cfunc_MooWinPlugin_get_window (gpointer pself, G_GNUC_UNUSED lua_State *L, G_GNU
 
 // methods of MooWindow
 
+// methods of MooCommandData
+
+// methods of MooPaneLabel
+
+// methods of MooPaneParams
+
+// methods of MooPluginInfo
+
+// methods of MooPluginParams
+
+// methods of MooUiNode
+
+static int
+cfunc_MooUiNode_get_path (gpointer pself, G_GNUC_UNUSED lua_State *L, G_GNUC_UNUSED int first_arg)
+{
+    MooUiNode *self = (MooUiNode*) pself;
+    char *ret = moo_ui_node_get_path (self);
+    return moo_lua_push_string (L, ret);
+}
+
+static int
+cfunc_MooUiNode_get_child (gpointer pself, G_GNUC_UNUSED lua_State *L, G_GNUC_UNUSED int first_arg)
+{
+    MooUiNode *self = (MooUiNode*) pself;
+    const char* arg0 = moo_lua_get_arg_string (L, first_arg + 0, "path");
+    gpointer ret = moo_ui_node_get_child (self, arg0);
+    return moo_lua_push_instance (L, ret, MOO_TYPE_UI_NODE, TRUE);
+}
+
 void
 moo_lua_api_register (void)
 {
@@ -1148,5 +1177,12 @@ moo_lua_api_register (void)
         { NULL, NULL }
     };
     moo_lua_register_methods (MOO_TYPE_WIN_PLUGIN, methods_MooWinPlugin);
+
+    MooLuaMethodEntry methods_MooUiNode[] = {
+        { "get_path", cfunc_MooUiNode_get_path },
+        { "get_child", cfunc_MooUiNode_get_child },
+        { NULL, NULL }
+    };
+    moo_lua_register_methods (MOO_TYPE_UI_NODE, methods_MooUiNode);
 
 }

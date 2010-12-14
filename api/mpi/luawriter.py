@@ -294,7 +294,7 @@ class Writer(object):
 
     def __write_register_module(self, module, all_method_cfuncs):
         self.out.write(tmpl_register_module_start % dict(module=module.name.lower()))
-        for cls in module.get_classes():
+        for cls in module.get_classes() + module.get_boxed() + module.get_pointers():
             method_cfuncs = all_method_cfuncs[cls.name]
             if method_cfuncs:
                 dic = dict(Class=cls.name, gtype_id=cls.gtype_id)
@@ -316,7 +316,7 @@ class Writer(object):
 
         all_method_cfuncs = {}
 
-        for cls in module.get_classes():
+        for cls in module.get_classes() + module.get_boxed() + module.get_pointers():
             method_cfuncs = self.__write_class(cls)
             all_method_cfuncs[cls.name] = method_cfuncs
 #         for cls in module.get_boxed():
