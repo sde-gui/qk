@@ -12,6 +12,11 @@
 
 // methods of GtkWidget
 
+extern const luaL_Reg gtk_lua_functions[];
+const luaL_Reg gtk_lua_functions[] = {
+    { NULL, NULL }
+};
+
 void
 gtk_lua_api_register (void)
 {

@@ -1788,6 +1788,11 @@
 
 ; functions
 
+(define-function app_instance
+  (c-name "moo_app_instance")
+  (return-type "MooApp*")
+)
+
 (define-function command_factory_register
   (c-name "moo_command_factory_register")
   (return-type "none")

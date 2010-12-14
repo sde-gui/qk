@@ -475,8 +475,11 @@ moo_app_get_property (GObject        *object,
 }
 
 
-MooApp*
-moo_app_get_instance (void)
+/**
+ * moo_app_instance:
+ **/
+MooApp *
+moo_app_instance (void)
 {
     return moo_app_data.instance;
 }
@@ -1005,7 +1008,7 @@ install_common_actions (void)
                                  "stock-id", GTK_STOCK_QUIT,
                                  "default-accel", MOO_APP_ACCEL_QUIT,
                                  "closure-callback", moo_app_quit,
-                                 "closure-proxy-func", moo_app_get_instance,
+                                 "closure-proxy-func", moo_app_instance,
                                  NULL);
 
     g_type_class_unref (klass);
@@ -1388,7 +1391,7 @@ moo_app_prefs_dialog (GtkWidget *parent)
     MooApp *app;
     GtkWidget *dialog;
 
-    app = moo_app_get_instance ();
+    app = moo_app_instance ();
     dialog = MOO_APP_GET_CLASS(app)->prefs_dialog (app);
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
 
@@ -1399,7 +1402,7 @@ moo_app_prefs_dialog (GtkWidget *parent)
 static void
 prefs_dialog_apply (void)
 {
-    moo_app_save_prefs (moo_app_get_instance ());
+    moo_app_save_prefs (moo_app_instance ());
 }
 
 

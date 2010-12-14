@@ -100,7 +100,7 @@ class Writer(object):
         dic = dict(narg=i, gtype_id=param.type.gtype_id, param_name=param.name,
                    allow_none=('TRUE' if param.allow_none else 'FALSE'),
                    default_value=param.default_value,
-                   arg_idx='first_arg + %d' % (i,),
+                   arg_idx=('first_arg + %d' % (i,)) if cls else ('1 + %d' % (i,)),
                    TypeName=param.type.name,
                    )
         if isinstance(param.type, Class) or isinstance(param.type, Boxed) or isinstance(param.type, Pointer):
@@ -143,7 +143,7 @@ class Writer(object):
         else:
             arg_helper = find_arg_helper(param)
             func_body.start.append(arg_helper.format_arg(param.allow_none, param.default_value,
-                                            'arg%(narg)d' % dic, 'first_arg + %(narg)d' % dic, param.name))
+                                            'arg%(narg)d' % dic, '%(arg_idx)s' % dic, param.name))
 
     def __write_function(self, meth, cls, method_cfuncs):
         assert not isinstance(meth, Constructor) and not isinstance(meth, VMethod)
@@ -319,19 +319,19 @@ class Writer(object):
         for cls in module.get_classes() + module.get_boxed() + module.get_pointers():
             method_cfuncs = self.__write_class(cls)
             all_method_cfuncs[cls.name] = method_cfuncs
-#         for cls in module.get_boxed():
-#             self.__write_boxed_decl(cls)
-#         for cls in module.get_pointers():
-#             self.__write_pointer_decl(cls)
-#
+
 #         for enum in module.get_enums():
 #             self.__write_enum_decl(enum)
-#
-#         for cls in module.get_classes() + module.get_boxed() + module.get_pointers():
-#             self.__write_class_methods(cls)
-#
-#         for func in module.get_functions():
-#             self.__write_function(func)
+
+        all_func_cfuncs = []
+        for func in module.get_functions():
+            self.__write_function(func, None, all_func_cfuncs)
+        self.out.write('extern const luaL_Reg %s_lua_functions[];\n' % (module.name.lower(),))
+        self.out.write('const luaL_Reg %s_lua_functions[] = {\n' % (module.name.lower(),))
+        for name, cfunc in all_func_cfuncs:
+            self.out.write('    { "%s", %s },\n' % (name, cfunc))
+        self.out.write('    { NULL, NULL }\n')
+        self.out.write('};\n\n')
 
         self.__write_register_module(module, all_method_cfuncs)
 

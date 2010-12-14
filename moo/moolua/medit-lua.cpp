@@ -6,24 +6,18 @@
 
 void gtk_lua_api_register (void);
 void moo_lua_api_register (void);
-
-static int
-cfunc_get_app_obj (lua_State *L)
-{
-    return moo_lua_push_object (L, G_OBJECT (moo_app_get_instance ()));
-}
+extern const luaL_Reg gtk_lua_functions[];
+extern const luaL_Reg moo_lua_functions[];
 
 static bool
 add_raw_api (lua_State *L)
 {
-    static const struct luaL_reg meditlib[] = {
-        { "get_app_obj", cfunc_get_app_obj },
-        { 0, 0 }
-    };
-
     g_assert (lua_gettop (L) == 0);
 
-    luaL_register(L, "medit", meditlib);
+    luaL_register(L, "gtk", gtk_lua_functions);
+    lua_pop(L, 1);
+
+    luaL_register(L, "medit", moo_lua_functions);
     lua_pop(L, 1);
 
     g_assert (lua_gettop (L) == 0);

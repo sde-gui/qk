@@ -633,6 +633,9 @@
   <enum gtype_id="MOO_TYPE_PANE_POSITION" name="MooPanePosition" short_name="PanePosition" />
   <flags gtype_id="MOO_TYPE_TEXT_SEARCH_FLAGS" name="MooTextSearchFlags" short_name="TextSearchFlags" />
   <enum gtype_id="MOO_TYPE_UI_WIDGET_TYPE" name="MooUiWidgetType" short_name="UiWidgetType" />
+  <function c_name="moo_app_instance" name="app_instance">
+    <retval type="MooApp*" />
+  </function>
   <function c_name="moo_command_factory_register" name="command_factory_register">
     <param name="name" type="const-char*" />
     <param name="display_name" type="const-char*" />

@@ -2,6 +2,7 @@
 #define MOO_LUA_API_UTIL_H
 
 #include "moolua/lua/lua.h"
+#include "moolua/lua/lauxlib.h"
 #include "mooutils/mooarray.h"
 #include <glib-object.h>
 

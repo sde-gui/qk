@@ -1003,6 +1003,245 @@ cfunc_MooUiNode_get_child (gpointer pself, G_GNUC_UNUSED lua_State *L, G_GNUC_UN
     return moo_lua_push_instance (L, ret, MOO_TYPE_UI_NODE, TRUE);
 }
 
+static int
+cfunc_app_instance (G_GNUC_UNUSED lua_State *L)
+{
+    gpointer ret = moo_app_instance ();
+    return moo_lua_push_instance (L, ret, MOO_TYPE_APP, TRUE);
+}
+
+static int
+cfunc_command_factory_register (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "name");
+    const char* arg1 = moo_lua_get_arg_string (L, 1 + 1, "display_name");
+    MooCommandFactory *arg2 = (MooCommandFactory*) moo_lua_get_arg_instance (L, 1 + 2, "factory", MOO_TYPE_COMMAND_FACTORY);
+    char **arg3 = moo_lua_get_arg_strv_opt (L, 1 + 3, "keys");
+    const char* arg4 = moo_lua_get_arg_string_opt (L, 1 + 4, "extension", NULL);
+    moo_command_factory_register (arg0, arg1, arg2, arg3, arg4);
+    g_strfreev (arg3);
+    return 0;
+}
+
+static int
+cfunc_dgettext (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "domain");
+    const char* arg1 = moo_lua_get_arg_string (L, 1 + 1, "string");
+    const char *ret = moo_dgettext (arg0, arg1);
+    return moo_lua_push_string_copy (L, ret);
+}
+
+static int
+cfunc_edit_open_info_new_path (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "path");
+    const char* arg1 = moo_lua_get_arg_string_opt (L, 1 + 1, "encoding", NULL);
+    gpointer ret = moo_edit_open_info_new_path (arg0, arg1);
+    return moo_lua_push_instance (L, ret, MOO_TYPE_EDIT_OPEN_INFO, FALSE);
+}
+
+static int
+cfunc_edit_open_info_new_uri (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "uri");
+    const char* arg1 = moo_lua_get_arg_string_opt (L, 1 + 1, "encoding", NULL);
+    gpointer ret = moo_edit_open_info_new_uri (arg0, arg1);
+    return moo_lua_push_instance (L, ret, MOO_TYPE_EDIT_OPEN_INFO, FALSE);
+}
+
+static int
+cfunc_edit_save_info_new_path (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "path");
+    const char* arg1 = moo_lua_get_arg_string_opt (L, 1 + 1, "encoding", NULL);
+    gpointer ret = moo_edit_save_info_new_path (arg0, arg1);
+    return moo_lua_push_instance (L, ret, MOO_TYPE_EDIT_SAVE_INFO, FALSE);
+}
+
+static int
+cfunc_edit_save_info_new_uri (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "uri");
+    const char* arg1 = moo_lua_get_arg_string_opt (L, 1 + 1, "encoding", NULL);
+    gpointer ret = moo_edit_save_info_new_uri (arg0, arg1);
+    return moo_lua_push_instance (L, ret, MOO_TYPE_EDIT_SAVE_INFO, FALSE);
+}
+
+static int
+cfunc_edit_window_set_action_filter (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "action_id");
+    MooActionCheckType arg1 = (MooActionCheckType) moo_lua_get_arg_enum (L, 1 + 1, "type", MOO_TYPE_ACTION_CHECK_TYPE);
+    const char* arg2 = moo_lua_get_arg_string (L, 1 + 2, "filter");
+    moo_edit_window_set_action_filter (arg0, arg1, arg2);
+    return 0;
+}
+
+static int
+cfunc_editor_create (G_GNUC_UNUSED lua_State *L)
+{
+    gboolean arg0 = moo_lua_get_arg_bool (L, 1 + 0, "embedded");
+    gpointer ret = moo_editor_create (arg0);
+    return moo_lua_push_instance (L, ret, MOO_TYPE_EDITOR, FALSE);
+}
+
+static int
+cfunc_editor_instance (G_GNUC_UNUSED lua_State *L)
+{
+    gpointer ret = moo_editor_instance ();
+    return moo_lua_push_instance (L, ret, MOO_TYPE_EDITOR, TRUE);
+}
+
+static int
+cfunc_gettext (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "string");
+    const char *ret = moo_gettext (arg0);
+    return moo_lua_push_string_copy (L, ret);
+}
+
+static int
+cfunc_prefs_get_bool (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "key");
+    gboolean ret = moo_prefs_get_bool (arg0);
+    return moo_lua_push_bool (L, ret);
+}
+
+static int
+cfunc_prefs_get_file (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "key");
+    gpointer ret = moo_prefs_get_file (arg0);
+    return moo_lua_push_instance (L, ret, G_TYPE_FILE, FALSE);
+}
+
+static int
+cfunc_prefs_get_filename (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "key");
+    const char *ret = moo_prefs_get_filename (arg0);
+    return moo_lua_push_string_copy (L, ret);
+}
+
+static int
+cfunc_prefs_get_int (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "key");
+    int ret = moo_prefs_get_int (arg0);
+    return moo_lua_push_int (L, ret);
+}
+
+static int
+cfunc_prefs_get_string (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "key");
+    const char *ret = moo_prefs_get_string (arg0);
+    return moo_lua_push_string_copy (L, ret);
+}
+
+static int
+cfunc_prefs_new_key_bool (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "key");
+    gboolean arg1 = moo_lua_get_arg_bool_opt (L, 1 + 1, "default_val", FALSE);
+    moo_prefs_new_key_bool (arg0, arg1);
+    return 0;
+}
+
+static int
+cfunc_prefs_new_key_int (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "key");
+    int arg1 = moo_lua_get_arg_int_opt (L, 1 + 1, "default_val", 0);
+    moo_prefs_new_key_int (arg0, arg1);
+    return 0;
+}
+
+static int
+cfunc_prefs_new_key_string (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "key");
+    const char* arg1 = moo_lua_get_arg_string_opt (L, 1 + 1, "default_val", NULL);
+    moo_prefs_new_key_string (arg0, arg1);
+    return 0;
+}
+
+static int
+cfunc_prefs_set_bool (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "key");
+    gboolean arg1 = moo_lua_get_arg_bool (L, 1 + 1, "val");
+    moo_prefs_set_bool (arg0, arg1);
+    return 0;
+}
+
+static int
+cfunc_prefs_set_file (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "key");
+    GFile *arg1 = (GFile*) moo_lua_get_arg_instance (L, 1 + 1, "val", G_TYPE_FILE);
+    moo_prefs_set_file (arg0, arg1);
+    return 0;
+}
+
+static int
+cfunc_prefs_set_filename (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "key");
+    const char* arg1 = moo_lua_get_arg_string (L, 1 + 1, "val");
+    moo_prefs_set_filename (arg0, arg1);
+    return 0;
+}
+
+static int
+cfunc_prefs_set_int (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "key");
+    int arg1 = moo_lua_get_arg_int (L, 1 + 1, "val");
+    moo_prefs_set_int (arg0, arg1);
+    return 0;
+}
+
+static int
+cfunc_prefs_set_string (G_GNUC_UNUSED lua_State *L)
+{
+    const char* arg0 = moo_lua_get_arg_string (L, 1 + 0, "key");
+    const char* arg1 = moo_lua_get_arg_string (L, 1 + 1, "val");
+    moo_prefs_set_string (arg0, arg1);
+    return 0;
+}
+
+extern const luaL_Reg moo_lua_functions[];
+const luaL_Reg moo_lua_functions[] = {
+    { "app_instance", cfunc_app_instance },
+    { "command_factory_register", cfunc_command_factory_register },
+    { "dgettext", cfunc_dgettext },
+    { "edit_open_info_new_path", cfunc_edit_open_info_new_path },
+    { "edit_open_info_new_uri", cfunc_edit_open_info_new_uri },
+    { "edit_save_info_new_path", cfunc_edit_save_info_new_path },
+    { "edit_save_info_new_uri", cfunc_edit_save_info_new_uri },
+    { "edit_window_set_action_filter", cfunc_edit_window_set_action_filter },
+    { "editor_create", cfunc_editor_create },
+    { "editor_instance", cfunc_editor_instance },
+    { "gettext", cfunc_gettext },
+    { "prefs_get_bool", cfunc_prefs_get_bool },
+    { "prefs_get_file", cfunc_prefs_get_file },
+    { "prefs_get_filename", cfunc_prefs_get_filename },
+    { "prefs_get_int", cfunc_prefs_get_int },
+    { "prefs_get_string", cfunc_prefs_get_string },
+    { "prefs_new_key_bool", cfunc_prefs_new_key_bool },
+    { "prefs_new_key_int", cfunc_prefs_new_key_int },
+    { "prefs_new_key_string", cfunc_prefs_new_key_string },
+    { "prefs_set_bool", cfunc_prefs_set_bool },
+    { "prefs_set_file", cfunc_prefs_set_file },
+    { "prefs_set_filename", cfunc_prefs_set_filename },
+    { "prefs_set_int", cfunc_prefs_set_int },
+    { "prefs_set_string", cfunc_prefs_set_string },
+    { NULL, NULL }
+};
+
 void
 moo_lua_api_register (void)
 {

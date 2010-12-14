@@ -522,8 +522,8 @@ unit_test_func (void)
 {
     MooTestOptions opts = 0;
     int status = unit_tests_main (opts, medit_opts.ut_tests, medit_opts.ut_dir);
-    moo_app_set_exit_status (moo_app_get_instance (), status);
-    moo_app_quit (moo_app_get_instance ());
+    moo_app_set_exit_status (moo_app_instance (), status);
+    moo_app_quit (moo_app_instance ());
     return FALSE;
 }
 
@@ -532,7 +532,7 @@ run_script_func (void)
 {
     char **p;
     for (p = medit_opts.run_script; p && *p; ++p)
-        moo_app_run_script (moo_app_get_instance(), *p);
+        moo_app_run_script (moo_app_instance(), *p);
     return FALSE;
 }
 
