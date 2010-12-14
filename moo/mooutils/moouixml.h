@@ -115,7 +115,7 @@ MooUiXml   *moo_ui_xml_new                  (void);
 
 void        moo_ui_xml_add_ui_from_string   (MooUiXml       *xml,
                                              const char     *buffer,
-                                             gssize          length);
+                                             int             length);
 
 MooUiNode  *moo_ui_xml_get_node             (MooUiXml       *xml,
                                              const char     *path);

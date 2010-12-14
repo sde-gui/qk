@@ -618,11 +618,15 @@ node_free (Node *node)
 
 /**
  * moo_ui_xml_add_ui_from_string:
+ *
+ * @xml:
+ * @buffer:
+ * @length: (default -1)
  */
 void
-moo_ui_xml_add_ui_from_string (MooUiXml       *xml,
-                               const char     *buffer,
-                               gssize          length)
+moo_ui_xml_add_ui_from_string (MooUiXml   *xml,
+                               const char *buffer,
+                               int         length)
 {
     MooMarkupDoc *doc;
     MooMarkupNode *ui_node, *child;
