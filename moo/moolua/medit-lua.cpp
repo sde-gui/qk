@@ -4,20 +4,18 @@
 #include "moolua/lua-default-init.h"
 #include "mooapp/mooapp.h"
 
-void gtk_lua_api_register (void);
-void moo_lua_api_register (void);
-extern const luaL_Reg gtk_lua_functions[];
-extern const luaL_Reg moo_lua_functions[];
+void gtk_lua_api_add_to_lua (lua_State *L, const char *package_name);
+void moo_lua_api_add_to_lua (lua_State *L, const char *package_name);
 
 static bool
 add_raw_api (lua_State *L)
 {
     g_assert (lua_gettop (L) == 0);
 
-    luaL_register(L, "gtk", gtk_lua_functions);
+    gtk_lua_api_add_to_lua (L, "gtk");
     lua_pop(L, 1);
 
-    luaL_register(L, "medit", moo_lua_functions);
+    moo_lua_api_add_to_lua (L, "medit");
     lua_pop(L, 1);
 
     g_assert (lua_gettop (L) == 0);
@@ -29,9 +27,6 @@ bool
 medit_lua_setup (lua_State *L,
                  bool       default_init)
 {
-    gtk_lua_api_register ();
-    moo_lua_api_register ();
-
     try
     {
         g_assert (lua_gettop (L) == 0);

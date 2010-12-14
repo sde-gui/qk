@@ -21,7 +21,7 @@ static int
 """
 
 tmpl_register_module_start = """\
-void
+static void
 %(module)s_lua_api_register (void)
 {
     static gboolean been_here = FALSE;
@@ -302,7 +302,7 @@ class Writer(object):
                 for name, cfunc in method_cfuncs:
                     self.out.write('        { "%s", %s },\n' % (name, cfunc))
                 self.out.write(tmpl_register_one_type_end % dic)
-        self.out.write('}\n')
+        self.out.write('}\n\n')
 
     def write(self, module, include_headers):
         self.module = module
@@ -323,16 +323,26 @@ class Writer(object):
 #         for enum in module.get_enums():
 #             self.__write_enum_decl(enum)
 
+        dic = dict(module=module.name.lower())
+
         all_func_cfuncs = []
         for func in module.get_functions():
             self.__write_function(func, None, all_func_cfuncs)
-        self.out.write('extern const luaL_Reg %s_lua_functions[];\n' % (module.name.lower(),))
-        self.out.write('const luaL_Reg %s_lua_functions[] = {\n' % (module.name.lower(),))
+        self.out.write('const luaL_Reg %(module)s_lua_functions[] = {\n' % dic)
         for name, cfunc in all_func_cfuncs:
             self.out.write('    { "%s", %s },\n' % (name, cfunc))
         self.out.write('    { NULL, NULL }\n')
         self.out.write('};\n\n')
 
         self.__write_register_module(module, all_method_cfuncs)
+
+        self.out.write("""\
+void %(module)s_lua_api_add_to_lua (lua_State *L, const char *package_name)
+{
+    %(module)s_lua_api_register ();
+
+    luaL_register (L, package_name, %(module)s_lua_functions);
+}
+""" % dic)
 
         del self.module
