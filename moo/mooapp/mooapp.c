@@ -561,7 +561,6 @@ moo_app_get_editor (MooApp *app)
 }
 
 
-#ifdef MOO_BUILD_EDIT
 static gboolean
 close_editor_window (MooApp *app)
 {
@@ -605,7 +604,6 @@ moo_app_init_editor (MooApp *app)
 
     init_plugins (app);
 }
-#endif /* MOO_BUILD_EDIT */
 
 
 static void
@@ -704,12 +702,10 @@ moo_app_init_real (MooApp *app)
     moo_app_init_ui (app);
     moo_app_init_mac (app);
 
-#ifdef MOO_BUILD_EDIT
     moo_app_init_editor (app);
 
     if (app->priv->use_session == -1)
         app->priv->use_session = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SAVE_SESSION));
-#endif
 
     if (app->priv->use_session)
         app->priv->run_input = TRUE;
@@ -860,10 +856,8 @@ moo_app_try_quit_real (MooApp *app)
 
     moo_app_save_session (app);
 
-#ifdef MOO_BUILD_EDIT
     if (!_moo_editor_close_all (app->priv->editor, TRUE, TRUE))
         return TRUE;
-#endif /* MOO_BUILD_EDIT */
 
     return FALSE;
 }
@@ -901,14 +895,12 @@ moo_app_quit_real (MooApp *app)
     g_object_unref (app->priv->sm_client);
     app->priv->sm_client = NULL;
 
-#ifdef MOO_BUILD_EDIT
     _moo_editor_close_all (app->priv->editor, FALSE, FALSE);
 
     moo_plugin_shutdown ();
 
     g_object_unref (app->priv->editor);
     app->priv->editor = NULL;
-#endif /* MOO_BUILD_EDIT */
 
     moo_app_write_session (app);
     moo_app_save_prefs (app);
@@ -1018,11 +1010,9 @@ install_common_actions (void)
 static void
 install_editor_actions (void)
 {
-#ifdef MOO_BUILD_EDIT
     MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
     g_return_if_fail (klass != NULL);
     g_type_class_unref (klass);
-#endif /* MOO_BUILD_EDIT */
 }
 
 
@@ -1033,13 +1023,12 @@ moo_app_get_ui_xml (MooApp *app)
 
     if (!app->priv->ui_xml)
     {
-#ifdef MOO_BUILD_EDIT
         if (app->priv->editor)
         {
             app->priv->ui_xml = moo_editor_get_ui_xml (app->priv->editor);
             g_object_ref (app->priv->ui_xml);
         }
-#endif
+
         if (!app->priv->ui_xml)
             app->priv->ui_xml = moo_ui_xml_new ();
     }
@@ -1065,10 +1054,8 @@ moo_app_set_ui_xml (MooApp     *app,
     if (xml)
         g_object_ref (app->priv->ui_xml);
 
-#ifdef MOO_BUILD_EDIT
     if (app->priv->editor)
         moo_editor_set_ui_xml (app->priv->editor, xml);
-#endif /* MOO_BUILD_EDIT */
 }
 
 
@@ -1077,24 +1064,20 @@ static void
 moo_app_load_session_real (MooApp        *app,
                            MooMarkupNode *xml)
 {
-#ifdef MOO_BUILD_EDIT
     MooEditor *editor;
     editor = moo_app_get_editor (app);
     g_return_if_fail (editor != NULL);
     _moo_editor_load_session (editor, xml);
-#endif /* MOO_BUILD_EDIT */
 }
 
 static void
 moo_app_save_session_real (MooApp        *app,
                            MooMarkupNode *xml)
 {
-#ifdef MOO_BUILD_EDIT
     MooEditor *editor;
     editor = moo_app_get_editor (app);
     g_return_if_fail (editor != NULL);
     _moo_editor_save_session (editor, xml);
-#endif /* MOO_BUILD_EDIT */
 }
 
 static void
@@ -1207,10 +1190,8 @@ moo_app_load_session (MooApp *app)
 // {
 //     gpointer window = NULL;
 //
-// #ifdef MOO_BUILD_EDIT
 //     if (!window && app->priv->editor)
 //         window = moo_editor_get_active_window (app->priv->editor);
-// #endif /* MOO_BUILD_EDIT */
 //
 //     if (window)
 //         moo_window_present (window, 0);
@@ -1222,7 +1203,6 @@ moo_app_load_session (MooApp *app)
 //                    const char *data,
 //                    gboolean    has_encoding)
 // {
-// #ifdef MOO_BUILD_EDIT
 //     char **uris;
 //     guint32 stamp;
 //     char *stamp_string;
@@ -1287,7 +1267,6 @@ moo_app_load_session (MooApp *app)
 //     g_free (encoding);
 //     g_strfreev (uris);
 //     g_free (stamp_string);
-// #endif /* MOO_BUILD_EDIT */
 // }
 
 void
@@ -1417,14 +1396,12 @@ moo_app_create_prefs_dialog (MooApp *app)
     dialog = MOO_PREFS_DIALOG (moo_prefs_dialog_new (title));
     g_free (title);
 
-#ifdef MOO_BUILD_EDIT
     moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_1 (moo_app_get_editor (app)));
     moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_2 (moo_app_get_editor (app)));
     moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_3 (moo_app_get_editor (app)));
     moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_4 (moo_app_get_editor (app)));
     moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_5 (moo_app_get_editor (app)));
     moo_plugin_attach_prefs (GTK_WIDGET (dialog));
-#endif
 
     g_signal_connect_after (dialog, "apply",
                             G_CALLBACK (prefs_dialog_apply),

@@ -1,6 +1,6 @@
 m4_define([_moo_major_version_],[0])
 m4_define([_moo_minor_version_],[99])
-m4_define([_moo_micro_version_],[7])
+m4_define([_moo_micro_version_],[8])
 m4_define([_moo_version_suffix_],[devel])
 m4_define([_moo_module_major_version_],[2])
 m4_define([_moo_module_minor_version_],[0])
@@ -70,11 +70,6 @@ AH_BOTTOM([#include <moo-config.h>
 #endif // __CONFIG_H__])
 
 MOO_LT_LIB_M
-
-AC_DEFINE(MOO_BUILD_APP,[1],[MOO_BUILD_APP])
-AC_DEFINE(MOO_BUILD_EDIT,[1],[MOO_BUILD_EDIT])
-AC_DEFINE(MOO_BUILD_LUA,[1],[MOO_BUILD_LUA])
-AC_DEFINE(MOO_BUILD_UTILS,[1],[MOO_BUILD_UTILS])
 
 AC_DEFINE_UNQUOTED(MOO_VERSION,["$MOO_VERSION"],[MOO_VERSION])
 AC_DEFINE_UNQUOTED(MOO_DISPLAY_VERSION,["$MOO_DISPLAY_VERSION"],[MOO_DISPLAY_VERSION])
