@@ -22,6 +22,13 @@ from _moo import *
 _ = gettext
 D_ = dgettext
 
+class _PluginWontLoad(Exception):
+    def __repr__(self):
+        return 'PluginWontLoad'
+
+def cancel_plugin_loading():
+    raise _PluginWontLoad()
+
 def N_(string):
     return string
 
