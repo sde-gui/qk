@@ -92,7 +92,6 @@ void array_type##_append_array (ArrayType *ar, ArrayType *ar2)          \
         return;                                                         \
     old_size = ar->n_elms;                                              \
     MOO_IP_ARRAY_GROW (ElmType*, ar, elms, ar2->n_elms);                \
-    ar->n_elms += ar2->n_elms;                                          \
     for (i = 0; i < ar2->n_elms; ++i)                                   \
         ar->elms[old_size + i] = copy_elm (ar2->elms[i]);               \
 }                                                                       \
