@@ -188,6 +188,15 @@ copy_python() {
   do_or_die cp -lfR $mgwpythonsystem32dir/python2*.dll "$dstdir/bin/"
   do_or_die cp -lfR $srcdir/lib/python2.*/site-packages/* "$dstdir/bin/Lib/site-packages/"
   do_or_die cp -lfR $srcdir/bin/libpyglib-*.dll "$dstdir/bin/"
+  do_or_die find $dstdir/bin/Lib/ -name '*.py[co]' -delete
+  do_or_die find $dstdir/bin/Lib/site-packages/ -name '*.a' -delete
+  do_or_die find $dstdir/bin/Lib/site-packages/ -name '*.la' -delete
+  do_or_die rm $dstdir/bin/DLLs/_ctypes_test.pyd
+  for dir in bsddb/test ctypes/test distutils/tests email/test json/tests \
+             lib-tk/test lib2to3/tests sqlite3/test test unittest/test;
+  do
+    do_or_die rm -r $dstdir/bin/Lib/$dir
+  done
 }
 
 copy_files
