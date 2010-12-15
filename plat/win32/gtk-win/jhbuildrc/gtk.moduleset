@@ -353,7 +353,7 @@
       <dep package="pkgconfig"/>
       <dep package="gtk+"/>
       <dep package="intltool"/>
-<!--      <dep package="pygtk"/>-->
+      <dep package="pygtk"/>
     </dependencies>
   </metamodule>
 

@@ -71,7 +71,7 @@ export PKG_CONFIG_LIBDIR="$mgwtargetdir/lib/pkgconfig"
 export PKG_CONFIG_PATH="$mgwtargetdir/lib/pkgconfig"
 
 export PYTHON_INCLUDES="-I$mgwtargetdir/include/python"
-export PYTHON_LIBS="-lpython27"
+export PYTHON_LIBS="-lpython$mgwpythonver"
 
 configure_args="--build=i686-pc-linux-gnu --host=i586-pc-mingw32msvc --target=i586-pc-mingw32msvc \
 AR=$AR RANLIB=$RANLIB STRIP=$STRIP AS=$AS DLLTOOL=$DLLTOOL OBJDUMP=$OBJDUMP NM=$NM WINDRES=$WINDRES RC=$RC \

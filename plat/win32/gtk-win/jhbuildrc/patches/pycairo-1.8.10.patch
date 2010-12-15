@@ -872,7 +872,7 @@ diff -r 269744cb96ec acinclude.m4
  
 +AC_DEFUN([AM_CHECK_PYTHON_HEADERS],[
 +  AC_SUBST([PYTHON_INCLUDES],[-I$prefix/include/python])
-+  AC_SUBST([PYTHON_LIBS],[-lpython27])
++  AC_SUBST([PYTHON_LIBS],[-lpython$mgwpythonver])
 +])
 diff -r 269744cb96ec aclocal.m4
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
@@ -22744,7 +22744,7 @@ diff -r 269744cb96ec configure
 +
 +  PYTHON_INCLUDES=-I$prefix/include/python
 +
-+  PYTHON_LIBS=-lpython27
++  PYTHON_LIBS=-lpython$mgwpythonver
 +
 +
 +

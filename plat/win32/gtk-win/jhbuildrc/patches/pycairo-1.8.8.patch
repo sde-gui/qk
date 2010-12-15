@@ -138,7 +138,7 @@ diff -r e54fba98ac25 acinclude.m4
 + 
 +AC_DEFUN([AM_CHECK_PYTHON_HEADERS],[
 +  AC_SUBST([PYTHON_INCLUDES],[-I$prefix/include/python])
-+  AC_SUBST([PYTHON_LIBS],[-lpython27])
++  AC_SUBST([PYTHON_LIBS],[-lpython$mgwpythonver])
 +])
 diff -r e54fba98ac25 aclocal.m4
 --- a/aclocal.m4	Fri Dec 03 00:00:46 2010 -0800
@@ -8155,7 +8155,7 @@ diff -r e54fba98ac25 configure
 -CPPFLAGS="$save_CPPFLAGS"
 +  PYTHON_INCLUDES=-I$prefix/include/python
 +
-+  PYTHON_LIBS=-lpython27
++  PYTHON_LIBS=-lpython$mgwpythonver
 +
  
  
@@ -8989,7 +8989,8 @@ diff -r e54fba98ac25 configure
  if test -n "$CONFIG_FILES"; then
  
  
--ac_cr=''
+-ac_cr='
+'
 +ac_cr=`echo X | tr X '\015'`
 +# On cygwin, bash can eat \r inside `` if the user requested igncr.
 +# But we know of no other shell where ac_cr would be empty at this

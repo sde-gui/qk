@@ -1,6 +1,8 @@
+export mgwbuildroot=$HOME/projects/gtk-win-build
+export mgwpythonver=27
+
 export mgwdir_s=$mgwdir
 export mgwdir=`cd $mgwdir && pwd`
-export mgwbuildroot=$HOME/projects/gtk-win-build
 export mgwconfig=release
 
 case "$1" in
@@ -26,5 +28,5 @@ export mgwtargetdir=$mgwbuilddir/target
 export mgwsourcedir_s=$mgwbuilddir_s/source
 export mgwtargetdir_s=$mgwbuilddir_s/target
 
-export mgwpythoninstdir=$HOME/.wine/drive_c/Python27
+export mgwpythoninstdir=$HOME/.wine/drive_c/Python$mgwpythonver
 export mgwpythonsystem32dir=$HOME/.wine/drive_c/windows/system32

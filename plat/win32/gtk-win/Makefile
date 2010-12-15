@@ -22,7 +22,7 @@ build-python: check-make
 	cp -fl $(mgwpythoninstdir)/libs/libpython2*.a $(mgwtargetdir)/lib/
 	cp -fl $(mgwpythoninstdir)/include/* $(mgwtargetdir)/include/python/
 
-build: build-gtk build-data
+build: build-python build-gtk build-data
 
 bdist-en:
 	rm -fr $(mgwdestdir)-en

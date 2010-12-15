@@ -159,11 +159,12 @@ module_autogenargs['gtk+'] = autogenargs \
 #                                             + " --disable-introspection"
 # module_autogenargs['gtk-2-20'] = module_autogenargs['gtk+-2.20']
 
-module_autogenargs['pygobject'] =   autogenargs \
+module_autogenargs['pygobject'] = autogenargs \
                                             + " --disable-cairo" \
                                             + " --disable-introspection" \
                                             + " --disable-docs"
 
-module_autogenargs['pygobject'] =   autogenargs \
+module_autogenargs['pygtk'] = autogenargs \
+                                            + " --disable-introspection" \
                                             + " --disable-docs" \
                                             + " --disable-numpy"

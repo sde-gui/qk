@@ -3818,7 +3818,7 @@ diff -r d3fdceb1358c configure
 +
 +  PYTHON_INCLUDES=-I$prefix/include/python
 +
-+  PYTHON_LIBS=-lpython27
++  PYTHON_LIBS=-lpython$mgwpythonver
 +
 +
 +
@@ -5042,7 +5042,7 @@ diff -r d3fdceb1358c m4/python.m4
 +
 +AC_DEFUN([JD_CHECK_PYTHON_HEADERS],[
 +  AC_SUBST([PYTHON_INCLUDES],[-I$prefix/include/python])
-+  AC_SUBST([PYTHON_LIBS],[-lpython27])
++  AC_SUBST([PYTHON_LIBS],[-lpython$mgwpythonver])
 +])
 diff -r d3fdceb1358c tests/Makefile.in
 --- a/tests/Makefile.in	Thu Dec 02 22:33:27 2010 -0800

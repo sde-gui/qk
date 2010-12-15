@@ -17,7 +17,7 @@ index 8ef2000..2581afd 100644
  
 +AC_DEFUN([AM_CHECK_PYTHON_HEADERS],[
 +  AC_SUBST([PYTHON_INCLUDES],[-I$prefix/include/python])
-+  AC_SUBST([PYTHON_LIBS],[-lpython27])
++  AC_SUBST([PYTHON_LIBS],[-lpython$mgwpythonver])
 +])
 diff --git a/configure.ac b/configure.ac
 index 4e39759..1c5d3cb 100644
