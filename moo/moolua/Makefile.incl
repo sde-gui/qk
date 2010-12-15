@@ -7,6 +7,7 @@ moo_sources +=				\
 	moolua/moo-lua-api-util.h	\
 	moolua/moo-lua-api-util.cpp	\
 	moolua/moo-lua-api.cpp		\
+	moolua/moo-lua-api.h		\
 	moolua/gtk-lua-api.cpp
 
 genlua_files =					\
