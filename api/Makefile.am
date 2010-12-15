@@ -32,7 +32,7 @@ include sourcefiles.mak
 
 BUILT_SOURCES += moo.xml.stamp
 moo.xml.stamp: $(docparser_files) $(source_files)
-	$(PYTHON) $(srcdir)/parsedocs.py \
+	$(AM_V_GEN)$(PYTHON) $(srcdir)/parsedocs.py \
 		--source-dir $(top_srcdir)/moo/mooapp \
 		--source-dir $(top_srcdir)/moo/mooedit \
 		--source-dir $(top_srcdir)/moo/moofileview \
@@ -42,7 +42,7 @@ moo.xml.stamp: $(docparser_files) $(source_files)
                 --skip 'moofontsel.*' \
 		--output moo.xml.tmp && \
 	(cmp -s moo.xml.tmp $(srcdir)/moo.xml || mv moo.xml.tmp $(srcdir)/moo.xml)
-	rm -f moo.xml.tmp
-	echo stamp > moo.xml.stamp
+	$(AM_V_at)rm -f moo.xml.tmp
+	$(AM_V_at)echo stamp > moo.xml.stamp
 
 endif
