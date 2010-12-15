@@ -1160,7 +1160,8 @@ action_open (MooEditWindow *window)
 {
     MooEdit *active = moo_edit_window_get_active_doc (window);
     MooEditOpenInfoArray *files = _moo_edit_open_dialog (GTK_WIDGET (window), active);
-    moo_editor_open_files (window->priv->editor, files, GTK_WIDGET (window), NULL);
+    if (!moo_edit_open_info_array_is_empty (files))
+        moo_editor_open_files (window->priv->editor, files, GTK_WIDGET (window), NULL);
     moo_edit_open_info_array_free (files);
 }
 
