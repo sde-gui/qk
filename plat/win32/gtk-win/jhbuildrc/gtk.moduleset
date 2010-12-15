@@ -101,7 +101,8 @@
             md5sum="9e09fd6e58cbf9717140891e0b7d4a7a"/>
   </tarball>
 
-<!--  <tarball id="cairo-1.8" supports-non-srcdir-builds="no">
+  <!-- THIS ONE WORKS -->
+<!--  <tarball id="cairo" supports-non-srcdir-builds="no">
     <source href="http://cairographics.org/releases/cairo-1.8.4.tar.gz"
             md5sum="a5067e355e78294db2485aa97afd1115"/>
     <dependencies>
@@ -112,6 +113,17 @@
   </tarball>-->
 
   <tarball id="cairo" supports-non-srcdir-builds="no">
+    <source href="http://cairographics.org/releases/cairo-1.8.10.tar.gz"
+            md5sum="b60a82f405f9400bbfdcf850b1728d25"/>
+    <dependencies>
+      <dep package="pixman"/>
+      <dep package="gettext"/>
+      <dep package="libpng"/>
+    </dependencies>
+  </tarball>
+
+  <!-- with cairo-1.10 icons disappear randomly -->
+<!--  <tarball id="cairo" supports-non-srcdir-builds="no">
     <source href="http://cairographics.org/releases/cairo-1.10.0.tar.gz"
             md5sum="70a2ece66cf473d976e2db0f75bf199e"/>
     <dependencies>
@@ -122,7 +134,7 @@
     <patches>
       <patch file="cairo-1.10.patch" strip="1"/>
     </patches>
-  </tarball>
+  </tarball>-->
 
   <tarball id="pango">
     <source href="http://ftp.acc.umu.se/pub/GNOME/sources/pango/1.28/pango-1.28.0.tar.bz2"
