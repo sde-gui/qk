@@ -100,11 +100,14 @@ normalize_encoding (const char *encoding,
 gboolean
 _moo_edit_file_is_new (GFile *file)
 {
+    gboolean is_new;
     char *filename;
     moo_return_val_if_fail (G_IS_FILE (file), FALSE);
     filename = g_file_get_path (file);
     moo_return_val_if_fail (filename != NULL, FALSE);
-    return !g_file_test (filename, G_FILE_TEST_EXISTS);
+    is_new = !g_file_test (filename, G_FILE_TEST_EXISTS);
+    g_free (filename);
+    return is_new;
 }
 
 
@@ -931,6 +934,7 @@ do_save_local (MooEdit        *edit,
         {
             to_save = encoded;
             to_save_size = bytes_written;
+            freeme = encoded;
         }
         else
         {

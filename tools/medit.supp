@@ -210,3 +210,44 @@
    obj:/usr/lib/libgobject-2.0.so*
    fun:g_type_register_static
 }
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr1
+   fun:g_utf8_pointer_to_offset
+   fun:g_utf8_pointer_to_offset
+   fun:regex_fetch_pos
+   fun:apply_sub_patterns
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:_XEnq
+   obj:/usr/lib/libX11.so.6.3.0
+   fun:_XReadEvents
+   fun:XIfEvent
+   fun:gdk_x11_get_server_time
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_rc_parse_string
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gtk_rc_get_style
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:gdk_window_focus
+}

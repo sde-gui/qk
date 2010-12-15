@@ -17,6 +17,7 @@ moo_file_fnmatch (GFile      *file,
                   const char *glob)
 {
     char *filename;
+    gboolean ret;
 
     moo_return_val_if_fail (G_IS_FILE (file), FALSE);
     moo_return_val_if_fail (glob != NULL, FALSE);
@@ -24,5 +25,8 @@ moo_file_fnmatch (GFile      *file,
     filename = g_file_get_path (file);
     moo_return_val_if_fail (filename != NULL, FALSE);
 
-    return fnmatch (glob, filename, 0) == 0;
+    ret = fnmatch (glob, filename, 0) == 0;
+
+    g_free (filename);
+    return ret;
 }

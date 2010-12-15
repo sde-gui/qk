@@ -1969,10 +1969,12 @@ moo_log_debug_enabled (void)
 
 void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_list args)
 {
-    char *message = g_strdup_vprintf (format, args);
+    char *message;
 
     if (flags >= G_LOG_LEVEL_DEBUG && !moo_log_debug_enabled ())
         return;
+
+    message = g_strdup_vprintf (format, args);
 
 #if defined(MOO_DEV_MODE) && !defined(__WIN32__)
     if (flags < G_LOG_LEVEL_MESSAGE)
