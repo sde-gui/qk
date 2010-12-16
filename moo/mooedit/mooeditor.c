@@ -2024,7 +2024,7 @@ moo_editor_open_files (MooEditor              *editor,
 
     moo_assert (moo_edit_array_is_empty (docs) ||
                 moo_edit_array_get_size (docs) ==
-                    moo_edit_open_info_array_size (files));
+                    moo_edit_open_info_array_get_size (files));
 
     moo_edit_array_free (docs);
     return ret;
