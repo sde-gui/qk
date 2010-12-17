@@ -35,6 +35,8 @@ plat/win32/gtk-win/debug/
 plat/win32/gtk-win/release/
 plat/win32/gtk-win/bdist-debug/
 plat/win32/gtk-win/bdist-release/
+api/moo.xml
+moo/moopython/pygtk/moo-generated.defs
 moo/moolua/moo-lua-api.cpp
 moo/moolua/gtk-lua-api.cpp
 doc/help/*.html
