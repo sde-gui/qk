@@ -15,6 +15,7 @@
 
 /* This is not a part of the Lua distribution */
 
+#include "config.h"
 #include "moolua.h"
 #include "mooutils/moospawn.h"
 #include "mooutils/mooutils.h"
