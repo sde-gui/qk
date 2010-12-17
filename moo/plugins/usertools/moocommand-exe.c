@@ -146,13 +146,13 @@ moo_command_exe_finalize (GObject *object)
 
 
 static char *
-get_lines (GtkTextView *doc,
-           gboolean     select_them)
+get_lines (MooEdit  *doc,
+           gboolean  select_them)
 {
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
 
-    buffer = gtk_text_view_get_buffer (doc);
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
     gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
 
     gtk_text_iter_set_line_offset (&start, 0);
@@ -171,7 +171,7 @@ get_input (MooCommandExe     *cmd,
            MooCommandContext *ctx,
            gboolean           select_it)
 {
-    GtkTextView *doc = moo_command_context_get_doc (ctx);
+    MooEdit *doc = moo_command_context_get_doc (ctx);
 
     g_return_val_if_fail (cmd->priv->input == MOO_COMMAND_EXE_INPUT_NONE || doc != NULL, NULL);
 
@@ -296,7 +296,7 @@ make_argv (const char  *cmd_line,
 
 static void
 run_in_pane (MooEditWindow     *window,
-             GtkTextView       *doc,
+             MooEdit           *doc,
              const char        *filter_id,
              const char        *cmd_line,
              const char        *display_cmd_line,
@@ -327,7 +327,7 @@ run_in_pane (MooEditWindow     *window,
 
         if (filter)
         {
-            char *fn = MOO_IS_EDIT (doc) ? moo_edit_get_filename (MOO_EDIT (doc)) : NULL;
+            char *fn = doc ? moo_edit_get_filename (doc) : NULL;
             moo_output_filter_set_active_file (filter, fn);
             g_free (fn);
         }
@@ -386,7 +386,7 @@ run_command_in_pane (MooCommandExe     *cmd,
                      const char        *working_dir,
                      char             **envp)
 {
-    GtkTextView *doc;
+    MooEdit *doc;
     MooEditWindow *window;
     char *cmd_line;
 
@@ -913,7 +913,7 @@ unx_factory_create_command (G_GNUC_UNUSED MooCommandFactory *factory,
         return NULL;
 
     cmd = _moo_command_exe_new (cmd_line,
-                                moo_command_options_parse (options),
+                                moo_parse_command_options (options),
                                 input, output,
                                 moo_command_data_get (data, KEY_FILTER));
     g_return_val_if_fail (cmd != NULL, NULL);

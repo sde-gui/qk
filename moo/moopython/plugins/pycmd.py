@@ -27,9 +27,6 @@ class PyCmd(moo.Command):
             self.code = code
         self.set_options(options)
 
-    def __set_variable(self, name, value, dic):
-        dic[name] = value
-
     def do_run(self, ctx):
         dic = {}
         dic['doc'] = ctx.get_doc()
@@ -37,8 +34,6 @@ class PyCmd(moo.Command):
         dic['buffer'] = ctx.get_doc() and ctx.get_doc().get_buffer()
         dic['editor'] = moo.editor_instance()
         dic['moo'] = moo
-
-        ctx.foreach(self.__set_variable, dic)
 
         buf = (ctx.get_doc() and ctx.get_doc().get_buffer()) or None
 

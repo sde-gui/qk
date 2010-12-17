@@ -70,8 +70,7 @@ MOO_DEFINE_TYPE_STATIC (MeditApp, medit_app, MOO_TYPE_APP)
 static void
 medit_app_init_plugins (G_GNUC_UNUSED MooApp *app)
 {
-    moo_plugin_init_builtin ();
-    moo_plugin_read_dirs ();
+    moo_plugin_init ();
 }
 
 static void

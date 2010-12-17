@@ -29,6 +29,10 @@
  * boxed:MooCommandData:
  **/
 
+/**
+ * flags:MooCommandOptions:
+ */
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -74,8 +78,8 @@ typedef struct {
 
 struct _MooCommandContextPrivate {
     GHashTable *vars;
-    gpointer window;
-    gpointer doc;
+    MooEditWindow *window;
+    MooEdit *doc;
 };
 
 struct _MooCommandData {
@@ -547,6 +551,9 @@ moo_command_check_sensitive (MooCommand    *cmd,
 }
 
 
+/**
+ * moo_command_set_options:
+ **/
 void
 moo_command_set_options (MooCommand       *cmd,
                          MooCommandOptions options)
@@ -563,6 +570,9 @@ moo_command_set_options (MooCommand       *cmd,
 }
 
 
+/**
+ * moo_command_get_options:
+ **/
 MooCommandOptions
 moo_command_get_options (MooCommand *cmd)
 {
@@ -571,8 +581,11 @@ moo_command_get_options (MooCommand *cmd)
 }
 
 
+/**
+ * moo_parse_command_options:
+ **/
 MooCommandOptions
-moo_command_options_parse (const char *string)
+moo_parse_command_options (const char *string)
 {
     MooCommandOptions options = 0;
     char **pieces, **p;
@@ -871,10 +884,10 @@ moo_command_context_new (gpointer doc,
 
 void
 moo_command_context_set_doc (MooCommandContext *ctx,
-                             gpointer           doc)
+                             MooEdit           *doc)
 {
     g_return_if_fail (MOO_IS_COMMAND_CONTEXT (ctx));
-    g_return_if_fail (!doc || GTK_IS_TEXT_VIEW (doc));
+    g_return_if_fail (!doc || MOO_IS_EDIT (doc));
 
     if (ctx->priv->doc != doc)
     {
@@ -890,10 +903,10 @@ moo_command_context_set_doc (MooCommandContext *ctx,
 
 void
 moo_command_context_set_window (MooCommandContext *ctx,
-                                gpointer           window)
+                                MooEditWindow     *window)
 {
     g_return_if_fail (MOO_IS_COMMAND_CONTEXT (ctx));
-    g_return_if_fail (!window || GTK_IS_WINDOW (window));
+    g_return_if_fail (!window || MOO_IS_EDIT_WINDOW (window));
 
     if (ctx->priv->window != window)
     {
@@ -907,7 +920,10 @@ moo_command_context_set_window (MooCommandContext *ctx,
 }
 
 
-gpointer
+/**
+ * moo_command_context_get_doc:
+ **/
+MooEdit *
 moo_command_context_get_doc (MooCommandContext *ctx)
 {
     g_return_val_if_fail (MOO_IS_COMMAND_CONTEXT (ctx), NULL);
@@ -915,7 +931,10 @@ moo_command_context_get_doc (MooCommandContext *ctx)
 }
 
 
-gpointer
+/**
+ * moo_command_context_get_window:
+ **/
+MooEditWindow *
 moo_command_context_get_window (MooCommandContext *ctx)
 {
     g_return_val_if_fail (MOO_IS_COMMAND_CONTEXT (ctx), NULL);
@@ -1207,9 +1226,8 @@ _moo_command_parse_item (MooKeyFileItem     *item,
 
     if (!factory)
     {
-        if (strcmp (factory_name, "python") != 0)
-            g_warning ("unknown command type %s in item %s in file %s",
-                       factory_name, name, filename);
+        g_warning ("unknown command type %s in item %s in file %s",
+                   factory_name, name, filename);
         goto error;
     }
 
@@ -1328,6 +1346,9 @@ moo_command_data_unref (MooCommandData *data)
 }
 
 
+/**
+ * moo_command_data_set:
+ **/
 void
 moo_command_data_set (MooCommandData *data,
                       guint           index,
@@ -1339,6 +1360,9 @@ moo_command_data_set (MooCommandData *data,
 }
 
 
+/**
+ * moo_command_data_get:
+ **/
 const char *
 moo_command_data_get (MooCommandData *data,
                       guint           index)
@@ -1359,6 +1383,9 @@ moo_command_data_take_code (MooCommandData *data,
 }
 
 
+/**
+ * moo_command_data_set_code:
+ **/
 void
 moo_command_data_set_code (MooCommandData *data,
                            const char     *code)
@@ -1367,6 +1394,9 @@ moo_command_data_set_code (MooCommandData *data,
 }
 
 
+/**
+ * moo_command_data_get_code:
+ **/
 const char *
 moo_command_data_get_code (MooCommandData *data)
 {

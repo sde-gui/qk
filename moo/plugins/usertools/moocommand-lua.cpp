@@ -112,7 +112,7 @@ lua_factory_create_command (G_GNUC_UNUSED MooCommandFactory *factory,
     code = moo_command_data_get_code (data);
     g_return_val_if_fail (code && *code, NULL);
 
-    cmd = moo_command_lua_new (code, moo_command_options_parse (options));
+    cmd = moo_command_lua_new (code, moo_parse_command_options (options));
     g_return_val_if_fail (cmd != NULL, NULL);
 
     return cmd;

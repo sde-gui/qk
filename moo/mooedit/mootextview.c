@@ -943,6 +943,9 @@ goto_line_interactive (MooTextView *view)
 }
 
 
+/**
+ * moo_text_view_set_font_from_string:
+ **/
 void
 moo_text_view_set_font_from_string (MooTextView *view,
                                     const char  *font)

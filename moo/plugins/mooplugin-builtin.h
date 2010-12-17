@@ -21,7 +21,7 @@
 G_BEGIN_DECLS
 
 
-void         moo_plugin_init_builtin        (void);
+void         moo_plugin_init                (void);
 
 #ifndef __WIN32__
 gboolean    _moo_ctags_plugin_init          (void);
