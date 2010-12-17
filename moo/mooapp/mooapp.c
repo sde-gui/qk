@@ -1501,7 +1501,6 @@ moo_app_parse_files (const char      *data,
 
         info = moo_edit_open_info_new_uri (uri, encoding);
 
-        // XXX comment this out to repro crash in appinput code
         info->flags |= MOO_EDIT_OPEN_CREATE_NEW;
 
         line = moo_markup_int_prop (node, "line", 0);

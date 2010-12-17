@@ -641,7 +641,7 @@ read_input (G_GNUC_UNUSED GIOChannel *source,
     if (do_commit)
         commit (&conn->buffer);
 
-    if (condition & (G_IO_ERR | G_IO_HUP))
+    if (!do_commit && (condition & (G_IO_ERR | G_IO_HUP)))
     {
         moo_dmsg ("%s: %s", G_STRLOC,
                   (condition & G_IO_ERR) ? "G_IO_ERR" : "G_IO_HUP");
