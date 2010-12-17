@@ -352,7 +352,6 @@ filter_setting_new (const char *filter,
                     const char *config)
 {
     FilterSetting *setting;
-    GError *error = NULL;
 
     g_return_val_if_fail (filter != NULL, NULL);
     g_return_val_if_fail (config != NULL, NULL);
@@ -363,8 +362,7 @@ filter_setting_new (const char *filter,
 
     if (!setting->filter)
     {
-        g_warning ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
+        moo_warning ("could not parse filter '%s'", filter);
         filter_setting_free (setting);
         setting = NULL;
     }
