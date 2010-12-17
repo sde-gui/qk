@@ -1276,19 +1276,9 @@ moo_app_open_files (MooApp               *app,
 {
     g_return_if_fail (MOO_IS_APP (app));
 
-    if (moo_edit_open_info_array_is_empty (files))
-    {
-        MooEdit *doc;
+    if (!moo_edit_open_info_array_is_empty (files))
+        moo_editor_open_files (app->priv->editor, files, NULL, NULL);
 
-        doc = moo_editor_get_active_doc (app->priv->editor);
-
-        if (!doc || !moo_edit_is_empty (doc))
-            moo_editor_new_doc (app->priv->editor, NULL);
-
-        return;
-    }
-
-    moo_editor_open_files (app->priv->editor, files, NULL, NULL);
     moo_editor_present (app->priv->editor, stamp);
 }
 
@@ -1511,6 +1501,9 @@ moo_app_parse_files (const char      *data,
 
         info = moo_edit_open_info_new_uri (uri, encoding);
 
+        // XXX comment this out to repro crash in appinput code
+        info->flags |= MOO_EDIT_OPEN_CREATE_NEW;
+
         line = moo_markup_int_prop (node, "line", 0);
         if (line > 0)
             info->line = line - 1;
@@ -1535,12 +1528,8 @@ moo_app_cmd_open_files (MooApp     *app,
 {
     MooEditOpenInfoArray *files;
     guint32 stamp;
-
     files = moo_app_parse_files (data, &stamp);
-
-    if (!moo_edit_open_info_array_is_empty (files))
-        moo_app_open_files (app, files, stamp);
-
+    moo_app_open_files (app, files, stamp);
     moo_edit_open_info_array_free (files);
 }
 
