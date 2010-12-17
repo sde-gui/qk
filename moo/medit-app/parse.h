@@ -7,7 +7,7 @@ parse_filename (const char *filename)
     char *freeme2 = NULL;
     char *freeme1 = NULL;
     char *uri;
-    int line = -1;
+    int line = 0;
     MooEditOpenInfo *info;
 
     freeme1 = _moo_normalize_file_path (filename);
@@ -52,7 +52,7 @@ parse_filename (const char *filename)
                         errno = 0;
                         line = strtol (line_string, NULL, 10);
                         if (errno)
-                            line = -1;
+                            line = 0;
                     }
                 }
                 g_free (line_string);
@@ -74,7 +74,7 @@ parse_filename (const char *filename)
 
     info = moo_edit_open_info_new_uri (uri, NULL);
 
-    info->line = line;
+    info->line = line - 1;
 
     g_free (uri);
     g_free (freeme1);
