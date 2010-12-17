@@ -23,8 +23,8 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooutils.h"
-#include "mootextfind-prompt-gxml.h"
-#include "mooeditsavemult-gxml.h"
+#include "mooedit/mootextfind-prompt-gxml.h"
+#include "mooedit/mooeditsavemult-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gregex.h>
 #include <string.h>

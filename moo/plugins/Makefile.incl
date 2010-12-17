@@ -13,17 +13,18 @@ EXTRA_DIST +=						\
 	plugins/glade/moofind.glade			\
 	plugins/glade/moogrep.glade
 
-built_plugins_sources +=		\
-	moofileselector-prefs-gxml.h	\
-	moofileselector-gxml.h		\
-	moofind-gxml.h			\
-	moogrep-gxml.h
+built_plugins_sources +=				\
+	plugins/moofileselector-prefs-gxml.h		\
+	plugins/moofileselector-gxml.h			\
+	plugins/moofind-gxml.h				\
+	plugins/moogrep-gxml.h
 
 EXTRA_DIST += plugins/lua-module-setup.lua
-built_plugins_sources += lua-module-setup.h
-lua-module-setup.h: plugins/lua-module-setup.lua $(top_srcdir)/tools/xml2h.py
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/plugins/lua-module-setup.lua lua-module-setup.h.tmp LUA_MODULE_SETUP_CODE \
-		&& mv lua-module-setup.h.tmp lua-module-setup.h
+built_plugins_sources += plugins/lua-module-setup.h
+plugins/lua-module-setup.h: plugins/lua-module-setup.lua $(top_srcdir)/tools/xml2h.py
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/plugins/lua-module-setup.lua \
+		plugins/lua-module-setup.h.tmp LUA_MODULE_SETUP_CODE \
+		&& mv plugins/lua-module-setup.h.tmp plugins/lua-module-setup.h
 
 include plugins/ctags/Makefile.incl
 include plugins/usertools/Makefile.incl

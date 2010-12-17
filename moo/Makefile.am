@@ -45,29 +45,37 @@ CLEANFILES += $(built_moo_sources) $(built_plugin_sources)
 # 	$(MKDIR_P) glade
 # 	$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
 
-%-gxml.h: mooutils/glade/%.glade $(top_srcdir)/tools/glade2c.py
+mooutils/%-gxml.h: mooutils/glade/%.glade $(top_srcdir)/tools/glade2c.py
+	$(AM_V_at) $(MKDIR_P) `dirname $@`
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
 
-%-gxml.h: moofileview/glade/%.glade $(top_srcdir)/tools/glade2c.py
+moofileview/%-gxml.h: moofileview/glade/%.glade $(top_srcdir)/tools/glade2c.py
+	$(AM_V_at) $(MKDIR_P) `dirname $@`
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
 
-%-gxml.h: mooedit/glade/%.glade $(top_srcdir)/tools/glade2c.py
+mooedit/%-gxml.h: mooedit/glade/%.glade $(top_srcdir)/tools/glade2c.py
+	$(AM_V_at) $(MKDIR_P) `dirname $@`
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
 
-%-gxml.h: mooapp/glade/%.glade $(top_srcdir)/tools/glade2c.py
+mooapp/%-gxml.h: mooapp/glade/%.glade $(top_srcdir)/tools/glade2c.py
+	$(AM_V_at) $(MKDIR_P) `dirname $@`
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
 
-%-gxml.h: plugins/glade/%.glade $(top_srcdir)/tools/glade2c.py
+plugins/%-gxml.h: plugins/glade/%.glade $(top_srcdir)/tools/glade2c.py
+	$(AM_V_at) $(MKDIR_P) `dirname $@`
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
 
-%-gxml.h: plugins/usertools/glade/%.glade $(top_srcdir)/tools/glade2c.py
+plugins/usertools/%-gxml.h: plugins/usertools/glade/%.glade $(top_srcdir)/tools/glade2c.py
+	$(AM_V_at) $(MKDIR_P) `dirname $@`
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
 
 # %-ui.h: %.xml $(top_srcdir)/tools/xml2h.py
 # 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $< $@.tmp $*_ui_xml && mv $@.tmp $@
 
-%-ui.h: moofileview/%.xml $(top_srcdir)/tools/xml2h.py
+moofileview/%-ui.h: moofileview/%.xml $(top_srcdir)/tools/xml2h.py
+	$(AM_V_at) $(MKDIR_P) `dirname $@`
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $< $@.tmp $*_ui_xml && mv $@.tmp $@
 
-%-ui.h: mooedit/%.xml $(top_srcdir)/tools/xml2h.py
+mooedit/%-ui.h: mooedit/%.xml $(top_srcdir)/tools/xml2h.py
+	$(AM_V_at) $(MKDIR_P) `dirname $@`
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $< $@.tmp $*_ui_xml && mv $@.tmp $@

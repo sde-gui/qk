@@ -1,25 +1,41 @@
-plugins_sources +=				\
-	plugins/usertools/moousertools.c	\
-	plugins/usertools/moousertools.h	\
-	plugins/usertools/moousertools-prefs.c	\
-	plugins/usertools/moousertools-prefs.h	\
-	plugins/usertools/moocommand.c		\
-	plugins/usertools/moocommand.h		\
-	plugins/usertools/moocommand-private.h	\
-	plugins/usertools/moocommanddisplay.c	\
-	plugins/usertools/moocommanddisplay.h	\
-	plugins/usertools/moooutputfilterregex.c\
-	plugins/usertools/moooutputfilterregex.h\
-	plugins/usertools/mookeyfile.c		\
-	plugins/usertools/mookeyfile.h		\
-	plugins/usertools/moousertools-enums.h	\
-	plugins/usertools/moousertools-enums.c
+plugins_sources +=					\
+	plugins/usertools/moousertools.c		\
+	plugins/usertools/moousertools.h		\
+	plugins/usertools/moousertools-prefs.c		\
+	plugins/usertools/moousertools-prefs.h		\
+	plugins/usertools/moocommand.c			\
+	plugins/usertools/moocommand.h			\
+	plugins/usertools/moocommand-private.h		\
+	plugins/usertools/moocommanddisplay.c		\
+	plugins/usertools/moocommanddisplay.h		\
+	plugins/usertools/moooutputfilterregex.c	\
+	plugins/usertools/moooutputfilterregex.h	\
+	plugins/usertools/mookeyfile.c			\
+	plugins/usertools/mookeyfile.h			\
+	plugins/usertools/moousertools-enums.h		\
+	plugins/usertools/moousertools-enums.c		\
+	plugins/usertools/moocommand-exe.c		\
+	plugins/usertools/moocommand-exe.h		\
+	plugins/usertools/moocommand-lua.cpp		\
+	plugins/usertools/moocommand-lua.h
 
-include plugins/usertools/lua/Makefile.incl
-include plugins/usertools/exe/Makefile.incl
+EXTRA_DIST +=						\
+	plugins/usertools/glade/mooedittools-exe.glade	\
+	plugins/usertools/glade/mooedittools-lua.glade	\
+	plugins/usertools/glade/moousertools.glade
 
-EXTRA_DIST += plugins/usertools/glade/moousertools.glade
-built_plugins_sources += moousertools-gxml.h
+built_plugins_sources +=				\
+	plugins/usertools/mooedittools-exe-gxml.h	\
+	plugins/usertools/mooedittools-lua-gxml.h	\
+	plugins/usertools/moousertools-gxml.h
+
+EXTRA_DIST += plugins/usertools/lua-tool-setup.lua
+built_plugins_sources += plugins/usertools/lua-tool-setup.h
+plugins/usertools/lua-tool-setup.h: plugins/usertools/lua-tool-setup.lua $(top_srcdir)/tools/xml2h.py
+	$(AM_V_at)$(MKDIR_P) plugins/usertools
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/plugins/usertools/lua-tool-setup.lua \
+		plugins/usertools/lua-tool-setup.h.tmp LUA_SETUP_CODE \
+		&& mv plugins/usertools/lua-tool-setup.h.tmp plugins/usertools/lua-tool-setup.h
 
 cfgdir = $(MOO_DATA_DIR)
 cfg_DATA = plugins/usertools/filters.xml

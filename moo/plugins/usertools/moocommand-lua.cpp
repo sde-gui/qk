@@ -15,13 +15,13 @@
 
 #define MOOEDIT_COMPILATION
 #include "moocommand-lua.h"
-#include "lua-tool-setup.h"
+#include "plugins/usertools/lua-tool-setup.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootext-private.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
-#include "mooedittools-lua-gxml.h"
+#include "plugins/usertools/mooedittools-lua-gxml.h"
 #include "moolua/medit-lua.h"
 #include <string.h>
 

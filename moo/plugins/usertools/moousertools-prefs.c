@@ -21,7 +21,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/moohelp.h"
-#include "moousertools-gxml.h"
+#include "plugins/usertools/moousertools-gxml.h"
 #include "help-sections.h"
 #include <string.h>
 

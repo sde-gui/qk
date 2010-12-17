@@ -1,6 +1,0 @@
-plugins_sources +=				\
-	plugins/usertools/exe/moocommand-exe.c	\
-	plugins/usertools/exe/moocommand-exe.h
-
-EXTRA_DIST += plugins/usertools/glade/mooedittools-exe.glade
-built_plugins_sources += mooedittools-exe-gxml.h

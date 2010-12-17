@@ -155,9 +155,9 @@ EXTRA_DIST +=					\
 	mooutils/glade/mooaccelbutton.glade	\
 	mooutils/glade/moologwindow.glade
 built_moo_sources +=				\
-	mooaccelprefs-gxml.h			\
-	mooaccelbutton-gxml.h			\
-	moologwindow-gxml.h
+	mooutils/mooaccelprefs-gxml.h		\
+	mooutils/mooaccelbutton-gxml.h		\
+	mooutils/moologwindow-gxml.h
 
 built_moo_sources += stock-moo.h moofileicon-symlink.h
 PIXMAPS =					\

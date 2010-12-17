@@ -99,25 +99,25 @@ EXTRA_DIST +=						\
 	mooedit/glade/mooquicksearch.glade		\
 	mooedit/glade/moostatusbar.glade
 
-built_moo_sources +=			\
-	mooprintpreview-gxml.h		\
-	moopluginprefs-gxml.h		\
-	mooeditprefs-view-gxml.h	\
-	mooeditprefs-file-gxml.h	\
-	mooeditprefs-filters-gxml.h	\
-	mooeditprefs-general-gxml.h	\
-	mooeditprefs-langs-gxml.h	\
-	mooeditprogress-gxml.h		\
-	mooeditsavemult-gxml.h		\
-	mooprint-gxml.h			\
-	mootextfind-gxml.h		\
-	mootextfind-prompt-gxml.h	\
-	mootextgotoline-gxml.h		\
-	mooquicksearch-gxml.h		\
-	moostatusbar-gxml.h
+built_moo_sources +=					\
+	mooedit/mooprintpreview-gxml.h			\
+	mooedit/moopluginprefs-gxml.h			\
+	mooedit/mooeditprefs-view-gxml.h		\
+	mooedit/mooeditprefs-file-gxml.h		\
+	mooedit/mooeditprefs-filters-gxml.h		\
+	mooedit/mooeditprefs-general-gxml.h		\
+	mooedit/mooeditprefs-langs-gxml.h		\
+	mooedit/mooeditprogress-gxml.h			\
+	mooedit/mooeditsavemult-gxml.h			\
+	mooedit/mooprint-gxml.h				\
+	mooedit/mootextfind-gxml.h			\
+	mooedit/mootextfind-prompt-gxml.h		\
+	mooedit/mootextgotoline-gxml.h			\
+	mooedit/mooquicksearch-gxml.h			\
+	mooedit/moostatusbar-gxml.h
 
 EXTRA_DIST += mooedit/medit.xml mooedit/mooedit.xml
-built_moo_sources += medit-ui.h mooedit-ui.h
+built_moo_sources += mooedit/medit-ui.h mooedit/mooedit-ui.h
 
 include mooedit/langs/Makefile.incl
 

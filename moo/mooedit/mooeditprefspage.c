@@ -28,11 +28,11 @@
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moohelp.h"
-#include "mooeditprefs-file-gxml.h"
-#include "mooeditprefs-filters-gxml.h"
-#include "mooeditprefs-general-gxml.h"
-#include "mooeditprefs-langs-gxml.h"
-#include "mooeditprefs-view-gxml.h"
+#include "mooedit/mooeditprefs-file-gxml.h"
+#include "mooedit/mooeditprefs-filters-gxml.h"
+#include "mooedit/mooeditprefs-general-gxml.h"
+#include "mooedit/mooeditprefs-langs-gxml.h"
+#include "mooedit/mooeditprefs-view-gxml.h"
 #include "help-sections.h"
 #include <string.h>
 

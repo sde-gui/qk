@@ -35,8 +35,8 @@
 
 #define MOOEDIT_COMPILATION
 #include "moocommand-private.h"
-#include "lua/moocommand-lua.h"
-#include "exe/moocommand-exe.h"
+#include "moocommand-lua.h"
+#include "moocommand-exe.h"
 #include "moooutputfilterregex.h"
 #include "mooedit/mooeditwindow.h"
 #include "mooedit/mooedit-enums.h"

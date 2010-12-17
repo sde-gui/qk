@@ -40,12 +40,12 @@ EXTRA_DIST +=						\
 	moofileview/glade/moobookmark-editor.glade
 
 built_moo_sources +=					\
-	moofileview-drop-gxml.h				\
-	moofileprops-gxml.h				\
-	moocreatefolder-gxml.h				\
-	moobookmark-editor-gxml.h
+	moofileview/moofileview-drop-gxml.h             \
+	moofileview/moofileprops-gxml.h			\
+	moofileview/moocreatefolder-gxml.h		\
+	moofileview/moobookmark-editor-gxml.h
 
 EXTRA_DIST += moofileview/moofileview.xml
-built_moo_sources += moofileview-ui.h
+built_moo_sources += moofileview/moofileview-ui.h
 
 # -%- strip:true -%-

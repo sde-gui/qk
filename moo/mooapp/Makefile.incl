@@ -16,10 +16,10 @@ EXTRA_DIST +=					\
 	mooapp/glade/mooappabout-license.glade	\
 	mooapp/glade/mooappabout-credits.glade
 
-built_moo_sources +=			\
-	mooappabout-dialog-gxml.h	\
-	mooappabout-license-gxml.h	\
-	mooappabout-credits-gxml.h
+built_moo_sources +=				\
+	mooapp/mooappabout-dialog-gxml.h	\
+	mooapp/mooappabout-license-gxml.h	\
+	mooapp/mooappabout-credits-gxml.h
 
 built_moo_sources += mooapp-credits.h
 mooapp-credits.h: $(top_srcdir)/THANKS $(top_srcdir)/tools/xml2h.py

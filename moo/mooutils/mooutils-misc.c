@@ -26,7 +26,7 @@
 #include "mooutils/moocompat.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooarray.h"
-#include "moologwindow-gxml.h"
+#include "mooutils/moologwindow-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gmappedfile.h>
 #include <glib/gstdio.h>

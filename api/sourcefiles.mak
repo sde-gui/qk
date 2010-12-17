@@ -271,9 +271,9 @@ source_files = \
     ../moo/plugins/support/moolineview.h\
     ../moo/plugins/support/moooutputfilter.c\
     ../moo/plugins/support/moooutputfilter.h\
-    ../moo/plugins/usertools/exe/moocommand-exe.c\
-    ../moo/plugins/usertools/exe/moocommand-exe.h\
-    ../moo/plugins/usertools/lua/moocommand-lua.h\
+    ../moo/plugins/usertools/moocommand-exe.c\
+    ../moo/plugins/usertools/moocommand-exe.h\
+    ../moo/plugins/usertools/moocommand-lua.h\
     ../moo/plugins/usertools/moocommand.c\
     ../moo/plugins/usertools/moocommanddisplay.c\
     ../moo/plugins/usertools/moocommanddisplay.h\

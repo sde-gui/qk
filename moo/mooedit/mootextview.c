@@ -38,7 +38,7 @@
 #include "mooutils/mootype-macros.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooutils-gobject.h"
-#include "mooquicksearch-gxml.h"
+#include "mooedit/mooquicksearch-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gregex.h>
 #include <gdk/gdkkeysyms.h>

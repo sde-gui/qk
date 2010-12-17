@@ -26,7 +26,7 @@
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moospawn.h"
 #include "mooutils/mootype-macros.h"
-#include "mooedittools-exe-gxml.h"
+#include "plugins/usertools/mooedittools-exe-gxml.h"
 #include <gtk/gtk.h>
 #include <string.h>
 

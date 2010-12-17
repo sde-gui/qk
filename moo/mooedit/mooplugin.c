@@ -39,7 +39,7 @@
 
 #include "mooedit/mooplugin.h"
 #include "mooedit/mooplugin-loader.h"
-#include "moopluginprefs-gxml.h"
+#include "mooedit/moopluginprefs-gxml.h"
 #include "mooutils/mooprefsdialog.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooutils-misc.h"

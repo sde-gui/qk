@@ -50,7 +50,7 @@
 #include "mooutils/moofiledialog.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/moocompat.h"
-#include "moostatusbar-gxml.h"
+#include "mooedit/moostatusbar-gxml.h"
 #include <string.h>
 #include <gtk/gtk.h>
 #include <math.h>
