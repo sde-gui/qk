@@ -151,11 +151,10 @@ static void     set_title_format_from_prefs     (MooEditWindow      *window);
 
 static void     proxy_boolean_property          (MooEditWindow      *window,
                                                  GParamSpec         *prop,
-                                                 MooEditView        *view);
+                                                 MooEdit            *doc);
 static void     edit_changed                    (MooEditWindow      *window,
                                                  MooEdit            *doc);
 static void     edit_filename_changed           (MooEditWindow      *window,
-                                                 const char         *filename,
                                                  MooEdit            *doc);
 static void     edit_encoding_changed           (MooEditWindow      *window,
                                                  GParamSpec         *pspec,
@@ -164,7 +163,6 @@ static void     edit_line_end_changed           (MooEditWindow      *window,
                                                  GParamSpec         *pspec,
                                                  MooEdit            *doc);
 static void     edit_lang_changed               (MooEditWindow      *window,
-                                                 guint               var_id,
                                                  GParamSpec         *pspec,
                                                  MooEdit            *doc);
 static void     view_overwrite_changed          (MooEditWindow      *window,
@@ -1842,20 +1840,23 @@ notebook_populate_popup (MooNotebook        *notebook,
                          GtkMenu            *menu,
                          MooEditWindow      *window)
 {
-    MooEdit *edit;
+    MooEdit *doc;
+    MooEditView *view;
     GtkWidget *item;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), TRUE);
     g_return_val_if_fail (window->priv->notebook == notebook, TRUE);
     g_return_val_if_fail (GTK_IS_SCROLLED_WINDOW (child), TRUE);
 
-    edit = MOO_EDIT (gtk_bin_get_child (GTK_BIN (child)));
-    g_return_val_if_fail (MOO_IS_EDIT (edit), TRUE);
+    view = MOO_EDIT_VIEW (gtk_bin_get_child (GTK_BIN (child)));
+    g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), TRUE);
+
+    doc = moo_edit_view_get_doc (view);
 
     item = gtk_menu_item_new_with_label ("Close");
     gtk_widget_show (item);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-    g_object_set_data (G_OBJECT (item), "moo-edit", edit);
+    g_object_set_data (G_OBJECT (item), "moo-edit", doc);
     g_signal_connect (item, "activate",
                       G_CALLBACK (close_activated),
                       window);
@@ -1865,7 +1866,7 @@ notebook_populate_popup (MooNotebook        *notebook,
         item = gtk_menu_item_new_with_label ("Close All Others");
         gtk_widget_show (item);
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-        g_object_set_data (G_OBJECT (item), "moo-edit", edit);
+        g_object_set_data (G_OBJECT (item), "moo-edit", doc);
         g_signal_connect (item, "activate",
                           G_CALLBACK (close_others_activated),
                           window);
@@ -1881,7 +1882,7 @@ notebook_populate_popup (MooNotebook        *notebook,
         item = gtk_menu_item_new_with_label ("Detach");
         gtk_widget_show (item);
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
-        g_object_set_data (G_OBJECT (item), "moo-edit", edit);
+        g_object_set_data (G_OBJECT (item), "moo-edit", doc);
         g_signal_connect (item, "activate",
                           G_CALLBACK (detach_activated),
                           window);
@@ -2116,7 +2117,6 @@ update_doc_view_actions (MooEditWindow *window)
 
 static void
 edit_filename_changed (MooEditWindow      *window,
-                       G_GNUC_UNUSED const char *filename,
                        MooEdit            *doc)
 {
     edit_changed (window, doc);
@@ -2125,11 +2125,11 @@ edit_filename_changed (MooEditWindow      *window,
 
 
 static void
-proxy_boolean_property (MooEditWindow      *window,
-                        GParamSpec         *prop,
-                        MooEditView        *view)
+proxy_boolean_property (MooEditWindow *window,
+                        GParamSpec    *prop,
+                        MooEdit       *doc)
 {
-    if (view == ACTIVE_VIEW (window))
+    if (doc == ACTIVE_DOC (window))
         g_object_notify (G_OBJECT (window), prop->name);
 }
 
@@ -2386,9 +2386,9 @@ _moo_edit_window_insert_doc (MooEditWindow  *window,
                               G_CALLBACK (view_show_line_numbers_changed), window);
     g_signal_connect_swapped (edit, "filename_changed",
                               G_CALLBACK (edit_filename_changed), window);
-    g_signal_connect_swapped (view, "notify::has-comments",
+    g_signal_connect_swapped (edit, "notify::has-comments",
                               G_CALLBACK (proxy_boolean_property), window);
-    g_signal_connect_swapped (edit, "config-notify::lang",
+    g_signal_connect_swapped (edit, "notify::lang",
                               G_CALLBACK (edit_lang_changed), window);
     g_signal_connect_swapped (view, "cursor-moved",
                               G_CALLBACK (view_cursor_moved), window);
@@ -2431,7 +2431,7 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
 
     g_signal_handlers_disconnect_by_func (doc, (gpointer) edit_changed, window);
     g_signal_handlers_disconnect_by_func (doc, (gpointer) edit_filename_changed, window);
-    g_signal_handlers_disconnect_by_func (view, (gpointer) proxy_boolean_property, window);
+    g_signal_handlers_disconnect_by_func (doc, (gpointer) proxy_boolean_property, window);
     g_signal_handlers_disconnect_by_func (view, (gpointer) view_cursor_moved, window);
     g_signal_handlers_disconnect_by_func (doc, (gpointer) edit_lang_changed, window);
     g_signal_handlers_disconnect_by_func (view, (gpointer) view_overwrite_changed, window);
@@ -3250,7 +3250,6 @@ update_lang_menu (MooEditWindow      *window)
 
 static void
 edit_lang_changed (MooEditWindow      *window,
-                   G_GNUC_UNUSED guint var_id,
                    G_GNUC_UNUSED GParamSpec *pspec,
                    MooEdit            *doc)
 {

@@ -82,12 +82,14 @@ moo_indenter_make_space (MooIndenter    *indenter,
                          guint           start)
 {
     guint tabs, spaces, delta;
-    guint tab_width = indenter->tab_width;
+    guint tab_width;
     char *string;
 
     g_return_val_if_fail (MOO_IS_INDENTER (indenter), NULL);
 
     sync_settings (indenter);
+
+    tab_width = indenter->tab_width;
 
     if (!len)
         return NULL;
@@ -349,11 +351,14 @@ moo_indenter_tab (MooIndenter    *indenter,
 {
     GtkTextIter insert, start;
     int offset, new_offset, white_space;
-    guint tab_width = indenter->tab_width;
-    guint indent = indenter->indent;
+    guint tab_width;
+    guint indent;
     char *text = NULL;
 
     sync_settings (indenter);
+
+    tab_width = indenter->tab_width;
+    indent = indenter->indent;
 
     gtk_text_buffer_get_iter_at_mark (buffer, &insert, gtk_text_buffer_get_insert (buffer));
 

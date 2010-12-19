@@ -115,7 +115,7 @@ prefs_page_new (MooEditor          *editor,
                                   init_ui, init, apply);
 
     g_signal_connect_swapped (prefs_page, "apply",
-                              G_CALLBACK (_moo_editor_queue_apply_prefs),
+                              G_CALLBACK (_moo_editor_apply_prefs),
                               editor);
 
     return prefs_page;
@@ -816,7 +816,7 @@ prefs_page_apply_lang_prefs (MooPrefsPage *page)
     mgr = moo_lang_mgr_default ();
     gtk_tree_model_foreach (model, (GtkTreeModelForeachFunc) apply_one_lang, mgr);
     _moo_lang_mgr_save_config (mgr);
-    _moo_edit_update_lang_config ();
+    _moo_edit_queue_recheck_config_all ();
 }
 
 

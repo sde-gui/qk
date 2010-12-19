@@ -403,9 +403,6 @@ moo_editor_finalize (GObject *object)
     moo_edit_window_array_free (editor->priv->windows);
     moo_edit_array_free (editor->priv->windowless);
 
-    if (editor->priv->prefs_idle)
-        g_source_remove (editor->priv->prefs_idle);
-
     G_OBJECT_CLASS (moo_editor_parent_class)->finalize (object);
 }
 
@@ -769,8 +766,6 @@ moo_editor_add_doc (MooEditor      *editor,
 {
     if (!window)
         moo_edit_array_append (editor->priv->windowless, doc);
-
-    _moo_edit_apply_prefs (doc);
 }
 
 
@@ -2783,51 +2778,22 @@ moo_editor_set_doc_type (MooEditor      *editor,
 }
 
 
-static gboolean
-moo_editor_apply_prefs_in_idle (MooEditor *editor)
-{
-    editor->priv->prefs_idle = 0;
-    _moo_editor_apply_prefs (editor);
-    return FALSE;
-}
-
-void
-_moo_editor_queue_apply_prefs (MooEditor *editor)
-{
-    g_return_if_fail (MOO_IS_EDITOR (editor));
-    if (!editor->priv->prefs_idle)
-        editor->priv->prefs_idle =
-            moo_idle_add_full (G_PRIORITY_HIGH,
-                               (GSourceFunc) moo_editor_apply_prefs_in_idle,
-                               editor, NULL);
-}
-
 void
 _moo_editor_apply_prefs (MooEditor *editor)
 {
-    MooEditArray *docs;
     gboolean backups;
     const char *color_scheme;
-
-    if (editor->priv->prefs_idle)
-    {
-        g_source_remove (editor->priv->prefs_idle);
-        editor->priv->prefs_idle = 0;
-    }
 
     _moo_edit_window_update_title ();
     _moo_edit_window_set_use_tabs ();
 
     _moo_edit_update_global_config ();
+    _moo_edit_queue_recheck_config_all ();
 
     color_scheme = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_COLOR_SCHEME));
 
     if (color_scheme)
         _moo_lang_mgr_set_active_scheme (editor->priv->lang_mgr, color_scheme);
-
-    docs = moo_editor_get_docs (editor);
-    moo_edit_array_foreach (docs, (MooEditArrayForeach) _moo_edit_apply_prefs, NULL);
-    moo_edit_array_free (docs);
 
     backups = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_MAKE_BACKUPS));
 

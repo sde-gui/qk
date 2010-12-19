@@ -26,7 +26,6 @@ void             _moo_editor_move_doc           (MooEditor      *editor,
 MooFileWatch    *_moo_editor_get_file_watch     (MooEditor      *editor);
 
 void             _moo_editor_apply_prefs        (MooEditor      *editor);
-void             _moo_editor_queue_apply_prefs  (MooEditor      *editor);
 
 G_END_DECLS
 

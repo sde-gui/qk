@@ -53,14 +53,7 @@ struct MooEditClass
        are changed. for use in editor to adjust title bar, etc. */
     void (* doc_status_changed) (MooEdit    *edit);
 
-    void (* filename_changed)   (MooEdit    *edit,
-                                 const char *new_filename);
-
-    void (* bookmarks_changed)  (MooEdit    *edit);
-
-    void (* config_notify)      (MooEdit    *edit,
-                                 guint       var_id,
-                                 GParamSpec *pspec);
+    void (* filename_changed)   (MooEdit    *edit);
 
     void (* save_before)        (MooEdit    *edit);
     void (* save_after)         (MooEdit    *edit);
@@ -87,7 +80,7 @@ const char      *moo_edit_get_encoding              (MooEdit            *edit);
 void             moo_edit_set_encoding              (MooEdit            *edit,
                                                      const char         *encoding);
 
-const char      *moo_edit_get_lang_id               (MooEdit            *edit);
+char            *moo_edit_get_lang_id               (MooEdit            *edit);
 
 #ifdef __WIN32__
 #define MOO_LE_DEFAULT MOO_LE_WIN32

@@ -310,6 +310,9 @@ _moo_ctags_language_find_for_name (const char *lang_name)
 {
     static GHashTable *langs_hash;
 
+    if (!lang_name)
+        return NULL;
+
     if (!langs_hash)
     {
         /* default fields option is --fields=afksS */
@@ -370,7 +373,8 @@ moo_ctags_doc_plugin_update (MooCtagsDocPlugin *plugin)
     if (filename)
     {
         GSList *list = NULL;
-        MooCtagsLanguage *ctags_lang = _moo_ctags_language_find_for_name (moo_edit_get_lang_id (doc));
+        char *lang_id = moo_edit_get_lang_id (doc);
+        MooCtagsLanguage *ctags_lang = _moo_ctags_language_find_for_name (lang_id);
 
         if (ctags_lang && (list = moo_ctags_parse_file (filename, ctags_lang->opts)))
             process_entries (plugin, list, ctags_lang);
@@ -379,6 +383,7 @@ moo_ctags_doc_plugin_update (MooCtagsDocPlugin *plugin)
 
         g_slist_foreach (list, (GFunc) _moo_ctags_entry_unref, NULL);
         g_slist_free (list);
+        g_free (lang_id);
     }
 
     g_free (filename);

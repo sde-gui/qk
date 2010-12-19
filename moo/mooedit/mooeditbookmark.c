@@ -55,9 +55,8 @@ moo_edit_bookmark_init (MooEditBookmark *bk)
 
 
 static void
-bookmarks_changed (MooEdit *edit)
+bookmarks_changed (G_GNUC_UNUSED MooEdit *edit)
 {
-    g_signal_emit_by_name (edit, "bookmarks-changed");
 }
 
 
@@ -271,7 +270,7 @@ moo_edit_add_bookmark (MooEdit *edit,
     g_return_if_fail (line < get_line_count (edit));
     g_return_if_fail (moo_edit_get_bookmark_at_line (edit, line) == NULL);
 
-    g_object_set (edit, "show-line-marks", TRUE, (char*) 0);
+    g_object_set (moo_edit_get_view (edit), "show-line-marks", TRUE, (char*) 0);
 
     bk = MOO_EDIT_BOOKMARK (g_object_new (MOO_TYPE_EDIT_BOOKMARK, "background", get_bookmark_color (edit), (char*) 0));
     moo_text_buffer_add_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bk), line);

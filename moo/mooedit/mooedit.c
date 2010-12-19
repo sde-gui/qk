@@ -45,47 +45,38 @@
 MOO_DEFINE_OBJECT_ARRAY (MooEdit, moo_edit)
 
 MooEditList *_moo_edit_instances = NULL;
+static guint moo_edit_apply_config_all_idle;
 
-static GObject *moo_edit_constructor        (GType                  type,
-                                             guint                  n_construct_properties,
-                                             GObjectConstructParam *construct_param);
-static void     moo_edit_finalize           (GObject        *object);
-static void     moo_edit_dispose            (GObject        *object);
+static GObject *moo_edit_constructor            (GType           type,
+                                                 guint           n_construct_properties,
+                                                 GObjectConstructParam *construct_param);
+static void     moo_edit_finalize               (GObject        *object);
+static void     moo_edit_dispose                (GObject        *object);
 
-static void     moo_edit_set_property       (GObject        *object,
-                                             guint           prop_id,
-                                             const GValue   *value,
-                                             GParamSpec     *pspec);
-static void     moo_edit_get_property       (GObject        *object,
-                                             guint           prop_id,
-                                             GValue         *value,
-                                             GParamSpec     *pspec);
-
-static void     moo_edit_filename_changed       (MooEdit        *edit,
-                                                 const char     *new_filename);
-
-static void     config_changed                  (MooEdit        *edit,
+static void     moo_edit_set_property           (GObject        *object,
+                                                 guint           prop_id,
+                                                 const GValue   *value,
                                                  GParamSpec     *pspec);
-static void     moo_edit_config_notify          (MooEdit        *edit,
-                                                 guint           var_id,
+static void     moo_edit_get_property           (GObject        *object,
+                                                 guint           prop_id,
+                                                 GValue         *value,
                                                  GParamSpec     *pspec);
-static void     _moo_edit_freeze_config_notify  (MooEdit        *edit);
-static void     _moo_edit_thaw_config_notify    (MooEdit        *edit);
-static void     _moo_edit_update_config_from_global (MooEdit    *edit);
+
+static void     config_changed                  (MooEdit        *edit);
+static void     update_config_from_mode_lines   (MooEdit        *doc);
+static void     moo_edit_recheck_config         (MooEdit        *doc);
 
 static void     modified_changed_cb             (GtkTextBuffer  *buffer,
                                                  MooEdit        *edit);
+
+static MooLang *moo_edit_get_lang               (MooEdit        *doc);
 
 
 enum {
     DOC_STATUS_CHANGED,
     FILENAME_CHANGED,
-    COMMENT,
-    UNCOMMENT,
-    CONFIG_NOTIFY,
     SAVE_BEFORE,
     SAVE_AFTER,
-    BOOKMARKS_CHANGED,
     LAST_SIGNAL
 };
 
@@ -97,6 +88,7 @@ enum {
     PROP_ENABLE_BOOKMARKS,
     PROP_HAS_COMMENTS,
     PROP_LINE_END_TYPE,
+    PROP_LANG,
     PROP_ENCODING
 };
 
@@ -114,57 +106,32 @@ moo_edit_class_init (MooEditClass *klass)
     gobject_class->finalize = moo_edit_finalize;
     gobject_class->dispose = moo_edit_dispose;
 
-    klass->filename_changed = moo_edit_filename_changed;
-    klass->config_notify = moo_edit_config_notify;
-
     g_type_class_add_private (klass, sizeof (MooEditPrivate));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_EDITOR,
-                                     g_param_spec_object ("editor",
-                                             "editor",
-                                             "editor",
-                                             MOO_TYPE_EDITOR,
-                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
+    g_object_class_install_property (gobject_class, PROP_EDITOR,
+        g_param_spec_object ("editor", "editor", "editor",
+                             MOO_TYPE_EDITOR, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_ENABLE_BOOKMARKS,
-                                     g_param_spec_boolean ("enable-bookmarks",
-                                             "enable-bookmarks",
-                                             "enable-bookmarks",
-                                             TRUE,
-                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
+    g_object_class_install_property (gobject_class, PROP_ENABLE_BOOKMARKS,
+        g_param_spec_boolean ("enable-bookmarks", "enable-bookmarks", "enable-bookmarks",
+                              TRUE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_HAS_COMMENTS,
-                                     g_param_spec_boolean ("has-comments",
-                                             "has-comments",
-                                             "has-comments",
-                                             FALSE,
-                                             G_PARAM_READABLE));
+    g_object_class_install_property (gobject_class, PROP_HAS_COMMENTS,
+        g_param_spec_boolean ("has-comments", "has-comments", "has-comments",
+                              FALSE, G_PARAM_READABLE));
 
     g_object_class_install_property (gobject_class, PROP_LINE_END_TYPE,
         g_param_spec_enum ("line-end-type", "line-end-type", "line-end-type",
                            MOO_TYPE_LINE_END_TYPE, MOO_LE_NONE,
                            (GParamFlags) G_PARAM_READWRITE));
 
-    g_object_class_install_property (gobject_class,
-                                     PROP_ENCODING,
-                                     g_param_spec_string ("encoding",
-                                             "encoding",
-                                             "encoding",
-                                             NULL,
-                                             (GParamFlags) G_PARAM_READWRITE));
+    g_object_class_install_property (gobject_class, PROP_ENCODING,
+        g_param_spec_string ("encoding", "encoding", "encoding",
+                             NULL, (GParamFlags) G_PARAM_READWRITE));
 
-    signals[CONFIG_NOTIFY] =
-            g_signal_new ("config-notify",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          (GSignalFlags) (G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED),
-                          G_STRUCT_OFFSET (MooEditClass, config_notify),
-                          NULL, NULL,
-                          _moo_marshal_VOID__UINT_POINTER,
-                          G_TYPE_NONE, 2,
-                          G_TYPE_UINT, G_TYPE_POINTER);
+    g_object_class_install_property (gobject_class, PROP_LANG,
+        g_param_spec_object ("lang", "lang", "lang",
+                             MOO_TYPE_LANG, G_PARAM_READABLE));
 
     signals[DOC_STATUS_CHANGED] =
             g_signal_new ("doc-status-changed",
@@ -181,27 +148,8 @@ moo_edit_class_init (MooEditClass *klass)
                           G_SIGNAL_RUN_FIRST,
                           G_STRUCT_OFFSET (MooEditClass, filename_changed),
                           NULL, NULL,
-                          _moo_marshal_VOID__STRING,
-                          G_TYPE_NONE, 1,
-                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
-
-    signals[COMMENT] =
-            _moo_signal_new_cb ("comment",
-                                G_OBJECT_CLASS_TYPE (klass),
-                                (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
-                                G_CALLBACK (_moo_edit_comment),
-                                NULL, NULL,
-                                _moo_marshal_VOID__VOID,
-                                G_TYPE_NONE, 0);
-
-    signals[UNCOMMENT] =
-            _moo_signal_new_cb ("uncomment",
-                                G_OBJECT_CLASS_TYPE (klass),
-                                (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
-                                G_CALLBACK (_moo_edit_uncomment),
-                                NULL, NULL,
-                                _moo_marshal_VOID__VOID,
-                                G_TYPE_NONE, 0);
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[SAVE_BEFORE] =
             g_signal_new ("save-before",
@@ -221,15 +169,6 @@ moo_edit_class_init (MooEditClass *klass)
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
 
-    signals[BOOKMARKS_CHANGED] =
-            g_signal_new ("bookmarks-changed",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooEditClass, bookmarks_changed),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
-
     _moo_edit_init_config ();
     _moo_edit_class_init_actions (klass);
 }
@@ -242,7 +181,8 @@ moo_edit_init (MooEdit *edit)
 
     edit->config = moo_edit_config_new ();
     g_signal_connect_swapped (edit->config, "notify",
-                              G_CALLBACK (config_changed), edit);
+                              G_CALLBACK (config_changed),
+                              edit);
 
     edit->priv->actions = moo_action_collection_new ("MooEdit", "MooEdit");
 
@@ -250,7 +190,7 @@ moo_edit_init (MooEdit *edit)
 }
 
 
-static GObject*
+static GObject *
 moo_edit_constructor (GType                  type,
                       guint                  n_construct_properties,
                       GObjectConstructParam *construct_param)
@@ -571,6 +511,10 @@ moo_edit_get_property (GObject        *object,
 
         case PROP_ENCODING:
             g_value_set_string (value, edit->priv->encoding);
+            break;
+
+        case PROP_LANG:
+            g_value_set_object (value, moo_edit_get_lang (edit));
             break;
 
         case PROP_LINE_END_TYPE:
@@ -904,7 +848,7 @@ try_mode_string (MooEdit    *edit,
 }
 
 static void
-try_mode_strings (MooEdit *edit)
+update_config_from_mode_lines (MooEdit *edit)
 {
     GtkTextBuffer *buffer = moo_edit_get_buffer (edit);
     GtkTextIter start, end;
@@ -960,21 +904,11 @@ try_mode_strings (MooEdit *edit)
 }
 
 
-static void
-config_changed (MooEdit        *edit,
-                GParamSpec     *pspec)
-{
-    guint id = moo_edit_config_get_setting_id (pspec);
-    GQuark detail = g_quark_from_string (pspec->name);
-    g_return_if_fail (id != 0);
-    g_signal_emit (edit, signals[CONFIG_NOTIFY], detail, id, pspec);
-}
-
-
 static MooLang *
 moo_edit_get_lang (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    moo_assert (!doc->priv->in_recheck_config);
     return moo_text_view_get_lang (MOO_TEXT_VIEW (moo_edit_get_view (doc)));
 }
 
@@ -984,156 +918,164 @@ moo_edit_get_lang (MooEdit *doc)
  * Returns: id of language currently used in the document. If no language
  * is used, then string "none" is returned.
  */
-const char *
+char *
 moo_edit_get_lang_id (MooEdit *doc)
 {
-    return _moo_lang_id (moo_edit_get_lang (doc));
-}
+    MooLang *lang = NULL;
 
-static void
-moo_edit_set_lang (MooEdit *edit,
-                   MooLang *lang)
-{
-    MooLang *old_lang;
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
 
-    old_lang = moo_edit_get_lang (edit);
-
-    if (old_lang != lang)
+    if (!doc->priv->in_recheck_config)
     {
-        moo_text_view_set_lang (MOO_TEXT_VIEW (moo_edit_get_view (edit)), lang);
-        _moo_lang_mgr_update_config (moo_lang_mgr_default (),
-                                     edit->config,
-                                     _moo_lang_id (lang));
-        _moo_edit_update_config_from_global (edit);
-        g_object_notify (G_OBJECT (edit), "has-comments");
+        lang = moo_edit_get_lang (doc);
     }
+    else
+    {
+        const char *lang_id = moo_edit_config_get_string (doc->config, "lang");
+        lang = lang_id ? _moo_lang_mgr_find_lang (moo_lang_mgr_default (), lang_id) : NULL;
+    }
+
+    return g_strdup (_moo_lang_id (lang));
 }
-
-
-static void
-moo_edit_apply_lang_config (MooEdit *edit)
-{
-    const char *lang_id = moo_edit_config_get_string (edit->config, "lang");
-    MooLangMgr *mgr = moo_lang_mgr_default ();
-    MooLang *lang = lang_id ? _moo_lang_mgr_find_lang (mgr, lang_id) : NULL;
-    moo_edit_set_lang (edit, lang);
-}
-
-static void
-moo_edit_apply_config (MooEdit *edit)
-{
-    moo_edit_apply_lang_config (edit);
-    _moo_edit_view_apply_config (moo_edit_get_view (edit));
-}
-
 
 static gboolean
-do_apply_config (MooEdit *edit)
-{
-    edit->priv->apply_config_idle = 0;
-    moo_edit_apply_config (edit);
-    return FALSE;
-}
-
-static void
-moo_edit_queue_apply_config (MooEdit *edit)
-{
-    if (!edit->priv->apply_config_idle)
-        edit->priv->apply_config_idle =
-                moo_idle_add_full (G_PRIORITY_HIGH,
-                                   (GSourceFunc) do_apply_config,
-                                   edit, NULL);
-}
-
-
-static void
-moo_edit_config_notify (MooEdit        *edit,
-                        guint           var_id,
-                        G_GNUC_UNUSED GParamSpec *pspec)
-{
-    if (var_id == _moo_edit_settings[MOO_EDIT_SETTING_LANG])
-        moo_edit_apply_lang_config (edit);
-    else
-        moo_edit_queue_apply_config (edit);
-}
-
-
-static void
-_moo_edit_update_config_from_global (MooEdit *edit)
-{
-    g_return_if_fail (MOO_IS_EDIT (edit));
-    /* XXX */
-    moo_edit_config_unset_by_source (edit->config,
-                                     MOO_EDIT_CONFIG_SOURCE_AUTO);
-}
-
-
-void
-_moo_edit_update_lang_config (void)
+moo_edit_apply_config_all_in_idle (void)
 {
     MooEditList *l;
 
+    moo_edit_apply_config_all_idle = 0;
+
     for (l = _moo_edit_instances; l != NULL; l = l->next)
-    {
-        MooEdit *edit = l->data;
-        _moo_lang_mgr_update_config (moo_lang_mgr_default (), edit->config,
-                                     moo_edit_get_lang_id (edit));
-    }
+        moo_edit_recheck_config (l->data);
+
+    return FALSE;
+}
+
+void
+_moo_edit_queue_recheck_config_all (void)
+{
+    if (!moo_edit_apply_config_all_idle)
+        moo_edit_apply_config_all_idle =
+            moo_idle_add ((GSourceFunc) moo_edit_apply_config_all_in_idle, NULL);
 }
 
 
 static void
-moo_edit_filename_changed (MooEdit    *edit,
-                           const char *filename)
+update_lang_config_from_lang_globs (MooEdit *doc)
 {
-    gboolean lang_changed = FALSE;
-    MooLang *lang = NULL, *old_lang = NULL;
     const char *lang_id = NULL;
-    char *filter_config = NULL;
 
-    old_lang = moo_edit_get_lang (edit);
-
-    _moo_edit_freeze_config_notify (edit);
-
-    moo_edit_config_unset_by_source (edit->config, MOO_EDIT_CONFIG_SOURCE_FILE);
-    _moo_edit_update_config_from_global (edit);
-
-    if (filename)
+    if (doc->priv->file)
     {
         MooLangMgr *mgr = moo_lang_mgr_default ();
-        lang = moo_lang_mgr_get_lang_for_file (mgr, filename);
+        MooLang *lang = moo_lang_mgr_get_lang_for_file (mgr, doc->priv->file);
         lang_id = lang ? _moo_lang_id (lang) : NULL;
     }
 
-    moo_edit_config_set (edit->config, MOO_EDIT_CONFIG_SOURCE_FILENAME,
-                         "lang", lang_id, "indent", (void*) NULL, (char*) NULL);
+    moo_edit_config_set (doc->config, MOO_EDIT_CONFIG_SOURCE_FILENAME,
+                         "lang", lang_id, (char*) NULL);
+}
 
-    filter_config = _moo_edit_filter_settings_get_for_doc (edit);
+static void
+update_config_from_filter_settings (MooEdit *doc)
+{
+    char *filter_config = NULL;
+
+    filter_config = _moo_edit_filter_settings_get_for_doc (doc);
 
     if (filter_config)
-        moo_edit_config_parse (edit->config, filter_config,
+        moo_edit_config_parse (doc->config, filter_config,
                                MOO_EDIT_CONFIG_SOURCE_FILENAME);
 
-    try_mode_strings (edit);
+    g_free (filter_config);
+}
 
-    lang_id = moo_edit_config_get_string (edit->config, "lang");
+static void
+update_config_from_lang (MooEdit *doc)
+{
+    char *lang_id = moo_edit_get_lang_id (doc);
+    _moo_lang_mgr_update_config (moo_lang_mgr_default (), doc->config, lang_id);
+    g_free (lang_id);
+}
 
-    if (!lang_id)
-        lang_id = MOO_LANG_NONE;
+static void
+moo_edit_apply_config (MooEdit *doc)
+{
+    const char *lang_id = moo_edit_config_get_string (doc->config, "lang");
+    MooLangMgr *mgr = moo_lang_mgr_default ();
+    MooLang *lang = lang_id ? _moo_lang_mgr_find_lang (mgr, lang_id) : NULL;
+    moo_text_view_set_lang (MOO_TEXT_VIEW (moo_edit_get_view (doc)), lang);
+    g_object_notify (G_OBJECT (doc), "has-comments");
+    g_object_notify (G_OBJECT (doc), "lang");
+    _moo_edit_view_apply_config (moo_edit_get_view (doc));
+}
 
-    lang_changed = strcmp (lang_id, _moo_lang_id (old_lang)) != 0;
+static void
+moo_edit_recheck_config (MooEdit *doc)
+{
+    moo_return_if_fail (!doc->priv->in_recheck_config);
 
-    if (!lang_changed)
+    if (doc->priv->apply_config_idle)
     {
-        _moo_lang_mgr_update_config (moo_lang_mgr_default (),
-                                     edit->config,
-                                     _moo_lang_id (lang));
-        _moo_edit_update_config_from_global (edit);
+        g_source_remove (doc->priv->apply_config_idle);
+        doc->priv->apply_config_idle = 0;
     }
 
-    _moo_edit_thaw_config_notify (edit);
+    g_object_freeze_notify (G_OBJECT (doc));
+    g_object_freeze_notify (G_OBJECT (moo_edit_get_view (doc)));
+    doc->priv->in_recheck_config = TRUE;
 
-    g_free (filter_config);
+    // this resets settings from global config
+    moo_edit_config_unset_by_source (doc->config, MOO_EDIT_CONFIG_SOURCE_FILE);
+
+    // First global settings
+    _moo_edit_apply_prefs (doc);
+
+    // then language from globs
+    update_lang_config_from_lang_globs (doc);
+
+    // then settings from mode lines, these may change lang
+    update_config_from_mode_lines (doc);
+
+    // then filter settings, these also may change lang
+    update_config_from_filter_settings (doc);
+
+    // update config for lang
+    update_config_from_lang (doc);
+
+    // finally apply config
+    moo_edit_apply_config (doc);
+
+    doc->priv->in_recheck_config = FALSE;
+
+    g_object_thaw_notify (G_OBJECT (moo_edit_get_view (doc)));
+    g_object_thaw_notify (G_OBJECT (doc));
+}
+
+static gboolean
+moo_edit_recheck_config_in_idle (MooEdit *edit)
+{
+    edit->priv->apply_config_idle = 0;
+    moo_edit_recheck_config (edit);
+    return FALSE;
+}
+
+void
+_moo_edit_queue_recheck_config (MooEdit *doc)
+{
+    moo_return_if_fail (!doc->priv->in_recheck_config);
+    if (!doc->priv->apply_config_idle)
+        doc->priv->apply_config_idle =
+                moo_idle_add_full (G_PRIORITY_HIGH,
+                                   (GSourceFunc) moo_edit_recheck_config_in_idle,
+                                   doc, NULL);
+}
+
+static void
+config_changed (MooEdit *doc)
+{
+    if (!doc->priv->in_recheck_config)
+        _moo_edit_queue_recheck_config (doc);
 }
 
 
@@ -1208,21 +1150,6 @@ moo_edit_save_copy (MooEdit          *doc,
 {
     moo_return_error_if_fail (MOO_IS_EDIT (doc));
     return moo_editor_save_copy (doc->priv->editor, doc, info, error);
-}
-
-
-static void
-_moo_edit_freeze_config_notify (MooEdit *edit)
-{
-    g_return_if_fail (MOO_IS_EDIT (edit));
-    g_object_freeze_notify (G_OBJECT (edit->config));
-}
-
-static void
-_moo_edit_thaw_config_notify (MooEdit *edit)
-{
-    g_return_if_fail (MOO_IS_EDIT (edit));
-    g_object_thaw_notify (G_OBJECT (edit->config));
 }
 
 

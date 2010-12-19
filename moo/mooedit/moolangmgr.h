@@ -38,7 +38,7 @@ MooLangMgr     *moo_lang_mgr_default                (void);
 MooLang        *moo_lang_mgr_get_lang               (MooLangMgr     *mgr,
                                                      const char     *lang_id);
 MooLang        *moo_lang_mgr_get_lang_for_file      (MooLangMgr     *mgr,
-                                                     const char     *filename);
+                                                     GFile          *file);
 
 /* list must be freed, content unref'ed */
 GSList         *moo_lang_mgr_get_available_langs    (MooLangMgr     *mgr);

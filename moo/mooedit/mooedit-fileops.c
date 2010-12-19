@@ -1311,7 +1311,6 @@ _moo_edit_set_file (MooEdit    *edit,
         edit->priv->norm_name = _moo_file_get_normalized_name (file);
         edit->priv->display_filename = moo_file_get_display_name (file);
         edit->priv->display_basename = moo_file_get_display_basename (file);
-// _moo_edit_normalize_filename_for_comparison (_moo_normalize_file_path (edit->priv->filename));
     }
 
     if (!encoding)
@@ -1319,8 +1318,9 @@ _moo_edit_set_file (MooEdit    *edit,
     else
         moo_edit_set_encoding (edit, encoding);
 
-    g_signal_emit_by_name (edit, "filename-changed", edit->priv->filename, NULL);
+    g_signal_emit_by_name (edit, "filename-changed", NULL);
     _moo_edit_status_changed (edit);
+    _moo_edit_queue_recheck_config (edit);
 
     moo_file_free (tmp);
 

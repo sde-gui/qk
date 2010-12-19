@@ -293,15 +293,20 @@ static gboolean
 moo_edit_filter_check_langs (GSList  *langs,
                              MooEdit *doc)
 {
-    const char *lang_id = moo_edit_get_lang_id (doc);
+    char *lang_id = moo_edit_get_lang_id (doc);
 
     while (lang_id && langs)
     {
         if (strcmp (langs->data, lang_id) == 0)
+        {
+            g_free (lang_id);
             return TRUE;
+        }
+
         langs = langs->next;
     }
 
+    g_free (lang_id);
     return FALSE;
 }
 

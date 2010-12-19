@@ -258,7 +258,7 @@ get_lang_by_extension (MooLangMgr *mgr,
                        const char *filename)
 {
     MooLang *lang = NULL;
-    char *basename, *utf8_basename;
+    char *basename;
     GSList *langs, *l;
     gboolean found = FALSE;
 
@@ -266,11 +266,8 @@ get_lang_by_extension (MooLangMgr *mgr,
 
     read_langs (mgr);
 
-    /* TODO: is this right? */
     basename = g_path_get_basename (filename);
     moo_return_val_if_fail (basename != NULL, NULL);
-    utf8_basename = g_filename_display_name (basename);
-    moo_return_val_if_fail (utf8_basename != NULL, NULL);
 
     langs = moo_lang_mgr_get_available_langs (mgr);
 
@@ -283,7 +280,7 @@ get_lang_by_extension (MooLangMgr *mgr,
 
         for (g = globs; !found && g != NULL; g = g->next)
         {
-            if (_moo_glob_match_simple ((char*) g->data, utf8_basename))
+            if (_moo_glob_match_simple ((char*) g->data, basename))
             {
                 found = TRUE;
                 break;
@@ -298,7 +295,6 @@ get_lang_by_extension (MooLangMgr *mgr,
 
     g_slist_foreach (langs, (GFunc) g_object_unref, NULL);
     g_slist_free (langs);
-    g_free (utf8_basename);
     g_free (basename);
     return lang;
 }
@@ -309,7 +305,7 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
                                     const char *filename)
 {
     MooLang *lang = NULL;
-    char *utf8_name, *utf8_base = NULL;
+    char *base = NULL;
     int len;
     guint i;
 
@@ -317,32 +313,23 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
 
     read_langs (mgr);
 
-    utf8_name = g_filename_display_name (filename);
-    len = strlen (utf8_name);
+    len = strlen (filename);
 
     for (i = 0; i < G_N_ELEMENTS (bak_globs); ++i)
     {
         int ext_len = strlen (bak_globs[i]) - 1;
 
-        if (len > ext_len && _moo_glob_match_simple (bak_globs[i], utf8_name))
+        if (len > ext_len && _moo_glob_match_simple (bak_globs[i], filename))
         {
-            utf8_base = g_strndup (utf8_name, len - ext_len);
+            base = g_strndup (filename, len - ext_len);
             break;
         }
     }
 
-    if (utf8_base)
-    {
-        char *base = g_filename_from_utf8 (utf8_base, -1, NULL, NULL, NULL);
+    if (base)
+        lang = get_lang_for_filename (mgr, base);
 
-        if (base)
-            lang = get_lang_for_filename (mgr, base);
-
-        g_free (base);
-        g_free (utf8_base);
-    }
-
-    g_free (utf8_name);
+    g_free (base);
     return lang;
 }
 
@@ -352,7 +339,7 @@ filename_blacklisted (MooLangMgr *mgr,
                       const char *filename)
 {
     /* XXX bak files */
-    char *basename, *utf8_basename;
+    char *basename;
     gboolean result = FALSE;
     LangInfo *info;
     GSList *l;
@@ -361,17 +348,14 @@ filename_blacklisted (MooLangMgr *mgr,
 
     basename = g_path_get_basename (filename);
     moo_return_val_if_fail (basename != NULL, FALSE);
-    utf8_basename = g_filename_display_name (basename);
-    moo_return_val_if_fail (utf8_basename != NULL, FALSE);
 
     info = get_lang_info (mgr, MOO_LANG_NONE, FALSE);
 
     if (info)
         for (l = info->globs; !result && l != NULL; l = l->next)
-            if (_moo_glob_match_simple ((char*) l->data, utf8_basename))
+            if (_moo_glob_match_simple ((char*) l->data, basename))
                 result = TRUE;
 
-    g_free (utf8_basename);
     g_free (basename);
     return result;
 }
@@ -387,28 +371,31 @@ file_blacklisted (MooLangMgr *mgr,
 
 MooLang *
 moo_lang_mgr_get_lang_for_file (MooLangMgr *mgr,
-                                const char *filename)
+                                GFile      *file)
 {
     MooLang *lang = NULL;
     const char *mime_type;
+    char *filename;
 
     moo_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
-    moo_return_val_if_fail (filename != NULL, NULL);
+    moo_return_val_if_fail (G_IS_FILE (file), NULL);
 
     read_langs (mgr);
 
+    filename = g_file_get_parse_name (file);
+
     if (file_blacklisted (mgr, filename))
-        return NULL;
+        goto out;
 
     lang = get_lang_by_extension (mgr, filename);
 
     if (lang)
-        return lang;
+        goto out;
 
     lang = lang_mgr_get_lang_for_bak_filename (mgr, filename);
 
     if (lang)
-        return lang;
+        goto out;
 
     mime_type = moo_get_mime_type_for_file (filename, NULL);
 
@@ -416,9 +403,11 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr *mgr,
         lang = get_lang_for_mime_type (mgr, mime_type);
 
     if (lang)
-        return lang;
+        goto out;
 
-    return NULL;
+out:
+    g_free (filename);
+    return lang;
 }
 
 

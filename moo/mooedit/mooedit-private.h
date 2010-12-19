@@ -28,6 +28,7 @@ struct MooEditPrivate {
 
     gulong modified_changed_handler_id;
     guint apply_config_idle;
+    gboolean in_recheck_config;
 
     /***********************************************************************/
     /* Document
@@ -60,6 +61,7 @@ struct MooEditPrivate {
 };
 
 void    _moo_edit_remove_untitled   (MooEdit    *doc);
+void    _moo_edit_apply_prefs       (MooEdit    *doc);
 
 G_END_DECLS
 

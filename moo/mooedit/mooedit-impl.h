@@ -75,9 +75,9 @@ extern guint *_moo_edit_settings;
 
 void        _moo_edit_update_global_config      (void);
 void        _moo_edit_init_config               (void);
-void        _moo_edit_update_lang_config        (void);
 
-void        _moo_edit_apply_prefs               (MooEdit        *edit);
+void        _moo_edit_queue_recheck_config_all  (void);
+void        _moo_edit_queue_recheck_config      (MooEdit        *edit);
 
 void        _moo_edit_closed                    (MooEdit        *edit);
 
