@@ -433,6 +433,11 @@ static void     file_view_paste_clipboard   (MooFileView    *fileview);
 
 static void     edit_ops_iface_init         (MooEditOpsIface *iface);
 
+static void     action_file_view_go_up      (MooFileView    *fileview);
+static void     action_file_view_go_back    (MooFileView    *fileview);
+static void     action_file_view_go_forward (MooFileView    *fileview);
+static void     action_file_view_go_home    (MooFileView    *fileview);
+
 /* MOO_TYPE_FILE_VIEW */
 G_DEFINE_TYPE_WITH_CODE (MooFileView, moo_file_view, GTK_TYPE_VBOX,
                          G_IMPLEMENT_INTERFACE (MOO_TYPE_EDIT_OPS,
@@ -1122,7 +1127,7 @@ init_actions (MooFileView *fileview)
                                  "default-accel", MOO_FILE_VIEW_ACCEL_GO_UP,
                                  "force-accel-label", TRUE,
                                  "closure-object", fileview,
-                                 "closure-signal", "go-up",
+                                 "closure-callback", action_file_view_go_up,
                                  NULL);
 
     action = moo_action_group_add_action (group, "GoBack",
@@ -1132,7 +1137,7 @@ init_actions (MooFileView *fileview)
                                           "default-accel", MOO_FILE_VIEW_ACCEL_GO_BACK,
                                           "force-accel-label", TRUE,
                                           "closure-object", fileview,
-                                          "closure-signal", "go-back",
+                                          "closure-callback", action_file_view_go_back,
                                           NULL);
     moo_bind_bool_property (action, "sensitive", fileview, "can-go-back", FALSE);
 
@@ -1143,7 +1148,7 @@ init_actions (MooFileView *fileview)
                                           "default-accel", MOO_FILE_VIEW_ACCEL_GO_FORWARD,
                                           "force-accel-label", TRUE,
                                           "closure-object", fileview,
-                                          "closure-signal", "go-forward",
+                                          "closure-callback", action_file_view_go_forward,
                                           NULL);
     moo_bind_bool_property (action, "sensitive", fileview, "can-go-forward", FALSE);
 
@@ -1154,7 +1159,7 @@ init_actions (MooFileView *fileview)
                                  "default-accel", MOO_FILE_VIEW_ACCEL_GO_HOME,
                                  "force-accel-label", TRUE,
                                  "closure-object", fileview,
-                                 "closure-signal", "go-home",
+                                 "closure-callback", action_file_view_go_home,
                                  NULL);
 
     moo_action_group_add_action (group, "NewFolder",
@@ -1280,6 +1285,34 @@ init_actions (MooFileView *fileview)
                                  "closure-object", fileview,
                                  "closure-signal", "reload",
                                  NULL);
+}
+
+static void
+action_file_view_go_up (MooFileView *fileview)
+{
+    g_signal_emit_by_name (fileview, "go-up");
+    moo_file_view_focus_files (fileview);
+}
+
+static void
+action_file_view_go_back (MooFileView *fileview)
+{
+    g_signal_emit_by_name (fileview, "go-back");
+    moo_file_view_focus_files (fileview);
+}
+
+static void
+action_file_view_go_forward (MooFileView *fileview)
+{
+    g_signal_emit_by_name (fileview, "go-forward");
+    moo_file_view_focus_files (fileview);
+}
+
+static void
+action_file_view_go_home (MooFileView *fileview)
+{
+    g_signal_emit_by_name (fileview, "go-home");
+    moo_file_view_focus_files (fileview);
 }
 
 
