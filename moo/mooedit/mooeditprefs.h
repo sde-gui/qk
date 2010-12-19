@@ -38,7 +38,6 @@ const char *moo_edit_setting            (const char *setting_name);
 #define MOO_EDIT_PREFS_USE_TABS                 "use_tabs"
 #define MOO_EDIT_PREFS_OPEN_NEW_WINDOW          "open_new_window"
 
-#define MOO_EDIT_PREFS_DEFAULT_LANG             "default_lang"
 #define MOO_EDIT_PREFS_SAVE_SESSION             "save_session"
 
 #define MOO_EDIT_PREFS_SPACES_NO_TABS           "spaces_instead_of_tabs"

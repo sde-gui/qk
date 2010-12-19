@@ -45,7 +45,6 @@ struct MooEditorPrivate {
     GType                doc_type;
 
     MooLangMgr          *lang_mgr;
-    char                *default_lang;
 
     guint                prefs_idle;
 };

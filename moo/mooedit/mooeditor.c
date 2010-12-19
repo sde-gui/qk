@@ -272,9 +272,6 @@ moo_editor_constructor (GType                  type,
                           "name", "Editor",
                           (const char*) NULL));
 
-    moo_prefs_new_key_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG),
-                              MOO_LANG_NONE);
-
     _moo_edit_filter_settings_load ();
     _moo_editor_apply_prefs (editor);
 
@@ -405,8 +402,6 @@ moo_editor_finalize (GObject *object)
 
     moo_edit_window_array_free (editor->priv->windows);
     moo_edit_array_free (editor->priv->windowless);
-
-    g_free (editor->priv->default_lang);
 
     if (editor->priv->prefs_idle)
         g_source_remove (editor->priv->prefs_idle);
@@ -774,14 +769,6 @@ moo_editor_add_doc (MooEditor      *editor,
 {
     if (!window)
         moo_edit_array_append (editor->priv->windowless, doc);
-
-    if (moo_edit_is_untitled (doc) &&
-        !moo_edit_config_get_string (doc->config, "lang") &&
-        editor->priv->default_lang)
-    {
-        moo_edit_config_set (doc->config, MOO_EDIT_CONFIG_SOURCE_FILENAME,
-                             "lang", editor->priv->default_lang, NULL);
-    }
 
     _moo_edit_apply_prefs (doc);
 }
@@ -2796,16 +2783,6 @@ moo_editor_set_doc_type (MooEditor      *editor,
 }
 
 
-static void
-set_default_lang (MooEditor  *editor,
-                  const char *name)
-{
-    g_return_if_fail (MOO_IS_EDITOR (editor));
-    g_free (editor->priv->default_lang);
-    editor->priv->default_lang = g_strdup (name);
-}
-
-
 static gboolean
 moo_editor_apply_prefs_in_idle (MooEditor *editor)
 {
@@ -2830,7 +2807,7 @@ _moo_editor_apply_prefs (MooEditor *editor)
 {
     MooEditArray *docs;
     gboolean backups;
-    const char *color_scheme, *default_lang;
+    const char *color_scheme;
 
     if (editor->priv->prefs_idle)
     {
@@ -2840,13 +2817,6 @@ _moo_editor_apply_prefs (MooEditor *editor)
 
     _moo_edit_window_update_title ();
     _moo_edit_window_set_use_tabs ();
-
-    default_lang = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG));
-
-    if (default_lang && !strcmp (default_lang, MOO_LANG_NONE))
-        default_lang = NULL;
-
-    set_default_lang (editor, default_lang);
 
     _moo_edit_update_global_config ();
 

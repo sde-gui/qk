@@ -51,11 +51,6 @@ static void     scheme_combo_data_func      (GtkCellLayout      *layout,
 static void     scheme_combo_set_scheme     (GtkComboBox        *combo,
                                              MooTextStyleScheme *scheme);
 
-static void     default_lang_combo_init     (GtkComboBox        *combo,
-                                             MooPrefsPage       *page);
-static void     default_lang_combo_set_lang (GtkComboBox        *combo,
-                                             const char         *id);
-
 static void     lang_combo_init             (GtkComboBox        *combo,
                                              MooPrefsPage       *page,
                                              PrefsLangsXml      *gxml);
@@ -69,7 +64,6 @@ static void     save_encoding_combo_apply   (PrefsFileXml       *gxml);
 
 static GtkTreeModel *page_get_lang_model    (MooPrefsPage       *page);
 static MooTextStyleScheme *page_get_scheme  (PrefsGeneralXml    *gxml);
-static char    *page_get_default_lang       (PrefsLangsXml      *gxml);
 
 
 static void
@@ -352,7 +346,6 @@ page_langs_init (MooPrefsPage *page)
 {
     PrefsLangsXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
     MooTreeHelper *helper;
-    const char *lang;
 
     moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_LANGS_AND_FILTERS);
 
@@ -360,24 +353,12 @@ page_langs_init (MooPrefsPage *page)
 
     helper = g_object_get_data (G_OBJECT (page), "moo-tree-helper");
     _moo_tree_helper_update_widgets (helper);
-
-    default_lang_combo_init (gxml->default_lang_combo, page);
-    lang = moo_prefs_get_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG));
-    default_lang_combo_set_lang (gxml->default_lang_combo, lang);
 }
 
 static void
 page_langs_apply (MooPrefsPage *page)
 {
-    char *lang;
-    PrefsLangsXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
-
     prefs_page_apply_lang_prefs (page);
-
-    lang = page_get_default_lang (gxml);
-    moo_prefs_set_string (moo_edit_setting (MOO_EDIT_PREFS_DEFAULT_LANG), lang);
-
-    g_free (lang);
 }
 
 GtkWidget *
@@ -682,105 +663,6 @@ set_sensitive (G_GNUC_UNUSED GtkCellLayout *cell_layout,
     g_object_set (cell, "sensitive",
                   !gtk_tree_model_iter_has_child (model, iter),
                   NULL);
-}
-
-static void
-default_lang_combo_init (GtkComboBox  *combo,
-                         MooPrefsPage *page)
-{
-    GtkTreeModel *model;
-    GtkCellRenderer *cell;
-
-    fix_style (GTK_WIDGET (combo));
-
-    model = page_get_lang_model (page);
-    g_return_if_fail (model != NULL);
-
-    cell = gtk_cell_renderer_text_new ();
-    gtk_cell_layout_clear (GTK_CELL_LAYOUT (combo));
-    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combo), cell, TRUE);
-    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combo), cell,
-                                    "text", COLUMN_NAME, NULL);
-    gtk_cell_layout_set_cell_data_func (GTK_CELL_LAYOUT (combo), cell,
-                                        set_sensitive, NULL, NULL);
-
-    gtk_combo_box_set_model (combo, model);
-}
-
-
-static gboolean
-find_lang_by_id (GtkTreeModel *model,
-                 G_GNUC_UNUSED GtkTreePath *path,
-                 GtkTreeIter  *iter,
-                 gpointer      user_data)
-{
-    struct {
-        gboolean found;
-        GtkTreeIter iter;
-        const char *id;
-    } *data = user_data;
-
-    char *lang_id = NULL;
-
-    gtk_tree_model_get (model, iter, COLUMN_ID, &lang_id, -1);
-
-    if (_moo_str_equal(data->id, lang_id))
-    {
-        data->found = TRUE;
-        data->iter = *iter;
-        g_free (lang_id);
-        return TRUE;
-    }
-
-    g_free (lang_id);
-    return FALSE;
-}
-
-
-static void
-default_lang_combo_set_lang (GtkComboBox *combo,
-                             const char  *id)
-{
-    GtkTreeModel *model;
-
-    struct {
-        gboolean found;
-        GtkTreeIter iter;
-        const char *id;
-    } data;
-
-    g_return_if_fail (GTK_IS_COMBO_BOX (combo));
-
-    model = gtk_combo_box_get_model (combo);
-    data.found = FALSE;
-    data.id = id ? id : MOO_LANG_NONE;
-
-    gtk_tree_model_foreach (model,
-                            (GtkTreeModelForeachFunc) find_lang_by_id,
-                            &data);
-
-    g_return_if_fail (data.found);
-    gtk_combo_box_set_active_iter (combo, &data.iter);
-}
-
-
-static char *
-page_get_default_lang (PrefsLangsXml *gxml)
-{
-    GtkTreeModel *model;
-    GtkTreeIter iter;
-    char *lang = NULL;
-
-    if (!gtk_combo_box_get_active_iter (gxml->default_lang_combo, &iter))
-    {
-        g_critical ("%s: oops", G_STRLOC);
-        return NULL;
-    }
-
-    model = gtk_combo_box_get_model (gxml->default_lang_combo);
-    gtk_tree_model_get (model, &iter, COLUMN_ID, &lang, -1);
-
-    return lang;
 }
 
 
