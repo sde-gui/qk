@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * enum:MooEditConfigSource
+ **/
+
 #define MOOEDIT_COMPILATION
 
 #include "mooedit/mooeditconfig.h"

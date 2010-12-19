@@ -87,6 +87,28 @@ static gboolean moo_edit_save_copy_local    (MooEdit        *edit,
 static void     _moo_edit_start_file_watch  (MooEdit        *edit);
 
 
+gboolean
+_moo_signal_accumulator_save_response (G_GNUC_UNUSED GSignalInvocationHint  *ihint,
+                                       GValue *return_accu,
+                                       const GValue *handler_return)
+{
+    int ret = g_value_get_enum (handler_return);
+
+    if (ret == MOO_EDIT_SAVE_RESPONSE_CANCEL)
+    {
+        g_value_set_enum (return_accu, MOO_EDIT_SAVE_RESPONSE_CANCEL);
+        return FALSE;
+    }
+    else
+    {
+        g_value_set_enum (return_accu, MOO_EDIT_SAVE_RESPONSE_CONTINUE);
+        if (ret != MOO_EDIT_SAVE_RESPONSE_CONTINUE)
+            moo_critical ("invalid save response value %d", ret);
+        return TRUE;
+    }
+}
+
+
 static const char *
 normalize_encoding (const char *encoding,
                     gboolean    for_save)

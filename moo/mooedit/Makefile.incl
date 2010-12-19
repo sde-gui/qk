@@ -125,6 +125,16 @@ built_moo_sources +=					\
 EXTRA_DIST += mooedit/medit.xml mooedit/mooedit.xml
 built_moo_sources += mooedit/medit-ui.h mooedit/mooedit-ui.h
 
+if MOO_DEV_MODE
+
+built_moo_sources += mooedit/mooedit-enums.stamp
+mooedit/mooedit-enums.stamp: mooedit/mooedit-enums-in.py $(top_srcdir)/tools/genenums.py
+	$(AM_V_at)$(MKDIR_P) mooedit
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/genenums.py MOOEDIT \
+		$(srcdir)/mooedit/mooedit-enums-in.py $(srcdir)/mooedit/mooedit-enums mooedit/mooedit-enums.stamp
+
+endif
+
 include mooedit/langs/Makefile.incl
 
 # -%- strip:true -%-

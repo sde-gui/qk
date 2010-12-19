@@ -1,4 +1,4 @@
-# foo/foo-enums-in.py foo/foo-enums stamp
+# comp_name foo/foo-enums-in.py foo/foo-enums stamp
 
 import sys
 import filecmp

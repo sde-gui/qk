@@ -95,7 +95,7 @@ moo_ctags_doc_plugin_create (MooCtagsDocPlugin *plugin)
     ensure_model (plugin);
     moo_ctags_doc_plugin_queue_update (plugin);
 
-    g_signal_connect_swapped (MOO_DOC_PLUGIN (plugin)->doc, "save-after",
+    g_signal_connect_swapped (MOO_DOC_PLUGIN (plugin)->doc, "after-save",
                               G_CALLBACK (moo_ctags_doc_plugin_queue_update),
                               plugin);
     g_signal_connect_swapped (MOO_DOC_PLUGIN (plugin)->doc, "filename-changed",

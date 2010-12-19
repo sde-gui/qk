@@ -59,12 +59,11 @@ struct MooEditorClass
                               MooEditWindow *window,
                               gboolean       ask_confirm);
 
-    gboolean (*before_save)  (MooEditor     *editor,
-                              MooEdit       *doc,
-                              GFile         *file,
-                              const char    *encoding);
-    void     (*after_save)   (MooEditor     *editor,
-                              MooEdit       *doc);
+    MooEditSaveResponse (*before_save)  (MooEditor     *editor,
+                                         MooEdit       *doc,
+                                         GFile         *file);
+    void                (*after_save)   (MooEditor     *editor,
+                                         MooEdit       *doc);
 };
 
 

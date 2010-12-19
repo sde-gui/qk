@@ -17,6 +17,22 @@
  * class:MooEdit: (parent GObject)
  **/
 
+/**
+ * flags:MooEditStatus
+ **/
+
+/**
+ * enum:MooEditSaveResponse
+ **/
+
+/**
+ * enum:MooEditState
+ **/
+
+/**
+ * enum:MooLineEndType
+ **/
+
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mooedit-private.h"
@@ -62,6 +78,9 @@ static void     moo_edit_get_property           (GObject        *object,
                                                  GValue         *value,
                                                  GParamSpec     *pspec);
 
+static MooEditSaveResponse moo_edit_before_save (MooEdit        *doc,
+                                                 GFile          *file);
+
 static void     config_changed                  (MooEdit        *edit);
 static void     update_config_from_mode_lines   (MooEdit        *doc);
 static void     moo_edit_recheck_config         (MooEdit        *doc);
@@ -75,8 +94,8 @@ static MooLang *moo_edit_get_lang               (MooEdit        *doc);
 enum {
     DOC_STATUS_CHANGED,
     FILENAME_CHANGED,
-    SAVE_BEFORE,
-    SAVE_AFTER,
+    BEFORE_SAVE,
+    AFTER_SAVE,
     LAST_SIGNAL
 };
 
@@ -105,6 +124,8 @@ moo_edit_class_init (MooEditClass *klass)
     gobject_class->constructor = moo_edit_constructor;
     gobject_class->finalize = moo_edit_finalize;
     gobject_class->dispose = moo_edit_dispose;
+
+    klass->before_save = moo_edit_before_save;
 
     g_type_class_add_private (klass, sizeof (MooEditPrivate));
 
@@ -151,20 +172,21 @@ moo_edit_class_init (MooEditClass *klass)
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
 
-    signals[SAVE_BEFORE] =
-            g_signal_new ("save-before",
+    signals[BEFORE_SAVE] =
+            g_signal_new ("before-save",
                           G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_FIRST,
-                          G_STRUCT_OFFSET (MooEditClass, save_before),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditClass, before_save),
+                          (GSignalAccumulator) _moo_signal_accumulator_save_response, NULL,
+                          _moo_marshal_ENUM__OBJECT,
+                          MOO_TYPE_EDIT_SAVE_RESPONSE, 1,
+                          G_TYPE_FILE);
 
-    signals[SAVE_AFTER] =
-            g_signal_new ("save-after",
+    signals[AFTER_SAVE] =
+            g_signal_new ("after-save",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_FIRST,
-                          G_STRUCT_OFFSET (MooEditClass, save_after),
+                          G_STRUCT_OFFSET (MooEditClass, after_save),
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
@@ -1115,6 +1137,13 @@ moo_edit_close (MooEdit        *edit,
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
     return moo_editor_close_doc (edit->priv->editor, edit, ask_confirm);
+}
+
+static MooEditSaveResponse
+moo_edit_before_save (G_GNUC_UNUSED MooEdit *doc,
+                      G_GNUC_UNUSED GFile *file)
+{
+    return MOO_EDIT_SAVE_RESPONSE_CONTINUE;
 }
 
 /**

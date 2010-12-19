@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * flags:MooFindFlags
+ **/
+
 #include "mooedit/mootextfind.h"
 #include "mooedit/mootextview.h"
 #include "mooedit/mooeditdialogs.h"

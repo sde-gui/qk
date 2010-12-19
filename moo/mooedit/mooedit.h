@@ -55,8 +55,9 @@ struct MooEditClass
 
     void (* filename_changed)   (MooEdit    *edit);
 
-    void (* save_before)        (MooEdit    *edit);
-    void (* save_after)         (MooEdit    *edit);
+    MooEditSaveResponse (* before_save) (MooEdit *doc,
+                                         GFile   *file);
+    void                (* after_save)  (MooEdit *doc);
 };
 
 

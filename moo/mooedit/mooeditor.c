@@ -67,6 +67,9 @@ static MooEditWindow *create_window             (MooEditor      *editor);
 static void          moo_editor_add_doc         (MooEditor      *editor,
                                                  MooEditWindow  *window,
                                                  MooEdit        *doc);
+static MooEditSaveResponse moo_editor_before_save (MooEditor    *editor,
+                                                 MooEdit        *doc,
+                                                 GFile          *file);
 static gboolean      close_window_handler       (MooEditor      *editor,
                                                  MooEditWindow  *window,
                                                  gboolean        ask_confirm);
@@ -151,6 +154,7 @@ moo_editor_class_init (MooEditorClass *klass)
     gobject_class->get_property = moo_editor_get_property;
 
     klass->close_window = close_window_handler;
+    klass->before_save = moo_editor_before_save;
 
     _moo_edit_init_config ();
     g_type_class_unref (g_type_class_ref (MOO_TYPE_EDIT));
@@ -203,12 +207,11 @@ moo_editor_class_init (MooEditorClass *klass)
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooEditorClass, before_save),
-                          g_signal_accumulator_true_handled, NULL,
-                          _moo_marshal_BOOLEAN__OBJECT_OBJECT_STRING,
-                          G_TYPE_BOOLEAN, 3,
+                          (GSignalAccumulator) _moo_signal_accumulator_save_response, NULL,
+                          _moo_marshal_ENUM__OBJECT_OBJECT,
+                          MOO_TYPE_EDIT_SAVE_RESPONSE, 2,
                           MOO_TYPE_EDIT,
-                          G_TYPE_FILE,
-                          G_TYPE_STRING | G_SIGNAL_TYPE_STATIC_SCOPE);
+                          G_TYPE_FILE);
 
     signals[AFTER_SAVE] =
             g_signal_new ("after-save",
@@ -2462,6 +2465,14 @@ moo_editor_reload (MooEditor          *editor,
 }
 
 
+static MooEditSaveResponse
+moo_editor_before_save (G_GNUC_UNUSED MooEditor *editor,
+                        G_GNUC_UNUSED MooEdit *doc,
+                        G_GNUC_UNUSED GFile *file)
+{
+    return MOO_EDIT_SAVE_RESPONSE_CONTINUE;
+}
+
 static MooEditSaveFlags
 moo_editor_get_save_flags (MooEditor *editor)
 {
@@ -2482,13 +2493,22 @@ do_save (MooEditor    *editor,
 {
     gboolean strip;
     gboolean add_newline;
-    gboolean stopped = FALSE;
+    int response = MOO_EDIT_SAVE_RESPONSE_CONTINUE;
     GError *error_here = NULL;
 
-    g_signal_emit (editor, signals[BEFORE_SAVE], 0, doc, file, encoding, &stopped);
+    g_signal_emit (editor, signals[BEFORE_SAVE], 0, doc, file, &response);
 
-    if (stopped)
+    if (response != MOO_EDIT_SAVE_RESPONSE_CANCEL)
+        g_signal_emit_by_name (doc, "before-save", file, &response);
+
+    if (response == MOO_EDIT_SAVE_RESPONSE_CANCEL)
+    {
+        g_set_error (error,
+                     MOO_EDIT_SAVE_ERROR,
+                     MOO_EDIT_SAVE_ERROR_CANCELLED,
+                     "cancelled");
         return FALSE;
+    }
 
     strip = moo_edit_config_get_bool (doc->config, "strip");
     add_newline = moo_edit_config_get_bool (doc->config, "add-newline");
@@ -2524,6 +2544,7 @@ do_save (MooEditor    *editor,
 
     update_history_item_for_doc (editor, doc, TRUE);
 
+    g_signal_emit_by_name (doc, "after-save");
     g_signal_emit (editor, signals[AFTER_SAVE], 0, doc);
 
     return TRUE;

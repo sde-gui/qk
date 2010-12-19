@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * flags:MooTextSearchFlags
+ **/
+
 #include "mooedit/mootextsearch-private.h"
 #include "gtksourceview/gtksourceview-api.h"
 #include "mooutils/mooutils-misc.h"

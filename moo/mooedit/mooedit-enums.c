@@ -1,4 +1,4 @@
-#include "mooedit-enums.h"
+#include "../../../moo/mooedit/mooedit-enums.h"
 
 GType
 moo_action_check_type_get_type (void)
@@ -50,6 +50,22 @@ moo_edit_config_source_get_type (void)
             { 0, NULL, NULL }
         };
         etype = g_enum_register_static ("MooEditConfigSource", values);
+    }
+    return etype;
+}
+
+GType
+moo_edit_save_response_get_type (void)
+{
+    static GType etype;
+    if (G_UNLIKELY (!etype))
+    {
+        static const GEnumValue values[] = {
+            { MOO_EDIT_SAVE_RESPONSE_CONTINUE, (char*) "MOO_EDIT_SAVE_RESPONSE_CONTINUE", (char*) "MOO_EDIT_SAVE_RESPONSE_CONTINUE" },
+            { MOO_EDIT_SAVE_RESPONSE_CANCEL, (char*) "MOO_EDIT_SAVE_RESPONSE_CANCEL", (char*) "MOO_EDIT_SAVE_RESPONSE_CANCEL" },
+            { 0, NULL, NULL }
+        };
+        etype = g_enum_register_static ("MooEditSaveResponse", values);
     }
     return etype;
 }
