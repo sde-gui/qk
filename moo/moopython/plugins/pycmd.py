@@ -30,8 +30,8 @@ class PyCmd(moo.Command):
     def do_run(self, ctx):
         dic = {}
         dic['doc'] = ctx.get_doc()
+        dic['view'] = ctx.get_doc().get_view()
         dic['window'] = ctx.get_window()
-        dic['buffer'] = ctx.get_doc() and ctx.get_doc().get_buffer()
         dic['editor'] = moo.editor_instance()
         dic['moo'] = moo
 
