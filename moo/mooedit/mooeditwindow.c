@@ -1407,12 +1407,12 @@ static void
 moo_edit_window_find_now (MooEditWindow *window,
                           gboolean       forward)
 {
-    MooEdit *doc;
+    MooEditView *view;
 
-    doc = ACTIVE_DOC (window);
-    g_return_if_fail (doc != NULL);
+    view = ACTIVE_VIEW (window);
+    g_return_if_fail (view != NULL);
 
-    g_signal_emit_by_name (doc, "find-word-at-cursor", forward);
+    g_signal_emit_by_name (view, "find-word-at-cursor", forward);
 }
 
 static void
