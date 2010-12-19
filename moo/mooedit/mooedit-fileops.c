@@ -745,10 +745,12 @@ moo_edit_reload_local (MooEdit    *edit,
     GtkTextBuffer *buffer;
     gboolean result, enable_highlight;
     GFile *file;
+    MooEditView *view;
 
     file = moo_edit_get_file (edit);
     moo_return_val_if_fail (G_IS_FILE (file), FALSE);
 
+    view = moo_edit_get_view (edit);
     buffer = moo_edit_get_buffer (edit);
 
     block_buffer_signals (edit);
@@ -756,15 +758,15 @@ moo_edit_reload_local (MooEdit    *edit,
 
     gtk_text_buffer_get_bounds (buffer, &start, &end);
     gtk_text_buffer_delete (buffer, &start, &end);
-    g_object_get (edit, "enable-highlight", &enable_highlight, (char*) 0);
-    g_object_set (edit, "enable-highlight", FALSE, (char*) 0);
+    g_object_get (view, "enable-highlight", &enable_highlight, (char*) 0);
+    g_object_set (view, "enable-highlight", FALSE, (char*) 0);
 
     result = _moo_edit_load_file (edit, file,
                                   encoding ? encoding : edit->priv->encoding,
                                   NULL,
                                   error);
 
-    g_object_set (edit, "enable-highlight", enable_highlight, (char*) 0);
+    g_object_set (view, "enable-highlight", enable_highlight, (char*) 0);
     gtk_text_buffer_end_user_action (buffer);
     unblock_buffer_signals (edit);
 

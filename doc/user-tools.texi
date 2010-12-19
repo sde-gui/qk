@@ -237,6 +237,6 @@ the number of the line containing cursor.
 the user data directory. For example the tools are stored in @file{$DATA_DIR/menu.cfg} file and in files in the @file{$DATA_DIR/tools/} directory.
 @end table
 
-Additionally, all processes ran from inside @medit{} will have @file{DATADIR/scripts}
+Additionally, all shell commands which run inside @medit{} will have @file{DATADIR/scripts}
 directories in @code{$PATH}, so you may place some @medit{}-specific programs
 or scripts into @file{USERDATADIR/scripts/} to be used from shell script tools.
