@@ -482,11 +482,78 @@ moo_lua_get_arg_int (lua_State  *L,
     return moo_lua_get_arg_int_opt (L, narg, param_name, 0);
 }
 
+static int
+parse_enum (const char *string,
+            GType       type,
+            lua_State  *L)
+{
+    GEnumValue *value;
+    GEnumClass *enum_class = G_ENUM_CLASS (g_type_class_peek (type));
+
+    value = g_enum_get_value_by_nick (enum_class, string);
+    if (!value)
+        value = g_enum_get_value_by_name (enum_class, string);
+
+    if (!value)
+        luaL_error (L, "could not convert string '%s' to a value of type %s",
+                    string, g_type_name (type));
+
+    return value->value;
+}
+
+static int
+parse_flags (const char *string,
+             GType       type,
+             lua_State  *L)
+{
+    char **pieces, **p;
+    GEnumValue *value;
+    GEnumClass *enum_class = G_ENUM_CLASS (g_type_class_peek (type));
+    int ret = 0;
+
+    pieces = g_strsplit_set (string, ",;|", 0);
+
+    for (p = pieces; p && *p; ++p)
+    {
+        value = g_enum_get_value_by_nick (enum_class, string);
+        if (!value)
+            value = g_enum_get_value_by_name (enum_class, string);
+
+        if (!value)
+        {
+            g_strfreev (pieces);
+            luaL_error (L, "could not convert string '%s' to a value of type %s",
+                        string, g_type_name (type));
+        }
+
+        ret |= value->value;
+    }
+
+    g_strfreev (pieces);
+    return ret;
+}
+
+static int
+moo_lua_get_arg_enum_from_string (lua_State  *L,
+                                  int         narg,
+                                  GType       type)
+{
+    const char *s = lua_tostring (L, narg);
+
+    if (!s)
+        luaL_argerror (L, narg, "nil string unexpected");
+
+    if (g_type_is_a (type, G_TYPE_ENUM))
+        return parse_enum (s, type, L);
+    else
+        return parse_flags (s, type, L);
+}
+
 int
 moo_lua_get_arg_enum_opt (lua_State  *L,
                           int         narg,
                           G_GNUC_UNUSED const char *param_name,
-                          G_GNUC_UNUSED GType       type,
+                          GType       type,
                           int         default_value)
 {
     if (lua_isnoneornil (L, narg))
@@ -494,6 +561,9 @@ moo_lua_get_arg_enum_opt (lua_State  *L,
 
     if (lua_isnumber (L, narg))
         return lua_tointeger (L, narg);
+
+    if (lua_isstring (L, narg))
+        return moo_lua_get_arg_enum_from_string (L, narg, type);
 
     luaL_argerror (L, narg, "bad value");
     return 0;
