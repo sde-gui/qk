@@ -17,10 +17,6 @@
  * class:MooEditWindow: (parent MooWindow)
  **/
 
-/**
- * enum:MooActionCheckType:
- **/
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

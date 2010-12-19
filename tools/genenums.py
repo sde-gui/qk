@@ -46,11 +46,11 @@ def print_enum_h(name, vals, out):
     for i in range(len(vals)):
         v = vals[i]
         out.write('    %s' % (v[0],))
-        if v[1:]:
+        if v[1:] and v[1] is not None:
             out.write(' = %s' % (v[1],))
         if i + 1 < len(vals):
             out.write(',')
-        if v[2:]:
+        if v[2:] and v[2] is not None:
             out.write(' /* %s */' % (v[2],))
         out.write('\n')
     print >> out, '} %s;' % name
@@ -96,8 +96,11 @@ def print_flags_or_enum_c(name, vals, out, enum):
     dic = parse_name(name)
     dic['Type'] = enum and 'Enum' or 'Flags'
     dic['type'] = enum and 'enum' or 'flags'
-    out.write(
-'''GType\n%(name)s_get_type (void)
+    out.write('''\
+/**
+ * %(type)s:%(Name)s
+ **/
+GType\n%(name)s_get_type (void)
 {
     static GType etype;
     if (G_UNLIKELY (!etype))
@@ -106,7 +109,7 @@ def print_flags_or_enum_c(name, vals, out, enum):
 ''' % dic)
 
     for v in vals:
-        out.write('            { %s, (char*) "%s", (char*) "%s" },\n' % (v[0], v[0], v[0]))
+        out.write('            { %s, (char*) "%s", (char*) "%s" },\n' % (v[0], v[0], v[3]))
 
     out.write('''            { 0, NULL, NULL }
         };

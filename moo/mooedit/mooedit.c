@@ -17,22 +17,6 @@
  * class:MooEdit: (parent GObject)
  **/
 
-/**
- * flags:MooEditStatus
- **/
-
-/**
- * enum:MooEditSaveResponse
- **/
-
-/**
- * enum:MooEditState
- **/
-
-/**
- * enum:MooLineEndType
- **/
-
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mooedit-private.h"

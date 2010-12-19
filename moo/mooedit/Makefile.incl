@@ -133,7 +133,7 @@ if MOO_DEV_MODE
 built_moo_sources += mooedit/mooedit-enums.stamp
 mooedit/mooedit-enums.stamp: mooedit/mooedit-enums-in.py $(top_srcdir)/tools/genenums.py
 	$(AM_V_at)$(MKDIR_P) mooedit
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/genenums.py MOOEDIT \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/genenums.py MOO_EDIT \
 		$(srcdir)/mooedit/mooedit-enums-in.py $(srcdir)/mooedit/mooedit-enums mooedit/mooedit-enums.stamp
 
 endif
