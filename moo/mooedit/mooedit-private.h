@@ -20,14 +20,11 @@
 
 G_BEGIN_DECLS
 
-#define PROGRESS_TIMEOUT    100
-#define PROGRESS_WIDTH      300
-#define PROGRESS_HEIGHT     100
-
 #define MOO_EDIT_IS_UNTITLED(edit) (!(edit)->priv->file)
 
 struct MooEditPrivate {
     MooEditor *editor;
+    MooEditView *view;
 
     gulong modified_changed_handler_id;
     guint apply_config_idle;
@@ -50,17 +47,6 @@ struct MooEditPrivate {
     gboolean deleted_from_disk;
 
     /***********************************************************************/
-    /* Progress dialog and stuff
-     */
-    MooEditState state;
-    guint progress_timeout;
-    GtkWidget *progress;
-    GtkWidget *progressbar;
-    char *progress_text;
-    GDestroyNotify cancel_op;
-    gpointer cancel_data;
-
-    /***********************************************************************/
     /* Bookmarks
      */
     gboolean enable_bookmarks;
@@ -73,6 +59,7 @@ struct MooEditPrivate {
     MooActionCollection *actions;
 };
 
+void    _moo_edit_remove_untitled   (MooEdit    *doc);
 
 G_END_DECLS
 

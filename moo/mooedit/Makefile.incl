@@ -1,4 +1,10 @@
 moo_sources +=				\
+	mooedit/mooeditview.c		\
+	mooedit/mooeditview.h		\
+	mooedit/mooeditview-priv.h	\
+	mooedit/mooeditview-impl.h	\
+	mooedit/mooeditview-script.c	\
+	mooedit/mooeditview-script.h	\
 	mooedit/mooedit-accels.h	\
 	mooedit/mooeditaction.c		\
 	mooedit/mooeditaction-factory.c	\

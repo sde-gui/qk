@@ -487,22 +487,23 @@ save_all (MooEdit *doc)
 
 
 static gboolean
-check_context (MooCommandOptions options,
-               gpointer          doc,
-               gpointer          window)
+check_context (MooCommandOptions  options,
+               MooEdit           *doc,
+               MooEditWindow     *window)
 {
-    if ((options & MOO_COMMAND_NEED_WINDOW) &&
-        !MOO_IS_EDIT_WINDOW (window))
-            return FALSE;
+    moo_return_val_if_fail (!doc || MOO_IS_EDIT (doc), FALSE);
+    moo_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), FALSE);
 
-    if ((options & MOO_COMMAND_NEED_DOC) && doc == NULL)
+    if ((options & MOO_COMMAND_NEED_WINDOW) && !window)
         return FALSE;
 
-    if ((options & MOO_COMMAND_NEED_FILE) &&
-        !(MOO_IS_EDIT (doc) && !moo_edit_is_untitled (doc)))
+    if ((options & MOO_COMMAND_NEED_DOC) && !doc)
+        return FALSE;
+
+    if ((options & MOO_COMMAND_NEED_FILE) && !(doc && !moo_edit_is_untitled (doc)))
             return FALSE;
 
-    if ((options & MOO_COMMAND_NEED_SAVE) && !MOO_IS_EDIT (doc))
+    if ((options & MOO_COMMAND_NEED_SAVE) && !doc)
         return FALSE;
 
     return TRUE;
@@ -512,11 +513,12 @@ void
 moo_command_run (MooCommand         *cmd,
                  MooCommandContext  *ctx)
 {
-    gpointer doc, window;
+    MooEdit *doc;
+    MooEditWindow *window;
 
     g_return_if_fail (MOO_IS_COMMAND (cmd));
     g_return_if_fail (MOO_IS_COMMAND_CONTEXT (ctx));
-    g_return_if_fail (MOO_COMMAND_GET_CLASS(cmd)->run != NULL);
+    g_return_if_fail (MOO_COMMAND_GET_CLASS (cmd)->run != NULL);
 
     doc = moo_command_context_get_doc (ctx);
     window = moo_command_context_get_window (ctx);
@@ -534,7 +536,7 @@ moo_command_run (MooCommand         *cmd,
             return;
     }
 
-    MOO_COMMAND_GET_CLASS(cmd)->run (cmd, ctx);
+    MOO_COMMAND_GET_CLASS (cmd)->run (cmd, ctx);
 }
 
 
@@ -814,14 +816,13 @@ moo_command_context_class_init (MooCommandContextClass *klass)
     g_type_class_add_private (klass, sizeof (MooCommandContextPrivate));
 
     g_object_class_install_property (object_class, CTX_PROP_DOC,
-                                     g_param_spec_object ("doc", "doc", "doc",
-                                                          GTK_TYPE_TEXT_VIEW,
-                                                          (GParamFlags) G_PARAM_READWRITE));
+        g_param_spec_object ("doc", "doc", "doc",
+                             MOO_TYPE_EDIT, (GParamFlags) G_PARAM_READWRITE));
 
     g_object_class_install_property (object_class, CTX_PROP_WINDOW,
-                                     g_param_spec_object ("window", "window", "window",
-                                                          GTK_TYPE_WINDOW,
-                                                          (GParamFlags) G_PARAM_READWRITE));
+        g_param_spec_object ("window", "window", "window",
+                             MOO_TYPE_EDIT_WINDOW,
+                             (GParamFlags) G_PARAM_READWRITE));
 }
 
 
@@ -869,11 +870,11 @@ moo_command_context_foreach (MooCommandContext  *ctx,
 
 
 MooCommandContext *
-moo_command_context_new (gpointer doc,
-                         gpointer window)
+moo_command_context_new (MooEdit       *doc,
+                         MooEditWindow *window)
 {
-    g_return_val_if_fail (!doc || GTK_IS_TEXT_VIEW (doc), NULL);
-    g_return_val_if_fail (!window || GTK_IS_WINDOW (window), NULL);
+    g_return_val_if_fail (!doc || MOO_IS_EDIT (doc), NULL);
+    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), NULL);
 
     return g_object_new (MOO_TYPE_COMMAND_CONTEXT,
                          "doc", doc,

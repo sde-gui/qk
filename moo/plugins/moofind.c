@@ -485,16 +485,18 @@ init_grep_dialog (MooEditWindow *window,
                   WindowStuff   *stuff)
 {
     MooEdit *doc;
+    MooEditView *view;
     GtkWidget *pattern_entry, *glob_entry;
 
     pattern_entry = MOO_COMBO(stuff->grep_xml->pattern_combo)->entry;
     glob_entry = MOO_COMBO(stuff->grep_xml->glob_combo)->entry;
 
-    doc = moo_edit_window_get_active_doc (window);
+    view = moo_edit_window_get_active_view (window);
+    doc = view ? moo_edit_view_get_doc (view) : NULL;
 
-    if (doc)
+    if (view)
     {
-        char *sel = moo_text_view_get_selection (MOO_TEXT_VIEW (doc));
+        char *sel = moo_text_view_get_selection (GTK_TEXT_VIEW (view));
         if (sel && !strchr (sel, '\n'))
             gtk_entry_set_text (GTK_ENTRY (pattern_entry), sel);
         g_free (sel);

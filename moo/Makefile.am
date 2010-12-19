@@ -26,11 +26,11 @@ marshals.h: marshals.list
 	$(AM_V_GEN)$(GLIB_GENMARSHAL) --prefix=_moo_marshal --header $(srcdir)/marshals.list > marshals.h.tmp \
 		&& mv marshals.h.tmp marshals.h
 
+include mooedit/Makefile.incl
 include xdgmime/Makefile.incl
 include mooutils/Makefile.incl
 include moofileview/Makefile.incl
 include gtksourceview/Makefile.incl
-include mooedit/Makefile.incl
 include eggsmclient/Makefile.incl
 include mooapp/Makefile.incl
 include moolua/Makefile.incl

@@ -323,6 +323,7 @@ try_load (MooEdit      *edit,
           const char   *encoding,
           GError      **error)
 {
+    MooEditView *view;
     GtkTextBuffer *buffer;
     gboolean enable_highlight;
     LoadResult result = ERROR_FILE;
@@ -331,13 +332,14 @@ try_load (MooEdit      *edit,
     moo_return_val_if_fail (G_IS_FILE (file), result);
     moo_return_val_if_fail (encoding && encoding[0], result);
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    view = moo_edit_get_view (edit);
+    buffer = moo_edit_get_buffer (edit);
     gtk_text_buffer_set_text (buffer, "", 0);
 
-    g_object_get (edit, "enable-highlight", &enable_highlight, (char*) 0);
-    g_object_set (edit, "enable-highlight", FALSE, (char*) 0);
+    g_object_get (view, "enable-highlight", &enable_highlight, (char*) 0);
+    g_object_set (view, "enable-highlight", FALSE, (char*) 0);
     result = do_load (edit, file, encoding, error);
-    g_object_set (edit, "enable-highlight", enable_highlight, (char*) 0);
+    g_object_set (view, "enable-highlight", enable_highlight, (char*) 0);
 
     return result;
 }
@@ -396,8 +398,8 @@ moo_edit_load_local (MooEdit     *edit,
     else
         undo = TRUE;
 
-    view = MOO_TEXT_VIEW (edit);
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    view = MOO_TEXT_VIEW (moo_edit_get_view (edit));
+    buffer = moo_edit_get_buffer (edit);
 
     block_buffer_signals (edit);
 
@@ -530,7 +532,7 @@ do_load (MooEdit      *edit,
     }
 
     text = g_string_new (NULL);
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = moo_edit_get_buffer (edit);
 
     while (TRUE)
     {
@@ -665,7 +667,7 @@ load_binary (MooEdit     *edit,
 
     moo_return_val_if_fail (filename != NULL, FALSE);
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = moo_edit_get_buffer (edit);
 
     file = g_io_channel_new_file (filename, "r", error);
 
@@ -747,7 +749,7 @@ moo_edit_reload_local (MooEdit    *edit,
     file = moo_edit_get_file (edit);
     moo_return_val_if_fail (G_IS_FILE (file), FALSE);
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = moo_edit_get_buffer (edit);
 
     block_buffer_signals (edit);
     gtk_text_buffer_begin_user_action (buffer);
@@ -857,7 +859,7 @@ get_contents (MooEdit *edit)
             moo_assert_not_reached ();
     }
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
+    buffer = moo_edit_get_buffer (edit);
 
     if (normalize_le)
     {
@@ -1013,16 +1015,14 @@ moo_edit_save_copy_local (MooEdit        *edit,
 static void
 block_buffer_signals (MooEdit *edit)
 {
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-    g_signal_handler_block (buffer, edit->priv->modified_changed_handler_id);
+    g_signal_handler_block (moo_edit_get_buffer (edit), edit->priv->modified_changed_handler_id);
 }
 
 
 static void
 unblock_buffer_signals (MooEdit *edit)
 {
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (edit));
-    g_signal_handler_unblock (buffer, edit->priv->modified_changed_handler_id);
+    g_signal_handler_unblock (moo_edit_get_buffer (edit), edit->priv->modified_changed_handler_id);
 }
 
 
@@ -1157,20 +1157,15 @@ add_status (MooEdit        *edit,
 }
 
 
-static void
-remove_untitled (gpointer    destroyed,
-                 MooEdit    *edit)
+void
+_moo_edit_remove_untitled (MooEdit *doc)
 {
-    gpointer n = g_hash_table_lookup (UNTITLED_NO, edit);
+    gpointer n = g_hash_table_lookup (UNTITLED_NO, doc);
 
     if (n)
     {
         UNTITLED = g_slist_remove (UNTITLED, n);
-        g_hash_table_remove (UNTITLED_NO, edit);
-        if (!destroyed)
-            g_object_weak_unref (G_OBJECT (edit),
-                                 (GWeakNotify) remove_untitled,
-                                 GINT_TO_POINTER (TRUE));
+        g_hash_table_remove (UNTITLED_NO, doc);
     }
 }
 
@@ -1192,9 +1187,6 @@ add_untitled (MooEdit *edit)
         }
 
         g_hash_table_insert (UNTITLED_NO, edit, GINT_TO_POINTER (n));
-        g_object_weak_ref (G_OBJECT (edit),
-                           (GWeakNotify) remove_untitled,
-                           GINT_TO_POINTER (TRUE));
     }
 
     return n;
@@ -1311,7 +1303,7 @@ _moo_edit_set_file (MooEdit    *edit,
     }
     else
     {
-        remove_untitled (NULL, edit);
+        _moo_edit_remove_untitled (edit);
         edit->priv->file = g_file_dup (file);
         edit->priv->filename = g_file_get_path (file);
         edit->priv->norm_name = _moo_file_get_normalized_name (file);

@@ -24,6 +24,8 @@
 
 G_BEGIN_DECLS
 
+#define MOO_EDIT_IS_BUSY(edit) (_moo_edit_view_get_state (moo_edit_get_view (edit)) != MOO_EDIT_STATE_NORMAL)
+
 extern MooEditList *_moo_edit_instances;
 
 char       *_moo_file_get_normalized_name       (GFile          *file);
@@ -37,19 +39,11 @@ void        _moo_edit_class_init_actions        (MooEditClass   *klass);
 
 void        _moo_edit_status_changed            (MooEdit        *edit);
 
-void        _moo_edit_do_popup                  (MooEdit        *edit,
-                                                 GdkEventButton *event);
-
 gboolean    _moo_edit_has_comments              (MooEdit        *edit,
                                                  gboolean       *single_line,
                                                  gboolean       *multi_line);
 void        _moo_edit_comment                   (MooEdit        *edit);
 void        _moo_edit_uncomment                 (MooEdit        *edit);
-
-void        _moo_edit_ui_set_line_wrap_mode     (MooEdit        *edit,
-                                                 gboolean        enabled);
-void        _moo_edit_ui_set_show_line_numbers  (MooEdit        *edit,
-                                                 gboolean        show);
 
 #define MOO_EDIT_GOTO_BOOKMARK_ACTION "GoToBookmark"
 void        _moo_edit_delete_bookmarks          (MooEdit        *edit,
@@ -85,6 +79,7 @@ void        _moo_edit_update_lang_config        (void);
 
 void        _moo_edit_apply_prefs               (MooEdit        *edit);
 
+void        _moo_edit_closed                    (MooEdit        *edit);
 
 /***********************************************************************/
 /* File operations
@@ -101,22 +96,16 @@ void         _moo_edit_stop_file_watch          (MooEdit        *edit);
 void         _moo_edit_set_status               (MooEdit        *edit,
                                                  MooEditStatus   status);
 
-void         _moo_edit_set_state                (MooEdit        *edit,
-                                                 MooEditState    state,
-                                                 const char     *text,
-                                                 GDestroyNotify  cancel,
-                                                 gpointer        data);
-void         _moo_edit_create_progress_dialog   (MooEdit        *edit);
-void         _moo_edit_set_progress_text        (MooEdit        *edit,
-                                                 const char     *text);
-
 GdkPixbuf   *_moo_edit_get_icon                 (MooEdit        *edit,
                                                  GtkWidget      *widget,
                                                  GtkIconSize     size);
 
+MooActionCollection *_moo_edit_get_actions      (MooEdit        *edit);
+
 char *_moo_edit_normalize_filename_for_comparison (const char *filename);
 char *_moo_edit_normalize_uri_for_comparison (const char *uri);
 
+void         _moo_edit_strip_whitespace         (MooEdit        *edit);
 
 G_END_DECLS
 

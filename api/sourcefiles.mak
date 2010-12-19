@@ -49,6 +49,10 @@ source_files = \
     ../moo/mooedit/mooedit-script.c\
     ../moo/mooedit/mooedit-script.h\
     ../moo/mooedit/mooedittypes.h\
+    ../moo/mooedit/mooeditview.c\
+    ../moo/mooedit/mooeditview.h\
+    ../moo/mooedit/mooeditview-script.c\
+    ../moo/mooedit/mooeditview-script.h\
     ../moo/mooedit/mooeditwindow.c\
     ../moo/mooedit/mooeditwindow.h\
     ../moo/mooedit/mooeditwindow-impl.h\

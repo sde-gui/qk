@@ -219,12 +219,16 @@ _moo_edit_apply_prefs (MooEdit *edit)
     MooLangMgr *mgr;
     MooTextStyleScheme *scheme;
     MooDrawWhitespaceFlags ws_flags = 0;
+    MooEditView *view;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
 
-    g_object_freeze_notify (G_OBJECT (edit));
+    view = moo_edit_get_view (edit);
 
-    g_object_set (edit,
+    g_object_freeze_notify (G_OBJECT (edit));
+    g_object_freeze_notify (G_OBJECT (view));
+
+    g_object_set (view,
                   "smart-home-end", get_bool (MOO_EDIT_PREFS_SMART_HOME_END),
                   "enable-highlight", get_bool (MOO_EDIT_PREFS_ENABLE_HIGHLIGHTING),
                   "highlight-matching-brackets", get_bool (MOO_EDIT_PREFS_HIGHLIGHT_MATCHING),
@@ -244,19 +248,20 @@ _moo_edit_apply_prefs (MooEdit *edit)
         ws_flags |= MOO_DRAW_SPACES;
     if (get_bool (MOO_EDIT_PREFS_SHOW_TRAILING_SPACES))
         ws_flags |= MOO_DRAW_TRAILING_SPACES;
-    g_object_set (edit, "draw-whitespace", ws_flags, NULL);
+    g_object_set (view, "draw-whitespace", ws_flags, NULL);
 
-    moo_text_view_set_font_from_string (MOO_TEXT_VIEW (edit),
+    moo_text_view_set_font_from_string (MOO_TEXT_VIEW (view),
                                         get_string (MOO_EDIT_PREFS_FONT));
-    _moo_text_view_set_line_numbers_font (MOO_TEXT_VIEW (edit),
+    _moo_text_view_set_line_numbers_font (MOO_TEXT_VIEW (view),
                                           get_string (MOO_EDIT_PREFS_LINE_NUMBERS_FONT));
 
     mgr = moo_lang_mgr_default ();
     scheme = moo_lang_mgr_get_active_scheme (mgr);
 
     if (scheme)
-        moo_text_view_set_style_scheme (MOO_TEXT_VIEW (edit), scheme);
+        moo_text_view_set_style_scheme (MOO_TEXT_VIEW (view), scheme);
 
+    g_object_thaw_notify (G_OBJECT (view));
     g_object_thaw_notify (G_OBJECT (edit));
 }
 

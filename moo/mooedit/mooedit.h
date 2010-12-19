@@ -16,7 +16,6 @@
 #ifndef MOO_EDIT_H
 #define MOO_EDIT_H
 
-#include <mooedit/mootextview.h>
 #include <mooedit/mooeditconfig.h>
 #include <mooedit/mooedit-enums.h>
 #include <mooedit/mooedittypes.h>
@@ -35,21 +34,20 @@ G_BEGIN_DECLS
 
 #define MOO_EDIT_IS_MODIFIED(edit)  (moo_edit_get_status (edit) & MOO_EDIT_MODIFIED)
 #define MOO_EDIT_IS_CLEAN(edit)     (moo_edit_get_status (edit) & MOO_EDIT_CLEAN)
-#define MOO_EDIT_IS_BUSY(edit)      (moo_edit_get_state (edit) != MOO_EDIT_STATE_NORMAL)
 
 typedef struct MooEditPrivate  MooEditPrivate;
 typedef struct MooEditClass    MooEditClass;
 
 struct MooEdit
 {
-    MooTextView parent;
+    GObject parent;
     MooEditConfig *config;
     MooEditPrivate *priv;
 };
 
 struct MooEditClass
 {
-    MooTextViewClass parent_class;
+    GObjectClass parent_class;
 
     /* emitted when filename, modified status, or file on disk
        are changed. for use in editor to adjust title bar, etc. */
@@ -71,7 +69,11 @@ struct MooEditClass
 
 GType            moo_edit_get_type                  (void) G_GNUC_CONST;
 
-MooEditWindow   *moo_edit_get_window                (MooEdit            *edit);
+MooEditView     *moo_edit_get_view                  (MooEdit            *doc);
+MooEditWindow   *moo_edit_get_window                (MooEdit            *doc);
+MooEditor       *moo_edit_get_editor                (MooEdit            *doc);
+
+GtkTextBuffer   *moo_edit_get_buffer                (MooEdit            *doc);
 
 GFile           *moo_edit_get_file                  (MooEdit            *edit);
 
@@ -86,8 +88,6 @@ void             moo_edit_set_encoding              (MooEdit            *edit,
                                                      const char         *encoding);
 
 const char      *moo_edit_get_lang_id               (MooEdit            *edit);
-
-MooEditor       *moo_edit_get_editor                (MooEdit            *doc);
 
 #ifdef __WIN32__
 #define MOO_LE_DEFAULT MOO_LE_WIN32

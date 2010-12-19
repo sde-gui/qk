@@ -139,6 +139,7 @@ matcher.register('no-ref-object-slist', arg)
 
 for typ, prefix in (('MooFileArray', 'moo_file_array'),
                     ('MooEditArray', 'moo_edit_array'),
+                    ('MooEditViewArray', 'moo_edit_view_array'),
                     ('MooEditWindowArray', 'moo_edit_window_array'),
                     ('MooEditOpenInfoArray', 'moo_edit_open_info_array'),
                     ):

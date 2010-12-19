@@ -1305,7 +1305,7 @@ moo_text_view_get_property (GObject        *object,
 
 
 char *
-moo_text_view_get_selection (gpointer view)
+moo_text_view_get_selection (GtkTextView *view)
 {
     GtkTextBuffer *buf;
     GtkTextIter start, end;
@@ -1338,7 +1338,7 @@ moo_text_view_has_text (MooTextView *view)
 
 
 char *
-moo_text_view_get_text (gpointer view)
+moo_text_view_get_text (GtkTextView *view)
 {
     GtkTextBuffer *buf;
     GtkTextIter start, end;
@@ -1346,7 +1346,7 @@ moo_text_view_get_text (gpointer view)
 
     g_return_val_if_fail (GTK_IS_TEXT_VIEW (view), NULL);
 
-    buf = get_buffer (view);
+    buf = gtk_text_view_get_buffer (view);
     gtk_text_buffer_get_bounds (buf, &start, &end);
     text = gtk_text_buffer_get_slice (buf, &start, &end, TRUE);
 
@@ -1534,7 +1534,7 @@ moo_text_view_set_indenter (MooTextView *view,
 
 
 typedef struct {
-    GtkTextView *view;
+    MooTextView *view;
     int      line;
     int      character;
     gboolean visual;
@@ -1562,7 +1562,7 @@ do_move_cursor (Scroll *scroll)
     g_return_val_if_fail (GTK_IS_TEXT_VIEW (scroll->view), FALSE);
     g_return_val_if_fail (scroll->line >= 0, FALSE);
 
-    buffer = gtk_text_view_get_buffer (scroll->view);
+    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (scroll->view));
 
     if (scroll->line >= gtk_text_buffer_get_line_count (buffer))
         scroll->line = gtk_text_buffer_get_line_count (buffer) - 1;
@@ -1612,7 +1612,7 @@ do_move_cursor (Scroll *scroll)
     }
 
     gtk_text_buffer_place_cursor (buffer, &iter);
-    gtk_text_view_scroll_to_mark (scroll->view,
+    gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (scroll->view),
                                   gtk_text_buffer_get_insert (buffer),
                                   0.2, FALSE, 0, 0);
 
@@ -1632,11 +1632,11 @@ do_move_cursor (Scroll *scroll)
 
 
 void
-moo_text_view_move_cursor (gpointer view,
-                           int      line,
-                           int      offset,
-                           gboolean offset_visual,
-                           gboolean in_idle)
+moo_text_view_move_cursor (MooTextView *view,
+                           int          line,
+                           int          offset,
+                           gboolean     offset_visual,
+                           gboolean     in_idle)
 {
     Scroll scroll;
 
@@ -1667,7 +1667,7 @@ moo_text_view_move_cursor (gpointer view,
 
 
 void
-moo_text_view_get_cursor (MooTextView *view,
+moo_text_view_get_cursor (GtkTextView *view,
                           GtkTextIter *iter)
 {
     GtkTextBuffer *buffer;
@@ -1675,14 +1675,14 @@ moo_text_view_get_cursor (MooTextView *view,
     g_return_if_fail (GTK_IS_TEXT_VIEW (view));
     g_return_if_fail (iter != NULL);
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
+    buffer = gtk_text_view_get_buffer (view);
     gtk_text_buffer_get_iter_at_mark (buffer, iter,
                                       gtk_text_buffer_get_insert (buffer));
 }
 
 
 int
-moo_text_view_get_cursor_line (MooTextView *view)
+moo_text_view_get_cursor_line (GtkTextView *view)
 {
     GtkTextIter iter;
 
@@ -2353,7 +2353,7 @@ moo_text_view_draw_whitespace (GtkTextView       *text_view,
         return;
 
     line = gtk_text_iter_get_line (&iter);
-    moo_text_view_get_cursor (MOO_TEXT_VIEW (text_view), &cursor);
+    moo_text_view_get_cursor (GTK_TEXT_VIEW (text_view), &cursor);
     cursor_line = gtk_text_iter_get_line (&cursor);
     cursor_line = -1; /* FIXME */
 
@@ -2669,50 +2669,6 @@ moo_text_view_get_style_scheme (MooTextView *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), NULL);
     return view->priv->style_scheme;
-}
-
-
-void
-moo_text_view_strip_whitespace (MooTextView *view)
-{
-    GtkTextBuffer *buffer;
-    GtkTextIter iter;
-
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-
-    buffer = get_buffer (view);
-    gtk_text_buffer_begin_user_action (buffer);
-
-    for (gtk_text_buffer_get_start_iter (buffer, &iter);
-         !gtk_text_iter_is_end (&iter);
-         gtk_text_iter_forward_line (&iter))
-    {
-        GtkTextIter end;
-        char *slice, *p;
-        int len;
-
-        if (gtk_text_iter_ends_line (&iter))
-            continue;
-
-        end = iter;
-        gtk_text_iter_forward_to_line_end (&end);
-
-        slice = gtk_text_buffer_get_slice (buffer, &iter, &end, TRUE);
-        len = strlen (slice);
-        g_assert (len > 0);
-
-        for (p = slice + len; p > slice && (p[-1] == ' ' || p[-1] == '\t'); --p) ;
-
-        if (*p)
-        {
-            gtk_text_iter_forward_chars (&iter, g_utf8_pointer_to_offset (slice, p));
-            gtk_text_buffer_delete (buffer, &iter, &end);
-        }
-
-        g_free (slice);
-    }
-
-    gtk_text_buffer_end_user_action (buffer);
 }
 
 

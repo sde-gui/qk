@@ -152,7 +152,7 @@ get_lines (MooEdit  *doc,
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
+    buffer = moo_edit_get_buffer (doc);
     gtk_text_buffer_get_selection_bounds (buffer, &start, &end);
 
     gtk_text_iter_set_line_offset (&start, 0);
@@ -172,6 +172,7 @@ get_input (MooCommandExe     *cmd,
            gboolean           select_it)
 {
     MooEdit *doc = moo_command_context_get_doc (ctx);
+    MooEditView *view = doc ? moo_edit_get_view (doc) : NULL;
 
     g_return_val_if_fail (cmd->priv->input == MOO_COMMAND_EXE_INPUT_NONE || doc != NULL, NULL);
 
@@ -182,9 +183,9 @@ get_input (MooCommandExe     *cmd,
         case MOO_COMMAND_EXE_INPUT_LINES:
             return get_lines (doc, select_it);
         case MOO_COMMAND_EXE_INPUT_SELECTION:
-            return moo_text_view_get_selection (doc);
+            return moo_text_view_get_selection (GTK_TEXT_VIEW (view));
         case MOO_COMMAND_EXE_INPUT_DOC:
-            return moo_text_view_get_text (doc);
+            return moo_text_view_get_text (GTK_TEXT_VIEW (view));
     }
 
     g_return_val_if_reached (NULL);
@@ -407,14 +408,14 @@ run_command_in_pane (MooCommandExe     *cmd,
 
 
 static void
-insert_text (MooTextView        *view,
-             const char         *text,
-             gboolean            replace_doc)
+insert_text (MooEdit    *doc,
+             const char *text,
+             gboolean    replace_doc)
 {
     GtkTextBuffer *buffer;
     GtkTextIter start, end;
 
-    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
+    buffer = moo_edit_get_buffer (doc);
 
     gtk_text_buffer_begin_user_action (buffer);
 
@@ -732,8 +733,7 @@ moo_command_exe_run (MooCommand        *cmd_base,
         g_return_if_fail (MOO_IS_EDIT (doc));
     }
 
-    insert_text (MOO_TEXT_VIEW (doc), output,
-                 cmd->priv->input == MOO_COMMAND_EXE_INPUT_DOC);
+    insert_text (doc, output, cmd->priv->input == MOO_COMMAND_EXE_INPUT_DOC);
 
 out:
     g_free (working_dir);
@@ -1103,7 +1103,7 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
     xml = exe_page_xml_get (page);
     g_return_val_if_fail (xml != NULL, FALSE);
 
-    new_cmd_line = moo_text_view_get_text (xml->textview);
+    new_cmd_line = moo_text_view_get_text (GTK_TEXT_VIEW (xml->textview));
     cmd_line = moo_command_data_get_code (data);
 
     if (!_moo_str_equal (cmd_line, new_cmd_line))

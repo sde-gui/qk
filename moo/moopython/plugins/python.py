@@ -81,6 +81,7 @@ class Plugin(moo.Plugin):
         dic = {}
         dic['editor'] = moo.editor_instance()
         dic['window'] = moo.editor_instance().get_active_window()
+        dic['view'] = moo.editor_instance().get_active_view()
         dic['doc'] = moo.editor_instance().get_active_doc()
         console_type = pyconsole.ConsoleType(moo.TextView)
         console = console_type(use_rlcompleter=False, start_script=

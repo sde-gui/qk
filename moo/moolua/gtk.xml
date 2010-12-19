@@ -5,4 +5,7 @@
   <class gtype_id="GTK_TYPE_OBJECT" name="GtkObject" parent="GObject" short_name='Object'/>
   <class gtype_id="GTK_TYPE_ACCEL_GROUP" name="GtkAccelGroup" parent="GObject" short_name='AccelGroup'/>
   <class gtype_id="GTK_TYPE_WIDGET" name="GtkWidget" parent="GtkObject" short_name='Widget'/>
+  <class gtype_id="GTK_TYPE_CONTAINER" name="GtkContainer" parent="GtkWidget" short_name='Container'/>
+  <class gtype_id="GTK_TYPE_TEXT_VIEW" name="GtkTextView" parent="GtkContainer" short_name='TextView'/>
+  <class gtype_id="GTK_TYPE_TEXT_BUFFER" name="GtkTextBuffer" parent="GObject" short_name='TextBuffer'/>
 </module>

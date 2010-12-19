@@ -54,13 +54,15 @@ MOO_DEFINE_QUARK_STATIC (moo-edit-actions, moo_edit_actions_quark)
 
 typedef struct {
     MooActionFactory *action;
-    char **conditions;
+    char **doc_conditions;
+    char **view_conditions;
 } ActionInfo;
 
 
 static ActionInfo*
 action_info_new (MooActionFactory  *action,
-                 char             **conditions)
+                 char             **doc_conditions,
+                 char             **view_conditions)
 {
     ActionInfo *info;
 
@@ -69,7 +71,8 @@ action_info_new (MooActionFactory  *action,
     info = g_new0 (ActionInfo, 1);
     g_object_ref (action);
     info->action = action;
-    info->conditions = g_strdupv (conditions);
+    info->doc_conditions = g_strdupv (doc_conditions);
+    info->view_conditions = g_strdupv (view_conditions);
 
     return info;
 }
@@ -81,7 +84,8 @@ action_info_free (ActionInfo *info)
     if (info)
     {
         g_object_unref (info->action);
-        g_strfreev (info->conditions);
+        g_strfreev (info->doc_conditions);
+        g_strfreev (info->view_conditions);
         g_free (info);
     }
 }
@@ -123,10 +127,15 @@ create_action (const char *action_id,
                MooEdit    *edit)
 {
     GtkAction *action;
+    char **p;
+    MooEditView *view;
 
+    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
     g_return_val_if_fail (info != NULL, NULL);
     g_return_val_if_fail (MOO_IS_ACTION_FACTORY (info->action), NULL);
     g_return_val_if_fail (action_id && action_id[0], NULL);
+
+    view = moo_edit_get_view (edit);
 
     if (g_type_is_a (info->action->action_type, MOO_TYPE_ACTION))
         action = moo_action_factory_create_action (info->action, edit,
@@ -149,17 +158,20 @@ create_action (const char *action_id,
         g_object_set (action, "doc", edit, (char*) 0);
     g_object_set_data (G_OBJECT (action), "moo-edit", edit);
 
-    if (info->conditions)
+    for (p = info->doc_conditions; p && *p; p += 2)
     {
-        char **p;
+        if (p[1][0] == '!')
+            moo_bind_bool_property (action, p[0], edit, p[1] + 1, TRUE);
+        else
+            moo_bind_bool_property (action, p[0], edit, p[1], FALSE);
+    }
 
-        for (p = info->conditions; *p != NULL; p += 2)
-        {
-            if (p[1][0] == '!')
-                moo_bind_bool_property (action, p[0], edit, p[1] + 1, TRUE);
-            else
-                moo_bind_bool_property (action, p[0], edit, p[1], FALSE);
-        }
+    for (p = info->view_conditions; p && *p; p += 2)
+    {
+        if (p[1][0] == '!')
+            moo_bind_bool_property (action, p[0], view, p[1] + 1, TRUE);
+        else
+            moo_bind_bool_property (action, p[0], view, p[1], FALSE);
     }
 
     return action;
@@ -189,7 +201,8 @@ static void
 moo_edit_class_install_action (MooEditClass      *klass,
                                const char        *action_id,
                                MooActionFactory  *factory,
-                               char             **conditions)
+                               char             **doc_conditions,
+                               char             **view_conditions)
 {
     GHashTable *actions;
     ActionInfo *info;
@@ -213,7 +226,7 @@ moo_edit_class_install_action (MooEditClass      *klass,
     if (g_hash_table_lookup (actions, action_id))
         moo_edit_class_remove_action (klass, action_id);
 
-    info = action_info_new (factory, conditions);
+    info = action_info_new (factory, doc_conditions, view_conditions);
     g_hash_table_insert (actions, g_strdup (action_id), info);
 
     for (l = _moo_edit_instances; l != NULL; l = l->next)
@@ -242,14 +255,16 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
     GType action_type = 0;
     GObjectClass *action_class = NULL;
     GArray *action_params = NULL;
-    GPtrArray *conditions = NULL;
+    GPtrArray *doc_conditions = NULL;
+    GPtrArray *view_conditions = NULL;
 
     g_return_if_fail (MOO_IS_EDIT_CLASS (klass));
     g_return_if_fail (first_prop_name != NULL);
     g_return_if_fail (action_id != NULL);
 
     action_params = g_array_new (FALSE, TRUE, sizeof (GParameter));
-    conditions = g_ptr_array_new ();
+    doc_conditions = g_ptr_array_new ();
+    view_conditions = g_ptr_array_new ();
 
     name = first_prop_name;
     while (name)
@@ -287,8 +302,11 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
 
             action_class = G_OBJECT_CLASS (g_type_class_ref (action_type));
         }
-        else if (!strncmp (name, "condition::", strlen ("condition::")))
+        else if (g_str_has_prefix (name, "condition::") ||
+                 g_str_has_prefix (name, "view-condition::"))
         {
+            GPtrArray *conditions;
+            gboolean is_doc = g_str_has_prefix (name, "condition::");
             const char *suffix = strstr (name, "::");
 
             if (!suffix || !suffix[1] || !suffix[2])
@@ -297,18 +315,17 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
                 goto error;
             }
 
-            g_ptr_array_add (conditions, g_strdup (suffix + 2));
-
+            suffix += 2;
             name = va_arg (var_args, gchar*);
 
             if (!name)
             {
-                g_warning ("%s: unterminated '%s' property",
-                           G_STRLOC,
-                           (char*) g_ptr_array_index (conditions, conditions->len - 1));
+                g_warning ("%s: unterminated '%s' property", G_STRLOC, suffix);
                 goto error;
             }
 
+            conditions = is_doc ? doc_conditions : view_conditions;
+            g_ptr_array_add (conditions, g_strdup (suffix));
             g_ptr_array_add (conditions, g_strdup (name));
         }
         else
@@ -365,15 +382,19 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
         g_array_free (action_params, FALSE);
         action_params = NULL;
 
-        g_ptr_array_add (conditions, NULL);
+        g_ptr_array_add (doc_conditions, NULL);
+        g_ptr_array_add (view_conditions, NULL);
 
         moo_edit_class_install_action (klass,
                                        action_id,
                                        action_factory,
-                                       (char**) conditions->pdata);
+                                       (char**) doc_conditions->pdata,
+                                       (char**) view_conditions->pdata);
 
-        g_strfreev ((char**) conditions->pdata);
-        g_ptr_array_free (conditions, FALSE);
+        g_strfreev ((char**) doc_conditions->pdata);
+        g_strfreev ((char**) view_conditions->pdata);
+        g_ptr_array_free (doc_conditions, FALSE);
+        g_ptr_array_free (view_conditions, FALSE);
 
         if (action_class)
             g_type_class_unref (action_class);
@@ -399,12 +420,16 @@ error:
         g_array_free (action_params, TRUE);
     }
 
-    if (conditions)
+    if (doc_conditions)
     {
-        guint i;
-        for (i = 0; i < conditions->len; ++i)
-            g_free (g_ptr_array_index (conditions, i));
-        g_ptr_array_free (conditions, TRUE);
+        g_ptr_array_foreach (doc_conditions, (GFunc) g_free, NULL);
+        g_ptr_array_free (doc_conditions, TRUE);
+    }
+
+    if (view_conditions)
+    {
+        g_ptr_array_foreach (view_conditions, (GFunc) g_free, NULL);
+        g_ptr_array_free (view_conditions, TRUE);
     }
 
     if (action_class)
@@ -454,7 +479,7 @@ moo_edit_class_new_action_custom (MooEditClass       *klass,
     g_object_set_data_full (G_OBJECT (action_factory), "moo-edit-class-action-func-data",
                             data, notify);
 
-    moo_edit_class_install_action (klass, action_id, action_factory, NULL);
+    moo_edit_class_install_action (klass, action_id, action_factory, NULL, NULL);
     g_object_unref (action_factory);
 }
 
@@ -578,23 +603,26 @@ _moo_edit_add_class_actions (MooEdit *edit)
 static GtkWidget *
 create_input_methods_menu_item (GtkAction *action)
 {
-    GtkTextView *edit;
+    MooEdit *doc;
+    GtkTextView *view;
     GtkWidget *item, *menu;
     gboolean visible = TRUE;
 
-    edit = GTK_TEXT_VIEW (g_object_get_data (G_OBJECT (action), "moo-edit"));
-    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    doc = g_object_get_data (G_OBJECT (action), "moo-edit");
+    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+
+    view = GTK_TEXT_VIEW (moo_edit_get_view (doc));
 
     item = gtk_menu_item_new ();
     menu = gtk_menu_new ();
     gtk_widget_show (menu);
     gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), menu);
 
-    gtk_im_multicontext_append_menuitems (GTK_IM_MULTICONTEXT (edit->im_context),
+    gtk_im_multicontext_append_menuitems (GTK_IM_MULTICONTEXT (view->im_context),
 					  GTK_MENU_SHELL (menu));
 
 #if GTK_CHECK_VERSION(2, 10, 0)
-    g_object_get (gtk_widget_get_settings (GTK_WIDGET (edit)),
+    g_object_get (gtk_widget_get_settings (GTK_WIDGET (view)),
                   "gtk-show-input-method-menu", &visible,
                   (char*) 0);
 #endif
@@ -606,21 +634,24 @@ create_input_methods_menu_item (GtkAction *action)
 static GtkWidget *
 create_special_chars_menu_item (GtkAction *action)
 {
-    GtkTextView *edit;
+    MooEdit *doc;
+    GtkTextView *view;
     GtkWidget *item, *menu;
     gboolean visible = TRUE;
 
-    edit = GTK_TEXT_VIEW (g_object_get_data (G_OBJECT (action), "moo-edit"));
-    g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
+    doc = g_object_get_data (G_OBJECT (action), "moo-edit");
+    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+
+    view = GTK_TEXT_VIEW (moo_edit_get_view (doc));
 
     item = gtk_menu_item_new ();
     menu = gtk_menu_new ();
     gtk_widget_show (menu);
     gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), menu);
-    append_special_char_menuitems (GTK_MENU_SHELL (menu), edit);
+    append_special_char_menuitems (GTK_MENU_SHELL (menu), view);
 
 #if GTK_CHECK_VERSION(2, 10, 0)
-    g_object_get (gtk_widget_get_settings (GTK_WIDGET (edit)),
+    g_object_get (gtk_widget_get_settings (GTK_WIDGET (view)),
                   "gtk-show-unicode-menu", &visible,
                   (char*) 0);
 #endif
@@ -638,7 +669,8 @@ _moo_edit_class_init_actions (MooEditClass *klass)
                                "tooltip", GTK_STOCK_UNDO,
                                "stock-id", GTK_STOCK_UNDO,
                                "closure-signal", "undo",
-                               "condition::sensitive", "can-undo",
+                               "closure-proxy-func", moo_edit_get_view,
+                               "view-condition::sensitive", "can-undo",
                                (char*) 0);
 
     moo_edit_class_new_action (klass, "Redo",
@@ -647,27 +679,31 @@ _moo_edit_class_init_actions (MooEditClass *klass)
                                "tooltip", GTK_STOCK_REDO,
                                "stock-id", GTK_STOCK_REDO,
                                "closure-signal", "redo",
-                               "condition::sensitive", "can-redo",
+                               "closure-proxy-func", moo_edit_get_view,
+                               "view-condition::sensitive", "can-redo",
                                (char*) 0);
 
     moo_edit_class_new_action (klass, "Cut",
                                "display-name", GTK_STOCK_CUT,
                                "stock-id", GTK_STOCK_CUT,
                                "closure-signal", "cut-clipboard",
-                               "condition::sensitive", "has-selection",
+                               "closure-proxy-func", moo_edit_get_view,
+                               "view-condition::sensitive", "has-selection",
                                (char*) 0);
 
     moo_edit_class_new_action (klass, "Copy",
                                "display-name", GTK_STOCK_COPY,
                                "stock-id", GTK_STOCK_COPY,
                                "closure-signal", "copy-clipboard",
-                               "condition::sensitive", "has-selection",
+                               "closure-proxy-func", moo_edit_get_view,
+                               "view-condition::sensitive", "has-selection",
                                (char*) 0);
 
     moo_edit_class_new_action (klass, "Paste",
                                "display-name", GTK_STOCK_PASTE,
                                "stock-id", GTK_STOCK_PASTE,
                                "closure-signal", "paste-clipboard",
+                               "closure-proxy-func", moo_edit_get_view,
                                (char*) 0);
 
     moo_edit_class_new_action (klass, "SelectAll",
@@ -676,7 +712,8 @@ _moo_edit_class_init_actions (MooEditClass *klass)
                                "tooltip", GTK_STOCK_SELECT_ALL,
                                "stock-id", GTK_STOCK_SELECT_ALL,
                                "closure-callback", moo_text_view_select_all,
-                               "condition::sensitive", "has-text",
+                               "closure-proxy-func", moo_edit_get_view,
+                               "view-condition::sensitive", "has-text",
                                (char*) 0);
 
     moo_edit_class_new_action (klass, "InputMethods",

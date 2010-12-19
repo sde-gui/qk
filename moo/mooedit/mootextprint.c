@@ -17,6 +17,7 @@
 #include "mooedit/mootextprint-private.h"
 #include "mooedit/mooedit.h"
 #include "mooedit/mooedit-impl.h"
+#include "mooedit/mooeditview-impl.h"
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mootext-private.h"
 #include "mooedit/mooprintpreview.h"
@@ -922,18 +923,18 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
 
     timer = g_timer_new ();
 
-    if (MOO_IS_EDIT (op->priv->doc))
+    if (MOO_IS_EDIT_VIEW (op->priv->doc))
     {
         if (!op->priv->preview)
-            _moo_edit_set_state (MOO_EDIT (op->priv->doc),
-                                 MOO_EDIT_STATE_PRINTING,
-                                 "Printing",
-                                 (GDestroyNotify) gtk_print_operation_cancel,
-                                 op);
+            _moo_edit_view_set_state (MOO_EDIT_VIEW (op->priv->doc),
+                                      MOO_EDIT_STATE_PRINTING,
+                                      "Printing",
+                                      (GDestroyNotify) gtk_print_operation_cancel,
+                                      op);
         else
-            _moo_edit_set_state (MOO_EDIT (op->priv->doc),
-                                 MOO_EDIT_STATE_NORMAL,
-                                 NULL, NULL, NULL);
+            _moo_edit_view_set_state (MOO_EDIT_VIEW (op->priv->doc),
+                                      MOO_EDIT_STATE_NORMAL,
+                                      NULL, NULL, NULL);
     }
 
     if (op->priv->last_line < 0)
@@ -1502,10 +1503,10 @@ moo_print_operation_end_print (GtkPrintOperation  *operation,
 
     moo_dmsg ("moo_print_operation_end_print");
 
-    if (MOO_IS_EDIT (op->priv->doc))
-        _moo_edit_set_state (MOO_EDIT (op->priv->doc),
-                             MOO_EDIT_STATE_NORMAL,
-                             NULL, NULL, NULL);
+    if (MOO_IS_EDIT_VIEW (op->priv->doc))
+        _moo_edit_view_set_state (MOO_EDIT_VIEW (op->priv->doc),
+                                  MOO_EDIT_STATE_NORMAL,
+                                  NULL, NULL, NULL);
 
     g_object_unref (op->priv->layout);
     op->priv->layout = NULL;
@@ -1522,13 +1523,13 @@ update_progress (GtkPrintOperation *operation,
     MooPrintOperation *op = MOO_PRINT_OPERATION (operation);
     GtkPrintStatus status;
     MooEditWindow *window;
-    MooEdit *doc;
+    MooEditView *view;
 
-    if (!MOO_IS_EDIT (op->priv->doc))
+    if (!MOO_IS_EDIT_VIEW (op->priv->doc))
         return;
 
-    doc = MOO_EDIT (op->priv->doc);
-    window = moo_edit_get_window (doc);
+    view = MOO_EDIT_VIEW (op->priv->doc);
+    window = moo_edit_view_get_window (view);
     status = gtk_print_operation_get_status (operation);
 
     if (status == GTK_PRINT_STATUS_FINISHED)
@@ -1549,8 +1550,8 @@ update_progress (GtkPrintOperation *operation,
     if (window)
         moo_window_message (MOO_WINDOW (window), NULL);
 
-    if (moo_edit_get_state (doc) == MOO_EDIT_STATE_PRINTING)
-        _moo_edit_set_progress_text (doc, text);
+    if (_moo_edit_view_get_state (view) == MOO_EDIT_STATE_PRINTING)
+        _moo_edit_view_set_progress_text (view, text);
     else if (window)
         moo_window_message (MOO_WINDOW (window), text);
 

@@ -94,8 +94,8 @@ void         moo_text_view_set_buffer_type          (MooTextView        *view,
 
 void         moo_text_view_select_all               (MooTextView        *view);
 
-char        *moo_text_view_get_selection            (gpointer            view);
-char        *moo_text_view_get_text                 (gpointer            view);
+char        *moo_text_view_get_selection            (GtkTextView        *view);
+char        *moo_text_view_get_text                 (GtkTextView        *view);
 gboolean     moo_text_view_has_selection            (MooTextView        *view);
 gboolean     moo_text_view_has_text                 (MooTextView        *view);
 
@@ -113,10 +113,10 @@ MooIndenter *moo_text_view_get_indenter             (MooTextView        *view);
 void         moo_text_view_set_indenter             (MooTextView        *view,
                                                      MooIndenter        *indenter);
 
-void         moo_text_view_get_cursor               (MooTextView        *view,
+void         moo_text_view_get_cursor               (GtkTextView        *view,
                                                      GtkTextIter        *iter);
-int          moo_text_view_get_cursor_line          (MooTextView        *view);
-void         moo_text_view_move_cursor              (gpointer            view,
+int          moo_text_view_get_cursor_line          (GtkTextView        *view);
+void         moo_text_view_move_cursor              (MooTextView        *view,
                                                      int                 line,
                                                      int                 offset,
                                                      gboolean            offset_visual,
@@ -153,8 +153,6 @@ void         moo_text_view_set_lang_by_id           (MooTextView        *view,
 
 void         moo_text_view_set_word_chars           (MooTextView        *view,
                                                      const char         *word_chars);
-
-void         moo_text_view_strip_whitespace         (MooTextView        *view);
 
 void         moo_text_view_add_child_in_border      (MooTextView        *view,
                                                      GtkWidget          *child,

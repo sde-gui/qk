@@ -162,8 +162,8 @@ const char         *moo_command_data_get            (MooCommandData     *data,
 const char         *moo_command_data_get_code       (MooCommandData     *data);
 
 
-MooCommandContext  *moo_command_context_new         (gpointer            doc,
-                                                     gpointer            window);
+MooCommandContext  *moo_command_context_new         (MooEdit            *doc,
+                                                     MooEditWindow      *window);
 
 void                moo_command_context_set_doc     (MooCommandContext  *ctx,
                                                      MooEdit            *doc);

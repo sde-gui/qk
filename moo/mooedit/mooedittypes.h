@@ -13,10 +13,12 @@ typedef struct MooEditSaveInfo MooEditSaveInfo;
 typedef struct MooEditReloadInfo MooEditReloadInfo;
 
 typedef struct MooEdit MooEdit;
+typedef struct MooEditView MooEditView;
 typedef struct MooEditWindow MooEditWindow;
 typedef struct MooEditor MooEditor;
 
 MOO_DECLARE_OBJECT_ARRAY (MooEdit, moo_edit)
+MOO_DECLARE_OBJECT_ARRAY (MooEditView, moo_edit_view)
 MOO_DECLARE_OBJECT_ARRAY (MooEditWindow, moo_edit_window)
 MOO_DEFINE_SLIST (MooEditList, moo_edit_list, MooEdit)
 

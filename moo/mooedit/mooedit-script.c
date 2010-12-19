@@ -1,11 +1,6 @@
-#include "mooedit-script.h"
+#include "mooedit/mooedit-script.h"
+#include "mooedit/mootextview.h"
 #include "mooutils/mooutils.h"
-
-static GtkTextBuffer *
-get_buffer (MooEdit *doc)
-{
-    return gtk_text_view_get_buffer (GTK_TEXT_VIEW (doc));
-}
 
 static void
 get_selected_lines_bounds (GtkTextBuffer *buf,
@@ -51,7 +46,7 @@ moo_edit_get_selected_lines (MooEdit *doc)
 
     moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
 
-    buf = get_buffer (doc);
+    buf = moo_edit_get_buffer (doc);
     get_selected_lines_bounds (buf, &start, &end, NULL);
     text = gtk_text_buffer_get_slice (buf, &start, &end, TRUE);
     lines = moo_splitlines (text);
@@ -116,7 +111,7 @@ moo_edit_replace_selected_lines (MooEdit  *doc,
 
     moo_return_if_fail (MOO_IS_EDIT (doc));
 
-    buf = get_buffer (doc);
+    buf = moo_edit_get_buffer (doc);
     get_selected_lines_bounds (buf, &start, &end, &cursor_at_next_line);
     gtk_text_buffer_delete (buf, &start, &end);
 
@@ -147,7 +142,7 @@ moo_edit_get_selected_text (MooEdit *doc)
 
     moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
 
-    buf = get_buffer (doc);
+    buf = moo_edit_get_buffer (doc);
     gtk_text_buffer_get_selection_bounds(buf, &start, &end);
     return gtk_text_buffer_get_slice(buf, &start, &end, TRUE);
 }
@@ -168,7 +163,7 @@ moo_edit_replace_selected_text (MooEdit    *doc,
     moo_return_if_fail (MOO_IS_EDIT (doc));
     moo_return_if_fail (replacement != NULL);
 
-    buf = get_buffer (doc);
+    buf = moo_edit_get_buffer (doc);
     gtk_text_buffer_get_selection_bounds (buf, &start, &end);
     gtk_text_buffer_delete (buf, &start, &end);
     if (*replacement)
@@ -182,7 +177,8 @@ moo_edit_replace_selected_text (MooEdit    *doc,
 gboolean
 moo_edit_has_selection (MooEdit *doc)
 {
-    return moo_text_view_has_selection (MOO_TEXT_VIEW (doc));
+    MooEditView *view = moo_edit_get_view (doc);
+    return moo_text_view_has_selection (MOO_TEXT_VIEW (view));
 }
 
 /**
@@ -191,7 +187,8 @@ moo_edit_has_selection (MooEdit *doc)
 char *
 moo_edit_get_text (MooEdit *doc)
 {
-    return moo_text_view_get_text (MOO_TEXT_VIEW (doc));
+    MooEditView *view = moo_edit_get_view (doc);
+    return moo_text_view_get_text (GTK_TEXT_VIEW (view));
 }
 
 static void
@@ -219,7 +216,7 @@ moo_edit_set_selection (MooEdit *doc,
 
     moo_return_if_fail (MOO_IS_EDIT (doc));
 
-    buf = get_buffer (doc);
+    buf = moo_edit_get_buffer (doc);
 
     get_iter (pos_start, buf, &start);
     get_iter (pos_end, buf, &end);
@@ -238,7 +235,7 @@ moo_edit_get_cursor_pos (MooEdit *doc)
 
     moo_return_val_if_fail (MOO_IS_EDIT (doc), 0);
 
-    buf = get_buffer (doc);
+    buf = moo_edit_get_buffer (doc);
     gtk_text_buffer_get_iter_at_mark(buf, &iter, gtk_text_buffer_get_insert(buf));
     return gtk_text_iter_get_offset(&iter);
 }
@@ -256,7 +253,7 @@ moo_edit_insert_text (MooEdit    *doc,
     moo_return_if_fail (MOO_IS_EDIT (doc));
     moo_return_if_fail (text != NULL);
 
-    buf = get_buffer (doc);
+    buf = moo_edit_get_buffer (doc);
 
     gtk_text_buffer_get_iter_at_mark (buf, &iter, gtk_text_buffer_get_insert(buf));
     gtk_text_buffer_insert (buf, &iter, text, -1);

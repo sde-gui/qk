@@ -16,7 +16,8 @@
 #ifndef MOO_EDITOR_H
 #define MOO_EDITOR_H
 
-#include <mooedit/mooedittypes.h>
+#include <mooedit/mooedit.h>
+#include <mooedit/mooeditview.h>
 #include <mooedit/mooeditwindow.h>
 #include <mooedit/mooeditfileinfo.h>
 #include <mooutils/moouixml.h>
@@ -127,6 +128,9 @@ MooEdit             *moo_editor_get_doc_for_uri     (MooEditor              *edi
 MooEdit             *moo_editor_get_active_doc      (MooEditor              *editor);
 void                 moo_editor_set_active_doc      (MooEditor              *editor,
                                                      MooEdit                *doc);
+MooEditView         *moo_editor_get_active_view     (MooEditor              *editor);
+void                 moo_editor_set_active_view     (MooEditor              *editor,
+                                                     MooEditView            *view);
 MooEditWindow       *moo_editor_get_active_window   (MooEditor              *editor);
 void                 moo_editor_set_active_window   (MooEditor              *editor,
                                                      MooEditWindow          *window);
