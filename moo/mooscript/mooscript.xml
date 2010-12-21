@@ -77,65 +77,9 @@
     </signal>
   </class>
 
-  <class name='DocumentWindow' gobject='MooEditWindow'>
-    <method name='editor' retval='Editor'/>
-    <method name='active_document' retval='Document'/>
-    <method name='set_active_document' param-name='doc' param-type='Document'/>
-    <method name='documents' retval='list'/>
-    <method name='is_active' retval='bool'/>
-    <method name='set_active'/>
-  </class>
-
   <class name='Document' gobject='MooEdit'>
     <method name='filename' retval='string'/>
     <method name='uri' retval='string'/>
     <method name='basename' retval='string'/>
-
-    <method name='start_pos' retval='index'/>
-    <method name='end_pos' retval='index'/>
-    <method name='cursor_pos' retval='index'/>
-    <method name='set_cursor_pos' param-name='pos' param-type='index'/>
-    <method name='selection' retval='list'/>
-    <method name='set_selection' varargs='1'/>
-    <method name='selection_bound' retval='index'/>
-    <method name='has_selection' retval='bool'/>
-
-    <method name='char_count' retval='int'/>
-    <method name='line_count' retval='int'/>
-
-    <method name='line_at_pos' param-name='pos' param-type='index' retval='index'/>
-    <method name='pos_at_line' param-name='line' param-type='index' retval='index'/>
-    <method name='pos_at_line_end' param-name='line' param-type='index' retval='index'/>
-    <method name='char_at_pos' param-name='pos' param-type='index' retval='string'/>
-    <method name='text' varargs='1' retval='string'/>
-
-    <method name='insert_text' varargs='1'/>
-    <method name='replace_text'>
-      <param name='start' type='index'/>
-      <param name='end' type='index'/>
-      <param name='text' type='string'/>
-    </method>
-    <method name='delete_text'>
-      <param name='start' type='index'/>
-      <param name='end' type='index'/>
-    </method>
-    <method name='append_text' param-name='text' param-type='string'/>
-    <method name='clear'/>
-
-    <method name='copy'/>
-    <method name='cut'/>
-    <method name='paste'/>
-
-    <method name='select_text' varargs='1'/>
-    <method name='select_lines' varargs='1'/>
-    <method name='select_lines_at_pos' varargs='1'/>
-    <method name='select_all'/>
-
-    <method name='selected_text' retval='string'/>
-    <method name='selected_lines' retval='list'/>
-    <method name='delete_selected_text'/>
-    <method name='delete_selected_lines'/>
-    <method name='replace_selected_text' param-name='text' param-type='string'/>
-    <method name='replace_selected_lines' param-name='repl' param-type='variant'/>
   </class>
 </classes>

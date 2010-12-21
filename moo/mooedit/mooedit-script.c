@@ -142,8 +142,8 @@ moo_edit_get_selection_end_pos (MooEdit *doc)
  * moo_edit_set_cursor_pos:
  **/
 void
-moo_edit_set_cursor_pos (MooEdit     *doc,
-                         GtkTextIter *pos)
+moo_edit_set_cursor_pos (MooEdit           *doc,
+                         const GtkTextIter *pos)
 {
     moo_return_if_fail (MOO_IS_EDIT (doc));
     gtk_text_buffer_place_cursor (moo_edit_get_buffer (doc), pos);
@@ -153,9 +153,9 @@ moo_edit_set_cursor_pos (MooEdit     *doc,
  * moo_edit_set_selection:
  **/
 void
-moo_edit_set_selection (MooEdit     *doc,
-                        GtkTextIter *start,
-                        GtkTextIter *end)
+moo_edit_set_selection (MooEdit           *doc,
+                        const GtkTextIter *start,
+                        const GtkTextIter *end)
 {
     moo_return_if_fail (MOO_IS_EDIT (doc));
     gtk_text_buffer_select_range (moo_edit_get_buffer (doc), start, end);
@@ -179,6 +179,345 @@ moo_edit_get_line_count (MooEdit *doc)
 {
     moo_return_val_if_fail (MOO_IS_EDIT (doc), 0);
     return gtk_text_buffer_get_line_count (moo_edit_get_buffer (doc));
+}
+
+/**
+ * moo_edit_get_line_at_pos:
+ *
+ * Returns: (type index)
+ **/
+int
+moo_edit_get_line_at_pos (MooEdit           *doc,
+                          const GtkTextIter *pos)
+{
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), 0);
+    return gtk_text_iter_get_line (pos);
+}
+
+/**
+ * moo_edit_get_pos_at_line:
+ *
+ * @doc:
+ * @line: (type index)
+ *
+ * Returns: (transfer full)
+ **/
+GtkTextIter *
+moo_edit_get_pos_at_line (MooEdit *doc,
+                          int      line)
+{
+    GtkTextIter iter;
+    GtkTextBuffer *buffer;
+
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+
+    buffer = moo_edit_get_buffer (doc);
+    moo_return_val_if_fail (line >= 0 && line <= gtk_text_buffer_get_line_count (buffer), NULL);
+
+    gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
+    return gtk_text_iter_copy (&iter);
+}
+
+/**
+ * moo_edit_get_pos_at_line_end:
+ *
+ * @doc:
+ * @line: (type index)
+ *
+ * Returns: (transfer full)
+ **/
+GtkTextIter *
+moo_edit_get_pos_at_line_end (MooEdit *doc,
+                              int      line)
+{
+    GtkTextIter iter;
+    GtkTextBuffer *buffer;
+
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+
+    buffer = moo_edit_get_buffer (doc);
+    moo_return_val_if_fail (line >= 0 && line <= gtk_text_buffer_get_line_count (buffer), NULL);
+
+    gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
+    if (!gtk_text_iter_ends_line (&iter))
+        gtk_text_iter_forward_to_line_end (&iter);
+
+    return gtk_text_iter_copy (&iter);
+}
+
+/**
+ * moo_edit_get_char_at_pos:
+ **/
+gunichar
+moo_edit_get_char_at_pos (MooEdit           *doc,
+                          const GtkTextIter *pos)
+{
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), 0);
+    return gtk_text_iter_get_char (pos);
+}
+
+/**
+ * moo_edit_get_text:
+ *
+ * @doc:
+ * @start: (allow-none) (default NULL)
+ * @end: (allow-none) (default NULL)
+ **/
+char *
+moo_edit_get_text (MooEdit           *doc,
+                   const GtkTextIter *start,
+                   const GtkTextIter *end)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter start_iter;
+    GtkTextIter end_iter;
+
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+
+    buffer = moo_edit_get_buffer (doc);
+
+    if (start)
+        start_iter = *start;
+    else
+        gtk_text_buffer_get_start_iter (buffer, &start_iter);
+
+    if (end)
+        end_iter = *end;
+    else
+        gtk_text_buffer_get_end_iter (buffer, &end_iter);
+
+    return gtk_text_buffer_get_slice (buffer, &start_iter, &end_iter, TRUE);
+}
+
+/**
+ * moo_edit_insert_text:
+ *
+ * @doc:
+ * @text:
+ * @where: (allow-none) (default NULL)
+ *
+ * Insert text at position @where or at cursor position if @where is NULL.
+ **/
+void
+moo_edit_insert_text (MooEdit     *doc,
+                      const char  *text,
+                      GtkTextIter *where)
+{
+    GtkTextIter iter;
+    GtkTextBuffer *buffer;
+
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    moo_return_if_fail (text != NULL);
+
+    buffer = moo_edit_get_buffer (doc);
+
+    if (where)
+        iter = *where;
+    else
+        gtk_text_buffer_get_iter_at_mark (buffer, &iter, gtk_text_buffer_get_insert (buffer));
+
+    gtk_text_buffer_insert (buffer, &iter, text, -1);
+
+    if (where)
+        *where = iter;
+}
+
+/**
+ * moo_edit_replace_text:
+ **/
+void
+moo_edit_replace_text (MooEdit     *doc,
+                       GtkTextIter *start,
+                       GtkTextIter *end,
+                       const char  *text)
+{
+    GtkTextBuffer *buffer;
+
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    moo_return_if_fail (start != NULL);
+    moo_return_if_fail (end != NULL);
+    moo_return_if_fail (text != NULL);
+
+    buffer = moo_edit_get_buffer (doc);
+    gtk_text_buffer_delete (buffer, start, end);
+    gtk_text_buffer_insert (buffer, start, text, -1);
+    *end = *start;
+}
+
+/**
+ * moo_edit_delete_text:
+ **/
+void
+moo_edit_delete_text (MooEdit     *doc,
+                      GtkTextIter *start,
+                      GtkTextIter *end)
+{
+    GtkTextBuffer *buffer;
+
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    moo_return_if_fail (start != NULL);
+    moo_return_if_fail (end != NULL);
+
+    buffer = moo_edit_get_buffer (doc);
+    gtk_text_buffer_delete (buffer, start, end);
+}
+
+/**
+ * moo_edit_append_text:
+ **/
+void
+moo_edit_append_text (MooEdit    *doc,
+                      const char *text)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter iter;
+
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    moo_return_if_fail (text != NULL);
+
+    buffer = moo_edit_get_buffer (doc);
+    gtk_text_buffer_get_end_iter (buffer, &iter);
+    gtk_text_buffer_insert (buffer, &iter, text, -1);
+}
+
+/**
+ * moo_edit_clear:
+ **/
+void
+moo_edit_clear (MooEdit *doc)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter start, end;
+
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+
+    buffer = moo_edit_get_buffer (doc);
+    gtk_text_buffer_get_bounds (buffer, &start, &end);
+    gtk_text_buffer_delete (buffer, &start, &end);
+}
+
+/**
+ * moo_edit_cut:
+ **/
+void
+moo_edit_cut (MooEdit *doc)
+{
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    g_signal_emit_by_name (moo_edit_get_view (doc), "cut-clipboard");
+}
+
+/**
+ * moo_edit_copy:
+ **/
+void
+moo_edit_copy (MooEdit        *doc)
+{
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    g_signal_emit_by_name (moo_edit_get_view (doc), "copy-clipboard");
+}
+
+/**
+ * moo_edit_paste:
+ **/
+void
+moo_edit_paste (MooEdit *doc)
+{
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    g_signal_emit_by_name (moo_edit_get_view (doc), "paste-clipboard");
+}
+
+/**
+ * moo_edit_select_text:
+ **/
+void
+moo_edit_select_text (MooEdit           *doc,
+                      const GtkTextIter *start,
+                      const GtkTextIter *end)
+{
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    moo_return_if_fail (start != NULL);
+    moo_return_if_fail (end != NULL);
+    gtk_text_buffer_select_range (moo_edit_get_buffer (doc), start, end);
+}
+
+/**
+ * moo_edit_select_lines:
+ *
+ * @doc:
+ * @start: (type index)
+ * @end: (type index) (default -1)
+ **/
+void
+moo_edit_select_lines (MooEdit *doc,
+                       int      start,
+                       int      end)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter start_iter, end_iter;
+
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+
+    buffer = moo_edit_get_buffer (doc);
+
+    if (end < 0)
+        end = start;
+
+    if (start > end)
+    {
+        int tmp = start;
+        start = end;
+        end = tmp;
+    }
+
+    moo_return_if_fail (start >= 0 && start < gtk_text_buffer_get_line_count (buffer));
+    moo_return_if_fail (end >= 0 && end < gtk_text_buffer_get_line_count (buffer));
+
+    gtk_text_buffer_get_iter_at_line (buffer, &start_iter, start);
+    gtk_text_buffer_get_iter_at_line (buffer, &end_iter, end);
+    gtk_text_iter_forward_line (&end_iter);
+    gtk_text_buffer_select_range (buffer, &start_iter, &end_iter);
+}
+
+/**
+ * moo_edit_select_lines_at_pos:
+ *
+ * @doc:
+ * @start:
+ * @end: (allow-none) (default NULL)
+ **/
+void
+moo_edit_select_lines_at_pos (MooEdit           *doc,
+                              const GtkTextIter *start,
+                              const GtkTextIter *end)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter start_iter, end_iter;
+
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    moo_return_if_fail (start != NULL);
+
+    buffer = moo_edit_get_buffer (doc);
+    start_iter = *start;
+    end_iter = end ? *end : *start;
+    gtk_text_iter_order (&start_iter, &end_iter);
+    gtk_text_iter_forward_line (&end_iter);
+    gtk_text_buffer_select_range (buffer, &start_iter, &end_iter);
+}
+
+/**
+ * moo_edit_select_all:
+ **/
+void
+moo_edit_select_all (MooEdit *doc)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter start, end;
+
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+
+    buffer = moo_edit_get_buffer (doc);
+    gtk_text_buffer_get_bounds (buffer, &start, &end);
+    gtk_text_buffer_select_range (buffer, &start, &end);
 }
 
 static void
@@ -251,7 +590,7 @@ join_lines (char **strv)
  * moo_edit_replace_selected_lines:
  *
  * @doc:
- * @replacement: (type strv)
+ * @replacement: (type strv) (allow-none)
  *
  * replace selected lines with %param{replacement}. Similar to
  * %method{replace_selected_text()}, but selection is extended to include
@@ -261,29 +600,6 @@ void
 moo_edit_replace_selected_lines (MooEdit  *doc,
                                  char    **replacement)
 {
-//     switch (repl.vt())
-//     {
-//         case VtString:
-//             text = repl.value<VtString>();
-//             break;
-//         case VtArray:
-//             {
-//                 moo::Vector<String> lines = get_string_list(repl);
-//                 text = join(lines, "\n");
-//             }
-//             break;
-//         case VtArgList:
-//             {
-//                 moo::Vector<String> lines = get_string_list(repl);
-//                 text = join(lines, "\n");
-//             }
-//             break;
-//         default:
-//             Error::raisef("string or list of strings expected, got %s",
-//                           get_argument_type_name(repl.vt()));
-//             break;
-//     }
-
     GtkTextBuffer *buf;
     GtkTextIter start, end;
     gboolean cursor_at_next_line;
@@ -327,6 +643,24 @@ moo_edit_get_selected_text (MooEdit *doc)
 }
 
 /**
+ * moo_edit_delete_selected_text:
+ **/
+void
+moo_edit_delete_selected_text (MooEdit *doc)
+{
+    moo_edit_replace_selected_text (doc, "");
+}
+
+/**
+ * moo_edit_delete_selected_lines:
+ **/
+void
+moo_edit_delete_selected_lines (MooEdit *doc)
+{
+    moo_edit_replace_selected_lines (doc, NULL);
+}
+
+/**
  * moo_edit_replace_selected_text:
  *
  * replace selected text with %param{replacement}. If nothing is selected,
@@ -358,61 +692,4 @@ moo_edit_has_selection (MooEdit *doc)
 {
     MooEditView *view = moo_edit_get_view (doc);
     return moo_text_view_has_selection (MOO_TEXT_VIEW (view));
-}
-
-/**
- * moo_edit_get_text:
- **/
-char *
-moo_edit_get_text (MooEdit *doc)
-{
-    MooEditView *view = moo_edit_get_view (doc);
-    return moo_text_view_get_text (GTK_TEXT_VIEW (view));
-}
-
-// static void
-// get_iter (int pos, GtkTextBuffer *buf, GtkTextIter *iter)
-// {
-//     if (pos > gtk_text_buffer_get_char_count(buf) || pos < 0)
-//     {
-//         moo_critical ("invalid offset");
-//         pos = 0;
-//     }
-//
-//     gtk_text_buffer_get_iter_at_offset (buf, iter, pos);
-// }
-
-// /**
-//  * moo_edit_get_cursor_pos:
-//  **/
-// int
-// moo_edit_get_cursor_pos (MooEdit *doc)
-// {
-//     GtkTextBuffer *buf;
-//     GtkTextIter iter;
-//
-//     moo_return_val_if_fail (MOO_IS_EDIT (doc), 0);
-//
-//     buf = moo_edit_get_buffer (doc);
-//     gtk_text_buffer_get_iter_at_mark(buf, &iter, gtk_text_buffer_get_insert(buf));
-//     return gtk_text_iter_get_offset(&iter);
-// }
-
-/**
- * moo_edit_insert_text:
- **/
-void
-moo_edit_insert_text (MooEdit    *doc,
-                      const char *text)
-{
-    GtkTextIter iter;
-    GtkTextBuffer *buf;
-
-    moo_return_if_fail (MOO_IS_EDIT (doc));
-    moo_return_if_fail (text != NULL);
-
-    buf = moo_edit_get_buffer (doc);
-
-    gtk_text_buffer_get_iter_at_mark (buf, &iter, gtk_text_buffer_get_insert(buf));
-    gtk_text_buffer_insert (buf, &iter, text, -1);
 }

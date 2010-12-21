@@ -1,4 +1,6 @@
-from argtypes import ArgType, matcher
+from argtypes import ArgType, IntArg, matcher
+
+matcher.register('index', IntArg())
 
 class StrvArg(ArgType):
     def write_param(self, ptype, pname, pdflt, pnull, info):
