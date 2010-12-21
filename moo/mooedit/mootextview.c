@@ -988,7 +988,7 @@ moo_text_view_can_undo (MooTextView *view)
 
 
 void
-moo_text_view_begin_not_undoable_action (MooTextView *view)
+moo_text_view_begin_non_undoable_action (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     moo_undo_stack_freeze (get_undo_stack (view));
@@ -996,7 +996,7 @@ moo_text_view_begin_not_undoable_action (MooTextView *view)
 
 
 void
-moo_text_view_end_not_undoable_action (MooTextView *view)
+moo_text_view_end_non_undoable_action (MooTextView *view)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     moo_undo_stack_thaw (get_undo_stack (view));

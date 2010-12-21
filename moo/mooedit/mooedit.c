@@ -343,6 +343,9 @@ modify_status (MooEdit       *edit,
         edit->priv->status = (MooEditStatus) (edit->priv->status & ~status);
 }
 
+/**
+ * moo_edit_set_modified:
+ **/
 void
 moo_edit_set_modified (MooEdit            *edit,
                        gboolean            modified)
@@ -448,6 +451,15 @@ moo_edit_is_untitled (MooEdit *edit)
     return MOO_EDIT_IS_UNTITLED (edit);
 }
 
+/**
+ * moo_edit_is_modified:
+ **/
+gboolean
+moo_edit_is_modified (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    return MOO_EDIT_IS_MODIFIED (edit);
+}
 
 /**
  * moo_edit_get_status:
@@ -1089,9 +1101,8 @@ config_changed (MooEdit *doc)
  * moo_edit_reload:
  *
  * @edit:
- * @encoding: (allow-none) (default NULL): encoding to use. If %NULL,
- * current document encoding will be used.
- * @error: (allow-none): location for returned error or %NULL
+ * @info: (allow-none) (default NULL):
+ * @error:
  *
  * Reload document from disk
  *

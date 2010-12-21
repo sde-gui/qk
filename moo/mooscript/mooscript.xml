@@ -91,26 +91,6 @@
     <method name='uri' retval='string'/>
     <method name='basename' retval='string'/>
 
-    <method name='is_modified' retval='bool'/>
-    <method name='set_modified' param-type='bool' param-name='modified'/>
-
-    <method name='encoding' retval='string'/>
-    <method name='set_encoding' param-name='encoding' param-type='string'/>
-
-    <method name='line_endings' retval='string'/>
-    <method name='set_line_endings' param-name='value' param-type='string'/>
-
-    <method name='reload'/>
-    <method name='save' retval='bool'/>
-    <method name='save_as' param-name='filename' param-type='string' param-optional='1' retval='bool'/>
-
-    <method name='can_undo' retval='bool'/>
-    <method name='can_redo' retval='bool'/>
-    <method name='undo'/>
-    <method name='redo'/>
-    <method name='begin_not_undoable_action'/>
-    <method name='end_not_undoable_action'/>
-
     <method name='start_pos' retval='index'/>
     <method name='end_pos' retval='index'/>
     <method name='cursor_pos' retval='index'/>

@@ -5,6 +5,13 @@
 
 G_BEGIN_DECLS
 
+gboolean     moo_edit_can_undo                  (MooEdit    *doc);
+gboolean     moo_edit_can_redo                  (MooEdit    *doc);
+gboolean     moo_edit_undo                      (MooEdit    *doc);
+gboolean     moo_edit_redo                      (MooEdit    *doc);
+void         moo_edit_begin_non_undoable_action (MooEdit    *doc);
+void         moo_edit_end_non_undoable_action   (MooEdit    *doc);
+
 char       **moo_edit_get_selected_lines        (MooEdit    *doc);
 void         moo_edit_replace_selected_lines    (MooEdit    *doc,
                                                  char      **replacement);

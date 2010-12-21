@@ -103,8 +103,8 @@ gboolean     moo_text_view_can_redo                 (MooTextView        *view);
 gboolean     moo_text_view_can_undo                 (MooTextView        *view);
 gboolean     moo_text_view_redo                     (MooTextView        *view);
 gboolean     moo_text_view_undo                     (MooTextView        *view);
-void         moo_text_view_begin_not_undoable_action(MooTextView        *view);
-void         moo_text_view_end_not_undoable_action  (MooTextView        *view);
+void         moo_text_view_begin_non_undoable_action(MooTextView        *view);
+void         moo_text_view_end_non_undoable_action  (MooTextView        *view);
 
 void         moo_text_view_set_font_from_string     (MooTextView        *view,
                                                      const char         *font);

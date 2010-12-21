@@ -2,6 +2,66 @@
 #include "mooedit/mootextview.h"
 #include "mooutils/mooutils.h"
 
+/**
+ * moo_edit_can_undo:
+ **/
+gboolean
+moo_edit_can_undo (MooEdit *doc)
+{
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
+    return moo_text_view_can_undo (MOO_TEXT_VIEW (moo_edit_get_view (doc)));
+}
+
+/**
+ * moo_edit_can_redo:
+ **/
+gboolean
+moo_edit_can_redo (MooEdit *doc)
+{
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
+    return moo_text_view_can_redo (MOO_TEXT_VIEW (moo_edit_get_view (doc)));
+}
+
+/**
+ * moo_edit_undo:
+ **/
+gboolean
+moo_edit_undo (MooEdit *doc)
+{
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
+    return moo_text_view_undo (MOO_TEXT_VIEW (moo_edit_get_view (doc)));
+}
+
+/**
+ * moo_edit_redo:
+ **/
+gboolean
+moo_edit_redo (MooEdit *doc)
+{
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
+    return moo_text_view_redo (MOO_TEXT_VIEW (moo_edit_get_view (doc)));
+}
+
+/**
+ * moo_edit_begin_non_undoable_action:
+ **/
+void
+moo_edit_begin_non_undoable_action (MooEdit *doc)
+{
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    moo_text_view_begin_non_undoable_action (MOO_TEXT_VIEW (moo_edit_get_view (doc)));
+}
+
+/**
+ * moo_edit_end_non_undoable_action:
+ **/
+void
+moo_edit_end_non_undoable_action (MooEdit *doc)
+{
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    moo_text_view_end_non_undoable_action (MOO_TEXT_VIEW (moo_edit_get_view (doc)));
+}
+
 static void
 get_selected_lines_bounds (GtkTextBuffer *buf,
                            GtkTextIter   *start,

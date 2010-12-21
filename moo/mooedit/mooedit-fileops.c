@@ -240,6 +240,9 @@ set_encoding_error (GError **error)
 }
 
 
+/**
+ * moo_edit_get_line_end_type:
+ **/
 MooLineEndType
 moo_edit_get_line_end_type (MooEdit *edit)
 {
@@ -266,6 +269,9 @@ moo_edit_set_line_end_type_full (MooEdit        *edit,
     }
 }
 
+/**
+ * moo_edit_set_line_end_type:
+ **/
 void
 moo_edit_set_line_end_type (MooEdit        *edit,
                             MooLineEndType  le)
@@ -428,7 +434,7 @@ moo_edit_load_local (MooEdit     *edit,
     if (undo)
         gtk_text_buffer_begin_user_action (buffer);
     else
-        moo_text_view_begin_not_undoable_action (view);
+        moo_text_view_begin_non_undoable_action (view);
 
     moo_text_buffer_begin_non_interactive_action (MOO_TEXT_BUFFER (buffer));
 
@@ -506,7 +512,7 @@ moo_edit_load_local (MooEdit     *edit,
     if (undo)
         gtk_text_buffer_end_user_action (buffer);
     else
-        moo_text_view_end_not_undoable_action (view);
+        moo_text_view_end_non_undoable_action (view);
 
     moo_text_buffer_end_non_interactive_action (MOO_TEXT_BUFFER (buffer));
 

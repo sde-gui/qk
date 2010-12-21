@@ -30,6 +30,10 @@ output_c_tmp = output_c + '.tmp'
 stamp = sys.argv[4]
 
 vrs = {}
+for a in sys.argv[5:]:
+    key, val = a.split('=')
+    vrs[key] = eval(val)
+    print '%s=%s' % (key, vrs[key])
 execfile(input_py, vrs)
 
 def parse_name(Name):
@@ -109,7 +113,9 @@ GType\n%(name)s_get_type (void)
 ''' % dic)
 
     for v in vals:
-        out.write('            { %s, (char*) "%s", (char*) "%s" },\n' % (v[0], v[0], v[3]))
+        name = v[0]
+        nick = v[3] if v[3:] and v[3] else name
+        out.write('            { %s, (char*) "%s", (char*) "%s" },\n' % (name, name, nick))
 
     out.write('''            { 0, NULL, NULL }
         };

@@ -138,6 +138,7 @@ moo_line_end_type_get_type (void)
             { MOO_LE_WIN32, (char*) "MOO_LE_WIN32", (char*) "win32" },
             { MOO_LE_MAC, (char*) "MOO_LE_MAC", (char*) "mac" },
             { MOO_LE_MIX, (char*) "MOO_LE_MIX", (char*) "mix" },
+            { MOO_LE_DEFAULT, (char*) "MOO_LE_DEFAULT", (char*) "MOO_LE_DEFAULT" },
             { 0, NULL, NULL }
         };
         etype = g_enum_register_static ("MooLineEndType", values);
@@ -225,10 +226,10 @@ moo_draw_whitespace_flags_get_type (void)
     if (G_UNLIKELY (!etype))
     {
         static const GFlagsValue values[] = {
-            { MOO_DRAW_NO_WHITESPACE, (char*) "MOO_DRAW_NO_WHITESPACE", (char*) "None" },
-            { MOO_DRAW_SPACES, (char*) "MOO_DRAW_SPACES", (char*) "None" },
-            { MOO_DRAW_TABS, (char*) "MOO_DRAW_TABS", (char*) "None" },
-            { MOO_DRAW_TRAILING_SPACES, (char*) "MOO_DRAW_TRAILING_SPACES", (char*) "None" },
+            { MOO_DRAW_NO_WHITESPACE, (char*) "MOO_DRAW_NO_WHITESPACE", (char*) "MOO_DRAW_NO_WHITESPACE" },
+            { MOO_DRAW_SPACES, (char*) "MOO_DRAW_SPACES", (char*) "MOO_DRAW_SPACES" },
+            { MOO_DRAW_TABS, (char*) "MOO_DRAW_TABS", (char*) "MOO_DRAW_TABS" },
+            { MOO_DRAW_TRAILING_SPACES, (char*) "MOO_DRAW_TRAILING_SPACES", (char*) "MOO_DRAW_TRAILING_SPACES" },
             { 0, NULL, NULL }
         };
         etype = g_flags_register_static ("MooDrawWhitespaceFlags", values);

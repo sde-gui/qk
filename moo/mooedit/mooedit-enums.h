@@ -67,7 +67,8 @@ typedef enum {
     MOO_LE_UNIX,
     MOO_LE_WIN32,
     MOO_LE_MAC,
-    MOO_LE_MIX
+    MOO_LE_MIX,
+    MOO_LE_DEFAULT = MOO_LE_UNIX
 } MooLineEndType;
 
 GType moo_line_end_type_get_type (void) G_GNUC_CONST;
