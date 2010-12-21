@@ -33,7 +33,6 @@ vrs = {}
 for a in sys.argv[5:]:
     key, val = a.split('=')
     vrs[key] = eval(val)
-    print '%s=%s' % (key, vrs[key])
 execfile(input_py, vrs)
 
 def parse_name(Name):
@@ -133,7 +132,7 @@ def print_flags_c(name, vals, out):
 
 out = open(output_c_tmp, 'w')
 
-print >> out, '#include "%s"' % (output_h,)
+print >> out, '#include "%s"' % (os.path.basename(output_h),)
 print >> out, ''
 
 for name in vrs.get('enums', {}):

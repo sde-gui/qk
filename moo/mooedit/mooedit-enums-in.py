@@ -46,11 +46,6 @@ enums['MooLineEndType'] = [
     [ 'MOO_LE_MIX', None, None, 'mix' ],
 ]
 
-if win32:
-    enums['MooLineEndType'].append([ 'MOO_LE_DEFAULT', 'MOO_LE_WIN32' ])
-else:
-    enums['MooLineEndType'].append([ 'MOO_LE_DEFAULT', 'MOO_LE_UNIX' ])
-
 flags['MooFindFlags'] = [
     [ 'MOO_FIND_REGEX',        '1 << 0', None, 'regex' ],
     [ 'MOO_FIND_CASELESS',     '1 << 1', None, 'caseless' ],

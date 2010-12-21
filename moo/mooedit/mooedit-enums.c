@@ -1,4 +1,4 @@
-#include "../../../moo/mooedit/mooedit-enums.h"
+#include "mooedit-enums.h"
 
 /**
  * enum:MooActionCheckType
@@ -138,7 +138,6 @@ moo_line_end_type_get_type (void)
             { MOO_LE_WIN32, (char*) "MOO_LE_WIN32", (char*) "win32" },
             { MOO_LE_MAC, (char*) "MOO_LE_MAC", (char*) "mac" },
             { MOO_LE_MIX, (char*) "MOO_LE_MIX", (char*) "mix" },
-            { MOO_LE_DEFAULT, (char*) "MOO_LE_DEFAULT", (char*) "MOO_LE_DEFAULT" },
             { 0, NULL, NULL }
         };
         etype = g_enum_register_static ("MooLineEndType", values);

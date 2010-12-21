@@ -83,6 +83,12 @@ void             moo_edit_set_encoding              (MooEdit            *edit,
 
 char            *moo_edit_get_lang_id               (MooEdit            *edit);
 
+#ifdef __WIN32__
+#define MOO_LE_DEFAULT MOO_LE_WIN32
+#else
+#define MOO_LE_DEFAULT MOO_LE_UNIX
+#endif
+
 MooLineEndType   moo_edit_get_line_end_type         (MooEdit            *edit);
 void             moo_edit_set_line_end_type         (MooEdit            *edit,
                                                      MooLineEndType      le);
