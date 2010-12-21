@@ -276,7 +276,9 @@ sm_client_xsmp_connect (gpointer user_data)
       gdk_set_sm_client_id (xsmp->client_id);
       gdk_threads_leave ();
 
+#if 0
       g_debug ("Got client ID \"%s\"", xsmp->client_id);
+#endif
     }
 
   if (egg_sm_client_get_mode () == EGG_SM_CLIENT_MODE_NO_RESTART)
@@ -326,7 +328,9 @@ sm_client_xsmp_connect (gpointer user_data)
   clone = generate_command (xsmp->restart_command, NULL, NULL);
   restart = generate_command (xsmp->restart_command, xsmp->client_id, NULL);
 
+#if 0
   g_debug ("Setting initial properties");
+#endif
 
   /* Program, CloneCommand, RestartCommand, and UserID are required.
    * ProcessID isn't required, but the SM may be able to do something
@@ -367,7 +371,9 @@ sm_client_xsmp_disconnect (EggSMClientXSMP *xsmp)
   if (!xsmp->connection)
     return;
 
+#if 0
   g_debug ("Disconnecting");
+#endif
 
   connection = xsmp->connection;
   xsmp->connection = NULL;
@@ -443,13 +449,17 @@ sm_client_xsmp_will_quit (EggSMClient *client,
 
   g_return_if_fail (xsmp->state == XSMP_STATE_INTERACT);
 
+#if 0
   g_debug ("Sending InteractDone(%s)", will_quit ? "False" : "True");
+#endif
   SmcInteractDone (xsmp->connection, !will_quit);
 
   if (will_quit && xsmp->need_save_state)
     save_state (xsmp);
 
+#if 0
   g_debug ("Sending SaveYourselfDone(%s)", will_quit ? "True" : "False");
+#endif
   SmcSaveYourselfDone (xsmp->connection, will_quit);
   xsmp->state = XSMP_STATE_SAVE_YOURSELF_DONE;
 }
@@ -535,7 +545,9 @@ sm_client_xsmp_end_session (EggSMClient         *client,
   else
     save_type = SmSaveGlobal;
 
+#if 0
   g_debug ("Sending SaveYourselfRequest(SmSaveGlobal, Shutdown, SmInteractStyleAny, %sFast)", request_confirmation ? "!" : "");
+#endif
   SmcRequestSaveYourself (xsmp->connection,
 			  save_type,
 			  True, /* shutdown */
@@ -634,6 +646,7 @@ xsmp_save_yourself (SmcConn   smc_conn,
   EggSMClientXSMP *xsmp = client_data;
   gboolean wants_quit_requested;
 
+#if 0
   g_debug ("Received SaveYourself(%s, %s, %s, %s) in state %s",
 	   save_type == SmSaveLocal ? "SmSaveLocal" :
 	   save_type == SmSaveGlobal ? "SmSaveGlobal" : "SmSaveBoth",
@@ -642,6 +655,7 @@ xsmp_save_yourself (SmcConn   smc_conn,
 	   interact_style == SmInteractStyleErrors ? "SmInteractStyleErrors" :
 	   "SmInteractStyleNone", fast ? "Fast" : "!Fast",
 	   EGG_SM_CLIENT_XSMP_STATE (xsmp));
+#endif
 
   if (xsmp->state != XSMP_STATE_IDLE &&
       xsmp->state != XSMP_STATE_SHUTDOWN_CANCELLED)
@@ -661,7 +675,9 @@ xsmp_save_yourself (SmcConn   smc_conn,
 	  interact_style == SmInteractStyleNone &&
 	  !shutdown && !fast)
 	{
+#if 0
 	  g_debug ("Sending SaveYourselfDone(True) for initial SaveYourself");
+#endif
 	  SmcSaveYourselfDone (xsmp->connection, True);
 	  /* As explained in the comment at the end of
 	   * do_save_yourself(), SAVE_YOURSELF_DONE is the correct
@@ -746,8 +762,10 @@ do_save_yourself (EggSMClientXSMP *xsmp)
     {
       xsmp->state = XSMP_STATE_INTERACT_REQUEST;
 
+#if 0
       g_debug ("Sending InteractRequest(%s)",
 	       xsmp->interact_errors ? "Error" : "Normal");
+#endif
       SmcInteractRequest (xsmp->connection,
 			  xsmp->interact_errors ? SmDialogError : SmDialogNormal,
 			  xsmp_interact,
@@ -766,7 +784,9 @@ do_save_yourself (EggSMClientXSMP *xsmp)
 	 return;
     }
 
+#if 0
   g_debug ("Sending SaveYourselfDone(True)");
+#endif
   SmcSaveYourselfDone (xsmp->connection, True);
 
   /* The client state diagram in the XSMP spec says that after a
@@ -939,8 +959,10 @@ xsmp_interact (SmcConn   smc_conn,
   EggSMClientXSMP *xsmp = client_data;
   EggSMClient *client = client_data;
 
+#if 0
   g_debug ("Received Interact message in state %s",
 	   EGG_SM_CLIENT_XSMP_STATE (xsmp));
+#endif
 
   if (xsmp->state != XSMP_STATE_INTERACT_REQUEST)
     {
@@ -959,8 +981,10 @@ xsmp_die (SmcConn   smc_conn,
   EggSMClientXSMP *xsmp = client_data;
   EggSMClient *client = client_data;
 
+#if 0
   g_debug ("Received Die message in state %s",
 	   EGG_SM_CLIENT_XSMP_STATE (xsmp));
+#endif
 
   sm_client_xsmp_disconnect (xsmp);
   egg_sm_client_quit (client);
@@ -972,8 +996,10 @@ xsmp_save_complete (SmcConn   smc_conn,
 {
   EggSMClientXSMP *xsmp = client_data;
 
+#if 0
   g_debug ("Received SaveComplete message in state %s",
 	   EGG_SM_CLIENT_XSMP_STATE (xsmp));
+#endif
 
   if (xsmp->state == XSMP_STATE_SAVE_YOURSELF_DONE)
     xsmp->state = XSMP_STATE_IDLE;
@@ -988,8 +1014,10 @@ xsmp_shutdown_cancelled (SmcConn   smc_conn,
   EggSMClientXSMP *xsmp = client_data;
   EggSMClient *client = client_data;
 
+#if 0
   g_debug ("Received ShutdownCancelled message in state %s",
 	   EGG_SM_CLIENT_XSMP_STATE (xsmp));
+#endif
 
   xsmp->shutting_down = FALSE;
 
@@ -1014,7 +1042,9 @@ xsmp_shutdown_cancelled (SmcConn   smc_conn,
     }
   else
     {
+#if 0
       g_debug ("Sending SaveYourselfDone(False)");
+#endif
       SmcSaveYourselfDone (xsmp->connection, False);
 
       if (xsmp->state == XSMP_STATE_INTERACT)
@@ -1136,7 +1166,7 @@ delete_properties (EggSMClientXSMP *xsmp, ...)
  * until you're done with the SmProp.
  */
 static SmProp *
-array_prop (const char *name, ...) 
+array_prop (const char *name, ...)
 {
   SmProp *prop;
   SmPropValue pv;
@@ -1353,13 +1383,13 @@ ice_error_handler (IceConn       ice_conn,
 		   IcePointer    values)
 {
   /* Do nothing */
-} 
+}
 
 static void
 ice_io_error_handler (IceConn ice_conn)
 {
   /* Do nothing */
-} 
+}
 
 static void
 smc_error_handler (SmcConn       smc_conn,
