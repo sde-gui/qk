@@ -249,6 +249,8 @@ source_files = \
     ../moo/mooutils/mooutils-messages.h\
     ../moo/mooutils/mooutils-misc.c\
     ../moo/mooutils/mooutils-misc.h\
+    ../moo/mooutils/mooutils-script.c\
+    ../moo/mooutils/mooutils-script.h\
     ../moo/mooutils/mooutils-tests.h\
     ../moo/mooutils/mooutils-thread.c\
     ../moo/mooutils/mooutils-thread.h\

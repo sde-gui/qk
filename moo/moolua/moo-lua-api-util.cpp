@@ -691,6 +691,27 @@ moo_lua_get_arg_int (lua_State  *L,
     return moo_lua_get_arg_int_opt (L, narg, param_name, 0);
 }
 
+double
+moo_lua_get_arg_double_opt (lua_State  *L,
+                            int         narg,
+                            G_GNUC_UNUSED const char *param_name,
+                            double      default_value)
+{
+    if (lua_isnoneornil (L, narg))
+        return default_value;
+    else
+        return lua_tonumber (L, narg);
+}
+
+double
+moo_lua_get_arg_double (lua_State  *L,
+                        int         narg,
+                        const char *param_name)
+{
+    luaL_checkany (L, narg);
+    return moo_lua_get_arg_double_opt (L, narg, param_name, 0);
+}
+
 int
 moo_lua_get_arg_index_opt (lua_State  *L,
                            int         narg,

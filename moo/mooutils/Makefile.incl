@@ -119,6 +119,8 @@ moo_sources +=				\
 	mooutils/mooutils-messages.h	\
 	mooutils/mooutils-misc.c	\
 	mooutils/mooutils-misc.h	\
+	mooutils/mooutils-script.c	\
+	mooutils/mooutils-script.h	\
 	mooutils/mooutils-tests.h	\
 	mooutils/mooutils-treeview.c	\
 	mooutils/mooutils-treeview.h	\

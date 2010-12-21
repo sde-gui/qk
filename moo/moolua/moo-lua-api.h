@@ -20,6 +20,7 @@
 #include "mooutils/moomenutoolbutton.h"
 #include "mooutils/moonotebook.h"
 #include "mooutils/mooundo.h"
+#include "mooutils/mooutils-script.h"
 
 #include "moofileview/moofileview.h"
 
