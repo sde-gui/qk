@@ -1462,6 +1462,8 @@ moo_app_parse_files (const char      *data,
     const char *version;
     MooEditOpenInfoArray *files;
 
+    *stamp = 0;
+
     xml = moo_markup_parse_memory (data, -1, NULL);
     g_return_val_if_fail (xml != NULL, FALSE);
 
