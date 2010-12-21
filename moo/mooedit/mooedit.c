@@ -548,6 +548,8 @@ moo_edit_get_property (GObject        *object,
 
 /**
  * moo_edit_get_file:
+ *
+ * Returns: (transfer full)
  **/
 GFile *
 moo_edit_get_file (MooEdit *edit)

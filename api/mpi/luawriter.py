@@ -11,7 +11,7 @@ tmpl_cfunc_method_start = """\
 static int
 %(cfunc)s (gpointer pself, G_GNUC_UNUSED lua_State *L, G_GNUC_UNUSED int first_arg)
 {
-    MooLuaCurrentFunc cur_func("%(current_function)s");
+    MooLuaCurrentFunc cur_func ("%(current_function)s");
     %(Class)s *self = (%(Class)s*) pself;
 """
 
@@ -19,7 +19,7 @@ tmpl_cfunc_func_start = """\
 static int
 %(cfunc)s (G_GNUC_UNUSED lua_State *L)
 {
-    MooLuaCurrentFunc cur_func("%(current_function)s");
+    MooLuaCurrentFunc cur_func ("%(current_function)s");
 """
 
 tmpl_register_module_start = """\
@@ -160,13 +160,16 @@ class Writer(object):
                                             'arg%(narg)d' % dic, '%(arg_idx)s' % dic, param.name))
 
     def __write_function(self, meth, cls, method_cfuncs):
-        assert not isinstance(meth, Constructor) and not isinstance(meth, VMethod)
+        assert not isinstance(meth, VMethod)
 
         bind = meth.annotations.get('moo.lua', '1')
         if bind == '0':
             return
         elif bind != '1':
             raise RuntimeError('invalid value %s for moo.lua annotation' % (bind,))
+
+        is_constructor = isinstance(meth, Constructor)
+        own_return = is_constructor or (meth.retval and meth.retval.transfer_mode == 'full')
 
         has_gerror_return = False
         params = []
@@ -189,7 +192,7 @@ class Writer(object):
                 params.append(p)
 
         dic = dict(name=meth.name, c_name=meth.c_name)
-        if cls:
+        if cls and not is_constructor:
             dic['cfunc'] = 'cfunc_%s_%s' % (cls.name, meth.name)
             dic['Class'] = cls.name
             dic['current_function'] = '%s.%s' % (cls.name, meth.name)
@@ -211,7 +214,7 @@ class Writer(object):
 
         i = 0
         for p in params:
-            self.__write_function_param(func_body, p, i, meth, cls)
+            self.__write_function_param(func_body, p, i, meth, None if is_constructor else cls)
             i += 1
 
         if has_gerror_return:
@@ -219,7 +222,7 @@ class Writer(object):
 
         if meth.retval:
             dic = {'gtype_id': meth.retval.type.gtype_id,
-                   'make_copy': ('FALSE' if meth.retval.transfer_mode == 'full' else 'TRUE'),
+                   'make_copy': 'FALSE' if own_return else 'TRUE',
                    }
             if isinstance(meth.retval.type, Class) or isinstance(meth.retval.type, Boxed) or isinstance(meth.retval.type, Pointer):
                 func_call = 'gpointer ret = '
@@ -264,7 +267,7 @@ class Writer(object):
 
         func_call += '%s (' % meth.c_name
         first_arg = True
-        if cls:
+        if cls and not is_constructor:
             first_arg = False
             func_call += 'self'
         for i in range(len(params)):
@@ -358,8 +361,14 @@ class Writer(object):
         dic = dict(module=module.name.lower())
 
         all_func_cfuncs = []
+
+        for cls in module.get_classes() + module.get_boxed() + module.get_pointers():
+            if cls.constructor:
+                self.__write_function(cls.constructor, cls, all_func_cfuncs)
+
         for func in module.get_functions():
             self.__write_function(func, None, all_func_cfuncs)
+
         self.out.write('const luaL_Reg %(module)s_lua_functions[] = {\n' % dic)
         for name, cfunc in all_func_cfuncs:
             self.out.write('    { "%s", %s },\n' % (name, cfunc))

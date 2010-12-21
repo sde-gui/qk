@@ -1166,8 +1166,8 @@ moo_plugin_info_free (MooPluginInfo *info)
 /**
  * moo_plugin_params_new: (constructor-of MooPluginParams)
  *
- * @enabled: (default "TRUE")
- * @visible: (default "TRUE")
+ * @enabled: (default TRUE)
+ * @visible: (default TRUE)
  */
 MooPluginParams *
 moo_plugin_params_new (gboolean enabled,

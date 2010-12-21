@@ -16,26 +16,26 @@ struct LGInstance
 
 static std::vector<std::string> function_stack;
 
-MooLuaCurrentFunc::MooLuaCurrentFunc(const char *func)
+MooLuaCurrentFunc::MooLuaCurrentFunc (const char *func)
 {
-    function_stack.push_back(func);
+    function_stack.push_back (func);
 }
 
-MooLuaCurrentFunc::~MooLuaCurrentFunc()
+MooLuaCurrentFunc::~MooLuaCurrentFunc ()
 {
-    function_stack.pop_back();
+    function_stack.pop_back ();
 }
 
 namespace {
 class StringHolder
 {
 public:
-    StringHolder(char *s)
-        : m_s(s)
+    StringHolder (char *s)
+        : m_s (s)
     {
     }
 
-    ~StringHolder()
+    ~StringHolder ()
     {
         g_free (m_s);
     }
@@ -48,15 +48,15 @@ private:
 const char *
 moo_lua_current_function (void)
 {
-    moo_return_val_if_fail (function_stack.size() > 0, "NONE");
-    return function_stack.back().c_str();
+    moo_return_val_if_fail (function_stack.size () > 0, "NONE");
+    return function_stack.back ().c_str ();
 }
 
 static int
 moo_lua_error_impl (lua_State  *L,
                     const char *message)
 {
-    return luaL_error (L, "function %s: %s", moo_lua_current_function(), message);
+    return luaL_error (L, "function %s: %s", moo_lua_current_function (), message);
 }
 
 int
@@ -92,7 +92,7 @@ moo_lua_arg_error_impl (lua_State  *L,
                         const char *message)
 {
     return luaL_error (L, "function %s, argument %d (%s): %s",
-                       moo_lua_current_function(),
+                       moo_lua_current_function (),
                        narg,
                        param_name ? param_name : "`none'",
                        message);

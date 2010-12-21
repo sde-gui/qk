@@ -1,3 +1,36 @@
+GFile *                  g_file_new_for_path            (const char *path);
+GFile *                  g_file_new_for_uri             (const char *uri);
+GFile *                  g_file_new_for_commandline_arg (const char *arg);
+GFile *                  g_file_parse_name              (const char *parse_name);
+GFile *                  g_file_dup                     (GFile *file);
+guint               g_file_hash                         (GFile *file);
+gboolean            g_file_equal                        (GFile *file1,
+                                                         GFile *file2);
+char *                   g_file_get_basename            (GFile *file);
+char *                   g_file_get_path                (GFile *file);
+char *                   g_file_get_uri                 (GFile *file);
+char *                   g_file_get_parse_name          (GFile *file);
+GFile *                  g_file_get_parent              (GFile *file);
+gboolean            g_file_has_parent                   (GFile *file,
+                                                         GFile *parent);
+GFile *                  g_file_get_child               (GFile *file,
+                                                         const char *name);
+GFile *                  g_file_get_child_for_display_name
+                                                        (GFile *file,
+                                                         const char *display_name,
+                                                         GError **error);
+gboolean            g_file_has_prefix                   (GFile *file,
+                                                         GFile *prefix);
+char *                   g_file_get_relative_path       (GFile *parent,
+                                                         GFile *descendant);
+GFile *                  g_file_resolve_relative_path   (GFile *file,
+                                                         const char *relative_path);
+gboolean            g_file_is_native                    (GFile *file);
+gboolean            g_file_has_uri_scheme               (GFile *file,
+                                                         const char *uri_scheme);
+char *                   g_file_get_uri_scheme          (GFile *file);
+
+
 GtkTextBuffer *     gtk_text_iter_get_buffer            (const GtkTextIter *iter);
 GtkTextIter *       gtk_text_iter_copy                  (const GtkTextIter *iter);
 void                gtk_text_iter_free                  (GtkTextIter *iter);

@@ -38,6 +38,116 @@
  * boxed:GtkTextIter
  **/
 
+
+/****************************************************************************
+ *
+ * GFile
+ *
+ */
+
+/**
+ * g_file_new_for_path:
+ *
+ * Returns: (transfer full)
+ **/
+
+/**
+ * g_file_new_for_uri:
+ *
+ * Returns: (transfer full)
+ **/
+
+/**
+ * g_file_parse_name:
+ *
+ * Returns: (transfer full)
+ **/
+
+/**
+ * g_file_dup:
+ *
+ * Returns: (transfer full)
+ **/
+
+/**
+ * g_file_hash:
+ **/
+
+/**
+ * g_file_equal:
+ **/
+
+/**
+ * g_file_get_basename:
+ **/
+
+/**
+ * g_file_get_path:
+ **/
+
+/**
+ * g_file_get_uri:
+ **/
+
+/**
+ * g_file_get_parse_name:
+ **/
+
+/**
+ * g_file_get_parent:
+ *
+ * Returns: (transfer full)
+ **/
+
+/**
+ * g_file_has_parent:
+ **/
+
+/**
+ * g_file_get_child:
+ *
+ * Returns: (transfer full)
+ **/
+
+/**
+ * g_file_get_child_for_display_name:
+ *
+ * Returns: (transfer full)
+ **/
+
+/**
+ * g_file_resolve_relative_path:
+ *
+ * Returns: (transfer full)
+ **/
+
+/**
+ * g_file_has_prefix:
+ **/
+
+/**
+ * g_file_get_relative_path:
+ **/
+
+/**
+ * g_file_is_native:
+ **/
+
+/**
+ * g_file_has_uri_scheme:
+ **/
+
+/**
+ * g_file_get_uri_scheme:
+ **/
+
+
+/****************************************************************************
+ *
+ * GtkTextIter
+ *
+ */
+
 /**
  * gtk_text_iter_get_buffer:
  **/
