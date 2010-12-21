@@ -4,9 +4,10 @@
 #include "moolua/lua/lua.h"
 #include "moolua/lua/lauxlib.h"
 #include "mooutils/mooarray.h"
-#include <glib-object.h>
+#include <gtk/gtk.h>
 
 typedef int (*MooLuaMethod) (gpointer instance, lua_State *L, int first_arg);
+typedef void (*MooLuaMetatableFunc) (lua_State *L);
 
 typedef struct {
     const char *name;
@@ -45,6 +46,16 @@ int             moo_lua_get_arg_int_opt         (lua_State          *L,
 int             moo_lua_get_arg_int             (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name);
+void            moo_lua_get_arg_iter            (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name,
+                                                 GtkTextBuffer      *buffer,
+                                                 GtkTextIter        *iter);
+gboolean        moo_lua_get_arg_iter_opt        (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name,
+                                                 GtkTextBuffer      *buffer,
+                                                 GtkTextIter        *iter);
 int             moo_lua_get_arg_enum_opt        (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,

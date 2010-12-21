@@ -101,12 +101,57 @@ get_arg_string (lua_State *L, int narg)
 }
 
 
+static gboolean
+ginstance_eq (LGInstance *lg1, LGInstance *lg2)
+{
+    if (!lg1->instance || !lg2->instance)
+        return lg1->instance == lg2->instance;
+
+    if (lg1->type == lg2->type && lg1->type == GTK_TYPE_TEXT_ITER && lg2->type == GTK_TYPE_TEXT_ITER)
+        return gtk_text_iter_equal ((GtkTextIter*) lg1->instance, (GtkTextIter*) lg2->instance);
+
+    return lg1->instance == lg2->instance;
+}
+
 static int
 cfunc_ginstance__eq (lua_State *L)
 {
     LGInstance *lg1 = get_arg_instance (L, 1);
     LGInstance *lg2 = get_arg_instance (L, 2);
-    return lg1->instance == lg2->instance;
+    lua_pushboolean (L, ginstance_eq (lg1, lg2));
+    return 1;
+}
+
+static int
+cfunc_ginstance__lt (lua_State *L)
+{
+    LGInstance *lg1 = get_arg_instance (L, 1);
+    LGInstance *lg2 = get_arg_instance (L, 2);
+
+    if (lg1->instance && lg2->instance && lg1->type == lg2->type &&
+        lg1->type == GTK_TYPE_TEXT_ITER && lg2->type == GTK_TYPE_TEXT_ITER)
+    {
+        lua_pushboolean (L, gtk_text_iter_compare ((GtkTextIter*) lg1->instance, (GtkTextIter*) lg2->instance) < 0);
+        return 1;
+    }
+
+    return luaL_error (L, "unsupported operation");
+}
+
+static int
+cfunc_ginstance__le (lua_State *L)
+{
+    LGInstance *lg1 = get_arg_instance (L, 1);
+    LGInstance *lg2 = get_arg_instance (L, 2);
+
+    if (lg1->instance && lg2->instance && lg1->type == lg2->type &&
+        lg1->type == GTK_TYPE_TEXT_ITER && lg2->type == GTK_TYPE_TEXT_ITER)
+    {
+        lua_pushboolean (L, gtk_text_iter_compare ((GtkTextIter*) lg1->instance, (GtkTextIter*) lg2->instance) <= 0);
+        return 1;
+    }
+
+    return luaL_error (L, "unsupported operation");
 }
 
 int
@@ -197,6 +242,10 @@ moo_lua_push_ginstance (lua_State *L,
         lua_setfield (L, -2, "__index");
         lua_pushcfunction (L, cfunc_ginstance__gc);
         lua_setfield (L, -2, "__gc");
+        lua_pushcfunction (L, cfunc_ginstance__lt);
+        lua_setfield (L, -2, "__lt");
+        lua_pushcfunction (L, cfunc_ginstance__le);
+        lua_setfield (L, -2, "__le");
     }
 
     lua_setmetatable (L, -2);
@@ -480,6 +529,51 @@ moo_lua_get_arg_int (lua_State  *L,
 {
     luaL_checkany (L, narg);
     return moo_lua_get_arg_int_opt (L, narg, param_name, 0);
+}
+
+void
+moo_lua_get_arg_iter (lua_State     *L,
+                      int            narg,
+                      const char    *param_name,
+                      GtkTextBuffer *buffer,
+                      GtkTextIter   *iter)
+{
+    luaL_checkany (L, narg);
+    moo_lua_get_arg_iter_opt (L, narg, param_name, buffer, iter);
+}
+
+gboolean
+moo_lua_get_arg_iter_opt (lua_State     *L,
+                          int            narg,
+                          const char    *param_name,
+                          GtkTextBuffer *buffer,
+                          GtkTextIter   *iter)
+{
+    GtkTextIter *iter_here;
+
+    if (lua_isnoneornil (L, narg))
+        return FALSE;
+
+    if (lua_isnumber (L, narg))
+    {
+        if (!buffer)
+            luaL_error (L, "could not convert integer to iterator without a buffer instance");
+
+        int pos = lua_tointeger (L, narg);
+        if (pos <= 0 || pos > gtk_text_buffer_get_char_count (buffer) + 1)
+            luaL_error (L, "invalid position %d", pos);
+
+        gtk_text_buffer_get_iter_at_offset (buffer, iter, pos - 1);
+        return TRUE;
+    }
+
+    iter_here = (GtkTextIter*) moo_lua_get_arg_instance (L, narg, param_name, GTK_TYPE_TEXT_ITER);
+
+    if (!iter_here)
+        luaL_error (L, "nil iterator");
+
+    *iter = *iter_here;
+    return TRUE;
 }
 
 static int

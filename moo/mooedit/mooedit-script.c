@@ -62,6 +62,125 @@ moo_edit_end_non_undoable_action (MooEdit *doc)
     moo_text_view_end_non_undoable_action (MOO_TEXT_VIEW (moo_edit_get_view (doc)));
 }
 
+/**
+ * moo_edit_get_start_pos:
+ *
+ * Returns: (transfer full)
+ **/
+GtkTextIter *
+moo_edit_get_start_pos (MooEdit *doc)
+{
+    GtkTextIter iter;
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    gtk_text_buffer_get_start_iter (moo_edit_get_buffer (doc), &iter);
+    return gtk_text_iter_copy (&iter);
+}
+
+/**
+ * moo_edit_get_end_pos:
+ *
+ * Returns: (transfer full)
+ **/
+GtkTextIter *
+moo_edit_get_end_pos (MooEdit *doc)
+{
+    GtkTextIter iter;
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    gtk_text_buffer_get_end_iter (moo_edit_get_buffer (doc), &iter);
+    return gtk_text_iter_copy (&iter);
+}
+
+/**
+ * moo_edit_get_cursor_pos:
+ *
+ * Returns: (transfer full)
+ **/
+GtkTextIter *
+moo_edit_get_cursor_pos (MooEdit *doc)
+{
+    GtkTextIter iter;
+    GtkTextBuffer *buffer;
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    buffer = moo_edit_get_buffer (doc);
+    gtk_text_buffer_get_iter_at_mark (buffer, &iter, gtk_text_buffer_get_insert (buffer));
+    return gtk_text_iter_copy (&iter);
+}
+
+/**
+ * moo_edit_get_selection_start_pos:
+ *
+ * Returns: (transfer full)
+ **/
+GtkTextIter *
+moo_edit_get_selection_start_pos (MooEdit *doc)
+{
+    GtkTextIter iter;
+    GtkTextBuffer *buffer;
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    buffer = moo_edit_get_buffer (doc);
+    gtk_text_buffer_get_selection_bounds (buffer, &iter, NULL);
+    return gtk_text_iter_copy (&iter);
+}
+
+/**
+ * moo_edit_get_selection_end_pos:
+ *
+ * Returns: (transfer full)
+ **/
+GtkTextIter *
+moo_edit_get_selection_end_pos (MooEdit *doc)
+{
+    GtkTextIter iter;
+    GtkTextBuffer *buffer;
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    buffer = moo_edit_get_buffer (doc);
+    gtk_text_buffer_get_selection_bounds (buffer, NULL, &iter);
+    return gtk_text_iter_copy (&iter);
+}
+
+/**
+ * moo_edit_set_cursor_pos:
+ **/
+void
+moo_edit_set_cursor_pos (MooEdit     *doc,
+                         GtkTextIter *pos)
+{
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    gtk_text_buffer_place_cursor (moo_edit_get_buffer (doc), pos);
+}
+
+/**
+ * moo_edit_set_selection:
+ **/
+void
+moo_edit_set_selection (MooEdit     *doc,
+                        GtkTextIter *start,
+                        GtkTextIter *end)
+{
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    gtk_text_buffer_select_range (moo_edit_get_buffer (doc), start, end);
+}
+
+/**
+ * moo_edit_get_char_count:
+ **/
+int
+moo_edit_get_char_count (MooEdit *doc)
+{
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), 0);
+    return gtk_text_buffer_get_char_count (moo_edit_get_buffer (doc));
+}
+
+/**
+ * moo_edit_get_line_count:
+ **/
+int
+moo_edit_get_line_count (MooEdit *doc)
+{
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), 0);
+    return gtk_text_buffer_get_line_count (moo_edit_get_buffer (doc));
+}
+
 static void
 get_selected_lines_bounds (GtkTextBuffer *buf,
                            GtkTextIter   *start,
@@ -251,54 +370,33 @@ moo_edit_get_text (MooEdit *doc)
     return moo_text_view_get_text (GTK_TEXT_VIEW (view));
 }
 
-static void
-get_iter (int pos, GtkTextBuffer *buf, GtkTextIter *iter)
-{
-    if (pos > gtk_text_buffer_get_char_count(buf) || pos < 0)
-    {
-        moo_critical ("invalid offset");
-        pos = 0;
-    }
+// static void
+// get_iter (int pos, GtkTextBuffer *buf, GtkTextIter *iter)
+// {
+//     if (pos > gtk_text_buffer_get_char_count(buf) || pos < 0)
+//     {
+//         moo_critical ("invalid offset");
+//         pos = 0;
+//     }
+//
+//     gtk_text_buffer_get_iter_at_offset (buf, iter, pos);
+// }
 
-    gtk_text_buffer_get_iter_at_offset (buf, iter, pos);
-}
-
-/**
- * moo_edit_set_selection:
- **/
-void
-moo_edit_set_selection (MooEdit *doc,
-                        int      pos_start,
-                        int      pos_end)
-{
-    GtkTextBuffer *buf;
-    GtkTextIter start, end;
-
-    moo_return_if_fail (MOO_IS_EDIT (doc));
-
-    buf = moo_edit_get_buffer (doc);
-
-    get_iter (pos_start, buf, &start);
-    get_iter (pos_end, buf, &end);
-
-    gtk_text_buffer_select_range(buf, &start, &end);
-}
-
-/**
- * moo_edit_get_cursor_pos:
- **/
-int
-moo_edit_get_cursor_pos (MooEdit *doc)
-{
-    GtkTextBuffer *buf;
-    GtkTextIter iter;
-
-    moo_return_val_if_fail (MOO_IS_EDIT (doc), 0);
-
-    buf = moo_edit_get_buffer (doc);
-    gtk_text_buffer_get_iter_at_mark(buf, &iter, gtk_text_buffer_get_insert(buf));
-    return gtk_text_iter_get_offset(&iter);
-}
+// /**
+//  * moo_edit_get_cursor_pos:
+//  **/
+// int
+// moo_edit_get_cursor_pos (MooEdit *doc)
+// {
+//     GtkTextBuffer *buf;
+//     GtkTextIter iter;
+//
+//     moo_return_val_if_fail (MOO_IS_EDIT (doc), 0);
+//
+//     buf = moo_edit_get_buffer (doc);
+//     gtk_text_buffer_get_iter_at_mark(buf, &iter, gtk_text_buffer_get_insert(buf));
+//     return gtk_text_iter_get_offset(&iter);
+// }
 
 /**
  * moo_edit_insert_text:

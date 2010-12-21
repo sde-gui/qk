@@ -8,4 +8,5 @@
   <class gtype_id="GTK_TYPE_CONTAINER" name="GtkContainer" parent="GtkWidget" short_name='Container'/>
   <class gtype_id="GTK_TYPE_TEXT_VIEW" name="GtkTextView" parent="GtkContainer" short_name='TextView'/>
   <class gtype_id="GTK_TYPE_TEXT_BUFFER" name="GtkTextBuffer" parent="GObject" short_name='TextBuffer'/>
+  <boxed gtype_id="GTK_TYPE_TEXT_ITER" name="GtkTextIter" short_name="TextIter"></boxed>
 </module>

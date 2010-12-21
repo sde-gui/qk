@@ -103,7 +103,25 @@ class Writer(object):
                    arg_idx=('first_arg + %d' % (i,)) if cls else ('1 + %d' % (i,)),
                    TypeName=param.type.name,
                    )
-        if isinstance(param.type, Class) or isinstance(param.type, Boxed) or isinstance(param.type, Pointer):
+        if param.type.name == 'GtkTextIter':
+            assert param.default_value is None or param.default_value == 'NULL'
+            if param.default_value is not None:
+                dic['get_arg'] = 'moo_lua_get_arg_iter_opt'
+            else:
+                dic['get_arg'] = 'moo_lua_get_arg_iter'
+            if cls.name == 'MooEdit':
+                dic['buffer'] = 'moo_edit_get_buffer (self)'
+            else:
+                dic['buffer'] = 'NULL'
+            if param.default_value is not None:
+                func_body.start.append('GtkTextIter arg%(narg)d_iter;' % dic)
+                func_body.start.append(('GtkTextIter *arg%(narg)d = %(get_arg)s (L, %(arg_idx)s, ' + \
+                                        '"%(param_name)s", %(buffer)s, &arg%(narg)d_iter) ? &arg%(narg)d_iter : NULL;') % dic)
+            else:
+                func_body.start.append('GtkTextIter arg%(narg)d_iter;' % dic)
+                func_body.start.append('GtkTextIter *arg%(narg)d = &arg%(narg)d_iter;' % dic)
+                func_body.start.append('%(get_arg)s (L, %(arg_idx)s, "%(param_name)s", %(buffer)s, &arg%(narg)d_iter);' % dic)
+        elif isinstance(param.type, Class) or isinstance(param.type, Boxed) or isinstance(param.type, Pointer):
             if param.default_value is not None:
                 func_body.start.append(('%(TypeName)s *arg%(narg)d = (%(TypeName)s*) ' + \
                                         'moo_lua_get_arg_instance_opt (L, %(arg_idx)s, "%(param_name)s", ' + \
