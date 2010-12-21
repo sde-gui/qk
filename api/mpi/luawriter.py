@@ -67,20 +67,12 @@ _arg_helpers['uint'] = SimpleArgHelper('guint', 'int')
 _arg_helpers['gint'] = SimpleArgHelper('int', 'int')
 _arg_helpers['guint'] = SimpleArgHelper('guint', 'int')
 _arg_helpers['gboolean'] = SimpleArgHelper('gboolean', 'bool')
+_arg_helpers['index'] = SimpleArgHelper('int', 'index')
 _arg_helpers['const-char*'] = SimpleArgHelper('const char*', 'string')
 _arg_helpers['char*'] = SimpleArgHelper('char*', 'string')
 _arg_helpers['strv'] = SimpleArgHelper('char**', 'strv')
 def find_arg_helper(param):
     return _arg_helpers[param.type.name]
-
-_ret_helpers = {}
-_ret_helpers['int'] = ('int', 'int')
-_ret_helpers['uint'] = ('guint', 'uint')
-_ret_helpers['gint'] = ('int', 'int')
-_ret_helpers['guint'] = ('guint', 'uint')
-_ret_helpers['gboolean'] = ('gboolean', 'bool')
-def find_ret_helper(name):
-    return _ret_helpers[name]
 
 _pod_ret_helpers = {}
 _pod_ret_helpers['int'] = ('int', 'int')
@@ -88,8 +80,9 @@ _pod_ret_helpers['uint'] = ('guint', 'int')
 _pod_ret_helpers['gint'] = ('int', 'int')
 _pod_ret_helpers['guint'] = ('guint', 'int')
 _pod_ret_helpers['gboolean'] = ('gboolean', 'bool')
+_pod_ret_helpers['index'] = ('int', 'index')
 def find_pod_ret_helper(name):
-    return _pod_ret_helpers.get(name, (None, None))
+    return _pod_ret_helpers[name]
 
 class Writer(object):
     def __init__(self, out):
@@ -243,17 +236,14 @@ class Writer(object):
                 assert meth.retval.transfer_mode != 'full'
                 func_call = 'const char *ret = '
                 push_ret = 'moo_lua_push_string_copy (L, ret);'
+            elif meth.retval.type.name == 'gunichar':
+                func_call = 'gunichar ret = '
+                push_ret = 'moo_lua_push_gunichar (L, ret);'
             else:
                 typ, suffix = find_pod_ret_helper(meth.retval.type.name)
-                if typ:
-                    dic['suffix'] = suffix
-                    func_call = '%s ret = ' % typ
-                    push_ret = 'moo_lua_push_%(suffix)s (L, ret);' % dic
-                else:
-                    typ, suffix = find_ret_helper(meth.retval.type.name)
-                    dic['suffix'] = suffix
-                    func_call = '%s ret = ' % typ
-                    push_ret = 'moo_lua_push_%(suffix)s (L, ret, %(make_copy)s);' % dic
+                dic['suffix'] = suffix
+                func_call = '%s ret = ' % typ
+                push_ret = 'moo_lua_push_%(suffix)s (L, ret);' % dic
         else:
             push_ret = '0;'
 

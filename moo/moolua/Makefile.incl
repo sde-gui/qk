@@ -16,6 +16,11 @@ genlua_files =					\
 	$(top_srcdir)/api/mpi/module.py		\
 	$(top_srcdir)/api/mpi/luawriter.py
 
+EXTRA_DIST +=				\
+	moolua/gtk-api.h		\
+	moolua/gtk-api.c		\
+	moolua/gtk.xml
+
 include moolua/lua/Makefile.incl
 
 EXTRA_DIST += moolua/lua-default-init.lua
@@ -26,6 +31,22 @@ moolua/lua-default-init.h: moolua/lua-default-init.lua $(top_srcdir)/tools/xml2h
 		&& mv moolua/lua-default-init.h.tmp moolua/lua-default-init.h
 
 if MOO_DEV_MODE
+
+docparser_files =				\
+	$(top_srcdir)/api/parsedocs.py		\
+	$(top_srcdir)/api/mdp/__init__.py	\
+	$(top_srcdir)/api/mdp/module.py		\
+	$(top_srcdir)/api/mdp/docparser.py	\
+	$(top_srcdir)/api/mdp/xmlwriter.py
+BUILT_SOURCES += moolua/gtk.xml
+moolua/gtk.xml: $(docparser_files) moolua/gtk-api.c moolua/gtk-api.h
+	$(AM_V_at)$(MKDIR_P) moolua
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/parsedocs.py \
+		--source-file $(srcdir)/moolua/gtk-api.c \
+		--source-file $(srcdir)/moolua/gtk-api.h \
+		--module Gtk \
+		--output moolua/gtk.xml.tmp && \
+	mv moolua/gtk.xml.tmp $(srcdir)/moolua/gtk.xml
 
 BUILT_SOURCES += moolua/moo-lua-api.cpp
 moolua/moo-lua-api.cpp: $(genlua_files) $(top_srcdir)/api/moo.xml $(srcdir)/moolua/gtk.xml

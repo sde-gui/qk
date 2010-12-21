@@ -46,6 +46,13 @@ int             moo_lua_get_arg_int_opt         (lua_State          *L,
 int             moo_lua_get_arg_int             (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name);
+int             moo_lua_get_arg_index_opt       (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name,
+                                                 int                 default_value);
+int             moo_lua_get_arg_index           (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name);
 void            moo_lua_get_arg_iter            (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,
@@ -89,8 +96,12 @@ int             moo_lua_push_bool               (lua_State          *L,
                                                  gboolean            value);
 int             moo_lua_push_int                (lua_State          *L,
                                                  int                 value);
+int             moo_lua_push_index              (lua_State          *L,
+                                                 int                 value);
 int             moo_lua_push_strv               (lua_State          *L,
                                                  char              **value);
+int             moo_lua_push_gunichar           (lua_State          *L,
+                                                 gunichar            value);
 int             moo_lua_push_string             (lua_State          *L,
                                                  char               *value);
 int             moo_lua_push_string_copy        (lua_State          *L,

@@ -276,9 +276,9 @@ class Module(object):
             return self.__types[typ]
         if typ == 'GError**':
             return GErrorReturnType()
-        m = re.match(r'([\w\d_]+)\*', typ)
+        m = re.match(r'(const-)?([\w\d_]+)\*', typ)
         if m:
-            name = m.group(1)
+            name = m.group(2)
             if name in self.__types:
                 obj_type = self.__types[name]
                 if isinstance(obj_type, InstanceType):

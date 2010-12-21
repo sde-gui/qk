@@ -297,6 +297,14 @@ moo_lua_push_int (lua_State *L,
 }
 
 int
+moo_lua_push_index (lua_State *L,
+                    int        value)
+{
+    lua_pushinteger (L, value + 1);
+    return 1;
+}
+
+int
 moo_lua_push_string (lua_State *L,
                      char      *value)
 {
@@ -313,6 +321,23 @@ moo_lua_push_string_copy (lua_State  *L,
         lua_pushnil (L);
     else
         lua_pushstring (L, value);
+    return 1;
+}
+
+int
+moo_lua_push_gunichar (lua_State *L,
+                       gunichar   value)
+{
+    char buf[12];
+
+    if (!value)
+    {
+        lua_pushnil (L);
+        return 1;
+    }
+
+    buf[g_unichar_to_utf8 (value, buf)] = 0;
+    lua_pushstring (L, buf);
     return 1;
 }
 
@@ -529,6 +554,27 @@ moo_lua_get_arg_int (lua_State  *L,
 {
     luaL_checkany (L, narg);
     return moo_lua_get_arg_int_opt (L, narg, param_name, 0);
+}
+
+int
+moo_lua_get_arg_index_opt (lua_State  *L,
+                           int         narg,
+                           const char *param_name,
+                           int         default_value)
+{
+    if (lua_isnoneornil (L, narg))
+        return default_value;
+    else
+        return moo_lua_get_arg_index (L, narg, param_name);
+}
+
+int
+moo_lua_get_arg_index (lua_State  *L,
+                       int         narg,
+                       G_GNUC_UNUSED const char *param_name)
+{
+    luaL_checkany (L, narg);
+    return lua_tointeger (L, narg) - 1;
 }
 
 void

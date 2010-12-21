@@ -595,9 +595,10 @@ class Parser(object):
             for i in range(len(args)):
                 spaces = string.count(args[i], ' ')
                 if spaces > 1:
-                    args[i] = string.replace(args[i], ' ', '-', spaces - 1)
+                    args[i] = string.replace(args[i], ' ', '-', spaces - 1).replace('gchar', 'char')
 
             if ret != 'void':
+                ret = ret.replace('gchar', 'char')
                 if func.retval is None:
                     func.retval = Retval()
                 if func.retval.type is None:
