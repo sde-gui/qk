@@ -5,6 +5,7 @@
 #include "moolua/lua/lauxlib.h"
 #include "mooutils/mooarray.h"
 #include <gtk/gtk.h>
+#include <stdarg.h>
 
 typedef int (*MooLuaMethod) (gpointer instance, lua_State *L, int first_arg);
 typedef void (*MooLuaMetatableFunc) (lua_State *L);
@@ -14,11 +15,35 @@ typedef struct {
     MooLuaMethod impl;
 } MooLuaMethodEntry;
 
+class MooLuaCurrentFunc
+{
+public:
+    MooLuaCurrentFunc(const char *func);
+    ~MooLuaCurrentFunc();
+};
+
 MooLuaMethod    moo_lua_lookup_method           (lua_State          *L,
                                                  GType               type,
                                                  const char         *meth);
 void            moo_lua_register_methods        (GType               type,
                                                  MooLuaMethodEntry  *entries);
+
+int             moo_lua_error                   (lua_State          *L,
+                                                 const char         *fmt,
+                                                 ...) G_GNUC_PRINTF (2, 3);
+int             moo_lua_errorv                  (lua_State          *L,
+                                                 const char         *fmt,
+                                                 va_list             args);
+int             moo_lua_arg_error               (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name,
+                                                 const char         *fmt,
+                                                 ...) G_GNUC_PRINTF (4, 5);
+int             moo_lua_arg_errorv              (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name,
+                                                 const char         *fmt,
+                                                 va_list             args);
 
 gpointer        moo_lua_get_arg_instance_opt    (lua_State          *L,
                                                  int                 narg,

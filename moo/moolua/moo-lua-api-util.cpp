@@ -14,6 +14,119 @@ struct LGInstance
     GType type;
 };
 
+static std::vector<std::string> function_stack;
+
+MooLuaCurrentFunc::MooLuaCurrentFunc(const char *func)
+{
+    function_stack.push_back(func);
+}
+
+MooLuaCurrentFunc::~MooLuaCurrentFunc()
+{
+    function_stack.pop_back();
+}
+
+namespace {
+class StringHolder
+{
+public:
+    StringHolder(char *s)
+        : m_s(s)
+    {
+    }
+
+    ~StringHolder()
+    {
+        g_free (m_s);
+    }
+
+private:
+    char *m_s;
+};
+}
+
+const char *
+moo_lua_current_function (void)
+{
+    moo_return_val_if_fail (function_stack.size() > 0, "NONE");
+    return function_stack.back().c_str();
+}
+
+static int
+moo_lua_error_impl (lua_State  *L,
+                    const char *message)
+{
+    return luaL_error (L, "function %s: %s", moo_lua_current_function(), message);
+}
+
+int
+moo_lua_error (lua_State  *L,
+               const char *fmt,
+               ...)
+{
+    char *message;
+    va_list args;
+
+    va_start (args, fmt);
+    message = g_strdup_vprintf (fmt, args);
+    va_end (args);
+
+    StringHolder sh(message);
+    return moo_lua_error_impl (L, message);
+}
+
+int
+moo_lua_errorv (lua_State          *L,
+                const char         *fmt,
+                va_list             args)
+{
+    char *message = g_strdup_vprintf (fmt, args);
+    StringHolder sh(message);
+    return moo_lua_error_impl (L, message);
+}
+
+static int
+moo_lua_arg_error_impl (lua_State  *L,
+                        int         narg,
+                        const char *param_name,
+                        const char *message)
+{
+    return luaL_error (L, "function %s, argument %d (%s): %s",
+                       moo_lua_current_function(),
+                       narg,
+                       param_name ? param_name : "`none'",
+                       message);
+}
+
+int
+moo_lua_arg_error (lua_State  *L,
+                   int         narg,
+                   const char *param_name,
+                   const char *fmt,
+                   ...)
+{
+    char *message;
+    va_list args;
+
+    va_start (args, fmt);
+    message = g_strdup_vprintf (fmt, args);
+    va_end (args);
+
+    StringHolder sh(message);
+    return moo_lua_arg_error_impl (L, narg, param_name, message);
+}
+
+int
+moo_lua_arg_errorv (lua_State  *L,
+                    int         narg,
+                    const char *param_name,
+                    const char *fmt,
+                    va_list     args)
+{
+    char *message = g_strdup_vprintf (fmt, args);
+    StringHolder sh(message);
+    return moo_lua_arg_error_impl (L, narg, param_name, message);
+}
 
 void
 moo_lua_register_methods (GType              type,
@@ -69,9 +182,23 @@ moo_lua_lookup_method (lua_State  *L,
 
 
 static LGInstance *
-get_arg_instance (lua_State *L, int arg)
+get_arg_instance (lua_State *L, int arg, const char *param_name)
 {
-    return (LGInstance*) luaL_checkudata (L, arg, GINSTANCE_META);
+    void *p = lua_touserdata (L, arg);
+
+    if (!p || !lua_getmetatable (L, arg))
+        moo_lua_arg_error (L, arg, param_name,
+                           "instance expected, got %s",
+                           luaL_typename (L, arg));
+
+    lua_getfield (L, LUA_REGISTRYINDEX, GINSTANCE_META);
+    if (!lua_rawequal (L, -1, -2))
+        moo_lua_arg_error (L, arg, param_name,
+                           "instance expected, got %s",
+                           luaL_typename (L, arg));
+
+    lua_pop (L, 2);  /* remove both metatables */
+    return (LGInstance*) p;
 }
 
 static LGInstance *
@@ -92,11 +219,11 @@ get_arg_if_instance (lua_State *L, int arg)
 }
 
 static const char *
-get_arg_string (lua_State *L, int narg)
+get_arg_string (lua_State *L, int narg, const char *param_name)
 {
     const char *arg = luaL_checkstring (L, narg);
     if (arg == 0)
-        luaL_argerror (L, narg, "nil string");
+        moo_lua_arg_error (L, narg, param_name, "nil string");
     return arg;
 }
 
@@ -116,8 +243,8 @@ ginstance_eq (LGInstance *lg1, LGInstance *lg2)
 static int
 cfunc_ginstance__eq (lua_State *L)
 {
-    LGInstance *lg1 = get_arg_instance (L, 1);
-    LGInstance *lg2 = get_arg_instance (L, 2);
+    LGInstance *lg1 = get_arg_instance (L, 1, "arg1");
+    LGInstance *lg2 = get_arg_instance (L, 2, "arg2");
     lua_pushboolean (L, ginstance_eq (lg1, lg2));
     return 1;
 }
@@ -125,8 +252,8 @@ cfunc_ginstance__eq (lua_State *L)
 static int
 cfunc_ginstance__lt (lua_State *L)
 {
-    LGInstance *lg1 = get_arg_instance (L, 1);
-    LGInstance *lg2 = get_arg_instance (L, 2);
+    LGInstance *lg1 = get_arg_instance (L, 1, "arg1");
+    LGInstance *lg2 = get_arg_instance (L, 2, "arg2");
 
     if (lg1->instance && lg2->instance && lg1->type == lg2->type &&
         lg1->type == GTK_TYPE_TEXT_ITER && lg2->type == GTK_TYPE_TEXT_ITER)
@@ -141,8 +268,8 @@ cfunc_ginstance__lt (lua_State *L)
 static int
 cfunc_ginstance__le (lua_State *L)
 {
-    LGInstance *lg1 = get_arg_instance (L, 1);
-    LGInstance *lg2 = get_arg_instance (L, 2);
+    LGInstance *lg1 = get_arg_instance (L, 1, "arg1");
+    LGInstance *lg2 = get_arg_instance (L, 2, "arg2");
 
     if (lg1->instance && lg2->instance && lg1->type == lg2->type &&
         lg1->type == GTK_TYPE_TEXT_ITER && lg2->type == GTK_TYPE_TEXT_ITER)
@@ -163,14 +290,14 @@ cfunc_call_named_method (lua_State *L)
     // is the same object or not. (This does mean a method can't
     // take a first argument equal to the target object)
 
-    LGInstance *self = get_arg_instance (L, lua_upvalueindex (1));
+    LGInstance *self = get_arg_instance (L, lua_upvalueindex (1), "self");
     LGInstance *arg = get_arg_if_instance (L, 1);
 
     int first_arg = 2;
     if (!arg || self->instance != arg->instance)
         first_arg = 1;
 
-    const char *meth = get_arg_string (L, lua_upvalueindex(2));
+    const char *meth = get_arg_string (L, lua_upvalueindex (2), NULL);
 
     MooLuaMethod func = moo_lua_lookup_method (L, self->type, meth);
     moo_return_val_if_fail (func != NULL, 0);
@@ -190,7 +317,7 @@ cfunc_ginstance__index (lua_State *L)
 int
 cfunc_ginstance__gc (lua_State *L)
 {
-    LGInstance *self = get_arg_instance (L, 1);
+    LGInstance *self = get_arg_instance (L, 1, "self");
 
     if (self->instance)
     {
@@ -395,18 +522,18 @@ moo_lua_push_strv (lua_State  *L,
 gpointer
 moo_lua_get_arg_instance_opt (lua_State  *L,
                               int         narg,
-                              G_GNUC_UNUSED const char *param_name,
+                              const char *param_name,
                               GType       type)
 {
     if (lua_isnoneornil (L, narg))
         return NULL;
 
-    LGInstance *lg = get_arg_instance (L, narg);
+    LGInstance *lg = get_arg_instance (L, narg, param_name);
     if (!lg->instance)
         return NULL;
 
     if (G_TYPE_FUNDAMENTAL (type) != G_TYPE_FUNDAMENTAL (lg->type) || !g_type_is_a (lg->type, type))
-        luaL_argerror (L, narg, "wrong object");
+        moo_lua_arg_error (L, narg, param_name, "expected %s, got %s", g_type_name (type), g_type_name (lg->type));
 
     return lg->instance;
 }
@@ -424,11 +551,13 @@ moo_lua_get_arg_instance (lua_State  *L,
 MooObjectArray *
 moo_lua_get_arg_object_array (lua_State  *L,
                               int         narg,
-                              G_GNUC_UNUSED const char *param_name,
+                              const char *param_name,
                               GType       type)
 {
     if (!lua_istable (L, narg))
-        luaL_argerror (L, narg, "table expected");
+        moo_lua_arg_error (L, narg, param_name,
+                           "table expected, got %s",
+                           luaL_typename (L, narg));
 
     std::vector<gpointer> vec;
     size_t len = lua_objlen(L, narg);
@@ -437,13 +566,15 @@ moo_lua_get_arg_object_array (lua_State  *L,
     while (lua_next(L, narg) != 0)
     {
         if (!lua_isnumber (L, -2))
-            luaL_argerror (L, narg, "list expected");
+            moo_lua_arg_error (L, narg, param_name,
+                               "list expected, got dict");
 
         gpointer instance = moo_lua_get_arg_instance (L, -1, NULL, type);
 
         int idx = luaL_checkint (L, -2);
         if (idx <= 0 || idx > (int) len)
-            luaL_argerror (L, narg, "list expected");
+            moo_lua_arg_error (L, narg, param_name,
+                               "list expected, got dict");
 
         if ((int) vec.size () < idx)
             vec.resize (idx);
@@ -479,7 +610,9 @@ moo_lua_get_arg_strv (lua_State  *L,
                       G_GNUC_UNUSED const char *param_name)
 {
     if (!lua_istable (L, narg))
-        luaL_argerror (L, narg, "table expected");
+        moo_lua_arg_error (L, narg, param_name,
+                           "table expected, got %s",
+                           luaL_typename (L, narg));
 
     std::vector<std::string> vec;
     size_t len = lua_objlen(L, narg);
@@ -488,13 +621,15 @@ moo_lua_get_arg_strv (lua_State  *L,
     while (lua_next(L, narg) != 0)
     {
         if (!lua_isnumber (L, -2))
-            luaL_argerror (L, narg, "list expected");
+            moo_lua_arg_error (L, narg, param_name,
+                               "list expected, got dict");
 
         const char *s = moo_lua_get_arg_string (L, -1, NULL);
 
         int idx = luaL_checkint (L, -2);
         if (idx <= 0 || idx > (int) len)
-            luaL_argerror (L, narg, "list expected");
+            moo_lua_arg_error (L, narg, param_name,
+                               "list expected, got dict");
 
         if ((int) vec.size () < idx)
             vec.resize (idx);
@@ -603,11 +738,13 @@ moo_lua_get_arg_iter_opt (lua_State     *L,
     if (lua_isnumber (L, narg))
     {
         if (!buffer)
-            luaL_error (L, "could not convert integer to iterator without a buffer instance");
+            moo_lua_arg_error (L, narg, param_name,
+                               "could not convert integer to iterator without a buffer instance");
 
         int pos = lua_tointeger (L, narg);
         if (pos <= 0 || pos > gtk_text_buffer_get_char_count (buffer) + 1)
-            luaL_error (L, "invalid position %d", pos);
+            moo_lua_arg_error (L, narg, param_name,
+                               "invalid position %d", pos);
 
         gtk_text_buffer_get_iter_at_offset (buffer, iter, pos - 1);
         return TRUE;
@@ -616,7 +753,8 @@ moo_lua_get_arg_iter_opt (lua_State     *L,
     iter_here = (GtkTextIter*) moo_lua_get_arg_instance (L, narg, param_name, GTK_TYPE_TEXT_ITER);
 
     if (!iter_here)
-        luaL_error (L, "nil iterator");
+        moo_lua_arg_error (L, narg, param_name,
+                           "null iterator");
 
     *iter = *iter_here;
     return TRUE;
@@ -625,7 +763,9 @@ moo_lua_get_arg_iter_opt (lua_State     *L,
 static int
 parse_enum (const char *string,
             GType       type,
-            lua_State  *L)
+            lua_State  *L,
+            int         narg,
+            const char *param_name)
 {
     GEnumValue *value;
     GEnumClass *enum_class = G_ENUM_CLASS (g_type_class_peek (type));
@@ -635,8 +775,9 @@ parse_enum (const char *string,
         value = g_enum_get_value_by_name (enum_class, string);
 
     if (!value)
-        luaL_error (L, "could not convert string '%s' to a value of type %s",
-                    string, g_type_name (type));
+        moo_lua_arg_error (L, narg, param_name,
+                           "could not convert string '%s' to a value of type %s",
+                           string, g_type_name (type));
 
     return value->value;
 }
@@ -644,7 +785,9 @@ parse_enum (const char *string,
 static int
 parse_flags (const char *string,
              GType       type,
-             lua_State  *L)
+             lua_State  *L,
+             int         narg,
+             const char *param_name)
 {
     char **pieces, **p;
     GEnumValue *value;
@@ -662,8 +805,9 @@ parse_flags (const char *string,
         if (!value)
         {
             g_strfreev (pieces);
-            luaL_error (L, "could not convert string '%s' to a value of type %s",
-                        string, g_type_name (type));
+            moo_lua_arg_error (L, narg, param_name,
+                               "could not convert string '%s' to a value of type %s",
+                               string, g_type_name (type));
         }
 
         ret |= value->value;
@@ -676,23 +820,24 @@ parse_flags (const char *string,
 static int
 moo_lua_get_arg_enum_from_string (lua_State  *L,
                                   int         narg,
+                                  const char *param_name,
                                   GType       type)
 {
     const char *s = lua_tostring (L, narg);
 
     if (!s)
-        luaL_argerror (L, narg, "nil string unexpected");
+        moo_lua_arg_error (L, narg, param_name, "null string unexpected");
 
     if (g_type_is_a (type, G_TYPE_ENUM))
-        return parse_enum (s, type, L);
+        return parse_enum (s, type, L, narg, param_name);
     else
-        return parse_flags (s, type, L);
+        return parse_flags (s, type, L, narg, param_name);
 }
 
 int
 moo_lua_get_arg_enum_opt (lua_State  *L,
                           int         narg,
-                          G_GNUC_UNUSED const char *param_name,
+                          const char *param_name,
                           GType       type,
                           int         default_value)
 {
@@ -703,9 +848,11 @@ moo_lua_get_arg_enum_opt (lua_State  *L,
         return lua_tointeger (L, narg);
 
     if (lua_isstring (L, narg))
-        return moo_lua_get_arg_enum_from_string (L, narg, type);
+        return moo_lua_get_arg_enum_from_string (L, narg, param_name, type);
 
-    luaL_argerror (L, narg, "bad value");
+    moo_lua_arg_error (L, narg, param_name,
+                       "expected string or integer, got %s",
+                       luaL_typename (L, narg));
     return 0;
 }
 

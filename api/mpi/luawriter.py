@@ -11,6 +11,7 @@ tmpl_cfunc_method_start = """\
 static int
 %(cfunc)s (gpointer pself, G_GNUC_UNUSED lua_State *L, G_GNUC_UNUSED int first_arg)
 {
+    MooLuaCurrentFunc cur_func("%(current_function)s");
     %(Class)s *self = (%(Class)s*) pself;
 """
 
@@ -18,6 +19,7 @@ tmpl_cfunc_func_start = """\
 static int
 %(cfunc)s (G_GNUC_UNUSED lua_State *L)
 {
+    MooLuaCurrentFunc cur_func("%(current_function)s");
 """
 
 tmpl_register_module_start = """\
@@ -189,9 +191,11 @@ class Writer(object):
         if cls:
             dic['cfunc'] = 'cfunc_%s_%s' % (cls.name, meth.name)
             dic['Class'] = cls.name
+            dic['current_function'] = '%s.%s' % (cls.name, meth.name)
             self.out.write(tmpl_cfunc_method_start % dic)
         else:
             dic['cfunc'] = 'cfunc_%s' % meth.name
+            dic['current_function'] = meth.name
             self.out.write(tmpl_cfunc_func_start % dic)
 
         method_cfuncs.append([meth.name, dic['cfunc']])
