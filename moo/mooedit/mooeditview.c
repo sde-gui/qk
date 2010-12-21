@@ -72,7 +72,7 @@ moo_edit_view_init (MooEditView *view)
 static void
 moo_edit_view_finalize (GObject *object)
 {
-    MooEditView *view = MOO_EDIT_VIEW (object);
+    G_GNUC_UNUSED MooEditView *view = MOO_EDIT_VIEW (object);
 
     moo_assert (view->priv->state == MOO_EDIT_STATE_NORMAL);
 
