@@ -518,6 +518,24 @@ moo_lua_push_strv (lua_State  *L,
     return 1;
 }
 
+int
+moo_lua_push_error (lua_State *L,
+                    GError    *error)
+{
+    if (error)
+    {
+        lua_pushstring (L, error->message);
+        lua_pushinteger (L, error->domain);
+        lua_pushinteger (L, error->code);
+        g_error_free (error);
+        return 3;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 
 gpointer
 moo_lua_get_arg_instance_opt (lua_State  *L,

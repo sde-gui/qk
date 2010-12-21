@@ -91,6 +91,8 @@ class Writer(object):
         if not cls.parent and cls.name != 'GObject':
             raise RuntimeError('parent missing in class %s' % (cls.name,))
         dic = dict(name=cls.name, short_name=cls.short_name, parent=cls.parent or 'none', gtype_id=cls.gtype_id)
+        for k in cls.annotations:
+            dic[k] = cls.annotations[k]
         if cls.constructable:
             dic['constructable'] = '1'
         self.__start_tag('class', dic)
@@ -105,6 +107,8 @@ class Writer(object):
 
     def __write_boxed(self, cls):
         dic = dict(name=cls.name, short_name=cls.short_name, gtype_id=cls.gtype_id)
+        for k in cls.annotations:
+            dic[k] = cls.annotations[k]
         tag = 'boxed' if isinstance(cls, module.Boxed) else 'pointer'
         self.__start_tag(tag, dic)
         if cls.constructor is not None:
@@ -120,6 +124,8 @@ class Writer(object):
         else:
             tag = 'flags'
         dic = dict(name=enum.name, short_name=enum.short_name, gtype_id=enum.gtype_id)
+        for k in enum.annotations:
+            dic[k] = enum.annotations[k]
         self.__start_tag(tag, dic)
         self.__write_docs(enum.docs)
         self.__end_tag(tag)

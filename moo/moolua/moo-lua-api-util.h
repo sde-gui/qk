@@ -141,5 +141,7 @@ int             moo_lua_push_string_copy        (lua_State          *L,
 int             moo_lua_push_object_array       (lua_State          *L,
                                                  MooObjectArray     *value,
                                                  gboolean            make_copy);
+int             moo_lua_push_error              (lua_State          *L,
+                                                 GError             *error);
 
 #endif /* MOO_LUA_API_UTIL_H */

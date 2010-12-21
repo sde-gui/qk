@@ -14,23 +14,23 @@
  */
 
 /**
- * class:MooPlugin: (parent GObject)
+ * class:MooPlugin: (parent GObject) (moo.lua 0)
  **/
 
 /**
- * class:MooWinPlugin: (parent GObject)
+ * class:MooWinPlugin: (parent GObject) (moo.lua 0)
  **/
 
 /**
- * class:MooDocPlugin: (parent GObject)
+ * class:MooDocPlugin: (parent GObject) (moo.lua 0)
  **/
 
 /**
- * boxed:MooPluginInfo:
+ * boxed:MooPluginInfo: (moo.lua 0)
  **/
 
 /**
- * boxed:MooPluginParams:
+ * boxed:MooPluginParams: (moo.lua 0)
  **/
 
 #ifdef HAVE_CONFIG_H
@@ -228,7 +228,7 @@ moo_plugin_class_init (MooPluginClass *klass)
 
 
 /**
- * moo_plugin_register:
+ * moo_plugin_register: (moo.lua 0)
  *
  * @id:
  * @type:

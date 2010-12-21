@@ -2774,7 +2774,7 @@ moo_editor_get_doc_for_uri (MooEditor  *editor,
 
 
 /**
- * moo_editor_set_window_type:
+ * moo_editor_set_window_type: (moo.lua 0)
  */
 void
 moo_editor_set_window_type (MooEditor      *editor,
@@ -2787,7 +2787,7 @@ moo_editor_set_window_type (MooEditor      *editor,
 
 
 /**
- * moo_editor_set_doc_type:
+ * moo_editor_set_doc_type: (moo.lua 0)
  */
 void
 moo_editor_set_doc_type (MooEditor      *editor,

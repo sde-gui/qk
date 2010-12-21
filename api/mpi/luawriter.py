@@ -173,18 +173,18 @@ class Writer(object):
         for i in range(len(meth.params)):
             p = meth.params[i]
 
-            if isinstance(p.type, GErrorReturnType):
-                print >> sys.stderr, "Skipping function %s because of 'GError**' parameter" % meth.c_name
-                return
+#             if isinstance(p.type, GErrorReturnType):
+#                 print >> sys.stderr, "Skipping function %s because of 'GError**' parameter" % meth.c_name
+#                 return
 
             if not p.type.name in _arg_helpers and not isinstance(p.type, ArrayType) and \
-               not isinstance(p.type, GTypedType):
+               not isinstance(p.type, GTypedType) and not isinstance(p.type, GErrorReturnType):
                 print >> sys.stderr, "Skipping function %s because of '%s' parameter" % (meth.c_name, p.type.name)
                 return
 
             if isinstance(p.type, GErrorReturnType):
                 assert i == len(meth.params) - 1
-                assert meth.retval.type.name == 'gboolean'
+                has_gerror_return = True
             else:
                 params.append(p)
 
@@ -213,6 +213,9 @@ class Writer(object):
         for p in params:
             self.__write_function_param(func_body, p, i, meth, cls)
             i += 1
+
+        if has_gerror_return:
+            func_body.start.append('GError *error = NULL;')
 
         if meth.retval:
             dic = {'gtype_id': meth.retval.type.gtype_id,
@@ -252,7 +255,12 @@ class Writer(object):
         else:
             push_ret = '0;'
 
-        func_body.end.append('return %s' % push_ret)
+        if not has_gerror_return:
+            func_body.end.append('return %s' % push_ret)
+        else:
+            func_body.end.append('int ret_lua = %s' % push_ret)
+            func_body.end.append('ret_lua += moo_lua_push_error (L, error);')
+            func_body.end.append('return ret_lua;')
 
         func_call += '%s (' % meth.c_name
         first_arg = True
@@ -264,6 +272,8 @@ class Writer(object):
                 func_call += ', '
             first_arg = False
             func_call += 'arg%d' % i
+        if has_gerror_return:
+            func_call += ', &error'
         func_call += ');'
 
         for line in func_body.start:
@@ -304,6 +314,9 @@ class Writer(object):
 #         self.out.write(')\n\n')
 
     def __write_class(self, cls):
+        bind = cls.annotations.get('moo.lua', '1')
+        if bind == '0':
+            return []
         self.out.write('// methods of %s\n\n' % cls.name)
         method_cfuncs = []
         for meth in cls.methods:
