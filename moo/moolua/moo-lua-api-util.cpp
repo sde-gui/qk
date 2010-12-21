@@ -48,7 +48,7 @@ private:
 const char *
 moo_lua_current_function (void)
 {
-    moo_return_val_if_fail (function_stack.size () > 0, "NONE");
+    moo_return_val_if_fail (function_stack.size () > 0, "`none'");
     return function_stack.back ().c_str ();
 }
 
