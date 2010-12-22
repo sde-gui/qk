@@ -18,7 +18,7 @@ EXTRA_DIST +=				\
 	tools/xml2h.py
 
 if MOO_DEV_MODE
-DISTCHECK_CONFIGURE_FLAGS = MAKEFLAGS=-j3 --enable-silent-rules
+DISTCHECK_CONFIGURE_FLAGS = MAKEFLAGS=-j3 --enable-silent-rules CFLAGS="-Werror -Wall -O2" CXXFLAGS="-Werror -Wall -O2"
 endif
 
 CLEANFILES =
