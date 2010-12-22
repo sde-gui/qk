@@ -186,6 +186,7 @@ ensure_output (WindowStuff *stuff)
                                 _("Search Results"), _("Search Results"));
     stuff->output = g_object_new (MOO_TYPE_CMD_VIEW,
                                   "highlight-current-line", TRUE,
+                                  "highlight-current-line-unfocused", TRUE,
                                   (const char*) NULL);
 
     moo_edit_window_add_stop_client (window, G_OBJECT (stuff->output));

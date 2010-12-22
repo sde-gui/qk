@@ -232,6 +232,7 @@ enum {
     PROP_DRAW_RIGHT_MARGIN,
     PROP_RIGHT_MARGIN_COLOR,
     PROP_HIGHLIGHT_CURRENT_LINE,
+    PROP_HIGHLIGHT_CURRENT_LINE_UNFOCUSED,
     PROP_HIGHLIGHT_MATCHING_BRACKETS,
     PROP_HIGHLIGHT_MISMATCHING_BRACKETS,
     PROP_CURRENT_LINE_COLOR,
@@ -353,6 +354,14 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                      g_param_spec_boolean ("highlight-current-line",
                                              "highlight-current-line",
                                              "highlight-current-line",
+                                             FALSE,
+                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_HIGHLIGHT_CURRENT_LINE_UNFOCUSED,
+                                     g_param_spec_boolean ("highlight-current-line-unfocused",
+                                             "highlight-current-line-unfocused",
+                                             "highlight-current-line-unfocused",
                                              FALSE,
                                              (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
@@ -1130,6 +1139,9 @@ moo_text_view_set_property (GObject        *object,
         case PROP_HIGHLIGHT_CURRENT_LINE:
             moo_text_view_set_highlight_current_line (view, g_value_get_boolean (value));
             break;
+        case PROP_HIGHLIGHT_CURRENT_LINE_UNFOCUSED:
+            moo_text_view_set_highlight_current_line_unfocused (view, g_value_get_boolean (value));
+            break;
         case PROP_DRAW_RIGHT_MARGIN:
             moo_text_view_set_draw_right_margin (view, g_value_get_boolean (value));
             break;
@@ -1225,6 +1237,9 @@ moo_text_view_get_property (GObject        *object,
             break;
         case PROP_TAB_WIDTH:
             g_value_set_uint (value, view->priv->tab_width);
+            break;
+        case PROP_HIGHLIGHT_CURRENT_LINE_UNFOCUSED:
+            g_value_set_boolean (value, view->priv->highlight_current_line_unfocused);
             break;
         case PROP_HIGHLIGHT_CURRENT_LINE:
             g_value_set_boolean (value, view->priv->color_settings[MOO_TEXT_VIEW_COLOR_CURRENT_LINE]);
@@ -1738,6 +1753,20 @@ moo_text_view_set_highlight_current_line (MooTextView *view,
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
     moo_text_view_set_color_setting (view, "highlight-current-line", highlight,
                                      MOO_TEXT_VIEW_COLOR_CURRENT_LINE);
+}
+
+void
+moo_text_view_set_highlight_current_line_unfocused (MooTextView *view,
+                                                    gboolean     highlight)
+{
+    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
+
+    if (view->priv->highlight_current_line_unfocused != highlight)
+    {
+        view->priv->highlight_current_line_unfocused = highlight;
+        gtk_widget_queue_draw (GTK_WIDGET (view));
+        g_object_notify (G_OBJECT (view), "highlight-current-line-unfocused");
+    }
 }
 
 void
@@ -2415,14 +2444,18 @@ moo_text_view_expose (GtkWidget      *widget,
         update_n_lines_idle (view);
 
     if (GTK_WIDGET_SENSITIVE (view) &&
-        GTK_WIDGET_HAS_FOCUS(view) &&
         event->window == text_window)
     {
-        if (view->priv->color_settings[MOO_TEXT_VIEW_COLOR_CURRENT_LINE] &&
-            view->priv->gcs[MOO_TEXT_VIEW_COLOR_CURRENT_LINE])
-                moo_text_view_draw_current_line (text_view, event);
+        if ((GTK_WIDGET_HAS_FOCUS (view) ||
+             view->priv->highlight_current_line_unfocused)
+            && view->priv->color_settings[MOO_TEXT_VIEW_COLOR_CURRENT_LINE]
+            && view->priv->gcs[MOO_TEXT_VIEW_COLOR_CURRENT_LINE])
+        {
+            moo_text_view_draw_current_line (text_view, event);
+        }
 
-        if (view->priv->color_settings[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN] &&
+        if (GTK_WIDGET_HAS_FOCUS (view) &&
+            view->priv->color_settings[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN] &&
             view->priv->gcs[MOO_TEXT_VIEW_COLOR_RIGHT_MARGIN])
                 moo_text_view_draw_right_margin (text_view, event);
     }

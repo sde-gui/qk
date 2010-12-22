@@ -125,6 +125,9 @@ void         moo_text_view_move_cursor              (MooTextView        *view,
 void         moo_text_view_set_highlight_current_line
                                                     (MooTextView        *view,
                                                      gboolean            highlight);
+void         moo_text_view_set_highlight_current_line_unfocused
+                                                    (MooTextView        *view,
+                                                     gboolean            highlight);
 void         moo_text_view_set_current_line_color   (MooTextView        *view,
                                                      const char         *color);
 void         moo_text_view_set_draw_right_margin    (MooTextView        *view,

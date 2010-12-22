@@ -134,6 +134,7 @@ struct MooTextViewPrivate {
     MooDrawWhitespaceFlags draw_whitespace;
     gboolean highlight_matching_brackets;
     gboolean highlight_mismatching_brackets;
+    gboolean highlight_current_line_unfocused;
 
     struct {
         gboolean show_icons;
