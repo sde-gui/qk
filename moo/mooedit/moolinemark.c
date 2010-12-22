@@ -1,7 +1,7 @@
 /*
  *   moolinemark.c
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
+ *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *   Copyright (C) 2008 by Daniel Poelzleithner <mooedit@poelzi.org>
  *
  *   This file is part of medit.  medit is free software; you can

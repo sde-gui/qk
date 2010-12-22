@@ -1,7 +1,7 @@
 /*
  *   moousertools.c
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
+ *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -1398,7 +1398,7 @@ user_tools_plugin_deinit (G_GNUC_UNUSED UserToolsPlugin *plugin)
 MOO_PLUGIN_DEFINE_INFO (user_tools,
                         N_("User Tools"),
                         N_("Configurable tools"),
-                        "Yevgen Muntyan <emuntyan@sourceforge.net>",
+                        "Yevgen Muntyan <emuntyan@users.sourceforge.net>",
                         MOO_VERSION)
 
 MOO_PLUGIN_DEFINE (UserTools, user_tools,

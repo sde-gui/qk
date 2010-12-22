@@ -1,7 +1,7 @@
 #
 #  mprj/utils.py
 #
-#  Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
+#  Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
 #
 #  This file is part of medit.  medit is free software; you can
 #  redistribute it and/or modify it under the terms of the

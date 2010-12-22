@@ -1,7 +1,7 @@
 /*
  *   moofilelist.c
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
+ *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -2410,7 +2410,7 @@ file_list_plugin_deinit (G_GNUC_UNUSED FileListPlugin *plugin)
 
 MOO_PLUGIN_DEFINE_INFO (file_list,
                         N_("File List"), N_("List of files"),
-                        "Yevgen Muntyan <emuntyan@sourceforge.net>",
+                        "Yevgen Muntyan <emuntyan@users.sourceforge.net>",
                         MOO_VERSION)
 MOO_WIN_PLUGIN_DEFINE (FileList, file_list)
 MOO_PLUGIN_DEFINE (FileList, file_list,

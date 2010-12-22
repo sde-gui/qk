@@ -1,7 +1,7 @@
 /*
  *   ctags-plugin.c
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@sourceforge.net>
+ *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *   Copyright (C) 2008      by Christian Dywan <christian@twotoasts.de>
  *
  *   This file is part of medit.  medit is free software; you can
@@ -157,7 +157,7 @@ ctags_plugin_deinit (G_GNUC_UNUSED CtagsPlugin *plugin)
 
 
 MOO_PLUGIN_DEFINE_INFO (ctags, "Ctags", "Shows functions in the open document",
-                        "Yevgen Muntyan <emuntyan@sourceforge.net>\n"
+                        "Yevgen Muntyan <emuntyan@users.sourceforge.net>\n"
                         "Christian Dywan <christian@twotoasts.de>",
                         MOO_VERSION)
 MOO_WIN_PLUGIN_DEFINE (Ctags, ctags)

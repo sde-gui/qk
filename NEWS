@@ -1,10 +1,10 @@
-2010-04-29  Yevgen Muntyan  <emuntyan@sourceforge.net>
+2010-04-29  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
 
     * === Released 0.10.4 ===
 
     Python plugins are back.
 
-2010-04-16  Yevgen Muntyan  <emuntyan@sourceforge.net>
+2010-04-16  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
 
     * === Released 0.10.3 ===
 
@@ -15,7 +15,7 @@
     touchpad where scrolling would stop working after a dialog
     was shown.
 
-2010-04-14  Yevgen Muntyan  <emuntyan@sourceforge.net>
+2010-04-14  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
 
     * === Released 0.10.2 ===
 
@@ -25,14 +25,14 @@
     On windows, made medit use case-insensitive filename comparison
     and fixed scrolling with a Synaptics touchpad.
 
-2010-03-19  Yevgen Muntyan  <emuntyan@sourceforge.net>
+2010-03-19  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
 
     * === Released 0.10.1 ===
 
     Restored lost ctags plugin. Added simple installation
     instructions.
 
-2010-02-28  Yevgen Muntyan  <emuntyan@sourceforge.net>
+2010-02-28  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
 
     * === Released 0.10.0 ===
 

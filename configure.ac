@@ -10,7 +10,7 @@ m4_if([_moo_version_suffix_],[],[m4_define([_moo_display_version_],[_moo_version
 
 m4_define([_moo_website_],[http://mooedit.sourceforge.net/])
 m4_define([_moo_web_contact_],[http://mooedit.sourceforge.net/contact.html])
-m4_define([_moo_email_],[emuntyan@sourceforge.net])
+m4_define([_moo_email_],[emuntyan@users.sourceforge.net])
 m4_define([_moo_copyright_],[2004-2010 Yevgen Muntyan <_moo_email_>])
 
 AC_PREREQ([2.65])
