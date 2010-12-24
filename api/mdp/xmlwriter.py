@@ -37,6 +37,16 @@ class Writer(object):
         self.xml.data(docs)
         self.__end_tag('doc')
 
+    def __write_summary(self, summary):
+        if not summary:
+            return
+        self.__start_tag('summary')
+        if isinstance(summary, list):
+            assert len(summary) == 1
+            summary = summary[0]
+        self.xml.data(summary)
+        self.__end_tag('summary')
+
     def __write_param_or_retval_annotations(self, param, elm):
         for k in param.attributes:
             elm.set(k, self.attributes[v])
@@ -96,13 +106,14 @@ class Writer(object):
         if cls.constructable:
             dic['constructable'] = '1'
         self.__start_tag('class', dic)
+        self.__write_summary(cls.summary)
+        self.__write_docs(cls.docs)
         if cls.constructor is not None:
             self.__write_function(cls.constructor, 'constructor')
         for meth in sorted(cls.vmethods, lambda x, y: cmp(x.name, y.name)):
             self.__write_function(meth, 'virtual')
         for meth in sorted(cls.methods, lambda x, y: cmp(x.name, y.name)):
             self.__write_function(meth, 'method')
-        self.__write_docs(cls.docs)
         self.__end_tag('class')
 
     def __write_boxed(self, cls):
@@ -111,11 +122,12 @@ class Writer(object):
             dic[k] = cls.annotations[k]
         tag = 'boxed' if isinstance(cls, module.Boxed) else 'pointer'
         self.__start_tag(tag, dic)
+        self.__write_summary(cls.summary)
+        self.__write_docs(cls.docs)
         if cls.constructor is not None:
             self.__write_function(cls.constructor, 'constructor')
         for meth in cls.methods:
             self.__write_function(meth, 'method')
-        self.__write_docs(cls.docs)
         self.__end_tag(tag)
 
     def __write_enum(self, enum):
@@ -127,6 +139,7 @@ class Writer(object):
         for k in enum.annotations:
             dic[k] = enum.annotations[k]
         self.__start_tag(tag, dic)
+        self.__write_summary(enum.summary)
         self.__write_docs(enum.docs)
         self.__end_tag(tag)
 
@@ -141,6 +154,7 @@ class Writer(object):
             self.__write_param(p)
         if func.retval:
             self.__write_retval(func.retval)
+        self.__write_summary(func.summary)
         self.__write_docs(func.docs)
         self.__end_tag(tag)
 

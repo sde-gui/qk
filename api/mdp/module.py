@@ -100,6 +100,7 @@ class Symbol(object):
         self.name = name
         self.c_name = c_name
         self.docs = docs
+        self.summary = None
         self.annotations = {}
 
 class FunctionBase(Symbol):
@@ -188,6 +189,7 @@ class Module(object):
             else:
                 raise RuntimeError("unknown annotation '%s' in class %s" % (a, name))
         cls = Class(name, short_name, parent, gtype_id, docs)
+        cls.summary = pcls.summary
         cls.annotations = annotations
         cls.constructable = constructable
         self.classes.append(cls)
@@ -207,6 +209,7 @@ class Module(object):
             else:
                 raise RuntimeError("unknown annotation '%s' in class %s" % (a, name))
         cls = What(name, short_name, gtype_id, docs)
+        cls.summary = pcls.summary
         cls.annotations = annotations
         self.boxed.append(cls)
         self.__class_dict[name] = cls
@@ -236,6 +239,7 @@ class Module(object):
             enum = Enum(name, short_name, gtype_id, docs)
         else:
             enum = Flags(name, short_name, gtype_id, docs)
+        enum.summary = ptyp.summary
         enum.annotations = annotations
         self.enums.append(enum)
 
@@ -429,12 +433,14 @@ class Module(object):
 
         if constructor_of:
             func = Function(name, c_name, params, retval, docs)
+            func.summary = pfunc.summary
             func.annotations = annotations
             if constructor_of in self.__constructors:
                 raise RuntimeError('duplicated constructor of class %s' % constructor_of)
             self.__constructors[constructor_of] = func
         elif cls:
             meth = Method(name, c_name, cls, params[1:], retval, docs)
+            meth.summary = pfunc.summary
             meth.annotations = annotations
             this_class_methods = self.__methods.get(cls)
             if not this_class_methods:
@@ -443,6 +449,7 @@ class Module(object):
             this_class_methods.append(meth)
         else:
             func = Function(name, c_name, params, retval, docs)
+            func.summary = pfunc.summary
             func.annotations = annotations
             self.functions.append(func)
 

@@ -21,11 +21,12 @@ print >> outfile, ';'
 
 outfile.close()
 
-docopy = False
-try:
-    docopy = not filecmp.cmp(tmp_output, output)
-except:
-    docopy = True
+# docopy = False
+# try:
+#     docopy = not filecmp.cmp(tmp_output, output)
+# except:
+#     docopy = True
+docopy = True
 
 if docopy:
     shutil.copyfile(tmp_output, output)

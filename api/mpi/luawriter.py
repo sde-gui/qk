@@ -171,14 +171,9 @@ class Writer(object):
         is_constructor = isinstance(meth, Constructor)
         own_return = is_constructor or (meth.retval and meth.retval.transfer_mode == 'full')
 
-        has_gerror_return = False
         params = []
         for i in range(len(meth.params)):
             p = meth.params[i]
-
-#             if isinstance(p.type, GErrorReturnType):
-#                 print >> sys.stderr, "Skipping function %s because of 'GError**' parameter" % meth.c_name
-#                 return
 
             if not p.type.name in _arg_helpers and not isinstance(p.type, ArrayType) and \
                not isinstance(p.type, GTypedType) and not isinstance(p.type, GErrorReturnType):
@@ -187,7 +182,7 @@ class Writer(object):
 
             if isinstance(p.type, GErrorReturnType):
                 assert i == len(meth.params) - 1
-                has_gerror_return = True
+                assert meth.has_gerror_return
             else:
                 params.append(p)
 
@@ -217,7 +212,7 @@ class Writer(object):
             self.__write_function_param(func_body, p, i, meth, None if is_constructor else cls)
             i += 1
 
-        if has_gerror_return:
+        if meth.has_gerror_return:
             func_body.start.append('GError *error = NULL;')
 
         if meth.retval:
@@ -258,7 +253,7 @@ class Writer(object):
         else:
             push_ret = '0;'
 
-        if not has_gerror_return:
+        if not meth.has_gerror_return:
             func_body.end.append('return %s' % push_ret)
         else:
             func_body.end.append('int ret_lua = %s' % push_ret)
@@ -275,7 +270,7 @@ class Writer(object):
                 func_call += ', '
             first_arg = False
             func_call += 'arg%d' % i
-        if has_gerror_return:
+        if meth.has_gerror_return:
             func_call += ', &error'
         func_call += ');'
 

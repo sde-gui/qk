@@ -1,0 +1,617 @@
+@menu
+* moo.App (Python):: 
+* moo.Command (Python):: 
+* moo.CommandContext (Python):: 
+* moo.DocPlugin (Python):: 
+* moo.Edit (Python):: Document object.
+* moo.EditOpenInfo (Python):: 
+* moo.EditReloadInfo (Python):: 
+* moo.EditSaveInfo (Python):: 
+* moo.EditWindow (Python):: 
+* moo.Editor (Python):: 
+* moo.Pane (Python):: 
+* moo.Plugin (Python):: 
+* moo.TextView (Python):: 
+* moo.UiXml (Python):: 
+* moo.WinPlugin (Python):: 
+* moo.CommandData (Python):: 
+* moo.PaneLabel (Python):: 
+* moo.PaneParams (Python):: 
+* moo.PluginInfo (Python):: 
+* moo.PluginParams (Python):: 
+* moo.UiNode (Python):: 
+* Functions (Python):: Functions.
+@end menu
+
+@node moo.App (Python)
+@subsection class moo.App
+@helpsection{SCRIPT_PYTHON_MOO_APP}
+
+@table @method
+
+@item get_editor()
+
+@end table
+
+@node moo.Command (Python)
+@subsection class moo.Command
+@helpsection{SCRIPT_PYTHON_MOO_COMMAND}
+
+@table @method
+
+@item get_options()
+
+@item set_options(options)
+
+@end table
+
+@node moo.CommandContext (Python)
+@subsection class moo.CommandContext
+@helpsection{SCRIPT_PYTHON_MOO_COMMAND_CONTEXT}
+
+@table @method
+
+@item get_doc()
+
+@item get_window()
+
+@end table
+
+@node moo.DocPlugin (Python)
+@subsection class moo.DocPlugin
+@helpsection{SCRIPT_PYTHON_MOO_DOC_PLUGIN}
+
+@table @method
+
+@item get_doc()
+
+@item get_plugin()
+
+@item get_window()
+
+@end table
+
+@node moo.Edit (Python)
+@subsection class moo.Edit
+@helpsection{SCRIPT_PYTHON_MOO_EDIT}
+
+Object which represents a document. It has methods for file operations and manipulating document text.
+@table @method
+
+@item append_text(text)
+
+@item begin_non_undoable_action()
+
+@item can_redo()
+
+@item can_undo()
+
+@item clear()
+
+@item close(ask_confirm=True)
+
+@item copy()
+
+@item cut()
+
+@item delete_selected_lines()
+
+@item delete_selected_text()
+
+@item delete_text(start, end)
+
+@item end_non_undoable_action()
+
+@item get_buffer()
+
+@item get_char_at_pos(pos)
+
+@item get_char_count()
+
+@item get_clean()
+
+@item get_cursor_pos()
+
+@item get_display_basename()
+
+@item get_display_name()
+
+@item get_editor()
+
+@item get_encoding()
+
+@item get_end_pos()
+
+@item get_file()
+
+@item get_filename()
+
+@item get_lang_id()
+
+@item get_line_at_pos(pos)
+
+@item get_line_count()
+
+@item get_line_end_type()
+
+@item get_pos_at_line(line)
+
+@item get_pos_at_line_end(line)
+
+@item get_selected_lines()
+Returns selected lines as a list of strings, one string for each line, line terminator characters not included. If nothing is selected, then line at cursor is returned. 
+
+@item get_selected_text()
+returns selected text.
+
+@item get_selection_end_pos()
+
+@item get_selection_start_pos()
+
+@item get_start_pos()
+
+@item get_status()
+
+@item get_text(start=None, end=None)
+
+@item get_uri()
+
+@item get_view()
+
+@item get_window()
+
+@item has_selection()
+
+@item insert_text(text, where=None)
+Insert text at position @param{where} or at cursor position if @param{where} is @code{None}.
+
+@item is_empty()
+This function returns whether the document is "empty", i.e. is not modified, is untitled, and contains no text.
+
+@item is_modified()
+
+@item is_untitled()
+
+@item paste()
+
+@item redo()
+
+@item reload(info=None)
+Reload document from disk 
+
+@item replace_selected_lines(replacement)
+replace selected lines with @param{replacement}. Similar to @method{replace_selected_text()}, but selection is extended to include whole lines. If nothing is selected, then line at cursor is replaced.
+
+@item replace_selected_text(replacement)
+replace selected text with @param{replacement}. If nothing is selected, then @param{replacement} is inserted at cursor.
+
+@item replace_text(start, end, text)
+
+@item save()
+
+@item save_as(info)
+
+@item save_copy(info)
+
+@item select_all()
+
+@item select_lines(start, end=-1)
+
+@item select_lines_at_pos(start, end=None)
+Select lines which span the range from @param{start} to @param{end} (including @param{end} position). If @param{end} is @code{None}, then it selects single line which contains position @param{start}.
+
+@item select_text(start, end)
+
+@item set_clean(clean)
+
+@item set_cursor_pos(pos)
+
+@item set_encoding(encoding)
+
+@item set_line_end_type(le)
+
+@item set_modified(modified)
+
+@item set_selection(start, end)
+
+@item undo()
+
+@end table
+
+@node moo.EditOpenInfo (Python)
+@subsection class moo.EditOpenInfo
+@helpsection{SCRIPT_PYTHON_MOO_EDIT_OPEN_INFO}
+
+@table @method
+
+@item edit_open_info_new(file, encoding=None)
+
+@item dup()
+
+@end table
+
+@node moo.EditReloadInfo (Python)
+@subsection class moo.EditReloadInfo
+@helpsection{SCRIPT_PYTHON_MOO_EDIT_RELOAD_INFO}
+
+@table @method
+
+@item edit_reload_info_new(encoding=None)
+
+@item dup()
+
+@end table
+
+@node moo.EditSaveInfo (Python)
+@subsection class moo.EditSaveInfo
+@helpsection{SCRIPT_PYTHON_MOO_EDIT_SAVE_INFO}
+
+@table @method
+
+@item edit_save_info_new(file, encoding=None)
+
+@item dup()
+
+@end table
+
+@node moo.EditWindow (Python)
+@subsection class moo.EditWindow
+@helpsection{SCRIPT_PYTHON_MOO_EDIT_WINDOW}
+
+@table @method
+
+@item abort_jobs()
+
+@item add_pane(user_id, widget, label, position)
+
+@item add_stop_client(client)
+
+@item close_all()
+
+@item get_active_doc()
+
+@item get_active_view()
+
+@item get_docs()
+
+@item get_editor()
+
+@item get_nth_doc(n)
+
+@item get_nth_view(n)
+
+@item get_pane(user_id)
+
+@item get_views()
+
+@item num_docs()
+
+@item remove_pane(user_id)
+
+@item remove_stop_client(client)
+
+@item set_active_doc(edit)
+
+@item set_active_view(view)
+
+@end table
+
+@node moo.Editor (Python)
+@subsection class moo.Editor
+@helpsection{SCRIPT_PYTHON_MOO_EDITOR}
+
+@table @method
+
+@item close_doc(doc, ask_confirm=True)
+
+@item close_docs(docs, ask_confirm=True)
+
+@item close_window(window, ask_confirm=True)
+
+@item get_active_doc()
+
+@item get_active_view()
+
+@item get_active_window()
+
+@item get_doc(file)
+
+@item get_doc_for_path(path)
+
+@item get_doc_for_uri(uri)
+
+@item get_doc_ui_xml()
+
+@item get_docs()
+
+@item get_ui_xml()
+
+@item get_windows()
+
+@item new_doc(window=None)
+
+@item new_file(info, parent=None)
+
+@item new_window()
+
+@item open_file(info, parent=None)
+
+@item open_files(files, parent=None)
+
+@item open_path(path, encoding=None, line=-1, window=None)
+
+@item open_uri(uri, encoding=None, line=-1, window=None)
+
+@item reload(doc, info)
+
+@item save(doc)
+
+@item save_as(doc, info)
+
+@item save_copy(doc, info)
+
+@item set_active_doc(doc)
+
+@item set_active_view(view)
+
+@item set_active_window(window)
+
+@item set_doc_type(type)
+
+@item set_ui_xml(xml)
+
+@item set_window_type(type)
+
+@end table
+
+@node moo.Pane (Python)
+@subsection class moo.Pane
+@helpsection{SCRIPT_PYTHON_MOO_PANE}
+
+@table @method
+
+@item attach()
+
+@item detach()
+
+@item get_child()
+
+@item get_detachable()
+
+@item get_id()
+
+@item get_index()
+
+@item get_label()
+
+@item get_params()
+
+@item get_removable()
+
+@item open()
+
+@item present()
+
+@item set_detachable(detachable)
+
+@item set_drag_dest()
+
+@item set_frame_markup(markup)
+
+@item set_frame_text(text)
+
+@item set_label(label)
+
+@item set_params(params)
+
+@item set_removable(removable)
+
+@item unset_drag_dest()
+
+@end table
+
+@node moo.Plugin (Python)
+@subsection class moo.Plugin
+@helpsection{SCRIPT_PYTHON_MOO_PLUGIN}
+
+@table @method
+
+@item set_doc_plugin_type(type)
+
+@item set_info(info)
+
+@item set_win_plugin_type(type)
+
+@end table
+
+@node moo.TextView (Python)
+@subsection class moo.TextView
+@helpsection{SCRIPT_PYTHON_MOO_TEXT_VIEW}
+
+@table @method
+
+@item set_font_from_string(font)
+
+@item set_lang_by_id(id)
+
+@end table
+
+@node moo.UiXml (Python)
+@subsection class moo.UiXml
+@helpsection{SCRIPT_PYTHON_MOO_UI_XML}
+
+@table @method
+
+@item add_item(merge_id, parent_path, name, action, position)
+
+@item add_ui_from_string(buffer, length=-1)
+
+@item create_widget(type, path, actions, accel_group)
+
+@item find_placeholder(name)
+
+@item get_node(path)
+
+@item get_widget(toplevel, path)
+
+@item insert(merge_id, parent, position, markup)
+
+@item insert_after(merge_id, parent, after, markup)
+
+@item insert_before(merge_id, parent, before, markup)
+
+@item insert_markup(merge_id, parent_path, position, markup)
+
+@item insert_markup_after(merge_id, parent_path, after, markup)
+
+@item insert_markup_before(merge_id, parent_path, before, markup)
+
+@item new_merge_id()
+
+@item remove_node(node)
+
+@item remove_ui(merge_id)
+
+@end table
+
+@node moo.WinPlugin (Python)
+@subsection class moo.WinPlugin
+@helpsection{SCRIPT_PYTHON_MOO_WIN_PLUGIN}
+
+@table @method
+
+@item get_plugin()
+
+@item get_window()
+
+@end table
+
+@node moo.CommandData (Python)
+@subsection class moo.CommandData
+@helpsection{SCRIPT_PYTHON_MOO_COMMAND_DATA}
+
+@table @method
+
+@item set(index_, value)
+
+@item get(index_)
+
+@item set_code(code)
+
+@item get_code()
+
+@end table
+
+@node moo.PaneLabel (Python)
+@subsection class moo.PaneLabel
+@helpsection{SCRIPT_PYTHON_MOO_PANE_LABEL}
+
+@table @method
+
+@item pane_label_new(icon_name=None, icon_pixbuf=None, label_text=None, window_title=None)
+
+@end table
+
+@node moo.PaneParams (Python)
+@subsection class moo.PaneParams
+@helpsection{SCRIPT_PYTHON_MOO_PANE_PARAMS}
+
+@table @method
+
+@item pane_params_new(window_position, detached, maximized, keep_on_top)
+
+@end table
+
+@node moo.PluginInfo (Python)
+@subsection class moo.PluginInfo
+@helpsection{SCRIPT_PYTHON_MOO_PLUGIN_INFO}
+
+@table @method
+
+@item plugin_info_new(name, description=None, author=None, version=None)
+
+@end table
+
+@node moo.PluginParams (Python)
+@subsection class moo.PluginParams
+@helpsection{SCRIPT_PYTHON_MOO_PLUGIN_PARAMS}
+
+@table @method
+
+@item plugin_params_new(enabled=True, visible=True)
+
+@end table
+
+@node moo.UiNode (Python)
+@subsection class moo.UiNode
+@helpsection{SCRIPT_PYTHON_MOO_UI_NODE}
+
+@table @method
+
+@item get_path()
+
+@item get_child(path)
+
+@end table
+
+@node Functions (Python)
+@subsection Functions
+@helpsection{SCRIPT_PYTHON_FUNCTIONS}
+@table @method
+
+@item app_instance()
+
+@item command_factory_register(name, display_name, factory, keys=None, extension=None)
+
+@item dgettext(domain, string)
+
+@item edit_open_info_new_path(path, encoding=None)
+
+@item edit_open_info_new_uri(uri, encoding=None)
+
+@item edit_save_info_new_path(path, encoding=None)
+
+@item edit_save_info_new_uri(uri, encoding=None)
+
+@item edit_window_set_action_filter(action_id, type, filter)
+
+@item editor_create(embedded)
+
+@item editor_instance()
+
+@item gettext(string)
+
+@item parse_command_options(string)
+
+@item plugin_register(id, type, info, params=None)
+
+@item prefs_get_bool(key)
+
+@item prefs_get_file(key)
+
+@item prefs_get_filename(key)
+
+@item prefs_get_int(key)
+
+@item prefs_get_string(key)
+
+@item prefs_new_key_bool(key, default_val=False)
+
+@item prefs_new_key_int(key, default_val=0)
+
+@item prefs_new_key_string(key, default_val=None)
+
+@item prefs_set_bool(key, val)
+
+@item prefs_set_file(key, val)
+
+@item prefs_set_filename(key, val)
+
+@item prefs_set_int(key, val)
+
+@item prefs_set_string(key, val)
+
+@item spin_main_loop(sec)
+
+@end table
+

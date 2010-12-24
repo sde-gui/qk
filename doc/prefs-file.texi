@@ -1,8 +1,8 @@
-@node meditrc
+@node prefs.xml
 @chapter Preferences files
 @helpsection{PREFS_FILE}
 
-@medit{} preferences are stored in @file{$HOME/.config/@medit{}rc} file.
+@medit{} preferences are stored in @file{$HOME/.local/share/medit-1/prefs.xml} file.
 It is an XML file which may be edited to set preferences which have not found
 their place in the @uilabel{Preferences} dialog.
 

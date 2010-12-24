@@ -17,10 +17,17 @@ genlua_files =			\
 	mpi/module.py		\
 	mpi/luawriter.py
 
+gendocs_files =			\
+	gendocs.py		\
+	mpi/__init__.py		\
+	mpi/module.py		\
+	mpi/texiwriter.py
+
 EXTRA_DIST =			\
 	$(docparser_files)	\
 	$(gendefs_files)	\
 	$(genlua_files)		\
+	$(gendocs_files)	\
 	sourcefiles.mak		\
 	moo.xml
 

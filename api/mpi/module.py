@@ -28,6 +28,7 @@ class _XmlObject(object):
     def __init__(self):
         object.__init__(self)
         self.doc = None
+        self.summary = None
         self.annotations = {}
 
     @classmethod
@@ -37,8 +38,8 @@ class _XmlObject(object):
         return obj
 
     def _parse_xml_element(self, elm):
-        if elm.tag == 'doc':
-            _set_unique_attribute(self, 'doc', Doc.from_xml(elm))
+        if elm.tag in ('doc', 'summary'):
+            _set_unique_attribute(self, elm.tag, Doc.from_xml(elm))
         else:
             raise RuntimeError('unknown element %s' % (elm.tag,))
 
@@ -298,6 +299,10 @@ class Module(object):
             p.type = self.__finish_type(p.type)
         if meth.retval:
             meth.retval.type = self.__finish_type(meth.retval.type)
+
+        meth.has_gerror_return = False
+        if meth.params and isinstance(meth.params[-1].type, GErrorReturnType):
+            meth.has_gerror_return = True
 
     def __finish_parsing_type(self, typ):
         if hasattr(typ, 'constructor') and typ.constructor is not None:

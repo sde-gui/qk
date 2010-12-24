@@ -10,6 +10,15 @@
 @var{\text\}
 @end macro
 
-@macro null{}
-@code{null}
-@end macro
+@menu
+* Lua:: Lua
+* Python:: Python
+@end menu
+
+@node Lua
+@section Lua
+@include script-lua.texi
+
+@node Python
+@section Python
+@include script-python.texi

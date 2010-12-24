@@ -22,6 +22,7 @@ class DoxBlock(object):
         self.params = []
         self.attributes = []
         self.docs = []
+        self.summary = None
 
         self.__parse(block)
 
@@ -62,6 +63,7 @@ class DoxBlock(object):
 
         self.symbol = chunks[0][0]
         self.annotations = chunks[0][1]
+        self.summary = chunks[0][2]
 
         for chunk in chunks[1:]:
             if chunk[0]:
@@ -282,6 +284,7 @@ class Parser(object):
             raise ParseError('bad function name %s' % (db.symbol,), block)
 
         func = Function(db.symbol, db.annotations, params, retval, db.docs, block)
+        func.summary = db.summary
         if DEBUG:
             print 'func.name:', func.name
         if func.name in self.__functions_dict:
@@ -302,6 +305,7 @@ class Parser(object):
             raise ParseError('class attributes', block)
 
         cls = Class(name, db.annotations, db.docs, block)
+        cls.summary = db.summary
         self.classes.append(cls)
 
     def __parse_boxed(self, block):
@@ -324,6 +328,7 @@ class Parser(object):
             raise ParseError('boxed attributes', block)
 
         cls = What(name, db.annotations, db.docs, block)
+        cls.summary = db.summary
         self.classes.append(cls)
 
     def __parse_enum(self, block):
@@ -339,6 +344,7 @@ class Parser(object):
             raise ParseError('enum attributes', block)
 
         enum = Enum(name, db.annotations, db.docs, block)
+        enum.summary = db.summary
         self.enums.append(enum)
 
     def __parse_flags(self, block):
@@ -354,6 +360,7 @@ class Parser(object):
             raise ParseError('flags attributes', block)
 
         flags = Flags(name, db.annotations, db.docs, block)
+        flags.summary = db.summary
         self.enums.append(flags)
 
     def __parse_block(self, block):

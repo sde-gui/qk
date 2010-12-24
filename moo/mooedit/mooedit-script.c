@@ -296,7 +296,7 @@ moo_edit_get_text (MooEdit           *doc,
  * @text:
  * @where: (allow-none) (default NULL)
  *
- * Insert text at position @where or at cursor position if @where is NULL.
+ * Insert text at position @where or at cursor position if @where is %NULL.
  **/
 void
 moo_edit_insert_text (MooEdit     *doc,
@@ -484,6 +484,9 @@ moo_edit_select_lines (MooEdit *doc,
  * @doc:
  * @start:
  * @end: (allow-none) (default NULL)
+ *
+ * Select lines which span the range from @start to @end (including @end position).
+ * If @end is %NULL, then it selects single line which contains position @start.
  **/
 void
 moo_edit_select_lines_at_pos (MooEdit           *doc,
@@ -592,7 +595,7 @@ join_lines (char **strv)
  * @doc:
  * @replacement: (type strv) (allow-none)
  *
- * replace selected lines with %param{replacement}. Similar to
+ * replace selected lines with @replacement. Similar to
  * %method{replace_selected_text()}, but selection is extended to include
  * whole lines. If nothing is selected, then line at cursor is replaced.
  **/
@@ -663,8 +666,8 @@ moo_edit_delete_selected_lines (MooEdit *doc)
 /**
  * moo_edit_replace_selected_text:
  *
- * replace selected text with %param{replacement}. If nothing is selected,
- * then %param{replacement} is inserted at cursor.
+ * replace selected text with @replacement. If nothing is selected,
+ * then @replacement is inserted at cursor.
  **/
 void
 moo_edit_replace_selected_text (MooEdit    *doc,
