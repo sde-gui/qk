@@ -593,7 +593,8 @@ join_lines (char **strv)
  * moo_edit_replace_selected_lines:
  *
  * @doc:
- * @replacement: (type strv) (allow-none)
+ * @replacement: (type strv) (allow-none): list of lines to replace
+ * selected lines with, maybe empty
  *
  * replace selected lines with @replacement. Similar to
  * %method{replace_selected_text()}, but selection is extended to include

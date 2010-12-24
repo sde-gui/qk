@@ -97,15 +97,45 @@ class Writer(object):
             else:
                 params.append(p.name)
 
-        dic = dict(func=func.name,
+        if isinstance(func, Constructor):
+            if self.mode == 'python':
+                func_name = cls.short_name
+            elif self.mode == 'lua':
+                func_name = 'medit.%s' % func.name
+            else:
+                oops()
+        elif cls is not None:
+            func_name = func.name
+        else:
+            if self.mode == 'python':
+                func_name = 'moo.%s' % func.name
+            elif self.mode == 'lua':
+                func_name = 'medit.%s' % func.name
+            else:
+                oops()
+
+        dic = dict(func=func_name,
                    params=', '.join(params))
         self.part_body.write("""\
 @item %(func)s(%(params)s)
 """ % dic)
 
+        has_param_docs = False
+        for p in func_params:
+            if p.doc:
+                has_param_docs = True
+                break
+
         if func.doc:
             self.part_body.write(self.__format_doc(func.doc.text))
             self.part_body.write('\n')
+
+        if has_param_docs:
+            self.part_body.write("@multitable\n")
+            for p in func_params:
+                param_dic = dict(param=p.name, doc=self.__format_doc(p.doc.text))
+                self.part_body.write("@item @param{%(param)s}\n@tab - \n@tab %(doc)s\n" % param_dic)
+            self.part_body.write("@end multitable\n")
 
         self.part_body.write('\n')
 

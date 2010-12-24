@@ -34,9 +34,9 @@ help/index.html: $(src_texinfo_files)
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help
 	$(AM_V_GEN)cd $(srcdir) && makeinfo --html medit.texi
 
-help/help.html: help/index.html
-	$(AM_V_at)rm -f $(srcdir)/help/help.html
-	$(AM_V_GEN)cd $(srcdir) && makeinfo --html --no-split medit.texi && mv help.html help/
+help.html: help/index.html
+	$(AM_V_at)rm -f $(srcdir)/help.html
+	$(AM_V_GEN)cd $(srcdir) && makeinfo --html --no-split medit.texi
 
 help-sections.h.stamp: help/index.html $(srcdir)/gensections.py
 	$(AM_V_GEN)$(PYTHON) $(srcdir)/gensections.py $(srcdir)/help/*.html > help-sections.h.tmp && \
@@ -45,7 +45,7 @@ help-sections.h.stamp: help/index.html $(srcdir)/gensections.py
 	$(AM_V_at)echo stamp > help-sections.h.stamp
 
 all-am: doc
-doc: help/index.html help/help.html help-sections.h.stamp medit.1
+doc: help/index.html help.html help-sections.h.stamp medit.1
 
 man-medit.t2t: man-medit.t2t.in $(top_builddir)/config.status
 	$(AM_V_GEN)cd $(top_builddir) && ./config.status --silent --file=doc/man-medit.t2t

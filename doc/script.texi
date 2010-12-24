@@ -7,7 +7,7 @@
 @end macro
 
 @macro param{text}
-@var{\text\}
+@code{\text\}
 @end macro
 
 @menu
