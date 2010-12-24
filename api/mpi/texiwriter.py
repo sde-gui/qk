@@ -47,14 +47,19 @@ class Writer(object):
 
         self.section_suffix = ' (%s)' % self.mode.capitalize()
 
-    def __check_bind_ann(self, obj):
-        bind = obj.annotations.get('moo.' + self.mode, '1')
-        if bind == '0':
+    def __string_to_bool(self, s):
+        if s == '0':
             return False
-        elif bind == '1':
+        elif s == '1':
             return True
         else:
             oops()
+
+    def __check_bind_ann(self, obj):
+        bind = self.__string_to_bool(obj.annotations.get('moo.' + self.mode, '1'))
+        if bind:
+            bind = not self.__string_to_bool(obj.annotations.get('moo.private', '0'))
+        return bind
 
     def __format_constant(self, value):
         if value in self.constants:

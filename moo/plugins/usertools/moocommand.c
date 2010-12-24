@@ -14,23 +14,23 @@
  */
 
 /**
- * class:MooCommand: (parent GObject)
+ * class:MooCommand: (parent GObject) (moo.private 1)
  **/
 
 /**
- * class:MooCommandContext: (parent GObject) (constructable)
+ * class:MooCommandContext: (parent GObject) (constructable) (moo.private 1)
  **/
 
 /**
- * class:MooCommandFactory: (parent GObject)
+ * class:MooCommandFactory: (parent GObject) (moo.private 1)
  **/
 
 /**
- * boxed:MooCommandData:
+ * boxed:MooCommandData: (moo.private 1)
  **/
 
 /**
- * flags:MooCommandOptions:
+ * flags:MooCommandOptions: (moo.private 1)
  */
 
 #ifdef HAVE_CONFIG_H
@@ -129,7 +129,7 @@ moo_command_create (const char     *name,
 
 
 /**
- * moo_command_factory_register:
+ * moo_command_factory_register: (moo.private 1)
  *
  * @name:
  * @display_name:

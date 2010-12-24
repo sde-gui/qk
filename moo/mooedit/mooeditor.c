@@ -574,7 +574,7 @@ get_top_window (MooEditor *editor)
 
 
 /**
- * moo_editor_get_ui_xml:
+ * moo_editor_get_ui_xml: (moo.private 1)
  */
 MooUiXml *
 moo_editor_get_ui_xml (MooEditor *editor)
@@ -592,7 +592,7 @@ moo_editor_get_ui_xml (MooEditor *editor)
 
 
 /**
- * moo_editor_get_doc_ui_xml:
+ * moo_editor_get_doc_ui_xml: (moo.private 1)
  */
 MooUiXml *
 moo_editor_get_doc_ui_xml (MooEditor *editor)
@@ -603,7 +603,7 @@ moo_editor_get_doc_ui_xml (MooEditor *editor)
 
 
 /**
- * moo_editor_set_ui_xml:
+ * moo_editor_set_ui_xml: (moo.private 1)
  */
 void
 moo_editor_set_ui_xml (MooEditor      *editor,

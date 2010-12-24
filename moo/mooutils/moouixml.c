@@ -14,15 +14,15 @@
  */
 
 /**
- * class:MooUiXml: (parent GObject) (constructable)
+ * class:MooUiXml: (parent GObject) (constructable) (moo.private 1)
  **/
 
 /**
- * pointer:MooUiNode:
+ * pointer:MooUiNode: (moo.private 1)
  */
 
 /**
- * enum:MooUiWidgetType:
+ * enum:MooUiWidgetType: (moo.private 1)
  */
 
 #include "mooutils/mooaction-private.h"
