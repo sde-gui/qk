@@ -40,10 +40,10 @@ moo/moopython/pygtk/moo-generated.defs
 moo/moolua/gtk.xml
 moo/moolua/moo-lua-api.cpp
 moo/moolua/gtk-lua-api.cpp
-doc/help/*.html
+doc/help/*
 doc/man-medit.t2t
 doc/medit.texi
 doc/medit.1
-doc/help.html
-doc/script-lua.texi
-doc/script-python.texi
+doc/script-lua.docbook
+doc/script-lua-gtk.docbook
+doc/script-python.docbook

@@ -53,6 +53,26 @@ moo_edit_begin_non_undoable_action (MooEdit *doc)
 }
 
 /**
+ * moo_edit_begin_user_action:
+ **/
+void
+moo_edit_begin_user_action (MooEdit *doc)
+{
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    gtk_text_buffer_begin_user_action (moo_edit_get_buffer (doc));
+}
+
+/**
+ * moo_edit_end_user_action:
+ **/
+void
+moo_edit_end_user_action (MooEdit *doc)
+{
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    gtk_text_buffer_end_user_action (moo_edit_get_buffer (doc));
+}
+
+/**
  * moo_edit_end_non_undoable_action:
  **/
 void
@@ -364,6 +384,8 @@ moo_edit_delete_text (MooEdit     *doc,
 
 /**
  * moo_edit_append_text:
+ *
+ * Append text to the end of document.
  **/
 void
 moo_edit_append_text (MooEdit    *doc,
@@ -382,6 +404,8 @@ moo_edit_append_text (MooEdit    *doc,
 
 /**
  * moo_edit_clear:
+ *
+ * Remove all text from document.
  **/
 void
 moo_edit_clear (MooEdit *doc)
@@ -398,6 +422,8 @@ moo_edit_clear (MooEdit *doc)
 
 /**
  * moo_edit_cut:
+ *
+ * Cut selection to clipboard.
  **/
 void
 moo_edit_cut (MooEdit *doc)
@@ -408,6 +434,8 @@ moo_edit_cut (MooEdit *doc)
 
 /**
  * moo_edit_copy:
+ *
+ * Copy selection to clipboard.
  **/
 void
 moo_edit_copy (MooEdit        *doc)
@@ -418,6 +446,8 @@ moo_edit_copy (MooEdit        *doc)
 
 /**
  * moo_edit_paste:
+ *
+ * Paste clipboard contents.
  **/
 void
 moo_edit_paste (MooEdit *doc)
@@ -428,6 +458,8 @@ moo_edit_paste (MooEdit *doc)
 
 /**
  * moo_edit_select_text:
+ *
+ * Select text from @start to @end.
  **/
 void
 moo_edit_select_text (MooEdit           *doc,
@@ -597,7 +629,7 @@ join_lines (char **strv)
  * selected lines with, maybe empty
  *
  * replace selected lines with @replacement. Similar to
- * %method{replace_selected_text()}, but selection is extended to include
+ * moo_edit_replace_selected_text(), but selection is extended to include
  * whole lines. If nothing is selected, then line at cursor is replaced.
  **/
 void
@@ -657,6 +689,10 @@ moo_edit_delete_selected_text (MooEdit *doc)
 
 /**
  * moo_edit_delete_selected_lines:
+ *
+ * Delete selected lines. Similar to moo_edit_delete_selected_text() but
+ * selection is extended to include whole lines. If no text is selected then
+ * line at cursor is deleted.
  **/
 void
 moo_edit_delete_selected_lines (MooEdit *doc)
@@ -667,7 +703,7 @@ moo_edit_delete_selected_lines (MooEdit *doc)
 /**
  * moo_edit_replace_selected_text:
  *
- * replace selected text with @replacement. If nothing is selected,
+ * Replace selected text with string @replacement. If nothing is selected,
  * then @replacement is inserted at cursor.
  **/
 void

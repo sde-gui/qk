@@ -2,14 +2,6 @@
 @chapter Scripting
 @helpsection{SCRIPT}
 
-@macro method{text}
-@code{\text\}
-@end macro
-
-@macro param{text}
-@code{\text\}
-@end macro
-
 @menu
 * Lua:: Lua
 * Python:: Python
@@ -17,8 +9,10 @@
 
 @node Lua
 @section Lua
-@include script-lua.texi
+@uref{script-lua.html, script-lua}
+
+@uref{script-lua-gtk.html, script-lua-gtk}
 
 @node Python
 @section Python
-@include script-python.texi
+@uref{script-python.html, script-python}

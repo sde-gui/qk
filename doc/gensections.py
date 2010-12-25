@@ -16,11 +16,12 @@ sections = [
 ]
 
 for f in sys.argv[1:]:
-    for line in open(f):
-        m = re_section.search(line)
-        if m:
-            sections.append([m.group(1), f])
-            break
+    if not os.path.basename(f) in ['help.html', 'script-lua.html', 'script-lua-gtk.html', 'script-python.html']:
+        for line in open(f):
+            m = re_section.search(line)
+            if m:
+                sections.append([m.group(1), f])
+                break
 
 print '#ifndef MOO_HELP_SECTIONS_H'
 print '#define MOO_HELP_SECTIONS_H'

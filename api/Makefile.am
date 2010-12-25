@@ -19,9 +19,11 @@ genlua_files =			\
 
 gendocs_files =			\
 	gendocs.py		\
+	gendocbook.py		\
 	mpi/__init__.py		\
 	mpi/module.py		\
-	mpi/texiwriter.py
+	mpi/texiwriter.py	\
+	mpi/docbookwriter.py
 
 EXTRA_DIST =			\
 	$(docparser_files)	\
