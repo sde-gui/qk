@@ -16,11 +16,6 @@
   padding: 0.5em;
 }
 
-.navigation .title
-{
-  font-size: 200%;
-}
-
 div.table table
 {
   border-collapse: collapse;
@@ -51,15 +46,6 @@ hr
   border: none 0px;
   height: 1px;
   clear: both;
-}
-
-.footer
-{
-  padding-top: 3.5em;
-  /* tango:aluminium 3 */
-  color: #babdb6;
-  text-align: center;
-  font-size: 80%;
 }
 
 .warning
