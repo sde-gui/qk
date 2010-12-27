@@ -4,7 +4,7 @@ if MOO_DEV_MODE
 
 $(srcdir)/medit-defines.ent: medit-defines.ent.in $(top_builddir)/config.status
 	$(AM_V_GEN)cd $(top_builddir) && ./config.status --silent --file=doc/medit-defines.ent
-	$(AM_V_at)mv medit-defines.ent $(srcdir)/medit-defines.ent
+	$(AM_V_at)$(MOO_MV_TO_SRCDIR) medit-defines.ent $(srcdir)/medit-defines.ent
 
 gendocbook_files =				\
 	$(top_srcdir)/api/gendocbook.py		\
@@ -102,7 +102,7 @@ doc:						\
 
 man-medit.t2t: man-medit.t2t.in $(top_builddir)/config.status
 	$(AM_V_GEN)cd $(top_builddir) && ./config.status --silent --file=doc/man-medit.t2t
-	$(AM_V_at)mv man-medit.t2t $(srcdir)/man-medit.t2t
+	$(AM_V_at)$(MOO_MV_TO_SRCDIR) man-medit.t2t $(srcdir)/man-medit.t2t
 
 medit.1: man-medit.t2t
 	$(AM_V_GEN)txt2tags --target=man --outfile=- $(srcdir)/man-medit.t2t | grep -v "cmdline: txt2tags" \
