@@ -66,36 +66,6 @@ static GtkTreeModel *page_get_lang_model    (MooPrefsPage       *page);
 static MooTextStyleScheme *page_get_scheme  (PrefsGeneralXml    *gxml);
 
 
-static void
-add_page (GtkWidget *page,
-          GtkWidget *notebook,
-          GtkWidget *subpage)
-{
-    GtkWidget *label = gtk_label_new (MOO_PREFS_PAGE (subpage)->label);
-    gtk_widget_show (subpage);
-    gtk_notebook_append_page (GTK_NOTEBOOK (notebook), subpage, label);
-    moo_prefs_page_add_page (MOO_PREFS_PAGE (page), MOO_PREFS_PAGE (subpage));
-}
-
-GtkWidget *
-moo_edit_prefs_page_new (MooEditor *editor)
-{
-    GtkWidget *page, *notebook;
-
-    page = moo_prefs_page_new ("Editor", GTK_STOCK_EDIT);
-    notebook = gtk_notebook_new ();
-    gtk_container_add (GTK_CONTAINER (page), notebook);
-    gtk_widget_show_all (page);
-
-    add_page (page, notebook, moo_edit_prefs_page_new_1 (editor));
-    add_page (page, notebook, moo_edit_prefs_page_new_2 (editor));
-    add_page (page, notebook, moo_edit_prefs_page_new_3 (editor));
-    add_page (page, notebook, moo_edit_prefs_page_new_4 (editor));
-
-    return page;
-}
-
-
 static GtkWidget *
 prefs_page_new (MooEditor          *editor,
                 const char         *label,
@@ -143,6 +113,8 @@ page_general_init_ui (MooPrefsPage *page)
     BIND_SETTING (tab_width, MOO_EDIT_PREFS_TAB_WIDTH);
     BIND_SETTING (indent_width, MOO_EDIT_PREFS_INDENT_WIDTH);
     BIND_SETTING (fontbutton, MOO_EDIT_PREFS_FONT);
+
+    moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_GENERAL);
 }
 
 static void
@@ -193,7 +165,6 @@ GtkWidget *
 moo_edit_prefs_page_new_1 (MooEditor *editor)
 {
     return prefs_page_new (editor,
-                           /* Translators: this one is temporary, don't translate */
                            Q_("PreferencesPage|General"),
                            GTK_STOCK_EDIT,
                            page_general_init_ui,
@@ -208,6 +179,7 @@ page_filters_init_ui (MooPrefsPage *page)
     PrefsFiltersXml *gxml;
     gxml = prefs_filters_xml_new_with_root (GTK_WIDGET (page));
     g_object_set_data (G_OBJECT (page), "moo-edit-prefs-page-xml", gxml);
+    moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_FILTERS);
 }
 
 static void
@@ -215,7 +187,6 @@ page_filters_init (MooPrefsPage *page)
 {
     PrefsFiltersXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
     filter_treeview_init (gxml);
-    moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_FILTERS);
 }
 
 static void
@@ -229,8 +200,7 @@ GtkWidget *
 moo_edit_prefs_page_new_5 (MooEditor *editor)
 {
     return prefs_page_new (editor,
-                           /* Translators: this one is temporary, don't translate */
-                           Q_("PreferencesPage|Filters"),
+                           Q_("PreferencesPage|File Filters"),
                            GTK_STOCK_EDIT,
                            page_filters_init_ui,
                            page_filters_init,
@@ -260,6 +230,8 @@ page_view_init_ui (MooPrefsPage *page)
     BIND_SETTING (check_show_trailing_spaces, MOO_EDIT_PREFS_SHOW_TRAILING_SPACES);
     BIND_SETTING (draw_rigth_margin, MOO_EDIT_PREFS_DRAW_RIGHT_MARGIN);
     BIND_SETTING (spin_right_margin_offset, MOO_EDIT_PREFS_RIGHT_MARGIN_OFFSET);
+
+    moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_VIEW);
 }
 
 static void
@@ -280,7 +252,6 @@ GtkWidget *
 moo_edit_prefs_page_new_2 (MooEditor *editor)
 {
     return prefs_page_new (editor,
-                           /* Translators: this one is temporary, don't translate */
                            Q_("PreferencesPage|View"),
                            GTK_STOCK_EDIT,
                            page_view_init_ui,
@@ -303,6 +274,8 @@ page_file_init_ui (MooPrefsPage *page)
     BIND_SETTING (check_make_backups, MOO_EDIT_PREFS_MAKE_BACKUPS);
     BIND_SETTING (check_save_session, MOO_EDIT_PREFS_SAVE_SESSION);
     BIND_SETTING (check_open_dialog_follows_doc, MOO_EDIT_PREFS_DIALOGS_OPEN_FOLLOWS_DOC);
+
+    moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_FILE);
 }
 
 static void
@@ -325,7 +298,6 @@ GtkWidget *
 moo_edit_prefs_page_new_3 (MooEditor *editor)
 {
     return prefs_page_new (editor,
-                           /* Translators: this one is temporary, don't translate */
                            Q_("PreferencesPage|File"),
                            GTK_STOCK_EDIT,
                            page_file_init_ui,
@@ -340,6 +312,7 @@ page_langs_init_ui (MooPrefsPage *page)
     PrefsLangsXml *gxml;
     gxml = prefs_langs_xml_new_with_root (GTK_WIDGET (page));
     g_object_set_data (G_OBJECT (page), "moo-edit-prefs-page-xml", gxml);
+    moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_LANGS);
 }
 
 static void
@@ -347,8 +320,6 @@ page_langs_init (MooPrefsPage *page)
 {
     PrefsLangsXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
     MooTreeHelper *helper;
-
-    moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_LANGS);
 
     lang_combo_init (gxml->lang_combo, page, gxml);
 
@@ -366,8 +337,7 @@ GtkWidget *
 moo_edit_prefs_page_new_4 (MooEditor *editor)
 {
     return prefs_page_new (editor,
-                           /* Translators: this one is temporary, don't translate */
-                           Q_("PreferencesPage|Langs"),
+                           Q_("PreferencesPage|Languages"),
                            GTK_STOCK_EDIT,
                            page_langs_init_ui,
                            page_langs_init,

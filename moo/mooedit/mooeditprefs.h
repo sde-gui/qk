@@ -23,7 +23,6 @@ G_BEGIN_DECLS
 
 #define MOO_EDIT_PREFS_PREFIX "Editor"
 
-GtkWidget  *moo_edit_prefs_page_new     (MooEditor  *editor);
 GtkWidget  *moo_edit_prefs_page_new_1   (MooEditor  *editor);
 GtkWidget  *moo_edit_prefs_page_new_2   (MooEditor  *editor);
 GtkWidget  *moo_edit_prefs_page_new_3   (MooEditor  *editor);

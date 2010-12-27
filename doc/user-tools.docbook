@@ -1,4 +1,4 @@
-<?xml version="1.0"?><!-- -%- indent-width:1 -%- -->
+<?xml version="1.0"?><!-- -%- indent-width:2 -%- -->
 <!DOCTYPE chapter [
 <!ENTITY % medit-defines SYSTEM "medit-defines.ent">
 %medit-defines;
@@ -19,8 +19,8 @@ an example or to modify to suit your needs.
 </para>
 
 
-<sect1 id="section-managing-tools">
-<title>Managing tools</title>
+<sect1 id="section-prefs-user-tools" moo.helpsection="PREFS_USER_TOOLS">
+<title>Managing tools in <guilabel>Preferences</guilabel> dialog</title>
 
 <para>
 To create a new tool or to modify existing ones, open
@@ -28,134 +28,64 @@ To create a new tool or to modify existing ones, open
 </para>
 <para>
 Select the tool in the list or click the <guibutton>New</guibutton>
-button to create a new one. To modify the order in which the tools
+button to create a new one. To modify the order in which tools
 appear in the <guimenu>Tools</guimenu> menu (or in the document
 context menu), use <guibutton>Up</guibutton> and <guibutton>Down</guibutton> buttons. To rename a tool,
 click its name in the list to select it and then click again to
 edit the name. Use the <guibutton>Delete</guibutton> button to delete a tool.
 </para>
 <para>
-The following controls are available to modify the tools behavior:
-<variablelist>
-<varlistentry>
-<term><guilabel>Files</guilabel></term>
-<listitem>Specifies for which files the tool is going to be available.</listitem>
-</varlistentry>
-<varlistentry>
-<term><guilabel>Options</guilabel></term>
-<listitem>Specifies under which conditions the tool should be enabled.</listitem>
-</varlistentry>
-<varlistentry>
-<term><guilabel>Command type</guilabel></term>
-<listitem>The type of the tool: a Python script, a Lua script, or a shell script.</listitem>
-</varlistentry>
-<varlistentry>
-<term><guilabel>Code</guilabel> text field</term>
-<listitem>Here you enter the actual script text.</listitem>
-</varlistentry>
-</variablelist>
-</para>
-<para>
-<guilabel>Options</guilabel> entry content is a comma-separated list of the following:
-<variablelist>
-<varlistentry>
-<term><code>need-doc</code></term>
-<listitem>the tool needs an open document.</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>need-file</code></term>
-<listitem>the tool will not work in new unsaved documents.</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>need-save</code></term>
-<listitem>the document will be saved before the command is executed.</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>need-save-all</code></term>
-<listitem>all open documents will be saved before the command is executed.</listitem>
-</varlistentry>
-</variablelist>
-</para>
-<para>
-<guilabel>Files</guilabel> entry content can be the following:
+The following controls are available to modify tools:
 <itemizedlist>
-<listitem>a comma-separated list of file patterns, e.g. <programlisting><code>*.c,*.h</code></programlisting></listitem>
-<listitem>a comma-separated list of languages prefixed with "<code>langs:</code>", e.g.
-<programlisting><code>langs: c, c++, objc</code></programlisting></listitem>
-<listitem>a regular expression matching document filename prefixed with "<code>regex:</code>", e.g. the above
-pattern list may be written as <programlisting><code>regex:\.[ch]$</code></programlisting></listitem>
-</itemizedlist>
-</para>
-<para>
-Empty entry means that the tool will be available for all documents.
-</para>
-<para>
-Shell script tools also have the following controls available:
-</para>
-
-<itemizedlist>
-<listitem>
-<guilabel>Input</guilabel> entry specifies what text from the document should be passed to the command via its standard input:
-  <variablelist>
-  <?dbhtml list-presentation="table"?>
-    <varlistentry>
-      <term><parameter>None</parameter></term>
-      <listitem>no input text.</listitem>
+  <listitem>
+    <para>
+    <guilabel>Files</guilabel> entry specifies for which files the tool is going to be available. It can
+    contain the following:
+    <itemizedlist>
+      <listitem>a comma-separated list of file patterns, e.g. <programlisting><code>*.c,*.h</code></programlisting></listitem>
+      <listitem>a comma-separated list of languages prefixed with "<code>langs:</code>", e.g.
+      <programlisting><code>langs: c, c++, objc</code></programlisting></listitem>
+      <listitem>a regular expression matching document filename prefixed with "<code>regex:</code>", e.g. the above
+      pattern list may be written as <programlisting><code>regex:\.[ch]$</code></programlisting></listitem>
+    </itemizedlist>
+    </para>
+    <para>Empty entry means that the tool will be available for all documents.</para>
+  </listitem>
+  <listitem>
+    <guilabel>Options</guilabel> entry specifies under which conditions the tool should be enabled.
+    Its content is a comma-separated list of the following:
+    <variablelist>
+      <?dbhtml list-presentation="table"?>
+<!--      <?dbhtml term-separator=" : "?>-->
+      <varlistentry>
+        <term><code>need-doc</code></term>
+        <listitem>the tool needs an open document.</listitem>
       </varlistentry>
       <varlistentry>
-      <term><parameter>Selected lines</parameter></term>
-      <listitem>the lines containing selection or the line containing the cursor in
-      case when no text is selected.</listitem>
-    </varlistentry>
-    <varlistentry>
-      <term><parameter>Selection</parameter></term>
-      <listitem>exact selected text. This will be different from <parameter>Selected lines</parameter>
-      if selection does not span whole lines of the document, for instance if it is a single word.</listitem>
-    </varlistentry>
-    <varlistentry>
-      <term><parameter>Whole document</parameter></term>
-      <listitem>whole document contents.</listitem>
-    </varlistentry>
-  </variablelist>
-</listitem>
-
-<listitem>
-<guilabel>Output</guilabel> entry specifies how the standard output of the command should be redirected.
-  <variablelist>
-  <?dbhtml list-presentation="table"?>
-  <varlistentry>
-   <term><parameter>None</parameter></term>
-   <listitem>the command output will be discarded.</listitem>
-  </varlistentry>
-  <varlistentry>
-   <term><parameter>None, asynchronous</parameter></term>
-   <listitem>the command output will be discarded, and the command will be executed in background.
-   Use this if you need to launch some external program like a web browser.</listitem>
-  </varlistentry>
-  <varlistentry>
-   <term><parameter>Output pane</parameter></term>
-   <listitem>the command output will be displayed in an output pane. This is useful for running programs
-   like compilers, where you want to see the output.</listitem>
-  </varlistentry>
-  <varlistentry>
-   <term><parameter>Insert into the document</parameter></term>
-   <listitem>output will be inserted into the current document at the cursor position. It will replace the
-   text used as an input, if any.</listitem>
-  </varlistentry>
-  <varlistentry>
-   <term><parameter>New document</parameter></term>
-   <listitem>new document will be created and the command output will be inserted into it.</listitem>
-  </varlistentry>
-  </variablelist>
-</listitem>
-
-<listitem>
-  <guilabel>Filter</guilabel> combo. If the output pane is used, then it can be passed through a
-  <parameter>filter</parameter>: the filter can match filenames and line numbers, so when you click
-  the text in the output pane it will open the corresponding file. This is used for compilers and
-  similar commands, which output locations of errors in processed files.
-</listitem>
+        <term><code>need-file</code></term>
+        <listitem>the tool will not work in new unsaved documents.</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><code>need-save</code></term>
+        <listitem>the document will be saved before the command is executed.</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><code>need-save-all</code></term>
+        <listitem>all open documents will be saved before the command is executed.</listitem>
+      </varlistentry>
+    </variablelist>
+  </listitem>
+  <listitem>
+    <guilabel>Command type</guilabel> combo specifies the type of the tool: a Python script, a
+    Lua script, or a shell script.
+  </listitem>
+  <listitem>
+    <guilabel>Code</guilabel> text field contains script or shell command text. See
+    <xref linkend="section-user-tools-shell"/>, <xref linkend="section-user-tools-lua"/>,
+    <xref linkend="section-user-tools-python"/> for details on what can be here.
+  </listitem>
 </itemizedlist>
+</para>
 
 </sect1>
 
@@ -167,7 +97,7 @@ Shell script tools also have the following controls available:
 It is possible to create tools without using the <guilabel>Preferences</guilabel> dialog,
 they can be stored in files in <filename>tools</filename> subfolder of the &medit; data
 folders (or <filename>tools-context</filename> for tools which appear in the document context
-menu). In particular, on Unix systems you can place files into &medit-user-tools-dir; folder.
+menu). In particular, on Unix systems you can place files into &medit-user-tools-dir-unix; folder.
 </para>
 <para>
 Names of the files in the <filename>tools</filename> folder are used as their menu item
@@ -214,7 +144,7 @@ the following format:
  </varlistentry>
  <varlistentry>
   <term><code>menu</code></term>
-  <listitem>the menu to place this tool into. By default the tools are located in the <guimenu>Tools</guimenu> menu,
+  <listitem>the menu to place this tool into. By default tools are located in the <guimenu>Tools</guimenu> menu,
   but they can be as well put into any other menu.</listitem>
  </varlistentry>
  <varlistentry>
@@ -258,13 +188,88 @@ In addition to these, you can set input and output options for executable files:
 <title>Shell scripts</title>
 
 <para>
-In addition to the document text passed via standard input,
-shell scripts have a number of environment variables set. <envar>APP_PID</envar>
-variable is set to the current process process id, so that opening a file in the
-same instance of &medit; is as simple as <code>medit filename</code> (on the other
-hand, you will have to use command line options if you need to run a new &medit; instance).
-The following environment variables are set when scripts are executed:
+Shell script user tools execute command entered in the <guilabel>Command</guilabel>
+text field using default user shell on Unix systems or <command>cmd.exe</command> on Windows.
+</para>
+<para>
+Its input and output are specified by the following controls:
+<itemizedlist>
+  <listitem>
+    <guilabel>Input</guilabel> entry specifies what text from the document should be passed to the command via its standard input:
+    <variablelist>
+    <?dbhtml list-presentation="table"?>
+      <varlistentry>
+        <term><parameter>None</parameter></term>
+        <listitem>no input text.</listitem>
+        </varlistentry>
+        <varlistentry>
+        <term><parameter>Selected lines</parameter></term>
+        <listitem>the lines containing selection or the line containing the cursor in
+        case when no text is selected.</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><parameter>Selection</parameter></term>
+        <listitem>exact selected text. This will be different from <parameter>Selected lines</parameter>
+        if selection does not span whole lines of the document, for instance if it is a single word.</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><parameter>Whole document</parameter></term>
+        <listitem>whole document contents.</listitem>
+      </varlistentry>
+    </variablelist>
+  </listitem>
+
+  <listitem>
+  <guilabel>Output</guilabel> entry specifies how the standard output of the command should be redirected.
+    <variablelist>
+    <?dbhtml list-presentation="table"?>
+    <varlistentry>
+     <term><parameter>None</parameter></term>
+     <listitem>the command output will be discarded.</listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>None, asynchronous</parameter></term>
+     <listitem>the command output will be discarded, and the command will be executed in background.
+     Use this if you need to launch some external program like a web browser.</listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>Output pane</parameter></term>
+     <listitem>the command output will be displayed in an output pane. This is useful for running programs
+     like compilers, where you want to see the output.</listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>Insert into the document</parameter></term>
+     <listitem>output will be inserted into the current document at the cursor position. It will replace the
+     text used as an input, if any.</listitem>
+    </varlistentry>
+    <varlistentry>
+     <term><parameter>New document</parameter></term>
+     <listitem>new document will be created and the command output will be inserted into it.</listitem>
+    </varlistentry>
+    </variablelist>
+  </listitem>
+
+  <listitem>
+    <guilabel>Filter</guilabel> combo. If the output pane is used, then it can be passed through a
+    <parameter>filter</parameter>: the filter can match filenames and line numbers, so when you click
+    the text in the output pane it will open the corresponding file. This is used for compilers and
+    similar commands, which output locations of errors in processed files.
+  </listitem>
+</itemizedlist>
+</para>
+<para>
+Shell script user tools have a number of environment variables set.
+<envar>APP_PID</envar> variable is set so that opening a file in the same instance
+of &medit; is as simple as <code>medit filename</code> (on the other hand, you will
+have to use command line options if you need to run a new &medit; instance). The
+following environment variables are set when scripts are executed:
 <variablelist>
+  <?dbhtml list-presentation="table"?>
+<!--  <?dbhtml term-separator=" : "?>-->
+  <varlistentry>
+    <term><envar>APP_PID</envar></term>
+    <listitem>current process id.</listitem>
+  </varlistentry>
   <varlistentry>
     <term><envar>DOC</envar></term>
     <listitem>document basename.</listitem>
@@ -285,13 +290,19 @@ The following environment variables are set when scripts are executed:
   </varlistentry>
   <varlistentry>
     <term><envar>LINE</envar></term>
-    <listitem>the number of the line containing cursor.</listitem>
+    <listitem><constant>1</constant>-based number of the line containing cursor.
+    For example, if cursor is at the first line then <envar>LINE</envar> will be
+    set to <constant>1</constant>.</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><envar>LINE0</envar></term>
+    <listitem><constant>0</constant>-based number of the line containing cursor.
+    For example, if cursor is at the first line then <envar>LINE0</envar> will be
+    set to <constant>0</constant>.</listitem>
   </varlistentry>
   <varlistentry>
     <term><envar>DATA_DIR</envar></term>
-    <listitem>user data directory (&medit-user-data-dir;). For example the tools are stored in
-    <filename><envar>$DATA_DIR</envar>/menu.cfg</filename> file and in files in the
-    <filename><envar>$DATA_DIR</envar>/tools/</filename> directory.</listitem>
+    <listitem>user data directory (&medit-user-data-dir-unix; on Unix systems).</listitem>
   </varlistentry>
 </variablelist>
 </para>

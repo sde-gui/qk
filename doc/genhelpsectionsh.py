@@ -49,7 +49,6 @@ for f in args:
 
 map_hsection_to_html = {
     'PREFS_ACCELS': 'index.html',
-    'PREFS_PLUGINS': 'index.html',
     'DIALOG_REPLACE': 'index.html',
     'DIALOG_FIND': 'index.html',
     'FILE_SELECTOR': 'index.html',
@@ -59,6 +58,8 @@ map_hsection_to_html = {
 
 for section in map_hsection_to_id:
     map_hsection_to_html[section] = os.path.basename(map_id_to_html[map_hsection_to_id[section]])
+
+map_hsection_to_html['PREFS_PLUGINS'] = map_hsection_to_html['PREFS_DIALOG']
 
 print '#ifndef MOO_HELP_SECTIONS_H'
 print '#define MOO_HELP_SECTIONS_H'

@@ -81,6 +81,13 @@ moo-help-sections.h.stamp: $(docbook_files) toc.xml genhelpsectionsh.py
 	$(AM_V_at)rm -f moo-help-sections.h.tmp
 	$(AM_V_at)echo stamp > moo-help-sections.h.stamp
 
+png_files = prefs-file-filters.png prefs-file-selector.png
+dest_png_files = $(addprefix $(srcdir)/help/img/,$(png_files))
+
+$(srcdir)/help/img/%.png: img/%.png
+	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/img/
+	$(AM_V_GEN)cp $(srcdir)/img/$*.png $(srcdir)/help/img/
+
 all-am: doc
 doc:						\
 	$(srcdir)/help/index.html		\
@@ -90,6 +97,7 @@ doc:						\
 	$(srcdir)/help/script-python.html	\
 	$(srcdir)/help/medit.css		\
 	$(srcdir)/medit.1			\
+	$(dest_png_files)			\
 	moo-help-sections.h.stamp
 
 man-medit.t2t: man-medit.t2t.in $(top_builddir)/config.status
@@ -105,11 +113,12 @@ endif
 EXTRA_DIST = help moo-help-sections.h medit.1
 
 install-data-local:
-	$(MKDIR_P) $(DESTDIR)$(MOO_HELP_DIR)
-	cd $(srcdir) && $(INSTALL_DATA) help/*.html $(DESTDIR)$(MOO_HELP_DIR)
+	$(MKDIR_P) $(DESTDIR)$(MOO_HELP_DIR)/img
+	cd $(srcdir) && $(INSTALL_DATA) help/*.html help/*.css $(DESTDIR)$(MOO_HELP_DIR)
+	cd $(srcdir) && $(INSTALL_DATA) help/img/*.png $(DESTDIR)$(MOO_HELP_DIR)/img
 
 uninstall-local:
-	rm -f $(DESTDIR)$(MOO_HELP_DIR)/*.html
+	rm -f $(DESTDIR)$(MOO_HELP_DIR)/*.html $(DESTDIR)$(MOO_HELP_DIR)/*.css $(DESTDIR)$(MOO_HELP_DIR)/img/*.png
 
 if MOO_OS_UNIX
 dist_man_MANS = medit.1

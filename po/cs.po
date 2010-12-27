@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-21 03:29-0800\n"
+"POT-Creation-Date: 2010-12-26 22:09-0800\n"
 "PO-Revision-Date: 2007-11-10 22:45+0100\n"
 "Last-Translator: Vlastimil Ott <vlastimil@e-ott.info>\n"
 "Language-Team:  <cs@li.org>\n"
@@ -389,6 +389,10 @@ msgid "<b>Description:</b>"
 msgstr "<b>Popis:</b>"
 
 #: ../moo/mooedit/glade/moopluginprefs.glade.h:3
+msgid "<b>Plugins</b>"
+msgstr ""
+
+#: ../moo/mooedit/glade/moopluginprefs.glade.h:4
 msgid "<b>Version:</b>"
 msgstr "<b>Verze:</b>"
 
@@ -476,7 +480,7 @@ msgstr "Rozlišovat velikost znaků"
 msgid "Don't prompt on replace"
 msgstr "Neptat se na nahrazení"
 
-#: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1119
+#: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1120
 msgid "Find"
 msgstr "Najít"
 
@@ -755,29 +759,24 @@ msgstr "Otevřít nedávný"
 msgid "encodings_list"
 msgstr ""
 
-#. Translators: this one is temporary, don't translate
-#: ../moo/mooedit/mooeditprefspage.c:197
+#: ../moo/mooedit/mooeditprefspage.c:196
 msgid "PreferencesPage|General"
 msgstr ""
 
-#. Translators: this one is temporary, don't translate
-#: ../moo/mooedit/mooeditprefspage.c:232
-msgid "PreferencesPage|Filters"
+#: ../moo/mooedit/mooeditprefspage.c:231
+msgid "PreferencesPage|File Filters"
 msgstr ""
 
-#. Translators: this one is temporary, don't translate
-#: ../moo/mooedit/mooeditprefspage.c:283
+#: ../moo/mooedit/mooeditprefspage.c:281
 msgid "PreferencesPage|View"
 msgstr ""
 
-#. Translators: this one is temporary, don't translate
-#: ../moo/mooedit/mooeditprefspage.c:328
+#: ../moo/mooedit/mooeditprefspage.c:325
 msgid "PreferencesPage|File"
 msgstr ""
 
-#. Translators: this one is temporary, don't translate
-#: ../moo/mooedit/mooeditprefspage.c:369
-msgid "PreferencesPage|Langs"
+#: ../moo/mooedit/mooeditprefspage.c:365
+msgid "PreferencesPage|Languages"
 msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:362
@@ -1279,7 +1278,7 @@ msgstr ""
 msgid "Move selected files to Trash"
 msgstr ""
 
-#: ../moo/moofileview/moofileview-tools.c:292
+#: ../moo/moofileview/moofileview-tools.c:328
 msgid "Open with|Default Application"
 msgstr ""
 
@@ -1925,28 +1924,28 @@ msgstr "Panel výběru souborů pro okno editoru"
 msgid "Search Results"
 msgstr "Výsledky hledání"
 
-#: ../moo/plugins/moofind.c:249 ../moo/plugins/moofind.c:250
+#: ../moo/plugins/moofind.c:250 ../moo/plugins/moofind.c:251
 msgid "Find In Files"
 msgstr "Najít v souborech"
 
-#: ../moo/plugins/moofind.c:251
+#: ../moo/plugins/moofind.c:252
 msgid "Find in files"
 msgstr "Najít v souborech"
 
-#: ../moo/plugins/moofind.c:259 ../moo/plugins/moofind.c:260
-#: ../moo/plugins/moofind.c:999
+#: ../moo/plugins/moofind.c:260 ../moo/plugins/moofind.c:261
+#: ../moo/plugins/moofind.c:1000
 msgid "Find File"
 msgstr "Najít soubor"
 
-#: ../moo/plugins/moofind.c:261
+#: ../moo/plugins/moofind.c:262
 msgid "Find file"
 msgstr "Najít soubor"
 
-#: ../moo/plugins/moofind.c:968
+#: ../moo/plugins/moofind.c:969
 msgid "Find in Files"
 msgstr "Najít v souborech"
 
-#: ../moo/plugins/moofind.c:1051 ../moo/plugins/moofind.c:1077
+#: ../moo/plugins/moofind.c:1052 ../moo/plugins/moofind.c:1078
 #, c-format
 msgid "*** %u match found ***"
 msgid_plural "*** %u matches found ***"
@@ -1954,7 +1953,7 @@ msgstr[0] "*** Nalezeny %u shody ***"
 msgstr[1] "*** Nalezeno %u shod ***"
 msgstr[2] "*** Nalezeno %u shod ***"
 
-#: ../moo/plugins/moofind.c:1058 ../moo/plugins/moofind.c:1083
+#: ../moo/plugins/moofind.c:1059 ../moo/plugins/moofind.c:1084
 #, c-format
 msgid "*** %u file found ***"
 msgid_plural "*** %u files found ***"
@@ -1962,7 +1961,7 @@ msgstr[0] "*** Nalezeny %u soubory ***"
 msgstr[1] "*** Nalezeno %u souborů ***"
 msgstr[2] "*** Nalezeno %u souborů ***"
 
-#: ../moo/plugins/moofind.c:1119
+#: ../moo/plugins/moofind.c:1120
 msgid "Finds everything"
 msgstr "Najde vše"
 

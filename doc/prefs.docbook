@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0"?><!-- -%- indent-width:2 -%- -->
 <!DOCTYPE chapter [
 <!ENTITY % medit-defines SYSTEM "medit-defines.ent">
 %medit-defines;
@@ -9,6 +9,70 @@
 <sect1 id="section-prefs-dialog" moo.helpsection="PREFS_DIALOG">
 <title>Preferences dialog</title>
 <para>
+<guilabel>Preferences</guilabel> provides access to almost all &medit; settings.
+Some settings are not available here, see <xref linkend="section-prefs-xml"/>.
+</para>
+<para>
+<guilabel>Preferences</guilabel> dialog has several tabs:
+<variablelist>
+  <varlistentry>
+    <term><guilabel>General</guilabel></term>
+    <listitem>Contains settings which didn't find place in other sections, see
+    <xref linkend="section-prefs-general"/>.</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><guilabel>View</guilabel></term>
+    <listitem>Contains settings which control how &medit; displays text, see
+    <xref linkend="section-prefs-view"/>.</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><guilabel>File</guilabel></term>
+    <listitem>Contains settings which control how &medit; saves and loads files, see
+    <xref linkend="section-prefs-file"/>.</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><guilabel>Languages</guilabel></term>
+    <listitem>See <xref linkend="section-prefs-langs"/>.</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><guilabel>File Filters</guilabel></term>
+    <listitem>See <xref linkend="section-prefs-file-filters"/>.</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><guilabel>Plugins</guilabel></term>
+    <listitem>Displays information about available plugings and allows to disable/enable them.</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><guilabel>File Selector</guilabel></term>
+    <listitem>Contains File Selector settings, see <xref linkend="section-prefs-file-selector"/>.</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><guilabel>Tools</guilabel></term>
+    <listitem>User-defined tools, see <xref linkend="section-prefs-user-tools"/>.</listitem>
+  </varlistentry>
+</variablelist>
+</para>
+</sect1>
+
+
+<sect1 id="section-prefs-general" moo.helpsection="PREFS_GENERAL">
+<title><guilabel>General</guilabel> tab</title>
+</sect1>
+
+
+<sect1 id="section-prefs-view" moo.helpsection="PREFS_VIEW">
+<title><guilabel>View</guilabel> tab</title>
+</sect1>
+
+
+<sect1 id="section-prefs-file" moo.helpsection="PREFS_FILE">
+<title><guilabel>File</guilabel> tab</title>
+</sect1>
+
+
+<sect1 id="section-prefs-langs" moo.helpsection="PREFS_LANGS">
+<title><guilabel>Languages</guilabel> tab</title>
+<para>
 <guilabel>Languages and files</guilabel> tab in the <guilabel>Editor</guilabel>
 section of the <guilabel>Preferences</guilabel> dialog allows customizing
 how syntax highlighting language and editing options are chosen
@@ -16,11 +80,6 @@ depending on the document filename, as well as setting editing options for
 all documents which use given language and choosing file patterns and mime types
 for which the given language should be used.
 </para>
-</sect1>
-
-
-<sect1 id="section-language-options" moo.helpsection="PREFS_LANGS">
-<title>Language options tab</title>
 <para>
 Here you can set editing options on per-language basis, as well as define
 for which file patterns and mime types given language should be used.
@@ -60,17 +119,13 @@ for format of this entry content.
 </sect1>
 
 
-<sect1 id="section-file-filters" moo.helpsection="PREFS_FILTERS">
+<sect1 id="section-prefs-file-filters" moo.helpsection="PREFS_FILTERS">
 <title>File filters tab</title>
 <para>
 <guilabel>File filters tab</guilabel> section allows to customize editing options,
 as well as syntax highlighting language, on per-document basis using regular
 expressions which are matched against the document filename (globs can also be
 used, see below). Full file paths are used, so one can have per-directory settings.
-</para>
-<para>
-Use dollar if you need to match ends of filenames, e.g. "<code>\.doc$</code>" will work as
-"<code>*.doc</code>" pattern.
 </para>
 <para>
 The filters are applied in the order they appear in the list, one by one. All filters
@@ -87,16 +142,30 @@ which they are applied.
 </para>
 <para>
 <guilabel>Filter</guilabel> field contains a regular expression matched agains the
-document filename. If it is found in the filename, then the options from the
-<guilabel>Options</guilabel> field are applied to the document. Alternatively it can be
+document filename. If it is found in the filename,
+then the options from the <guilabel>Options</guilabel> field are applied to the
+document. Example:
+<programlisting>projects/moo/</programlisting>
+</para>
+<para>
+Use dollar if you need to match ends of filenames, e.g. "<code>\.doc$</code>" will work as
+"<code>*.doc</code>" pattern.
+</para>
+<para>
+Alternatively it can be
 a comma-separated list of globs prefixed with "<code>globs:</code>" or a list
-of language ids prefixed with "<code>langs:</code>", e.g. "<code>globs:*.c,*.h</code>" or
-"<code>langs:c,c++</code>".
+of language ids prefixed with "<code>langs:</code>", e.g.
+<programlisting>globs:*.c,*.h</programlisting>
+or
+<programlisting>langs:c,c++</programlisting>
 </para>
 <para>
 <guilabel>Options</guilabel> field contains the options, in format described in
 <xref linkend="section-editing-options"/>.
 </para>
+<informalexample>
+<graphic fileref="img/prefs-file-filters.png" align="center"/>
+</informalexample>
 </sect1>
 
 
@@ -120,6 +189,8 @@ as in this list.
 <para>
 The following entries set the command properties:
 <variablelist>
+  <?dbhtml list-presentation="table"?>
+<!--  <?dbhtml term-separator=" : "?>-->
   <varlistentry>
     <term><parameter>Name</parameter></term>
     <listitem>Menu item label for this command.</listitem>
@@ -148,6 +219,9 @@ The following entries set the command properties:
   </varlistentry>
 </variablelist>
 </para>
+<informalexample>
+<graphic fileref="img/prefs-file-selector.png" align="center"/>
+</informalexample>
 </sect1>
 
 
@@ -230,7 +304,7 @@ pick up the conventional settings from source files.
 <sect1 id="section-prefs-xml">
 <title>Preferences files</title>
 <para>
-&medit; preferences are stored in &medit-prefs-xml; file.
+&medit; preferences are stored in &medit-prefs-xml-unix; file.
 It is an XML file which may be edited to set preferences which have not found
 their place in the <guilabel>Preferences</guilabel> dialog.
 </para>
@@ -245,48 +319,48 @@ effect until you restart &medit;.
 <para>
 The following "hidden" settings are available:
 <variablelist>
-<?dbhtml term-separator=" : "?>
-<varlistentry>
-<term><parameter>Editor/window_title</parameter></term>
-<listitem><para>Format of the window title. It is a string which may
-contain format sequences, which are percent sign followed by a character:
-<variablelist>
-<?dbhtml list-presentation="table"?>
-<?dbhtml term-separator=" : "?>
-<varlistentry>
-<term><code>%a</code></term>
-<listitem>application name</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>%b</code></term>
-<listitem>current document basename</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>%f</code></term>
-<listitem>full path of the current document</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>%u</code></term>
-<listitem>URI of the current document</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>%s</code></term>
-<listitem>the status of the current document, e.g. "<code> [modified]</code>". It is prefixed
-with a space, so that "<code>%b%s</code>" produces a nice string</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>%%</code></term>
-<listitem>the percent character</listitem>
-</varlistentry>
-</variablelist>
-Default value is "<code>%a - %f%s</code>" which produces something like "<code>medit - /home/user/file [modified]</code>".
-</para></listitem>
-</varlistentry>
-<varlistentry>
-<term><parameter>Editor/window_title_no_doc</parameter></term>
-<listitem><para>same as <parameter>Editor/window_title</parameter>, used when no document is open.
-Default value is "<code>%a</code>".</para></listitem>
-</varlistentry>
+  <?dbhtml term-separator=" : "?>
+  <varlistentry>
+    <term><parameter>Editor/window_title</parameter></term>
+    <listitem><para>Format of the window title. It is a string which may
+    contain format sequences, which are percent sign followed by a character:
+    <variablelist>
+      <?dbhtml list-presentation="table"?>
+      <?dbhtml term-separator=" : "?>
+      <varlistentry>
+        <term><code>%a</code></term>
+        <listitem>application name</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><code>%b</code></term>
+        <listitem>current document basename</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><code>%f</code></term>
+        <listitem>full path of the current document</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><code>%u</code></term>
+        <listitem>URI of the current document</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><code>%s</code></term>
+        <listitem>the status of the current document, e.g. "<code> [modified]</code>". It is prefixed
+        with a space, so that "<code>%b%s</code>" produces a nice string</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><code>%%</code></term>
+        <listitem>the percent character</listitem>
+      </varlistentry>
+    </variablelist>
+    Default value is "<code>%a - %f%s</code>" which produces something like "<code>medit - /home/user/file [modified]</code>".
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Editor/window_title_no_doc</parameter></term>
+    <listitem><para>same as <parameter>Editor/window_title</parameter>, used when no document is open.
+    Default value is "<code>%a</code>".</para></listitem>
+  </varlistentry>
 </variablelist>
 </para>
 </sect1>

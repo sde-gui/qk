@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-21 03:29-0800\n"
+"POT-Creation-Date: 2010-12-26 22:09-0800\n"
 "PO-Revision-Date: 2007-07-29 11:03-0600\n"
 "Last-Translator: Arnau Sanchez <arnau@ehas.org>\n"
 "Language-Team: Arnau Sanchez <arnau@ehas.org>\n"
@@ -387,6 +387,10 @@ msgid "<b>Description:</b>"
 msgstr "<b>Descripción:</b>"
 
 #: ../moo/mooedit/glade/moopluginprefs.glade.h:3
+msgid "<b>Plugins</b>"
+msgstr ""
+
+#: ../moo/mooedit/glade/moopluginprefs.glade.h:4
 msgid "<b>Version:</b>"
 msgstr "<b>Versión:</b>"
 
@@ -474,7 +478,7 @@ msgstr "Coincidir capitalización"
 msgid "Don't prompt on replace"
 msgstr "Sin confirmación al reemplazar"
 
-#: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1119
+#: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1120
 msgid "Find"
 msgstr "Buscar"
 
@@ -756,29 +760,24 @@ msgstr "Abrir recientes"
 msgid "encodings_list"
 msgstr "encodings_list"
 
-#. Translators: this one is temporary, don't translate
-#: ../moo/mooedit/mooeditprefspage.c:197
+#: ../moo/mooedit/mooeditprefspage.c:196
 msgid "PreferencesPage|General"
 msgstr ""
 
-#. Translators: this one is temporary, don't translate
-#: ../moo/mooedit/mooeditprefspage.c:232
-msgid "PreferencesPage|Filters"
+#: ../moo/mooedit/mooeditprefspage.c:231
+msgid "PreferencesPage|File Filters"
 msgstr ""
 
-#. Translators: this one is temporary, don't translate
-#: ../moo/mooedit/mooeditprefspage.c:283
+#: ../moo/mooedit/mooeditprefspage.c:281
 msgid "PreferencesPage|View"
 msgstr ""
 
-#. Translators: this one is temporary, don't translate
-#: ../moo/mooedit/mooeditprefspage.c:328
+#: ../moo/mooedit/mooeditprefspage.c:325
 msgid "PreferencesPage|File"
 msgstr ""
 
-#. Translators: this one is temporary, don't translate
-#: ../moo/mooedit/mooeditprefspage.c:369
-msgid "PreferencesPage|Langs"
+#: ../moo/mooedit/mooeditprefspage.c:365
+msgid "PreferencesPage|Languages"
 msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:362
@@ -1282,7 +1281,7 @@ msgstr ""
 msgid "Move selected files to Trash"
 msgstr ""
 
-#: ../moo/moofileview/moofileview-tools.c:292
+#: ../moo/moofileview/moofileview-tools.c:328
 msgid "Open with|Default Application"
 msgstr ""
 
@@ -1931,42 +1930,42 @@ msgstr "Panel de selección de archivo en la ventana del editor"
 msgid "Search Results"
 msgstr "Resultados de la búsqueda"
 
-#: ../moo/plugins/moofind.c:249 ../moo/plugins/moofind.c:250
+#: ../moo/plugins/moofind.c:250 ../moo/plugins/moofind.c:251
 msgid "Find In Files"
 msgstr "Buscar en archivos"
 
-#: ../moo/plugins/moofind.c:251
+#: ../moo/plugins/moofind.c:252
 msgid "Find in files"
 msgstr "Buscar en archivos"
 
-#: ../moo/plugins/moofind.c:259 ../moo/plugins/moofind.c:260
-#: ../moo/plugins/moofind.c:999
+#: ../moo/plugins/moofind.c:260 ../moo/plugins/moofind.c:261
+#: ../moo/plugins/moofind.c:1000
 msgid "Find File"
 msgstr "Buscar archivo"
 
-#: ../moo/plugins/moofind.c:261
+#: ../moo/plugins/moofind.c:262
 msgid "Find file"
 msgstr "Buscar fichero"
 
-#: ../moo/plugins/moofind.c:968
+#: ../moo/plugins/moofind.c:969
 msgid "Find in Files"
 msgstr "Buscar en ficheros"
 
-#: ../moo/plugins/moofind.c:1051 ../moo/plugins/moofind.c:1077
+#: ../moo/plugins/moofind.c:1052 ../moo/plugins/moofind.c:1078
 #, c-format
 msgid "*** %u match found ***"
 msgid_plural "*** %u matches found ***"
 msgstr[0] "*** %u concordancia ***"
 msgstr[1] "*** %u concordancias ***"
 
-#: ../moo/plugins/moofind.c:1058 ../moo/plugins/moofind.c:1083
+#: ../moo/plugins/moofind.c:1059 ../moo/plugins/moofind.c:1084
 #, c-format
 msgid "*** %u file found ***"
 msgid_plural "*** %u files found ***"
 msgstr[0] "*** %u archivo encontrado***"
 msgstr[1] "*** %u archivos encontrados ***"
 
-#: ../moo/plugins/moofind.c:1119
+#: ../moo/plugins/moofind.c:1120
 msgid "Finds everything"
 msgstr "Encuentra todo"
 
