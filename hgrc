@@ -5,14 +5,3 @@ default = ssh://hg@bitbucket.org/medit/medit
 # Reject commits which would introduce windows-style text" files
 pretxncommit.crlf = python:hgext.win32text.forbidcrlf
 pretxncommit.glade = tools/checkglade
-
-[extensions]
-hgext.win32text =
-
-[encode]
-# Encode files that don't contain NUL characters.
-** = cleverencode:
-
-[decode]
-# Decode files that don't contain NUL characters.
-** = cleverdecode:
