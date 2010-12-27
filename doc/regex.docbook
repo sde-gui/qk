@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE chapter [
+<!ENTITY % medit-defines SYSTEM "medit-defines.ent">
+%medit-defines;
+]>
+<chapter id="chapter-regex">
+<title>Regular expressions</title>
+
+<para>
+&medit; uses regular expressions functionality provided by Glib, which in turn uses
+<ulink url="http://pcre.org/">PCRE</ulink> library. See
+<ulink url="http://library.gnome.org/devel/glib/stable/glib-regex-syntax.html">Glib manual</ulink>
+for complete description of regular expression syntax.
+</para>
+
+<para>
+Regular expression searches in a document text are limited to single lines, unless the
+search pattern includes newline character. For example, pattern "<code>.*</code>" will match every
+line in the document, pattern "<code>.*\n.*</code>" will match pairs of consecutive lines. This means
+that it is mostly impossible to perform searches for text which spawns multiple lines.
+</para>
+
+</chapter>

@@ -46,7 +46,7 @@
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moohelp.h"
 #include "mooutils/mootype-macros.h"
-#include "help-sections.h"
+#include "moo-help-sections.h"
 #include <string.h>
 #include <gmodule.h>
 #include <gobject/gvaluecollector.h>

@@ -1,40 +1,47 @@
-@node License
-@unnumbered License
-@helpsection{APP_LICENSE}
+<?xml version="1.0"?>
+<!DOCTYPE chapter [
+<!ENTITY % medit-defines SYSTEM "medit-defines.ent">
+%medit-defines;
+]>
+<chapter id="chapter-license" moo.helpsection="APP_LICENSE">
+<title>License</title>
 
-@medit{} as a whole is distributed under the terms of the GNU General
+<para>
+&medit; as a whole is distributed under the terms of the GNU General
 Public License, version 2, but most of its code is released under the
 GNU Lesser General Public License. Full text of these licenses, as well
 as licenses and acknowledgements for third-party software incorporated
-in @medit{}, can be found in this section.
+in &medit;, can be found in this section.
+</para>
 
-@menu
-* GNU GPL:: GNU General Public License
-* GNU LGPL:: GNU Lesser General Public License
-* Lua License:: Lua License
-* LuaFileSystem License:: LuaFileSystem License
-* xdg-utils License:: xdg-utils License
-@end menu
 
-@node GNU GPL
-@section GNU General Public License
-@helpsection{LICENSE_GPL}
-@verbatiminclude ../COPYING.GPL
+<sect1 id="section-license-gpl">
+<title>GNU General Public License</title>
+<literallayout>
+<xi:include href="../COPYING.GPL" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</literallayout>
+</sect1>
 
-@node GNU LGPL
-@section GNU Lesser General Public License
-@helpsection{LICENSE_LGPL}
-@verbatiminclude ../COPYING
 
-@node Lua License
-@section Lua License
-@helpsection{LICENSE_LUA}
-@verbatiminclude ../moo/moolua/lua/COPYRIGHT
+<sect1 id="section-license-lgpl">
+<title>GNU Lesser General Public License</title>
+<literallayout>
+<xi:include href="lgpl.no-fancy-chars" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</literallayout>
+</sect1>
 
-@node LuaFileSystem License
-@section LuaFileSystem License
-@helpsection{LICENSE_LFS}
-@verbatim
+
+<sect1 id="section-license-lua">
+<title>Lua License</title>
+<literallayout>
+<xi:include href="../moo/moolua/lua/COPYRIGHT" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</literallayout>
+</sect1>
+
+
+<sect1 id="section-license-lfs">
+<title>LuaFileSystem License</title>
+<literallayout>
 LuaFileSystem - File System Library for Lua
 Copyright 2003-2007 PUC-Rio
 http://www.keplerproject.org/luafilesystem
@@ -44,14 +51,15 @@ related to file systems offered by the standard Lua distribution. LuaFileSystem
 offers a portable way to access the underlying directory structure and file
 attributes. LuaFileSystem is free software and uses the same license as Lua 5.1
 Current version is 1.2.1.
-@end verbatim
+</literallayout>
+</sect1>
 
-@node xdg-utils License
-@section xdg-utils License
-@helpsection{LICENSE_XDG_UTILS}
-@verbatim
-Copyright 2006, Kevin Krammer <kevin.krammer@gmx.at>
-Copyright 2006, Jeremy White <jwhite@codeweavers.com>
+
+<sect1 id="section-license-xdg-utils">
+<title>xdg-utils License</title>
+<literallayout>
+Copyright 2006, Kevin Krammer &lt;kevin.krammer@gmx.at&gt;
+Copyright 2006, Jeremy White &lt;jwhite@codeweavers.com&gt;
 
 LICENSE:
 
@@ -72,4 +80,8 @@ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
-@end verbatim
+</literallayout>
+</sect1>
+
+
+</chapter>

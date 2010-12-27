@@ -19,7 +19,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moohelp.h"
-#include "help-sections.h"
+#include "moo-help-sections.h"
 #include "plugins/moofileselector-prefs-gxml.h"
 #include <gtk/gtk.h>
 #include <string.h>

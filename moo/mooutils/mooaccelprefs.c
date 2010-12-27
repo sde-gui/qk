@@ -27,7 +27,7 @@
 #include "mooutils/moohelp.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooaccelprefs-gxml.h"
-#include "help-sections.h"
+#include "moo-help-sections.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>

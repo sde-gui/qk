@@ -4,10 +4,8 @@
 
 <xsl:import href="http://docbook.sourceforge.net/release/xsl/current/html/docbook.xsl"/>
 
-<xsl:param name="html.stylesheet" select="'script.css'"/>
-
-<xsl:output method="html"
-            indent="yes"/>
+<xsl:param name="html.stylesheet" select="'medit.css'"/>
+<xsl:output method="html" indent="yes"/>
 
 <!--<xsl:param name="variablelist.as.table" select="1"/>-->
 

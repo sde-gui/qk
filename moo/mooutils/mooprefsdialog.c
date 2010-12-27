@@ -24,7 +24,7 @@
 #include "mooutils/moohelp.h"
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/moocompat.h"
-#include "help-sections.h"
+#include "moo-help-sections.h"
 
 
 enum {

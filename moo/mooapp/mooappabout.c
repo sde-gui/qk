@@ -25,7 +25,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moohelp.h"
-#include "help-sections.h"
+#include "moo-help-sections.h"
 #include "mooapp/mooappabout-dialog-gxml.h"
 #include "mooapp/mooappabout-license-gxml.h"
 #include "mooapp/mooappabout-credits-gxml.h"

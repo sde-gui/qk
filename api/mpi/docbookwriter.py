@@ -5,6 +5,10 @@ from mpi.module import *
 
 tmpl_file_start = """\
 <?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE article [
+<!ENTITY % medit-defines SYSTEM "medit-defines.ent">
+%medit-defines;
+]>
 <article>
 """
 
@@ -87,7 +91,8 @@ class Writer(object):
         text = re.sub(r'%FALSE\b', '<constant>%s</constant>' % self.constants['FALSE'], text)
 
         def repl_func(m):
-            return '<function><link linkend="%s" endterm="%s.title"></link></function>' % (m.group(1), m.group(1))
+            return '<function><link linkend="%(mode)s.%(func_id)s" endterm="%(mode)s.%(func_id)s.title"></link></function>' % \
+                dict(func_id=m.group(1), mode=self.mode)
         text = re.sub(r'([\w\d_.]+)\(\)', repl_func, text)
 
         assert not re.search(r'NULL|TRUE|FALSE', text)
@@ -143,10 +148,11 @@ class Writer(object):
             oops(func_id)
 
         func_id = func.c_name
+        mode = self.mode
 
         self.out.write("""\
-<sect2 id="%(func_id)s">
-<title id="%(func_id)s.title">%(func_name)s()</title>
+<sect2 id="%(mode)s.%(func_id)s">
+<title id="%(mode)s.%(func_id)s.title">%(func_name)s()</title>
 <programlisting>%(func_name)s(%(params_string)s)</programlisting>
 """ % locals())
 

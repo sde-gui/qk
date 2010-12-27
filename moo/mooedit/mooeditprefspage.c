@@ -33,7 +33,7 @@
 #include "mooedit/mooeditprefs-general-gxml.h"
 #include "mooedit/mooeditprefs-langs-gxml.h"
 #include "mooedit/mooeditprefs-view-gxml.h"
-#include "help-sections.h"
+#include "moo-help-sections.h"
 #include <string.h>
 
 
@@ -215,6 +215,7 @@ page_filters_init (MooPrefsPage *page)
 {
     PrefsFiltersXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
     filter_treeview_init (gxml);
+    moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_FILTERS);
 }
 
 static void
@@ -347,7 +348,7 @@ page_langs_init (MooPrefsPage *page)
     PrefsLangsXml *gxml = g_object_get_data (G_OBJECT (page), "moo-edit-prefs-page-xml");
     MooTreeHelper *helper;
 
-    moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_LANGS_AND_FILTERS);
+    moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_LANGS);
 
     lang_combo_init (gxml->lang_combo, page, gxml);
 

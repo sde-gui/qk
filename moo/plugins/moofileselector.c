@@ -38,7 +38,7 @@
 #include "plugins/moofileselector-gxml.h"
 #include "mooutils/moohelp.h"
 #include "mooutils/mooatom.h"
-#include "help-sections.h"
+#include "moo-help-sections.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>

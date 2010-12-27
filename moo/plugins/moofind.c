@@ -31,7 +31,7 @@
 #include "mooutils/mooutils-fs.h"
 #include "plugins/moofind-gxml.h"
 #include "plugins/moogrep-gxml.h"
-#include "help-sections.h"
+#include "moo-help-sections.h"
 #include <gtk/gtkdialog.h>
 #include <gtk/gtkscrolledwindow.h>
 #include <gtk/gtktogglebutton.h>

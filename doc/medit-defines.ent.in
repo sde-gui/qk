@@ -1,0 +1,6 @@
+<!-- -%- lang:none -%- -->
+<!ENTITY medit "<application>medit</application>">
+<!ENTITY medit-version "@MOO_DISPLAY_VERSION@">
+<!ENTITY medit-prefs-xml "<filename>$HOME/.local/share/medit-1/prefs.xml</filename>">
+<!ENTITY medit-user-tools-dir "<filename>$HOME/.local/share/medit-1/tools/</filename>">
+<!ENTITY medit-user-data-dir "<filename>$HOME/.local/share/medit-1/</filename>">

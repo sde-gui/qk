@@ -2,30 +2,9 @@ BUILT_SOURCES =
 
 if MOO_DEV_MODE
 
-# docbook_files =			\
-# 	medit.docbook		\
-# 	prefs.docbook
-#
-# medit.docbook: medit.docbook.in $(top_builddir)/config.status
-# 	$(AM_V_GEN)cd $(top_builddir) && ./config.status --silent --file=doc/medit.docbook
-# 	$(AM_V_at)mv medit.docbook $(srcdir)/medit.docbook
-#
-# medit.html: $(docbook_files)
-# 	$(AM_V_GEN)xsltproc /usr/share/xml/docbook/stylesheet/docbook-xsl/html/docbook.xsl $(srcdir)/medit.docbook > medit.html.tmp && \
-# 		mv medit.html.tmp $(srcdir)/medit.html
-
-src_texinfo_files =		\
-	medit.texi		\
-	prefs.texi		\
-	prefs-file.texi		\
-	user-tools.texi		\
-	regex.texi		\
-	license.texi		\
-	script.texi
-
-medit.texi: medit.texi.in $(top_builddir)/config.status
-	$(AM_V_GEN)cd $(top_builddir) && ./config.status --silent --file=doc/medit.texi
-	$(AM_V_at)mv medit.texi $(srcdir)/medit.texi
+$(srcdir)/medit-defines.ent: medit-defines.ent.in $(top_builddir)/config.status
+	$(AM_V_GEN)cd $(top_builddir) && ./config.status --silent --file=doc/medit-defines.ent
+	$(AM_V_at)mv medit-defines.ent $(srcdir)/medit-defines.ent
 
 gendocbook_files =				\
 	$(top_srcdir)/api/gendocbook.py		\
@@ -33,60 +12,85 @@ gendocbook_files =				\
 	$(top_srcdir)/api/mpi/module.py		\
 	$(top_srcdir)/api/mpi/docbookwriter.py
 
-script-python.docbook: $(gendocbook_files) $(top_srcdir)/api/moo.xml
+$(srcdir)/script-python.docbook: $(gendocbook_files) $(top_srcdir)/api/moo.xml
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py --python $(top_srcdir)/api/moo.xml \
 		> script-python.docbook.tmp && mv script-python.docbook.tmp $(srcdir)/script-python.docbook
 
-script-lua.docbook: $(gendocbook_files) $(top_srcdir)/api/moo.xml
+$(srcdir)/script-lua.docbook: $(gendocbook_files) $(top_srcdir)/api/moo.xml
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py --lua $(top_srcdir)/api/moo.xml \
 		> script-lua.docbook.tmp && mv script-lua.docbook.tmp $(srcdir)/script-lua.docbook
 
-script-lua-gtk.docbook: $(gendocbook_files) $(top_srcdir)/moo/moolua/gtk.xml
+$(srcdir)/script-lua-gtk.docbook: $(gendocbook_files) $(top_srcdir)/moo/moolua/gtk.xml
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py --lua $(top_srcdir)/moo/moolua/gtk.xml \
 		> script-lua-gtk.docbook.tmp && mv script-lua-gtk.docbook.tmp $(srcdir)/script-lua-gtk.docbook
 
-help/script-python.html: script-python.docbook script.xsl help/index.html
+$(srcdir)/help/script-python.html: script-python.docbook medit-defines.ent script.xsl
+	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
 	$(AM_V_GEN)xsltproc --output script-python.html.tmp \
 		$(srcdir)/script.xsl $(srcdir)/script-python.docbook \
 		&& mv script-python.html.tmp $(srcdir)/help/script-python.html
 
-help/script-lua.html: script-lua.docbook script.xsl help/index.html
+$(srcdir)/help/script-lua.html: script-lua.docbook medit-defines.ent script.xsl
+	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
 	$(AM_V_GEN)xsltproc --output script-lua.html.tmp \
 		$(srcdir)/script.xsl $(srcdir)/script-lua.docbook \
 		&& mv script-lua.html.tmp $(srcdir)/help/script-lua.html
 
-help/script-lua-gtk.html: script-lua-gtk.docbook script.xsl help/index.html
+$(srcdir)/help/script-lua-gtk.html: script-lua-gtk.docbook medit-defines.ent script.xsl
+	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
 	$(AM_V_GEN)xsltproc --output script-lua-gtk.html.tmp \
 		$(srcdir)/script.xsl $(srcdir)/script-lua-gtk.docbook \
 		&& mv script-lua-gtk.html.tmp $(srcdir)/help/script-lua-gtk.html
 
-help/script.css: script.css
-	$(AM_V_GEN)cp $(srcdir)/script.css $(srcdir)/help/
+$(srcdir)/help/medit.css: medit.css
+	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
+	$(AM_V_GEN)cp $(srcdir)/medit.css $(srcdir)/help/
 
-help/index.html: $(src_texinfo_files)
-	$(AM_V_at)rm -f $(srcdir)/help/*.html
-	$(AM_V_at)$(MKDIR_P) $(srcdir)/help
-	$(AM_V_GEN)cd $(srcdir) && makeinfo --html medit.texi
+$(srcdir)/lgpl.no-fancy-chars: $(top_srcdir)/COPYING
+	tr -d '\014' < $(top_srcdir)/COPYING > lgpl.no-fancy-chars.tmp && \
+		 mv lgpl.no-fancy-chars.tmp $(srcdir)/lgpl.no-fancy-chars
 
-help/help.html: help/index.html
-	$(AM_V_GEN)cd $(srcdir) && makeinfo --html --no-split medit.texi && mv help.html help/
+docbook_files =				\
+	medit.docbook			\
+	prefs.docbook			\
+	regex.docbook			\
+	user-tools.docbook		\
+	license.docbook
 
-help-sections.h.stamp: help/index.html $(srcdir)/gensections.py
-	$(AM_V_GEN)$(PYTHON) $(srcdir)/gensections.py $(srcdir)/help/*.html > help-sections.h.tmp && \
-		(cmp -s help-sections.h.tmp $(srcdir)/help-sections.h || mv help-sections.h.tmp $(srcdir)/help-sections.h)
-	$(AM_V_at)rm -f help-sections.h.tmp
-	$(AM_V_at)echo stamp > help-sections.h.stamp
+docbook_sources =			\
+	$(docbook_files)		\
+	lgpl.no-fancy-chars		\
+	medit-defines.ent
+
+$(srcdir)/help/index.html: $(docbook_sources) medit.xsl medit-common.xsl
+	$(AM_V_GEN)cd $(srcdir) && xsltproc --xinclude medit.xsl medit.docbook
+
+$(srcdir)/help/help.html: $(docbook_sources) medit-single.xsl medit-common.xsl
+	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
+	$(AM_V_GEN)xsltproc --xinclude --output help.html.tmp $(srcdir)/medit-single.xsl $(srcdir)/medit.docbook && \
+		mv help.html.tmp $(srcdir)/help/help.html
+
+toc.xml: $(docbook_sources)
+	$(AM_V_GEN)xsltproc --output toc.xml --xinclude \
+		--stringparam chunk.first.sections 1 \
+		http://docbook.sourceforge.net/release/xsl/current/html/maketoc.xsl $(srcdir)/medit.docbook
+
+moo-help-sections.h.stamp: $(docbook_files) toc.xml genhelpsectionsh.py
+	$(AM_V_GEN)$(PYTHON) $(srcdir)/genhelpsectionsh.py --toc=toc.xml --srcdir=$(srcdir) $(docbook_files) > moo-help-sections.h.tmp
+	$(AM_V_at)cmp -s moo-help-sections.h.tmp $(srcdir)/moo-help-sections.h || mv moo-help-sections.h.tmp $(srcdir)/moo-help-sections.h
+	$(AM_V_at)rm -f moo-help-sections.h.tmp
+	$(AM_V_at)echo stamp > moo-help-sections.h.stamp
 
 all-am: doc
-doc:					\
-	help/index.html			\
-	help/help.html			\
-	help/script-lua.html		\
-	help/script-lua-gtk.html	\
-	help/script-python.html		\
-	help/script.css			\
-	help-sections.h.stamp		\
-	medit.1
+doc:						\
+	$(srcdir)/help/index.html		\
+	$(srcdir)/help/help.html		\
+	$(srcdir)/help/script-lua.html		\
+	$(srcdir)/help/script-lua-gtk.html	\
+	$(srcdir)/help/script-python.html	\
+	$(srcdir)/help/medit.css		\
+	$(srcdir)/medit.1			\
+	moo-help-sections.h.stamp
 
 man-medit.t2t: man-medit.t2t.in $(top_builddir)/config.status
 	$(AM_V_GEN)cd $(top_builddir) && ./config.status --silent --file=doc/man-medit.t2t
@@ -98,7 +102,7 @@ medit.1: man-medit.t2t
 
 endif
 
-EXTRA_DIST = help help-sections.h medit.1
+EXTRA_DIST = help moo-help-sections.h medit.1
 
 install-data-local:
 	$(MKDIR_P) $(DESTDIR)$(MOO_HELP_DIR)

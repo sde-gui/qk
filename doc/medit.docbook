@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?><!-- -%- indent-width:1 -%- -->
+<!DOCTYPE book [
+<!ENTITY % medit-defines SYSTEM "medit-defines.ent">
+%medit-defines;
+]>
+<book id="medit-manual">
+
+<bookinfo>
+<title>&medit; manual</title>
+<date>12/26/2010</date>
+<releaseinfo>&medit-version;</releaseinfo>
+</bookinfo>
+
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="prefs.docbook"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="regex.docbook"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="user-tools.docbook"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="license.docbook"/>
+
+</book>
