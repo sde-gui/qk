@@ -127,19 +127,24 @@ The following entries set the command properties:
   <varlistentry>
     <term><parameter>Command</parameter></term>
     <listitem>Shell command to execute when the menu item is activated. <code>%f</code> will
-    be replaced with full path of the selected file. Example: <code>firefox %f</code></listitem>
+    be replaced with full path of the selected file; if more than one file is selected then
+    the command will be executed for each file one by one. If <parameter>command</parameter>
+    contains <code>%F</code> and several files are selected then <code>%F</code> will be
+    replaced with the space-separated list of paths of all selected files. If a single file
+    is selected then <code>%f</code> and <code>%F</code> behave in the same way.
+    Example: <code>firefox %f</code>, <code>glade %F</code></listitem>
   </varlistentry>
   <varlistentry>
     <term><parameter>Extensions</parameter></term>
     <listitem>Semicolon-separated list of file patterns to define for which files this command
-    is available, e.g. <code>*.c;*.h</code>. Leave it empty if the command should
+    is available, e.g. <code>*.c;*.h</code>. Use <code>*</code> if the command should
     be available for all files.</listitem>
   </varlistentry>
   <varlistentry>
     <term><parameter>Mime types</parameter></term>
     <listitem>Semicolon-separated list of mime types to define for which files this command
     is available, e.g. <code>application/docbook+xml;application/x-glade</code>. Leave it empty
-    if the command should be available for all files.</listitem>
+    if <parameter>Extensions</parameter> entry defines whether the command should be enabled.</listitem>
   </varlistentry>
 </variablelist>
 </para>

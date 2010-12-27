@@ -24,6 +24,7 @@
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooaction.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moo-mime.h"
@@ -70,41 +71,76 @@ moo_file_view_tool_action_finalize (GObject *object)
 
 
 static void
+run_command (const char *command_template,
+             const char *files)
+{
+    char *command;
+    GError *error = NULL;
+    GRegex *regex;
+
+    regex = g_regex_new ("%[fF]", 0, 0, NULL);
+    moo_return_if_fail (regex != NULL);
+
+    command = g_regex_replace (regex, command_template, -1, 0, files, 0, &error);
+    moo_return_if_fail (command != NULL);
+
+    if (!g_spawn_command_line_async (command, &error))
+    {
+        moo_warning ("%s", error ? error->message : "error");
+        g_error_free (error);
+    }
+
+    g_free (command);
+    g_regex_unref (regex);
+}
+
+static void
 moo_file_view_tool_action_activate (GtkAction *_action)
 {
     ToolAction *action = (ToolAction*) _action;
     GList *files;
-    const char *p;
-    GString *command;
-    GError *error = NULL;
+    gboolean has_small_f;
+    gboolean has_cap_f;
 
     g_return_if_fail (MOO_IS_FILE_VIEW (action->fileview));
     g_return_if_fail (action->command && action->command[0]);
 
-    p = strstr (action->command, "%f");
-    g_return_if_fail (p != NULL);
+    has_small_f = strstr (action->command, "%f") != NULL;
+    has_cap_f = strstr (action->command, "%F") != NULL;
+    moo_return_if_fail (has_small_f + has_cap_f == 1);
 
     files = _moo_file_view_get_filenames (action->fileview);
     g_return_if_fail (files != NULL);
 
-    command = g_string_new_len (action->command, p - action->command);
-
-    while (files)
+    if (has_small_f)
     {
-        g_string_append_printf (command, " \"%s\"", (char*) files->data);
-        g_free (files->data);
-        files = g_list_delete_link (files, files);
+        while (files)
+        {
+            char *repl = g_strdup_printf ("\"%s\"", (char*) files->data);
+            run_command (action->command, repl);
+            g_free (repl);
+            g_free (files->data);
+            files = g_list_delete_link (files, files);
+        }
     }
-
-    g_string_append (command, p + 2);
-
-    if (!g_spawn_command_line_async (command->str, &error))
+    else
     {
-        g_warning ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
+        GString *repl = g_string_new (NULL);
+        gboolean first = TRUE;
+        while (files)
+        {
+            if (!first)
+                g_string_append_c (repl, ' ');
+            first = FALSE;
+            g_string_append_c (repl, '"');
+            g_string_append (repl, (char*) files->data);
+            g_string_append_c (repl, '"');
+            g_free (files->data);
+            files = g_list_delete_link (files, files);
+        }
+        run_command (action->command, repl->str);
+        g_string_free (repl, TRUE);
     }
-
-    g_string_free (command, TRUE);
 }
 
 
@@ -167,7 +203,7 @@ tool_action_new (MooFileView *fileview,
     char **set, **p;
 
     g_return_val_if_fail (label != NULL, NULL);
-    g_return_val_if_fail (command && strstr (command, "%f"), NULL);
+    g_return_val_if_fail (command && (strstr (command, "%f") || strstr (command, "%F")), NULL);
 
     name = g_strdup_printf ("moofileview-action-%08x", g_random_int ());
     action = (ToolAction*)
