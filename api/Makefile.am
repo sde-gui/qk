@@ -31,7 +31,8 @@ EXTRA_DIST =			\
 	$(genlua_files)		\
 	$(gendocs_files)	\
 	sourcefiles.mak		\
-	moo.xml
+	moo.xml			\
+	gtk.xml
 
 BUILT_SOURCES =
 
@@ -49,9 +50,21 @@ moo.xml.stamp: $(docparser_files) $(source_files)
 		--source-dir $(top_srcdir)/moo/plugins/usertools \
 		--source-dir $(top_srcdir)/moo/plugins/support \
                 --skip 'moofontsel.*' \
-		--output moo.xml.tmp && \
-	(cmp -s moo.xml.tmp $(srcdir)/moo.xml || mv moo.xml.tmp $(srcdir)/moo.xml)
+		--output moo.xml.tmp
+	$(AM_V_at)cmp -s moo.xml.tmp $(srcdir)/moo.xml || mv moo.xml.tmp $(srcdir)/moo.xml
 	$(AM_V_at)rm -f moo.xml.tmp
 	$(AM_V_at)echo stamp > moo.xml.stamp
+
+BUILT_SOURCES += gtk.xml.stamp
+gtk.xml.stamp: $(docparser_files) $(top_srcdir)/moo/moolua/gtk-api.c $(top_srcdir)/moo/moolua/gtk-api.h
+	$(AM_V_at)$(MKDIR_P) moolua
+	$(AM_V_GEN)$(PYTHON) $(srcdir)/parsedocs.py \
+		--source-file $(top_srcdir)/moo/moolua/gtk-api.c \
+		--source-file $(top_srcdir)/moo/moolua/gtk-api.h \
+		--module Gtk \
+		--output gtk.xml.tmp
+	$(AM_V_at)cmp -s gtk.xml.tmp $(srcdir)/gtk.xml || mv gtk.xml.tmp $(srcdir)/gtk.xml
+	$(AM_V_at)rm -f gtk.xml.tmp
+	$(AM_V_at)echo stamp > gtk.xml.stamp
 
 endif

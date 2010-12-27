@@ -20,8 +20,8 @@ $(srcdir)/script-lua.docbook: $(gendocbook_files) $(top_srcdir)/api/moo.xml
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py --lua $(top_srcdir)/api/moo.xml \
 		> script-lua.docbook.tmp && mv script-lua.docbook.tmp $(srcdir)/script-lua.docbook
 
-$(srcdir)/script-lua-gtk.docbook: $(gendocbook_files) $(top_srcdir)/moo/moolua/gtk.xml
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py --lua $(top_srcdir)/moo/moolua/gtk.xml \
+$(srcdir)/script-lua-gtk.docbook: $(gendocbook_files) $(top_srcdir)/api/gtk.xml
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py --lua $(top_srcdir)/api/gtk.xml \
 		> script-lua-gtk.docbook.tmp && mv script-lua-gtk.docbook.tmp $(srcdir)/script-lua-gtk.docbook
 
 $(srcdir)/help/script-python.html: script-python.docbook medit-defines.ent script.xsl
