@@ -1,0 +1,17 @@
+#! /bin/sh
+
+fixfile() {
+  sed --regexp-extended 's/^[ \t]+</</g' <$1 >$1.tmp || exit 1
+  cmp -s $1.tmp $1 || ( echo $1 && mv $1.tmp $1 )
+  rm -f $1.tmp
+}
+
+for arg; do
+  if [ -f $arg ]; then
+    fixfile $arg
+  else
+    for f in `find $arg -name '*.glade'`; do
+      fixfile $f
+    done
+  fi
+done

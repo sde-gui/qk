@@ -1,5 +1,7 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <glade-interface>
+<!-- interface-requires gtk+ 2.6 -->
+<!-- interface-naming-policy toplevel-contextual -->
 <widget class="GtkWindow" id="window5">
 <property name="visible">True</property>
 <property name="title">window2</property>
@@ -101,15 +103,16 @@ Something
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
+<property name="position">0</property>
 </packing>
 </child>
 <child>
 <widget class="GtkScrolledWindow" id="scrolledwindow4">
 <property name="visible">True</property>
 <property name="can_focus">False</property>
-<property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-<property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-<property name="shadow_type">GTK_SHADOW_ETCHED_IN</property>
+<property name="hscrollbar_policy">automatic</property>
+<property name="vscrollbar_policy">automatic</property>
+<property name="shadow_type">etched-in</property>
 <child>
 <widget class="GtkTextView" id="textview:MooTextView">
 <property name="visible">True</property>

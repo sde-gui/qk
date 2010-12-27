@@ -1,11 +1,12 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <glade-interface>
+<!-- interface-requires gtk+ 2.6 -->
+<!-- interface-naming-policy toplevel-contextual -->
 <widget class="GtkDialog" id="AccelDialog">
 <property name="title">Choose Accelerator</property>
 <property name="resizable">False</property>
-<property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
-<property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
-<property name="has_separator">False</property>
+<property name="window_position">center-on-parent</property>
+<property name="type_hint">dialog</property>
 <child internal-child="vbox">
 <widget class="GtkVBox" id="dialog-vbox1">
 <property name="visible">True</property>
@@ -48,12 +49,14 @@ New accelerator...
 <child internal-child="action_area">
 <widget class="GtkHButtonBox" id="dialog-action_area1">
 <property name="visible">True</property>
-<property name="layout_style">GTK_BUTTONBOX_END</property>
+<property name="layout_style">end</property>
 <child>
 <widget class="GtkButton" id="cancel">
-<property name="visible">True</property>
-<property name="focus_on_click">False</property>
 <property name="response_id">-6</property>
+<property name="visible">True</property>
+<property name="can_focus">False</property>
+<property name="receives_default">False</property>
+<property name="focus_on_click">False</property>
 <child>
 <widget class="GtkAlignment" id="alignment29">
 <property name="visible">True</property>
@@ -71,6 +74,7 @@ New accelerator...
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
+<property name="position">0</property>
 </packing>
 </child>
 <child>
@@ -90,12 +94,19 @@ New accelerator...
 </widget>
 </child>
 </widget>
+<packing>
+<property name="expand">False</property>
+<property name="fill">False</property>
+<property name="position">0</property>
+</packing>
 </child>
 <child>
 <widget class="GtkButton" id="ok">
-<property name="visible">True</property>
-<property name="focus_on_click">False</property>
 <property name="response_id">-5</property>
+<property name="visible">True</property>
+<property name="can_focus">False</property>
+<property name="receives_default">False</property>
+<property name="focus_on_click">False</property>
 <child>
 <widget class="GtkAlignment" id="alignment30">
 <property name="visible">True</property>
@@ -113,6 +124,7 @@ New accelerator...
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
+<property name="position">0</property>
 </packing>
 </child>
 <child>
@@ -133,13 +145,16 @@ New accelerator...
 </child>
 </widget>
 <packing>
+<property name="expand">False</property>
+<property name="fill">False</property>
 <property name="position">1</property>
 </packing>
 </child>
 </widget>
 <packing>
 <property name="expand">False</property>
-<property name="pack_type">GTK_PACK_END</property>
+<property name="pack_type">end</property>
+<property name="position">0</property>
 </packing>
 </child>
 </widget>

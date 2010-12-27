@@ -1,5 +1,7 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <glade-interface>
+<!-- interface-requires gtk+ 2.6 -->
+<!-- interface-naming-policy toplevel-contextual -->
 <widget class="GtkWindow" id="window1">
 <property name="visible">True</property>
 <child>
@@ -18,6 +20,7 @@
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
+<property name="position">0</property>
 </packing>
 </child>
 <child>
@@ -32,14 +35,15 @@
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
+<property name="position">0</property>
 </packing>
 </child>
 <child>
 <widget class="GtkScrolledWindow" id="scrolledwindow">
 <property name="visible">True</property>
 <property name="can_focus">False</property>
-<property name="hscrollbar_policy">GTK_POLICY_NEVER</property>
-<property name="shadow_type">GTK_SHADOW_IN</property>
+<property name="hscrollbar_policy">never</property>
+<property name="shadow_type">in</property>
 <child>
 <widget class="GtkTreeView" id="treeview">
 <property name="visible">True</property>
@@ -72,25 +76,28 @@
 <property name="visible">True</property>
 <child>
 <widget class="GtkRadioButton" id="shortcut_none">
-<property name="visible">True</property>
 <property name="label" translatable="yes" context="yes" comments="Translators: do not translate the part before |">Shortcut|None</property>
+<property name="visible">True</property>
+<property name="can_focus">False</property>
+<property name="receives_default">False</property>
 <property name="use_underline">True</property>
 <property name="focus_on_click">False</property>
-<property name="response_id">0</property>
 <property name="draw_indicator">True</property>
 </widget>
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
+<property name="position">0</property>
 </packing>
 </child>
 <child>
 <widget class="GtkRadioButton" id="shortcut_default">
-<property name="visible">True</property>
 <property name="label" translatable="yes" context="yes" comments="Translators: do not translate the part before |">Shortcut|Default</property>
+<property name="visible">True</property>
+<property name="can_focus">False</property>
+<property name="receives_default">False</property>
 <property name="use_underline">True</property>
 <property name="focus_on_click">False</property>
-<property name="response_id">0</property>
 <property name="draw_indicator">True</property>
 <property name="group">shortcut_none</property>
 </widget>
@@ -103,11 +110,12 @@
 </child>
 <child>
 <widget class="GtkRadioButton" id="shortcut_custom">
-<property name="visible">True</property>
 <property name="label" translatable="yes" context="yes" comments="Translators: do not translate the part before |">Shortcut|Custom</property>
+<property name="visible">True</property>
+<property name="can_focus">False</property>
+<property name="receives_default">False</property>
 <property name="use_underline">True</property>
 <property name="focus_on_click">False</property>
-<property name="response_id">0</property>
 <property name="draw_indicator">True</property>
 <property name="group">shortcut_none</property>
 </widget>
@@ -120,15 +128,19 @@
 <child>
 <widget class="GtkButton" id="shortcut:MooAccelButton">
 <property name="visible">True</property>
+<property name="can_focus">False</property>
+<property name="receives_default">False</property>
 <property name="use_underline">True</property>
 <property name="focus_on_click">False</property>
-<property name="response_id">0</property>
 </widget>
 <packing>
 <property name="position">3</property>
 </packing>
 </child>
 </widget>
+<packing>
+<property name="position">0</property>
+</packing>
 </child>
 <child>
 <widget class="GtkHBox" id="hbox11">
@@ -142,6 +154,7 @@
 <property name="expand">False</property>
 <property name="fill">False</property>
 <property name="padding">3</property>
+<property name="position">0</property>
 </packing>
 </child>
 <child>

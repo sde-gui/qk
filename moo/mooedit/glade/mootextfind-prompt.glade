@@ -1,9 +1,10 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <glade-interface>
+<!-- interface-requires gtk+ 2.6 -->
+<!-- interface-naming-policy toplevel-contextual -->
 <widget class="GtkDialog" id="FindPromptDialog">
 <property name="title">Replace?</property>
-<property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
-<property name="has_separator">False</property>
+<property name="type_hint">dialog</property>
 <child internal-child="vbox">
 <widget class="GtkVBox" id="dialog-vbox3">
 <property name="visible">True</property>
@@ -21,54 +22,72 @@
 <child internal-child="action_area">
 <widget class="GtkHButtonBox" id="dialog-action_area3">
 <property name="visible">True</property>
-<property name="layout_style">GTK_BUTTONBOX_END</property>
+<property name="layout_style">end</property>
 <child>
 <widget class="GtkButton" id="button1">
+<property name="label" translatable="yes">_Replace</property>
+<property name="response_id">2</property>
 <property name="visible">True</property>
+<property name="can_focus">False</property>
 <property name="can_default">True</property>
 <property name="has_default">True</property>
-<property name="label" translatable="yes">_Replace</property>
+<property name="receives_default">False</property>
 <property name="use_underline">True</property>
 <property name="focus_on_click">False</property>
-<property name="response_id">2</property>
 </widget>
+<packing>
+<property name="expand">False</property>
+<property name="fill">False</property>
+<property name="position">0</property>
+</packing>
 </child>
 <child>
 <widget class="GtkButton" id="button3">
-<property name="visible">True</property>
-<property name="can_default">True</property>
 <property name="label" translatable="yes">Replace _All</property>
+<property name="response_id">3</property>
+<property name="visible">True</property>
+<property name="can_focus">False</property>
+<property name="can_default">True</property>
+<property name="receives_default">False</property>
 <property name="use_underline">True</property>
 <property name="focus_on_click">False</property>
-<property name="response_id">3</property>
 </widget>
 <packing>
+<property name="expand">False</property>
+<property name="fill">False</property>
 <property name="position">1</property>
 </packing>
 </child>
 <child>
 <widget class="GtkButton" id="button4">
-<property name="visible">True</property>
-<property name="can_default">True</property>
 <property name="label" translatable="yes">Find _Next</property>
+<property name="response_id">1</property>
+<property name="visible">True</property>
+<property name="can_focus">False</property>
+<property name="can_default">True</property>
+<property name="receives_default">False</property>
 <property name="use_underline">True</property>
 <property name="focus_on_click">False</property>
-<property name="response_id">1</property>
 </widget>
 <packing>
+<property name="expand">False</property>
+<property name="fill">False</property>
 <property name="position">2</property>
 </packing>
 </child>
 <child>
 <widget class="GtkButton" id="button5">
-<property name="visible">True</property>
-<property name="can_default">True</property>
 <property name="label" translatable="yes">Sto_p</property>
+<property name="visible">True</property>
+<property name="can_focus">False</property>
+<property name="can_default">True</property>
+<property name="receives_default">False</property>
 <property name="use_underline">True</property>
 <property name="focus_on_click">False</property>
-<property name="response_id">0</property>
 </widget>
 <packing>
+<property name="expand">False</property>
+<property name="fill">False</property>
 <property name="position">3</property>
 </packing>
 </child>
@@ -76,7 +95,8 @@
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
-<property name="pack_type">GTK_PACK_END</property>
+<property name="pack_type">end</property>
+<property name="position">0</property>
 </packing>
 </child>
 </widget>
