@@ -81,10 +81,16 @@ run_command (const char *command_template,
     regex = g_regex_new ("%[fF]", 0, 0, NULL);
     moo_return_if_fail (regex != NULL);
 
-    command = g_regex_replace (regex, command_template, -1, 0, files, 0, &error);
-    moo_return_if_fail (command != NULL);
+    command = g_regex_replace_literal (regex, command_template, -1, 0, files, 0, &error);
 
-    if (!g_spawn_command_line_async (command, &error))
+    if (!command)
+    {
+        moo_critical ("%s", error ? error->message : "error");
+        g_error_free (error);
+        error = NULL;
+    }
+
+    if (command && !g_spawn_command_line_async (command, &error))
     {
         moo_warning ("%s", error ? error->message : "error");
         g_error_free (error);
@@ -329,7 +335,7 @@ _moo_file_view_tools_load (MooFileView *fileview)
 #ifndef __WIN32__
                                              "xdg-open %f"
 #else
-                                             "explorer %f"
+                                             "cmd /c start %f"
 #endif
                                             );
         info->actions = g_slist_prepend (info->actions, action);
