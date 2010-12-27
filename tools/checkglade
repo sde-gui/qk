@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import re
+import subprocess
+
+files = subprocess.Popen(['hg', 'log', '-r', 'tip', '--template', '{files}'],
+                         stdout=subprocess.PIPE).communicate()[0].split()
+
+status = 0
+
+for name in files:
+    if not name.endswith('.glade'):
+        continue
+    for line in open(name):
+        if re.match(r'\s+<.*', line):
+            print >> sys.stderr, "%s contains indented xml element" % (name,)
+            status = 1
+            break
+    if status == 1:
+        break
+
+sys.exit(status)
