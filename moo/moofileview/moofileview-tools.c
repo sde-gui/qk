@@ -25,6 +25,7 @@
 #include "mooutils/mooaction.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils.h"
+#include "mooutils/moospawn.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moo-mime.h"
@@ -90,7 +91,7 @@ run_command (const char *command_template,
         error = NULL;
     }
 
-    if (command && !g_spawn_command_line_async (command, &error))
+    if (command && !moo_spawn_command_line_async_with_flags (command, MOO_SPAWN_WIN32_HIDDEN_CONSOLE, &error))
     {
         moo_warning ("%s", error ? error->message : "error");
         g_error_free (error);

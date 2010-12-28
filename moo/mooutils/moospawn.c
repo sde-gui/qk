@@ -755,3 +755,31 @@ _moo_unix_spawn_async (char      **argv,
     return g_spawn_async (NULL, argv, NULL, g_flags,
                           NULL, NULL, NULL, error);
 }
+
+gboolean
+moo_spawn_command_line_async_with_flags (const gchar *command_line,
+                                         GSpawnFlags  g_flags,
+                                         GError     **error)
+{
+  gboolean retval;
+  gchar **argv = 0;
+
+  g_return_val_if_fail (command_line != NULL, FALSE);
+
+  if (!g_shell_parse_argv (command_line,
+                           NULL, &argv,
+                           error))
+    return FALSE;
+
+  retval = g_spawn_async (NULL,
+                          argv,
+                          NULL,
+                          G_SPAWN_SEARCH_PATH | g_flags,
+                          NULL,
+                          NULL,
+                          NULL,
+                          error);
+  g_strfreev (argv);
+
+  return retval;
+}

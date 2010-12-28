@@ -88,6 +88,10 @@ gboolean    _moo_unix_spawn_async   (char      **argv,
 char      **_moo_env_add            (char      **add);
 
 
+gboolean     moo_spawn_command_line_async_with_flags    (const gchar *command_line,
+                                                         GSpawnFlags  g_flags,
+                                                         GError     **error);
+
 G_END_DECLS
 
 #endif /* MOO_SPAWN_H */
