@@ -1149,7 +1149,7 @@ moo_app_load_session (MooApp *app)
     if (!app->priv->session_file)
     {
         if (app->priv->instance_name)
-            app->priv->session_file = g_strdup_printf (MOO_SESSION_XML_FILE_NAME ".%s",
+            app->priv->session_file = g_strdup_printf (MOO_NAMED_SESSION_XML_FILE_NAME,
                                                        app->priv->instance_name);
         else
             app->priv->session_file = g_strdup (MOO_SESSION_XML_FILE_NAME);
