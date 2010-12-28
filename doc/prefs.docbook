@@ -22,8 +22,7 @@ Some settings are not available here, see <xref linkend="section-prefs-xml"/>.
   </varlistentry>
   <varlistentry>
     <term><guilabel>View</guilabel></term>
-    <listitem>Contains settings which control how &medit; displays text, see
-    <xref linkend="section-prefs-view"/>.</listitem>
+    <listitem>Contains settings which control how &medit; displays text.</listitem>
   </varlistentry>
   <varlistentry>
     <term><guilabel>File</guilabel></term>
@@ -57,24 +56,98 @@ Some settings are not available here, see <xref linkend="section-prefs-xml"/>.
 
 <sect1 id="section-prefs-general" moo.helpsection="PREFS_GENERAL">
 <title><guilabel>General</guilabel> tab</title>
-</sect1>
-
-
-<sect1 id="section-prefs-view" moo.helpsection="PREFS_VIEW">
-<title><guilabel>View</guilabel> tab</title>
+<variablelist>
+  <varlistentry>
+    <term><parameter>Smart Home and End</parameter></term>
+    <listitem>If checked, <keycap>Home</keycap> key moves cursor to first non-whitespace character
+    on the line on first <keycap>Home</keycap> key press, and moves cursor to the first character on the line
+    on second key press. Analogously <keycap>End</keycap> key moves cursor past last non-whitespace character
+    on the line, and then past last character on next key press.</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Enable auto indentation</parameter></term>
+    <listitem>If checked, pressing <keycap>Enter</keycap> key inserts line end character and
+    whitespace to indent next line according to indentation settings.</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Do not use tabs for indentation</parameter></term>
+    <listitem>If checked, spaces are used for indentation instead of tab character.</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Tab key indents</parameter></term>
+    <listitem>If checked, <keycap>Tab</keycap> key inserts whitespace characters according
+    to indentation settings to indent text at cursor. Otherwise <keycap>Tab</keycap> key
+    only inserts single tab character.</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Tab width</parameter></term>
+    <listitem>Displayed width of tab character in spaces. By default it is
+    <constant>8</constant>.</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Indent width</parameter></term>
+    <listitem>Number of spaces inserted by single <keycap>Tab</keycap> key press. If tabs are
+    used for indentation then <keycap>Tab</keycap> key inserts spaces until line indent is
+    multiple of tab width, then it replaces spaces with tabs (if indent width is a multiple
+    of tab width then only tab characters are used.)</listitem>
+  </varlistentry>
+</variablelist>
 </sect1>
 
 
 <sect1 id="section-prefs-file" moo.helpsection="PREFS_FILE">
 <title><guilabel>File</guilabel> tab</title>
+<variablelist>
+  <varlistentry>
+    <term><parameter>Encodings to autodetect</parameter></term>
+    <listitem><para>This entry contains comma-separated list of encodings used when
+    loading files if encoding is not specified in the <guilabel>Open</guilabel>.
+    &medit; tries every encoding from the list one by one and stops when file
+    content is valid text in this encoding. <code>LOCALE</code> denotes encoding
+    from current locale.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Encoding for new files</parameter></term>
+    <listitem><para>This is default encoding to save new files. For every document
+    its encoding on disk can be changed using Encoding submenu of Document menu.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Remove trailing spaces</parameter></term>
+    <listitem><para>If checked, trailing whitespace characters are removed from each
+    line of the document on save.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Ensure trailing newline</parameter></term>
+    <listitem><para>If checked, new line character will be added to document on save
+    if it doesn't end with one.
+    </para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Make backups</parameter></term>
+    <listitem><para>If checked, old file contents will be moved to backup file on
+    save.</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Enable session support</parameter></term>
+    <listitem><para>If checked, &medit; will remember open documents on exit and restore
+    them next time it's launched.</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>Open and Save As dialogs show current document folder</parameter></term>
+    <listitem><para>If checked, Open and Save As dialogs will show folder of the current document.
+    Otherwise they will show last used folder.</para></listitem>
+  </varlistentry>
+</variablelist>
 </sect1>
 
 
 <sect1 id="section-prefs-langs" moo.helpsection="PREFS_LANGS">
 <title><guilabel>Languages</guilabel> tab</title>
 <para>
-<guilabel>Languages and files</guilabel> tab in the <guilabel>Editor</guilabel>
-section of the <guilabel>Preferences</guilabel> dialog allows customizing
+<guilabel>Languages and files</guilabel> tab allows customizing
 how syntax highlighting language and editing options are chosen
 depending on the document filename, as well as setting editing options for
 all documents which use given language and choosing file patterns and mime types
@@ -285,12 +358,12 @@ turn off syntax highlighting in this document.</para></listitem>
 </varlistentry>
 <varlistentry>
 <term><code>tab-width</code></term>
-<listitem><para>displayed width of the Tab character. Note that this is <emphasis>not</emphasis> the same as
+<listitem><para>displayed width of the tab character. Note that this is <emphasis>not</emphasis> the same as
 <code>indent-width</code>.</para></listitem>
 </varlistentry>
 <varlistentry>
 <term><code>use-tabs</code></term>
-<listitem><para>whether the Tab character should be used for indentation.</para></listitem>
+<listitem><para>whether tab character should be used for indentation.</para></listitem>
 </varlistentry>
 </variablelist>
 </para>

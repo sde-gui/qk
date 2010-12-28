@@ -60,6 +60,7 @@ for section in map_hsection_to_id:
     map_hsection_to_html[section] = os.path.basename(map_id_to_html[map_hsection_to_id[section]])
 
 map_hsection_to_html['PREFS_PLUGINS'] = map_hsection_to_html['PREFS_DIALOG']
+map_hsection_to_html['PREFS_VIEW'] = map_hsection_to_html['PREFS_DIALOG']
 
 print '#ifndef MOO_HELP_SECTIONS_H'
 print '#define MOO_HELP_SECTIONS_H'
