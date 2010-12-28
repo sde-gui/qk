@@ -12,17 +12,23 @@ gendocbook_files =				\
 	$(top_srcdir)/api/mpi/module.py		\
 	$(top_srcdir)/api/mpi/docbookwriter.py
 
-$(srcdir)/script-python.docbook: $(gendocbook_files) $(top_srcdir)/api/moo.xml
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py --python $(top_srcdir)/api/moo.xml \
-		> script-python.docbook.tmp && mv script-python.docbook.tmp $(srcdir)/script-python.docbook
+$(srcdir)/script-python.docbook: $(gendocbook_files) script-python.tmpl.docbook $(top_srcdir)/api/moo.xml
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
+		--python --template $(srcdir)/script-python.tmpl.docbook \
+		$(top_srcdir)/api/moo.xml > script-python.docbook.tmp && \
+		mv script-python.docbook.tmp $(srcdir)/script-python.docbook
 
-$(srcdir)/script-lua.docbook: $(gendocbook_files) $(top_srcdir)/api/moo.xml
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py --lua $(top_srcdir)/api/moo.xml \
-		> script-lua.docbook.tmp && mv script-lua.docbook.tmp $(srcdir)/script-lua.docbook
+$(srcdir)/script-lua.docbook: $(gendocbook_files) script-lua.tmpl.docbook $(top_srcdir)/api/moo.xml
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
+		--lua --template $(srcdir)/script-lua.tmpl.docbook \
+		$(top_srcdir)/api/moo.xml > script-lua.docbook.tmp && \
+		mv script-lua.docbook.tmp $(srcdir)/script-lua.docbook
 
-$(srcdir)/script-lua-gtk.docbook: $(gendocbook_files) $(top_srcdir)/api/gtk.xml
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py --lua $(top_srcdir)/api/gtk.xml \
-		> script-lua-gtk.docbook.tmp && mv script-lua-gtk.docbook.tmp $(srcdir)/script-lua-gtk.docbook
+$(srcdir)/script-lua-gtk.docbook: $(gendocbook_files) script-lua-gtk.tmpl.docbook $(top_srcdir)/api/gtk.xml
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
+		--lua --template $(srcdir)/script-lua-gtk.tmpl.docbook \
+		$(top_srcdir)/api/gtk.xml > script-lua-gtk.docbook.tmp && \
+		mv script-lua-gtk.docbook.tmp $(srcdir)/script-lua-gtk.docbook
 
 $(srcdir)/help/script-python.html: script-python.docbook medit-defines.ent script.xsl
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/

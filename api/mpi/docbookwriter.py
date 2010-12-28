@@ -3,19 +3,6 @@ import StringIO
 from mpi.util import *
 from mpi.module import *
 
-tmpl_file_start = """\
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE article [
-<!ENTITY % medit-defines SYSTEM "medit-defines.ent">
-%medit-defines;
-]>
-<article>
-"""
-
-tmpl_file_end = """\
-</article>
-"""
-
 lua_constants = {
     'NULL': 'nil',
     'TRUE': 'true',
@@ -45,10 +32,12 @@ def name_all_caps(cls):
     return '_'.join([s.upper() for s in split_camel_case_name(cls.name)])
 
 class Writer(object):
-    def __init__(self, mode, out):
+    def __init__(self, mode, template, out):
         super(Writer, self).__init__()
-        self.out = out
+        self.file = out
+        self.out = StringIO.StringIO()
         self.mode = mode
+        self.template = template
         if mode == 'python':
             self.constants = python_constants
         elif mode == 'lua':
@@ -235,8 +224,6 @@ class Writer(object):
     def write(self, module):
         self.module = module
 
-        self.out.write(tmpl_file_start)
-
         for cls in module.get_classes() + module.get_boxed() + module.get_pointers():
             self.__write_class(cls)
 
@@ -250,6 +237,9 @@ class Writer(object):
 
         self.out.write('</sect1>\n')
 
-        self.out.write(tmpl_file_end)
+        content = self.out.getvalue()
+        template = open(self.template).read()
+        self.file.write(template.replace('###GENERATED###', content))
 
+        del self.out
         del self.module

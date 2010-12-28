@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE article [
+<!ENTITY % medit-defines SYSTEM "medit-defines.ent">
+%medit-defines;
+]>
+<article>
+<title>&medit; Lua API</title>
+
+<sect1 id="section-introduction">
+<title>Introduction</title>
+<para>Lua scripts running in &medit; have access to its
+functionality through the <code>medit</code> package.</para>
+<warning>
+Functions which are not documented here may or may not work differently in
+the future and they may disappear without notice. Contact the author if you
+need functions which are not present here.
+</warning>
+</sect1>
+
+<sect1 id="section-object-model">
+<title>&medit; object model</title>
+<para>&medit; uses very simple object model where its objects are
+represented as user data in Lua and methods are provided via metatable
+shared by all objects of all "classes". Method dispatch is dynamic,
+i.e. metatable does not contain functions which correspond to methods,
+and <code>obj:method</code> returns a function object which knows which
+method on which object it is going to call.</para>
+<para>This manual lists and talks about "classes", but it is merely
+to avoid complicated terminology. When we say that an object belongs
+to or is an instance of a class <code>Foo</code>, it just means that
+it has methods listed in manual section for class <code>Foo</code>
+and methods of parent classes, if any.</para>
+<note>
+To call a method, you can use both <code>obj:method(args)</code>
+and <code>obj.method(args)</code>.
+</note>
+</sect1>
+
+<sect1 id="section-notations">
+<title>Notations</title>
+<para>This manual uses the following conventions:</para>
+<variablelist>
+  <varlistentry>
+    <term><code>func()</code> and <code>func(nil)</code> are equivalent.</term>
+    <listitem>There is no distinction between <constant>nil</constant> value
+    of a parameter and missing parameter, unless documentation for given function
+    says otehrwise.
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>Optional parameters</term>
+    <listitem>
+    <programlisting>func(arg1=val1, arg2=val, arg3=val3, ...)</programlisting>
+    <code><parameter>arg</parameter>=val</code> means that
+    parameter <parameter>arg</parameter> is optional, and function receives
+    value <code>val</code> if it's missing or <constant>nil</constant>.
+    Not all parameters are necessarily optional. For example,
+    <programlisting>insert_text(text, where=nil)</programlisting>
+    means that <parameter>text</parameter> may not be missing or <constant>nil</constant>
+    (unless documentation says otherwise), and <parameter>where</parameter> is optional.
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>Keyword parameters</term>
+    <listitem>
+    <programlisting>func{arg1, arg2=val2}</programlisting>
+    This means that function takes a single table parameter, and
+    table must be a dictionary with keys <parameter>arg1</parameter>,
+    <parameter>arg2</parameter>, etc. Similar to regular parameters,
+    <code><parameter>arg</parameter>=val</code> means that
+    <parameter>arg</parameter> is optional.
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term>Dictionary parameters</term>
+    <listitem>
+      <programlisting>func(arg1, arg2, {arg3, arg4=val})</programlisting>
+      <code>{}</code> denote a parameter which must be a table with given keys,
+      similar to keyword parameters (the difference is that with keyword parameters
+      function takes a single table argument).
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+</sect1>
+###GENERATED###
+</article>
