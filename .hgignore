@@ -40,12 +40,5 @@ api/gtk.xml
 moo/moopython/pygtk/moo-generated.defs
 moo/moolua/moo-lua-api.cpp
 moo/moolua/gtk-lua-api.cpp
-doc/help/*
-doc/man-medit.t2t
-doc/medit.1
-doc/script-lua.docbook
-doc/script-lua-gtk.docbook
-doc/script-python.docbook
-doc/lgpl.no-fancy-chars
-doc/medit-defines.ent
-doc/moo-help-sections.h
+doc/help/
+doc/built/

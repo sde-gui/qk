@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?><!-- -%- indent-width:1 -%- -->
 <!DOCTYPE book [
-<!ENTITY % medit-defines SYSTEM "medit-defines.ent">
+<!ENTITY % medit-defines SYSTEM "built/medit-defines.ent">
 %medit-defines;
 ]>
 <book id="medit-manual">

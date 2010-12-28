@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE chapter [
-<!ENTITY % medit-defines SYSTEM "medit-defines.ent">
+<!ENTITY % medit-defines SYSTEM "built/medit-defines.ent">
 %medit-defines;
 ]>
 <chapter id="chapter-license" moo.helpsection="APP_LICENSE">
@@ -26,7 +26,7 @@ in &medit;, can be found in this section.
 <sect1 id="section-license-lgpl">
 <title>GNU Lesser General Public License</title>
 <literallayout>
-<xi:include href="lgpl.no-fancy-chars" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+<xi:include href="built/lgpl.no-fancy-chars" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </literallayout>
 </sect1>
 

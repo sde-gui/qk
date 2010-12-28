@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE chapter [
-<!ENTITY % medit-defines SYSTEM "medit-defines.ent">
+<!ENTITY % medit-defines SYSTEM "built/medit-defines.ent">
 %medit-defines;
 ]>
 <chapter id="chapter-regex">
