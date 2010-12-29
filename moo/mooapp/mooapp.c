@@ -856,7 +856,7 @@ moo_app_try_quit_real (MooApp *app)
 
     moo_app_save_session (app);
 
-    if (!_moo_editor_close_all (app->priv->editor, TRUE, TRUE))
+    if (!_moo_editor_close_all (app->priv->editor, TRUE))
         return TRUE;
 
     return FALSE;
@@ -895,7 +895,7 @@ moo_app_quit_real (MooApp *app)
     g_object_unref (app->priv->sm_client);
     app->priv->sm_client = NULL;
 
-    _moo_editor_close_all (app->priv->editor, FALSE, FALSE);
+    _moo_editor_close_all (app->priv->editor, FALSE);
 
     moo_plugin_shutdown ();
 

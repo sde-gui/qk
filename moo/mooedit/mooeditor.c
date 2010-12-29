@@ -1706,8 +1706,7 @@ find_modified (MooEditArray *docs)
 
 gboolean
 _moo_editor_close_all (MooEditor *editor,
-                       gboolean   ask_confirm,
-                       gboolean   leave_one)
+                       gboolean   ask_confirm)
 {
     guint i;
     MooEditWindowArray *windows;
@@ -1718,20 +1717,7 @@ _moo_editor_close_all (MooEditor *editor,
 
     for (i = 0; i < windows->n_elms; ++i)
     {
-        gboolean closed = FALSE;
-
-        if (i + 1 < windows->n_elms || !leave_one || !ask_confirm)
-        {
-            closed = moo_editor_close_window (editor, windows->elms[i], ask_confirm);
-        }
-        else
-        {
-            MooEditArray *docs = moo_edit_window_get_docs (windows->elms[i]);
-            closed = moo_editor_close_docs (editor, docs, ask_confirm);
-            moo_edit_array_free (docs);
-        }
-
-        if (!closed)
+        if (!moo_editor_close_window (editor, windows->elms[i], ask_confirm))
         {
             moo_edit_window_array_free (windows);
             return FALSE;

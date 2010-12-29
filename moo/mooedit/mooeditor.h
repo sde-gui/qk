@@ -150,7 +150,6 @@ gboolean             moo_editor_close_docs          (MooEditor              *edi
                                                      MooEditArray           *docs,
                                                      gboolean                ask_confirm);
 gboolean            _moo_editor_close_all           (MooEditor              *editor,
-                                                     gboolean                leave_one,
                                                      gboolean                ask_confirm);
 
 MooUiXml            *moo_editor_get_doc_ui_xml      (MooEditor              *editor);
