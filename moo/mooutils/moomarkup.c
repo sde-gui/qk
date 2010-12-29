@@ -159,7 +159,7 @@ markup_parse_memory (const char     *buffer,
     _moo_markup_set_modified (state.doc, TRUE);
 
     state.current = MOO_MARKUP_NODE (state.doc);
-    context = g_markup_parse_context_new (&parser, (GMarkupParseFlags) 0, &state, NULL);
+    context = g_markup_parse_context_new (&parser, G_MARKUP_TREAT_CDATA_AS_TEXT, &state, NULL);
 
     if (!g_markup_parse_context_parse (context, buffer, len, error) ||
          !g_markup_parse_context_end_parse (context, error))
@@ -1311,7 +1311,7 @@ moo_parse_markup_file (const char         *filename,
     if (!(reader = moo_text_reader_new (filename, error)))
         return FALSE;
 
-    ctx = g_markup_parse_context_new (parser, (GMarkupParseFlags) 0, data, NULL);
+    ctx = g_markup_parse_context_new (parser, G_MARKUP_TREAT_CDATA_AS_TEXT, data, NULL);
 
     while (TRUE)
     {
