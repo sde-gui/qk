@@ -1716,8 +1716,7 @@ moo_get_user_cache_file (const char *basename)
 
 
 static gboolean
-save_config_file (const char     *dir,
-                  const char     *filename,
+save_config_file (const char     *filename,
                   const char     *content,
                   gssize          len,
                   GError        **error)
@@ -1725,7 +1724,6 @@ save_config_file (const char     *dir,
     MooFileWriter *writer;
     gboolean retval;
 
-    g_return_val_if_fail (dir != NULL, FALSE);
     g_return_val_if_fail (filename != NULL, FALSE);
     g_return_val_if_fail (content != NULL, FALSE);
 
@@ -1745,26 +1743,19 @@ save_user_data_file (const char     *basename,
                      gssize          len,
                      GError        **error)
 {
-    char *dir, *file;
+    char *file;
     gboolean result;
 
     g_return_val_if_fail (basename != NULL, FALSE);
     g_return_val_if_fail (content != NULL, FALSE);
 
     if (cache)
-    {
-        dir = moo_get_user_cache_dir ();
         file = moo_get_user_cache_file (basename);
-    }
     else
-    {
-        dir = moo_get_user_data_dir ();
         file = moo_get_user_data_file (basename);
-    }
 
-    result = save_config_file (dir, file, content, len, error);
+    result = save_config_file (file, content, len, error);
 
-    g_free (dir);
     g_free (file);
     return result;
 }
@@ -1793,17 +1784,13 @@ moo_save_config_file (const char   *filename,
                       gssize        len,
                       GError      **error)
 {
-    char *dir;
     gboolean result;
 
     g_return_val_if_fail (filename != NULL, FALSE);
     g_return_val_if_fail (content != NULL, FALSE);
 
-    dir = g_path_get_dirname (filename);
+    result = save_config_file (filename, content, len, error);
 
-    result = save_config_file (dir, filename, content, len, error);
-
-    g_free (dir);
     return result;
 }
 
@@ -2486,6 +2473,14 @@ GdkAtom
 moo_atom_uri_list (void)
 {
     MOO_DEFINE_ATOM_ (text/uri-list)
+}
+
+
+const char *
+moo_error_message (GError *error)
+{
+    moo_return_val_if_fail (error != NULL, "error");
+    return error->message;
 }
 
 

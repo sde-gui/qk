@@ -232,6 +232,8 @@ gboolean    _moo_regex_escape               (const char *string,
 #define moo_obj_dup(type, p)    ((type*) moo_dup_block (sizeof (type), p))
 #endif
 
+const char  *moo_error_message  (GError *error);
+
 G_END_DECLS
 
 
