@@ -278,7 +278,7 @@ moo_edit_filter_check_globs (GSList  *globs,
         if (!strcmp (globs->data, "*") ||
             (file && moo_file_fnmatch (file, globs->data)))
         {
-            g_object_unref (file);
+            moo_file_free (file);
             return TRUE;
         }
 
