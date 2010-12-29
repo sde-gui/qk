@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-26 22:09-0800\n"
+"POT-Creation-Date: 2010-12-29 03:14-0800\n"
 "PO-Revision-Date: 2007-07-11 10:00+0500\n"
 "Last-Translator: Andrey Fedoseev <andrey.fedoseev@gmail.com>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -473,11 +473,12 @@ msgid "_Regular expression"
 msgstr "Регулярное _выражение"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:1
-msgid "Case sensitive"
-msgstr "С учетом регистра"
+#: ../moo/plugins/glade/moogrep.glade.h:1
+msgid "Case _sensitive"
+msgstr "С учётом _регистра"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:2
-msgid "Don't prompt on replace"
+msgid "Don't _prompt on replace"
 msgstr "Не спрашивать при замене"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1120
@@ -485,43 +486,43 @@ msgid "Find"
 msgstr "Найти"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:4
-msgid "Find backwards"
+msgid "Find _backwards"
 msgstr "Снизу вверх"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:5
-msgid "From cursor"
+msgid "From c_ursor"
 msgstr "От курсора"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:6
-msgid "Literal replacement"
-msgstr "Литеральная замена"
-
-#: ../moo/mooedit/glade/mootextfind.glade.h:7
 msgid "Options"
 msgstr "Параметры"
 
-#: ../moo/mooedit/glade/mootextfind.glade.h:8
-msgid "Regular expression"
+#: ../moo/mooedit/glade/mootextfind.glade.h:7
+msgid "Regular e_xpression"
 msgstr "Регулярное выражение"
 
-#: ../moo/mooedit/glade/mootextfind.glade.h:9
+#: ../moo/mooedit/glade/mootextfind.glade.h:8
 msgid "Replace With"
 msgstr "Заменить на"
 
-#: ../moo/mooedit/glade/mootextfind.glade.h:10
-msgid "Replacement text:"
-msgstr "Текст для замены"
-
-#: ../moo/mooedit/glade/mootextfind.glade.h:11
-msgid "Selected text"
+#: ../moo/mooedit/glade/mootextfind.glade.h:9
+msgid "S_elected text"
 msgstr "В выделенном тексте"
 
+#: ../moo/mooedit/glade/mootextfind.glade.h:10
+msgid "_Literal replacement"
+msgstr "Литеральная замена"
+
+#: ../moo/mooedit/glade/mootextfind.glade.h:11
+msgid "_Replacement text:"
+msgstr "Текст для замены"
+
 #: ../moo/mooedit/glade/mootextfind.glade.h:12
-msgid "Text to find:"
+msgid "_Text to find:"
 msgstr "Текст для поиска:"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:13
-msgid "Whole words only"
+msgid "_Whole words only"
 msgstr "Только целые слова"
 
 #: ../moo/mooedit/glade/mootextfind-prompt.glade.h:1
@@ -765,23 +766,23 @@ msgstr "Последние файлы"
 msgid "encodings_list"
 msgstr "UTF-8,LOCALE,KOI8-R,WINDOWS-1251,ISO_8859-15,ISO_8859-1"
 
-#: ../moo/mooedit/mooeditprefspage.c:196
+#: ../moo/mooedit/mooeditprefspage.c:168
 msgid "PreferencesPage|General"
 msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:231
+#: ../moo/mooedit/mooeditprefspage.c:203
 msgid "PreferencesPage|File Filters"
 msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:281
+#: ../moo/mooedit/mooeditprefspage.c:255
 msgid "PreferencesPage|View"
 msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:325
+#: ../moo/mooedit/mooeditprefspage.c:301
 msgid "PreferencesPage|File"
 msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:365
+#: ../moo/mooedit/mooeditprefspage.c:340
 msgid "PreferencesPage|Languages"
 msgstr ""
 
@@ -1284,7 +1285,7 @@ msgstr ""
 msgid "Move selected files to Trash"
 msgstr ""
 
-#: ../moo/moofileview/moofileview-tools.c:328
+#: ../moo/moofileview/moofileview-tools.c:335
 msgid "Open with|Default Application"
 msgstr ""
 
@@ -1621,7 +1622,7 @@ msgstr ""
 msgid "Could not open %s: %s"
 msgstr ""
 
-#: ../moo/mooutils/moofilewriter.c:267 ../moo/mooutils/mooutils-fs.c:387
+#: ../moo/mooutils/moofilewriter.c:291 ../moo/mooutils/mooutils-fs.c:387
 #: ../moo/mooutils/mooutils-fs.c:406 ../moo/mooutils/mooutils-fs.c:422
 #, c-format
 msgid "Could not create folder %s: %s"
@@ -1721,14 +1722,14 @@ msgstr ""
 msgid "Could not rename file %s to %s: %s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-misc.c:1890
+#: ../moo/mooutils/mooutils-misc.c:1877
 #, c-format
 msgid ""
 "console message|in file %s, line %d, function %s:\n"
 "%s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-misc.c:1989
+#: ../moo/mooutils/mooutils-misc.c:1976
 #, c-format
 msgid "console message|in file %s, line %d, function %s: %s"
 msgstr ""
@@ -1836,10 +1837,6 @@ msgstr "_Папка:"
 #: ../moo/plugins/glade/moogrep.glade.h:5
 msgid "_Pattern:"
 msgstr "_Шаблон:"
-
-#: ../moo/plugins/glade/moogrep.glade.h:1
-msgid "Case _sensitive"
-msgstr "С учётом _регистра"
 
 #: ../moo/plugins/glade/moogrep.glade.h:2
 msgid "Fi_les:"
@@ -2103,22 +2100,25 @@ msgstr "Целый документ"
 msgid "Lua script"
 msgstr ""
 
-#: ../moo/plugins/usertools/moousertools.c:395
+#: ../moo/plugins/usertools/moousertools.c:397
 #: ../moo/plugins/usertools/moousertools-prefs.c:408
 msgid "Tools"
 msgstr "Инструменты"
 
-#: ../moo/plugins/usertools/moousertools.c:1399
+#: ../moo/plugins/usertools/moousertools.c:1456
 msgid "User Tools"
 msgstr ""
 
-#: ../moo/plugins/usertools/moousertools.c:1400
+#: ../moo/plugins/usertools/moousertools.c:1457
 msgid "Configurable tools"
 msgstr ""
 
 #: ../moo/plugins/usertools/moousertools-prefs.c:108
 msgid "New Command"
 msgstr "Новая команда"
+
+#~ msgid "Case sensitive"
+#~ msgstr "С учетом регистра"
 
 #~ msgid "<b>Default language</b>"
 #~ msgstr "<b>Язык по умолчанию</b>"

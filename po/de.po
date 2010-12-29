@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-26 22:09-0800\n"
+"POT-Creation-Date: 2010-12-29 03:14-0800\n"
 "PO-Revision-Date: 2008-02-04 21:47+0100\n"
 "Last-Translator: Christian Dywan <christian@twotoasts.de>\n"
 "Language-Team: Christian Dywan <christian@twotoasts.de>\n"
@@ -472,56 +472,57 @@ msgid "_Regular expression"
 msgstr "_Regulärer Ausdruck"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:1
-msgid "Case sensitive"
+#: ../moo/plugins/glade/moogrep.glade.h:1
+msgid "Case _sensitive"
 msgstr "Groß-/ Kleinschreibung beachten"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:2
-msgid "Don't prompt on replace"
-msgstr "Beim Ersetzen nicht nachfragen"
+msgid "Don't _prompt on replace"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1120
 msgid "Find"
 msgstr "Suchen"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:4
-msgid "Find backwards"
-msgstr "_Vorheriges"
+msgid "Find _backwards"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:5
-msgid "From cursor"
-msgstr "Ab Schreibmarke"
+msgid "From c_ursor"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:6
-msgid "Literal replacement"
-msgstr "Wörtliches Ersetzen"
-
-#: ../moo/mooedit/glade/mootextfind.glade.h:7
 msgid "Options"
 msgstr "Optionen"
 
-#: ../moo/mooedit/glade/mootextfind.glade.h:8
-msgid "Regular expression"
-msgstr "Regulärer Ausdruck"
+#: ../moo/mooedit/glade/mootextfind.glade.h:7
+msgid "Regular e_xpression"
+msgstr ""
 
-#: ../moo/mooedit/glade/mootextfind.glade.h:9
+#: ../moo/mooedit/glade/mootextfind.glade.h:8
 msgid "Replace With"
 msgstr "Ersetzen mit"
 
+#: ../moo/mooedit/glade/mootextfind.glade.h:9
+msgid "S_elected text"
+msgstr ""
+
 #: ../moo/mooedit/glade/mootextfind.glade.h:10
-msgid "Replacement text:"
-msgstr "Ersatztext:"
+msgid "_Literal replacement"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:11
-msgid "Selected text"
-msgstr "Markierter Text"
+msgid "_Replacement text:"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:12
-msgid "Text to find:"
-msgstr "Zu suchender Text:"
+msgid "_Text to find:"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:13
-msgid "Whole words only"
-msgstr "Nur ganze Wörter"
+msgid "_Whole words only"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind-prompt.glade.h:1
 #: ../moo/mooedit/mooeditwindow.c:471
@@ -761,23 +762,23 @@ msgstr "Zuletzt verwendete öffnen"
 msgid "encodings_list"
 msgstr "encodings_list"
 
-#: ../moo/mooedit/mooeditprefspage.c:196
+#: ../moo/mooedit/mooeditprefspage.c:168
 msgid "PreferencesPage|General"
 msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:231
+#: ../moo/mooedit/mooeditprefspage.c:203
 msgid "PreferencesPage|File Filters"
 msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:281
+#: ../moo/mooedit/mooeditprefspage.c:255
 msgid "PreferencesPage|View"
 msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:325
+#: ../moo/mooedit/mooeditprefspage.c:301
 msgid "PreferencesPage|File"
 msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:365
+#: ../moo/mooedit/mooeditprefspage.c:340
 msgid "PreferencesPage|Languages"
 msgstr ""
 
@@ -1279,7 +1280,7 @@ msgstr "In den Papierkorb verschieben..."
 msgid "Move selected files to Trash"
 msgstr "Markierte Dateien in den Papierkorb verschieben"
 
-#: ../moo/moofileview/moofileview-tools.c:328
+#: ../moo/moofileview/moofileview-tools.c:335
 msgid "Open with|Default Application"
 msgstr "Standardanwendung"
 
@@ -1616,7 +1617,7 @@ msgstr ""
 msgid "Could not open %s: %s"
 msgstr "%s konnte nicht geöffnet werden: %s"
 
-#: ../moo/mooutils/moofilewriter.c:267 ../moo/mooutils/mooutils-fs.c:387
+#: ../moo/mooutils/moofilewriter.c:291 ../moo/mooutils/mooutils-fs.c:387
 #: ../moo/mooutils/mooutils-fs.c:406 ../moo/mooutils/mooutils-fs.c:422
 #, c-format
 msgid "Could not create folder %s: %s"
@@ -1716,14 +1717,14 @@ msgstr "%s konnte nicht entfernt werden: %s"
 msgid "Could not rename file %s to %s: %s"
 msgstr "%s konnte nicht zu %s umbenannt werden: %s"
 
-#: ../moo/mooutils/mooutils-misc.c:1890
+#: ../moo/mooutils/mooutils-misc.c:1877
 #, c-format
 msgid ""
 "console message|in file %s, line %d, function %s:\n"
 "%s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-misc.c:1989
+#: ../moo/mooutils/mooutils-misc.c:1976
 #, c-format
 msgid "console message|in file %s, line %d, function %s: %s"
 msgstr ""
@@ -1834,10 +1835,6 @@ msgstr "_Ordner:"
 #: ../moo/plugins/glade/moogrep.glade.h:5
 msgid "_Pattern:"
 msgstr "_Muster:"
-
-#: ../moo/plugins/glade/moogrep.glade.h:1
-msgid "Case _sensitive"
-msgstr "Groß-/ Kleinschreibung beachten"
 
 #: ../moo/plugins/glade/moogrep.glade.h:2
 msgid "Fi_les:"
@@ -2099,22 +2096,25 @@ msgstr "Gesamtes Dokument"
 msgid "Lua script"
 msgstr "Luaskript"
 
-#: ../moo/plugins/usertools/moousertools.c:395
+#: ../moo/plugins/usertools/moousertools.c:397
 #: ../moo/plugins/usertools/moousertools-prefs.c:408
 msgid "Tools"
 msgstr "Werkzeuge"
 
-#: ../moo/plugins/usertools/moousertools.c:1399
+#: ../moo/plugins/usertools/moousertools.c:1456
 msgid "User Tools"
 msgstr ""
 
-#: ../moo/plugins/usertools/moousertools.c:1400
+#: ../moo/plugins/usertools/moousertools.c:1457
 msgid "Configurable tools"
 msgstr ""
 
 #: ../moo/plugins/usertools/moousertools-prefs.c:108
 msgid "New Command"
 msgstr "Neuer Befehl"
+
+#~ msgid "Case sensitive"
+#~ msgstr "Groß-/ Kleinschreibung beachten"
 
 #~ msgid "<b>Default language</b>"
 #~ msgstr "<b>Standardsprache</b>"

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-26 22:09-0800\n"
+"POT-Creation-Date: 2010-12-29 03:14-0800\n"
 "PO-Revision-Date: 2008-09-27\n"
 "Last-Translator: Kris Van Bruwaene <krvbr@yahoo.co.uk>\n"
 "Language-Team: Kris Van Bruwaene <krvbr@yahoo.co.uk>\n"
@@ -471,56 +471,57 @@ msgid "_Regular expression"
 msgstr "_Reguliere uitdrukking"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:1
-msgid "Case sensitive"
-msgstr "Hoofdlettergevoelig"
+#: ../moo/plugins/glade/moogrep.glade.h:1
+msgid "Case _sensitive"
+msgstr "Let op hoofd-/kleine letters"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:2
-msgid "Don't prompt on replace"
-msgstr "Niet vragen voor vervangen"
+msgid "Don't _prompt on replace"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1120
 msgid "Find"
 msgstr "Zoeken"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:4
-msgid "Find backwards"
-msgstr "Zoek vo_rige"
+msgid "Find _backwards"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:5
-msgid "From cursor"
-msgstr "Vanaf cursor"
+msgid "From c_ursor"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:6
-msgid "Literal replacement"
-msgstr "Letterlijk vervangen"
-
-#: ../moo/mooedit/glade/mootextfind.glade.h:7
 msgid "Options"
 msgstr "Opties"
 
-#: ../moo/mooedit/glade/mootextfind.glade.h:8
-msgid "Regular expression"
-msgstr "Reguliere uitdrukking"
+#: ../moo/mooedit/glade/mootextfind.glade.h:7
+msgid "Regular e_xpression"
+msgstr ""
 
-#: ../moo/mooedit/glade/mootextfind.glade.h:9
+#: ../moo/mooedit/glade/mootextfind.glade.h:8
 msgid "Replace With"
 msgstr "Vervangen met"
 
+#: ../moo/mooedit/glade/mootextfind.glade.h:9
+msgid "S_elected text"
+msgstr ""
+
 #: ../moo/mooedit/glade/mootextfind.glade.h:10
-msgid "Replacement text:"
-msgstr "Vervangtekst:"
+msgid "_Literal replacement"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:11
-msgid "Selected text"
-msgstr "Gekozen tekst"
+msgid "_Replacement text:"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:12
-msgid "Text to find:"
-msgstr "Te zoeken tekst:"
+msgid "_Text to find:"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:13
-msgid "Whole words only"
-msgstr "Enkel hele woorden"
+msgid "_Whole words only"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind-prompt.glade.h:1
 #: ../moo/mooedit/mooeditwindow.c:471
@@ -758,23 +759,23 @@ msgstr "Laatst Geopend"
 msgid "encodings_list"
 msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:196
+#: ../moo/mooedit/mooeditprefspage.c:168
 msgid "PreferencesPage|General"
 msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:231
+#: ../moo/mooedit/mooeditprefspage.c:203
 msgid "PreferencesPage|File Filters"
 msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:281
+#: ../moo/mooedit/mooeditprefspage.c:255
 msgid "PreferencesPage|View"
 msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:325
+#: ../moo/mooedit/mooeditprefspage.c:301
 msgid "PreferencesPage|File"
 msgstr ""
 
-#: ../moo/mooedit/mooeditprefspage.c:365
+#: ../moo/mooedit/mooeditprefspage.c:340
 msgid "PreferencesPage|Languages"
 msgstr ""
 
@@ -1276,7 +1277,7 @@ msgstr "Naar Vuilnisbak..."
 msgid "Move selected files to Trash"
 msgstr "Gekozen bestanden naar Vuilnisbak"
 
-#: ../moo/moofileview/moofileview-tools.c:328
+#: ../moo/moofileview/moofileview-tools.c:335
 msgid "Open with|Default Application"
 msgstr "Open with|Standaardtoepassing"
 
@@ -1613,7 +1614,7 @@ msgstr ""
 msgid "Could not open %s: %s"
 msgstr "Kon %s niet openen: %s"
 
-#: ../moo/mooutils/moofilewriter.c:267 ../moo/mooutils/mooutils-fs.c:387
+#: ../moo/mooutils/moofilewriter.c:291 ../moo/mooutils/mooutils-fs.c:387
 #: ../moo/mooutils/mooutils-fs.c:406 ../moo/mooutils/mooutils-fs.c:422
 #, c-format
 msgid "Could not create folder %s: %s"
@@ -1713,14 +1714,14 @@ msgstr "Kon %s niet verwijderen: %s"
 msgid "Could not rename file %s to %s: %s"
 msgstr "Kon bestand %s niet hernoemen tot %s: %s"
 
-#: ../moo/mooutils/mooutils-misc.c:1890
+#: ../moo/mooutils/mooutils-misc.c:1877
 #, c-format
 msgid ""
 "console message|in file %s, line %d, function %s:\n"
 "%s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-misc.c:1989
+#: ../moo/mooutils/mooutils-misc.c:1976
 #, c-format
 msgid "console message|in file %s, line %d, function %s: %s"
 msgstr ""
@@ -1834,10 +1835,6 @@ msgstr "_Map:"
 #: ../moo/plugins/glade/moogrep.glade.h:5
 msgid "_Pattern:"
 msgstr "_Patroon:"
-
-#: ../moo/plugins/glade/moogrep.glade.h:1
-msgid "Case _sensitive"
-msgstr "Let op hoofd-/kleine letters"
 
 #: ../moo/plugins/glade/moogrep.glade.h:2
 msgid "Fi_les:"
@@ -2099,22 +2096,25 @@ msgstr "Volledig document"
 msgid "Lua script"
 msgstr "Luascript"
 
-#: ../moo/plugins/usertools/moousertools.c:395
+#: ../moo/plugins/usertools/moousertools.c:397
 #: ../moo/plugins/usertools/moousertools-prefs.c:408
 msgid "Tools"
 msgstr "Hulpmiddelen"
 
-#: ../moo/plugins/usertools/moousertools.c:1399
+#: ../moo/plugins/usertools/moousertools.c:1456
 msgid "User Tools"
 msgstr ""
 
-#: ../moo/plugins/usertools/moousertools.c:1400
+#: ../moo/plugins/usertools/moousertools.c:1457
 msgid "Configurable tools"
 msgstr ""
 
 #: ../moo/plugins/usertools/moousertools-prefs.c:108
 msgid "New Command"
 msgstr "Nieuwe Opdracht"
+
+#~ msgid "Case sensitive"
+#~ msgstr "Hoofdlettergevoelig"
 
 #~ msgid "<b>Default language</b>"
 #~ msgstr "<b>Standaardtaal</b>"
