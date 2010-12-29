@@ -210,6 +210,30 @@ moo_file_writer_printf (MooFileWriter  *writer,
 }
 
 gboolean
+moo_file_writer_printf_markup (MooFileWriter  *writer,
+                               const char     *fmt,
+                               ...)
+{
+    va_list args;
+    gboolean ret;
+    char *string;
+
+    g_return_val_if_fail (MOO_IS_FILE_WRITER (writer), FALSE);
+    g_return_val_if_fail (fmt != NULL, FALSE);
+
+    va_start (args, fmt);
+    string = g_markup_vprintf_escaped (fmt, args);
+    va_end (args);
+
+    g_return_val_if_fail (string != NULL, FALSE);
+
+    ret = moo_file_writer_write (writer, string, -1);
+
+    g_free (string);
+    return ret;
+}
+
+gboolean
 moo_file_writer_close (MooFileWriter  *writer,
                        GError        **error)
 {

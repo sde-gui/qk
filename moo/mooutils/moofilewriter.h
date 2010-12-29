@@ -60,6 +60,9 @@ gboolean        moo_file_writer_write           (MooFileWriter  *writer,
 gboolean        moo_file_writer_printf          (MooFileWriter  *writer,
                                                  const char     *fmt,
                                                  ...) G_GNUC_PRINTF (2, 3);
+gboolean        moo_file_writer_printf_markup   (MooFileWriter  *writer,
+                                                 const char     *fmt,
+                                                 ...) G_GNUC_PRINTF (2, 3);
 gboolean        moo_file_writer_close           (MooFileWriter  *writer,
                                                  GError        **error);
 
