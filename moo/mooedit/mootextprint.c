@@ -1651,11 +1651,12 @@ do_print_operation (GtkTextView            *view,
     if (GTK_IS_WINDOW (parent))
         op->priv->parent = GTK_WINDOW (parent);
 
-    if (MOO_IS_EDIT (view))
+    if (MOO_IS_EDIT_VIEW (view))
     {
+        MooEdit *doc = moo_edit_view_get_doc (MOO_EDIT_VIEW (view));
         const char *filename, *basename;
-        filename = moo_edit_get_display_name (MOO_EDIT (view));
-        basename = moo_edit_get_display_basename (MOO_EDIT (view));
+        filename = moo_edit_get_display_name (doc);
+        basename = moo_edit_get_display_basename (doc);
         moo_print_operation_set_filename (op, filename, basename);
     }
 

@@ -485,7 +485,7 @@ show_progress (MooEditView *view)
 
     g_signal_connect_swapped (xml->cancel, "clicked",
                               G_CALLBACK (progress_cancel_clicked),
-                              MOO_EDIT (view));
+                              view);
 
     gtk_text_view_add_child_in_window (GTK_TEXT_VIEW (view),
                                        view->priv->progress,
