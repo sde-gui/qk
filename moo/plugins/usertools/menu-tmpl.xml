@@ -27,7 +27,7 @@ end
 ]]></lua:code>
   </command>
   <command id="SortLinesUniq"><!-- ###unix### -->
-    <name>Sort Lines</name>
+    <name>Sort | Uniq</name>
     <options>need-doc</options>
     <type>exe</type>
     <exe:output>insert</exe:output>

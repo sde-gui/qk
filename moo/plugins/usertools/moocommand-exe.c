@@ -1145,6 +1145,9 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
 
         old_filter = moo_command_data_get (data, KEY_FILTER);
 
+        if (!old_filter)
+            old_filter = "default";
+
         if (!_moo_str_equal (old_filter, new_filter))
         {
             moo_command_data_set (data, KEY_FILTER, new_filter);
