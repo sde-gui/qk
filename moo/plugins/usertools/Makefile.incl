@@ -10,8 +10,6 @@ plugins_sources +=					\
 	plugins/usertools/moocommanddisplay.h		\
 	plugins/usertools/moooutputfilterregex.c	\
 	plugins/usertools/moooutputfilterregex.h	\
-	plugins/usertools/mookeyfile.c			\
-	plugins/usertools/mookeyfile.h			\
 	plugins/usertools/moousertools-enums.h		\
 	plugins/usertools/moousertools-enums.c		\
 	plugins/usertools/moocommand-exe.c		\
@@ -38,16 +36,30 @@ plugins/usertools/lua-tool-setup.h: plugins/usertools/lua-tool-setup.lua $(top_s
 		&& mv plugins/usertools/lua-tool-setup.h.tmp plugins/usertools/lua-tool-setup.h
 
 cfgdir = $(MOO_DATA_DIR)
-cfg_DATA = plugins/usertools/filters.xml
+cfg_DATA =					\
+	plugins/usertools/filters.xml		\
+	plugins/usertools/menu.xml		\
+	plugins/usertools/context.xml
 EXTRA_DIST +=					\
 	plugins/usertools/filters.xml		\
-	plugins/usertools/win32/menu.cfg	\
-	plugins/usertools/win32/context.cfg	\
-	plugins/usertools/unix/menu.cfg		\
-	plugins/usertools/unix/context.cfg
+	plugins/usertools/menu-tmpl.xml		\
+	plugins/usertools/context-tmpl.xml	\
+	plugins/usertools/genplatxml.py
+
+genplatxml_args =
 
 if MOO_OS_WIN32
-cfg_DATA += plugins/usertools/win32/menu.cfg plugins/usertools/win32/context.cfg
+genplatxml_args += --enable=win32
 else !MOO_OS_WIN32
-cfg_DATA += plugins/usertools/unix/menu.cfg plugins/usertools/unix/context.cfg
+genplatxml_args += --enable=unix
 endif !MOO_OS_WIN32
+
+if MOO_ENABLE_PYTHON
+genplatxml_args += --enable=python
+endif
+
+built_plugins_sources += plugins/usertools/menu.xml plugins/usertools/context.xml
+plugins/usertools/%.xml: plugins/usertools/%-tmpl.xml plugins/usertools/genplatxml.py
+	$(AM_V_at)$(MKDIR_P) plugins/usertools
+	$(AM_V_GEN)$(PYTHON) $(srcdir)/plugins/usertools/genplatxml.py $(genplatxml_args) \
+		$(srcdir)/plugins/usertools/$*-tmpl.xml > $@.tmp && mv $@.tmp $@

@@ -20,19 +20,22 @@
 #ifndef MOO_COMMAND_PRIVATE_H
 #define MOO_COMMAND_PRIVATE_H
 
-#include "mookeyfile.h"
+#include "mooutils/moomarkup.h"
 #include "moocommand.h"
 
 G_BEGIN_DECLS
 
+#define KEY_TYPE    "type"
+#define KEY_OPTIONS "options"
+#define KEY_CODE    "code"
 
 void            _moo_command_init                   (void);
-MooCommandData *_moo_command_parse_item             (MooKeyFileItem     *item,
+MooCommandData *_moo_command_parse_item             (MooMarkupNode      *elm,
                                                      const char         *name,
                                                      const char         *filename,
                                                      MooCommandFactory **factory,
                                                      char              **options);
-void            _moo_command_format_item            (MooKeyFileItem     *item,
+void            _moo_command_write_item             (MooFileWriter      *writer,
                                                      MooCommandData     *data,
                                                      MooCommandFactory  *factory,
                                                      char               *options);
@@ -50,7 +53,6 @@ gboolean        _moo_command_factory_save_data      (MooCommandFactory  *factory
 gboolean        _moo_command_factory_data_equal     (MooCommandFactory  *factory,
                                                      MooCommandData     *data1,
                                                      MooCommandData     *data2);
-
 
 G_END_DECLS
 

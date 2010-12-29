@@ -34,20 +34,22 @@
 
 #define N_TOOLS 2
 
-#define ITEM_TOOL       "tool"
-#define KEY_ACCEL       "accel"
-#define KEY_MENU        "menu"
-#define KEY_LANGS       "langs"
-#define KEY_FILTER      "file-filter"
-#define KEY_POSITION    "position"
-#define KEY_COMMAND     "command"
-#define KEY_NAME        "name"
-#define KEY_ENABLED     "enabled"
-#define KEY_OS          "os"
-#define KEY_ID          "id"
-#define KEY_DELETED     "deleted"
-#define KEY_BUILTIN     "builtin"
-#define KEY_OPTIONS     "options"
+#define ELEMENT_ROOT        "moo-user-tools"
+#define PROP_VERSION        "version"
+#define CURRENT_TOOLS_VERSION "1.0"
+
+#define ELEMENT_COMMAND     "command"
+#define KEY_ID              "id"
+#define PROP_ENABLED        "enabled"
+#define PROP_DELETED        "deleted"
+#define PROP_BUILTIN        "builtin"
+
+#define KEY_NAME            "name"
+#define KEY_ACCEL           "accel"
+#define KEY_POSITION        "position"
+#define KEY_LANGS           "langs"
+#define KEY_FILTER          "file-filter"
+#define KEY_MENU            "menu"
 
 #define NAME_PREFIX_LEN 3
 
@@ -87,7 +89,7 @@ MOO_DEFINE_TYPE_STATIC (MooToolAction, _moo_tool_action, MOO_TYPE_EDIT_ACTION)
 #define MOO_IS_TOOL_ACTION(obj) (G_TYPE_CHECK_INSTANCE_TYPE (obj, MOO_TYPE_TOOL_ACTION))
 #define MOO_TOOL_ACTION(obj)    (G_TYPE_CHECK_INSTANCE_CAST (obj, MOO_TYPE_TOOL_ACTION, MooToolAction))
 
-static const char *FILENAMES[N_TOOLS] = {"menu.cfg", "context.cfg"};
+static const char *FILENAMES[N_TOOLS] = { "menu.xml", "context.xml" };
 static ToolStore *tools_stores[N_TOOLS];
 
 static void
@@ -527,10 +529,6 @@ parse_params (MooUserToolInfo  *info,
             g_free (info->name);
             info->name = g_strdup (value);
         }
-        else if (!strcmp (key, KEY_OS))
-        {
-            /* ignore */
-        }
         else if (!strcmp (key, KEY_ACCEL))
         {
             g_free (info->accel);
@@ -673,17 +671,16 @@ load_directories (MooUserToolType   type,
 
 
 static MooUserToolInfo *
-parse_item (MooKeyFileItem  *item,
-            MooUserToolType  type,
-            const char      *file)
+parse_command (MooMarkupNode    *elm,
+               MooUserToolType   type,
+               const char       *file)
 {
-    char *position = NULL;
     MooUserToolInfo *info;
-    char *langs;
+    MooMarkupNode *child;
 
-    if (strcmp (moo_key_file_item_name (item), ITEM_TOOL))
+    if (strcmp (elm->name, ELEMENT_COMMAND) != 0)
     {
-        g_warning ("invalid group %s in file %s", moo_key_file_item_name (item), file);
+        moo_warning ("invalid element '%s' in file '%s'", elm->name, file);
         return NULL;
     }
 
@@ -691,15 +688,15 @@ parse_item (MooKeyFileItem  *item,
     info->type = type;
     info->file = g_strdup (file);
     info->position = MOO_USER_TOOL_POS_END;
-    info->id = moo_key_file_item_steal (item, KEY_ID);
-    info->name = moo_key_file_item_steal (item, KEY_NAME);
-    info->enabled = moo_key_file_item_steal_bool (item, KEY_ENABLED, TRUE);
-    info->deleted = moo_key_file_item_steal_bool (item, KEY_DELETED, FALSE);
-    info->builtin = moo_key_file_item_steal_bool (item, KEY_BUILTIN, FALSE);
+
+    info->id = g_strdup (moo_markup_get_prop (elm, KEY_ID));
+    info->enabled = moo_markup_bool_prop (elm, PROP_ENABLED, TRUE);
+    info->deleted = moo_markup_bool_prop (elm, PROP_DELETED, FALSE);
+    info->builtin = moo_markup_bool_prop (elm, PROP_BUILTIN, FALSE);
 
     if (!info->id)
     {
-        g_warning ("tool id missing in file %s", file);
+        moo_warning ("tool id missing in file %s", file);
         _moo_user_tool_info_unref (info);
         return NULL;
     }
@@ -707,34 +704,70 @@ parse_item (MooKeyFileItem  *item,
     if (info->deleted || info->builtin)
         return info;
 
-    info->accel = moo_key_file_item_steal (item, KEY_ACCEL);
-    info->menu = moo_key_file_item_steal (item, KEY_MENU);
-    position = moo_key_file_item_steal (item, KEY_POSITION);
-
-    if (position)
+    for (child = elm->children; child != NULL; child = child->next)
     {
-        if (!g_ascii_strcasecmp (position, "end"))
-            info->position = MOO_USER_TOOL_POS_END;
-        else if (!g_ascii_strcasecmp (position, "start"))
-            info->position = MOO_USER_TOOL_POS_START;
-        else
-            g_warning ("unknown position type '%s' for tool %s in file %s",
-                       position, info->name, file);
+        if (!MOO_MARKUP_IS_ELEMENT (child))
+            continue;
 
-        g_free (position);
+        if (strcmp (child->name, KEY_NAME) == 0)
+        {
+            info->name = g_strdup (MOO_MARKUP_ELEMENT (child)->content);
+        }
+        else if (strcmp (child->name, KEY_ACCEL) == 0)
+        {
+            info->accel = g_strdup (MOO_MARKUP_ELEMENT (child)->content);
+        }
+        else if (strcmp (child->name, KEY_MENU) == 0)
+        {
+            info->menu = g_strdup (MOO_MARKUP_ELEMENT (child)->content);
+        }
+        else if (strcmp (child->name, KEY_POSITION) == 0)
+        {
+            const char *position = MOO_MARKUP_ELEMENT (child)->content;
+
+            if (position)
+            {
+                if (!g_ascii_strcasecmp (position, "end"))
+                    info->position = MOO_USER_TOOL_POS_END;
+                else if (!g_ascii_strcasecmp (position, "start"))
+                    info->position = MOO_USER_TOOL_POS_START;
+                else
+                    g_warning ("unknown position type '%s' for tool %s in file %s",
+                               position, info->id, file);
+            }
+        }
+        else if (strcmp (child->name, KEY_LANGS) == 0)
+        {
+            if (info->filter)
+                moo_warning ("duplicated filter in tool '%s' in file '%s'", info->id, file);
+            else
+                info->filter = g_strdup_printf ("langs: %s", MOO_MARKUP_ELEMENT (child)->content);
+        }
+        else if (strcmp (child->name, KEY_FILTER) == 0)
+        {
+            if (info->filter)
+                moo_warning ("duplicated filter in tool '%s' in file '%s'", info->id, file);
+            else
+                info->filter = g_strdup (MOO_MARKUP_ELEMENT (child)->content);
+        }
+        else if (strcmp (child->name, KEY_OPTIONS) == 0 || strcmp (child->name, KEY_TYPE) == 0)
+        {
+            // handled by _moo_command_parse_item
+        }
+        else if (!strchr (child->name, ':'))
+        {
+            moo_warning ("invalid element '%s' in tool '%s' in file '%s'", child->name, info->id, file);
+        }
     }
 
-    if ((langs = moo_key_file_item_steal (item, KEY_LANGS)))
+    if (!info->name)
     {
-        info->filter = g_strdup_printf ("langs: %s", langs);
-        g_free (langs);
-    }
-    else
-    {
-        info->filter = moo_key_file_item_steal (item, KEY_FILTER);
+        moo_warning ("tool name missing in tool '%s' in file '%s'", info->id, file);
+        _moo_user_tool_info_unref (info);
+        return NULL;
     }
 
-    info->cmd_data = _moo_command_parse_item (item, info->name, file,
+    info->cmd_data = _moo_command_parse_item (elm, info->name, file,
                                               &info->cmd_factory,
                                               &info->options);
 
@@ -747,50 +780,64 @@ parse_item (MooKeyFileItem  *item,
     return info;
 }
 
-
 static GSList *
-parse_key_file (MooKeyFile      *key_file,
-                MooUserToolType  type,
-                const char      *filename)
+parse_markup (MooMarkupDoc    *doc,
+              MooUserToolType  type,
+              const char      *filename)
 {
-    guint n_items, i;
     GSList *list = NULL;
+    MooMarkupNode *root;
+    MooMarkupNode *elm;
+    const char *version;
 
-    n_items = moo_key_file_n_items (key_file);
+    root = moo_markup_get_root_element (doc, ELEMENT_ROOT);
+    moo_return_val_if_fail (root != NULL, NULL);
 
-    for (i = 0; i < n_items; ++i)
+    version = moo_markup_get_prop (root, PROP_VERSION);
+    moo_return_val_if_fail (version != NULL, NULL);
+
+    if (strcmp (version, CURRENT_TOOLS_VERSION) != 0)
     {
-        MooKeyFileItem *item = moo_key_file_nth_item (key_file, i);
-        MooUserToolInfo *info = parse_item (item, type, filename);
-        if (info)
+        moo_message ("incompatible user tools file version '%s', '%s' expected",
+                     version, CURRENT_TOOLS_VERSION);
+        return NULL;
+    }
+
+    for (elm = root->children; elm != NULL; elm = elm->next)
+    {
+        MooUserToolInfo *info;
+
+        if (!MOO_MARKUP_IS_ELEMENT (elm))
+            continue;
+
+        if ((info = parse_command (elm, type, filename)))
             list = g_slist_prepend (list, info);
     }
 
     return g_slist_reverse (list);
 }
 
-
 static GSList *
 parse_file_simple (const char     *filename,
                    MooUserToolType type)
 {
-    MooKeyFile *key_file;
+    MooMarkupDoc *doc;
     GError *error = NULL;
     GSList *list = NULL;
 
     g_return_val_if_fail (filename != NULL, NULL);
     g_return_val_if_fail (type < N_TOOLS, NULL);
 
-    key_file = moo_key_file_new_from_file (filename, &error);
+    doc = moo_markup_parse_file (filename, &error);
 
-    if (key_file)
+    if (doc)
     {
-        list = parse_key_file (key_file, type, filename);
-        moo_key_file_unref (key_file);
+        list = parse_markup (doc, type, filename);
+        moo_markup_doc_unref (doc);
     }
     else
     {
-        g_warning ("could not load file '%s': %s", filename, error->message);
+        moo_warning ("could not load file '%s': %s", filename, moo_error_message (error));
         g_error_free (error);
     }
 
@@ -1055,69 +1102,78 @@ void
 _moo_edit_save_user_tools (MooUserToolType  type,
                            GSList          *user_list)
 {
-    MooKeyFile *key_file;
     GError *error = NULL;
-    char *string;
     GSList *list;
+    MooFileWriter *writer;
+    char *filename;
 
-    g_return_if_fail (type < N_TOOLS);
+    moo_return_if_fail (type < N_TOOLS);
 
-    key_file = moo_key_file_new ();
+    filename = moo_get_user_data_file (FILENAMES[type]);
+    moo_return_if_fail (filename != NULL);
+
+    if (!(writer = moo_config_writer_new (filename, TRUE, &error)))
+    {
+        moo_critical ("could not open file '%s': %s", filename, moo_error_message (error));
+        g_error_free (error);
+        g_free (filename);
+        return;
+    }
+
+    moo_file_writer_printf (writer, "<%s version=\"%s\"><!-- This file is autogenerated, do not edit -->\n",
+                            ELEMENT_ROOT, CURRENT_TOOLS_VERSION);
+
     list = generate_real_list (type, user_list);
 
     while (list)
     {
-        MooKeyFileItem *item;
         MooUserToolInfo *info = list->data;
 
-        item = moo_key_file_new_item (key_file, ITEM_TOOL);
+        moo_file_writer_printf (writer, "  <%s %s=\"%s\"", ELEMENT_COMMAND, KEY_ID, info->id);
 
-        moo_key_file_item_set (item, KEY_ID, info->id);
+        if (!info->enabled)
+            moo_file_writer_printf (writer, " %s=\"0\"", PROP_ENABLED);
 
-        if (info->deleted)
+        if (info->deleted || info->builtin)
         {
-            moo_key_file_item_set_bool (item, KEY_DELETED, TRUE);
-        }
-        else if (info->builtin)
-        {
-            moo_key_file_item_set_bool (item, KEY_BUILTIN, TRUE);
+            moo_file_writer_printf (writer, " %s=\"1\"/>\n", info->deleted ? PROP_DELETED : PROP_BUILTIN);
         }
         else
         {
-            if (info->name && info->name[0])
-                moo_key_file_item_set (item, KEY_NAME, info->name);
-            if (info->accel && info->accel[0])
-                moo_key_file_item_set (item, KEY_ACCEL, info->accel);
-            if (info->menu && info->menu[0])
-                moo_key_file_item_set (item, KEY_MENU, info->menu);
-            if (info->filter && info->filter[0])
-                moo_key_file_item_set (item, KEY_FILTER, info->filter);
-            if (!info->enabled)
-                moo_key_file_item_set_bool (item, KEY_ENABLED, info->enabled);
-            if (info->position != MOO_USER_TOOL_POS_END)
-                moo_key_file_item_set (item, KEY_POSITION, "start");
+            moo_file_writer_printf (writer, ">\n");
 
-            _moo_command_format_item (item,
-                                      info->cmd_data,
-                                      info->cmd_factory,
-                                      info->options);
+            if (info->name && info->name[0])
+                moo_file_writer_printf_markup (writer, "    <" KEY_NAME ">%s</" KEY_NAME ">\n", info->name);
+            if (info->accel && info->accel[0])
+                moo_file_writer_printf_markup (writer, "    <" KEY_ACCEL ">%s</" KEY_ACCEL ">\n", info->accel);
+            if (info->menu && info->menu[0])
+                moo_file_writer_printf_markup (writer, "    <" KEY_MENU ">%s</" KEY_MENU ">\n", info->menu);
+            if (info->filter && info->filter[0])
+                moo_file_writer_printf_markup (writer, "    <" KEY_FILTER ">%s</" KEY_FILTER ">\n", info->filter);
+            if (info->position != MOO_USER_TOOL_POS_END)
+                moo_file_writer_printf (writer, "    <" KEY_POSITION ">start</" KEY_POSITION ">\n");
+
+            _moo_command_write_item (writer,
+                                     info->cmd_data,
+                                     info->cmd_factory,
+                                     info->options);
+
+            moo_file_writer_printf (writer, "  </%s>\n", ELEMENT_COMMAND);
         }
 
         _moo_user_tool_info_unref (info);
         list = g_slist_delete_link (list, list);
     }
 
-    string = moo_key_file_format (key_file, "This file is autogenerated, do not edit\n"
-                                            "-%- strip: false -%-", 2);
+    moo_file_writer_printf (writer, "</%s>\n", ELEMENT_ROOT);
 
-    if (!moo_save_user_data_file (FILENAMES[type], string, -1, &error))
+    if (!moo_file_writer_close (writer, &error))
     {
-        g_critical ("could not save tools file: %s", error->message);
+        moo_critical ("could not save file '%s': %s", filename, moo_error_message (error));
         g_error_free (error);
     }
 
-    g_free (string);
-    moo_key_file_unref (key_file);
+    g_free (filename);
 }
 
 
@@ -1126,6 +1182,7 @@ _moo_user_tool_info_new (void)
 {
     MooUserToolInfo *info = g_new0 (MooUserToolInfo, 1);
     info->ref_count = 1;
+    info->enabled = TRUE;
     return info;
 }
 

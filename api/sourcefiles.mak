@@ -285,8 +285,6 @@ source_files = \
     ../moo/plugins/usertools/moocommanddisplay.h\
     ../moo/plugins/usertools/moocommand.h\
     ../moo/plugins/usertools/moocommand-private.h\
-    ../moo/plugins/usertools/mookeyfile.c\
-    ../moo/plugins/usertools/mookeyfile.h\
     ../moo/plugins/usertools/moooutputfilterregex.c\
     ../moo/plugins/usertools/moooutputfilterregex.h\
     ../moo/plugins/usertools/moousertools.c\

@@ -52,10 +52,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#define KEY_TYPE    "type"
-#define KEY_OPTIONS "options"
-
-
 G_DEFINE_TYPE (MooCommand, moo_command, G_TYPE_OBJECT)
 G_DEFINE_TYPE (MooCommandFactory, moo_command_factory, G_TYPE_OBJECT)
 G_DEFINE_TYPE (MooCommandContext, moo_command_context, G_TYPE_OBJECT)
@@ -1159,136 +1155,166 @@ _moo_command_parse_file (const char         *filename,
 }
 
 
-static void
-item_foreach_func (const char *key,
-                   const char *val,
-                   gpointer    user_data)
-{
-    int index;
-
-    struct {
-        MooCommandFactory *factory;
-        MooCommandData *cmd_data;
-        gboolean error;
-        const char *filename;
-        const char *name;
-    } *data = user_data;
-
-    if (data->error)
-        return;
-
-    /* Ignore 'os' for compatibility */
-    if (strcmp (key, "os") == 0)
-	return;
-
-    index = find_key (data->factory, key);
-
-    if (index < 0)
-    {
-        g_warning ("unknown key '%s' in item '%s' in file '%s'",
-                   key, data->name, data->filename);
-        data->error = TRUE;
-        return;
-    }
-
-    moo_command_data_set (data->cmd_data, index, val);
-}
-
 MooCommandData *
-_moo_command_parse_item (MooKeyFileItem     *item,
+_moo_command_parse_item (MooMarkupNode      *elm,
                          const char         *name,
                          const char         *filename,
                          MooCommandFactory **factory_p,
                          char              **options_p)
 {
-    MooCommandData *data;
+    MooMarkupNode *child;
+    MooCommandData *data = NULL;
     MooCommandFactory *factory;
-    char *factory_name, *options;
-    struct {
-        MooCommandFactory *factory;
-        MooCommandData *cmd_data;
-        gboolean error;
-        const char *filename;
-        const char *name;
-    } parse_data;
+    const char *factory_name;
+    const char *options = NULL;
+    char *prefix = NULL;
 
-    g_return_val_if_fail (item != NULL, NULL);
+    g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (elm), NULL);
 
-    factory_name = moo_key_file_item_steal (item, KEY_TYPE);
-    options = moo_key_file_item_steal (item, KEY_OPTIONS);
-
-    if (!factory_name)
+    if (!(child = moo_markup_get_element (elm, KEY_TYPE)) ||
+        !(factory_name = MOO_MARKUP_ELEMENT (child)->content) ||
+        !*factory_name)
     {
-        g_warning ("no type attribute in item %s in file %s", name, filename);
+        moo_warning ("missing or empty '%s' element in tool '%s' in file '%s'", KEY_TYPE, name, filename);
         goto error;
     }
+
+    if ((child = moo_markup_get_element (elm, KEY_OPTIONS)))
+        options = MOO_MARKUP_ELEMENT (child)->content;
 
     factory = moo_command_factory_lookup (factory_name);
 
     if (!factory)
     {
-        g_warning ("unknown command type %s in item %s in file %s",
-                   factory_name, name, filename);
+        moo_warning ("unknown command type '%s' in tool '%s' in file '%s'",
+                     factory_name, name, filename);
         goto error;
     }
 
     data = moo_command_data_new (factory->n_keys);
+    prefix = g_strdup_printf ("%s:", factory_name);
 
-    parse_data.factory = factory;
-    parse_data.cmd_data = data;
-    parse_data.error = FALSE;
-    parse_data.filename = filename;
-    parse_data.name = name;
-
-    moo_key_file_item_foreach (item, (GHFunc) item_foreach_func, &parse_data);
-
-    if (parse_data.error)
+    for (child = elm->children; child != NULL; child = child->next)
     {
-        moo_command_data_unref (data);
-        goto error;
-    }
+        const char *key;
 
-    moo_command_data_take_code (data, moo_key_file_item_steal_content (item));
+        if (!MOO_MARKUP_IS_ELEMENT (child))
+            continue;
+
+        if (!g_str_has_prefix (child->name, prefix))
+            continue;
+
+        key = child->name + strlen (prefix);
+
+        if (strcmp (key, KEY_CODE) == 0)
+        {
+            /* strip leading newline */
+            const char *code = MOO_MARKUP_ELEMENT (child)->content;
+            if (code)
+            {
+                if (*code == '\n')
+                    code += 1;
+                else if (*code == '\r' && *code == '\n')
+                    code += 2;
+                else if (*code == '\r')
+                    code += 1;
+                moo_command_data_set_code (data, code);
+            }
+        }
+        else
+        {
+            int index = find_key (factory, key);
+
+            if (index < 0)
+            {
+                moo_warning ("invalid element '%s' in item '%s' in file '%s'",
+                             child->name, name, filename);
+                goto error;
+            }
+
+            moo_command_data_set (data, index, MOO_MARKUP_ELEMENT (child)->content);
+        }
+    }
 
     if (factory_p)
         *factory_p = factory;
 
     if (options_p)
-        *options_p = options;
-    else
-        g_free (options);
+        *options_p = g_strdup (options);
 
-    g_free (factory_name);
+    g_free (prefix);
 
     return data;
 
 error:
-    g_free (factory_name);
-    g_free (options);
+    if (data)
+        moo_command_data_unref (data);
+    g_free (prefix);
     return NULL;
 }
 
 
-void
-_moo_command_format_item (MooKeyFileItem    *item,
-                          MooCommandData    *data,
-                          MooCommandFactory *factory,
-                          char              *options)
+static void
+write_code (MooFileWriter *writer,
+            const char    *code)
 {
-    g_return_if_fail (item != NULL);
+    char **pieces, **p;
+
+    if (!strstr (code, "]]>"))
+    {
+        moo_file_writer_write (writer, code, -1);
+        return;
+    }
+
+    pieces = g_strsplit (code, "]]>", 0);
+
+    for (p = pieces; p && *p; ++p)
+    {
+        if (p != pieces)
+            moo_file_writer_write (writer, "]]>]]&gt;<![CDATA[", -1);
+        moo_file_writer_write (writer, *p, -1);
+    }
+
+    g_strfreev (pieces);
+}
+
+void
+_moo_command_write_item (MooFileWriter     *writer,
+                         MooCommandData    *data,
+                         MooCommandFactory *factory,
+                         char              *options)
+{
+    g_return_if_fail (writer != NULL);
     g_return_if_fail (MOO_IS_COMMAND_FACTORY (factory));
 
-    moo_key_file_item_set (item, KEY_TYPE, factory->name);
-
     if (options && options[0])
-        moo_key_file_item_set (item, KEY_OPTIONS, options);
+        moo_file_writer_printf_markup (writer, "    <" KEY_OPTIONS ">%s</" KEY_OPTIONS ">\n", options);
+
+    moo_file_writer_printf (writer, "    <" KEY_TYPE ">%s</" KEY_TYPE ">\n", factory->name);
 
     if (data)
     {
         guint i;
+        const char *code;
+
         for (i = 0; i < factory->n_keys; ++i)
-            moo_key_file_item_set (item, factory->keys[i], moo_command_data_get (data, i));
-        moo_key_file_item_set_content (item, moo_command_data_get_code (data));
+        {
+            const char *key = factory->keys[i];
+            const char *value = moo_command_data_get (data, i);
+            if (value)
+                moo_file_writer_printf_markup (writer, "    <%s:%s>%s</%s:%s>\n",
+                                               factory->name, key, value,
+                                               factory->name, key);
+        }
+
+        if ((code = moo_command_data_get_code (data)))
+        {
+            moo_file_writer_printf (writer, "    <%s:%s><![CDATA[\n",
+                                    factory->name, KEY_CODE);
+            write_code (writer, code);
+            moo_file_writer_printf (writer, "]]></%s:%s>\n",
+                                    factory->name, KEY_CODE);
+        }
     }
 }
 
