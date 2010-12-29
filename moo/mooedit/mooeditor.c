@@ -2638,7 +2638,8 @@ moo_editor_save_as (MooEditor        *editor,
 
     /* fall through */
 out:
-    g_object_unref (freeme);
+    if (freeme)
+        g_object_unref (freeme);
     return result;
 }
 
