@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <glade-interface>
-<!-- interface-requires gtk+ 2.6 -->
-<!-- interface-naming-policy toplevel-contextual -->
+<requires-version lib="gtk+" version="2.12"/>
 <widget class="GtkWindow" id="window1">
 <property name="visible">True</property>
 <property name="title">window1</property>
@@ -24,7 +23,6 @@
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
-<property name="position">0</property>
 </packing>
 </child>
 <child>
@@ -43,9 +41,9 @@
 <widget class="GtkScrolledWindow" id="scrolledwindow1">
 <property name="visible">True</property>
 <property name="can_focus">False</property>
-<property name="hscrollbar_policy">never</property>
-<property name="vscrollbar_policy">automatic</property>
-<property name="shadow_type">in</property>
+<property name="hscrollbar_policy">GTK_POLICY_NEVER</property>
+<property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+<property name="shadow_type">GTK_SHADOW_IN</property>
 <child>
 <widget class="GtkTreeView" id="treeview">
 <property name="visible">True</property>
@@ -54,9 +52,6 @@
 </widget>
 </child>
 </widget>
-<packing>
-<property name="position">0</property>
-</packing>
 </child>
 <child>
 <widget class="GtkTable" id="table">
@@ -199,9 +194,6 @@
 </packing>
 </child>
 </widget>
-<packing>
-<property name="position">0</property>
-</packing>
 </child>
 <child>
 <widget class="GtkHBox" id="hbox2">
@@ -210,10 +202,9 @@
 <child>
 <widget class="GtkButton" id="new">
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
 <property name="tooltip" translatable="yes">New</property>
 <property name="focus_on_click">False</property>
+<property name="response_id">0</property>
 <child>
 <widget class="GtkImage" id="image3">
 <property name="visible">True</property>
@@ -224,16 +215,14 @@
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
-<property name="position">0</property>
 </packing>
 </child>
 <child>
 <widget class="GtkButton" id="delete">
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
 <property name="tooltip" translatable="yes">Delete</property>
 <property name="focus_on_click">False</property>
+<property name="response_id">0</property>
 <child>
 <widget class="GtkImage" id="image4">
 <property name="visible">True</property>
@@ -250,10 +239,9 @@
 <child>
 <widget class="GtkButton" id="down">
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
 <property name="tooltip" translatable="yes">Move down</property>
 <property name="focus_on_click">False</property>
+<property name="response_id">0</property>
 <child>
 <widget class="GtkImage" id="image2">
 <property name="visible">True</property>
@@ -270,10 +258,9 @@
 <child>
 <widget class="GtkButton" id="up">
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
 <property name="tooltip" translatable="yes">Move up</property>
 <property name="focus_on_click">False</property>
+<property name="response_id">0</property>
 <child>
 <widget class="GtkImage" id="image1">
 <property name="visible">True</property>
@@ -302,9 +289,6 @@
 </packing>
 </child>
 </widget>
-<packing>
-<property name="position">0</property>
-</packing>
 </child>
 </widget>
 </child>

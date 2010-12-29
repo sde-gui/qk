@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <glade-interface>
-<!-- interface-requires gtk+ 2.6 -->
-<!-- interface-naming-policy toplevel-contextual -->
 <widget class="GtkDialog" id="dialog1">
 <property name="title">Print Options</property>
-<property name="type_hint">dialog</property>
+<property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
 <child internal-child="vbox">
 <widget class="GtkVBox" id="dialog-vbox1">
 <property name="visible">True</property>
@@ -21,17 +19,15 @@
 <property name="spacing">6</property>
 <child>
 <widget class="GtkCheckButton" id="use_styles">
-<property name="label" translatable="yes">Print using text styles</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
+<property name="label" translatable="yes">Print using text styles</property>
 <property name="use_underline">True</property>
+<property name="response_id">0</property>
 <property name="draw_indicator">True</property>
 </widget>
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
-<property name="position">0</property>
 </packing>
 </child>
 <child>
@@ -40,24 +36,21 @@
 <property name="spacing">6</property>
 <child>
 <widget class="GtkCheckButton" id="use_custom_font">
-<property name="label" translatable="yes">Use custom font:</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
+<property name="label" translatable="yes">Use custom font:</property>
 <property name="use_underline">True</property>
+<property name="response_id">0</property>
 <property name="draw_indicator">True</property>
 </widget>
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
-<property name="position">0</property>
 </packing>
 </child>
 <child>
 <widget class="GtkFontButton" id="font">
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
+<property name="response_id">0</property>
 </widget>
 <packing>
 <property name="expand">False</property>
@@ -74,11 +67,10 @@
 </child>
 <child>
 <widget class="GtkCheckButton" id="wrap">
-<property name="label" translatable="yes">Wrap long lines</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
+<property name="label" translatable="yes">Wrap long lines</property>
 <property name="use_underline">True</property>
+<property name="response_id">0</property>
 <property name="draw_indicator">True</property>
 </widget>
 <packing>
@@ -89,11 +81,10 @@
 </child>
 <child>
 <widget class="GtkCheckButton" id="ellipsize">
-<property name="label" translatable="yes">Ellipsize long lines</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
+<property name="label" translatable="yes">Ellipsize long lines</property>
 <property name="use_underline">True</property>
+<property name="response_id">0</property>
 <property name="draw_indicator">True</property>
 </widget>
 <packing>
@@ -107,16 +98,14 @@
 <property name="visible">True</property>
 <child>
 <widget class="GtkCheckButton" id="line_numbers">
-<property name="label" translatable="yes" comments="Part of the phrase &quot;Print line numbers&quot; &quot;every&quot; &quot;1&quot; &quot;lines&quot;">Print line numbers</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
+<property name="label" translatable="yes" comments="Part of the phrase &quot;Print line numbers&quot; &quot;every&quot; &quot;1&quot; &quot;lines&quot;">Print line numbers</property>
+<property name="response_id">0</property>
 <property name="draw_indicator">True</property>
 </widget>
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
-<property name="position">0</property>
 </packing>
 </child>
 <child>
@@ -128,9 +117,6 @@
 <property name="visible">True</property>
 <property name="label" translatable="yes" comments="Part of the phrase &quot;Print line numbers&quot; &quot;every&quot; &quot;1&quot; &quot;lines&quot;">every</property>
 </widget>
-<packing>
-<property name="position">0</property>
-</packing>
 </child>
 <child>
 <widget class="GtkSpinButton" id="line_numbers_step">
@@ -187,17 +173,15 @@
 <property name="spacing">6</property>
 <child>
 <widget class="GtkCheckButton" id="print_header">
-<property name="label" translatable="yes">Print header</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
+<property name="label" translatable="yes">Print header</property>
 <property name="use_underline">True</property>
+<property name="response_id">0</property>
 <property name="draw_indicator">True</property>
 </widget>
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
-<property name="position">0</property>
 </packing>
 </child>
 <child>
@@ -209,17 +193,15 @@
 <property name="spacing">6</property>
 <child>
 <widget class="GtkCheckButton" id="header_separator">
-<property name="label" translatable="yes">Print separator line</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
+<property name="label" translatable="yes">Print separator line</property>
 <property name="use_underline">True</property>
+<property name="response_id">0</property>
 <property name="draw_indicator">True</property>
 </widget>
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
-<property name="position">0</property>
 </packing>
 </child>
 <child>
@@ -355,17 +337,15 @@
 <property name="spacing">6</property>
 <child>
 <widget class="GtkCheckButton" id="print_footer">
-<property name="label" translatable="yes">Print footer</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
+<property name="label" translatable="yes">Print footer</property>
 <property name="use_underline">True</property>
+<property name="response_id">0</property>
 <property name="draw_indicator">True</property>
 </widget>
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
-<property name="position">0</property>
 </packing>
 </child>
 <child>
@@ -377,17 +357,15 @@
 <property name="spacing">6</property>
 <child>
 <widget class="GtkCheckButton" id="footer_separator">
-<property name="label" translatable="yes">Print separator line</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
+<property name="label" translatable="yes">Print separator line</property>
 <property name="use_underline">True</property>
+<property name="response_id">0</property>
 <property name="draw_indicator">True</property>
 </widget>
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
-<property name="position">0</property>
 </packing>
 </child>
 <child>
@@ -531,46 +509,34 @@
 <child internal-child="action_area">
 <widget class="GtkHButtonBox" id="dialog-action_area1">
 <property name="visible">True</property>
-<property name="layout_style">end</property>
+<property name="layout_style">GTK_BUTTONBOX_END</property>
 <child>
 <widget class="GtkButton" id="cancelbutton1">
-<property name="label">gtk-cancel</property>
-<property name="response_id">-6</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
 <property name="can_default">True</property>
-<property name="receives_default">False</property>
+<property name="label">gtk-cancel</property>
 <property name="use_stock">True</property>
 <property name="focus_on_click">False</property>
+<property name="response_id">-6</property>
 </widget>
-<packing>
-<property name="expand">False</property>
-<property name="fill">False</property>
-<property name="position">0</property>
-</packing>
 </child>
 <child>
 <widget class="GtkButton" id="okbutton1">
-<property name="label">gtk-ok</property>
-<property name="response_id">-5</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
 <property name="can_default">True</property>
-<property name="receives_default">False</property>
+<property name="label">gtk-ok</property>
 <property name="use_stock">True</property>
 <property name="focus_on_click">False</property>
+<property name="response_id">-5</property>
 </widget>
 <packing>
-<property name="expand">False</property>
-<property name="fill">False</property>
 <property name="position">1</property>
 </packing>
 </child>
 </widget>
 <packing>
 <property name="expand">False</property>
-<property name="pack_type">end</property>
-<property name="position">0</property>
+<property name="pack_type">GTK_PACK_END</property>
 </packing>
 </child>
 </widget>

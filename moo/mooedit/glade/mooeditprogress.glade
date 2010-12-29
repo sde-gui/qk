@@ -1,7 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <glade-interface>
-<!-- interface-requires gtk+ 2.6 -->
-<!-- interface-naming-policy toplevel-contextual -->
 <widget class="GtkWindow" id="window1">
 <property name="visible">True</property>
 <property name="title">window1</property>
@@ -19,6 +17,9 @@
 <property name="visible">True</property>
 <property name="n_rows">2</property>
 <property name="n_columns">2</property>
+<child>
+<placeholder/>
+</child>
 <child>
 <widget class="GtkAlignment" id="alignment4">
 <property name="width_request">250</property>
@@ -46,11 +47,10 @@
 <property name="xscale">0</property>
 <child>
 <widget class="GtkButton" id="cancel">
-<property name="label">gtk-cancel</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
-<property name="receives_default">False</property>
+<property name="label">gtk-cancel</property>
 <property name="use_stock">True</property>
+<property name="response_id">0</property>
 </widget>
 </child>
 </widget>
@@ -62,9 +62,6 @@
 <property name="x_options">GTK_FILL</property>
 <property name="y_options"></property>
 </packing>
-</child>
-<child>
-<placeholder/>
 </child>
 </widget>
 </child>

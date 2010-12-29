@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <glade-interface>
-<!-- interface-requires gtk+ 2.6 -->
-<!-- interface-naming-policy toplevel-contextual -->
+<requires-version lib="gtk+" version="2.12"/>
 <widget class="GtkDialog" id="SaveAsDialog">
 <property name="title" translatable="yes">Save As</property>
-<property name="window_position">mouse</property>
-<property name="type_hint">dialog</property>
+<property name="window_position">GTK_WIN_POS_MOUSE</property>
+<property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+<property name="has_separator">False</property>
 <child internal-child="vbox">
 <widget class="GtkVBox" id="dialog-vbox1">
 <property name="visible">True</property>
@@ -29,7 +29,6 @@
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
-<property name="position">0</property>
 </packing>
 </child>
 <child>
@@ -54,45 +53,33 @@
 <child internal-child="action_area">
 <widget class="GtkHButtonBox" id="dialog-action_area1">
 <property name="visible">True</property>
-<property name="layout_style">end</property>
+<property name="layout_style">GTK_BUTTONBOX_END</property>
 <child>
 <widget class="GtkButton" id="cancelbutton1">
-<property name="label">gtk-cancel</property>
-<property name="response_id">-6</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
 <property name="can_default">True</property>
-<property name="receives_default">False</property>
+<property name="label">gtk-cancel</property>
 <property name="use_stock">True</property>
+<property name="response_id">-6</property>
 </widget>
-<packing>
-<property name="expand">False</property>
-<property name="fill">False</property>
-<property name="position">0</property>
-</packing>
 </child>
 <child>
 <widget class="GtkButton" id="ok_button">
-<property name="label">gtk-ok</property>
-<property name="response_id">-5</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
 <property name="can_default">True</property>
 <property name="has_default">True</property>
-<property name="receives_default">False</property>
+<property name="label">gtk-ok</property>
 <property name="use_stock">True</property>
+<property name="response_id">-5</property>
 </widget>
 <packing>
-<property name="expand">False</property>
-<property name="fill">False</property>
 <property name="position">1</property>
 </packing>
 </child>
 </widget>
 <packing>
 <property name="expand">False</property>
-<property name="pack_type">end</property>
-<property name="position">0</property>
+<property name="pack_type">GTK_PACK_END</property>
 </packing>
 </child>
 </widget>
@@ -100,8 +87,9 @@
 </widget>
 <widget class="GtkDialog" id="NewFileDialog">
 <property name="title" translatable="yes">Create File</property>
-<property name="window_position">mouse</property>
-<property name="type_hint">dialog</property>
+<property name="window_position">GTK_WIN_POS_MOUSE</property>
+<property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+<property name="has_separator">False</property>
 <child internal-child="vbox">
 <widget class="GtkVBox" id="dialog-vbox2">
 <property name="visible">True</property>
@@ -124,7 +112,6 @@
 <packing>
 <property name="expand">False</property>
 <property name="fill">False</property>
-<property name="position">0</property>
 </packing>
 </child>
 <child>
@@ -148,45 +135,33 @@
 <child internal-child="action_area">
 <widget class="GtkHButtonBox" id="dialog-action_area2">
 <property name="visible">True</property>
-<property name="layout_style">end</property>
+<property name="layout_style">GTK_BUTTONBOX_END</property>
 <child>
 <widget class="GtkButton" id="button1">
-<property name="label">gtk-cancel</property>
-<property name="response_id">-6</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
 <property name="can_default">True</property>
-<property name="receives_default">False</property>
+<property name="label">gtk-cancel</property>
 <property name="use_stock">True</property>
+<property name="response_id">-6</property>
 </widget>
-<packing>
-<property name="expand">False</property>
-<property name="fill">False</property>
-<property name="position">0</property>
-</packing>
 </child>
 <child>
 <widget class="GtkButton" id="ok_button">
-<property name="label">gtk-ok</property>
-<property name="response_id">-5</property>
 <property name="visible">True</property>
-<property name="can_focus">False</property>
 <property name="can_default">True</property>
 <property name="has_default">True</property>
-<property name="receives_default">False</property>
+<property name="label">gtk-ok</property>
 <property name="use_stock">True</property>
+<property name="response_id">-5</property>
 </widget>
 <packing>
-<property name="expand">False</property>
-<property name="fill">False</property>
 <property name="position">1</property>
 </packing>
 </child>
 </widget>
 <packing>
 <property name="expand">False</property>
-<property name="pack_type">end</property>
-<property name="position">0</property>
+<property name="pack_type">GTK_PACK_END</property>
 </packing>
 </child>
 </widget>
