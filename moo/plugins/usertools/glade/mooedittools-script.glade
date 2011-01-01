@@ -6,7 +6,7 @@
 <property name="visible">True</property>
 <property name="title">window2</property>
 <child>
-<widget class="GtkVBox" id="LuaPage">
+<widget class="GtkVBox" id="ScriptPage">
 <property name="visible">True</property>
 <property name="orientation">vertical</property>
 <property name="spacing">6</property>

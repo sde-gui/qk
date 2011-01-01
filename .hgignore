@@ -38,6 +38,7 @@ plat/win32/gtk-win/bdist-release/
 api/moo.xml
 api/gtk.xml
 moo/moopython/pygtk/moo-generated.defs
+moo/moopython/plugins/old/
 moo/moolua/moo-lua-api.cpp
 moo/moolua/gtk-lua-api.cpp
 doc/help/

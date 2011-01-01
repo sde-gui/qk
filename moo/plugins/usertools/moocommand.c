@@ -13,26 +13,6 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * class:MooCommand: (parent GObject) (moo.private 1)
- **/
-
-/**
- * class:MooCommandContext: (parent GObject) (constructable) (moo.private 1)
- **/
-
-/**
- * class:MooCommandFactory: (parent GObject) (moo.private 1)
- **/
-
-/**
- * boxed:MooCommandData: (moo.private 1)
- **/
-
-/**
- * flags:MooCommandOptions: (moo.private 1)
- */
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -40,6 +20,7 @@
 #define MOOEDIT_COMPILATION
 #include "moocommand-private.h"
 #include "moocommand-lua.h"
+#include "moocommand-python.h"
 #include "moocommand-exe.h"
 #include "moooutputfilterregex.h"
 #include "mooedit/mooeditwindow.h"
@@ -124,15 +105,6 @@ moo_command_create (const char     *name,
 }
 
 
-/**
- * moo_command_factory_register: (moo.private 1)
- *
- * @name:
- * @display_name:
- * @factory:
- * @keys: (type strv) (allow-none) (default NULL)
- * @extension: (allow-none) (default NULL)
- **/
 void
 moo_command_factory_register (const char        *name,
                               const char        *display_name,
@@ -549,9 +521,6 @@ moo_command_check_sensitive (MooCommand    *cmd,
 }
 
 
-/**
- * moo_command_set_options:
- **/
 void
 moo_command_set_options (MooCommand       *cmd,
                          MooCommandOptions options)
@@ -568,9 +537,6 @@ moo_command_set_options (MooCommand       *cmd,
 }
 
 
-/**
- * moo_command_get_options:
- **/
 MooCommandOptions
 moo_command_get_options (MooCommand *cmd)
 {
@@ -579,9 +545,6 @@ moo_command_get_options (MooCommand *cmd)
 }
 
 
-/**
- * moo_parse_command_options:
- **/
 MooCommandOptions
 moo_parse_command_options (const char *string)
 {
@@ -917,9 +880,6 @@ moo_command_context_set_window (MooCommandContext *ctx,
 }
 
 
-/**
- * moo_command_context_get_doc:
- **/
 MooEdit *
 moo_command_context_get_doc (MooCommandContext *ctx)
 {
@@ -928,9 +888,6 @@ moo_command_context_get_doc (MooCommandContext *ctx)
 }
 
 
-/**
- * moo_command_context_get_window:
- **/
 MooEditWindow *
 moo_command_context_get_window (MooCommandContext *ctx)
 {
@@ -1373,9 +1330,6 @@ moo_command_data_unref (MooCommandData *data)
 }
 
 
-/**
- * moo_command_data_set:
- **/
 void
 moo_command_data_set (MooCommandData *data,
                       guint           index,
@@ -1387,9 +1341,6 @@ moo_command_data_set (MooCommandData *data,
 }
 
 
-/**
- * moo_command_data_get:
- **/
 const char *
 moo_command_data_get (MooCommandData *data,
                       guint           index)
@@ -1410,9 +1361,6 @@ moo_command_data_take_code (MooCommandData *data,
 }
 
 
-/**
- * moo_command_data_set_code:
- **/
 void
 moo_command_data_set_code (MooCommandData *data,
                            const char     *code)
@@ -1421,9 +1369,6 @@ moo_command_data_set_code (MooCommandData *data,
 }
 
 
-/**
- * moo_command_data_get_code:
- **/
 const char *
 moo_command_data_get_code (MooCommandData *data)
 {
@@ -1440,6 +1385,9 @@ _moo_command_init (void)
     if (!been_here)
     {
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_LUA));
+#ifdef MOO_ENABLE_PYTHON
+        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_PYTHON));
+#endif
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));
         _moo_command_filter_regex_load ();
         been_here = TRUE;

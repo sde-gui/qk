@@ -14,6 +14,18 @@ moo_python_sources +=				\
 	moopython/moopython-utils.h		\
 	moopython/moopython-utils.c
 
+moo_sources +=					\
+	moopython/medit-python.h		\
+	moopython/medit-python.c
+
+EXTRA_DIST += moopython/medit-python-init.py
+built_moo_sources += moopython/medit-python-init.h
+moopython/medit-python-init.h: moopython/medit-python-init.py $(top_srcdir)/tools/xml2h.py
+	$(AM_V_at)$(MKDIR_P) moopython
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/moopython/medit-python-init.py \
+		moopython/medit-python-init.h.tmp MEDIT_PYTHON_INIT_PY \
+		&& mv moopython/medit-python-init.h.tmp moopython/medit-python-init.h
+
 if MOO_ENABLE_PYTHON
 moo_sources += $(moo_python_sources)
 built_moo_sources += $(built_moo_python_sources)

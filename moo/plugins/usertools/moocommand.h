@@ -73,11 +73,9 @@ struct _MooCommand {
 struct _MooCommandClass {
     GObjectClass base_class;
 
-    /**vtable:MooCommand**/
     gboolean    (*check_sensitive)  (MooCommand         *cmd,
                                      MooEdit            *doc,
                                      MooEditWindow      *window);
-    /**vtable:MooCommand**/
     void        (*run)              (MooCommand         *cmd,
                                      MooCommandContext  *ctx);
 };
@@ -94,21 +92,16 @@ struct _MooCommandFactory {
 struct _MooCommandFactoryClass {
     GObjectClass base_class;
 
-    /**vtable:MooCommandFactory**/
     MooCommand *(*create_command) (MooCommandFactory *factory,
                                    MooCommandData    *data,
                                    const char        *options);
-    /**vtable:MooCommandFactory**/
     GtkWidget  *(*create_widget)  (MooCommandFactory *factory);
-    /**vtable:MooCommandFactory**/
     void        (*load_data)      (MooCommandFactory *factory,
                                    GtkWidget         *widget,
                                    MooCommandData    *data);
-    /**vtable:MooCommandFactory**/
     gboolean    (*save_data)      (MooCommandFactory *factory,
                                    GtkWidget         *widget,
                                    MooCommandData    *data);
-    /**vtable:MooCommandFactory**/
     gboolean    (*data_equal)     (MooCommandFactory *factory,
                                    MooCommandData    *data1,
                                    MooCommandData    *data2);

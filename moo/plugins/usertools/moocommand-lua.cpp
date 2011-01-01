@@ -13,15 +13,13 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define MOOEDIT_COMPILATION
 #include "moocommand-lua.h"
 #include "plugins/usertools/lua-tool-setup.h"
 #include "mooedit/mooeditor.h"
-#include "mooedit/mootext-private.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
-#include "plugins/usertools/mooedittools-lua-gxml.h"
+#include "plugins/usertools/mooedittools-script-gxml.h"
 #include "moolua/medit-lua.h"
 #include <string.h>
 
@@ -47,18 +45,18 @@ moo_command_lua_run (MooCommand        *cmd_base,
     GtkTextBuffer *buffer = NULL;
     lua_State *L;
 
-    g_return_if_fail (cmd->priv->code != NULL);
+    g_return_if_fail (cmd->code != NULL);
 
     L = medit_lua_new (TRUE);
     g_return_if_fail (L != NULL);
 
-    if (!medit_lua_do_string (L, LUA_SETUP_CODE))
+    if (!medit_lua_do_string (L, LUA_TOOL_SETUP_LUA))
     {
         medit_lua_free (L);
         return;
     }
 
-    if (luaL_loadstring (L, cmd->priv->code) != 0)
+    if (luaL_loadstring (L, cmd->code) != 0)
     {
         const char *msg = lua_tostring (L, -1);
         g_critical ("%s: %s", G_STRLOC, msg ? msg : "ERROR");
@@ -91,11 +89,8 @@ moo_command_lua_dispose (GObject *object)
 {
     MooCommandLua *cmd = MOO_COMMAND_LUA (object);
 
-    if (cmd->priv)
-    {
-        g_free (cmd->priv->code);
-        cmd->priv = NULL;
-    }
+    g_free (cmd->code);
+    cmd->code = NULL;
 
     G_OBJECT_CLASS(_moo_command_lua_parent_class)->dispose (object);
 }
@@ -122,14 +117,14 @@ lua_factory_create_command (G_GNUC_UNUSED MooCommandFactory *factory,
 static GtkWidget *
 lua_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
 {
-    LuaPageXml *xml;
+    ScriptPageXml *xml;
 
-    xml = lua_page_xml_new ();
+    xml = script_page_xml_new ();
 
     moo_text_view_set_font_from_string (xml->textview, "Monospace");
     moo_text_view_set_lang_by_id (xml->textview, "lua");
 
-    return GTK_WIDGET (xml->LuaPage);
+    return GTK_WIDGET (xml->ScriptPage);
 }
 
 
@@ -138,11 +133,11 @@ lua_factory_load_data (G_GNUC_UNUSED MooCommandFactory *factory,
                        GtkWidget      *page,
                        MooCommandData *data)
 {
-    LuaPageXml *xml;
+    ScriptPageXml *xml;
     GtkTextBuffer *buffer;
     const char *code;
 
-    xml = lua_page_xml_get (page);
+    xml = script_page_xml_get (page);
     g_return_if_fail (xml != NULL);
 
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (xml->textview));
@@ -157,12 +152,12 @@ lua_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
                        GtkWidget      *page,
                        MooCommandData *data)
 {
-    LuaPageXml *xml;
+    ScriptPageXml *xml;
     const char *code;
     char *new_code;
     gboolean changed = FALSE;
 
-    xml = lua_page_xml_get (page);
+    xml = script_page_xml_get (page);
     g_return_val_if_fail (xml != NULL, FALSE);
 
     new_code = moo_text_view_get_text (GTK_TEXT_VIEW (xml->textview));
@@ -199,10 +194,8 @@ _moo_command_lua_class_init (MooCommandLuaClass *klass)
 {
     MooCommandFactory *factory;
 
-    G_OBJECT_CLASS(klass)->dispose = moo_command_lua_dispose;
-    MOO_COMMAND_CLASS(klass)->run = moo_command_lua_run;
-
-    g_type_class_add_private (klass, sizeof (MooCommandLuaPrivate));
+    G_OBJECT_CLASS (klass)->dispose = moo_command_lua_dispose;
+    MOO_COMMAND_CLASS (klass)->run = moo_command_lua_run;
 
     factory = MOO_COMMAND_FACTORY (g_object_new (_moo_command_factory_lua_get_type (), (const char*) NULL));
     moo_command_factory_register ("lua", _("Lua script"), factory, NULL, ".lua");
@@ -211,11 +204,8 @@ _moo_command_lua_class_init (MooCommandLuaClass *klass)
 
 
 static void
-_moo_command_lua_init (MooCommandLua *cmd)
+_moo_command_lua_init (G_GNUC_UNUSED MooCommandLua *cmd)
 {
-    cmd->priv = G_TYPE_INSTANCE_GET_PRIVATE (cmd,
-                                             MOO_TYPE_COMMAND_LUA,
-                                             MooCommandLuaPrivate);
 }
 
 
@@ -228,7 +218,7 @@ moo_command_lua_new (const char        *code,
     g_return_val_if_fail (code != NULL, NULL);
 
     cmd = MOO_COMMAND_LUA (g_object_new (MOO_TYPE_COMMAND_LUA, "options", options, (const char*) NULL));
-    cmd->priv->code = g_strdup (code);
+    cmd->code = g_strdup (code);
 
     return MOO_COMMAND (cmd);
 }

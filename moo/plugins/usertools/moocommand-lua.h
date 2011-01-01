@@ -34,7 +34,7 @@ typedef struct _MooCommandLuaClass   MooCommandLuaClass;
 
 struct _MooCommandLua {
     MooCommand base;
-    MooCommandLuaPrivate *priv;
+    char *code;
 };
 
 struct _MooCommandLuaClass {

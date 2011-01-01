@@ -11,7 +11,7 @@ files = subprocess.Popen(['hg', 'log', '-r', 'tip', '--template', '{files}'],
 status = 0
 
 for name in files:
-    if not name.endswith('.glade'):
+    if not name.endswith('.glade') or not os.path.exists(name):
         continue
     for line in open(name):
         if re.match(r'\s+<.*', line):
