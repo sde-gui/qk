@@ -378,6 +378,14 @@ moo_test_get_result (void)
 }
 
 
+/**
+ * moo_test_assert_impl: (moo.private 1)
+ *
+ * @passed:
+ * @text: (type const-utf8)
+ * @file: (type const-utf8) (allow-none) (default NULL)
+ * @line: (default -1)
+ **/
 void
 moo_test_assert_impl (gboolean    passed,
                       const char *text,
@@ -436,6 +444,21 @@ const char *
 moo_test_get_working_dir (void)
 {
     return "test-working-dir";
+}
+
+char *
+moo_test_find_data_file (const char *basename)
+{
+    char *fullname;
+
+    g_return_val_if_fail (registry.data_dir != NULL, NULL);
+
+    if (!_moo_path_is_absolute (basename))
+        fullname = g_build_filename (registry.data_dir, basename, NULL);
+    else
+        fullname = g_strdup (basename);
+
+    return fullname;
 }
 
 char *

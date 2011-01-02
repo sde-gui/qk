@@ -22,59 +22,8 @@
 #include <string.h>
 
 #include "moopython/moopython-loader.h"
+#include "moopython/moopython-utils.h"
 #include "mooutils/mooutils-misc.h"
-
-static gboolean
-sys_path_add_dir (const char *dir)
-{
-    PyObject *path;
-    PyObject *s;
-
-    path = PySys_GetObject ((char*) "path");
-
-    if (!path)
-    {
-        PyErr_Print ();
-        return FALSE;
-    }
-
-    if (!PyList_Check (path))
-    {
-        g_critical ("sys.path is not a list");
-        return FALSE;
-    }
-
-    s = PyString_FromString (dir);
-    PyList_Append (path, s);
-
-    Py_DECREF (s);
-    return TRUE;
-}
-
-static void
-sys_path_remove_dir (const char *dir)
-{
-    PyObject *path;
-    int i;
-
-    path = PySys_GetObject ((char*) "path");
-
-    if (!path || !PyList_Check (path))
-        return;
-
-    for (i = PyList_GET_SIZE (path) - 1; i >= 0; --i)
-    {
-        PyObject *item = PyList_GET_ITEM (path, i);
-
-        if (PyString_CheckExact (item) &&
-            !strcmp (PyString_AsString (item), dir))
-        {
-            if (PySequence_DelItem (path, i) != 0)
-                PyErr_Print ();
-            break;
-        }
-    }
-}
 
 static void
 sys_path_add_plugin_dirs (void)
@@ -90,7 +39,7 @@ sys_path_add_plugin_dirs (void)
     dirs = moo_get_data_and_lib_subdirs ("python");
 
     for (d = dirs; d && *d; ++d)
-        sys_path_add_dir (*d);
+        moo_python_add_path (*d);
 
     g_strfreev (dirs);
 }
@@ -178,12 +127,12 @@ load_file (const char *path)
     sys_path_add_plugin_dirs ();
 
     dirname = g_path_get_dirname (path);
-    dir_added = sys_path_add_dir (dirname);
+    dir_added = moo_python_add_path (dirname);
 
     retval = do_load_file (path);
 
     if (dir_added)
-        sys_path_remove_dir (dirname);
+        moo_python_remove_path (dirname);
 
     g_free (dirname);
 

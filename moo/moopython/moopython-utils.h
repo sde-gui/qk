@@ -54,6 +54,8 @@ void         _moo_pyobject_to_gvalue        (PyObject       *object,
 char        *_moo_py_err_string             (void);
 void         _moo_py_init_print_funcs       (void);
 
+gboolean      moo_python_add_path           (const char     *dir);
+void          moo_python_remove_path        (const char     *dir);
 
 #define return_Obj(obj) return Py_INCREF (obj), obj
 #define return_Self     return_Obj (self)

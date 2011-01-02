@@ -12,7 +12,9 @@ moo_python_sources +=				\
 	moopython/moopython-loader.h		\
 	moopython/moopython-loader.c		\
 	moopython/moopython-utils.h		\
-	moopython/moopython-utils.c
+	moopython/moopython-utils.c		\
+	moopython/moopython-tests.h		\
+	moopython/moopython-tests.c
 
 moo_sources +=					\
 	moopython/medit-python.h		\

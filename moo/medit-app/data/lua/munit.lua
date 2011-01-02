@@ -1,13 +1,17 @@
-local test_ret = {}
-
-local function getline()
-  return debug.getinfo(4, "l").currentline
-end
+local medit = require("medit")
 
 local function _tassert(cond, msg, ...)
-  table.insert(test_ret, string.format(msg or '', ...))
-  table.insert(test_ret, not not cond)
-  table.insert(test_ret, getline())
+  local info = debug.getinfo(3, "Slf")
+  if not cond then
+    local message = string.format(msg or '', ...)
+    local name = info.name
+    if name then
+      message = string.format('in function %s: %s', name, message)
+    end
+    medit.test_assert_impl(false, message, info.short_src, info.currentline)
+  else
+    medit.test_assert_impl(true, '', info.short_src, info.currentline)
+  end
 end
 
 function tassert(cond, msg, ...)
@@ -56,8 +60,4 @@ function tassert_eq(actual, exp, msg)
   end
   _tassert(cmp(actual, exp), "%sexpected %s, got %s",
            msg, pr(exp), pr(actual))
-end
-
-munit_report = function()
-  return unpack(test_ret)
 end

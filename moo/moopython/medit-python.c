@@ -37,10 +37,12 @@ create_script_dict (const char *name)
 
 static PyObject *
 run_string (const char *str,
+            const char *filename,
             PyObject   *globals,
             PyObject   *locals)
 {
     PyObject *ret;
+    PyObject *code;
 
     g_return_val_if_fail (str != NULL, NULL);
 
@@ -49,13 +51,18 @@ run_string (const char *str,
     else
         Py_INCREF ((PyObject*) locals);
 
-    g_return_val_if_fail (locals != NULL, NULL);
-
     if (!globals)
         globals = locals;
 
-    ret = PyRun_String (str, Py_file_input, globals, locals);
+    g_return_val_if_fail (locals != NULL, NULL);
+    g_return_val_if_fail (globals != NULL, NULL);
 
+    code = Py_CompileString (str, filename ? filename : "<script>", Py_file_input);
+
+    if (code)
+        ret = PyEval_EvalCode ((PyCodeObject*) code, globals, locals);
+
+    Py_XDECREF (code);
     Py_DECREF (locals);
     return ret;
 }
@@ -128,9 +135,10 @@ moo_python_state_free (MooPythonState *state)
     }
 }
 
-gboolean
-moo_python_run_string (MooPythonState *state,
-                       const char     *string)
+static gboolean
+moo_python_run_string_impl (MooPythonState *state,
+                            const char     *string,
+                            const char     *filename)
 {
     PyObject *pyret;
     gboolean ret = TRUE;
@@ -138,11 +146,14 @@ moo_python_run_string (MooPythonState *state,
     moo_return_val_if_fail (state && state->locals, FALSE);
     moo_return_val_if_fail (string != NULL, FALSE);
 
-    pyret = run_string (string, NULL, state->locals);
+    pyret = run_string (string, filename, NULL, state->locals);
 
     if (!pyret)
     {
-        moo_message ("error running python script '%s'", string);
+        if (filename)
+            g_warning ("error running python file '%s'", filename);
+        else
+            g_warning ("error running python script '%s'", string);
         if (PyErr_Occurred ())
             PyErr_Print ();
         else
@@ -152,6 +163,13 @@ moo_python_run_string (MooPythonState *state,
 
     Py_XDECREF (pyret);
     return ret;
+}
+
+gboolean
+moo_python_run_string (MooPythonState *state,
+                       const char     *string)
+{
+    return moo_python_run_string_impl (state, string, NULL);
 }
 
 gboolean
@@ -172,15 +190,16 @@ moo_python_run_file (MooPythonState *state,
         return FALSE;
     }
 
-    ret = moo_python_run_string (state, contents);
+    ret = moo_python_run_string_impl (state, contents, filename);
 
     g_free (contents);
     return ret;
 }
 
-gboolean
-medit_python_run_string (const char *string,
-                         gboolean    default_init)
+static gboolean
+medit_python_run_string_impl (const char *string,
+                              const char *filename,
+                              gboolean    default_init)
 {
     MooPythonState *state;
     gboolean ret;
@@ -192,10 +211,17 @@ medit_python_run_string (const char *string,
     if (!state)
         return FALSE;
 
-    ret = moo_python_run_string (state, string);
+    ret = moo_python_run_string_impl (state, string, filename);
 
     moo_python_state_free (state);
     return ret;
+}
+
+gboolean
+medit_python_run_string (const char *string,
+                         gboolean    default_init)
+{
+    return medit_python_run_string_impl (string, NULL, default_init);
 }
 
 gboolean
@@ -215,7 +241,7 @@ medit_python_run_file (const char *filename,
         return FALSE;
     }
 
-    ret = medit_python_run_string (contents, default_init);
+    ret = medit_python_run_string_impl (contents, filename, default_init);
 
     g_free (contents);
     return ret;

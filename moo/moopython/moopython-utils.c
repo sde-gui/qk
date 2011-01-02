@@ -25,6 +25,62 @@
 
 MOO_DEFINE_BOXED_TYPE_R (MooPyObject, _moo_py_object)
 
+gboolean
+moo_python_add_path (const char *dir)
+{
+    PyObject *path;
+    PyObject *s;
+
+    g_return_val_if_fail (dir != NULL, FALSE);
+
+    path = PySys_GetObject ((char*) "path");
+
+    if (!path)
+    {
+        PyErr_Print ();
+        return FALSE;
+    }
+
+    if (!PyList_Check (path))
+    {
+        g_critical ("sys.path is not a list");
+        return FALSE;
+    }
+
+    s = PyString_FromString (dir);
+    PyList_Append (path, s);
+
+    Py_DECREF (s);
+    return TRUE;
+}
+
+void
+moo_python_remove_path (const char *dir)
+{
+    PyObject *path;
+    int i;
+
+    g_return_if_fail (dir != NULL);
+
+    path = PySys_GetObject ((char*) "path");
+
+    if (!path || !PyList_Check (path))
+        return;
+
+    for (i = PyList_GET_SIZE (path) - 1; i >= 0; --i)
+    {
+        PyObject *item = PyList_GET_ITEM (path, i);
+
+        if (PyString_CheckExact (item) &&
+            !strcmp (PyString_AsString (item), dir))
+        {
+            if (PySequence_DelItem (path, i) != 0)
+                PyErr_Print ();
+            break;
+        }
+    }
+}
+
 static PyTypeObject *
 moo_get_pygobject_type (void)
 {

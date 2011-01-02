@@ -30,7 +30,6 @@ moo_test_run_lua_script (lua_State  *L,
                          const char *filename)
 {
     int ret;
-    int i;
 
     if (lua_gettop (L) != 0)
     {
@@ -70,29 +69,6 @@ moo_test_run_lua_script (lua_State  *L,
 
         return;
     }
-
-    luaL_loadstring (L, "return munit_report()");
-    if ((ret = lua_pcall (L, 0, LUA_MULTRET, 0)) != 0)
-        g_error ("%s: fix me!", G_STRFUNC);
-
-    for (i = 1; i+2 <= lua_gettop (L); i += 3)
-    {
-        if (!lua_isstring (L, i) || !lua_isboolean (L, i+1) || !lua_isnumber (L, i+2))
-        {
-            TEST_FAILED_MSG ("script `%s' returned wrong value!", filename);
-        }
-        else
-        {
-            const char *msg = lua_tostring (L, i);
-            gboolean success = lua_toboolean (L, i+1);
-            int line = lua_tointeger (L, i+2);
-            moo_test_assert_msg (success, filename, line, "%s", msg);
-        }
-    }
-
-    if (i != lua_gettop (L) + 1)
-        TEST_FAILED_MSG ("script `%s' returned wrong number of values (%d)",
-                         filename, lua_gettop (L));
 }
 
 static void
