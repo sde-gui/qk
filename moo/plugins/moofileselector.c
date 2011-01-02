@@ -442,7 +442,7 @@ new_file_dialog (GtkWidget   *parent,
             sec_text = g_strdup_printf (_("Could not convert '%s' to filename encoding. "
                                           "Please consider simpler name, such as foo.blah "
                                           "or blah.foo"), text);
-            moo_error_dialog (dialog ? dialog : parent, err_text, sec_text);
+            moo_error_dialog (err_text, sec_text, dialog ? dialog : parent);
             g_free (err_text);
             g_free (sec_text);
             continue;
@@ -455,7 +455,7 @@ new_file_dialog (GtkWidget   *parent,
             goto out;
 
         err_text = g_strdup_printf (_("File '%s' already exists"), text);
-        moo_error_dialog (dialog, err_text, NULL);
+        moo_error_dialog (err_text, NULL, dialog);
         g_free (err_text);
 
         g_free (fullname);
@@ -804,7 +804,7 @@ save_as_dialog (GtkWidget   *parent,
             sec_text = g_strdup_printf (_("Could not convert '%s' to filename encoding. "
                                           "Please consider simpler name, such as foo.blah "
                                           "or blah.foo"), text);
-            moo_error_dialog (dialog ? dialog : parent, err_text, sec_text);
+            moo_error_dialog (err_text, sec_text, dialog ? dialog : parent);
             g_free (err_text);
             g_free (sec_text);
             continue;
@@ -818,7 +818,7 @@ save_as_dialog (GtkWidget   *parent,
 
         display_dirname = g_filename_display_name (dirname);
 
-        if (moo_overwrite_file_dialog (dialog ? dialog : parent, text, display_dirname))
+        if (moo_overwrite_file_dialog (text, display_dirname, dialog ? dialog : parent))
         {
             g_free (display_dirname);
             goto out;

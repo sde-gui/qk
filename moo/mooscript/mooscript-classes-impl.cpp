@@ -327,15 +327,14 @@ static void setup_dialog(GtkWidget *dialog, const DialogOptions &opts)
     if (opts.parent)
         moo_window_set_parent(dialog, GTK_WIDGET(opts.parent->gobj()));
 
+    if (opts.width > 0 && opts.height > 0)
+        gtk_window_set_default_size(GTK_WINDOW(dialog), opts.width, opts.height);
+
     if (!opts.dialog_id.empty())
     {
         String prefs_key("Dialogs/");
         prefs_key += opts.dialog_id;
         _moo_window_set_remember_size(GTK_WINDOW(dialog), prefs_key, opts.width, opts.height, FALSE);
-    }
-    else if (opts.width > 0 && opts.height > 0)
-    {
-        gtk_window_set_default_size(GTK_WINDOW(dialog), opts.width, opts.height);
     }
 
     if (!opts.icon.empty())

@@ -27,8 +27,8 @@ MooEditSaveInfo                *_moo_edit_save_as_dialog                (MooEdit
 MooEditOpenInfoArray           *_moo_edit_open_dialog                   (GtkWidget      *widget,
                                                                          MooEdit        *current_doc);
 
-MooSaveChangesDialogResponse    _moo_edit_save_changes_dialog           (MooEdit        *doc);
-MooSaveChangesDialogResponse    _moo_edit_save_multiple_changes_dialog  (MooEditArray   *docs,
+MooSaveChangesResponse          _moo_edit_save_changes_dialog           (MooEdit        *doc);
+MooSaveChangesResponse          _moo_edit_save_multiple_changes_dialog  (MooEditArray   *docs,
                                                                          MooEditArray   *to_save);
 
 gboolean                        _moo_edit_reload_modified_dialog        (MooEdit        *doc);

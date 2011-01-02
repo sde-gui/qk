@@ -151,7 +151,7 @@ _moo_edit_save_as_dialog (MooEdit    *doc,
 }
 
 
-MooSaveChangesDialogResponse
+MooSaveChangesResponse
 _moo_edit_save_changes_dialog (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), MOO_SAVE_CHANGES_RESPONSE_CANCEL);
@@ -336,14 +336,14 @@ find_widget_for_response (GtkDialog *dialog,
     return ret;
 }
 
-MooSaveChangesDialogResponse
+MooSaveChangesResponse
 _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
                                         MooEditArray *to_save)
 {
     GtkWidget *dialog;
     char *msg, *question;
     int response;
-    MooSaveChangesDialogResponse retval;
+    MooSaveChangesResponse retval;
     SaveMultDialogXml *xml;
 
     g_return_val_if_fail (docs != NULL && docs->n_elms > 1, MOO_SAVE_CHANGES_RESPONSE_CANCEL);
@@ -429,7 +429,7 @@ _moo_edit_save_error_dialog (GtkWidget *widget,
     else
         msg = g_strdup (_("Could not save file"));
 
-    moo_error_dialog (widget, msg, error ? error->message : NULL);
+    moo_error_dialog (msg, error ? error->message : NULL, widget);
 
     g_free (msg);
     g_free (filename);
@@ -457,7 +457,7 @@ _moo_edit_save_error_enc_dialog (GtkWidget  *widget,
                                    "File was saved in UTF-8 encoding."),
                                  encoding);
 
-    moo_error_dialog (widget, msg, secondary);
+    moo_error_dialog (msg, secondary, widget);
 
     g_free (msg);
     g_free (secondary);
@@ -499,7 +499,7 @@ _moo_edit_open_error_dialog (GtkWidget  *widget,
         secondary = error ? g_strdup (error->message) : NULL;
     }
 
-    moo_error_dialog (widget, msg, secondary);
+    moo_error_dialog (msg, secondary, widget);
 
     g_free (msg);
     g_free (secondary);
@@ -527,8 +527,8 @@ _moo_edit_reload_error_dialog (MooEdit *doc,
     /* Could not reload file foo.txt */
     msg = g_strdup_printf (_("Could not reload file\n%s"), filename);
     /* XXX */
-    moo_error_dialog (GTK_WIDGET (moo_edit_get_view (doc)),
-                      msg, error ? error->message : NULL);
+    moo_error_dialog (msg, error ? error->message : NULL,
+                      GTK_WIDGET (moo_edit_get_view (doc)));
 
     g_free (msg);
 }

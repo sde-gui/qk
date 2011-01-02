@@ -20,6 +20,9 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moocompat.h"
 
+/**
+ * enum:MooSaveChangesResponse
+ **/
 
 static GtkWidget *
 create_message_dialog (GtkWindow  *parent,
@@ -245,10 +248,17 @@ moo_message_dialog (GtkWidget  *parent,
 }
 
 
+/**
+ * moo_error_dialog:
+ *
+ * @text: (type const-utf8)
+ * @secondary_text: (type const-utf8) (allow-none) (default NULL)
+ * @parent: (allow-none) (default NULL)
+ **/
 void
-moo_error_dialog (GtkWidget  *parent,
-                  const char *text,
-                  const char *secondary_text)
+moo_error_dialog (const char *text,
+                  const char *secondary_text,
+                  GtkWidget  *parent)
 {
     moo_message_dialog (parent,
                         GTK_MESSAGE_ERROR,
@@ -256,10 +266,17 @@ moo_error_dialog (GtkWidget  *parent,
                         FALSE, FALSE, 0, 0);
 }
 
+/**
+ * moo_info_dialog:
+ *
+ * @text: (type const-utf8)
+ * @secondary_text: (type const-utf8) (allow-none) (default NULL)
+ * @parent: (allow-none) (default NULL)
+ **/
 void
-moo_info_dialog (GtkWidget  *parent,
-                 const char *text,
-                 const char *secondary_text)
+moo_info_dialog (const char *text,
+                 const char *secondary_text,
+                 GtkWidget  *parent)
 {
     moo_message_dialog (parent,
                         GTK_MESSAGE_INFO,
@@ -267,10 +284,17 @@ moo_info_dialog (GtkWidget  *parent,
                         FALSE, FALSE, 0, 0);
 }
 
+/**
+ * moo_warning_dialog:
+ *
+ * @text: (type const-utf8)
+ * @secondary_text: (type const-utf8) (allow-none) (default NULL)
+ * @parent: (allow-none) (default NULL)
+ **/
 void
-moo_warning_dialog (GtkWidget  *parent,
-                    const char *text,
-                    const char *secondary_text)
+moo_warning_dialog (const char *text,
+                    const char *secondary_text,
+                    GtkWidget  *parent)
 {
     moo_message_dialog (parent,
                         GTK_MESSAGE_WARNING,
@@ -279,10 +303,17 @@ moo_warning_dialog (GtkWidget  *parent,
 }
 
 
+/**
+ * moo_overwrite_file_dialog:
+ *
+ * @display_name: (type const-utf8)
+ * @display_dirname: (type const-utf8)
+ * @parent: (allow-none) (default NULL)
+ **/
 gboolean
-moo_overwrite_file_dialog (GtkWidget  *parent,
-                           const char *display_name,
-                           const char *display_dirname)
+moo_overwrite_file_dialog (const char *display_name,
+                           const char *display_dirname,
+                           GtkWidget  *parent)
 {
     int response;
     GtkWidget *dialog, *button, *toplevel = NULL;
@@ -328,8 +359,13 @@ moo_overwrite_file_dialog (GtkWidget  *parent,
     return response == GTK_RESPONSE_YES;
 }
 
-
-MooSaveChangesDialogResponse
+/**
+ * moo_save_changes_dialog:
+ *
+ * @display_name: (type const-utf8)
+ * @parent: (allow-none) (default NULL)
+ **/
+MooSaveChangesResponse
 moo_save_changes_dialog (const char *display_name,
                          GtkWidget  *parent)
 {
@@ -386,36 +422,6 @@ moo_save_changes_dialog (const char *display_name,
 }
 
 
-const char *
-moo_font_dialog (GtkWidget  *parent,
-                 const char *title,
-                 const char *start_font,
-                 gboolean fixed_width)
-{
-    GtkWidget *dialog;
-    const char *fontname = NULL;
-
-    if (fixed_width)
-        g_warning ("%s: choosing fixed width fonts "
-                   "only is not implemented", G_STRLOC);
-
-    dialog = gtk_font_selection_dialog_new (title);
-    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
-    if (start_font)
-        gtk_font_selection_dialog_set_font_name (
-                GTK_FONT_SELECTION_DIALOG (dialog), start_font);
-
-    moo_window_set_parent (dialog, parent);
-
-    if (GTK_RESPONSE_OK == gtk_dialog_run (GTK_DIALOG (dialog)))
-        fontname = gtk_font_selection_dialog_get_font_name (
-            GTK_FONT_SELECTION_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
-
-    return fontname;
-}
-
-
 typedef struct {
     char *key_maximized;
     char *key_width;
@@ -441,7 +447,6 @@ position_info_free (PositionInfo *pinfo)
         g_free (pinfo);
     }
 }
-
 
 static gboolean
 save_size (GtkWindow *window)

@@ -459,7 +459,7 @@ _moo_file_view_save_drop_dialog (GtkWidget  *parent,
             sec_text = g_strdup_printf ("Could not convert '%s' to filename encoding.\n"
                                         "Please consider simpler name, such as foo.blah "
                                         "or blah.foo", text);
-            moo_error_dialog (dialog, err_text, sec_text);
+            moo_error_dialog (err_text, sec_text, dialog);
             g_free (err_text);
             g_free (sec_text);
             continue;
@@ -472,7 +472,7 @@ _moo_file_view_save_drop_dialog (GtkWidget  *parent,
             goto out;
 
         err_text = g_strdup_printf ("File '%s' already exists", text);
-        moo_error_dialog (dialog, err_text, NULL);
+        moo_error_dialog (err_text, NULL, dialog);
 
         g_free (err_text);
         g_free (fullname);

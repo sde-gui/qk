@@ -3299,8 +3299,9 @@ file_view_do_delete_selected (MooFileView *fileview,
                     text = g_strdup_printf (_("Could not delete file %s"),
                                             path_utf8);
 
-                moo_error_dialog (GTK_WIDGET (fileview), text,
-                                  error ? error->message : NULL);
+                moo_error_dialog (text,
+                                  error ? error->message : NULL,
+                                  GTK_WIDGET (fileview));
 
                 g_free (path_utf8);
                 g_free (text);
@@ -6168,7 +6169,7 @@ moo_file_view_drop_text (G_GNUC_UNUSED MooFileView *fileview,
             char *utf8_name = g_filename_display_name (name);
             char *err_text = g_strdup_printf ("Could not save file\n%s", utf8_name);
 
-            moo_error_dialog (widget, err_text, error->message);
+            moo_error_dialog (err_text, error->message, widget);
 
             g_free (err_text);
             g_free (utf8_name);

@@ -1359,7 +1359,7 @@ close_window_handler (MooEditor     *editor,
                       MooEditWindow *window,
                       gboolean       ask_confirm)
 {
-    MooSaveChangesDialogResponse response;
+    MooSaveChangesResponse response;
     MooEditArray *modified;
     MooEditArray *docs;
     gboolean do_close = FALSE;
@@ -1613,7 +1613,7 @@ close_docs_real (MooEditor    *editor,
                  MooEditArray *docs,
                  gboolean      ask_confirm)
 {
-    MooSaveChangesDialogResponse response;
+    MooSaveChangesResponse response;
     MooEditArray *modified;
     gboolean do_close = FALSE;
 

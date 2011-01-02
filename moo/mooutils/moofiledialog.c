@@ -636,7 +636,7 @@ moo_file_dialog_run (MooFileDialog *dialog)
 
                 if (!uri_is_valid (uri, &msg))
                 {
-                    moo_error_dialog (filechooser, msg, NULL);
+                    moo_error_dialog (msg, NULL, filechooser);
                     g_free (uri);
                     g_free (msg);
                     continue;
@@ -647,9 +647,9 @@ moo_file_dialog_run (MooFileDialog *dialog)
                     if (g_file_test (filename, G_FILE_TEST_EXISTS) &&
                         !g_file_test (filename, G_FILE_TEST_IS_REGULAR))
                     {
-                        moo_error_dialog (filechooser,
-                                          _("Selected file is not a regular file"),
-                                          NULL);
+                        moo_error_dialog (_("Selected file is not a regular file"),
+                                          NULL,
+                                          filechooser);
                         g_free (filename);
                         g_free (uri);
                         continue;
@@ -664,7 +664,7 @@ moo_file_dialog_run (MooFileDialog *dialog)
                         char *display_dirname = g_filename_display_name (dirname);
                         gboolean overwrite;
 
-                        overwrite = moo_overwrite_file_dialog (filechooser, display_name, display_dirname);
+                        overwrite = moo_overwrite_file_dialog (display_name, display_dirname, filechooser);
 
                         g_free (basename);
                         g_free (dirname);

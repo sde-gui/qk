@@ -202,7 +202,7 @@ warn_no_help (GtkWidget *parent)
     if (!been_here)
     {
         been_here = TRUE;
-        moo_error_dialog (parent, _("Help files not found"), NULL);
+        moo_error_dialog (_("Help files not found"), NULL, parent);
     }
 }
 
@@ -217,7 +217,7 @@ warn_no_help_file (const char *basename,
     msg = g_strdup_printf (_("File '%s' is missing in the directory '%s'"),
                            basename, dir_utf8);
 
-    moo_error_dialog (parent, _("Could not find help file"), msg);
+    moo_error_dialog (_("Could not find help file"), msg, parent);
 
     g_free (msg);
     g_free (dir_utf8);

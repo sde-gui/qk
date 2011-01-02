@@ -6,7 +6,7 @@
 #include "moodialogs.h"
 
 GType
-moo_save_changes_dialog_response_get_type (void)
+moo_save_changes_response_get_type (void)
 {
     static GType etype;
     if (G_UNLIKELY (!etype))
@@ -17,7 +17,7 @@ moo_save_changes_dialog_response_get_type (void)
             { MOO_SAVE_CHANGES_RESPONSE_DONT_SAVE, (char*) "MOO_SAVE_CHANGES_RESPONSE_DONT_SAVE", (char*) "dont-save" },
             { 0, NULL, NULL }
         };
-        etype = g_enum_register_static ("MooSaveChangesDialogResponse", values);
+        etype = g_enum_register_static ("MooSaveChangesResponse", values);
     }
     return etype;
 }
