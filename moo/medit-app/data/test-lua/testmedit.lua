@@ -2,7 +2,6 @@
 
 require("munit")
 require("medit")
-require("_moo_utils")
 
 app = medit.app_instance()
 editor = app.get_editor()

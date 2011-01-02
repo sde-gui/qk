@@ -17,6 +17,7 @@
 #include "mooutils/mooutils-fs.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct {
     char *text;
@@ -292,19 +293,13 @@ out:
     return retval;
 }
 
-void
+gboolean
 moo_test_run_tests (char          **tests,
-                    const char     *data_dir,
+                    const char     *coverage_file,
                     MooTestOptions  opts)
 {
-    if (!(opts & MOO_TEST_LIST_ONLY))
-    {
-        g_return_if_fail (data_dir != NULL);
-        g_return_if_fail (g_file_test (data_dir, G_FILE_TEST_IS_DIR));
-    }
-
-    g_free (registry.data_dir);
-    registry.data_dir = g_strdup (data_dir);
+    if (coverage_file)
+        moo_test_coverage_enable ();
 
     fprintf (stdout, "\n");
 
@@ -347,7 +342,12 @@ moo_test_run_tests (char          **tests,
                  registry.tr.asserts, registry.tr.asserts, registry.tr.asserts_passed,
                  registry.tr.asserts - registry.tr.asserts_passed);
         fprintf (stdout, "\n");
+
+        if (coverage_file)
+            moo_test_coverage_write (coverage_file);
     }
+
+    return moo_test_get_result ();
 }
 
 void
@@ -440,6 +440,24 @@ moo_test_get_data_dir (void)
     return registry.data_dir;
 }
 
+void
+moo_test_set_data_dir (const char *dir)
+{
+    char *tmp;
+
+    moo_return_if_fail (dir != NULL);
+
+    if (!g_file_test (dir, G_FILE_TEST_IS_DIR))
+    {
+        moo_critical ("not a directory: %s", dir);
+        return;
+    }
+
+    tmp = registry.data_dir;
+    registry.data_dir = g_strdup (dir);
+    g_free (tmp);
+}
+
 const char *
 moo_test_get_working_dir (void)
 {
@@ -459,6 +477,42 @@ moo_test_find_data_file (const char *basename)
         fullname = g_strdup (basename);
 
     return fullname;
+}
+
+char **
+moo_test_list_data_files (const char *dir)
+{
+    GDir *gdir;
+    char *freeme = NULL;
+    GError *error = NULL;
+    const char *name;
+    GPtrArray *names = NULL;
+
+    if (!_moo_path_is_absolute (dir))
+    {
+        g_return_val_if_fail (registry.data_dir != NULL, NULL);
+        freeme = g_build_filename (registry.data_dir, dir, NULL);
+        dir = freeme;
+    }
+
+    if (!(gdir = g_dir_open (dir, 0, &error)))
+    {
+        moo_warning ("could not open directory '%s': %s",
+                     dir, moo_error_message (error));
+        g_error_free (error);
+        error = NULL;
+    }
+
+    names = g_ptr_array_new ();
+    while (gdir && (name = g_dir_read_name (gdir)))
+        g_ptr_array_add (names, g_strdup (name));
+    g_ptr_array_add (names, NULL);
+
+    if (gdir)
+        g_dir_close (gdir);
+
+    g_free (freeme);
+    return (char**) g_ptr_array_free (names, FALSE);
 }
 
 char *
@@ -484,4 +538,59 @@ moo_test_load_data_file (const char *basename)
 
     g_free (fullname);
     return contents;
+}
+
+
+/************************************************************************************
+ * coverage
+ */
+
+static GHashTable *called_functions = NULL;
+
+void
+moo_test_coverage_enable (void)
+{
+    moo_return_if_fail (called_functions == NULL);
+    called_functions = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+}
+
+static void
+add_func (gpointer key,
+          G_GNUC_UNUSED gpointer value,
+          GString *string)
+{
+    g_string_append (string, key);
+    g_string_append (string, "\n");
+}
+
+void
+moo_test_coverage_write (const char *filename)
+{
+    GString *content;
+    GError *error = NULL;
+
+    moo_return_if_fail (called_functions != NULL);
+    moo_return_if_fail (filename != NULL);
+
+    content = g_string_new (NULL);
+    g_hash_table_foreach (called_functions, (GHFunc) add_func, content);
+
+    if (!g_file_set_contents (filename, content->str, -1, &error))
+    {
+        moo_critical ("could not save file %s: %s", filename, moo_error_message (error));
+        g_error_free (error);
+    }
+
+    g_string_free (content, TRUE);
+    g_hash_table_destroy (called_functions);
+    called_functions = NULL;
+}
+
+void
+moo_test_coverage_record (const char *function)
+{
+    if (G_UNLIKELY (called_functions))
+        g_hash_table_insert (called_functions,
+                             g_strdup (function),
+                             GINT_TO_POINTER (TRUE));
 }

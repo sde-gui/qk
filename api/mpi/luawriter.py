@@ -5,12 +5,15 @@ from mpi.module import *
 tmpl_file_start = """\
 #include "moo-lua-api-util.h"
 
+extern "C" void moo_test_coverage_record (const char *function);
+
 """
 
 tmpl_cfunc_method_start = """\
 static int
 %(cfunc)s (gpointer pself, G_GNUC_UNUSED lua_State *L, G_GNUC_UNUSED int first_arg)
 {
+    moo_test_coverage_record ("%(c_name)s");
     MooLuaCurrentFunc cur_func ("%(current_function)s");
     %(Class)s *self = (%(Class)s*) pself;
 """
@@ -19,6 +22,7 @@ tmpl_cfunc_func_start = """\
 static int
 %(cfunc)s (G_GNUC_UNUSED lua_State *L)
 {
+    moo_test_coverage_record ("%(c_name)s");
     MooLuaCurrentFunc cur_func ("%(current_function)s");
 """
 
@@ -239,7 +243,10 @@ class Writer(object):
             dic = {'gtype_id': meth.retval.type.gtype_id,
                    'make_copy': 'FALSE' if own_return else 'TRUE',
                    }
-            if isinstance(meth.retval.type, Class) or isinstance(meth.retval.type, Boxed) or isinstance(meth.retval.type, Pointer):
+            if isinstance(meth.retval.type, Class):
+                func_call = 'gpointer ret = '
+                push_ret = 'moo_lua_push_object (L, (GObject*) ret, %(make_copy)s);' % dic
+            elif isinstance(meth.retval.type, Boxed) or isinstance(meth.retval.type, Pointer):
                 func_call = 'gpointer ret = '
                 push_ret = 'moo_lua_push_instance (L, ret, %(gtype_id)s, %(make_copy)s);' % dic
             elif isinstance(meth.retval.type, Enum) or isinstance(meth.retval.type, Flags):

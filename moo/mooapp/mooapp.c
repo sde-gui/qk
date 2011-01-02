@@ -939,6 +939,9 @@ moo_app_run (MooApp *app)
 }
 
 
+/**
+ * moo_app_quit:
+ **/
 gboolean
 moo_app_quit (MooApp *app)
 {

@@ -32,7 +32,8 @@ typedef struct {
 
 typedef enum {
     MOO_TEST_LIST_ONLY   = 1 << 0,
-    MOO_TEST_FATAL_ERROR = 1 << 1
+    MOO_TEST_FATAL_ERROR = 1 << 1,
+    MOO_TEST_INSTALLED   = 1 << 2
 } MooTestOptions;
 
 typedef struct MooTestSuite MooTestSuite;
@@ -51,8 +52,8 @@ void             moo_test_suite_add_test    (MooTestSuite       *ts,
                                              MooTestFunc         test_func,
                                              gpointer            data);
 
-void             moo_test_run_tests         (char              **tests,
-                                             const char         *data_dir,
+gboolean         moo_test_run_tests         (char              **tests,
+                                             const char         *coverage_file,
                                              MooTestOptions      opts);
 void             moo_test_cleanup           (void);
 gboolean         moo_test_get_result        (void);
@@ -74,8 +75,14 @@ void             moo_test_assert_msg        (gboolean            passed,
 
 char            *moo_test_load_data_file    (const char         *basename);
 char            *moo_test_find_data_file    (const char         *basename);
+void             moo_test_set_data_dir      (const char         *dir);
 const char      *moo_test_get_data_dir      (void);
 const char      *moo_test_get_working_dir   (void);
+char           **moo_test_list_data_files   (const char         *subdir);
+
+void             moo_test_coverage_enable   (void);
+void             moo_test_coverage_write    (const char         *filename);
+void             moo_test_coverage_record   (const char         *function);
 
 
 G_END_DECLS

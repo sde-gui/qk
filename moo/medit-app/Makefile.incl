@@ -1,7 +1,17 @@
 bin_PROGRAMS += medit
 
-EXTRA_DIST += medit-app/run-tests-am.sh
+EXTRA_DIST += medit-app/data
+dist-hook: delete-junk-from-data
+delete-junk-from-data:
+	rm -rf `find $(distdir)/medit-app/data -name '*~'`
+
+EXTRA_DIST += medit-app/run-tests-am.sh medit-app/print-functions.py
 TESTS = medit-app/run-tests-am.sh
+TESTS_ENVIRONMENT = top_srcdir=$(top_srcdir) PYTHON=$(PYTHON) print_functions=$(srcdir)/medit-app/print-functions.py
+
+installcheck-local: unit-tests-installed
+unit-tests-installed:
+	medit --ut --ut-installed
 
 if MOO_OS_UNIX
 AM_CFLAGS += -DMOO_UNIT_TEST_DATA_DIR=\"${MOO_TOP_SRCDIR}/moo/medit-app/data\"

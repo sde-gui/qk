@@ -42,5 +42,5 @@ moo_test_python (void)
 
     suite = moo_test_suite_new ("MooPython", "Python scripting tests", NULL, NULL, NULL);
 
-    add_test (suite, "moo", "test of moo module", "testmoo.py");
+    add_test (suite, "moo", "test of moo module", "test-python/testmoo.py");
 }

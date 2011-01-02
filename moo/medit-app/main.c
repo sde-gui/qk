@@ -54,8 +54,10 @@ static struct MeditOpts {
     gboolean show_version;
     const char *debug;
     gboolean ut;
+    gboolean ut_installed;
     gboolean ut_list;
     char *ut_dir;
+    char *ut_coverage_file;
     char **ut_tests;
     char **run_script;
     char **send_script;
@@ -161,8 +163,12 @@ static GOptionEntry medit_options[] = {
             /* help message for command line option --version */ N_("Show version information and exit"), NULL },
     { "ut", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.ut,
             "Run unit tests", NULL },
+    { "ut-installed", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.ut_installed,
+            "Run unit tests in installed medit", NULL },
     { "ut-dir", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING, &medit_opts.ut_dir,
             "Data dir for unit tests", NULL },
+    { "ut-coverage", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_FILENAME, &medit_opts.ut_coverage_file,
+            "File to write coverage data to", NULL },
     { "ut-list", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.ut_list,
             "List unit tests", NULL },
     { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &medit_opts.files,
@@ -181,7 +187,7 @@ post_parse_func (void)
 
     if (medit_opts.ut_list)
     {
-        list_unit_tests ();
+        list_unit_tests (medit_opts.ut_dir);
         exit (0);
     }
 
@@ -520,7 +526,12 @@ static gboolean
 unit_test_func (void)
 {
     MooTestOptions opts = 0;
-    int status = unit_tests_main (opts, medit_opts.ut_tests, medit_opts.ut_dir);
+    int status;
+
+    if (medit_opts.ut_installed)
+        opts |= MOO_TEST_INSTALLED;
+
+    status = unit_tests_main (opts, medit_opts.ut_tests, medit_opts.ut_dir, medit_opts.ut_coverage_file);
     moo_app_set_exit_status (moo_app_instance (), status);
     moo_app_quit (moo_app_instance ());
     return FALSE;

@@ -149,33 +149,90 @@ moo_lua_register_methods (GType              type,
     }
 }
 
+void
+moo_lua_register_method (GType         type,
+                         const char   *name,
+                         MooLuaMethod  meth)
+{
+    GHashTable *methods;
+
+    methods = (GHashTable*) g_type_get_qdata (type, moo_lua_methods_quark ());
+
+    if (!methods)
+    {
+        methods = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+        g_type_set_qdata (type, moo_lua_methods_quark (), methods);
+    }
+
+    g_hash_table_insert (methods, g_strdup (name), (gpointer) meth);
+}
+
+static GType *
+list_parent_types (GType type)
+{
+    GType *ifaces, *p;
+    GArray *types;
+
+    if (G_TYPE_FUNDAMENTAL (type) != G_TYPE_OBJECT)
+        return NULL;
+
+    types = g_array_new (TRUE, TRUE, sizeof (GType));
+
+    ifaces = g_type_interfaces (type, NULL);
+    for (p = ifaces; p && *p; ++p)
+        g_array_append_val (types, *p);
+
+    while (type != G_TYPE_OBJECT)
+    {
+        type = g_type_parent (type);
+        g_array_append_val (types, type);
+    }
+
+    g_free (ifaces);
+    return (GType*) g_array_free (types, FALSE);
+}
+
+static MooLuaMethod
+lookup_method_simple (GType       type,
+                      const char *name)
+{
+    GHashTable *methods = (GHashTable*) g_type_get_qdata (type, moo_lua_methods_quark ());
+    return methods ? (MooLuaMethod) g_hash_table_lookup (methods, name) : NULL;
+}
+
 MooLuaMethod
 moo_lua_lookup_method (lua_State  *L,
                        GType       type,
                        const char *name)
 {
+    GType *parent_types = NULL;
+    GType *p;
     MooLuaMethod meth = NULL;
 
     moo_return_val_if_fail (name != NULL, NULL);
 
-    while (TRUE)
-    {
-        GHashTable *methods = (GHashTable*) g_type_get_qdata (type, moo_lua_methods_quark ());
-
-        if (methods != NULL)
-            meth = (MooLuaMethod) g_hash_table_lookup (methods, name);
-
-        if (meth != NULL)
-            break;
-
-        if (type == G_TYPE_OBJECT || G_TYPE_FUNDAMENTAL (type) != G_TYPE_OBJECT)
-            break;
-
-        type = g_type_parent (type);
-    }
+    meth = lookup_method_simple (type, name);
 
     if (!meth)
-        luaL_error (L, "no method %s", name);
+    {
+        parent_types = list_parent_types (type);
+
+        for (p = parent_types; p && *p; ++p)
+        {
+            meth = lookup_method_simple (*p, name);
+
+            if (meth != NULL)
+                break;
+        }
+
+        if (meth != NULL)
+            moo_lua_register_method (type, name, meth);
+    }
+
+    g_free (parent_types);
+
+    if (!meth)
+        luaL_error (L, "no method %s in type %s", name, g_type_name (type));
 
     return meth;
 }
@@ -332,6 +389,7 @@ cfunc_ginstance__gc (lua_State *L)
             case G_TYPE_POINTER:
                 break;
             default:
+                moo_critical ("%s", g_type_name (self->type));
                 moo_assert_not_reached ();
                 break;
         }
@@ -393,9 +451,18 @@ moo_lua_push_ginstance (lua_State *L,
 
 int
 moo_lua_push_object (lua_State *L,
-                     GObject   *obj)
+                     GObject   *obj,
+                     gboolean   make_copy)
 {
-    return moo_lua_push_ginstance (L, obj, G_OBJECT_TYPE (obj), G_TYPE_OBJECT, TRUE);
+    if (obj)
+    {
+        return moo_lua_push_ginstance (L, obj, G_OBJECT_TYPE (obj), G_TYPE_OBJECT, make_copy);
+    }
+    else
+    {
+        lua_pushnil (L);
+        return 1;
+    }
 }
 
 int
@@ -580,8 +647,12 @@ moo_lua_get_arg_instance_opt (lua_State  *L,
     if (!lg->instance)
         return NULL;
 
-    if (G_TYPE_FUNDAMENTAL (type) != G_TYPE_FUNDAMENTAL (lg->type) || !g_type_is_a (lg->type, type))
-        moo_lua_arg_error (L, narg, param_name, "expected %s, got %s", g_type_name (type), g_type_name (lg->type));
+    if ((G_TYPE_FUNDAMENTAL (lg->type) != G_TYPE_OBJECT && lg->type != type) ||
+        (G_TYPE_FUNDAMENTAL (lg->type) == G_TYPE_OBJECT && !g_type_is_a (lg->type, type)))
+            moo_lua_arg_error (L, narg, param_name,
+                               "expected %s, got %s",
+                               g_type_name (type),
+                               g_type_name (lg->type));
 
     return lg->instance;
 }

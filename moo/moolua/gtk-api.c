@@ -119,6 +119,9 @@
 
 /**
  * g_file_has_parent:
+ *
+ * @file:
+ * @parent: (allow-none) (default NULL)
  **/
 
 /**
