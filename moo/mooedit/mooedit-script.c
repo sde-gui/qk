@@ -110,6 +110,14 @@ moo_edit_get_end_pos (MooEdit *doc)
     return gtk_text_iter_copy (&iter);
 }
 
+static void
+get_iter_at_cursor (MooEdit     *doc,
+                    GtkTextIter *iter)
+{
+    GtkTextBuffer *buffer = moo_edit_get_buffer (doc);
+    gtk_text_buffer_get_iter_at_mark (buffer, iter, gtk_text_buffer_get_insert (buffer));
+}
+
 /**
  * moo_edit_get_cursor_pos:
  *
@@ -119,10 +127,8 @@ GtkTextIter *
 moo_edit_get_cursor_pos (MooEdit *doc)
 {
     GtkTextIter iter;
-    GtkTextBuffer *buffer;
     moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
-    buffer = moo_edit_get_buffer (doc);
-    gtk_text_buffer_get_iter_at_mark (buffer, &iter, gtk_text_buffer_get_insert (buffer));
+    get_iter_at_cursor (doc, &iter);
     return gtk_text_iter_copy (&iter);
 }
 
@@ -199,6 +205,20 @@ moo_edit_get_line_count (MooEdit *doc)
 {
     moo_return_val_if_fail (MOO_IS_EDIT (doc), 0);
     return gtk_text_buffer_get_line_count (moo_edit_get_buffer (doc));
+}
+
+/**
+ * moo_edit_get_line_at_cursor:
+ *
+ * Returns: (type index)
+ **/
+int
+moo_edit_get_line_at_cursor (MooEdit *doc)
+{
+    GtkTextIter iter;
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), 0);
+    get_iter_at_cursor (doc, &iter);
+    return gtk_text_iter_get_line (&iter);
 }
 
 /**
@@ -312,6 +332,80 @@ moo_edit_get_text (MooEdit           *doc,
         gtk_text_buffer_get_end_iter (buffer, &end_iter);
 
     return gtk_text_buffer_get_slice (buffer, &start_iter, &end_iter, TRUE);
+}
+
+/**
+ * moo_edit_get_line_text:
+ *
+ * @doc:
+ * @line: (type index) (default -1)
+ *
+ * Returns: (type utf8): text at line @line, not including line
+ * end characters. If @line is missing, returns text at cursor line.
+ **/
+char *
+moo_edit_get_line_text (MooEdit *doc,
+                        int      line)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter start, end;
+
+    moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+
+    buffer = moo_edit_get_buffer (doc);
+
+    if (line >= 0)
+    {
+        moo_return_val_if_fail (line < gtk_text_buffer_get_line_count (buffer), NULL);
+        gtk_text_buffer_get_iter_at_line (buffer, &start, line);
+    }
+    else
+    {
+        get_iter_at_cursor (doc, &start);
+        gtk_text_iter_set_line_offset (&start, 0);
+    }
+
+    end = start;
+
+    if (!gtk_text_iter_ends_line (&end))
+        gtk_text_iter_forward_to_line_end (&end);
+
+    return moo_edit_get_text (doc, &start, &end);
+}
+
+/**
+ * moo_edit_get_line_text_at_pos:
+ *
+ * Returns: (type utf8): text at line which contains position @pos,
+ * not including line end characters.
+ **/
+char *
+moo_edit_get_line_text_at_pos (MooEdit           *doc,
+                               const GtkTextIter *pos)
+{
+    return moo_edit_get_line_text (doc, gtk_text_iter_get_line (pos));
+}
+
+/**
+ * moo_edit_set_text:
+ *
+ * @doc:
+ * @text: (type const-utf8)
+ **/
+void
+moo_edit_set_text (MooEdit    *doc,
+                   const char *text)
+{
+    GtkTextBuffer *buffer;
+    GtkTextIter start, end;
+
+    moo_return_if_fail (MOO_IS_EDIT (doc));
+    moo_return_if_fail (text != NULL);
+
+    buffer = moo_edit_get_buffer (doc);
+    gtk_text_buffer_get_bounds (buffer, &start, &end);
+    gtk_text_buffer_delete (buffer, &start, &end);
+    gtk_text_buffer_insert (buffer, &start, text, -1);
 }
 
 /**

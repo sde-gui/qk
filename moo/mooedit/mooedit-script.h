@@ -28,6 +28,7 @@ void         moo_edit_set_selection             (MooEdit            *doc,
 int          moo_edit_get_char_count            (MooEdit            *doc);
 int          moo_edit_get_line_count            (MooEdit            *doc);
 
+int          moo_edit_get_line_at_cursor        (MooEdit            *doc);
 int          moo_edit_get_line_at_pos           (MooEdit            *doc,
                                                  const GtkTextIter  *pos);
 GtkTextIter *moo_edit_get_pos_at_line           (MooEdit            *doc,
@@ -40,7 +41,13 @@ gunichar     moo_edit_get_char_at_pos           (MooEdit            *doc,
 char        *moo_edit_get_text                  (MooEdit            *doc,
                                                  const GtkTextIter  *start,
                                                  const GtkTextIter  *end);
+char        *moo_edit_get_line_text             (MooEdit            *doc,
+                                                 int                 line);
+char        *moo_edit_get_line_text_at_pos      (MooEdit            *doc,
+                                                 const GtkTextIter  *pos);
 
+void         moo_edit_set_text                  (MooEdit            *doc,
+                                                 const char         *text);
 void         moo_edit_insert_text               (MooEdit            *doc,
                                                  const char         *text,
                                                  GtkTextIter        *where);

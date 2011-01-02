@@ -953,7 +953,7 @@ goto_line_interactive (MooTextView *view)
 
 
 /**
- * moo_text_view_set_font_from_string:
+ * moo_text_view_set_font_from_string: (moo.private 1)
  *
  * @view:
  * @font: (type const-utf8)
@@ -2647,7 +2647,7 @@ moo_text_view_set_lang (MooTextView    *view,
 
 
 /**
- * moo_text_view_set_lang_by_id:
+ * moo_text_view_set_lang_by_id: (moo.private 1)
  *
  * @view:
  * @lang_id: (type const-utf8)
