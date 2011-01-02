@@ -73,6 +73,12 @@ _arg_helpers['index'] = SimpleArgHelper('int', 'index')
 _arg_helpers['double'] = SimpleArgHelper('double', 'double')
 _arg_helpers['const-char*'] = SimpleArgHelper('const char*', 'string')
 _arg_helpers['char*'] = SimpleArgHelper('char*', 'string')
+_arg_helpers['const-utf8'] = SimpleArgHelper('const char*', 'utf8')
+_arg_helpers['utf8'] = SimpleArgHelper('char*', 'utf8')
+_arg_helpers['const-filename'] = SimpleArgHelper('const char*', 'filename')
+_arg_helpers['filename'] = SimpleArgHelper('char*', 'filename')
+_arg_helpers['const-cstring'] = SimpleArgHelper('const char*', 'string')
+_arg_helpers['cstring'] = SimpleArgHelper('char*', 'string')
 _arg_helpers['strv'] = SimpleArgHelper('char**', 'strv')
 def find_arg_helper(param):
     return _arg_helpers[param.type.name]
@@ -117,6 +123,20 @@ class Writer(object):
                 func_body.start.append('GtkTextIter arg%(narg)d_iter;' % dic)
                 func_body.start.append('GtkTextIter *arg%(narg)d = &arg%(narg)d_iter;' % dic)
                 func_body.start.append('%(get_arg)s (L, %(arg_idx)s, "%(param_name)s", %(buffer)s, &arg%(narg)d_iter);' % dic)
+        elif param.type.name == 'GdkRectangle':
+            assert param.default_value is None or param.default_value == 'NULL'
+            if param.default_value is not None:
+                dic['get_arg'] = 'moo_lua_get_arg_rect_opt'
+            else:
+                dic['get_arg'] = 'moo_lua_get_arg_rect'
+            if param.default_value is not None:
+                func_body.start.append('GdkRectangle arg%(narg)d_rect;' % dic)
+                func_body.start.append(('GdkRectangle *arg%(narg)d = %(get_arg)s (L, %(arg_idx)s, ' + \
+                                        '"%(param_name)s", &arg%(narg)d_rect) ? &arg%(narg)d_rect : NULL;') % dic)
+            else:
+                func_body.start.append('GdkRectangle arg%(narg)d_rect;' % dic)
+                func_body.start.append('GdkRectangle *arg%(narg)d = &arg%(narg)d_rect;' % dic)
+                func_body.start.append('%(get_arg)s (L, %(arg_idx)s, "%(param_name)s", &arg%(narg)d_rect);' % dic)
         elif isinstance(param.type, Class) or isinstance(param.type, Boxed) or isinstance(param.type, Pointer):
             if param.default_value is not None:
                 func_body.start.append(('%(TypeName)s *arg%(narg)d = (%(TypeName)s*) ' + \
@@ -155,6 +175,7 @@ class Writer(object):
                 func_body.start.append(('char **arg%(narg)d = moo_lua_get_arg_strv (L, %(arg_idx)s, "%(param_name)s");') % dic)
             func_body.end.append('g_strfreev (arg%(narg)d);' % dic)
         else:
+            assert param.transfer_mode is None
             arg_helper = find_arg_helper(param)
             func_body.start.append(arg_helper.format_arg(param.allow_none, param.default_value,
                                             'arg%(narg)d' % dic, '%(arg_idx)s' % dic, param.name))
@@ -177,8 +198,7 @@ class Writer(object):
 
             if not p.type.name in _arg_helpers and not isinstance(p.type, ArrayType) and \
                not isinstance(p.type, GTypedType) and not isinstance(p.type, GErrorReturnType):
-                print >> sys.stderr, "Skipping function %s because of '%s' parameter" % (meth.c_name, p.type.name)
-                return
+                raise RuntimeError("cannot write function %s because of '%s' parameter" % (meth.c_name, p.type.name))
 
             if isinstance(p.type, GErrorReturnType):
                 assert i == len(meth.params) - 1
@@ -234,14 +254,30 @@ class Writer(object):
                 assert meth.retval.transfer_mode == 'full'
                 func_call = 'char **ret = '
                 push_ret = 'moo_lua_push_strv (L, ret);'
-            elif meth.retval.type.name == 'char*':
+            elif meth.retval.type.name in ('char*', 'cstring'):
                 assert meth.retval.transfer_mode == 'full'
                 func_call = 'char *ret = '
                 push_ret = 'moo_lua_push_string (L, ret);'
-            elif meth.retval.type.name == 'const-char*':
+            elif meth.retval.type.name == 'utf8':
+                assert meth.retval.transfer_mode == 'full'
+                func_call = 'char *ret = '
+                push_ret = 'moo_lua_push_utf8 (L, ret);'
+            elif meth.retval.type.name == 'filename':
+                assert meth.retval.transfer_mode == 'full'
+                func_call = 'char *ret = '
+                push_ret = 'moo_lua_push_filename (L, ret);'
+            elif meth.retval.type.name in ('const-char*', 'const-cstring'):
                 assert meth.retval.transfer_mode != 'full'
                 func_call = 'const char *ret = '
                 push_ret = 'moo_lua_push_string_copy (L, ret);'
+            elif meth.retval.type.name == 'const-utf8':
+                assert meth.retval.transfer_mode != 'full'
+                func_call = 'const char *ret = '
+                push_ret = 'moo_lua_push_utf8_copy (L, ret);'
+            elif meth.retval.type.name == 'const-filename':
+                assert meth.retval.transfer_mode != 'full'
+                func_call = 'const char *ret = '
+                push_ret = 'moo_lua_push_filename_copy (L, ret);'
             elif meth.retval.type.name == 'gunichar':
                 func_call = 'gunichar ret = '
                 push_ret = 'moo_lua_push_gunichar (L, ret);'

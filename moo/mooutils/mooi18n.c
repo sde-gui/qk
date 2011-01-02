@@ -22,10 +22,10 @@
 /**
  * moo_dgettext:
  *
- * @domain: (type const-char*):
- * @string: (type const-char*):
+ * @domain: (type const-utf8):
+ * @string: (type const-utf8):
  *
- * Returns: (type const-char*):
+ * Returns: (type const-utf8):
  **/
 
 const char *moo_gettext (const char *string) G_GNUC_FORMAT (1);
@@ -52,6 +52,10 @@ init_gettext (void)
 
 /**
  * moo_gettext:
+ *
+ * @string: (type const-utf8)
+ *
+ * Returns: (type const-utf8)
  **/
 
 const char *

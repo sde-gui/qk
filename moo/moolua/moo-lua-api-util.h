@@ -95,6 +95,14 @@ gboolean        moo_lua_get_arg_iter_opt        (lua_State          *L,
                                                  const char         *param_name,
                                                  GtkTextBuffer      *buffer,
                                                  GtkTextIter        *iter);
+void            moo_lua_get_arg_rect            (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name,
+                                                 GdkRectangle       *rect);
+gboolean        moo_lua_get_arg_rect_opt        (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name,
+                                                 GdkRectangle       *rect);
 int             moo_lua_get_arg_enum_opt        (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,
@@ -109,6 +117,20 @@ const char     *moo_lua_get_arg_string_opt      (lua_State          *L,
                                                  const char         *param_name,
                                                  const char         *default_value);
 const char     *moo_lua_get_arg_string          (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name);
+const char     *moo_lua_get_arg_utf8_opt        (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name,
+                                                 const char         *default_value);
+const char     *moo_lua_get_arg_utf8            (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name);
+const char     *moo_lua_get_arg_filename_opt    (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name,
+                                                 const char         *default_value);
+const char     *moo_lua_get_arg_filename        (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name);
 char          **moo_lua_get_arg_strv_opt        (lua_State          *L,
@@ -137,6 +159,14 @@ int             moo_lua_push_gunichar           (lua_State          *L,
 int             moo_lua_push_string             (lua_State          *L,
                                                  char               *value);
 int             moo_lua_push_string_copy        (lua_State          *L,
+                                                 const char         *value);
+int             moo_lua_push_utf8               (lua_State          *L,
+                                                 char               *value);
+int             moo_lua_push_utf8_copy          (lua_State          *L,
+                                                 const char         *value);
+int             moo_lua_push_filename           (lua_State          *L,
+                                                 char               *value);
+int             moo_lua_push_filename_copy      (lua_State          *L,
                                                  const char         *value);
 int             moo_lua_push_object_array       (lua_State          *L,
                                                  MooObjectArray     *value,

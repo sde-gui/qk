@@ -563,6 +563,8 @@ moo_edit_get_file (MooEdit *edit)
 
 /**
  * moo_edit_get_filename:
+ *
+ * Returns: (type filename)
  **/
 char *
 moo_edit_get_filename (MooEdit *edit)
@@ -587,6 +589,8 @@ _moo_edit_get_utf8_filename (MooEdit *edit)
 
 /**
  * moo_edit_get_display_name:
+ *
+ * Returns: (type const-utf8)
  **/
 const char *
 moo_edit_get_display_name (MooEdit *edit)
@@ -597,6 +601,8 @@ moo_edit_get_display_name (MooEdit *edit)
 
 /**
  * moo_edit_get_display_basename:
+ *
+ * Returns: (type const-utf8)
  **/
 const char *
 moo_edit_get_display_basename (MooEdit *edit)
@@ -607,6 +613,8 @@ moo_edit_get_display_basename (MooEdit *edit)
 
 /**
  * moo_edit_get_uri:
+ *
+ * Returns: (type utf8)
  **/
 char *
 moo_edit_get_uri (MooEdit *edit)
@@ -617,6 +625,8 @@ moo_edit_get_uri (MooEdit *edit)
 
 /**
  * moo_edit_get_encoding:
+ *
+ * Returns: (type const-utf8)
  **/
 const char *
 moo_edit_get_encoding (MooEdit *edit)
@@ -627,6 +637,9 @@ moo_edit_get_encoding (MooEdit *edit)
 
 /**
  * moo_edit_set_encoding:
+ *
+ * @edit:
+ * @encoding: (type const-utf8)
  **/
 void
 moo_edit_set_encoding (MooEdit    *edit,
@@ -938,7 +951,7 @@ moo_edit_get_lang (MooEdit *doc)
 /**
  * moo_edit_get_lang_id:
  *
- * Returns: id of language currently used in the document. If no language
+ * Returns: (type utf8): id of language currently used in the document. If no language
  * is used, then string "none" is returned.
  */
 char *

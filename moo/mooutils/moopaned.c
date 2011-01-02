@@ -3228,10 +3228,10 @@ moo_paned_set_handle_cursor_type (MooPaned     *paned,
 /**
  * moo_pane_label_new: (constructor-of MooPaneLabel)
  *
- * @icon_name: (allow-none) (default NULL):
+ * @icon_name: (type const-utf8) (allow-none) (default NULL):
  * @icon_pixbuf: (allow-none) (default NULL):
- * @label_text: (allow-none) (default NULL):
- * @window_title: (allow-none) (default NULL):
+ * @label_text: (type const-utf8) (allow-none) (default NULL):
+ * @window_title: (type const-utf8) (allow-none) (default NULL):
  */
 MooPaneLabel *
 moo_pane_label_new (const char     *icon_stock_id,

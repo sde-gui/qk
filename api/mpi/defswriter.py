@@ -81,6 +81,10 @@ class Writer(object):
     def __get_pygtk_type_name(self, typ):
         if isinstance(typ, InstanceType):
             return typ.name + '*'
+        elif typ.name in ('utf8', 'filename', 'cstring'):
+            return 'char*'
+        elif typ.name in ('const-utf8', 'const-filename', 'const-cstring'):
+            return 'const-char*'
         else:
             return typ.name
 

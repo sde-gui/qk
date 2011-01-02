@@ -38,6 +38,10 @@
  * boxed:GtkTextIter
  **/
 
+/**
+ * boxed:GdkRectangle
+ **/
+
 
 /****************************************************************************
  *
@@ -48,17 +52,23 @@
 /**
  * g_file_new_for_path:
  *
+ * @path: (type const-filename)
+ *
  * Returns: (transfer full)
  **/
 
 /**
  * g_file_new_for_uri:
  *
+ * @uri: (type const-utf8)
+ *
  * Returns: (transfer full)
  **/
 
 /**
  * g_file_parse_name:
+ *
+ * @parse_name: (type const-utf8)
  *
  * Returns: (transfer full)
  **/
@@ -79,18 +89,26 @@
 
 /**
  * g_file_get_basename:
+ *
+ * Returns: (type filename)
  **/
 
 /**
  * g_file_get_path:
+ *
+ * Returns: (type filename)
  **/
 
 /**
  * g_file_get_uri:
+ *
+ * Returns: (type utf8)
  **/
 
 /**
  * g_file_get_parse_name:
+ *
+ * Returns: (type utf8)
  **/
 
 /**
@@ -106,17 +124,27 @@
 /**
  * g_file_get_child:
  *
+ * @file:
+ * @name: (type const-filename)
+ *
  * Returns: (transfer full)
  **/
 
 /**
  * g_file_get_child_for_display_name:
  *
+ * @file:
+ * @display_name: (type const-utf8)
+ * @error:
+ *
  * Returns: (transfer full)
  **/
 
 /**
  * g_file_resolve_relative_path:
+ *
+ * @file:
+ * @relative_path: (type const-filename)
  *
  * Returns: (transfer full)
  **/
@@ -127,6 +155,8 @@
 
 /**
  * g_file_get_relative_path:
+ *
+ * Returns: (type filename)
  **/
 
 /**
@@ -135,10 +165,15 @@
 
 /**
  * g_file_has_uri_scheme:
+ *
+ * @file:
+ * @uri_scheme: (type const-utf8)
  **/
 
 /**
  * g_file_get_uri_scheme:
+ *
+ * Returns: (type utf8)
  **/
 
 
@@ -188,6 +223,8 @@
 
 /**
  * gtk_text_iter_get_text:
+ *
+ * Returns: (type utf8)
  **/
 
 /**

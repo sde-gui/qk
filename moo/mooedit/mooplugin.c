@@ -230,7 +230,7 @@ moo_plugin_class_init (MooPluginClass *klass)
 /**
  * moo_plugin_register: (moo.lua 0)
  *
- * @id:
+ * @id: (type const-utf8)
  * @type:
  * @info:
  * @params: (allow-none) (default NULL)
@@ -1115,10 +1115,10 @@ moo_plugin_set_win_plugin_type (MooPlugin *plugin,
 /**
  * moo_plugin_info_new: (constructor-of MooPluginInfo)
  *
- * @name:
- * @description: (allow-none) (default NULL)
- * @author: (allow-none) (default NULL)
- * @version: (allow-none) (default NULL)
+ * @name: (type const-utf8)
+ * @description: (type const-utf8) (allow-none) (default NULL)
+ * @author: (type const-utf8) (allow-none) (default NULL)
+ * @version: (type const-utf8) (allow-none) (default NULL)
  */
 MooPluginInfo *
 moo_plugin_info_new (const char     *name,

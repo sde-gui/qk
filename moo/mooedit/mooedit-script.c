@@ -282,6 +282,11 @@ moo_edit_get_char_at_pos (MooEdit           *doc,
  * @doc:
  * @start: (allow-none) (default NULL)
  * @end: (allow-none) (default NULL)
+ *
+ * Returns: (type utf8): text between @start and @end. If @end is
+ * missing then it returns text from @start to the end of document;
+ * and if both @start and @end are missing then it returns whole
+ * document content.
  **/
 char *
 moo_edit_get_text (MooEdit           *doc,
@@ -313,10 +318,10 @@ moo_edit_get_text (MooEdit           *doc,
  * moo_edit_insert_text:
  *
  * @doc:
- * @text:
+ * @text: (type const-utf8)
  * @where: (allow-none) (default NULL)
  *
- * Insert text at position @where or at cursor position if @where is %NULL.
+ * Insert @text at position @where or at cursor position if @where is %NULL.
  **/
 void
 moo_edit_insert_text (MooEdit     *doc,
@@ -344,6 +349,11 @@ moo_edit_insert_text (MooEdit     *doc,
 
 /**
  * moo_edit_replace_text:
+ *
+ * @doc:
+ * @start:
+ * @end:
+ * @text: (type const-utf8)
  **/
 void
 moo_edit_replace_text (MooEdit     *doc,
@@ -384,6 +394,9 @@ moo_edit_delete_text (MooEdit     *doc,
 
 /**
  * moo_edit_append_text:
+ *
+ * @doc:
+ * @text: (type const-utf8)
  *
  * Append text to the end of document.
  **/
@@ -663,7 +676,7 @@ moo_edit_replace_selected_lines (MooEdit  *doc,
 /**
  * moo_edit_get_selected_text:
  *
- * returns selected text.
+ * Returns: (type utf8): selected text.
  **/
 char *
 moo_edit_get_selected_text (MooEdit *doc)
@@ -702,6 +715,9 @@ moo_edit_delete_selected_lines (MooEdit *doc)
 
 /**
  * moo_edit_replace_selected_text:
+ *
+ * @doc:
+ * @replacement: (type const-utf8)
  *
  * Replace selected text with string @replacement. If nothing is selected,
  * then @replacement is inserted at cursor.

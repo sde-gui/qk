@@ -896,7 +896,7 @@ moo_prefs_save (const char  *file_rc,
 /**
  * moo_prefs_new_key_bool:
  *
- * @key:
+ * @key: (type const-utf8)
  * @default_val: (default FALSE):
  */
 void
@@ -918,7 +918,7 @@ moo_prefs_new_key_bool (const char *key,
 /**
  * moo_prefs_new_key_int:
  *
- * @key:
+ * @key: (type const-utf8)
  * @default_val: (default 0):
  */
 void
@@ -940,8 +940,8 @@ moo_prefs_new_key_int (const char *key,
 /**
  * moo_prefs_new_key_string:
  *
- * @key:
- * @default_val: (allow-none) (default NULL):
+ * @key: (type const-utf8)
+ * @default_val: (type const-cstring) (allow-none) (default NULL):
  **/
 void
 moo_prefs_new_key_string (const char *key,
@@ -963,6 +963,10 @@ moo_prefs_new_key_string (const char *key,
 
 /**
  * moo_prefs_get_string:
+ *
+ * @key: (type const-utf8)
+ *
+ * Returns: (type const-cstring)
  */
 const char *
 moo_prefs_get_string (const char *key)
@@ -978,6 +982,10 @@ moo_prefs_get_string (const char *key)
 
 /**
  * moo_prefs_get_filename:
+ *
+ * @key: (type const-utf8)
+ *
+ * Returns: (type const-filename)
  */
 const char *
 moo_prefs_get_filename (const char *key)
@@ -1008,6 +1016,8 @@ moo_prefs_get_filename (const char *key)
 /**
  * moo_prefs_get_file:
  *
+ * @key: (type const-utf8)
+ *
  * Returns: (transfer full):
  */
 GFile *
@@ -1020,6 +1030,8 @@ moo_prefs_get_file (const char *key)
 
 /**
  * moo_prefs_get_bool:
+ *
+ * @key: (type const-utf8)
  */
 gboolean
 moo_prefs_get_bool (const char *key)
@@ -1039,6 +1051,8 @@ moo_prefs_get_bool (const char *key)
 
 /**
  * moo_prefs_get_int:
+ *
+ * @key: (type const-utf8)
  */
 int
 moo_prefs_get_int (const char *key)
@@ -1059,8 +1073,8 @@ moo_prefs_get_int (const char *key)
 /**
  * moo_prefs_set_string:
  *
- * @key:
- * @val: (allow-none)
+ * @key: (type const-utf8)
+ * @val: (type const-cstring) (allow-none)
  */
 void
 moo_prefs_set_string (const char     *key,
@@ -1081,8 +1095,8 @@ moo_prefs_set_string (const char     *key,
 /**
  * moo_prefs_set_filename:
  *
- * @key:
- * @val: (allow-none)
+ * @key: (type const-utf8)
+ * @val: (type const-filename) (allow-none)
  */
 void
 moo_prefs_set_filename (const char     *key,
@@ -1113,7 +1127,7 @@ moo_prefs_set_filename (const char     *key,
 /**
  * moo_prefs_set_file:
  *
- * @key:
+ * @key: (type const-utf8)
  * @val: (allow-none)
  */
 void
@@ -1138,6 +1152,9 @@ moo_prefs_set_file (const char *key,
 
 /**
  * moo_prefs_set_int:
+ *
+ * @key: (type const-utf8)
+ * @val:
  */
 void
 moo_prefs_set_int (const char *key,
@@ -1156,6 +1173,9 @@ moo_prefs_set_int (const char *key,
 
 /**
  * moo_prefs_set_bool:
+ *
+ * @key: (type const-utf8)
+ * @val:
  */
 void
 moo_prefs_set_bool (const char *key,

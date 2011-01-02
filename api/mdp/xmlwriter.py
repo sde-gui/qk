@@ -1,3 +1,4 @@
+import sys
 import xml.etree.ElementTree as etree
 
 import mdp.module as module
@@ -83,14 +84,20 @@ class Writer(object):
     def __write_retval_annotations(self, retval, elm):
         self.__write_param_or_retval_annotations(retval, elm)
 
-    def __write_param(self, param):
+    def __check_type(self, param, func):
+        if param.type in ('char*', 'const-char*'):
+            print >>sys.stderr, '*** WARNING: raw type %s used in function %s' % (param.type, func)
+
+    def __write_param(self, param, func):
+        self.__check_type(param, func)
         dic = dict(name=param.name, type=param.type)
         elm = self.__start_tag('param', dic)
         self.__write_param_annotations(param, elm)
         self.__write_docs(param.docs)
         self.__end_tag('param')
 
-    def __write_retval(self, retval):
+    def __write_retval(self, retval, func):
+        self.__check_type(retval, func)
         dic = dict(type=retval.type)
         elm = self.__start_tag('retval', dic)
         self.__write_retval_annotations(retval, elm)
@@ -151,9 +158,9 @@ class Writer(object):
             dic[k] = func.annotations[k]
         self.__start_tag(tag, dic)
         for p in func.params:
-            self.__write_param(p)
+            self.__write_param(p, func.c_name)
         if func.retval:
-            self.__write_retval(func.retval)
+            self.__write_retval(func.retval, func.c_name)
         self.__write_summary(func.summary)
         self.__write_docs(func.docs)
         self.__end_tag(tag)

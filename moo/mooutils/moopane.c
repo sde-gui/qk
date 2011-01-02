@@ -571,7 +571,7 @@ update_sticky_button (MooPane *pane)
  * moo_pane_set_frame_markup:
  *
  * @pane:
- * @markup: (allow-none):
+ * @markup: (type const-utf8) (allow-none):
  **/
 void
 moo_pane_set_frame_markup (MooPane    *pane,
@@ -602,7 +602,7 @@ moo_pane_set_frame_markup (MooPane    *pane,
  * moo_pane_set_frame_text:
  *
  * @pane:
- * @text: (allow-none):
+ * @text: (type const-utf8) (allow-none):
  **/
 void
 moo_pane_set_frame_text (MooPane    *pane,
@@ -1070,6 +1070,8 @@ _moo_pane_new (GtkWidget    *child,
 
 /**
  * moo_pane_get_id:
+ *
+ * Returns: (type const-utf8)
  **/
 const char *
 moo_pane_get_id (MooPane *pane)

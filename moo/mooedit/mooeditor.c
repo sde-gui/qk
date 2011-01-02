@@ -2104,8 +2104,8 @@ moo_editor_open_file (MooEditor        *editor,
  * moo_editor_open_uri:
  *
  * @editor:
- * @uri:
- * @encoding: (allow-none) (default NULL)
+ * @uri: (type const-utf8)
+ * @encoding: (type const-utf8) (allow-none) (default NULL)
  * @line: (default -1)
  * @window: (allow-none) (default NULL)
  */
@@ -2133,8 +2133,8 @@ moo_editor_open_uri (MooEditor     *editor,
  * moo_editor_open_path:
  *
  * @editor:
- * @path:
- * @encoding: (allow-none) (default NULL)
+ * @path: (type const-filename)
+ * @encoding: (type const-utf8) (allow-none) (default NULL)
  * @line: (default -1)
  * @window: (allow-none) (default NULL)
  */
@@ -2721,6 +2721,9 @@ moo_editor_get_doc (MooEditor *editor,
 
 /**
  * moo_editor_get_doc_for_path:
+ *
+ * @editor:
+ * @path: (type const-filename)
  */
 MooEdit *
 moo_editor_get_doc_for_path (MooEditor  *editor,
@@ -2741,6 +2744,9 @@ moo_editor_get_doc_for_path (MooEditor  *editor,
 
 /**
  * moo_editor_get_doc_for_uri:
+ *
+ * @editor:
+ * @uri: (type const-utf8)
  */
 MooEdit *
 moo_editor_get_doc_for_uri (MooEditor  *editor,

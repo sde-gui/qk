@@ -26,7 +26,7 @@ G_DEFINE_TYPE (MooEditReloadInfo, moo_edit_reload_info, G_TYPE_OBJECT)
  * moo_edit_open_info_new: (constructor-of MooEditOpenInfo)
  *
  * @file:
- * @encoding: (allow-none) (default NULL)
+ * @encoding: (type const-utf8) (allow-none) (default NULL)
  **/
 MooEditOpenInfo *
 moo_edit_open_info_new (GFile      *file,
@@ -48,8 +48,8 @@ moo_edit_open_info_new (GFile      *file,
 /**
  * moo_edit_open_info_new_path:
  *
- * @path:
- * @encoding: (allow-none) (default NULL)
+ * @path: (type const-filename)
+ * @encoding: (type const-utf8) (allow-none) (default NULL)
  *
  * Returns: (transfer full)
  **/
@@ -66,8 +66,8 @@ moo_edit_open_info_new_path (const char *path,
 /**
  * moo_edit_open_info_new_uri:
  *
- * @uri:
- * @encoding: (allow-none) (default NULL)
+ * @uri: (type const-utf8)
+ * @encoding: (type const-utf8) (allow-none) (default NULL)
  *
  * Returns: (transfer full)
  **/
@@ -130,7 +130,7 @@ moo_edit_open_info_init (MooEditOpenInfo *info)
  * moo_edit_save_info_new: (constructor-of MooEditSaveInfo)
  *
  * @file:
- * @encoding: (allow-none) (default NULL)
+ * @encoding: (type const-utf8) (allow-none) (default NULL)
  **/
 MooEditSaveInfo *
 moo_edit_save_info_new (GFile      *file,
@@ -151,8 +151,8 @@ moo_edit_save_info_new (GFile      *file,
 /**
  * moo_edit_save_info_new_path:
  *
- * @path:
- * @encoding: (allow-none) (default NULL)
+ * @path: (type const-filename)
+ * @encoding: (type const-utf8) (allow-none) (default NULL)
  *
  * Returns: (transfer full)
  **/
@@ -169,8 +169,8 @@ moo_edit_save_info_new_path (const char *path,
 /**
  * moo_edit_save_info_new_uri:
  *
- * @uri:
- * @encoding: (allow-none) (default NULL)
+ * @uri: (type const-utf8)
+ * @encoding: (type const-utf8) (allow-none) (default NULL)
  *
  * Returns: (transfer full)
  **/
@@ -228,7 +228,7 @@ moo_edit_save_info_init (G_GNUC_UNUSED MooEditSaveInfo *info)
 /**
  * moo_edit_reload_info_new: (constructor-of MooEditReloadInfo)
  *
- * @encoding: (allow-none) (default NULL)
+ * @encoding: (type const-utf8) (allow-none) (default NULL)
  **/
 MooEditReloadInfo *
 moo_edit_reload_info_new (const char *encoding)

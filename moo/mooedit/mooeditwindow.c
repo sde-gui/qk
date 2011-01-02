@@ -2968,6 +2968,12 @@ moo_edit_window_add_pane_full (MooEditWindow  *window,
 
 /**
  * moo_edit_window_add_pane:
+ *
+ * @window:
+ * @user_id: (type const-utf8)
+ * @widget:
+ * @label:
+ * @position:
  */
 MooPane *
 moo_edit_window_add_pane (MooEditWindow  *window,
@@ -2983,6 +2989,9 @@ moo_edit_window_add_pane (MooEditWindow  *window,
 
 /**
  * moo_edit_window_remove_pane:
+ *
+ * @window:
+ * @user_id: (type const-utf8)
  */
 gboolean
 moo_edit_window_remove_pane (MooEditWindow *window,
@@ -3005,6 +3014,9 @@ moo_edit_window_remove_pane (MooEditWindow *window,
 
 /**
  * moo_edit_window_get_pane:
+ *
+ * @window:
+ * @user_id: (type const-utf8)
  */
 GtkWidget*
 moo_edit_window_get_pane (MooEditWindow  *window,
@@ -3444,6 +3456,10 @@ check_action_filter (G_GNUC_UNUSED GtkAction *action,
 
 /**
  * moo_edit_window_set_action_filter:
+ *
+ * @action_id: (type const-utf8)
+ * @type:
+ * @filter_string: (type const-utf8)
  */
 void
 moo_edit_window_set_action_filter (const char        *action_id,

@@ -620,7 +620,7 @@ node_free (Node *node)
  * moo_ui_xml_add_ui_from_string:
  *
  * @xml:
- * @buffer:
+ * @buffer: (type const-utf8)
  * @length: (default -1)
  */
 void
@@ -899,6 +899,13 @@ lookup_merge (MooUiXml *xml,
 
 /**
  * moo_ui_xml_add_item:
+ *
+ * @xml:
+ * @merge_id:
+ * @parent_path: (type const-utf8)
+ * @name: (type const-utf8)
+ * @action: (type const-utf8)
+ * @position:
  */
 MooUiNode*
 moo_ui_xml_add_item (MooUiXml       *xml,
@@ -950,6 +957,12 @@ moo_ui_xml_add_item (MooUiXml       *xml,
 
 /**
  * moo_ui_xml_insert:
+ *
+ * @xml:
+ * @merge_id:
+ * @parent:
+ * @position:
+ * @markup: (type const-utf8)
  */
 void
 moo_ui_xml_insert (MooUiXml       *xml,
@@ -1058,6 +1071,12 @@ moo_ui_xml_insert (MooUiXml       *xml,
 
 /**
  * moo_ui_xml_insert_after:
+ *
+ * @xml:
+ * @merge_id:
+ * @parent:
+ * @after:
+ * @markup: (type const-utf8)
  */
 void
 moo_ui_xml_insert_after (MooUiXml       *xml,
@@ -1086,6 +1105,12 @@ moo_ui_xml_insert_after (MooUiXml       *xml,
 
 /**
  * moo_ui_xml_insert_before:
+ *
+ * @xml:
+ * @merge_id:
+ * @parent:
+ * @before:
+ * @markup: (type const-utf8)
  */
 void
 moo_ui_xml_insert_before (MooUiXml       *xml,
@@ -1114,6 +1139,12 @@ moo_ui_xml_insert_before (MooUiXml       *xml,
 
 /**
  * moo_ui_xml_insert_markup_after:
+ *
+ * @xml:
+ * @merge_id:
+ * @parent_path: (type const-utf8)
+ * @after_name: (type const-utf8)
+ * @markup: (type const-utf8)
  */
 void
 moo_ui_xml_insert_markup_after (MooUiXml       *xml,
@@ -1149,6 +1180,12 @@ moo_ui_xml_insert_markup_after (MooUiXml       *xml,
 
 /**
  * moo_ui_xml_insert_markup_before:
+ *
+ * @xml:
+ * @merge_id:
+ * @parent_path: (type const-utf8)
+ * @before_name: (type const-utf8)
+ * @markup: (type const-utf8)
  */
 void
 moo_ui_xml_insert_markup_before (MooUiXml       *xml,
@@ -1184,6 +1221,12 @@ moo_ui_xml_insert_markup_before (MooUiXml       *xml,
 
 /**
  * moo_ui_xml_insert_markup:
+ *
+ * @xml:
+ * @merge_id:
+ * @parent_path: (type const-utf8)
+ * @position:
+ * @markup: (type const-utf8)
  */
 void
 moo_ui_xml_insert_markup (MooUiXml       *xml,
@@ -1340,6 +1383,9 @@ merge_remove_node (Merge          *merge,
 
 /**
  * moo_ui_xml_get_node:
+ *
+ * @xml:
+ * @path: (type const-utf8)
  */
 MooUiNode *
 moo_ui_xml_get_node (MooUiXml       *xml,
@@ -1393,6 +1439,9 @@ find_placeholder_func (Node    *node,
 
 /**
  * moo_ui_xml_find_placeholder:
+ *
+ * @xml:
+ * @name: (type const-utf8)
  */
 MooUiNode*
 moo_ui_xml_find_placeholder (MooUiXml       *xml,
@@ -1416,6 +1465,8 @@ moo_ui_xml_find_placeholder (MooUiXml       *xml,
 
 /**
  * moo_ui_node_get_path:
+ *
+ * Returns: (type utf8)
  */
 char *
 moo_ui_node_get_path (MooUiNode *node)
@@ -1440,6 +1491,9 @@ moo_ui_node_get_path (MooUiNode *node)
 
 /**
  * moo_ui_node_get_child:
+ *
+ * @node:
+ * @name: (type const-utf8)
  */
 MooUiNode *
 moo_ui_node_get_child (MooUiNode      *node,
@@ -2284,6 +2338,12 @@ create_toolbar (MooUiXml       *xml,
 /**
  * moo_ui_xml_create_widget:
  *
+ * @xml:
+ * @type:
+ * @path: (type const-utf8)
+ * @actions:
+ * @accel_group:
+ *
  * Returns: (type GtkWidget*)
  */
 gpointer
@@ -2349,6 +2409,10 @@ moo_ui_xml_create_widget (MooUiXml            *xml,
 
 /**
  * moo_ui_xml_get_widget:
+ *
+ * @xml:
+ * @widget:
+ * @path: (type const-utf8)
  */
 GtkWidget*
 moo_ui_xml_get_widget (MooUiXml       *xml,

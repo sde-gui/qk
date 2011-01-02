@@ -452,6 +452,36 @@ moo_lua_push_string_copy (lua_State  *L,
 }
 
 int
+moo_lua_push_utf8 (lua_State *L,
+                   char      *value)
+{
+    return moo_lua_push_string (L, value);
+}
+
+int
+moo_lua_push_utf8_copy (lua_State  *L,
+                        const char *value)
+{
+    return moo_lua_push_string_copy (L, value);
+}
+
+int
+moo_lua_push_filename (lua_State *L,
+                       char      *value)
+{
+    // XXX
+    return moo_lua_push_string (L, value);
+}
+
+int
+moo_lua_push_filename_copy (lua_State  *L,
+                            const char *value)
+{
+    // XXX
+    return moo_lua_push_string_copy (L, value);
+}
+
+int
 moo_lua_push_gunichar (lua_State *L,
                        gunichar   value)
 {
@@ -799,6 +829,39 @@ moo_lua_get_arg_iter_opt (lua_State     *L,
     return TRUE;
 }
 
+void
+moo_lua_get_arg_rect (lua_State    *L,
+                      int           narg,
+                      const char   *param_name,
+                      GdkRectangle *rect)
+{
+    luaL_checkany (L, narg);
+    moo_lua_get_arg_rect_opt (L, narg, param_name, rect);
+}
+
+gboolean
+moo_lua_get_arg_rect_opt (lua_State    *L,
+                          int           narg,
+                          const char   *param_name,
+                          GdkRectangle *prect)
+{
+    GdkRectangle *rect;
+
+    if (lua_isnoneornil (L, narg))
+        return FALSE;
+
+    // XXX
+
+    rect = (GdkRectangle*) moo_lua_get_arg_instance (L, narg, param_name, GDK_TYPE_RECTANGLE);
+
+    if (!rect)
+        moo_lua_arg_error (L, narg, param_name,
+                           "null rectangle");
+
+    *prect = *rect;
+    return TRUE;
+}
+
 static int
 parse_enum (const char *string,
             GType       type,
@@ -924,4 +987,38 @@ moo_lua_get_arg_string (lua_State  *L,
 {
     luaL_checkany (L, narg);
     return moo_lua_get_arg_string_opt (L, narg, param_name, NULL);
+}
+
+const char *
+moo_lua_get_arg_utf8_opt (lua_State  *L,
+                          int         narg,
+                          const char *param_name,
+                          const char *default_value)
+{
+    return moo_lua_get_arg_string_opt (L, narg, param_name, default_value);
+}
+
+const char *
+moo_lua_get_arg_utf8 (lua_State  *L,
+                      int         narg,
+                      const char *param_name)
+{
+    return moo_lua_get_arg_string (L, narg, param_name);
+}
+
+const char *
+moo_lua_get_arg_filename_opt (lua_State  *L,
+                              int         narg,
+                              const char *param_name,
+                              const char *default_value)
+{
+    return moo_lua_get_arg_string_opt (L, narg, param_name, default_value);
+}
+
+const char *
+moo_lua_get_arg_filename (lua_State  *L,
+                          int         narg,
+                          const char *param_name)
+{
+    return moo_lua_get_arg_string (L, narg, param_name);
 }
