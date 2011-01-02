@@ -66,7 +66,7 @@ and <code>obj.method(args)</code>.
     <programlisting>func{arg1, arg2=val2}</programlisting>
     This means that function takes a single table parameter, and
     table must be a dictionary with keys <parameter>arg1</parameter>,
-    <parameter>arg2</parameter>, etc. Similar to regular parameters,
+    <parameter>arg2</parameter>, etc. Similarly to regular parameters,
     <code><parameter>arg</parameter>=val</code> means that
     <parameter>arg</parameter> is optional.
     </listitem>
