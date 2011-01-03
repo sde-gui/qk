@@ -20,7 +20,7 @@
 
 G_BEGIN_DECLS
 
-void    moo_test_lua                (void);
+void    moo_test_lua    (MooTestOptions opts);
 
 G_END_DECLS
 

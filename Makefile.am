@@ -33,4 +33,15 @@ installer: plat/win32/installer.iss
 	$(MEDIT_INNO_COMPILER) plat/win32/installer.iss
 endif
 
+test:
+	$(MAKE) $(AM_MAKEFLAGS) all
+	$(MAKE) $(AM_MAKEFLAGS) check
+	$(MAKE) $(AM_MAKEFLAGS) uninstall
+	$(MAKE) $(AM_MAKEFLAGS) check
+	$(MAKE) $(AM_MAKEFLAGS) install
+	IGNORE_COVERAGE=1 $(MAKE) $(AM_MAKEFLAGS) installcheck
+fullcheck:
+	$(MAKE) $(AM_MAKEFLAGS) test
+	IGNORE_COVERAGE=1 $(MAKE) $(AM_MAKEFLAGS) distcheck
+
 @MOO_PO_SUBDIRS_RULE@

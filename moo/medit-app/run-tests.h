@@ -20,7 +20,7 @@ add_tests (MooTestOptions opts)
     moo_test_mooutils_win32 ();
 #endif
 
-    moo_test_lua ();
+    moo_test_lua (opts);
 
 #ifdef MOO_ENABLE_PYTHON
     moo_test_python ();

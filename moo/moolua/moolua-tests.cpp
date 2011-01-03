@@ -112,11 +112,14 @@ moo_lua_test_data_free (gpointer udata)
 }
 
 void
-moo_test_lua (void)
+moo_test_lua (MooTestOptions opts)
 {
     MooLuaTestData *data;
     MooTestSuite *suite;
     char **p;
+
+    if (!(opts & MOO_TEST_INSTALLED))
+        return;
 
     data = moo_lua_test_data_new ();
     suite = moo_test_suite_new ("MooLua", "Lua scripting tests", NULL, moo_lua_test_data_free, data);

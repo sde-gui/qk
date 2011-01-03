@@ -41,6 +41,9 @@ include medit-app/Makefile.incl
 BUILT_SOURCES += $(built_moo_sources) $(built_plugin_sources)
 CLEANFILES += $(built_moo_sources) $(built_plugin_sources)
 
+test:
+	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) test
+
 # glade/%-gxml.h: glade/%.glade $(top_srcdir)/tools/glade2c.py
 # 	$(MKDIR_P) glade
 # 	$(PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
