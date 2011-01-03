@@ -41,7 +41,7 @@ run_string (const char *str,
             PyObject   *globals,
             PyObject   *locals)
 {
-    PyObject *ret;
+    PyObject *ret = NULL;
     PyObject *code;
 
     g_return_val_if_fail (str != NULL, NULL);
