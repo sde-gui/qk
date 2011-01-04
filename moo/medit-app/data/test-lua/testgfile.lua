@@ -84,6 +84,13 @@ local function test3()
   tassert(f.equal(f2))
 end
 
+local function test4()
+  f1 = gtk.g_file_new_for_uri(uri1)
+  f2 = gtk.g_file_new_for_path(name1)
+  tassert(f1.equal(f2))
+end
+
 test1()
 -- test2()
 test3()
+test4()
