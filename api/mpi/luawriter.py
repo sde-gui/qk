@@ -3,6 +3,10 @@ import sys
 from mpi.module import *
 
 tmpl_file_start = """\
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include "moo-lua-api-util.h"
 
 extern "C" void moo_test_coverage_record (const char *function);
@@ -13,7 +17,9 @@ tmpl_cfunc_method_start = """\
 static int
 %(cfunc)s (gpointer pself, G_GNUC_UNUSED lua_State *L, G_GNUC_UNUSED int first_arg)
 {
+#ifdef MOO_ENABLE_COVERAGE
     moo_test_coverage_record ("%(c_name)s");
+#endif
     MooLuaCurrentFunc cur_func ("%(current_function)s");
     %(Class)s *self = (%(Class)s*) pself;
 """
@@ -22,7 +28,9 @@ tmpl_cfunc_func_start = """\
 static int
 %(cfunc)s (G_GNUC_UNUSED lua_State *L)
 {
+#ifdef MOO_ENABLE_COVERAGE
     moo_test_coverage_record ("%(c_name)s");
+#endif
     MooLuaCurrentFunc cur_func ("%(current_function)s");
 """
 
