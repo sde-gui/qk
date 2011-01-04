@@ -22,8 +22,11 @@ test_func (MooTestEnv *env)
 
     if (!been_here)
     {
+        char *dir;
         been_here = TRUE;
-        moo_python_add_path (moo_test_get_data_dir ());
+        dir = g_build_filename (moo_test_get_data_dir (), "test-python", NULL);
+        moo_python_add_path (dir);
+        g_free (dir);
     }
 
     moo_test_run_python_file ((const char *) env->test_data);
