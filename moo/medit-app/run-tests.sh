@@ -21,6 +21,12 @@ for arg; do
   esac
 done
 
+relpath() {
+  from=`cd $1 && pwd`
+  to=`cd $2 && pwd`
+  $PYTHON -c 'import sys; import os; print os.path.relpath(sys.argv[2], sys.argv[1])' $from $to
+}
+
 if $uninstalled; then
   if ! [ -e ./medit ]; then
     echo "file ./medit doesn't exist"
@@ -31,7 +37,7 @@ else
   if [ -z $bindir ]; then
     medit=`which medit`
   else
-    medit=$bindir/medit
+    medit=$bindir/medit$EXEEXT
   fi
   if ! [ -e $medit ]; then
     echo "file $medit doesn't exist"
@@ -47,6 +53,8 @@ fi
 if $coverage; then
   medit_cmd_line="$medit_cmd_line --ut-coverage called-functions"
 fi
+
+medit_cmd_line="$medit_cmd_line --ut-dir `relpath . $srcdir/medit-app/data`"
 
 echo "$medit_cmd_line"
 $medit_cmd_line || exit $?

@@ -454,7 +454,7 @@ moo_test_set_data_dir (const char *dir)
     }
 
     tmp = registry.data_dir;
-    registry.data_dir = g_strdup (dir);
+    registry.data_dir = _moo_normalize_file_path (dir);
     g_free (tmp);
 }
 

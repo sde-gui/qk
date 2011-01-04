@@ -137,9 +137,9 @@ static void
 test_encodings_1 (const char *name,
                   const char *working_dir)
 {
-    char *filename;
-    char *filename2;
-    char *encoding;
+    char *filename = NULL;
+    char *filename2 = NULL;
+    char *encoding = NULL;
     const char *dot;
     MooEditor *editor;
     MooEdit *doc;
@@ -149,13 +149,18 @@ test_encodings_1 (const char *name,
     else
         encoding = g_strdup (name);
 
+#ifdef MOO_OS_WIN32
+    if (strcmp (encoding, "UTF-16") == 0 || strcmp (encoding, "UCS-4") == 0)
+        goto out;
+#endif
+
     filename = g_build_filename (test_data.encodings_dir, name, (char*)0);
     filename2 = g_build_filename (working_dir, name, (char*)0);
 
     editor = moo_editor_instance ();
     doc = moo_editor_open_path (editor, filename, encoding, -1, NULL);
     TEST_ASSERT_MSG (doc != NULL,
-                     "file '%s', encoding '%s'",
+                     "file %s, encoding %s",
                      TEST_FMT_STR (filename),
                      TEST_FMT_STR (encoding));
 
@@ -168,6 +173,9 @@ test_encodings_1 (const char *name,
         g_object_unref (info);
     }
 
+#ifdef MOO_OS_WIN32
+out:
+#endif
     g_free (encoding);
     g_free (filename2);
     g_free (filename);
