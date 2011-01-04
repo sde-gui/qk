@@ -126,6 +126,9 @@ moo_test_lua (MooTestOptions opts)
 
     data->files = moo_test_list_data_files ("test-lua");
 
+    if (g_strv_length (data->files) == 0)
+        moo_critical ("no lua test files found");
+
     for (p = data->files; p && *p; ++p)
     {
         char *test_name;
