@@ -74,6 +74,8 @@
 
 #define SESSION_VERSION "1.0"
 
+#define ASK_OPEN_BUG_URL_KEY "Application/ask_open_bug_url"
+
 static struct {
     MooApp *instance;
     gboolean atexit_installed;
@@ -1341,6 +1343,10 @@ moo_app_report_bug (GtkWidget *window)
     char *os;
     char *version_escaped, *os_escaped;
     char *message;
+    const char *prefs_val;
+    gboolean do_open = TRUE;
+
+    moo_prefs_new_key_string (ASK_OPEN_BUG_URL_KEY, NULL);
 
     version_escaped = g_uri_escape_string (MOO_DISPLAY_VERSION, NULL, FALSE);
     os = get_system_name ();
@@ -1352,7 +1358,15 @@ moo_app_report_bug (GtkWidget *window)
                                  "It contains medit version and your operating system name (%s)"),
                                url, os);
 
-    if (moo_question_dialog (_("Open URL?"), message, window, GTK_RESPONSE_OK))
+    prefs_val = moo_prefs_get_string (ASK_OPEN_BUG_URL_KEY);
+    if (!prefs_val || strcmp (prefs_val, url) != 0)
+    {
+        do_open = moo_question_dialog (_("Open URL?"), message, window, GTK_RESPONSE_OK);
+        if (do_open)
+            moo_prefs_set_string (ASK_OPEN_BUG_URL_KEY, url);
+    }
+
+    if (do_open)
         moo_open_url (url);
 
     g_free (message);
