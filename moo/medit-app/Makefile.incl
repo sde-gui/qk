@@ -14,13 +14,17 @@ EXTRA_DIST +=					\
 TESTS = medit-app/run-tests-uninstalled.sh
 TESTS_ENVIRONMENT = top_srcdir=$(top_srcdir) bindir=$(bindir) PYTHON=$(PYTHON) print_functions=$(srcdir)/medit-app/print-functions.py
 
+if !MOO_ENABLE_COVERAGE
+TESTS_ENVIRONMENT += IGNORE_COVERAGE=1
+endif
+
 installcheck-local: run-tests-installed
 run-tests-installed:
 	$(TESTS_ENVIRONMENT) srcdir=$(srcdir) $(srcdir)/medit-app/run-tests-installed.sh
 	@echo 'PASS: medit-app/run-tests-installed.sh'
-	@echo '============='
-	@echo '1 test passed'
-	@echo '============='
+	@echo '==========='
+	@echo 'test passed'
+	@echo '==========='
 
 if MOO_OS_UNIX
 AM_CFLAGS += -DMOO_UNIT_TEST_DATA_DIR=\"${MOO_TOP_SRCDIR}/moo/medit-app/data\"

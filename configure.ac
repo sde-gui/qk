@@ -103,6 +103,14 @@ if $MOO_OS_UNIX; then
   AC_DEFINE(MOO_BUILD_CTAGS, 1, [build ctags plugin])
 fi
 
+AC_ARG_ENABLE(coverage,
+  AC_HELP_STRING([--enable-coverage],[check test coverage]),[
+  MOO_ENABLE_COVERAGE="$enable_coverage"
+  ],[
+  MOO_ENABLE_COVERAGE="no"
+])
+AM_CONDITIONAL(MOO_ENABLE_COVERAGE, test "x$MOO_ENABLE_COVERAGE" = "xyes")
+
 if $MOO_OS_WIN32; then
   AC_SUBST(MEDIT_WIN32_APP_UID,"7F9F899F-EE8A-47F0-9981-8C525AF78E4D")
   AC_SUBST(MEDIT_INNO_TOP_SRCDIR,"Z:`cd $srcdir && pwd`")
