@@ -28,33 +28,37 @@ typedef enum {
     MOO_SAVE_CHANGES_RESPONSE_DONT_SAVE
 } MooSaveChangesResponse;
 
-gboolean    moo_overwrite_file_dialog       (const char *display_name,
-                                             const char *display_dirname,
-                                             GtkWidget  *parent);
+gboolean    moo_overwrite_file_dialog       (const char         *display_name,
+                                             const char         *display_dirname,
+                                             GtkWidget          *parent);
 MooSaveChangesResponse
-            moo_save_changes_dialog         (const char *display_name,
-                                             GtkWidget  *parent);
+            moo_save_changes_dialog         (const char         *display_name,
+                                             GtkWidget          *parent);
 
-void        moo_position_window_at_pointer  (GtkWidget  *window,
-                                             GtkWidget  *parent);
-void        moo_window_set_parent           (GtkWidget  *window,
-                                             GtkWidget  *parent);
+void        moo_position_window_at_pointer  (GtkWidget          *window,
+                                             GtkWidget          *parent);
+void        moo_window_set_parent           (GtkWidget          *window,
+                                             GtkWidget          *parent);
 
-void        moo_error_dialog                (const char *text,
-                                             const char *secondary_text,
-                                             GtkWidget  *parent);
-void        moo_info_dialog                 (const char *text,
-                                             const char *secondary_text,
-                                             GtkWidget  *parent);
-void        moo_warning_dialog              (const char *text,
-                                             const char *secondary_text,
-                                             GtkWidget  *parent);
+gboolean    moo_question_dialog             (const char         *text,
+                                             const char         *secondary_text,
+                                             GtkWidget          *parent,
+                                             GtkResponseType     default_response);
+void        moo_error_dialog                (const char         *text,
+                                             const char         *secondary_text,
+                                             GtkWidget          *parent);
+void        moo_info_dialog                 (const char         *text,
+                                             const char         *secondary_text,
+                                             GtkWidget          *parent);
+void        moo_warning_dialog              (const char         *text,
+                                             const char         *secondary_text,
+                                             GtkWidget          *parent);
 
-void        _moo_window_set_remember_size   (GtkWindow  *window,
-                                             const char *prefs_key,
-                                             int         default_width,
-                                             int         default_height,
-                                             gboolean    remember_position);
+void        _moo_window_set_remember_size   (GtkWindow          *window,
+                                             const char         *prefs_key,
+                                             int                 default_width,
+                                             int                 default_height,
+                                             gboolean            remember_position);
 
 
 G_END_DECLS

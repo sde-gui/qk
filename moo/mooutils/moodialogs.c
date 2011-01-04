@@ -27,25 +27,39 @@
 static GtkWidget *
 create_message_dialog (GtkWindow  *parent,
                        GtkMessageType type,
+                       GtkButtonsType buttons,
                        const char *text,
-                       const char *secondary_text)
+                       const char *secondary_text,
+                       GtkResponseType default_response)
 {
     GtkWidget *dialog;
+    GtkButtonsType message_dialog_buttons = buttons;
+
+    if (buttons == GTK_BUTTONS_CLOSE || buttons == GTK_BUTTONS_OK)
+        message_dialog_buttons = GTK_BUTTONS_NONE;
 
     dialog = gtk_message_dialog_new_with_markup (parent,
                                                  GTK_DIALOG_MODAL,
                                                  type,
-                                                 GTK_BUTTONS_NONE,
+                                                 message_dialog_buttons,
                                                  "<span weight=\"bold\" size=\"larger\">%s</span>", text);
     if (secondary_text)
         gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
                                                   "%s", secondary_text);
 
-    gtk_dialog_add_buttons (GTK_DIALOG (dialog),
-                            GTK_STOCK_CLOSE, GTK_RESPONSE_CANCEL,
-                            NULL);
-    gtk_dialog_set_default_response (GTK_DIALOG (dialog),
-                                     GTK_RESPONSE_CANCEL);
+    if (buttons == GTK_BUTTONS_CLOSE || buttons == GTK_BUTTONS_OK)
+    {
+        gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+                                buttons == GTK_BUTTONS_CLOSE ? GTK_STOCK_CLOSE : GTK_STOCK_OK,
+                                GTK_RESPONSE_CANCEL,
+                                NULL);
+        gtk_dialog_set_default_response (GTK_DIALOG (dialog),
+                                         GTK_RESPONSE_CANCEL);
+    }
+
+    if (default_response != GTK_RESPONSE_NONE)
+        gtk_dialog_set_default_response (GTK_DIALOG (dialog),
+                                         default_response);
 
     if (parent && parent->group)
         gtk_window_group_add_window (parent->group, GTK_WINDOW (dialog));
@@ -220,17 +234,16 @@ moo_window_set_parent (GtkWidget  *window,
 }
 
 
-static void
+static GtkResponseType
 moo_message_dialog (GtkWidget  *parent,
                     GtkMessageType type,
+                    GtkButtonsType buttons,
                     const char *text,
                     const char *secondary_text,
-                    gboolean    at_mouse,
-                    gboolean    at_coords,
-                    int         x,
-                    int         y)
+                    GtkResponseType default_response)
 {
     GtkWidget *dialog, *toplevel = NULL;
+    GtkResponseType response;
 
     if (parent)
         toplevel = gtk_widget_get_toplevel (parent);
@@ -238,15 +251,38 @@ moo_message_dialog (GtkWidget  *parent,
         toplevel = NULL;
 
     dialog = create_message_dialog (toplevel ? GTK_WINDOW (toplevel) : NULL,
-                                    type, text, secondary_text);
-    g_return_if_fail (dialog != NULL);
+                                    type, buttons, text, secondary_text, default_response);
+    g_return_val_if_fail (dialog != NULL, GTK_RESPONSE_NONE);
 
-    moo_position_window_real (dialog, parent, at_mouse, at_coords, x, y);
+    moo_position_window_real (dialog, parent, FALSE, FALSE, 0, 0);
 
-    gtk_dialog_run (GTK_DIALOG (dialog));
+    response = gtk_dialog_run (GTK_DIALOG (dialog));
+
     gtk_widget_destroy (dialog);
+    return response;
 }
 
+
+/**
+ * moo_question_dialog:
+ *
+ * @text: (type const-utf8)
+ * @secondary_text: (type const-utf8) (allow-none) (default NULL)
+ * @parent: (allow-none) (default NULL)
+ * @default_response: (default GTK_RESPONSE_OK)
+ **/
+gboolean
+moo_question_dialog (const char *text,
+                     const char *secondary_text,
+                     GtkWidget  *parent,
+                     GtkResponseType default_response)
+{
+    return moo_message_dialog (parent,
+                               GTK_MESSAGE_QUESTION,
+                               GTK_BUTTONS_OK_CANCEL,
+                               text, secondary_text,
+                               default_response) == GTK_RESPONSE_OK;
+}
 
 /**
  * moo_error_dialog:
@@ -262,8 +298,9 @@ moo_error_dialog (const char *text,
 {
     moo_message_dialog (parent,
                         GTK_MESSAGE_ERROR,
+                        GTK_BUTTONS_CLOSE,
                         text, secondary_text,
-                        FALSE, FALSE, 0, 0);
+                        GTK_RESPONSE_NONE);
 }
 
 /**
@@ -280,8 +317,9 @@ moo_info_dialog (const char *text,
 {
     moo_message_dialog (parent,
                         GTK_MESSAGE_INFO,
+                        GTK_BUTTONS_CLOSE,
                         text, secondary_text,
-                        FALSE, FALSE, 0, 0);
+                        GTK_RESPONSE_NONE);
 }
 
 /**
@@ -298,8 +336,9 @@ moo_warning_dialog (const char *text,
 {
     moo_message_dialog (parent,
                         GTK_MESSAGE_WARNING,
+                        GTK_BUTTONS_CLOSE,
                         text, secondary_text,
-                        FALSE, FALSE, 0, 0);
+                        GTK_RESPONSE_NONE);
 }
 
 

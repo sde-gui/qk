@@ -69,7 +69,7 @@ class Writer(object):
             return value
         except ValueError:
             pass
-        oops("unknown constant '%s'" % value)
+        warning("unknown constant '%s'" % value)
 
     def __format_doc(self, doc):
         text = doc.text
