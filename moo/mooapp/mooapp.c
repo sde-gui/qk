@@ -1335,11 +1335,12 @@ moo_app_help (GtkWidget *window)
 
 
 static void
-moo_app_report_bug (G_GNUC_UNUSED GtkWidget *window)
+moo_app_report_bug (GtkWidget *window)
 {
     char *url;
     char *os;
     char *version_escaped, *os_escaped;
+    char *message;
 
     version_escaped = g_uri_escape_string (MOO_DISPLAY_VERSION, NULL, FALSE);
     os = get_system_name ();
@@ -1347,9 +1348,14 @@ moo_app_report_bug (G_GNUC_UNUSED GtkWidget *window)
 
     url = g_strdup_printf ("http://mooedit.sourceforge.net/cgi-bin/report_bug.cgi?version=%s&os=%s",
                            version_escaped, os_escaped);
+    message = g_strdup_printf (_("The following URL will be opened:\n\n%s\n\n"
+                                 "It contains medit version and your operating system name (%s)"),
+                               url, os);
 
-    moo_open_url (url);
+    if (moo_question_dialog (_("Open URL?"), message, window, GTK_RESPONSE_OK))
+        moo_open_url (url);
 
+    g_free (message);
     g_free (url);
     g_free (os_escaped);
     g_free (os);
