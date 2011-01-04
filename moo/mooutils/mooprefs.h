@@ -35,7 +35,7 @@ gboolean        moo_prefs_save          (const char     *file_rc,
                                          const char     *file_state,
                                          GError        **error);
 
-MooMarkupDoc   *moo_prefs_get_markup    (MooPrefsKind    prefs_kind);
+MooMarkupNode  *moo_prefs_get_markup    (MooPrefsKind    prefs_kind);
 
 void            moo_prefs_new_key       (const char     *key,
                                          GType           value_type,

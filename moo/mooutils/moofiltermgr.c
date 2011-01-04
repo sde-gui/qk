@@ -991,7 +991,7 @@ mgr_load_set (MooFilterMgr      *mgr,
 static void
 mgr_load (MooFilterMgr *mgr)
 {
-    MooMarkupDoc *xml;
+    MooMarkupNode *xml;
     MooMarkupNode *root, *elm;
 
     if (mgr->priv->loaded)
@@ -1003,7 +1003,7 @@ mgr_load (MooFilterMgr *mgr)
     xml = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (xml != NULL);
 
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), FILTERS_ROOT);
+    root = moo_markup_get_element (xml, FILTERS_ROOT);
 
     if (!root)
         return;
@@ -1082,7 +1082,7 @@ mgr_save_set (MooFilterMgr      *mgr,
 static gboolean
 mgr_do_save (MooFilterMgr *mgr)
 {
-    MooMarkupDoc *xml;
+    MooMarkupNode *xml;
     MooMarkupNode *root, *elm;
     GSList *user_ids, *l;
 
@@ -1094,7 +1094,7 @@ mgr_do_save (MooFilterMgr *mgr)
     xml = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_val_if_fail (xml != NULL, FALSE);
 
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), FILTERS_ROOT);
+    root = moo_markup_get_element (xml, FILTERS_ROOT);
 
     if (root)
         moo_markup_delete_node (root);
@@ -1116,7 +1116,7 @@ mgr_do_save (MooFilterMgr *mgr)
         {
             if (!root)
             {
-                root = moo_markup_create_element (MOO_MARKUP_NODE (xml), FILTERS_ROOT);
+                root = moo_markup_create_element (xml, FILTERS_ROOT);
                 g_return_val_if_fail (root != NULL, FALSE);
             }
 

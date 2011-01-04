@@ -113,7 +113,7 @@ static void
 save_store (MooTreeHelper *helper,
             GtkTreeModel  *model)
 {
-    MooMarkupDoc *doc;
+    MooMarkupNode *doc;
     MooMarkupNode *root;
     GtkTreeIter iter;
 
@@ -125,7 +125,7 @@ save_store (MooTreeHelper *helper,
     doc = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (doc != NULL);
 
-    root = moo_markup_get_element (MOO_MARKUP_NODE (doc), "MooFileView/Tools");
+    root = moo_markup_get_element (doc, "MooFileView/Tools");
 
     if (root)
         moo_markup_delete_node (root);
@@ -133,7 +133,7 @@ save_store (MooTreeHelper *helper,
     if (!gtk_tree_model_get_iter_first (model, &iter))
         return;
 
-    root = moo_markup_create_element (MOO_MARKUP_NODE (doc), "MooFileView/Tools");
+    root = moo_markup_create_element (doc, "MooFileView/Tools");
 
     do
     {
@@ -211,7 +211,7 @@ prefs_page_apply (PrefsPageXml *gxml)
 static void
 populate_store (GtkListStore *store)
 {
-    MooMarkupDoc *doc;
+    MooMarkupNode *doc;
     MooMarkupNode *root, *child;
 
     gtk_list_store_clear (store);
@@ -219,7 +219,7 @@ populate_store (GtkListStore *store)
     doc = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (doc != NULL);
 
-    root = moo_markup_get_element (MOO_MARKUP_NODE (doc), "MooFileView/Tools");
+    root = moo_markup_get_element (doc, "MooFileView/Tools");
 
     if (!root)
         return;

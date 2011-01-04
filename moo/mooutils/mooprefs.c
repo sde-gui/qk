@@ -25,6 +25,10 @@
 #include <gobject/gvaluecollector.h>
 #include <glib/gregex.h>
 
+#define MOO_PREFS_ELEMENT "moo-prefs"
+#define PROP_VERSION "version"
+#define MOO_PREFS_VERSION "1.0"
+
 #define PREFS_ROOT "Prefs"
 #undef MOO_PREFS_DEBUG_READWRITE
 
@@ -125,22 +129,31 @@ moo_prefs_make_keyv (const char *first_comp,
 }
 
 
-MooMarkupDoc *
+static MooMarkupDoc *
+create_markup_doc (void)
+{
+    MooMarkupDoc *doc = moo_markup_doc_new ("Prefs");
+    MooMarkupNode *root = moo_markup_create_root_element (doc, MOO_PREFS_ELEMENT);
+    moo_markup_set_prop (root, PROP_VERSION, MOO_PREFS_VERSION);
+    return doc;
+}
+
+MooMarkupNode *
 moo_prefs_get_markup (MooPrefsKind prefs_kind)
 {
     PrefsStore *prefs = prefs_instance ();
 
     if (!prefs->xml_rc)
-        prefs->xml_rc = moo_markup_doc_new ("Prefs");
+        prefs->xml_rc = create_markup_doc ();
     if (!prefs->xml_state)
-        prefs->xml_state = moo_markup_doc_new ("Prefs");
+        prefs->xml_state = create_markup_doc ();
 
     switch (prefs_kind)
     {
         case MOO_PREFS_RC:
-            return prefs->xml_rc;
+            return moo_markup_get_root_element (prefs->xml_rc, MOO_PREFS_ELEMENT);
         case MOO_PREFS_STATE:
-            return prefs->xml_state;
+            return moo_markup_get_root_element (prefs->xml_state, MOO_PREFS_ELEMENT);
     }
 
     g_return_val_if_reached (NULL);
@@ -589,6 +602,7 @@ load_file (const char  *file,
     MooMarkupNode *root;
     PrefsStore *prefs;
     MooMarkupDoc **target = NULL;
+    const char *version;
 
     prefs = prefs_instance ();
 
@@ -615,6 +629,23 @@ load_file (const char  *file,
     if (!xml)
         return FALSE;
 
+    root = moo_markup_get_root_element (xml, MOO_PREFS_ELEMENT);
+
+    if (!root)
+    {
+        moo_warning ("element '%s' missing in file %s", MOO_PREFS_ELEMENT, file);
+        moo_markup_doc_unref (xml);
+        return FALSE;
+    }
+
+    version = moo_markup_get_prop (root, PROP_VERSION);
+    if (!version || strcmp (version, MOO_PREFS_VERSION) != 0)
+    {
+        moo_warning ("invalid version '%s'in file %s", version, file);
+        moo_markup_doc_unref (xml);
+        return FALSE;
+    }
+
     if (target)
     {
         if (*target)
@@ -632,7 +663,7 @@ load_file (const char  *file,
         _moo_markup_set_modified (xml, FALSE);
     }
 
-    root = moo_markup_get_root_element (xml, PREFS_ROOT);
+    root = moo_markup_get_element (root, PREFS_ROOT);
 
     if (root)
     {
@@ -766,10 +797,10 @@ sync_xml (MooPrefsKind prefs_kind)
     }
 
     if (!*xml_ptr)
-        *xml_ptr = moo_markup_doc_new ("Prefs");
+        *xml_ptr = create_markup_doc ();
 
     xml = *xml_ptr;
-    root = moo_markup_get_root_element (xml, PREFS_ROOT);
+    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), MOO_PREFS_ELEMENT "/" PREFS_ROOT);
 
     if (root)
         moo_markup_delete_node (root);
@@ -787,7 +818,8 @@ sync_xml (MooPrefsKind prefs_kind)
 
         g_ptr_array_sort (data.keys, compare_strings);
 
-        root = moo_markup_create_root_element (xml, PREFS_ROOT);
+        root = moo_markup_create_element (MOO_MARKUP_NODE (xml),
+                                          MOO_PREFS_ELEMENT "/" PREFS_ROOT);
 
         for (i = 0; i < data.keys->len; ++i)
             write_item (data.keys->pdata[i], root);

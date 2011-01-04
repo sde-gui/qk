@@ -873,7 +873,7 @@ _list_delete_last (MooHistoryList *list)
 void
 _moo_history_list_load (MooHistoryList *list)
 {
-    MooMarkupDoc *xml;
+    MooMarkupNode *xml;
     MooMarkupNode *root, *node;
     char *root_path;
 
@@ -891,7 +891,7 @@ _moo_history_list_load (MooHistoryList *list)
     g_return_if_fail (xml != NULL);
 
     root_path = g_strdup_printf ("%s/" ELEMENT_RECENT_ITEMS, list->priv->user_id);
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), root_path);
+    root = moo_markup_get_element (xml, root_path);
     g_free (root_path);
 
     if (!root)
@@ -950,7 +950,7 @@ save_one (GtkTreeModel  *model,
 static void
 list_save_recent (MooHistoryList *list)
 {
-    MooMarkupDoc *xml;
+    MooMarkupNode *xml;
     MooMarkupNode *root;
     char *root_path;
 
@@ -964,7 +964,7 @@ list_save_recent (MooHistoryList *list)
     g_return_if_fail (xml != NULL);
 
     root_path = g_strdup_printf ("%s/" ELEMENT_RECENT_ITEMS, list->priv->user_id);
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), root_path);
+    root = moo_markup_get_element (xml, root_path);
 
     if (root)
         moo_markup_delete_node (root);
@@ -975,7 +975,7 @@ list_save_recent (MooHistoryList *list)
         return;
     }
 
-    root = moo_markup_create_element (MOO_MARKUP_NODE (xml), root_path);
+    root = moo_markup_create_element (xml, root_path);
     g_return_if_fail (root != NULL);
 
     gtk_tree_model_foreach (GTK_TREE_MODEL (list->priv->store),

@@ -613,7 +613,7 @@ set_default_config (MooLangMgr *mgr)
 static void
 load_config (MooLangMgr *mgr)
 {
-    MooMarkupDoc *xml;
+    MooMarkupNode *xml;
     MooMarkupNode *root, *node;
 
     set_default_config (mgr);
@@ -622,8 +622,7 @@ load_config (MooLangMgr *mgr)
     xml = moo_prefs_get_markup (MOO_PREFS_RC);
     moo_return_if_fail (xml != NULL);
 
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml),
-                                   ELEMENT_LANG_CONFIG);
+    root = moo_markup_get_element (xml, ELEMENT_LANG_CONFIG);
 
     if (!root)
         return;
@@ -1037,7 +1036,7 @@ save_one (const char *lang_id,
 
     struct {
         MooLangMgr *mgr;
-        MooMarkupDoc *xml;
+        MooMarkupNode *xml;
         MooMarkupNode *root;
     } *data;
 
@@ -1048,8 +1047,7 @@ save_one (const char *lang_id,
         return;
 
     if (!data->root)
-        data->root = moo_markup_create_element (MOO_MARKUP_NODE (data->xml),
-                                                ELEMENT_LANG_CONFIG);
+        data->root = moo_markup_create_element (data->xml, ELEMENT_LANG_CONFIG);
 
     lang_node = moo_markup_create_element (data->root, ELEMENT_LANG);
     moo_markup_set_prop (lang_node, PROP_LANG_ID, lang_id);
@@ -1075,12 +1073,12 @@ save_one (const char *lang_id,
 void
 _moo_lang_mgr_save_config (MooLangMgr *mgr)
 {
-    MooMarkupDoc *xml;
+    MooMarkupNode *xml;
     MooMarkupNode *root;
 
     struct {
         MooLangMgr *mgr;
-        MooMarkupDoc *xml;
+        MooMarkupNode *xml;
         MooMarkupNode *root;
     } data;
 
@@ -1093,7 +1091,7 @@ _moo_lang_mgr_save_config (MooLangMgr *mgr)
     moo_return_if_fail (xml != NULL);
 
     mgr->modified = FALSE;
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), ELEMENT_LANG_CONFIG);
+    root = moo_markup_get_element (xml, ELEMENT_LANG_CONFIG);
 
     if (root)
         moo_markup_delete_node (root);

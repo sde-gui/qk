@@ -436,52 +436,6 @@ parse_element (const char     *filename,
     return TRUE;
 }
 
-static void
-load_legacy (MooHistoryMgr *mgr)
-{
-    MooMarkupDoc *xml;
-    MooMarkupNode *root, *node;
-    char *root_path;
-
-    if (!mgr->priv->name)
-        return;
-
-    xml = moo_prefs_get_markup (MOO_PREFS_STATE);
-    g_return_if_fail (xml != NULL);
-
-    root_path = g_strdup_printf ("%s/" ELM_RECENT_ITEMS, mgr->priv->name);
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml), root_path);
-    g_free (root_path);
-
-    if (!root)
-        return;
-
-    for (node = root->children; node != NULL; node = node->next)
-    {
-        char *uri = NULL;
-        MooHistoryItem *item = NULL;
-
-        if (!MOO_MARKUP_IS_ELEMENT (node))
-            continue;
-
-        if (!strcmp (node->name, ELM_ITEM))
-        {
-            const char *filename = moo_markup_get_content (node);
-            uri = g_filename_to_uri (filename, NULL, NULL);
-        }
-
-        if (uri)
-            item = moo_history_item_new (uri, NULL);
-
-        if (item)
-            add_file (mgr, item);
-
-        g_free (uri);
-    }
-
-    moo_markup_delete_node (root);
-}
-
 typedef enum {
     ELEMENT_NONE = 0,
     ELEMENT_ROOT,
@@ -743,10 +697,7 @@ load_file (MooHistoryMgr *mgr)
     g_return_if_fail (filename != NULL);
 
     if (!g_file_test (filename, G_FILE_TEST_EXISTS))
-    {
-        load_legacy (mgr);
         return;
-    }
 
     parser.start_element = (MooMarkupStartElementFunc) parser_start_element;
     parser.end_element = (MooMarkupEndElementFunc) parser_end_element;

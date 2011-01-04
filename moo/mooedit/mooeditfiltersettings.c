@@ -417,7 +417,7 @@ load_node (FilterSettingsStore *store,
 static void
 filter_settings_store_load (FilterSettingsStore *store)
 {
-    MooMarkupDoc *xml;
+    MooMarkupNode *xml;
     MooMarkupNode *root, *node;
 
     g_return_if_fail (!store->settings);
@@ -425,8 +425,7 @@ filter_settings_store_load (FilterSettingsStore *store)
     xml = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (xml != NULL);
 
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml),
-                                   ELEMENT_FILTER_SETTINGS);
+    root = moo_markup_get_element (xml, ELEMENT_FILTER_SETTINGS);
 
     if (!root)
         return;
@@ -505,14 +504,13 @@ filter_settings_store_get_setting (FilterSettingsStore *store,
 void
 _moo_edit_filter_settings_set_strings (GSList *list)
 {
-    MooMarkupDoc *xml;
+    MooMarkupNode *xml;
     MooMarkupNode *root;
 
     xml = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (xml != NULL);
 
-    root = moo_markup_get_element (MOO_MARKUP_NODE (xml),
-                                   ELEMENT_FILTER_SETTINGS);
+    root = moo_markup_get_element (xml, ELEMENT_FILTER_SETTINGS);
 
     if (root)
         moo_markup_delete_node (root);
@@ -523,8 +521,7 @@ _moo_edit_filter_settings_set_strings (GSList *list)
         return;
     }
 
-    root = moo_markup_create_element (MOO_MARKUP_NODE (xml),
-                                      ELEMENT_FILTER_SETTINGS);
+    root = moo_markup_create_element (xml, ELEMENT_FILTER_SETTINGS);
 
     while (list)
     {

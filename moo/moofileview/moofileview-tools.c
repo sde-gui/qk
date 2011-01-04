@@ -263,7 +263,7 @@ void
 _moo_file_view_tools_load (MooFileView *fileview)
 {
     ToolsInfo *info;
-    MooMarkupDoc *doc;
+    MooMarkupNode *doc;
     MooMarkupNode *root, *child;
     MooUiXml *xml;
     MooActionCollection *actions;
@@ -289,7 +289,7 @@ _moo_file_view_tools_load (MooFileView *fileview)
     ph = moo_ui_xml_find_placeholder (xml, "OpenWith");
     g_return_if_fail (ph != NULL);
 
-    root = moo_markup_get_element (MOO_MARKUP_NODE (doc), "MooFileView/Tools");
+    root = moo_markup_get_element (doc, "MooFileView/Tools");
 
     for (child = root ? root->children : NULL; child != NULL; child = child->next)
     {

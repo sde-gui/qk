@@ -306,16 +306,16 @@ _moo_encoding_get_display_name (const char *enc_name)
 static void
 enc_mgr_save (EncodingsManager *enc_mgr)
 {
-    MooMarkupDoc *doc;
+    MooMarkupNode *doc;
     MooMarkupNode *root;
     GString *string = NULL;
 
     doc = moo_prefs_get_markup (MOO_PREFS_STATE);
     g_return_if_fail (doc != NULL);
 
-    if (!(root = moo_markup_get_element (MOO_MARKUP_NODE (doc), ELM_ENCODINGS)))
+    if (!(root = moo_markup_get_element (doc, ELM_ENCODINGS)))
     {
-        root = moo_markup_create_element (MOO_MARKUP_NODE (doc), ELM_ENCODINGS);
+        root = moo_markup_create_element (doc, ELM_ENCODINGS);
         moo_markup_create_element (root, ELM_RECENT);
         moo_markup_create_element (root, ELM_LAST_OPEN);
         moo_markup_create_element (root, ELM_LAST_SAVE);
@@ -359,14 +359,14 @@ get_rid_of_locale (const char *enc_name)
 static void
 enc_mgr_load (EncodingsManager *enc_mgr)
 {
-    MooMarkupDoc *doc;
+    MooMarkupNode *doc;
     MooMarkupNode *root;
     MooMarkupNode *node;
 
     g_return_if_fail (enc_mgr->recent == NULL);
 
     if (!(doc = moo_prefs_get_markup (MOO_PREFS_STATE)) ||
-        !(root = moo_markup_get_element (MOO_MARKUP_NODE (doc), ELM_ENCODINGS)))
+        !(root = moo_markup_get_element (doc, ELM_ENCODINGS)))
             return;
 
     if ((node = moo_markup_get_element (root, ELM_RECENT)))
