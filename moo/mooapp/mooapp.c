@@ -1346,7 +1346,7 @@ moo_app_report_bug (GtkWidget *window)
     const char *prefs_val;
     gboolean do_open = TRUE;
 
-    moo_prefs_new_key_string (ASK_OPEN_BUG_URL_KEY, NULL);
+    moo_prefs_create_key (ASK_OPEN_BUG_URL_KEY, MOO_PREFS_STATE, G_TYPE_STRING, NULL);
 
     version_escaped = g_uri_escape_string (MOO_DISPLAY_VERSION, NULL, FALSE);
     os = get_system_name ();
