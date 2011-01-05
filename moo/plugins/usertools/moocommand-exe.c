@@ -743,9 +743,8 @@ out:
 
 
 static gboolean
-moo_command_exe_check_sensitive (MooCommand    *cmd_base,
-                                 MooEdit       *doc,
-                                 MooEditWindow *window)
+moo_command_exe_check_sensitive (MooCommand *cmd_base,
+                                 MooEdit    *doc)
 {
     MooCommandExe *cmd = MOO_COMMAND_EXE (cmd_base);
     MooCommandOptions options;
@@ -771,9 +770,7 @@ moo_command_exe_check_sensitive (MooCommand    *cmd_base,
         case MOO_COMMAND_EXE_OUTPUT_CONSOLE:
 #endif
         case MOO_COMMAND_EXE_OUTPUT_NEW_DOC:
-            break;
         case MOO_COMMAND_EXE_OUTPUT_PANE:
-            options |= MOO_COMMAND_NEED_WINDOW;
             break;
         case MOO_COMMAND_EXE_OUTPUT_INSERT:
             options |= MOO_COMMAND_NEED_DOC;
@@ -782,7 +779,7 @@ moo_command_exe_check_sensitive (MooCommand    *cmd_base,
 
     moo_command_set_options (cmd_base, options);
 
-    return MOO_COMMAND_CLASS (_moo_command_exe_parent_class)->check_sensitive (cmd_base, doc, window);
+    return MOO_COMMAND_CLASS (_moo_command_exe_parent_class)->check_sensitive (cmd_base, doc);
 }
 
 

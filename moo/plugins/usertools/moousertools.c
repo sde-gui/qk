@@ -219,7 +219,7 @@ find_user_tools_file (int     type,
 
 static gboolean
 check_sensitive_func (GtkAction      *gtkaction,
-                      MooEditWindow  *window,
+                      G_GNUC_UNUSED MooEditWindow  *window,
                       MooEdit        *doc,
                       G_GNUC_UNUSED gpointer data)
 {
@@ -228,7 +228,7 @@ check_sensitive_func (GtkAction      *gtkaction,
     g_return_val_if_fail (MOO_IS_TOOL_ACTION (gtkaction), FALSE);
     action = MOO_TOOL_ACTION (gtkaction);
 
-    return moo_command_check_sensitive (action->cmd, doc, window);
+    return moo_command_check_sensitive (action->cmd, doc);
 }
 
 
@@ -1322,7 +1322,7 @@ moo_tool_action_check_state (MooEditAction *edit_action)
         return;
 
     doc = moo_edit_action_get_doc (edit_action);
-    sensitive = moo_command_check_sensitive (action->cmd, doc, moo_edit_get_window (doc));
+    sensitive = moo_command_check_sensitive (action->cmd, doc);
 
     g_object_set (action, "sensitive", sensitive, NULL);
 }

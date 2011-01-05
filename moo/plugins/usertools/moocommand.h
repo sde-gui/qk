@@ -74,8 +74,7 @@ struct _MooCommandClass {
     GObjectClass base_class;
 
     gboolean    (*check_sensitive)  (MooCommand         *cmd,
-                                     MooEdit            *doc,
-                                     MooEditWindow      *window);
+                                     MooEdit            *doc);
     void        (*run)              (MooCommand         *cmd,
                                      MooCommandContext  *ctx);
 };
@@ -122,12 +121,10 @@ void                moo_command_run                 (MooCommand         *cmd,
 gboolean            moo_command_check_context       (MooCommand         *cmd,
                                                      MooCommandContext  *ctx);
 gboolean            moo_command_check_sensitive     (MooCommand         *cmd,
-                                                     MooEdit            *doc,
-                                                     MooEditWindow      *window);
+                                                     MooEdit            *doc);
 
 void                moo_command_set_options         (MooCommand         *cmd,
                                                      MooCommandOptions   options);
-MooCommandOptions   moo_command_get_options         (MooCommand         *cmd);
 
 MooCommandOptions   moo_parse_command_options       (const char         *string);
 

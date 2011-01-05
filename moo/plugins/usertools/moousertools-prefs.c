@@ -20,6 +20,7 @@
 #include "mooutils/mooprefspage.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-treeview.h"
+#include "mooutils/mooutils.h"
 #include "mooutils/moohelp.h"
 #include "plugins/usertools/moousertools-gxml.h"
 #include "moo-help-sections.h"
@@ -135,6 +136,155 @@ move_row (MooPrefsPage *page)
     return FALSE;
 }
 
+
+enum {
+    ROW_REQUIRES_NOTHING,
+    ROW_REQUIRES_DOC,
+    ROW_REQUIRES_FILE,
+    ROW_REQUIRES_INVALID
+};
+
+enum {
+    ROW_SAVE_NOTHING,
+    ROW_SAVE_ONE,
+    ROW_SAVE_ALL,
+    ROW_SAVE_INVALID
+};
+
+static void
+setup_options_widgets (CommandXml *gxml)
+{
+    GtkListStore *store;
+    GtkCellRenderer *cell;
+
+    store = gtk_list_store_new (1, G_TYPE_STRING);
+    // ROW_REQUIRES_NOTHING
+    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("'Requires' combo box entry", "Nothing"), -1);
+    // ROW_REQUIRES_DOC
+    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("'Requires' combo box entry", "Document"), -1);
+    // ROW_REQUIRES_FILE
+    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("'Requires' combo box entry", "File on disk"), -1);
+    gtk_combo_box_set_model (gxml->combo_requires, GTK_TREE_MODEL (store));
+    g_object_unref (store);
+
+    gtk_cell_layout_clear (GTK_CELL_LAYOUT (gxml->combo_requires));
+    cell = gtk_cell_renderer_text_new ();
+    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (gxml->combo_requires), cell, TRUE);
+    gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (gxml->combo_requires), cell, "text", 0);
+
+    store = gtk_list_store_new (1, G_TYPE_STRING);
+    // ROW_SAVE_NOTHING
+    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("'Save' combo box entry", "Nothing"), -1);
+    // ROW_SAVE_ONE
+    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("'Save' combo box entry", "Current document"), -1);
+    // ROW_SAVE_ALL
+    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("'Save' combo box entry", "All documents"), -1);
+    gtk_combo_box_set_model (gxml->combo_save, GTK_TREE_MODEL (store));
+    g_object_unref (store);
+
+    gtk_cell_layout_clear (GTK_CELL_LAYOUT (gxml->combo_save));
+    cell = gtk_cell_renderer_text_new ();
+    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (gxml->combo_save), cell, TRUE);
+    gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (gxml->combo_save), cell, "text", 0);
+}
+
+static void
+set_options (CommandXml *gxml,
+             const char *string)
+{
+    int row_requires = ROW_REQUIRES_NOTHING;
+    int row_save = ROW_SAVE_NOTHING;
+    MooCommandOptions options = moo_parse_command_options (string);
+
+    if (options & MOO_COMMAND_NEED_FILE)
+        row_requires = ROW_REQUIRES_FILE;
+    else if (options & MOO_COMMAND_NEED_DOC)
+        row_requires = ROW_REQUIRES_DOC;
+
+    if (options & MOO_COMMAND_NEED_SAVE)
+        row_save = ROW_SAVE_ONE;
+    else if (options & MOO_COMMAND_NEED_SAVE_ALL)
+        row_save = ROW_SAVE_ALL;
+
+    gtk_combo_box_set_active (gxml->combo_requires, row_requires);
+    gtk_combo_box_set_active (gxml->combo_save, row_save);
+}
+
+static gboolean
+get_options (CommandXml  *gxml,
+             char       **dest)
+{
+    char *string;
+    int row_requires;
+    int row_save;
+    const char *requires = NULL;
+    const char *save = NULL;
+
+    row_requires = gtk_combo_box_get_active (gxml->combo_requires);
+    if (row_requires < 0 || row_requires >= ROW_REQUIRES_INVALID)
+    {
+        moo_critical ("oops");
+        row_requires = ROW_REQUIRES_DOC;
+    }
+
+    switch (row_requires)
+    {
+        case ROW_REQUIRES_NOTHING:
+            break;
+        case ROW_REQUIRES_DOC:
+            requires = "need-doc";
+            break;
+        case ROW_REQUIRES_FILE:
+            requires = "need-file";
+            break;
+        default:
+            moo_critical ("oops");
+            break;
+    }
+
+    row_save = gtk_combo_box_get_active (gxml->combo_save);
+    if (row_save < 0 || row_save >= ROW_SAVE_INVALID)
+    {
+        moo_critical ("oops");
+        row_save = ROW_SAVE_NOTHING;
+    }
+
+    switch (row_save)
+    {
+        case ROW_SAVE_NOTHING:
+            break;
+        case ROW_SAVE_ONE:
+            save = "need-save";
+            break;
+        case ROW_SAVE_ALL:
+            save = "need-save-all";
+            break;
+        default:
+            moo_critical ("oops");
+            break;
+    }
+
+    if (requires && save)
+        string = g_strdup_printf ("%s,%s", requires, save);
+    else if (requires)
+        string = g_strdup (requires);
+    else
+        string = g_strdup (save);
+
+    if (!_moo_str_equal (*dest, string))
+    {
+        g_free (*dest);
+        *dest = string;
+        return TRUE;
+    }
+    else
+    {
+        g_free (string);
+        return FALSE;
+    }
+}
+
+
 static void
 update_widgets (MooPrefsPage *page,
                 GtkTreeModel *model,
@@ -158,7 +308,7 @@ update_widgets (MooPrefsPage *page,
 
         gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (gxml->enabled), info->enabled);
         gtk_entry_set_text (gxml->filter, info->filter ? info->filter : "");
-        gtk_entry_set_text (gxml->options, info->options ? info->options : "");
+        set_options (gxml, info->options);
 
         _moo_user_tool_info_unref (info);
     }
@@ -166,7 +316,6 @@ update_widgets (MooPrefsPage *page,
     {
         gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (gxml->enabled), FALSE);
         gtk_entry_set_text (gxml->filter, "");
-        gtk_entry_set_text (gxml->options, "");
         _moo_command_display_set (helper, NULL, NULL);
     }
 
@@ -227,7 +376,7 @@ update_model (MooPrefsPage *page,
     }
 
     changed = get_text (gxml->filter, &info->filter) || changed;
-    changed = get_text (gxml->options, &info->options) || changed;
+    changed = get_options (gxml, &info->options) || changed;
 
     if (changed)
     {
@@ -301,6 +450,8 @@ command_page_init (MooPrefsPage    *page,
 
     page_set_type (page, type);
 
+    setup_options_widgets (gxml);
+
     store = gtk_list_store_new (N_COLUMNS, MOO_TYPE_USER_TOOL_INFO);
 
     cell = gtk_cell_renderer_text_new ();
@@ -315,7 +466,7 @@ command_page_init (MooPrefsPage    *page,
 
     populate_store (store, type);
 
-    helper = _moo_command_display_new (gxml->type_combo,
+    helper = _moo_command_display_new (gxml->combo_type,
                                        gxml->type_notebook,
                                        GTK_WIDGET (gxml->treeview),
                                        GTK_WIDGET (gxml->new_),

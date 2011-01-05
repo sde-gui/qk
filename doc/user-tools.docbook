@@ -39,7 +39,7 @@ The following controls are available to modify tools:
 <itemizedlist>
   <listitem>
     <para>
-    <guilabel>Files</guilabel> entry specifies for which files the tool is going to be available. It can
+    <parameter><guilabel>Files</guilabel></parameter> entry specifies for which files the tool is going to be available. It can
     contain the following:
     <itemizedlist>
       <listitem>a comma-separated list of file patterns, e.g. <programlisting><code>*.c,*.h</code></programlisting></listitem>
@@ -52,31 +52,51 @@ The following controls are available to modify tools:
     <para>Empty entry means that the tool will be available for all documents.</para>
   </listitem>
   <listitem>
-    <guilabel>Options</guilabel> entry specifies under which conditions the tool should be enabled.
-    Its content is a comma-separated list of the following:
+    <parameter><guilabel>Requires</guilabel></parameter> combo box specifies whether the tool should be
+    enabled depending on current document.
     <variablelist>
       <?dbhtml list-presentation="table"?>
 <!--      <?dbhtml term-separator=" : "?>-->
       <varlistentry>
-        <term><code>need-doc</code></term>
-        <listitem>the tool needs an open document.</listitem>
+        <term><parameter>Nothing</parameter></term>
+        <listitem>the tool is enabled regardless whether there is an open document.</listitem>
       </varlistentry>
       <varlistentry>
-        <term><code>need-file</code></term>
-        <listitem>the tool will not work in new unsaved documents.</listitem>
+        <term><parameter>Document</parameter></term>
+        <listitem>the tool is enabled only if there is an open document. For example, if the tool manipulates
+        current document text, then it needs a document to be there.</listitem>
       </varlistentry>
       <varlistentry>
-        <term><code>need-save</code></term>
-        <listitem>the document will be saved before the command is executed.</listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><code>need-save-all</code></term>
-        <listitem>all open documents will be saved before the command is executed.</listitem>
+        <term><parameter>File on disk</parameter></term>
+        <listitem>the tool is enabled only if current document is saved on disk (i.e. it is not "Untitled").
+        For example, to compile a TeX file, it needs to be saved first.</listitem>
       </varlistentry>
     </variablelist>
   </listitem>
   <listitem>
-    <guilabel>Command type</guilabel> combo specifies the type of the tool: a Python script, a
+    <parameter><guilabel>Save</guilabel></parameter> combo box specifies what should be saved every time
+    before the command is executed.
+    <variablelist>
+      <?dbhtml list-presentation="table"?>
+<!--      <?dbhtml term-separator=" : "?>-->
+      <varlistentry>
+        <term><parameter>Nothing</parameter></term>
+        <listitem>nothing will be saved.</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><parameter>Current document</parameter></term>
+        <listitem>current document will be automatically saved. For example, you probably want to save currrent
+        document before compiling it with latex.</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><parameter>All documents</parameter></term>
+        <listitem>all open documents will be automatically saved. For example, if the tool builds a C project, then
+        you probably want to save all open files before running make.</listitem>
+      </varlistentry>
+    </variablelist>
+  </listitem>
+  <listitem>
+    <parameter><guilabel>Type</guilabel></parameter> combo specifies the type of the tool: a Python script, a
     Lua script, or a shell script.
   </listitem>
   <listitem>
@@ -113,6 +133,11 @@ as Lua scripts;</listitem>
 <listitem>executable files, they will be executed in the same way
 as shell commands.</listitem>
 </itemizedlist>
+</para>
+<para>
+Note that files with <filename>.py</filename> and <filename>.lua</filename> extensions will be
+executed inside &medit; process; if you want to use them as regular scripts, then just remove the
+extension.
 </para>
 <para>
 To set parameters for a tool, place them on the first or the second line of the file in
@@ -158,12 +183,34 @@ the following format:
  </varlistentry>
  <varlistentry>
   <term><code>options</code></term>
-  <listitem>same as the <guilabel>Options</guilabel> entry content in the <guilabel>Preferences</guilabel> dialog.</listitem>
+  <listitem>this corresponds to Requires and Save controls in the <guilabel>Preferences</guilabel> dialog. It is a
+  comma-separated list of the following:
+    <variablelist>
+      <?dbhtml list-presentation="table"?>
+      <varlistentry>
+        <term><code>need-doc</code></term>
+        <listitem>tool will be enabled only if there is an open document.</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><code>need-file</code></term>
+        <listitem>tool will be enabled only if current document is saved on disk (i.e. it is not "Untitled").</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><code>need-save</code></term>
+        <listitem>current document will be automatically saved before the command is executed.</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><code>need-save-all</code></term>
+        <listitem>all open documents will be automatically saved before the command is executed.</listitem>
+      </varlistentry>
+    </variablelist>
+  </listitem>
  </varlistentry>
 </variablelist>
 </para>
 <para>
-In addition to these, you can set input and output options for executable files:
+In addition to these, you can set input and output options for executable files (see <xref linkend="section-user-tools-shell"/>
+for the meaning of these options):
 <variablelist>
  <?dbhtml list-presentation="table"?>
  <varlistentry>
@@ -195,7 +242,7 @@ text field using default user shell on Unix systems or <command>cmd.exe</command
 Its input and output are specified by the following controls:
 <itemizedlist>
   <listitem>
-    <guilabel>Input</guilabel> entry specifies what text from the document should be passed to the command via its standard input:
+    <parameter><guilabel>Input</guilabel></parameter> entry specifies what text from the document should be passed to the command via its standard input:
     <variablelist>
     <?dbhtml list-presentation="table"?>
       <varlistentry>
@@ -220,7 +267,7 @@ Its input and output are specified by the following controls:
   </listitem>
 
   <listitem>
-  <guilabel>Output</guilabel> entry specifies how the standard output of the command should be redirected.
+  <parameter><guilabel>Output</guilabel></parameter> entry specifies how the standard output of the command should be redirected.
     <variablelist>
     <?dbhtml list-presentation="table"?>
     <varlistentry>
@@ -250,7 +297,7 @@ Its input and output are specified by the following controls:
   </listitem>
 
   <listitem>
-    <guilabel>Filter</guilabel> combo. If the output pane is used, then it can be passed through a
+    <parameter><guilabel>Filter</guilabel></parameter> combo. If the output pane is used, then it can be passed through a
     <parameter>filter</parameter>: the filter can match filenames and line numbers, so when you click
     the text in the output pane it will open the corresponding file. This is used for compilers and
     similar commands, which output locations of errors in processed files.
@@ -272,20 +319,21 @@ following environment variables are set when scripts are executed:
   </varlistentry>
   <varlistentry>
     <term><envar>DOC</envar></term>
-    <listitem>document basename.</listitem>
+    <listitem>document basename ("<filename>file.c</filename>" for file <filename>/home/user/file.c</filename>).</listitem>
   </varlistentry>
   <varlistentry>
     <term><envar>DOC_DIR</envar></term>
-    <listitem>document directory. Full file path is
+    <listitem>document directory ("<filename>/home/user</filename>" for file <filename>/home/user/file.c</filename>). Full file path is
     <filename><envar>$DOC_DIR</envar>/<envar>$DOC</envar></filename>.</listitem>
   </varlistentry>
   <varlistentry>
     <term><envar>DOC_BASE</envar></term>
-    <listitem>basename without extension.</listitem>
+    <listitem>basename without extension ("<filename>file</filename>" for file <filename>/home/user/file.c</filename>).</listitem>
   </varlistentry>
   <varlistentry>
     <term><envar>DOC_EXT</envar></term>
-    <listitem>document filename extension including the period. Basename is always
+    <listitem>document filename extension including the period ("<filename>.c</filename>" for file
+    <filename>/home/user/file.c</filename>). Basename is always
     <filename><envar>$DOC_BASE</envar><envar>$DOC_EXT</envar></filename>.</listitem>
   </varlistentry>
   <varlistentry>

@@ -357,12 +357,8 @@ moo_command_get_property (GObject *object,
 
 static gboolean
 moo_command_check_sensitive_real (MooCommand    *cmd,
-                                  MooEdit       *doc,
-                                  MooEditWindow *window)
+                                  MooEdit       *doc)
 {
-    if ((cmd->options & MOO_COMMAND_NEED_WINDOW) && !MOO_IS_EDIT_WINDOW (window))
-        return FALSE;
-
     if ((cmd->options & MOO_COMMAND_NEED_DOC) && !doc)
         return FALSE;
 
@@ -455,14 +451,9 @@ save_all (MooEdit *doc)
 
 static gboolean
 check_context (MooCommandOptions  options,
-               MooEdit           *doc,
-               MooEditWindow     *window)
+               MooEdit           *doc)
 {
     moo_return_val_if_fail (!doc || MOO_IS_EDIT (doc), FALSE);
-    moo_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), FALSE);
-
-    if ((options & MOO_COMMAND_NEED_WINDOW) && !window)
-        return FALSE;
 
     if ((options & MOO_COMMAND_NEED_DOC) && !doc)
         return FALSE;
@@ -490,7 +481,7 @@ moo_command_run (MooCommand         *cmd,
     doc = moo_command_context_get_doc (ctx);
     window = moo_command_context_get_window (ctx);
 
-    g_return_if_fail (check_context (cmd->options, doc, window));
+    g_return_if_fail (check_context (cmd->options, doc));
 
     if (cmd->options & MOO_COMMAND_NEED_SAVE_ALL)
     {
@@ -509,14 +500,12 @@ moo_command_run (MooCommand         *cmd,
 
 gboolean
 moo_command_check_sensitive (MooCommand    *cmd,
-                             MooEdit       *doc,
-                             MooEditWindow *window)
+                             MooEdit       *doc)
 {
     g_return_val_if_fail (MOO_IS_COMMAND (cmd), FALSE);
     g_return_val_if_fail (!doc || MOO_IS_EDIT (doc), FALSE);
-    g_return_val_if_fail (!window || MOO_IS_EDIT_WINDOW (window), FALSE);
     g_return_val_if_fail (MOO_COMMAND_GET_CLASS(cmd)->check_sensitive != NULL, FALSE);
-    return MOO_COMMAND_GET_CLASS(cmd)->check_sensitive (cmd, doc, window);
+    return MOO_COMMAND_GET_CLASS(cmd)->check_sensitive (cmd, doc);
 }
 
 
@@ -533,14 +522,6 @@ moo_command_set_options (MooCommand       *cmd,
         cmd->options = options;
         g_object_notify (G_OBJECT (cmd), "options");
     }
-}
-
-
-MooCommandOptions
-moo_command_get_options (MooCommand *cmd)
-{
-    g_return_val_if_fail (MOO_IS_COMMAND (cmd), 0);
-    return cmd->options;
 }
 
 
@@ -575,10 +556,8 @@ moo_parse_command_options (const char *string)
             options |= MOO_COMMAND_NEED_SAVE;
         else if (!strcmp (s, "need-save-all") || !strcmp (s, "save-all"))
             options |= MOO_COMMAND_NEED_SAVE_ALL;
-        else if (!strcmp (s, "need-window"))
-            options |= MOO_COMMAND_NEED_WINDOW;
         else
-            g_warning ("unknown flag '%s'", s);
+            g_warning ("unknown option '%s'", s);
     }
 
 out:
