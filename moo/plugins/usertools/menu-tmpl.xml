@@ -5,40 +5,49 @@
     <type>lua</type>
     <lua:code><![CDATA[
 lines = doc.get_selected_lines()
-if lines then
+if #lines > 1 then
   table.sort(lines)
   doc.replace_selected_lines(lines)
 end
-
--- lines = doc.get_selected_lines()
--- uniq_lines = {}
--- for _, line in pairs(lines) do
---   if (#line ~= 0) then
---     uniq_lines[line] = true
---   end
--- end
--- lines = {}
--- for line, _ in uniq_lines do
---   table.insert(lines, line)
--- end
--- table.sort(lines)
--- -- table.foreach(lines, print)
--- doc.replace_selected_lines(lines)
 ]]></lua:code>
   </command>
   <command id="SortLinesUniq"><!-- ###unix### -->
     <name>Sort | Uniq</name>
     <options>need-doc</options>
     <type>exe</type>
+    <exe:input>lines</exe:input>
     <exe:output>insert</exe:output>
     <exe:code><![CDATA[
 sort | uniq
 ]]></exe:code>
   </command>
+  <command id="SortLinesUniq"><!-- ###win32### -->
+    <name>Sort | Uniq</name>
+    <options>need-doc</options>
+    <type>lua</type>
+    <lua:code><![CDATA[
+lines = doc.get_selected_lines()
+if #lines == 1 then
+  return
+end
+uniq_lines = {}
+for _, line in pairs(lines) do
+  if (#line ~= 0) then
+    uniq_lines[line] = true
+  end
+end
+lines = {}
+for line, _ in pairs(uniq_lines) do
+  table.insert(lines, line)
+end
+table.sort(lines)
+doc.replace_selected_lines(lines)
+]]></lua:code>
+  </command>
   <command id="Yacc"><!-- ###unix### -->
     <name>Bison</name>
     <langs>yacc</langs>
-    <options>need-doc</options>
+    <options>need-file,need-save</options>
     <type>exe</type>
     <exe:filter>bison</exe:filter>
     <exe:output>pane</exe:output>
