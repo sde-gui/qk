@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-29 03:14-0800\n"
+"POT-Creation-Date: 2011-01-04 23:55-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,98 +19,98 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #. error message for wrong commmand line
-#: ../moo/medit-app/main.c:107
+#: ../moo/medit-app/main.c:109
 #, c-format
 msgid "Invalid value '%s' for option %s"
 msgstr ""
 
 #. help message for command line option --new-app
-#: ../moo/medit-app/main.c:114
+#: ../moo/medit-app/main.c:116
 msgid "Run new instance of application"
 msgstr ""
 
 #. help message for command line option --use-session
-#: ../moo/medit-app/main.c:120
+#: ../moo/medit-app/main.c:122
 msgid "Load and save session"
 msgstr ""
 
 #. help message for command line option --pid=PID
-#: ../moo/medit-app/main.c:126
+#: ../moo/medit-app/main.c:128
 msgid "Use existing instance with process id PID"
 msgstr ""
 
 #. "PID" part in "--pid=PID"
-#: ../moo/medit-app/main.c:127
+#: ../moo/medit-app/main.c:129
 msgid "PID"
 msgstr ""
 
 #. help message for command line option --app-name=NAME
-#: ../moo/medit-app/main.c:129
+#: ../moo/medit-app/main.c:131
 msgid "Set instance name to NAME if it's not already running"
 msgstr ""
 
 #. "NAME" part in "--app-name=NAME"
-#: ../moo/medit-app/main.c:130
+#: ../moo/medit-app/main.c:132
 msgid "NAME"
 msgstr ""
 
 #. help message for command line option --new-window
-#: ../moo/medit-app/main.c:132
+#: ../moo/medit-app/main.c:134
 msgid "Open file(s) in a new window"
 msgstr ""
 
 #. help message for command line option --new-tab
-#: ../moo/medit-app/main.c:134
+#: ../moo/medit-app/main.c:136
 msgid "Open file(s) in a new tab"
 msgstr ""
 
 #. help message for command line option --line=LINE
-#: ../moo/medit-app/main.c:140
+#: ../moo/medit-app/main.c:142
 msgid "Open file and position cursor on line LINE"
 msgstr ""
 
 #. "LINE" part in --line=LINE
-#: ../moo/medit-app/main.c:141
+#: ../moo/medit-app/main.c:143
 msgid "LINE"
 msgstr ""
 
 #. help message for command line option --encoding=ENCODING
-#: ../moo/medit-app/main.c:143
+#: ../moo/medit-app/main.c:145
 msgid "Use provided character encoding"
 msgstr ""
 
 #. "ENCODING" part in --encoding=ENCODING
-#: ../moo/medit-app/main.c:144
+#: ../moo/medit-app/main.c:146
 msgid "ENCODING"
 msgstr ""
 
 #. help message for command line option --reload
-#: ../moo/medit-app/main.c:146
+#: ../moo/medit-app/main.c:148
 msgid "Automatically reload file if it was modified on disk"
 msgstr ""
 
 #. help message for command line option --geometry=WIDTHxHEIGHT[+X+Y]
-#: ../moo/medit-app/main.c:158
+#: ../moo/medit-app/main.c:160
 msgid "Default window size and position"
 msgstr ""
 
 #. "WIDTHxHEIGHT[+X+Y]" part in --geometry=WIDTHxHEIGHT[+X+Y]
-#: ../moo/medit-app/main.c:159
+#: ../moo/medit-app/main.c:161
 msgid "WIDTHxHEIGHT[+X+Y]"
 msgstr ""
 
 #. help message for command line option --version
-#: ../moo/medit-app/main.c:161
+#: ../moo/medit-app/main.c:163
 msgid "Show version information and exit"
 msgstr ""
 
 #. "FILES" part in "medit [OPTION...] [FILES]"
-#: ../moo/medit-app/main.c:169
+#: ../moo/medit-app/main.c:175
 msgid "FILES"
 msgstr ""
 
 #. error message for wrong commmand line
-#: ../moo/medit-app/main.c:197
+#: ../moo/medit-app/main.c:203
 #, c-format
 msgid "%s and %s options may not be used simultaneously\n"
 msgstr ""
@@ -179,12 +179,26 @@ msgstr ""
 msgid "translator-credits-markup"
 msgstr ""
 
-#: ../moo/mooapp/mooapp.c:992
+#: ../moo/mooapp/mooapp.c:997
 msgid "Report a Bug..."
 msgstr ""
 
+#: ../moo/mooapp/mooapp.c:1357
+#, c-format
+msgid ""
+"The following URL will be opened:\n"
+"\n"
+"%s\n"
+"\n"
+"It contains medit version and your operating system name (%s)"
+msgstr ""
+
+#: ../moo/mooapp/mooapp.c:1364
+msgid "Open URL?"
+msgstr ""
+
 #. Prefs dialog title, like "medit Preferences"
-#: ../moo/mooapp/mooapp.c:1385
+#: ../moo/mooapp/mooapp.c:1408
 #, c-format
 msgid "%s Preferences"
 msgstr ""
@@ -1029,31 +1043,31 @@ msgstr ""
 msgid "Mi_xed"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3047
+#: ../moo/mooedit/mooeditwindow.c:3059
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3048
+#: ../moo/mooedit/mooeditwindow.c:3060
 #, c-format
 msgid "Chars: %s"
 msgstr ""
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3091
+#: ../moo/mooedit/mooeditwindow.c:3103
 msgid "OVR"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3091
+#: ../moo/mooedit/mooeditwindow.c:3103
 msgid "INS"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3188
+#: ../moo/mooedit/mooeditwindow.c:3200
 msgid "_Language"
 msgstr ""
 
 #. Menu item in the Language menu
-#: ../moo/mooedit/mooeditwindow.c:3193
+#: ../moo/mooedit/mooeditwindow.c:3205
 msgid "Language|None"
 msgstr ""
 
@@ -1172,11 +1186,11 @@ msgstr ""
 msgid "Go to parent folder"
 msgstr ""
 
-#: ../moo/moofileview/moofileview.c:1174 ../moo/moofileview/moofileview.c:3365
+#: ../moo/moofileview/moofileview.c:1174 ../moo/moofileview/moofileview.c:3366
 msgid "Delete..."
 msgstr ""
 
-#: ../moo/moofileview/moofileview.c:1175 ../moo/moofileview/moofileview.c:3366
+#: ../moo/moofileview/moofileview.c:1175 ../moo/moofileview/moofileview.c:3367
 msgid "Delete selected files"
 msgstr ""
 
@@ -1247,11 +1261,11 @@ msgstr ""
 msgid "Could not delete file %s"
 msgstr ""
 
-#: ../moo/moofileview/moofileview.c:3359
+#: ../moo/moofileview/moofileview.c:3360
 msgid "Move to Trash..."
 msgstr ""
 
-#: ../moo/moofileview/moofileview.c:3360
+#: ../moo/moofileview/moofileview.c:3361
 msgid "Move selected files to Trash"
 msgstr ""
 
@@ -1269,10 +1283,6 @@ msgstr ""
 
 #: ../moo/moopython/plugins/medit/runpython.py:43
 msgid "Python Output"
-msgstr ""
-
-#: ../moo/moopython/plugins/pycmd.py:91
-msgid "Python script"
 msgstr ""
 
 #: ../moo/moopython/plugins/python.py:48 ../moo/moopython/plugins/python.py:49
@@ -1357,16 +1367,16 @@ msgstr ""
 msgid "Configure Shortcuts"
 msgstr ""
 
-#: ../moo/mooutils/moodialogs.c:348
+#: ../moo/mooutils/moodialogs.c:423
 #, c-format
 msgid "Save changes to document \"%s\" before closing?"
 msgstr ""
 
-#: ../moo/mooutils/moodialogs.c:349
+#: ../moo/mooutils/moodialogs.c:424
 msgid "Save changes to the document before closing?"
 msgstr ""
 
-#: ../moo/mooutils/moodialogs.c:354
+#: ../moo/mooutils/moodialogs.c:429
 msgid "If you don't save, changes will be discarded"
 msgstr ""
 
@@ -1583,7 +1593,7 @@ msgstr ""
 msgid "Thai"
 msgstr ""
 
-#: ../moo/mooutils/moofiledialog.c:651
+#: ../moo/mooutils/moofiledialog.c:650
 msgid "Selected file is not a regular file"
 msgstr ""
 
@@ -2062,8 +2072,12 @@ msgstr ""
 msgid "Input|Whole document"
 msgstr ""
 
-#: ../moo/plugins/usertools/moocommand-lua.cpp:208
+#: ../moo/plugins/usertools/moocommand-script.cpp:271
 msgid "Lua script"
+msgstr ""
+
+#: ../moo/plugins/usertools/moocommand-script.cpp:277
+msgid "Python script"
 msgstr ""
 
 #: ../moo/plugins/usertools/moousertools.c:397

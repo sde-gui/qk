@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-29 03:14-0800\n"
+"POT-Creation-Date: 2011-01-04 23:55-0800\n"
 "PO-Revision-Date: 2008-09-27\n"
 "Last-Translator: Kris Van Bruwaene <krvbr@yahoo.co.uk>\n"
 "Language-Team: Kris Van Bruwaene <krvbr@yahoo.co.uk>\n"
@@ -17,98 +17,98 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n>1;\n"
 
 #. error message for wrong commmand line
-#: ../moo/medit-app/main.c:107
+#: ../moo/medit-app/main.c:109
 #, c-format
 msgid "Invalid value '%s' for option %s"
 msgstr "Ongeldige waarde '%s' voor optie %s"
 
 #. help message for command line option --new-app
-#: ../moo/medit-app/main.c:114
+#: ../moo/medit-app/main.c:116
 msgid "Run new instance of application"
 msgstr "Start nieuwe instantie van de toepassing"
 
 #. help message for command line option --use-session
-#: ../moo/medit-app/main.c:120
+#: ../moo/medit-app/main.c:122
 msgid "Load and save session"
 msgstr "Sessie laden en opslaan"
 
 #. help message for command line option --pid=PID
-#: ../moo/medit-app/main.c:126
+#: ../moo/medit-app/main.c:128
 msgid "Use existing instance with process id PID"
 msgstr "Gebruik bestaande instantie met proces-id PID"
 
 #. "PID" part in "--pid=PID"
-#: ../moo/medit-app/main.c:127
+#: ../moo/medit-app/main.c:129
 msgid "PID"
 msgstr "PID"
 
 #. help message for command line option --app-name=NAME
-#: ../moo/medit-app/main.c:129
+#: ../moo/medit-app/main.c:131
 msgid "Set instance name to NAME if it's not already running"
 msgstr "Stel instantienaam op NAAM tenzij ze al draait"
 
 #. "NAME" part in "--app-name=NAME"
-#: ../moo/medit-app/main.c:130
+#: ../moo/medit-app/main.c:132
 msgid "NAME"
 msgstr "NAAM"
 
 #. help message for command line option --new-window
-#: ../moo/medit-app/main.c:132
+#: ../moo/medit-app/main.c:134
 msgid "Open file(s) in a new window"
 msgstr "Open bestand(en) in nieuw venster"
 
 #. help message for command line option --new-tab
-#: ../moo/medit-app/main.c:134
+#: ../moo/medit-app/main.c:136
 msgid "Open file(s) in a new tab"
 msgstr "Open bestand(en) in nieuw tabblad"
 
 #. help message for command line option --line=LINE
-#: ../moo/medit-app/main.c:140
+#: ../moo/medit-app/main.c:142
 msgid "Open file and position cursor on line LINE"
 msgstr "Open bestand en plaats aanwijzer op lijn LIJN"
 
 #. "LINE" part in --line=LINE
-#: ../moo/medit-app/main.c:141
+#: ../moo/medit-app/main.c:143
 msgid "LINE"
 msgstr "LIJN"
 
 #. help message for command line option --encoding=ENCODING
-#: ../moo/medit-app/main.c:143
+#: ../moo/medit-app/main.c:145
 msgid "Use provided character encoding"
 msgstr ""
 
 #. "ENCODING" part in --encoding=ENCODING
-#: ../moo/medit-app/main.c:144
+#: ../moo/medit-app/main.c:146
 msgid "ENCODING"
 msgstr ""
 
 #. help message for command line option --reload
-#: ../moo/medit-app/main.c:146
+#: ../moo/medit-app/main.c:148
 msgid "Automatically reload file if it was modified on disk"
 msgstr ""
 
 #. help message for command line option --geometry=WIDTHxHEIGHT[+X+Y]
-#: ../moo/medit-app/main.c:158
+#: ../moo/medit-app/main.c:160
 msgid "Default window size and position"
 msgstr ""
 
 #. "WIDTHxHEIGHT[+X+Y]" part in --geometry=WIDTHxHEIGHT[+X+Y]
-#: ../moo/medit-app/main.c:159
+#: ../moo/medit-app/main.c:161
 msgid "WIDTHxHEIGHT[+X+Y]"
 msgstr ""
 
 #. help message for command line option --version
-#: ../moo/medit-app/main.c:161
+#: ../moo/medit-app/main.c:163
 msgid "Show version information and exit"
 msgstr "Toon versie-informatie en stop"
 
 #. "FILES" part in "medit [OPTION...] [FILES]"
-#: ../moo/medit-app/main.c:169
+#: ../moo/medit-app/main.c:175
 msgid "FILES"
 msgstr "BESTANDEN"
 
 #. error message for wrong commmand line
-#: ../moo/medit-app/main.c:197
+#: ../moo/medit-app/main.c:203
 #, c-format
 msgid "%s and %s options may not be used simultaneously\n"
 msgstr "opties %s en %s niet samen gebruiken\n"
@@ -179,12 +179,26 @@ msgstr ""
 "Kris Van Bruwaene <a href=\"mailto:krvbr@yahoo.co.uk\">&lt;krvbr@yahoo.co."
 "uk&gt;</a>"
 
-#: ../moo/mooapp/mooapp.c:992
+#: ../moo/mooapp/mooapp.c:997
 msgid "Report a Bug..."
 msgstr ""
 
+#: ../moo/mooapp/mooapp.c:1357
+#, c-format
+msgid ""
+"The following URL will be opened:\n"
+"\n"
+"%s\n"
+"\n"
+"It contains medit version and your operating system name (%s)"
+msgstr ""
+
+#: ../moo/mooapp/mooapp.c:1364
+msgid "Open URL?"
+msgstr ""
+
 #. Prefs dialog title, like "medit Preferences"
-#: ../moo/mooapp/mooapp.c:1385
+#: ../moo/mooapp/mooapp.c:1408
 #, c-format
 msgid "%s Preferences"
 msgstr "%s Voorkeuren"
@@ -1051,31 +1065,31 @@ msgstr ""
 msgid "Mi_xed"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3047
+#: ../moo/mooedit/mooeditwindow.c:3059
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr "Regel: %s Kolom: %s"
 
-#: ../moo/mooedit/mooeditwindow.c:3048
+#: ../moo/mooedit/mooeditwindow.c:3060
 #, c-format
 msgid "Chars: %s"
 msgstr "Tekens: %s"
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3091
+#: ../moo/mooedit/mooeditwindow.c:3103
 msgid "OVR"
 msgstr "OVR"
 
-#: ../moo/mooedit/mooeditwindow.c:3091
+#: ../moo/mooedit/mooeditwindow.c:3103
 msgid "INS"
 msgstr "INV"
 
-#: ../moo/mooedit/mooeditwindow.c:3188
+#: ../moo/mooedit/mooeditwindow.c:3200
 msgid "_Language"
 msgstr "_Taal"
 
 #. Menu item in the Language menu
-#: ../moo/mooedit/mooeditwindow.c:3193
+#: ../moo/mooedit/mooeditwindow.c:3205
 msgid "Language|None"
 msgstr "Geen"
 
@@ -1194,11 +1208,11 @@ msgstr "Bestandskeuze"
 msgid "Go to parent folder"
 msgstr "Ga naar bovenliggende map"
 
-#: ../moo/moofileview/moofileview.c:1174 ../moo/moofileview/moofileview.c:3365
+#: ../moo/moofileview/moofileview.c:1174 ../moo/moofileview/moofileview.c:3366
 msgid "Delete..."
 msgstr "Wissen..."
 
-#: ../moo/moofileview/moofileview.c:1175 ../moo/moofileview/moofileview.c:3366
+#: ../moo/moofileview/moofileview.c:1175 ../moo/moofileview/moofileview.c:3367
 msgid "Delete selected files"
 msgstr "Wis gekozen bestanden"
 
@@ -1269,11 +1283,11 @@ msgstr "Kon map %s niet wissen"
 msgid "Could not delete file %s"
 msgstr "Kon bestand %s niet wissen"
 
-#: ../moo/moofileview/moofileview.c:3359
+#: ../moo/moofileview/moofileview.c:3360
 msgid "Move to Trash..."
 msgstr "Naar Vuilnisbak..."
 
-#: ../moo/moofileview/moofileview.c:3360
+#: ../moo/moofileview/moofileview.c:3361
 msgid "Move selected files to Trash"
 msgstr "Gekozen bestanden naar Vuilnisbak"
 
@@ -1292,10 +1306,6 @@ msgstr "Beeld"
 #: ../moo/moopython/plugins/medit/runpython.py:43
 msgid "Python Output"
 msgstr "Pythonuitvoer"
-
-#: ../moo/moopython/plugins/pycmd.py:91
-msgid "Python script"
-msgstr "Pythonscript"
 
 #: ../moo/moopython/plugins/python.py:48 ../moo/moopython/plugins/python.py:49
 msgid "Python Console"
@@ -1379,16 +1389,16 @@ msgstr ""
 msgid "Configure Shortcuts"
 msgstr "Sneltoetsen Instellen"
 
-#: ../moo/mooutils/moodialogs.c:348
+#: ../moo/mooutils/moodialogs.c:423
 #, c-format
 msgid "Save changes to document \"%s\" before closing?"
 msgstr "Veranderingen aan \"%s\" opslaan voor het sluiten?"
 
-#: ../moo/mooutils/moodialogs.c:349
+#: ../moo/mooutils/moodialogs.c:424
 msgid "Save changes to the document before closing?"
 msgstr "Veranderingen in het document opslaan voor het sluiten?"
 
-#: ../moo/mooutils/moodialogs.c:354
+#: ../moo/mooutils/moodialogs.c:429
 msgid "If you don't save, changes will be discarded"
 msgstr "Als u niet opslaat verliest u de veranderingen"
 
@@ -1605,7 +1615,7 @@ msgstr "Vietnamees"
 msgid "Thai"
 msgstr "Thai"
 
-#: ../moo/mooutils/moofiledialog.c:651
+#: ../moo/mooutils/moofiledialog.c:650
 msgid "Selected file is not a regular file"
 msgstr ""
 
@@ -2092,9 +2102,13 @@ msgstr "Selectie"
 msgid "Input|Whole document"
 msgstr "Volledig document"
 
-#: ../moo/plugins/usertools/moocommand-lua.cpp:208
+#: ../moo/plugins/usertools/moocommand-script.cpp:271
 msgid "Lua script"
 msgstr "Luascript"
+
+#: ../moo/plugins/usertools/moocommand-script.cpp:277
+msgid "Python script"
+msgstr "Pythonscript"
 
 #: ../moo/plugins/usertools/moousertools.c:397
 #: ../moo/plugins/usertools/moousertools-prefs.c:408
