@@ -710,6 +710,14 @@ moo_edit_get_selected_lines (MooEdit *doc)
     get_selected_lines_bounds (buf, &start, &end, NULL);
     text = gtk_text_buffer_get_slice (buf, &start, &end, TRUE);
     lines = moo_splitlines (text);
+
+    if (!lines)
+    {
+        lines = g_new (char*, 2);
+        lines[0] = g_strdup ("");
+        lines[1] = NULL;
+    }
+
     g_free (text);
     return lines;
 }
