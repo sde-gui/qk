@@ -17,7 +17,7 @@
 <child>
 <widget class="GtkVBox" id="vbox2">
 <property name="visible">True</property>
-<property name="spacing">6</property>
+<property name="spacing">3</property>
 <child>
 <widget class="GtkScrolledWindow" id="scrolledwindow1">
 <property name="visible">True</property>
@@ -40,7 +40,6 @@
 <child>
 <widget class="GtkHBox" id="hbox2">
 <property name="visible">True</property>
-<property name="spacing">6</property>
 <child>
 <widget class="GtkButton" id="new">
 <property name="visible">True</property>
