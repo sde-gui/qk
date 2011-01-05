@@ -29,6 +29,8 @@ aclocal.m4
 .goutputstream-*
 po*/dist
 po*/pot
+po/notexist
+po/missing
 config.h.in
 plat/win32/gtk-win/tarballs/
 plat/win32/gtk-win/debug/
@@ -37,6 +39,7 @@ plat/win32/gtk-win/bdist-debug/
 plat/win32/gtk-win/bdist-release/
 api/moo.xml
 api/gtk.xml
+moo/plugins/usertools/old/
 moo/moopython/pygtk/moo-generated.defs
 moo/moopython/plugins/old/
 moo/moolua/moo-lua-api.cpp

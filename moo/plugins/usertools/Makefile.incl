@@ -14,8 +14,8 @@ plugins_sources +=					\
 	plugins/usertools/moousertools-enums.c		\
 	plugins/usertools/moocommand-exe.c		\
 	plugins/usertools/moocommand-exe.h		\
-	plugins/usertools/moocommand-lua.cpp		\
-	plugins/usertools/moocommand-lua.h
+	plugins/usertools/moocommand-script.cpp		\
+	plugins/usertools/moocommand-script.h
 
 EXTRA_DIST +=						\
 	plugins/usertools/glade/mooedittools-exe.glade	\
@@ -36,13 +36,8 @@ plugins/usertools/lua-tool-setup.h: plugins/usertools/lua-tool-setup.lua $(top_s
 		&& mv plugins/usertools/lua-tool-setup.h.tmp plugins/usertools/lua-tool-setup.h
 
 EXTRA_DIST +=						\
-	plugins/usertools/moocommand-python.c		\
-	plugins/usertools/moocommand-python.h		\
 	plugins/usertools/python-tool-setup.py
 if MOO_ENABLE_PYTHON
-plugins_sources +=					\
-	plugins/usertools/moocommand-python.c		\
-	plugins/usertools/moocommand-python.h
 built_plugins_sources += plugins/usertools/python-tool-setup.h
 plugins/usertools/python-tool-setup.h: plugins/usertools/python-tool-setup.py $(top_srcdir)/tools/xml2h.py
 	$(AM_V_at)$(MKDIR_P) plugins/usertools

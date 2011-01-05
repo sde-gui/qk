@@ -19,8 +19,7 @@
 
 #define MOOEDIT_COMPILATION
 #include "moocommand-private.h"
-#include "moocommand-lua.h"
-#include "moocommand-python.h"
+#include "moocommand-script.h"
 #include "moocommand-exe.h"
 #include "moooutputfilterregex.h"
 #include "mooedit/mooeditwindow.h"
@@ -1384,10 +1383,7 @@ _moo_command_init (void)
 
     if (!been_here)
     {
-        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_LUA));
-#ifdef MOO_ENABLE_PYTHON
-        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_PYTHON));
-#endif
+        g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_SCRIPT));
         g_type_class_unref (g_type_class_ref (MOO_TYPE_COMMAND_EXE));
         _moo_command_filter_regex_load ();
         been_here = TRUE;

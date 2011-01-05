@@ -38,7 +38,6 @@ moo/moofileview/moofileview.c
 moo/moofileview/moofileview-tools.c
 moo/moofileview/moofileview.xml
 moo/moopython/plugins/medit/runpython.py
-moo/moopython/plugins/pycmd.py
 moo/moopython/plugins/python.py
 moo/moopython/plugins/terminal.py
 moo/mooutils/glade/mooaccelprefs.glade
@@ -67,9 +66,9 @@ moo/plugins/moofind.c
 moo/plugins/mooluaplugin.cpp
 moo/plugins/usertools/filters.xml
 moo/plugins/usertools/glade/mooedittools-exe.glade
-moo/plugins/usertools/glade/mooedittools-lua.glade
+moo/plugins/usertools/glade/mooedittools-script.glade
 moo/plugins/usertools/glade/moousertools.glade
 moo/plugins/usertools/moocommand-exe.c
-moo/plugins/usertools/moocommand-lua.cpp
+moo/plugins/usertools/moocommand-script.cpp
 moo/plugins/usertools/moousertools.c
 moo/plugins/usertools/moousertools-prefs.c
