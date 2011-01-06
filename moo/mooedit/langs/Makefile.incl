@@ -1,17 +1,22 @@
 langsdir = $(MOO_TEXT_LANG_FILES_DIR)
 
-langs_DATA =				\
+lang_files =				\
 	mooedit/langs/ada.lang		\
 	mooedit/langs/asp.lang		\
 	mooedit/langs/awk.lang		\
+	mooedit/langs/bennugd.lang	\
+	mooedit/langs/bibtex.lang	\
 	mooedit/langs/boo.lang		\
+	mooedit/langs/cg.lang		\
 	mooedit/langs/changelog.lang	\
 	mooedit/langs/chdr.lang		\
 	mooedit/langs/c.lang		\
 	mooedit/langs/cmake.lang	\
+	mooedit/langs/cobol.lang	\
 	mooedit/langs/cpp.lang		\
 	mooedit/langs/csharp.lang	\
 	mooedit/langs/css.lang		\
+	mooedit/langs/cuda.lang		\
 	mooedit/langs/def.lang		\
 	mooedit/langs/desktop.lang	\
 	mooedit/langs/diff.lang		\
@@ -23,9 +28,14 @@ langs_DATA =				\
 	mooedit/langs/dtd.lang		\
 	mooedit/langs/eiffel.lang	\
 	mooedit/langs/erlang.lang	\
+	mooedit/langs/fcl.lang		\
 	mooedit/langs/forth.lang	\
 	mooedit/langs/fortran.lang	\
+	mooedit/langs/fsharp.lang	\
 	mooedit/langs/gap.lang		\
+	mooedit/langs/gdb-log.lang	\
+	mooedit/langs/glsl.lang		\
+	mooedit/langs/go.lang		\
 	mooedit/langs/gtk-doc.lang	\
 	mooedit/langs/gtkrc.lang	\
 	mooedit/langs/haddock.lang	\
@@ -41,12 +51,16 @@ langs_DATA =				\
 	mooedit/langs/lua.lang		\
 	mooedit/langs/m4.lang		\
 	mooedit/langs/makefile.lang	\
+	mooedit/langs/mallard.lang	\
+	mooedit/langs/msil.lang		\
 	mooedit/langs/nemerle.lang	\
 	mooedit/langs/nsis.lang		\
 	mooedit/langs/objc.lang		\
 	mooedit/langs/ocaml.lang	\
 	mooedit/langs/ocl.lang		\
 	mooedit/langs/octave.lang	\
+	mooedit/langs/ooc.lang		\
+	mooedit/langs/opal.lang		\
 	mooedit/langs/pascal.lang	\
 	mooedit/langs/perl.lang		\
 	mooedit/langs/php.lang		\
@@ -59,8 +73,11 @@ langs_DATA =				\
 	mooedit/langs/rpmspec.lang	\
 	mooedit/langs/ruby.lang		\
 	mooedit/langs/scheme.lang	\
+	mooedit/langs/scilab.lang	\
 	mooedit/langs/sh.lang		\
+	mooedit/langs/sparql.lang	\
 	mooedit/langs/sql.lang		\
+	mooedit/langs/systemverilog.lang\
 	mooedit/langs/t2t.lang		\
 	mooedit/langs/tcl.lang		\
 	mooedit/langs/texinfo.lang	\
@@ -70,13 +87,19 @@ langs_DATA =				\
 	mooedit/langs/vhdl.lang		\
 	mooedit/langs/xml.lang		\
 	mooedit/langs/xslt.lang		\
-	mooedit/langs/yacc.lang		\
-	mooedit/langs/msil.lang		\
+	mooedit/langs/yacc.lang
+
+scheme_files =				\
 	mooedit/langs/kate.xml		\
 	mooedit/langs/classic.xml	\
 	mooedit/langs/cobalt.xml	\
 	mooedit/langs/oblivion.xml	\
 	mooedit/langs/tango.xml		\
+	mooedit/langs/medit.xml
+
+langs_DATA =				\
+	$(lang_files)			\
+	$(scheme_files)			\
 	mooedit/langs/language2.rng	\
 	mooedit/langs/check.sh
 

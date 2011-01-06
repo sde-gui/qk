@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
+ This file is part of GtkSourceView
+
  Authors: Marco Barisione, Emanuele Aina
  Copyright (C) 2005-2007 Marco Barisione <barisione@gmail.com>
  Copyright (C) 2005-2007 Emanuele Aina
 
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Library General Public
+ GtkSourceView is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
- version 2 of the License, or (at your option) any later version.
+ version 2.1 of the License, or (at your option) any later version.
 
- This library is distributed in the hope that it will be useful,
+ GtkSourceView is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Library General Public License for more details.
+ Lesser General Public License for more details.
 
- You should have received a copy of the GNU Library General Public
- License along with this library; if not, write to the
- Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
 <language id="c" _name="C" version="2.0" _section="Sources">
@@ -48,6 +49,8 @@
         <style id="octal"             _name="Octal number"        map-to="def:base-n-integer"/>
         <style id="hexadecimal"       _name="Hexadecimal number"  map-to="def:base-n-integer"/>
         <style id="boolean"           _name="Boolean value"       map-to="def:boolean"/>
+        <style id="standard-stream"   _name="Standard stream"     map-to="def:constant"/>
+        <style id="signal-name"       _name="Signal name"         map-to="def:constant"/>
     </styles>
 
     <definitions>
@@ -73,21 +76,22 @@
             )
         </define-regex>
 
-        <context id="c">
+        <context id="c" class="no-spell-check">
             <include>
 
                 <!-- gtk-doc -->
                 <context ref="gtk-doc:inline-docs-section"/>
 
                 <!-- Comments -->
-                <context id="comment" style-ref="comment" end-at-line-end="true">
+                <context id="comment" style-ref="comment" end-at-line-end="true" class="comment" class-disabled="no-spell-check">
                     <start>//</start>
+
                     <include>
                       <context ref="def:in-line-comment"/>
                     </include>
                 </context>
 
-                <context id="comment-multiline" style-ref="comment">
+                <context id="comment-multiline" style-ref="comment" class="comment" class-disabled="no-spell-check">
                     <start>/\*</start>
                     <end>\*/</end>
                     <include>
@@ -143,7 +147,7 @@
                     </include>
                 </context>
 
-                <context id="string" style-ref="string" end-at-line-end="true">
+                <context id="string" style-ref="string" end-at-line-end="true" class="string" class-disabled="no-spell-check">
                     <start>L?"</start>
                     <end>"</end>
                     <include>
@@ -195,7 +199,7 @@
                 </context>
 
                 <!-- Keywords -->
-                <context id="keywords" style-ref="keyword">
+                <context id="keywords" style-ref="keyword" class="keyword">
                     <keyword>asm</keyword>
                     <keyword>break</keyword>
                     <keyword>case</keyword>
@@ -217,7 +221,7 @@
                     <keyword>while</keyword>
                 </context>
 
-                <context id="types" style-ref="type">
+                <context id="types" style-ref="type" class="type">
                     <keyword>_Bool</keyword>
                     <keyword>_Complex</keyword>
                     <keyword>_Imaginary</keyword>
@@ -234,7 +238,7 @@
                     <keyword>void</keyword>
                 </context>
 
-                <context id="storage-class" style-ref="storage-class">
+                <context id="storage-class" style-ref="storage-class" class="storage-class">
                     <keyword>auto</keyword>
                     <keyword>const</keyword>
                     <keyword>extern</keyword>
@@ -245,7 +249,13 @@
                     <keyword>volatile</keyword>
                 </context>
 
-                <context id="common-defines" style-ref="common-defines">
+                <!-- C99 booleans -->
+                <context id="boolean" style-ref="boolean" class="boolean">
+                    <keyword>true</keyword>
+                    <keyword>false</keyword>
+                </context>
+
+                <context id="common-defines" style-ref="common-defines" class="common-defines">
                     <keyword>NULL</keyword>
                     <keyword>MAX</keyword>
                     <keyword>MIN</keyword>
@@ -259,10 +269,33 @@
                     <keyword>__STDC__</keyword>
                 </context>
 
-                <!-- C99 booleans -->
-                <context id="boolean" style-ref="boolean">
-                    <keyword>true</keyword>
-                    <keyword>false</keyword>
+                <context id="standard-streams" style-ref="standard-stream" class="standard-streams">
+                    <keyword>stdin</keyword>
+                    <keyword>stdout</keyword>
+                    <keyword>stderr</keyword>
+                </context>
+
+                <context id="signals" style-ref="signal-name" class="signals">
+                    <keyword>SIGABRT</keyword>
+                    <keyword>SIGALRM</keyword>
+                    <keyword>SIGCHLD</keyword>
+                    <keyword>SIGCONT</keyword>
+                    <keyword>SIGFPE</keyword>
+                    <keyword>SIGHUP</keyword>
+                    <keyword>SIGILL</keyword>
+                    <keyword>SIGINT</keyword>
+                    <keyword>SIGKILL</keyword>
+                    <keyword>SIGPIPE</keyword>
+                    <keyword>SIGQUIT</keyword>
+                    <keyword>SIGSEGV</keyword>
+                    <keyword>SIGSTOP</keyword>
+                    <keyword>SIGTERM</keyword>
+                    <keyword>SIGTRAP</keyword>
+                    <keyword>SIGTSTP</keyword>
+                    <keyword>SIGTTIN</keyword>
+                    <keyword>SIGTTOU</keyword>
+                    <keyword>SIGUSR1</keyword>
+                    <keyword>SIGUSR2</keyword>
                 </context>
 
             </include>

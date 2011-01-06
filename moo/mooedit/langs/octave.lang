@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
+ This file is part of GtkSourceView
+
  Authors: Søren Hauberg, Muthiah Annamalai
  Copyright (C) 2006 Søren Hauberg <soren@hauberg.org>
  Copyright (C) 2006 Muthiah Annamalai <gnumuthu@users.sf.net>
 
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Library General Public
+ GtkSourceView is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
- version 2 of the License, or (at your option) any later version.
+ version 2.1 of the License, or (at your option) any later version.
 
- This library is distributed in the hope that it will be useful,
+ GtkSourceView is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Library General Public License for more details.
+ Lesser General Public License for more details.
 
- You should have received a copy of the GNU Library General Public
- License along with this library; if not, write to the
- Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
 <language id="octave" _name="Octave" version="2.0" _section="Scientific">
@@ -46,7 +47,7 @@
       this is not yet supported by octave, but it's supported
       by matlab - http://www.mathworks.com/access/helpdesk/help/techdoc/matlab_prog/f0-41244.html#f0-45380
     -->
-    <context id="multiline-comment" style-ref="comment">
+    <context id="multiline-comment" style-ref="comment" class="comment" class-disabled="no-spell-check">
       <start>^\s*%{\s*$</start>
       <end>^\s*%}\s*$</end>
       <include>
@@ -54,14 +55,14 @@
       </include>
     </context>
 
-    <context id="line-comment" style-ref="comment" end-at-line-end="true">
+    <context id="line-comment" style-ref="comment" end-at-line-end="true" class="comment" class-disabled="no-spell-check">
       <start>#|%</start>
       <include>
         <context ref="def:in-comment"/>
       </include>
     </context>
 
-    <context id="double-quoted-string" style-ref="string" end-at-line-end="true">
+    <context id="double-quoted-string" style-ref="string" end-at-line-end="true" class="string" class-disabled="no-spell-check">
       <start>"</start>
       <end>"</end>
       <include>
@@ -70,7 +71,7 @@
       </include>
     </context>
 
-    <context id="single-quoted-string" style-ref="string" end-at-line-end="true">
+    <context id="single-quoted-string" style-ref="string" end-at-line-end="true" class="string" class-disabled="no-spell-check">
       <!--
        To do not misdetect the transpose operator ' as the start of a string
        we assert to not follow a variable name (letters, digits and underscores)
@@ -218,7 +219,7 @@
       <keyword>zeros</keyword>
     </context>
 
-    <context id="octave">
+    <context id="octave" class="no-spell-check">
       <include>
         <context ref="multiline-comment"/>
         <context ref="line-comment"/>

@@ -34,7 +34,7 @@
 #define ELEMENT_MIME_TYPES      "mime-types"
 #define ELEMENT_CONFIG          "config"
 #define PROP_LANG_ID            "id"
-#define SCHEME_DEFAULT          "kate"
+#define SCHEME_DEFAULT          "medit"
 
 
 typedef struct {

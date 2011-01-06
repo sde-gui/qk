@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
+ This file is part of GtkSourceView
+
  Authors: Marco Barisione, Emanuele Aina
  Copyright (C) 2005-2007 Marco Barisione <barisione@gmail.com>
  Copyright (C) 2005-2007 Emanuele Aina
 
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Library General Public
+ GtkSourceView is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
- version 2 of the License, or (at your option) any later version.
+ version 2.1 of the License, or (at your option) any later version.
 
- This library is distributed in the hope that it will be useful,
+ GtkSourceView is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Library General Public License for more details.
+ Lesser General Public License for more details.
 
- You should have received a copy of the GNU Library General Public
- License along with this library; if not, write to the
- Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
 <language id="def" _name="Defaults" hidden="true" version="2.0">
@@ -196,23 +197,23 @@
                 \%]                 # separator
         </define-regex>
 
-        <context id="in-comment">
+        <context id="in-comment" class-disabled="no-spell-check">
             <include>
-                <context id="net-address" extend-parent="false" style-ref="underlined">
+                <context id="net-address" extend-parent="false" style-ref="underlined" class="no-spell-check">
                     <match>\%{net-address}</match>
                 </context>
-                <context id="email-address" extend-parent="false" style-ref="underlined">
+                <context id="email-address" extend-parent="false" style-ref="underlined" class="no-spell-check">
                     <match>\%{email-address}</match>
                 </context>
-                <context id="comment-note" extend-parent="false" style-ref="note">
+                <context id="comment-note" extend-parent="false" style-ref="note" class="no-spell-check">
                     <match>\b(FIXME|TODO|XXX)\b</match>
                 </context>
             </include>
         </context>
 
         <!-- A line comment starting with # -->
-        <context id="shell-like-comment" style-ref="comment" end-at-line-end="true">
-          <start>(?&lt;!\S)#</start>
+        <context id="shell-like-comment" style-ref="comment" end-at-line-end="true" class-disabled="no-spell-check">
+          <start>#</start>
           <include>
             <context ref="in-comment"/>
           </include>
@@ -225,14 +226,14 @@
 
         <!-- this is intended to be used from line comments
              that can continue on a different line after "\" -->
-        <context id="in-line-comment">
+        <context id="in-line-comment" class-disabled="no-spell-check">
           <include>
             <context ref="line-continue" ignore-style="true"/>
             <context ref="in-comment"/>
           </include>
         </context>
 
-        <context id="shebang" style-ref="shebang" first-line-only="true">
+        <context id="shebang" style-ref="shebang" first-line-only="true" class="no-spell-check">
             <start>^#!</start>
             <end>$</end>
         </context>
@@ -242,7 +243,7 @@
         </context>
 
         <!-- usual quoted string, ends at line end, \ is an escape char -->
-        <context id="string" style-ref="string" end-at-line-end="true">
+        <context id="string" style-ref="string" end-at-line-end="true" class="string" class-disabled="no-spell-check">
             <start>"</start>
             <end>"</end>
             <include>
@@ -252,7 +253,7 @@
         </context>
 
         <!-- same thing but with single quote marks -->
-        <context id="single-quoted-string" style-ref="string" end-at-line-end="true">
+        <context id="single-quoted-string" style-ref="string" end-at-line-end="true" class="string" class-disabled="no-spell-check">
             <start>'</start>
             <end>'</end>
             <include>
