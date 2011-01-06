@@ -1,10 +1,11 @@
 # Danish translation of gtksourceview.
-# Copyright (C) 2003-08 Free Software Foundation, Inc.
+# Copyright (C) 2003-09 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gtksourceview package.
+#
 # Ole Laursen <olau@hardworking.dk>, 2003, 04, 05.
 # Martin Willemoes Hansen <mwh@sysrq.dk>, 2004.
-# Ask Hjorth Larsen <asklarsen@gmail.com>, 2007.
 # Kenneth Nielsen <k.nielsen81@gmail.com>, 2008.
+# Ask Hjorth Larsen <asklarsen@gmail.com>, 2007, 09, 10.
 #
 # Konventioner:
 #
@@ -12,8 +13,7 @@
 #
 # En anden mulighed er [...]konstant(er), men det er meget misvisende da konstanter er noget andet, og folk vil misforstå en sådan oversættelse. Andre forslag er meget velkomne
 #
-# Boolean -> boolsk (i modsætning til f.eks. boolesk).
-# Boolsk synes at være det mest benyttede udtryk på dansk, men det er måske subjektivt.
+# Boolean -> boolesk
 #
 # Husk at tilføje dig i credit-listen (besked id "translator-credits")
 #
@@ -21,17 +21,42 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-01 10:57-0500\n"
-"PO-Revision-Date: 2008-03-09 22:07+0100\n"
-"Last-Translator: Kenneth Nielsen <k.nielsen81@gmail.com>\n"
+"POT-Creation-Date: 2011-01-05 23:03-0800\n"
+"PO-Revision-Date: 2010-03-25 00:24+0100\n"
+"Last-Translator: Ask Hjorth Larsen <asklarsen@gmail.com>\n"
 "Language-Team: Danish <dansk@dansk-gruppen.dk>\n"
+"Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);"
 
+msgid "Background"
+msgstr "Baggrund"
+
+msgid "Background color"
+msgstr "Baggrundsfarve"
+
+msgid "Background set"
+msgstr "Baggrund indstillet"
+
+msgid "Blue based color scheme"
+msgstr "Blåligt farveskema"
+
+msgid "Bold"
+msgstr "Fed"
+
+msgid "Bold set"
+msgstr "Fed indstillet"
+
+msgid "Boolean value"
+msgstr "Boolesk værdi"
+
 msgid "C/C++/ObjC Header"
 msgstr "C/C++/ObjC-header"
+
+msgid "CG Shader Language"
+msgstr "CG-shadersprog"
 
 msgid ""
 "Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
@@ -52,17 +77,62 @@ msgstr "Farveskema som bruges i tekstredigeringsprogrammet Kate"
 msgid "Color scheme using Tango color palette"
 msgstr "Farveskema der bruger Tango-farvepaletten"
 
+msgid "Comment"
+msgstr "Kommentar"
+
 msgid "Dark color scheme using the Tango color palette"
 msgstr "Mørkt farveskema der bruger Tango-farvepaletten"
+
+msgid "Data Type"
+msgstr "Datatype"
+
+msgid "Decimal number"
+msgstr "Decimaltal"
 
 msgid "Defaults"
 msgstr "Standard"
 
+msgid "Dos Batch"
+msgstr "Dos-Batch"
+
+msgid "Error"
+msgstr "Fejl"
+
+msgid "Escaped Character"
+msgstr "Undvegent tegn"
+
+msgid "Floating point number"
+msgstr "Flydende tal"
+
+msgid "Foreground"
+msgstr "Forgrund"
+
+msgid "Foreground color"
+msgstr "Forgrundsfarve"
+
+msgid "Foreground set"
+msgstr "Forgrund indstillet"
+
+msgid "Hexadecimal number"
+msgstr "Hexadecimalt tal"
+
 msgid "Hidden"
 msgstr "Skjult"
 
-msgid "Javascript"
-msgstr "JavaScript"
+msgid "Highlighting a single line took too much time, syntax highlighting will be disabled"
+msgstr "Syntaksfremhævning af en enkelt linje tog for lang tid, syntaksfremhævning vil blive slået fra"
+
+msgid "Identifier"
+msgstr "Variabelnavn"
+
+msgid "Italic"
+msgstr "Kursiv"
+
+msgid "Italic set"
+msgstr "Kursiv indstillet"
+
+msgid "Keyword"
+msgstr "Nøgleord"
 
 msgid "Language id"
 msgstr "Sprog-id"
@@ -78,6 +148,15 @@ msgstr "Sprogafsnit"
 
 msgid "Language specification directories"
 msgstr "Sprogspecifikationsmapper"
+
+msgid "Line background"
+msgstr "Linjebaggrund"
+
+msgid "Line background color"
+msgstr "Baggrundsfarve for linjer"
+
+msgid "Line background set"
+msgstr "Linjebaggrund indstillet"
 
 msgid "List of directories and files where the style schemes are located"
 msgstr "Liste af mapper og filer hvori stilskemaerne er placeret"
@@ -100,8 +179,14 @@ msgstr "Opmærkning"
 msgid "Missing main language definition (id = \"%s\".)"
 msgstr "Mangler hovedsprogsdefinition (id = \"%s\".)"
 
+msgid "OpenGL Shading Language"
+msgstr "OpenGL Shading-sprog"
+
 msgid "Others"
 msgstr "Andre"
+
+msgid "Preprocessor"
+msgstr "Præprocessor"
 
 msgid "RPM spec"
 msgstr "RPM-spec"
@@ -118,6 +203,15 @@ msgstr "Skripter"
 msgid "Sources"
 msgstr "Kildekode"
 
+msgid "Strikethrough"
+msgstr "Gennemstreget"
+
+msgid "Strikethrough set"
+msgstr "Gennemstregning indstillet"
+
+msgid "String"
+msgstr "Streng"
+
 msgid "Style scheme description"
 msgstr "Stilskema-beskrivelse"
 
@@ -133,11 +227,38 @@ msgstr "Stilskema-navn"
 msgid "Style scheme search path"
 msgstr "Søgesti til stilskema"
 
+msgid "Underline"
+msgstr "Understreget"
+
+msgid "Underline set"
+msgstr "Understreg indstillet"
+
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "Ukendt id \"%s\" i det regulære udtryk \"%s\""
 
+msgid "Whether background color is set"
+msgstr "Om baggrundsfarven er indstillet"
+
+msgid "Whether bold attribute is set"
+msgstr "Om fed-attributten er indstillet"
+
+msgid "Whether foreground color is set"
+msgstr "Om forgrundsfarven er indstillet"
+
+msgid "Whether italic attribute is set"
+msgstr "Om kursiv-attributten er indstillet"
+
+msgid "Whether line background color is set"
+msgstr "Om linjebaggrundsfarven er indstillet"
+
+msgid "Whether strikethrough attribute is set"
+msgstr "Om gennemstregnings-attributten er indstillet"
+
 msgid "Whether the language should be hidden from the user"
 msgstr "Om sproget skal skjules fra brugeren"
+
+msgid "Whether underline attribute is set"
+msgstr "Om understregs-attributten er indstillet"
 
 msgid "context '%s' cannot contain a \\%%{...@start} command"
 msgstr "konteksten \"%s\" kan ikke indeholder en \\%%{...@start}-kommando"

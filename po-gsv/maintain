@@ -1,1 +1,2 @@
-exec ../po/maintain
+#! /bin/sh
+exec ../po/maintain "$@"

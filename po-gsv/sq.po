@@ -7,10 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-01 10:57-0500\n"
+"POT-Creation-Date: 2011-01-05 23:03-0800\n"
 "PO-Revision-Date: 2006-03-09 19:22+0100\n"
 "Last-Translator: Laurent Dhima <laurenti@alblinux.net>\n"
 "Language-Team: Albanian <gnome-albanian-perkthyesit@lists.sourceforge.net>\n"
+"Language: sq\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit"
@@ -18,8 +19,17 @@ msgstr ""
 msgid "ChangeLog"
 msgstr "Ndryshimet"
 
+msgid "Comment"
+msgstr "Komenti"
+
+msgid "Data Type"
+msgstr "Lloji i të dhënave"
+
 msgid "Diff"
 msgstr "Dif"
+
+msgid "Keyword"
+msgstr "Fjalë kyç"
 
 msgid "Language specification directories"
 msgstr "Directory e specifikave të gjuhës"
@@ -30,8 +40,14 @@ msgstr "Lista e directories ku ndodhen files e specifikave të gjuhës (.lang)"
 msgid "Markup"
 msgstr "Markues"
 
+msgid "Operator"
+msgstr "Operatori"
+
 msgid "Others"
 msgstr "Të tjerë"
+
+msgid "Preprocessor"
+msgstr "Pre-procesues"
 
 msgid "Ruby"
 msgstr "Rubin"
@@ -44,6 +60,9 @@ msgstr "Scripte"
 
 msgid "Sources"
 msgstr "Burimet"
+
+msgid "String"
+msgstr "Stringë"
 
 msgid "Texinfo"
 msgstr "Infotekst"

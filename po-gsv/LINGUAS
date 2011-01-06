@@ -1,6 +1,8 @@
 # please keep this list sorted alphabetically
 #
 ar
+as
+ast
 az
 be
 bg
@@ -8,6 +10,7 @@ bn
 bn_IN
 bs
 ca
+ca@valencia
 cs
 cy
 da
@@ -16,6 +19,7 @@ dz
 el
 en_CA
 en_GB
+en@shaw
 es
 et
 eu
@@ -32,9 +36,11 @@ hu
 id
 it
 ja
+kn
 ko
 lt
 lv
+mai
 mg
 mk
 ml
@@ -44,6 +50,7 @@ ms
 nb
 ne
 nl
+nn
 oc
 or
 pa
@@ -58,11 +65,13 @@ sk
 sl
 sq
 sr
-sr@Latn
+sr@latin
 sv
 ta
+te
 th
 tr
+ug 
 uk
 vi
 xh

@@ -25,7 +25,7 @@ msgid "Background color"
 msgstr "Color de fons"
 
 msgid "Background set"
-msgstr "S'ha establert el fons"
+msgstr "S'ha establit el fons"
 
 msgid "Blue based color scheme"
 msgstr "Esquema de color blau"
@@ -34,7 +34,7 @@ msgid "Bold"
 msgstr "Negreta"
 
 msgid "Bold set"
-msgstr "S'ha establert la negreta"
+msgstr "S'ha establit la negreta"
 
 msgid "Boolean value"
 msgstr "Valor booleà"
@@ -104,7 +104,7 @@ msgid "Foreground color"
 msgstr "Color del primer pla"
 
 msgid "Foreground set"
-msgstr "S'ha establert el primer pla"
+msgstr "S'ha establit el primer pla"
 
 msgid "Graphviz Dot"
 msgstr "Dot del Graphviz"
@@ -125,7 +125,7 @@ msgid "Italic"
 msgstr "Cursiva"
 
 msgid "Italic set"
-msgstr "S'ha establert la cursiva"
+msgstr "S'ha establit la cursiva"
 
 msgid "Keyword"
 msgstr "Paraula clau"
@@ -152,7 +152,7 @@ msgid "Line background color"
 msgstr "Color de fons de la línia"
 
 msgid "Line background set"
-msgstr "S'ha establert el fons de la línia"
+msgstr "S'ha establit el fons de la línia"
 
 msgid "List of directories and files where the style schemes are located"
 msgstr "Llista de directoris i fitxers on hi ha els esquemes d'estil"
@@ -203,7 +203,7 @@ msgid "Strikethrough"
 msgstr "Barrat"
 
 msgid "Strikethrough set"
-msgstr "S'ha establert el barrat"
+msgstr "S'ha establit el barrat"
 
 msgid "String"
 msgstr "Cadena"
@@ -227,37 +227,37 @@ msgid "Underline"
 msgstr "Subratllat"
 
 msgid "Underline set"
-msgstr "S'ha establert el subratllat"
+msgstr "S'ha establit el subratllat"
 
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "Identificador «%s» desconegut en l'expressió regular «%s»"
 
 msgid "Whether background color is set"
-msgstr "Si s'ha establert el color de fons"
+msgstr "Si s'ha establit el color de fons"
 
 msgid "Whether bold attribute is set"
-msgstr "Si s'ha establert l'atribut de negreta"
+msgstr "Si s'ha establit l'atribut de negreta"
 
 msgid "Whether foreground color is set"
-msgstr "Si s'ha establert el color del primer pla"
+msgstr "Si s'ha establit el color del primer pla"
 
 msgid "Whether italic attribute is set"
-msgstr "Si s'ha establert l'atribut de cursiva"
+msgstr "Si s'ha establit l'atribut de cursiva"
 
 msgid "Whether line background color is set"
-msgstr "Si s'ha establert el color de fons de la línia"
+msgstr "Si s'ha establit el color de fons de la línia"
 
 msgid "Whether strikethrough attribute is set"
-msgstr "Si s'ha establert l'atribut de barrat"
+msgstr "Si s'ha establit l'atribut de barrat"
 
 msgid "Whether the language should be hidden from the user"
 msgstr "Si s'hauria d'ocultar el llenguatge a l'usuari"
 
 msgid "Whether underline attribute is set"
-msgstr "Si s'ha establert l'atribut de subratllat"
+msgstr "Si s'ha establit l'atribut de subratllat"
 
 msgid "context '%s' cannot contain a \\%%{...@start} command"
-msgstr "en el context «%s» no hi pot haver l'ordre \\%%{...@start}"
+msgstr "en el context «%s» no hi pot haver l'orde \\%%{...@start}"
 
 msgid "duplicated context id '%s'"
 msgstr "identificador de context duplicat «%s»"

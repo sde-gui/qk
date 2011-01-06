@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /bin/sh
 
 rm -fr fake_input po-stripped
 mkdir fake_input po-stripped
@@ -18,8 +18,8 @@ done
 
 ./pot
 
-sed -r 's/^#[:,.].*//' moo-gsv.pot | sed '$!N; /^\(.*\)\n\1$/!P; D' > moo-gsv.pot.tmp
-mv moo-gsv.pot.tmp moo-gsv.pot
+sed -r 's/^#[:,.].*//' medit-1-gsv.pot | sed '$!N; /^\(.*\)\n\1$/!P; D' > medit-1-gsv.pot.tmp
+mv medit-1-gsv.pot.tmp medit-1-gsv.pot
 
 for lang in `sed 's/#.*//' LINGUAS`; do
   cp $lang.po $lang.po.bak

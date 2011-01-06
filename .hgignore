@@ -46,3 +46,5 @@ moo/moolua/moo-lua-api.cpp
 moo/moolua/gtk-lua-api.cpp
 doc/help/
 doc/built/
+po-gsv/po-original/
+po-gsv/po-stripped/

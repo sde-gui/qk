@@ -12,4 +12,14 @@ moo/moofileview/
 moo/moopython/
 moo/mooutils/
 moo/eggsmclient/
-moo/mooedit/
+moo/mooedit/medit.xml
+moo/mooedit/mooedit-fileops.c
+moo/mooedit/mooeditaction-factory.c
+moo/mooedit/mooeditdialogs.c
+moo/mooedit/mooeditor.c
+moo/mooedit/mooeditprefs.c
+moo/mooedit/mooeditprefspage.c
+moo/mooedit/mooeditwindow.c
+moo/mooedit/mooplugin-loader.c
+moo/mooedit/mooplugin.c
+moo/mooedit/mootextfind.c

@@ -1,18 +1,43 @@
 # Norwegian messages for gtksourceview.
 # Copyright (C) 2003 Free Software Foundation, Inc.
-# Kjartan Maraas <kmaraas@gnome.org, 2003-2008.
+# Kjartan Maraas <kmaraas@gnome.org, 2003-2010.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gtksourceview 1.2.x\n"
+"Project-Id-Version: gtksourceview 2.5.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-01 10:57-0500\n"
-"PO-Revision-Date: 2008-02-18 11:12+0100\n"
+"POT-Creation-Date: 2011-01-05 23:03-0800\n"
+"PO-Revision-Date: 2010-01-13 22:13+0100\n"
 "Last-Translator: Kjartan Maraas <kmaraas@gnome.org>\n"
 "Language-Team: Norwegian Bokmål <i18n-nb@lister.ping.uio.no>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit"
+
+msgid "Background"
+msgstr "Bakgrunn"
+
+msgid "Background color"
+msgstr "Bakgrunnsfarge"
+
+msgid "Background set"
+msgstr "Bakgrunn satt"
+
+msgid "Blue based color scheme"
+msgstr "Fargeschema basert på blå"
+
+msgid "Bold"
+msgstr "Fet"
+
+msgid "Bold set"
+msgstr "Fet satt"
+
+msgid "Boolean value"
+msgstr "Bolsk verdi"
+
+msgid "C/C++/ObjC Header"
+msgstr "C/C++/ObjC-header"
 
 msgid ""
 "Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
@@ -36,14 +61,59 @@ msgstr "Fargeschema som brukes i tekstredigeringsprogrammet Kate"
 msgid "Color scheme using Tango color palette"
 msgstr "Fargeschema som bruker Tango-fargepaletten"
 
+msgid "Comment"
+msgstr "Kommentar"
+
 msgid "Dark color scheme using the Tango color palette"
 msgstr "Mørkt fargeschema som bruker Tango-fargepaletten"
+
+msgid "Data Type"
+msgstr "Datatype"
+
+msgid "Decimal number"
+msgstr "Desimaltall"
 
 msgid "Defaults"
 msgstr "Forvalg"
 
+msgid "Dos Batch"
+msgstr "Dos stegvis fil"
+
+msgid "Error"
+msgstr "Feil"
+
+msgid "Escaped Character"
+msgstr "Escaped-tegn"
+
+msgid "Floating point number"
+msgstr "Flyttall"
+
+msgid "Foreground"
+msgstr "Forgrunn"
+
+msgid "Foreground color"
+msgstr "Forgrunnsfarge"
+
+msgid "Foreground set"
+msgstr "Forgrunn satt"
+
+msgid "Hexadecimal number"
+msgstr "Heksadesimalt tall"
+
 msgid "Hidden"
 msgstr "Skjult"
+
+msgid "Identifier"
+msgstr "Identifikator"
+
+msgid "Italic"
+msgstr "Kursiv"
+
+msgid "Italic set"
+msgstr "Kursiv satt"
+
+msgid "Keyword"
+msgstr "Nøkkelord"
 
 msgid "LaTeX"
 msgstr "LaTex"
@@ -62,6 +132,15 @@ msgstr "Språkseksjon"
 
 msgid "Language specification directories"
 msgstr "Kataloger for språkspesifikasjoner"
+
+msgid "Line background"
+msgstr "Bakgrunn for linje"
+
+msgid "Line background color"
+msgstr "Bakgrunnsfarge for linje"
+
+msgid "Line background set"
+msgstr "Bakgrunn for linje satt"
 
 msgid "List of directories and files where the style schemes are located"
 msgstr "Liste med kataloger og filer der schema for stiler finnes"
@@ -84,6 +163,9 @@ msgstr "Mangler hovedspråkdefinisjon (id = «%s».)"
 msgid "Others"
 msgstr "Andre"
 
+msgid "Preprocessor"
+msgstr "Preprosessor"
+
 msgid "RPM spec"
 msgstr "RPM-spec"
 
@@ -99,17 +181,56 @@ msgstr "Skript"
 msgid "Sources"
 msgstr "Kildekode"
 
+msgid "Strikethrough"
+msgstr "Gjennomstreket"
+
+msgid "Strikethrough set"
+msgstr "Gjennomstreket satt"
+
+msgid "String"
+msgstr "Streng"
+
 msgid "Style scheme description"
 msgstr "Beskrivelse av stilschema"
 
 msgid "Style scheme search path"
 msgstr "Søkesti for stilschema"
 
+msgid "Text2Tags"
+msgstr "Tekst-til-tagger"
+
+msgid "Underline"
+msgstr "Understreket"
+
+msgid "Underline set"
+msgstr "Understreket satt"
+
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "Ukjent ID «%s» i vanlig uttrykk «%s»"
 
+msgid "Whether background color is set"
+msgstr "Om bakgrunnsfargen er satt"
+
+msgid "Whether bold attribute is set"
+msgstr "Om attributten fet er satt"
+
+msgid "Whether foreground color is set"
+msgstr "Om forgrunnsfargen er satt"
+
+msgid "Whether italic attribute is set"
+msgstr "Om attributten kursiv er satt"
+
+msgid "Whether line background color is set"
+msgstr "Om bakgrunnsfarge for linje er satt"
+
+msgid "Whether strikethrough attribute is set"
+msgstr "Om attributten gjennomstreket er satt"
+
 msgid "Whether the language should be hidden from the user"
 msgstr "Im språke skal skjules fra brukeren"
+
+msgid "Whether underline attribute is set"
+msgstr "Om attributten understreket er satt"
 
 msgid "gettext translation"
 msgstr "gettext-oversettelse"

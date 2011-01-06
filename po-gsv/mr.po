@@ -1,17 +1,20 @@
-# translation of gtksourceview.HEAD.mr.po to marathi
+# translation of mr.po to Marathi
 # This file is distributed under the same license as the PACKAGE package.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER.
 #
 # Rahul Bhalerao <b.rahul.pm@gmail.com>, 2006.
 # sandeep shedmake <sandeep.shedmake@gmail.com>, 2008.
+# Sandeep Shedmake <sandeep.shedmake@gmail.com>, 2008, 2009.
+# Sandeep Shedmake <sshedmak@redhat.com>, 2009.
 msgid ""
 msgstr ""
-"Project-Id-Version: gtksourceview.HEAD.mr\n"
+"Project-Id-Version: mr\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-01 10:57-0500\n"
-"PO-Revision-Date: 2008-02-18 10:32+0530\n"
-"Last-Translator: sandeep shedmake <sandeep.shedmake@gmail.com>\n"
-"Language-Team: marathi\n"
+"POT-Creation-Date: 2011-01-05 23:03-0800\n"
+"PO-Revision-Date: 2009-09-09 17:55+0530\n"
+"Last-Translator: Sandeep Shedmake <sshedmak@redhat.com>\n"
+"Language-Team: Marathi <fedora-trans-mr@redhat.com>\n"
+"Language: mr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,8 +22,26 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 ""
 
-msgid "Ada"
-msgstr "अडा"
+msgid "Background"
+msgstr "पार्श्वभूमी"
+
+msgid "Background color"
+msgstr "पार्श्वरंग"
+
+msgid "Background set"
+msgstr "पार्श्वभूमी समायोजन"
+
+msgid "Blue based color scheme"
+msgstr "निळा रंग आधारीत योजना"
+
+msgid "Bold"
+msgstr "ठळक"
+
+msgid "Bold set"
+msgstr "ठकळ संच"
+
+msgid "Boolean value"
+msgstr "बूलिअन मूल्य"
 
 msgid "C/C++/ObjC Header"
 msgstr "C/C++/ObjC शिर्षक"
@@ -44,8 +65,17 @@ msgstr "Kate पाठ्य संपादक मध्ये वापरण�
 msgid "Color scheme using Tango color palette"
 msgstr "Tango रंग पेलेटचा वापर करणारी रंग योजना"
 
+msgid "Comment"
+msgstr "टीप"
+
 msgid "Dark color scheme using the Tango color palette"
 msgstr "Tango रंग पेलेटचा वापर केलेली गडद रंग योजना"
+
+msgid "Data Type"
+msgstr "माहिती प्रकार"
+
+msgid "Decimal number"
+msgstr "दशमान संख्या"
 
 msgid "Defaults"
 msgstr "मुलभूत"
@@ -53,23 +83,50 @@ msgstr "मुलभूत"
 msgid "Docbook"
 msgstr "दस्तऐवज पुस्तिका"
 
+msgid "Error"
+msgstr "त्रुटी"
+
+msgid "Escaped Character"
+msgstr "टाळायचे अक्षर"
+
+msgid "Floating point number"
+msgstr "फ्लोटींग बिंदू संख्या"
+
+msgid "Foreground"
+msgstr "पृष्ठभूमी"
+
+msgid "Foreground color"
+msgstr "पृष्ठभागावरील रंग"
+
+msgid "Foreground set"
+msgstr "पृष्ठभागाचे समायोजन"
+
 msgid "Forth"
 msgstr "पुढचे"
 
 msgid "Haskell"
 msgstr "हास्केल"
 
+msgid "Hexadecimal number"
+msgstr "हेक्झाडेसीमल संख्या"
+
 msgid "Hidden"
 msgstr "लपविलेले"
 
-msgid "Java"
-msgstr "जावा"
+msgid "Highlighting a single line took too much time, syntax highlighting will be disabled"
+msgstr "एक ओळ ठळक करण्यास बराच वेळा लागला, रचना ठळक करणे अकार्यान्वीत केले जाईल"
 
-msgid "Javascript"
-msgstr "JavaScript"
+msgid "Identifier"
+msgstr "ओळखकर्ता"
 
-msgid "LaTeX"
-msgstr "लेटक्स"
+msgid "Italic"
+msgstr "तिरपे"
+
+msgid "Italic set"
+msgstr "तिरपे संच"
+
+msgid "Keyword"
+msgstr "कळशब्द"
 
 msgid "Language id"
 msgstr "भाषा id"
@@ -85,6 +142,15 @@ msgstr "भाषा विभाग"
 
 msgid "Language specification directories"
 msgstr "भाषा"
+
+msgid "Line background"
+msgstr "ओळ पार्श्वभूमी"
+
+msgid "Line background color"
+msgstr "ओळीचे पार्श्वभूमी रंग"
+
+msgid "Line background set"
+msgstr "ओळीचे पृष्ठभूमी संच"
 
 msgid "List of directories and files where the style schemes are located"
 msgstr "शैली सुत्रयोजना जेथे स्थित आहे त्या संचयीका व फाइलची यादी"
@@ -107,6 +173,9 @@ msgstr "लुआ"
 msgid "Makefile"
 msgstr "मेकफाइल"
 
+msgid "Mallard"
+msgstr "मल्लार्ड"
+
 msgid "Markup"
 msgstr "मार्कअप"
 
@@ -125,6 +194,9 @@ msgstr "उदिष्ठ-C"
 msgid "Octave"
 msgstr "अष्टक"
 
+msgid "Operator"
+msgstr "ऑपरेटर"
+
 msgid "Others"
 msgstr "इतर"
 
@@ -133,6 +205,9 @@ msgstr "पास्कल"
 
 msgid "Perl"
 msgstr "पर्ल"
+
+msgid "Preprocessor"
+msgstr "पुर्वप्रोसेसर"
 
 msgid "RPM spec"
 msgstr "RPM स्पेक"
@@ -155,6 +230,15 @@ msgstr "स्क्रिप्ट्स"
 msgid "Sources"
 msgstr "स्त्रोत"
 
+msgid "Strikethrough"
+msgstr "नकोअसणारे लेखन नष्ट करा"
+
+msgid "Strikethrough set"
+msgstr "लेखन खोडण्याची क्रिया"
+
+msgid "String"
+msgstr "पंक्ती"
+
 msgid "Style scheme description"
 msgstr "शैली सुत्रयोजना वर्णन"
 
@@ -170,11 +254,38 @@ msgstr "शैली सुत्रयोजना नाव"
 msgid "Style scheme search path"
 msgstr "शैली सुत्रयोजना शोध मार्ग"
 
+msgid "Underline"
+msgstr "अधोरेखन"
+
+msgid "Underline set"
+msgstr "अधोरेखन"
+
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "regex '%s' मधिल अपरिचीत '%s'"
 
+msgid "Whether background color is set"
+msgstr "पार्श्वभूमी रंग संच आहे का"
+
+msgid "Whether bold attribute is set"
+msgstr "ठळक गुणधर्म संच आहे का"
+
+msgid "Whether foreground color is set"
+msgstr "पृष्ठभूमी रंग संच आहे का"
+
+msgid "Whether italic attribute is set"
+msgstr "तिरपे गुणधर्म संच आहे का"
+
+msgid "Whether line background color is set"
+msgstr "ओळ पार्श्वभूमी रंग संच आहे का"
+
+msgid "Whether strikethrough attribute is set"
+msgstr "खोडा गुणधर्म संच आहे का"
+
 msgid "Whether the language should be hidden from the user"
 msgstr "वापरकर्त्यापासून भाषा लपविले पाहिजे का"
+
+msgid "Whether underline attribute is set"
+msgstr "अधोरेखीत गुणधर्म संच आहे का"
 
 msgid "context '%s' cannot contain a \\%%{...@start} command"
 msgstr "संदर्भ '%s' मध्ये \\%%{...@start} आदेश समाविष्ट असू शकत नाही"

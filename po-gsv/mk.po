@@ -1,4 +1,4 @@
-# translation of mk.po to Macedonian
+# translation of gtksourceview.HEAD.po to Macedonian
 # translation of gtksourceview.HEAD.po to
 # translation of gtksourceview.HEAD.po to
 # This file is distributed under the same license as the PACKAGE package.
@@ -14,16 +14,35 @@
 # Arangel Angov <ufo@linux.net.mk>, 2008.
 msgid ""
 msgstr ""
-"Project-Id-Version: mk\n"
+"Project-Id-Version: gtksourceview.HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-01 10:57-0500\n"
-"PO-Revision-Date: 2008-02-23 18:49+0100\n"
+"POT-Creation-Date: 2011-01-05 23:03-0800\n"
+"PO-Revision-Date: 2008-08-10 20:34+0200\n"
 "Last-Translator: Arangel Angov <ufo@linux.net.mk>\n"
 "Language-Team: Macedonian <ossm-members@hedona.on.net.mk>\n"
+"Language: mk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4"
+
+msgid "Background"
+msgstr "Позадина"
+
+msgid "Background color"
+msgstr "Боја на позадина"
+
+msgid "Background set"
+msgstr "Поставување на позадина"
+
+msgid "Bold"
+msgstr "Задебелено"
+
+msgid "Bold set"
+msgstr "Постави задебелено"
+
+msgid "Boolean value"
+msgstr "Логичка вредност"
 
 msgid "C/C++/ObjC Header"
 msgstr "C/C++/ObjC хедер"
@@ -50,8 +69,17 @@ msgstr "Боја на шема која се употребува во уред�
 msgid "Color scheme using Tango color palette"
 msgstr "Шема на бои која се користи од палетата на бои на Tango"
 
+msgid "Comment"
+msgstr "Коментар"
+
 msgid "Dark color scheme using the Tango color palette"
 msgstr "Темна шема на бои која се користи од палетата на бои на Tango"
+
+msgid "Data Type"
+msgstr "Тип на податок"
+
+msgid "Decimal number"
+msgstr "Децимален број"
 
 msgid "Defaults"
 msgstr "Стандардно"
@@ -59,11 +87,47 @@ msgstr "Стандардно"
 msgid "Diff"
 msgstr "Разлики"
 
+msgid "Error"
+msgstr "Грешка"
+
+msgid "Escaped Character"
+msgstr "Краен контролен знак"
+
+msgid "Floating point number"
+msgstr "Децимален број"
+
+msgid "Foreground"
+msgstr "Текст"
+
+msgid "Foreground color"
+msgstr "Боја на текст"
+
+msgid "Foreground set"
+msgstr "Поставување на текст"
+
 msgid "Forth"
 msgstr "Напред"
 
+msgid "Hexadecimal number"
+msgstr "Хексадецимален број"
+
 msgid "Hidden"
 msgstr "Скриен"
+
+msgid "Highlighting a single line took too much time, syntax highlighting will be disabled"
+msgstr "Осветлувањето на една линија одзема премногу време, осветлувањето на синтакса ќе биде исклучено."
+
+msgid "Identifier"
+msgstr "Ознаки"
+
+msgid "Italic"
+msgstr "Закосено"
+
+msgid "Italic set"
+msgstr "Постави закосено"
+
+msgid "Keyword"
+msgstr "Клучен збор"
 
 msgid "Language id"
 msgstr "Ид. на јазик"
@@ -79,6 +143,15 @@ msgstr "Оддел на јазик"
 
 msgid "Language specification directories"
 msgstr "Директориуми со специфицикации на јазици"
+
+msgid "Line background"
+msgstr "Линиска позадина"
+
+msgid "Line background color"
+msgstr "Боја на линиска позадина"
+
+msgid "Line background set"
+msgstr "Сет на линиски позадини"
 
 msgid "List of directories and files where the style schemes are located"
 msgstr "Листа од директориуми каде се лоцирани шемите за стилови"
@@ -107,8 +180,14 @@ msgstr "Објективен Caml"
 msgid "Octave"
 msgstr "Октава"
 
+msgid "Operator"
+msgstr "Оператор"
+
 msgid "Others"
 msgstr "Други"
+
+msgid "Preprocessor"
+msgstr "Предпроцесор"
 
 msgid "RPM spec"
 msgstr "RPM спецификации"
@@ -128,6 +207,15 @@ msgstr "Скрипти"
 msgid "Sources"
 msgstr "Извори"
 
+msgid "Strikethrough"
+msgstr "Прецртано"
+
+msgid "Strikethrough set"
+msgstr "Постави прецртано"
+
+msgid "String"
+msgstr "Стринг"
+
 msgid "Style scheme description"
 msgstr "Опис на шема на стил"
 
@@ -143,11 +231,38 @@ msgstr "Име на шема на стил"
 msgid "Style scheme search path"
 msgstr "Патека за пребарување на стил на шема"
 
+msgid "Underline"
+msgstr "Подвлечено"
+
+msgid "Underline set"
+msgstr "Постави подвлечено"
+
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "Непознат ид „%s“ во regex „%s“"
 
+msgid "Whether background color is set"
+msgstr "Дали е поставена бојата на позадината"
+
+msgid "Whether bold attribute is set"
+msgstr "Дали атриботот за задебеленост е поставен"
+
+msgid "Whether foreground color is set"
+msgstr "Дали е поставена бојата на текстот"
+
+msgid "Whether italic attribute is set"
+msgstr "Дали атрибутот за закосено е поставен"
+
+msgid "Whether line background color is set"
+msgstr "Дали е поставена бојата на линиската позадината"
+
+msgid "Whether strikethrough attribute is set"
+msgstr "Дали атрибутот за прецртано е поставен"
+
 msgid "Whether the language should be hidden from the user"
 msgstr "Дали јазикот треба да е скриен од корисникот"
+
+msgid "Whether underline attribute is set"
+msgstr "Дали атрибутот за подвлечено е поставен"
 
 msgid "context '%s' cannot contain a \\%%{...@start} command"
 msgstr "содржината „%s“ не може да содржи \\%%{...@start} команда"

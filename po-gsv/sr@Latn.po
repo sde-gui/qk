@@ -10,46 +10,483 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-01 10:57-0500\n"
+"POT-Creation-Date: 2011-01-05 23:00-0800\n"
 "PO-Revision-Date: 2006-01-31 01:59+0100\n"
 "Last-Translator: Slobodan D. Sredojević <slobo@akrep.be>\n"
 "Language-Team: Serbian (sr) <gnom@prevod.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit"
+"Content-Transfer-Encoding: 8bit\n"
 
-msgid "ChangeLog"
-msgstr "Dnevnik promena"
+msgid "using \\C is not supported in language definitions"
+msgstr ""
 
-msgid "Diff"
-msgstr "Razlike (Diff)"
+msgid ""
+"Cannot create a regex for all the transitions, the syntax highlighting "
+"process will be slower than usual.\n"
+"The error was: %s"
+msgstr ""
 
-msgid "Haskell"
-msgstr "Haskel"
+msgid ""
+"Highlighting a single line took too much time, syntax highlighting will be "
+"disabled"
+msgstr ""
 
-msgid "LaTeX"
-msgstr "LaTeH"
+msgid "context '%s' cannot contain a \\%%{...@start} command"
+msgstr ""
 
-msgid "Language specification directories"
-msgstr "Direktorijumi sa definicijama jezika"
+msgid "duplicated context id '%s'"
+msgstr ""
 
-msgid "List of directories where the language specification files (.lang) are located"
-msgstr "Spisak direktorijuma u kojima se nalaze datoteke sa definicijama jezika (.lang)"
+msgid ""
+"style override used with wildcard context reference in language '%s' in ref "
+"'%s'"
+msgstr ""
 
-msgid "Markup"
-msgstr "Označavanje"
+msgid "invalid context reference '%s'"
+msgstr ""
 
-msgid "Octave"
-msgstr "Oktava"
+msgid "unknown context '%s'"
+msgstr ""
+
+msgid "Missing main language definition (id = \"%s\".)"
+msgstr ""
+
+msgid "Unknown id '%s' in regex '%s'"
+msgstr ""
+
+msgid "in regex '%s': backreferences are not supported"
+msgstr ""
 
 msgid "Others"
 msgstr "Ostalo"
 
+msgid "Language id"
+msgstr ""
+
+msgid "Language name"
+msgstr ""
+
+#, fuzzy
+msgid "Language section"
+msgstr "Direktorijumi sa definicijama jezika"
+
+msgid "Hidden"
+msgstr ""
+
+msgid "Whether the language should be hidden from the user"
+msgstr ""
+
+msgid "Language specification directories"
+msgstr "Direktorijumi sa definicijama jezika"
+
+msgid ""
+"List of directories where the language specification files (.lang) are "
+"located"
+msgstr ""
+"Spisak direktorijuma u kojima se nalaze datoteke sa definicijama jezika (."
+"lang)"
+
+msgid "Language ids"
+msgstr ""
+
+msgid "List of the ids of the available languages"
+msgstr ""
+
+msgid "Line background"
+msgstr ""
+
+msgid "Line background color"
+msgstr ""
+
+msgid "Background"
+msgstr ""
+
+msgid "Background color"
+msgstr ""
+
+msgid "Foreground"
+msgstr ""
+
+msgid "Foreground color"
+msgstr ""
+
+msgid "Bold"
+msgstr ""
+
+msgid "Italic"
+msgstr ""
+
+msgid "Underline"
+msgstr ""
+
+msgid "Strikethrough"
+msgstr ""
+
+msgid "Line background set"
+msgstr ""
+
+msgid "Whether line background color is set"
+msgstr ""
+
+msgid "Foreground set"
+msgstr ""
+
+msgid "Whether foreground color is set"
+msgstr ""
+
+msgid "Background set"
+msgstr ""
+
+msgid "Whether background color is set"
+msgstr ""
+
+msgid "Bold set"
+msgstr ""
+
+msgid "Whether bold attribute is set"
+msgstr ""
+
+msgid "Italic set"
+msgstr ""
+
+msgid "Whether italic attribute is set"
+msgstr ""
+
+msgid "Underline set"
+msgstr ""
+
+msgid "Whether underline attribute is set"
+msgstr ""
+
+msgid "Strikethrough set"
+msgstr ""
+
+msgid "Whether strikethrough attribute is set"
+msgstr ""
+
+#, fuzzy
+msgid "Style scheme id"
+msgstr "lang)"
+
+#, fuzzy
+msgid "Style scheme name"
+msgstr "lang)"
+
+#, fuzzy
+msgid "Style scheme description"
+msgstr "lang)"
+
+#, fuzzy
+msgid "Style scheme filename"
+msgstr "lang)"
+
+msgid "Style scheme search path"
+msgstr "lang)"
+
+#, fuzzy
+msgid "List of directories and files where the style schemes are located"
+msgstr ""
+"Spisak direktorijuma u kojima se nalaze datoteke sa definicijama jezika (."
+"lang)"
+
+#, fuzzy
+msgid "Scheme ids"
+msgstr "Shema"
+
+msgid "List of the ids of the available style schemes"
+msgstr ""
+
+msgid "Ada"
+msgstr ""
+
+msgid "Sources"
+msgstr "Izvori"
+
+msgid "ASP"
+msgstr ""
+
+msgid "Scripts"
+msgstr "Skripte"
+
+msgid "awk"
+msgstr ""
+
+msgid "BennuGD"
+msgstr ""
+
+msgid "Boolean value"
+msgstr ""
+
+msgid "Comment"
+msgstr ""
+
+msgid "Data Type"
+msgstr ""
+
+msgid "Decimal number"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Escaped Character"
+msgstr ""
+
+msgid "Floating point number"
+msgstr ""
+
+msgid "Hexadecimal number"
+msgstr ""
+
+msgid "Identifier"
+msgstr ""
+
+msgid "Keyword"
+msgstr ""
+
+msgid "Operator"
+msgstr ""
+
+msgid "Preprocessor"
+msgstr ""
+
+msgid "String"
+msgstr ""
+
+msgid "BibTeX"
+msgstr ""
+
+msgid "Markup"
+msgstr "Označavanje"
+
+msgid "Boo"
+msgstr ""
+
+msgid "CG Shader Language"
+msgstr ""
+
+msgid "ChangeLog"
+msgstr "Dnevnik promena"
+
+msgid "C/C++/ObjC Header"
+msgstr ""
+
+msgid "C"
+msgstr ""
+
+msgid "Classic"
+msgstr ""
+
+msgid "Classic color scheme"
+msgstr ""
+
+msgid "CMake"
+msgstr ""
+
+msgid "Blue based color scheme"
+msgstr ""
+
+msgid "Cobalt"
+msgstr ""
+
+msgid "Cobol"
+msgstr ""
+
+msgid "C++"
+msgstr ""
+
+msgid "C#"
+msgstr ""
+
+msgid "CSS"
+msgstr ""
+
+msgid "CUDA"
+msgstr ""
+
+msgid "Defaults"
+msgstr ""
+
+msgid ".desktop"
+msgstr ""
+
+msgid "Diff"
+msgstr "Razlike (Diff)"
+
+msgid "D"
+msgstr ""
+
+msgid "Docbook"
+msgstr ""
+
+msgid "Dos Batch"
+msgstr ""
+
+msgid "Graphviz Dot"
+msgstr ""
+
+msgid "DPatch"
+msgstr ""
+
+msgid "DTD"
+msgstr ""
+
+msgid "Eiffel"
+msgstr ""
+
+msgid "Erlang"
+msgstr ""
+
+msgid "FCL"
+msgstr ""
+
+msgid "Scientific"
+msgstr ""
+
+msgid "Forth"
+msgstr ""
+
+msgid "Fortran 95"
+msgstr ""
+
+msgid "F#"
+msgstr ""
+
+msgid "GAP"
+msgstr ""
+
+msgid "GDB Log"
+msgstr ""
+
+msgid "OpenGL Shading Language"
+msgstr ""
+
+msgid "Go"
+msgstr ""
+
+msgid "gtk-doc"
+msgstr ""
+
+msgid "GtkRC"
+msgstr ""
+
+msgid "Haddock"
+msgstr ""
+
+msgid "Haskell"
+msgstr "Haskel"
+
+#, fuzzy
+msgid "Literate Haskell"
+msgstr "Haskel"
+
+msgid "HTML"
+msgstr ""
+
+msgid "IDL"
+msgstr ""
+
+msgid ".ini"
+msgstr ""
+
+msgid "Java"
+msgstr ""
+
+#, fuzzy
+msgid "JavaScript"
+msgstr "Skripte"
+
+msgid "Color scheme used in the Kate text editor"
+msgstr ""
+
+msgid "Kate"
+msgstr ""
+
+msgid "LaTeX"
+msgstr "LaTeH"
+
+msgid "libtool"
+msgstr ""
+
+msgid "Lua"
+msgstr ""
+
+msgid "m4"
+msgstr ""
+
+msgid "Makefile"
+msgstr ""
+
+msgid "Mallard"
+msgstr ""
+
+msgid "Default color scheme"
+msgstr ""
+
+msgid "Medit"
+msgstr ""
+
+msgid "MSIL"
+msgstr ""
+
+msgid "Nemerle"
+msgstr ""
+
+msgid "NSIS"
+msgstr ""
+
+msgid "Objective-C"
+msgstr ""
+
+msgid "Dark color scheme using the Tango color palette"
+msgstr ""
+
+msgid "Oblivion"
+msgstr ""
+
+msgid "Objective Caml"
+msgstr ""
+
+msgid "OCL"
+msgstr ""
+
+msgid "Octave"
+msgstr "Oktava"
+
+msgid "OOC"
+msgstr ""
+
+msgid "Opal"
+msgstr ""
+
 msgid "Pascal"
 msgstr "Paskal"
 
+msgid "Perl"
+msgstr ""
+
+msgid "PHP"
+msgstr ""
+
+msgid "pkg-config"
+msgstr ""
+
+msgid "gettext translation"
+msgstr "gettekst prevod"
+
+msgid "Prolog"
+msgstr ""
+
 msgid "Python"
 msgstr "Piton"
+
+msgid "R"
+msgstr ""
+
+msgid "RPM spec"
+msgstr ""
 
 msgid "Ruby"
 msgstr "Rubi"
@@ -57,18 +494,53 @@ msgstr "Rubi"
 msgid "Scheme"
 msgstr "Shema"
 
-msgid "Scripts"
-msgstr "Skripte"
+msgid "Scilab"
+msgstr ""
 
-msgid "Sources"
-msgstr "Izvori"
+msgid "sh"
+msgstr ""
 
-msgid "Style scheme search path"
-msgstr "lang)"
+msgid "SPARQL"
+msgstr ""
+
+msgid "SQL"
+msgstr ""
+
+msgid "SystemVerilog"
+msgstr ""
+
+msgid "Text2Tags"
+msgstr ""
+
+msgid "Color scheme using Tango color palette"
+msgstr ""
+
+msgid "Tango"
+msgstr ""
+
+msgid "Tcl"
+msgstr ""
 
 msgid "Texinfo"
 msgstr "Tehinfo"
 
-msgid "gettext translation"
-msgstr "gettekst prevod"
+msgid "Vala"
+msgstr ""
 
+msgid "VB.NET"
+msgstr ""
+
+msgid "Verilog"
+msgstr ""
+
+msgid "VHDL"
+msgstr ""
+
+msgid "XML"
+msgstr ""
+
+msgid "XSLT"
+msgstr ""
+
+msgid "Yacc"
+msgstr ""

@@ -1,5 +1,5 @@
 # French translation of gtksourceview.
-# Copyright (C) 2003-2007 Free Software Foundation, Inc.
+# Copyright (C) 2003-2010 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gtksourceview package.
 #
 # Cédric Delfosse <cdelfosse@free.fr>, 2003.
@@ -8,23 +8,49 @@
 # Benoît Dejean <tazforever@dlfp.org>, 2005.
 # Jonathan Ernst <jonathan@ernstfamily.ch>, 2006-2007.
 # Robert-André Mauchin <zebob.m@pengzone.org>, 2006-2008.
-# Claude Paroz <claude@2xlibre.net>, 2007-2008.
+# Claude Paroz <claude@2xlibre.net>, 2007-2010.
 # Stéphane Raimbault <stephane.raimbault@gmail.com>, 2007.
+# Laurent Coudeur <laurentc@iol.ie>, 2009
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gtksourceview 1.7.2\n"
+"Project-Id-Version: gtksourceview HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-01 10:57-0500\n"
-"PO-Revision-Date: 2008-02-21 14:32+0100\n"
+"POT-Creation-Date: 2011-01-05 23:03-0800\n"
+"PO-Revision-Date: 2010-02-28 22:29+0100\n"
 "Last-Translator: Claude Paroz <claude@2xlibre.net>\n"
 "Language-Team: GNOME French Team <gnomefr@traduc.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit"
 
+msgid "Background"
+msgstr "Arrière-plan"
+
+msgid "Background color"
+msgstr "Couleur d'arrière-plan"
+
+msgid "Background set"
+msgstr "Arrière-plan défini"
+
+msgid "Blue based color scheme"
+msgstr "Jeu de couleurs basé sur le bleu"
+
+msgid "Bold"
+msgstr "Gras"
+
+msgid "Bold set"
+msgstr "Gras défini"
+
+msgid "Boolean value"
+msgstr "Valeur booléenne"
+
 msgid "C/C++/ObjC Header"
 msgstr "En-tête C/C++/ObjC"
+
+msgid "CG Shader Language"
+msgstr "Langage de shading CG"
 
 msgid ""
 "Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
@@ -45,8 +71,17 @@ msgstr "Jeu de couleurs utilisé dans l'éditeur de texte Kate"
 msgid "Color scheme using Tango color palette"
 msgstr "Jeu de couleurs utilisant la palette Tango"
 
+msgid "Comment"
+msgstr "Commentaire"
+
 msgid "Dark color scheme using the Tango color palette"
 msgstr "Jeu de couleurs sombre utilisant la palette Tango"
+
+msgid "Data Type"
+msgstr "Type de donnée"
+
+msgid "Decimal number"
+msgstr "Nombre décimal"
 
 msgid "Defaults"
 msgstr "Valeurs par défaut"
@@ -54,11 +89,47 @@ msgstr "Valeurs par défaut"
 msgid "Docbook"
 msgstr "DocBook"
 
+msgid "Dos Batch"
+msgstr "Commandes DOS"
+
+msgid "Error"
+msgstr "Erreur"
+
+msgid "Escaped Character"
+msgstr "Caractère d'échappement"
+
+msgid "Floating point number"
+msgstr "Nombre à virgule flottante"
+
+msgid "Foreground"
+msgstr "Premier plan"
+
+msgid "Foreground color"
+msgstr "Couleur de premier plan"
+
+msgid "Foreground set"
+msgstr "Premier plan défini"
+
+msgid "Hexadecimal number"
+msgstr "Nombre hexadécimal"
+
 msgid "Hidden"
 msgstr "Masqué"
 
-msgid "Javascript"
-msgstr "JavaScript"
+msgid "Highlighting a single line took too much time, syntax highlighting will be disabled"
+msgstr "La mise en surbrillance d'une seule ligne a pris trop de temps, la coloration syntaxique sera désactivée"
+
+msgid "Identifier"
+msgstr "Identifiant"
+
+msgid "Italic"
+msgstr "Italique"
+
+msgid "Italic set"
+msgstr "Italique défini"
+
+msgid "Keyword"
+msgstr "Mot-clé"
 
 msgid "Language id"
 msgstr "Id de langage"
@@ -74,6 +145,15 @@ msgstr "Section de langage"
 
 msgid "Language specification directories"
 msgstr "Répertoires contenant les caractéristiques des langages"
+
+msgid "Line background"
+msgstr "Arrière-plan de ligne"
+
+msgid "Line background color"
+msgstr "Couleur d'arrière-plan de ligne"
+
+msgid "Line background set"
+msgstr "Arrière-plan de ligne défini"
 
 msgid "List of directories and files where the style schemes are located"
 msgstr "Liste de répertoires et de fichiers contenant les jeux de style"
@@ -91,10 +171,19 @@ msgid "Markup"
 msgstr "Balisage"
 
 msgid "Missing main language definition (id = \"%s\".)"
-msgstr "La définition principale du langage est manquante (id = \"%s\".)"
+msgstr "La définition principale du langage est manquante (id = « %s ».)"
+
+msgid "OpenGL Shading Language"
+msgstr "Langage de shading OpenGl"
+
+msgid "Operator"
+msgstr "Opérateur"
 
 msgid "Others"
 msgstr "Autres"
+
+msgid "Preprocessor"
+msgstr "Préprocesseur"
 
 msgid "RPM spec"
 msgstr "Spécification RPM"
@@ -104,6 +193,15 @@ msgstr "Id de jeux"
 
 msgid "Scientific"
 msgstr "Scientifique"
+
+msgid "Strikethrough"
+msgstr "Barré"
+
+msgid "Strikethrough set"
+msgstr "Barré défini"
+
+msgid "String"
+msgstr "Chaîne"
 
 msgid "Style scheme description"
 msgstr "Description de jeu de style"
@@ -120,11 +218,38 @@ msgstr "Nom de jeu de style"
 msgid "Style scheme search path"
 msgstr "Chemin de recherche du jeu de style"
 
+msgid "Underline"
+msgstr "Souligné"
+
+msgid "Underline set"
+msgstr "Souligné défini"
+
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "Id « %s » inconnu dans l'expr. régulière « %s »"
 
+msgid "Whether background color is set"
+msgstr "Indique si la couleur d'arrière-plan est définie"
+
+msgid "Whether bold attribute is set"
+msgstr "Indique si l'attribut gras est défini"
+
+msgid "Whether foreground color is set"
+msgstr "Indique si la couleur de premier plan est définie"
+
+msgid "Whether italic attribute is set"
+msgstr "Indique si l'attribut italique est défini"
+
+msgid "Whether line background color is set"
+msgstr "Indique si la couleur d'arrière-plan de ligne est définie"
+
+msgid "Whether strikethrough attribute is set"
+msgstr "Indique si l'attribut barré est défini"
+
 msgid "Whether the language should be hidden from the user"
 msgstr "Indique si le langage doit être masqué pour les utilisateurs"
+
+msgid "Whether underline attribute is set"
+msgstr "Indique si l'attribut souligné est défini"
 
 msgid "context '%s' cannot contain a \\%%{...@start} command"
 msgstr "le contexte « %s » ne peut contenir une commande \\%%{...@start}"

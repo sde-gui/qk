@@ -2,28 +2,54 @@
 # Estonian translation of gtksourceview.
 #
 # Copyright (C) 2003, 2005, 2006 Free Software Foundation, Inc.
-# Copyright (C) 2007, 2008 The GNOME Project.
+# Copyright (C) 2007–2010 The GNOME Project.
 # This file is distributed under the same license as the gtksourceview package.
 #
-# Tõivo Leedjärv <toivo@linux.ee>, 2003.
-# Priit Laes <amd@store20.com>, 2005.
-# Ivar Smolin <okul@linux.ee>, 2005-2008.
+# Tõivo Leedjärv <toivo linux ee>, 2003.
+# Priit Laes <amd store20 com>, 2005.
+# Ivar Smolin <okul linux ee>, 2005–2010.
+# Rene Pärts <rene87 hot ee>, 2010.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gtksourceview HEAD\n"
+"Project-Id-Version: gtksourceview MASTER\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-01 10:57-0500\n"
-"PO-Revision-Date: 2008-03-27 06:51+0200\n"
+"POT-Creation-Date: 2011-01-05 23:03-0800\n"
+"PO-Revision-Date: 2010-04-30 07:25+0300\n"
 "Last-Translator: Ivar Smolin <okul@linux.ee>\n"
 "Language-Team: Estonian <gnome-et@linux.ee>\n"
+"Language: et\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);"
 
+msgid "Background"
+msgstr "Taust"
+
+msgid "Background color"
+msgstr "Taustavärvus"
+
+msgid "Background set"
+msgstr "Tausta värvus seatud"
+
+msgid "Blue based color scheme"
+msgstr "Sinisel põhinev värviskeem"
+
+msgid "Bold"
+msgstr "Rasvane"
+
+msgid "Bold set"
+msgstr "Rasvane laad seatud"
+
+msgid "Boolean value"
+msgstr "Tõeväärtus"
+
 msgid "C/C++/ObjC Header"
 msgstr "C/C++/ObjC päis"
+
+msgid "CG Shader Language"
+msgstr "CG renderdamiskeel"
 
 msgid ""
 "Cannot create a regex for all the transitions, the syntax highlighting process will be slower than usual.\n"
@@ -47,17 +73,59 @@ msgstr "Kate'i tekstiredaktori poolt kasutatav värviskeem"
 msgid "Color scheme using Tango color palette"
 msgstr "Tango värvipaletti kasutav värviskeem"
 
+msgid "Comment"
+msgstr "Kommentaar"
+
 msgid "Dark color scheme using the Tango color palette"
 msgstr "Tango värvipaletti kasutav tume värviskeem"
+
+msgid "Data Type"
+msgstr "Andmetüüp"
+
+msgid "Decimal number"
+msgstr "Kümnendarv"
 
 msgid "Defaults"
 msgstr "Vaikeväärtused"
 
+msgid "Dos Batch"
+msgstr "Dos-i käsufail"
+
+msgid "Error"
+msgstr "Viga"
+
+msgid "Floating point number"
+msgstr "Ujukomaarv"
+
+msgid "Foreground"
+msgstr "Esiplaan"
+
+msgid "Foreground color"
+msgstr "Esiplaani värvus"
+
+msgid "Foreground set"
+msgstr "Teksti värvus seatud"
+
+msgid "Hexadecimal number"
+msgstr "Kuueteistkümnendarv"
+
 msgid "Hidden"
 msgstr "Peidetud"
 
-msgid "Javascript"
-msgstr "Javaskript"
+msgid "Highlighting a single line took too much time, syntax highlighting will be disabled"
+msgstr "Ühe rea esiletõstmine võttis liiga kaua aega, seetõttu keelati süntaksi esiletõstmine"
+
+msgid "Identifier"
+msgstr "Identifikaator"
+
+msgid "Italic"
+msgstr "Kursiiv"
+
+msgid "Italic set"
+msgstr "Kursiivne laad seatud"
+
+msgid "Keyword"
+msgstr "Võtmesõna"
 
 msgid "LaTeX"
 msgstr "LaTex"
@@ -71,8 +139,20 @@ msgstr "Keele ID-d"
 msgid "Language name"
 msgstr "Keele nimi"
 
+msgid "Language section"
+msgstr "Keele sektsioon"
+
 msgid "Language specification directories"
 msgstr "Keelekirjelduste kataloogid"
+
+msgid "Line background"
+msgstr "Rea taust"
+
+msgid "Line background color"
+msgstr "Rea taustavärvus"
+
+msgid "Line background set"
+msgstr "Rea tausta värvus seatud"
 
 msgid "List of directories and files where the style schemes are located"
 msgstr "Laadiskeemi sisaldavate kataloogide ja failide nimekiri"
@@ -86,14 +166,26 @@ msgstr "Saadaolevate keelte ID-de nimekiri"
 msgid "List of the ids of the available style schemes"
 msgstr "Saadaolevate laadiskeemide ID-de nimekiri"
 
+msgid "Markup"
+msgstr "Märgistus"
+
 msgid "Missing main language definition (id = \"%s\".)"
 msgstr "Puudub peamise keele definitsioon (id = \"%s\".)"
 
 msgid "Oblivion"
 msgstr "Unustus"
 
+msgid "Operator"
+msgstr "Operaator"
+
 msgid "Others"
 msgstr "Muud"
+
+msgid "Preprocessor"
+msgstr "Eelprotsessor"
+
+msgid "RPM spec"
+msgstr "RPM-spetsifikatsioon"
 
 msgid "Scheme ids"
 msgstr "Skeemi ID-d"
@@ -106,6 +198,12 @@ msgstr "Skriptid"
 
 msgid "Sources"
 msgstr "Lähtekoodid"
+
+msgid "Strikethrough"
+msgstr "Läbijoonitud"
+
+msgid "Strikethrough set"
+msgstr "Läbijoonimise laad seatud"
 
 msgid "Style scheme description"
 msgstr "Laadi skeemi kirjeldus"
@@ -122,11 +220,38 @@ msgstr "Laadi skeemi nimi"
 msgid "Style scheme search path"
 msgstr "Laadiskeemi otsingurada"
 
+msgid "Underline"
+msgstr "Allajoonitud"
+
+msgid "Underline set"
+msgstr "Allajoonimise laad seatud"
+
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "Tundmatu id '%s' regulaaravaldises '%s'"
 
+msgid "Whether background color is set"
+msgstr "Kas tausta värvus on seatud või mitte"
+
+msgid "Whether bold attribute is set"
+msgstr "Kas rasvane laad on seatud või mitte"
+
+msgid "Whether foreground color is set"
+msgstr "Kas rea teksti värvus on seatud või mitte"
+
+msgid "Whether italic attribute is set"
+msgstr "Kas kursiivne laad on seatud või mitte"
+
+msgid "Whether line background color is set"
+msgstr "Kas rea tausta värvus on seatud või mitte"
+
+msgid "Whether strikethrough attribute is set"
+msgstr "Kas läbijoonimise laad on seatud või mitte"
+
 msgid "Whether the language should be hidden from the user"
 msgstr "Kas keel peab kasutaja eest olema peidetud või mitte"
+
+msgid "Whether underline attribute is set"
+msgstr "Kas allajoonimise laad on seatud või mitte"
 
 msgid "context '%s' cannot contain a \\%%{...@start} command"
 msgstr "kontekst '%s' ei tohi sisaldada käsku \\%%{...@start}"

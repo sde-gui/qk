@@ -1,19 +1,41 @@
 # Swedish messages for gtksourceview.
-# Copyright (C) 2003-2008 Free Software Foundation, Inc.
-# Daniel Nylander <po@danielnylander.se>, 2006, 2007, 2008.
+# Copyright (C) 2003-2010 Free Software Foundation, Inc.
 # Christian Rose <menthos@menthos.com>, 2003, 2004, 2005.
+# Daniel Nylander <po@danielnylander.se>, 2006, 2007, 2008, 2009, 2010.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-01 10:57-0500\n"
-"PO-Revision-Date: 2008-02-10 10:31+0100\n"
+"POT-Creation-Date: 2011-01-05 23:03-0800\n"
+"PO-Revision-Date: 2010-12-31 03:22+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
+"Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit"
+
+msgid "Background"
+msgstr "Bakgrund"
+
+msgid "Background color"
+msgstr "Bakgrundsfärg"
+
+msgid "Background set"
+msgstr "Bakgrund inställd"
+
+msgid "Blue based color scheme"
+msgstr "Blåbaserat färgschema"
+
+msgid "Bold"
+msgstr "Fet"
+
+msgid "Bold set"
+msgstr "Fet text inställd"
+
+msgid "Boolean value"
+msgstr "Booleskt värde"
 
 msgid "C/C++/ObjC Header"
 msgstr "C/C++/ObjC-huvud"
@@ -40,14 +62,68 @@ msgstr "Färgschema använt i textredigeraren Kate"
 msgid "Color scheme using Tango color palette"
 msgstr "Färgschema som använder Tango-färgpalett"
 
+msgid "Comment"
+msgstr "Kommentar"
+
 msgid "Dark color scheme using the Tango color palette"
 msgstr "Mörkt färgschema som använder Tango-färgpaletten"
+
+msgid "Data Type"
+msgstr "Datatyp"
+
+msgid "Decimal number"
+msgstr "Decimaltal"
 
 msgid "Defaults"
 msgstr "Standardvärden"
 
+msgid "Dos Batch"
+msgstr "Dos-batch"
+
+msgid "Error"
+msgstr "Fel"
+
+msgid "Escaped Character"
+msgstr "Tecken efter Escape-tecken"
+
+msgid "Floating point number"
+msgstr "Flyttal"
+
+msgid "Foreground"
+msgstr "Förgrund"
+
+msgid "Foreground color"
+msgstr "Förgrundsfärg"
+
+msgid "Foreground set"
+msgstr "Förgrund inställd"
+
+msgid "GDB Log"
+msgstr "GDB-logg"
+
+msgid "Go"
+msgstr "Gå"
+
+msgid "Hexadecimal number"
+msgstr "Hexadecimaltal"
+
 msgid "Hidden"
 msgstr "Dold"
+
+msgid "Highlighting a single line took too much time, syntax highlighting will be disabled"
+msgstr "Färgmarkering av en enda rad tog för lång tid, syntaxmarkering kommer att inaktiveras"
+
+msgid "Identifier"
+msgstr "Identifierare"
+
+msgid "Italic"
+msgstr "Kursiv"
+
+msgid "Italic set"
+msgstr "Kursiv text inställd"
+
+msgid "Keyword"
+msgstr "Nyckelord"
 
 msgid "Language id"
 msgstr "Språk-id"
@@ -63,6 +139,15 @@ msgstr "Språksektion"
 
 msgid "Language specification directories"
 msgstr "Kataloger för språkspecifikationer"
+
+msgid "Line background"
+msgstr "Radbakgrund"
+
+msgid "Line background color"
+msgstr "Radbakgrundsfärg"
+
+msgid "Line background set"
+msgstr "Radbakgrund inställd"
 
 msgid "List of directories and files where the style schemes are located"
 msgstr "Lista över kataloger och filer där stilscheman finns"
@@ -103,6 +188,15 @@ msgstr "Skript"
 msgid "Sources"
 msgstr "Källkoder"
 
+msgid "Strikethrough"
+msgstr "Genomstruken"
+
+msgid "Strikethrough set"
+msgstr "Genomstruken inställd"
+
+msgid "String"
+msgstr "Sträng"
+
 msgid "Style scheme description"
 msgstr "Stilschemabeskrivning"
 
@@ -118,11 +212,38 @@ msgstr "Stilschemanamn"
 msgid "Style scheme search path"
 msgstr "Sökväg för stilscheman"
 
+msgid "Underline"
+msgstr "Understruken"
+
+msgid "Underline set"
+msgstr "Understruken inställd"
+
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "Okänt id \"%s\" i regex \"%s\""
 
+msgid "Whether background color is set"
+msgstr "Huruvida bakgrundsfärg är inställd"
+
+msgid "Whether bold attribute is set"
+msgstr "Huruvida attribut för fet text är inställt"
+
+msgid "Whether foreground color is set"
+msgstr "Huruvida förgrundsfärg är inställd"
+
+msgid "Whether italic attribute is set"
+msgstr "Huruvida kursivt textattribut är inställt"
+
+msgid "Whether line background color is set"
+msgstr "Huruvida radbakgrundsfärg är inställd"
+
+msgid "Whether strikethrough attribute is set"
+msgstr "Huruvida genomstruket attribut är inställt"
+
 msgid "Whether the language should be hidden from the user"
 msgstr "Huruvida språket ska döljas för användaren"
+
+msgid "Whether underline attribute is set"
+msgstr "Huruvida understrukningsattribut är inställt"
 
 msgid "context '%s' cannot contain a \\%%{...@start} command"
 msgstr "kontexten \"%s\" får inte innehålla kommandot \\%%{...@start}"

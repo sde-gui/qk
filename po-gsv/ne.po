@@ -12,15 +12,34 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gtksourceview.gnome-2-20.ne\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-01 10:57-0500\n"
+"POT-Creation-Date: 2011-01-05 23:03-0800\n"
 "PO-Revision-Date: 2007-12-10 12:20+0545\n"
 "Last-Translator: Nabin Gautam <nabin@mpp.org.np>\n"
 "Language-Team: Nepali <info@mpp.org.np>\n"
+"Language: ne\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
 "Plural-Forms: nplurals=2; plural=n !=1"
+
+msgid "Background"
+msgstr "पृष्ठभूमि"
+
+msgid "Background color"
+msgstr "पृष्ठभूमि रङ"
+
+msgid "Background set"
+msgstr "पृष्ठभूमि सेट"
+
+msgid "Bold"
+msgstr "बाक्लो"
+
+msgid "Bold set"
+msgstr "बाक्लो सेट"
+
+msgid "Boolean value"
+msgstr "बूलियन मान"
 
 msgid "C/C++/ObjC Header"
 msgstr "C/C++/ObjC हेडर"
@@ -47,8 +66,17 @@ msgstr "केट पाठ सम्पादकमा प्रयोग ग�
 msgid "Color scheme using Tango color palette"
 msgstr "टाङ्गो रङ रङदानी प्रयोग गर्ने रङ योजना"
 
+msgid "Comment"
+msgstr "टिप्पणी"
+
 msgid "Dark color scheme using the Tango color palette"
 msgstr "टाङ्गो रङ रङदानी प्रयोग गर्ने गाढा रङ योजना"
+
+msgid "Data Type"
+msgstr "डेटा प्रकार"
+
+msgid "Decimal number"
+msgstr "दशमलव सङ्ख्या"
 
 msgid "Defaults"
 msgstr "पूर्वनिर्धारित"
@@ -62,6 +90,24 @@ msgstr "कागजात पुस्तिका"
 msgid "Erlang"
 msgstr "इरल्याङ"
 
+msgid "Error"
+msgstr "त्रुटि"
+
+msgid "Escaped Character"
+msgstr "हटाइएको क्यारेक्टर"
+
+msgid "Floating point number"
+msgstr "उत्प्लवान बिन्दु नम्बर"
+
+msgid "Foreground"
+msgstr "अग्रभूमि"
+
+msgid "Foreground color"
+msgstr "अग्रभूमि रङ"
+
+msgid "Foreground set"
+msgstr "अग्रभूमि सेट"
+
 msgid "Fortran 95"
 msgstr "फर्ट्रान ९५"
 
@@ -74,17 +120,29 @@ msgstr "ह्याडडक"
 msgid "Haskell"
 msgstr "हासकेल"
 
+msgid "Hexadecimal number"
+msgstr "हेक्साडेसिमल नम्बर"
+
 msgid "Hidden"
 msgstr "लुकेको"
+
+msgid "Identifier"
+msgstr "पहिचायक"
+
+msgid "Italic"
+msgstr "छड्के"
+
+msgid "Italic set"
+msgstr "छड्के सेट"
 
 msgid "Java"
 msgstr "जाभा"
 
-msgid "Javascript"
-msgstr "जाभास्क्रिप्ट"
-
 msgid "Kate"
 msgstr "केट"
+
+msgid "Keyword"
+msgstr "शब्दकुञ्जी"
 
 msgid "Language id"
 msgstr "भाषा आईडी"
@@ -100,6 +158,15 @@ msgstr "भाषा खण्ड"
 
 msgid "Language specification directories"
 msgstr "भाषा विशिष्टिकरण डाइरेक्टरीहरू"
+
+msgid "Line background"
+msgstr "लाइन पृष्ठभूमि"
+
+msgid "Line background color"
+msgstr "लाइन पृष्ठभूमि रङ"
+
+msgid "Line background set"
+msgstr "लाइन पृष्ठभूमि सेट"
 
 msgid "List of directories and files where the style schemes are located"
 msgstr "शैलि योजना स्थापना गरिएको ठाउमा डाइरेक्टरी र फाइलको सूची"
@@ -140,6 +207,9 @@ msgstr "अब्लिभिअन"
 msgid "Octave"
 msgstr "ओक्टेभ"
 
+msgid "Operator"
+msgstr "सञ्चालक"
+
 msgid "Others"
 msgstr "अन्य"
 
@@ -148,6 +218,9 @@ msgstr "पास्कल"
 
 msgid "Perl"
 msgstr "पर्ल"
+
+msgid "Preprocessor"
+msgstr "पूर्व प्रोसेसर"
 
 msgid "Python"
 msgstr "पाइथोन"
@@ -173,6 +246,15 @@ msgstr "स्क्रिप्टहरू"
 msgid "Sources"
 msgstr "स्रोतहरू"
 
+msgid "Strikethrough"
+msgstr "स्ट्राइकथ्रु"
+
+msgid "Strikethrough set"
+msgstr "स्ट्राइकथ्रु सेट"
+
+msgid "String"
+msgstr "स्ट्रिङ"
+
 msgid "Style scheme description"
 msgstr "शैलि योजना वर्णन"
 
@@ -194,14 +276,41 @@ msgstr "टाङ्गो"
 msgid "Texinfo"
 msgstr "टेक्सइनफो"
 
+msgid "Underline"
+msgstr "अधोरेखा"
+
+msgid "Underline set"
+msgstr "अधोरेखा सेट"
+
 msgid "Unknown id '%s' in regex '%s'"
 msgstr "रेगेक्स '%s' मा अज्ञात आईडी '%s'"
 
 msgid "Verilog"
 msgstr "भेरिलग"
 
+msgid "Whether background color is set"
+msgstr "पृष्ठभूमि रङ सेट छ या छैन"
+
+msgid "Whether bold attribute is set"
+msgstr "बाक्लो विशेषता सेट छ या छैन"
+
+msgid "Whether foreground color is set"
+msgstr "अग्रभूमि रङ सेट छ या छैन"
+
+msgid "Whether italic attribute is set"
+msgstr "छड्के विशेषता सेट छ या छैन"
+
+msgid "Whether line background color is set"
+msgstr "लाइन पृष्ठभूमि रङ सेट छ या छैन"
+
+msgid "Whether strikethrough attribute is set"
+msgstr "स्ट्राइकथ्रु विशेषता सेट छ या छैन"
+
 msgid "Whether the language should be hidden from the user"
 msgstr "प्रयोगकर्ताबाट भाषा लुकाउनु पर्दछ या पर्दैन"
+
+msgid "Whether underline attribute is set"
+msgstr "अधोरेखा विशेषता सेट छ या छैन"
 
 msgid "Yacc"
 msgstr "याक"
