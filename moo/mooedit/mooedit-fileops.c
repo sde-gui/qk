@@ -145,8 +145,8 @@ _moo_edit_load_file (MooEdit      *edit,
     gboolean result;
     GError *error_here = NULL;
 
-    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
+    moo_return_error_if_fail (MOO_IS_EDIT (edit));
+    moo_return_error_if_fail (G_IS_FILE (file));
 
     encoding_copy = g_strdup (normalize_encoding (encoding, FALSE));
     cached_encoding_copy = cached_encoding ? g_strdup (normalize_encoding (cached_encoding, FALSE)) : NULL;
@@ -169,7 +169,7 @@ _moo_edit_reload_file (MooEdit    *edit,
     GError *error_here = NULL;
     gboolean result;
 
-    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    moo_return_error_if_fail (MOO_IS_EDIT (edit));
 
     result = moo_edit_reload_local (edit, encoding, &error_here);
 
@@ -191,8 +191,8 @@ _moo_edit_save_file (MooEdit        *edit,
     char *encoding_copy;
     gboolean result;
 
-    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
+    moo_return_error_if_fail (MOO_IS_EDIT (edit));
+    moo_return_error_if_fail (G_IS_FILE (file));
 
     encoding_copy = g_strdup (normalize_encoding (encoding, TRUE));
 
@@ -216,8 +216,8 @@ _moo_edit_save_file_copy (MooEdit        *edit,
     char *encoding_copy;
     gboolean result;
 
-    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
+    moo_return_error_if_fail (MOO_IS_EDIT (edit));
+    moo_return_error_if_fail (G_IS_FILE (file));
 
     encoding_copy = g_strdup (normalize_encoding (encoding, TRUE));
 
@@ -415,8 +415,8 @@ moo_edit_load_local (MooEdit     *edit,
     char *freeme = NULL;
     MooLineEndType saved_le;
 
-    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
+    moo_return_error_if_fail (MOO_IS_EDIT (edit));
+    moo_return_error_if_fail (G_IS_FILE (file));
 
     if (!check_regular (file, error))
         return FALSE;
@@ -693,7 +693,7 @@ load_binary (MooEdit     *edit,
     GIOStatus status;
     GtkTextBuffer *buffer;
 
-    moo_return_val_if_fail (filename != NULL, FALSE);
+    moo_return_error_if_fail (filename != NULL);
 
     buffer = moo_edit_get_buffer (edit);
 
@@ -776,7 +776,7 @@ moo_edit_reload_local (MooEdit    *edit,
     MooEditView *view;
 
     file = moo_edit_get_file (edit);
-    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
+    moo_return_error_if_fail (G_IS_FILE (file));
 
     view = moo_edit_get_view (edit);
     buffer = moo_edit_get_buffer (edit);
@@ -916,7 +916,7 @@ do_write (GFile             *file,
     MooFileWriterFlags writer_flags;
     gboolean success = FALSE;
 
-    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
+    moo_return_error_if_fail (G_IS_FILE (file));
 
     writer_flags = (flags & MOO_EDIT_SAVE_BACKUP) ? MOO_FILE_WRITER_SAVE_BACKUP : (MooFileWriterFlags) 0;
 
@@ -934,18 +934,15 @@ do_save_local (MooEdit        *edit,
                GFile          *file,
                const char     *encoding,
                MooEditSaveFlags flags,
-               GError        **error,
-               gboolean       *retval)
+               GError        **error)
 {
     char *utf8_contents;
     const char *to_save;
     gsize to_save_size;
     GError *encoding_error = NULL;
     char *freeme = NULL;
-    gboolean success;
+    gboolean success = TRUE;
 
-    success = TRUE;
-    *retval = TRUE;
     utf8_contents = get_contents (edit);
 
     moo_release_assert (utf8_contents != NULL);
@@ -970,9 +967,9 @@ do_save_local (MooEdit        *edit,
         }
         else
         {
-            *retval = FALSE;
-            to_save = utf8_contents;
-            to_save_size = strlen (utf8_contents);
+            g_propagate_error (error, encoding_error);
+            set_encoding_error (error);
+            success = FALSE;
         }
     }
     else
@@ -981,16 +978,8 @@ do_save_local (MooEdit        *edit,
         to_save_size = strlen (utf8_contents);
     }
 
-    if (!do_write (file, to_save, to_save_size, flags, error))
-    {
-        *retval = FALSE;
+    if (success && !do_write (file, to_save, to_save_size, flags, error))
         success = FALSE;
-    }
-    else if (encoding_error)
-    {
-        g_propagate_error (error, encoding_error);
-        set_encoding_error (error);
-    }
 
     g_free (freeme);
     g_free (utf8_contents);
@@ -1005,21 +994,17 @@ moo_edit_save_local (MooEdit        *edit,
                      MooEditSaveFlags flags,
                      GError        **error)
 {
-    gboolean result;
+    moo_return_error_if_fail (MOO_IS_EDIT (edit));
+    moo_return_error_if_fail (G_IS_FILE (file));
 
-    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
+    if (!do_save_local (edit, file, encoding, flags, error))
+        return FALSE;
 
-    if (do_save_local (edit, file, encoding, flags, error, &result))
-    {
-        edit->priv->status = (MooEditStatus) 0;
-        _moo_edit_set_file (edit, file,
-                           result ? encoding : MOO_ENCODING_UTF8);
-        moo_edit_set_modified (edit, FALSE);
-        _moo_edit_start_file_watch (edit);
-    }
-
-    return result;
+    edit->priv->status = (MooEditStatus) 0;
+    _moo_edit_set_file (edit, file, encoding);
+    moo_edit_set_modified (edit, FALSE);
+    _moo_edit_start_file_watch (edit);
+    return TRUE;
 }
 
 
@@ -1030,11 +1015,9 @@ moo_edit_save_copy_local (MooEdit        *edit,
                           MooEditSaveFlags flags,
                           GError        **error)
 {
-    gboolean result;
-    moo_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
-    do_save_local (edit, file, encoding, flags, error, &result);
-    return result;
+    moo_return_error_if_fail (MOO_IS_EDIT (edit));
+    moo_return_error_if_fail (G_IS_FILE (file));
+    return do_save_local (edit, file, encoding, flags, error);
 }
 
 

@@ -2481,6 +2481,7 @@ do_save (MooEditor    *editor,
     gboolean add_newline;
     int response = MOO_EDIT_SAVE_RESPONSE_CONTINUE;
     GError *error_here = NULL;
+    gboolean result;
 
     g_signal_emit (editor, signals[BEFORE_SAVE], 0, doc, file, &response);
 
@@ -2504,27 +2505,36 @@ do_save (MooEditor    *editor,
     if (add_newline)
         _moo_edit_ensure_newline (doc);
 
-    if (!_moo_edit_save_file (doc, file, encoding,
-                              moo_editor_get_save_flags (editor),
-                              &error_here))
+    result = _moo_edit_save_file (doc, file, encoding,
+                                  moo_editor_get_save_flags (editor),
+                                  &error_here);
+    if (!result && error_here->domain == MOO_EDIT_FILE_ERROR &&
+        error_here->code == MOO_EDIT_FILE_ERROR_ENCODING)
     {
-        if (!is_embedded (editor))
+        g_error_free (error_here);
+        error_here = NULL;
+
+        if (_moo_edit_save_error_enc_dialog (doc, file, encoding))
         {
-            MooEditView *view = moo_edit_get_view (doc);
-            gboolean saved_utf8 = error_here->domain == MOO_EDIT_FILE_ERROR &&
-                                  error_here->code == MOO_EDIT_FILE_ERROR_ENCODING;
-            if (saved_utf8)
-                _moo_edit_save_error_enc_dialog (GTK_WIDGET (view), file, encoding);
-            else
-                _moo_edit_save_error_dialog (GTK_WIDGET (view), file, error_here);
-            g_error_free (error_here);
+            result = _moo_edit_save_file (doc, file, "UTF-8",
+                                          moo_editor_get_save_flags (editor),
+                                          &error_here);
         }
         else
         {
-            /* XXX */
-            g_propagate_error (error, error_here);
+            g_set_error (error,
+                         MOO_EDIT_SAVE_ERROR,
+                         MOO_EDIT_SAVE_ERROR_CANCELLED,
+                         "cancelled");
+            return FALSE;
         }
+    }
 
+    if (!result)
+    {
+        if (!is_embedded (editor))
+            _moo_edit_save_error_dialog (doc, file, error_here);
+        g_propagate_error (error, error_here);
         return FALSE;
     }
 

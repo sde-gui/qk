@@ -34,10 +34,10 @@ MooSaveChangesResponse          _moo_edit_save_multiple_changes_dialog  (MooEdit
 gboolean                        _moo_edit_reload_modified_dialog        (MooEdit        *doc);
 gboolean                        _moo_edit_overwrite_modified_dialog     (MooEdit        *doc);
 
-void                            _moo_edit_save_error_dialog             (GtkWidget      *widget,
+void                            _moo_edit_save_error_dialog             (MooEdit        *doc,
                                                                          GFile          *file,
                                                                          GError         *error);
-void                            _moo_edit_save_error_enc_dialog         (GtkWidget      *widget,
+gboolean                        _moo_edit_save_error_enc_dialog         (MooEdit        *doc,
                                                                          GFile          *file,
                                                                          const char     *encoding);
 void                            _moo_edit_open_error_dialog             (GtkWidget      *widget,

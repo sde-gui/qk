@@ -415,53 +415,86 @@ _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
  */
 
 void
-_moo_edit_save_error_dialog (GtkWidget *widget,
-                             GFile     *file,
-                             GError    *error)
+_moo_edit_save_error_dialog (MooEdit *doc,
+                             GFile   *file,
+                             GError  *error)
 {
     char *filename, *msg = NULL;
 
+    moo_return_if_fail (G_IS_FILE (file));
+
     filename = moo_file_get_display_name (file);
 
-    if (filename)
-        /* Could not save file foo.txt */
-        msg = g_strdup_printf (_("Could not save file\n%s"), filename);
-    else
-        msg = g_strdup (_("Could not save file"));
+    msg = g_strdup_printf (_("Could not save file\n%s"), filename);
 
-    moo_error_dialog (msg, error ? error->message : NULL, widget);
+    moo_error_dialog (msg, error ? error->message : NULL,
+                      GTK_WIDGET (moo_edit_get_view (doc)));
 
     g_free (msg);
     g_free (filename);
 }
 
-void
-_moo_edit_save_error_enc_dialog (GtkWidget  *widget,
+static gboolean
+moo_edit_question_dialog (MooEdit    *doc,
+                          const char *text,
+                          const char *secondary,
+                          const char *button)
+{
+    int res;
+    MooEditView *view;
+    GtkWindow *parent;
+    GtkWidget *dialog;
+
+    view = doc ? moo_edit_get_view (doc) : NULL;
+    parent = view ? GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view))) : NULL;
+
+    dialog = gtk_message_dialog_new (parent, GTK_DIALOG_MODAL,
+                                     GTK_MESSAGE_WARNING,
+                                     GTK_BUTTONS_NONE,
+                                     "%s", text);
+    gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
+                                              "%s", secondary);
+
+    gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+                            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                            button, GTK_RESPONSE_YES,
+                            NULL);
+
+    gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
+                                             GTK_RESPONSE_YES,
+                                             GTK_RESPONSE_CANCEL,
+                                             -1);
+
+    res = gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (dialog);
+
+    return res == GTK_RESPONSE_YES;
+}
+
+gboolean
+_moo_edit_save_error_enc_dialog (MooEdit    *doc,
                                  GFile      *file,
                                  const char *encoding)
 {
-    char *filename, *msg = NULL;
+    char *filename;
     char *secondary;
+    gboolean result;
 
-    g_return_if_fail (encoding != NULL);
+    g_return_val_if_fail (G_IS_FILE (file), FALSE);
+    g_return_val_if_fail (encoding != NULL, FALSE);
 
     filename = moo_file_get_display_name (file);
 
-    if (filename)
-        /* Error saving file foo.txt */
-        msg = g_strdup_printf (_("Error saving file\n%s"), filename);
-    else
-        msg = g_strdup (_("Error saving file"));
+    secondary = g_strdup_printf (_("Could not save file %s in encoding %s. "
+                                   "Do you want to save it in UTF-8 encoding instead?"),
+                                 filename, encoding);
 
-    secondary = g_strdup_printf (_("Could not convert file to encoding %s. "
-                                   "File was saved in UTF-8 encoding."),
-                                 encoding);
+    result = moo_edit_question_dialog (doc, _("Save file in UTF-8 encoding?"),
+                                       secondary, GTK_STOCK_OK);
 
-    moo_error_dialog (msg, secondary, widget);
-
-    g_free (msg);
     g_free (secondary);
     g_free (filename);
+    return result;
 }
 
 
@@ -537,43 +570,6 @@ _moo_edit_reload_error_dialog (MooEdit *doc,
 /*****************************************************************************/
 /* Confirmation and alerts
  */
-
-static gboolean
-moo_edit_question_dialog (MooEdit    *doc,
-                          const char *text,
-                          const char *secondary,
-                          const char *button)
-{
-    int res;
-    MooEditView *view;
-    GtkWindow *parent;
-    GtkWidget *dialog;
-
-    view = doc ? moo_edit_get_view (doc) : NULL;
-    parent = view ? GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (view))) : NULL;
-
-    dialog = gtk_message_dialog_new (parent, GTK_DIALOG_MODAL,
-                                     GTK_MESSAGE_WARNING,
-                                     GTK_BUTTONS_NONE,
-                                     "%s", text);
-    gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
-                                              "%s", secondary);
-
-    gtk_dialog_add_buttons (GTK_DIALOG (dialog),
-                            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                            button, GTK_RESPONSE_YES,
-                            NULL);
-
-    gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
-                                             GTK_RESPONSE_YES,
-                                             GTK_RESPONSE_CANCEL,
-                                             -1);
-
-    res = gtk_dialog_run (GTK_DIALOG (dialog));
-    gtk_widget_destroy (dialog);
-
-    return res == GTK_RESPONSE_YES;
-}
 
 gboolean
 _moo_edit_reload_modified_dialog (MooEdit *doc)
