@@ -14,18 +14,21 @@ gendocbook_files =				\
 	$(top_srcdir)/api/mpi/docbookwriter.py
 
 $(srcdir)/built/script-python.docbook: $(gendocbook_files) script-python.tmpl.docbook $(top_srcdir)/api/moo.xml
+	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
 		--python --template $(srcdir)/script-python.tmpl.docbook \
 		$(top_srcdir)/api/moo.xml > script-python.docbook.tmp && \
 		mv script-python.docbook.tmp $(srcdir)/built/script-python.docbook
 
 $(srcdir)/built/script-lua.docbook: $(gendocbook_files) script-lua.tmpl.docbook $(top_srcdir)/api/moo.xml
+	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
 		--lua --template $(srcdir)/script-lua.tmpl.docbook \
 		$(top_srcdir)/api/moo.xml > script-lua.docbook.tmp && \
 		mv script-lua.docbook.tmp $(srcdir)/built/script-lua.docbook
 
 $(srcdir)/built/script-lua-gtk.docbook: $(gendocbook_files) script-lua-gtk.tmpl.docbook $(top_srcdir)/api/gtk.xml
+	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
 		--lua --template $(srcdir)/script-lua-gtk.tmpl.docbook \
 		$(top_srcdir)/api/gtk.xml > script-lua-gtk.docbook.tmp && \
@@ -54,6 +57,7 @@ $(srcdir)/help/medit.css: medit.css
 	$(AM_V_GEN)cp $(srcdir)/medit.css $(srcdir)/help/
 
 $(srcdir)/built/lgpl.no-fancy-chars: $(top_srcdir)/COPYING
+	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
 	tr -d '\014' < $(top_srcdir)/COPYING > lgpl.no-fancy-chars.tmp && \
 		 mv lgpl.no-fancy-chars.tmp $(srcdir)/built/lgpl.no-fancy-chars
 
@@ -83,6 +87,7 @@ toc.xml: $(docbook_sources)
 		http://docbook.sourceforge.net/release/xsl/current/html/maketoc.xsl $(srcdir)/medit.docbook
 
 moo-help-sections.h.stamp: $(docbook_files) toc.xml genhelpsectionsh.py
+	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
 	$(AM_V_GEN)$(PYTHON) $(srcdir)/genhelpsectionsh.py --toc=toc.xml --srcdir=$(srcdir) $(docbook_files) > moo-help-sections.h.tmp
 	$(AM_V_at)cmp -s moo-help-sections.h.tmp $(srcdir)/built/moo-help-sections.h || \
 		mv moo-help-sections.h.tmp $(srcdir)/built/moo-help-sections.h
@@ -109,6 +114,7 @@ doc:						\
 	moo-help-sections.h.stamp
 
 $(srcdir)/built/man-medit.t2t: man-medit.t2t.in $(top_builddir)/config.status
+	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
 	$(AM_V_GEN)cd $(top_builddir) && ./config.status --silent --file=doc/man-medit.t2t
 	$(AM_V_at)mv man-medit.t2t $(srcdir)/built/man-medit.t2t
 
