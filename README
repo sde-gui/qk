@@ -39,10 +39,10 @@ CVS
 
 medit sources are tracked using mercurial, therefore there is no
 CVS or SVN access. You may browse medit repository online at
-http://bitbucket.org/muntyan/moo/. To check out a copy of medit
+http://bitbucket.org/medit/medit/. To check out a copy of medit
 repository, install mercurial, and do
-hg clone http://bitbucket.org/muntyan/moo/
-This will create a new directory named 'moo' with medit sources inside.
+    hg clone http://bitbucket.org/medit/medit/
+This will create a new directory named 'medit' with medit sources inside.
 To update them later on, do
-hg pull; hg update
+    hg pull; hg update
 in this directory.

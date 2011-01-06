@@ -1,23 +1,20 @@
-medit is built using cmake (http://www.cmake.org/). See
-http://www.cmake.org/cmake/help/runningcmake.html for detailed instructions
-on how to use cmake.
-
-Quick build with default options (you must have cmake installed):
+medit uses autotools for the build. Quick build with default options:
 
 tar xjf medit-x.x.x.tar.bz2
 cd medit-x.x.x
-cmake .
+./configure
 make
 make install
 
-This will configure, build, and install medit to /usr/local. If you want to
-install it to a different directory, use the following cmake command line:
+This will configure, build, and install medit to /usr/local.
 
-cmake -DCMAKE_INSTALL_PREFIX=/some/path .
+If you checked out a copy of mercurial repository, then do the following to build:
 
-Alternatively, you can run the following command after running cmake:
+./autogen.sh
+./configure --enable-dev-mode
+make
+make install
 
-ccmake .
-
-This will invoke a curses interface for cmake where you can see the list of
-available options and set their values.
+You must have docbook, xsltproc, txt2tags to build medit from mercurial. Other
+tools may be required and configure may not check for them, please report those
+to the author.
