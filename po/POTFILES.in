@@ -34,6 +34,7 @@ moo/moofileview/glade/moobookmark-editor.glade
 moo/moofileview/glade/moocreatefolder.glade
 moo/moofileview/glade/moofileprops.glade
 moo/moofileview/glade/moofileview-drop.glade
+moo/moofileview/moobookmarkmgr.c
 moo/moofileview/moofileview.c
 moo/moofileview/moofileview-tools.c
 moo/moofileview/moofileview.xml
@@ -45,6 +46,7 @@ moo/mooutils/mooaccelprefs.c
 moo/mooutils/moodialogs.c
 moo/mooutils/mooencodings.c
 moo/mooutils/mooencodings-data.h
+moo/mooutils/mooentry.c
 moo/mooutils/moofiledialog.c
 moo/mooutils/moofilewriter.c
 moo/mooutils/moofiltermgr.c
@@ -55,6 +57,7 @@ moo/mooutils/mooutils-file.c
 moo/mooutils/mooutils-fs.c
 moo/mooutils/mooutils-misc.c
 moo/mooutils/moowindow.c
+moo/plugins/ctags/ctags-plugin.c
 moo/plugins/glade/moofileselector.glade
 moo/plugins/glade/moofileselector-prefs.glade
 moo/plugins/glade/moofind.glade
@@ -64,6 +67,7 @@ moo/plugins/moofileselector.c
 moo/plugins/moofileselector-prefs.c
 moo/plugins/moofind.c
 moo/plugins/mooluaplugin.cpp
+moo/plugins/support/mooeditwindowoutput.c
 moo/plugins/usertools/filters.xml
 moo/plugins/usertools/glade/mooedittools-exe.glade
 moo/plugins/usertools/glade/mooedittools-script.glade

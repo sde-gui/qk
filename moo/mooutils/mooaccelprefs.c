@@ -257,21 +257,27 @@ _moo_accel_prefs_page_init (MooAccelPrefsPage *page)
     g_object_unref (page->store);
 
     renderer = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes ("Action", renderer,
+    /* Column label in Configure Shortcuts dialog */
+    column = gtk_tree_view_column_new_with_attributes (C_("accel-editor-column", "Action"),
+                                                       renderer,
                                                        "text", COLUMN_ACTION_NAME,
                                                        NULL);
     gtk_tree_view_append_column (page->gxml->treeview, column);
     gtk_tree_view_column_set_sort_column_id (column, COLUMN_ACTION_NAME);
 
     renderer = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes ("Shortcut", renderer,
+    /* Column label in Configure Shortcuts dialog */
+    column = gtk_tree_view_column_new_with_attributes (C_("accel-editor-column", "Shortcut"),
+                                                       renderer,
                                                        "text", COLUMN_ACCEL,
                                                        NULL);
     gtk_tree_view_append_column (page->gxml->treeview, column);
     gtk_tree_view_column_set_sort_column_id (column, COLUMN_ACCEL);
 
     renderer = gtk_cell_renderer_toggle_new ();
-    column = gtk_tree_view_column_new_with_attributes ("Global", renderer,
+    /* Column label in Configure Shortcuts dialog */
+    column = gtk_tree_view_column_new_with_attributes (C_("accel-editor-column", "Global"),
+                                                       renderer,
                                                        "active", COLUMN_GLOBAL,
                                                        NULL);
     gtk_tree_view_append_column (page->gxml->treeview, column);

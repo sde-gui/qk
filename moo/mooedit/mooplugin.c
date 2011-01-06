@@ -1422,7 +1422,7 @@ moo_plugin_attach_prefs (GtkWidget *dialog)
 
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
 
-    page = moo_prefs_page_new (_("Plugins"), MOO_STOCK_PLUGINS);
+    page = moo_prefs_page_new (C_("Prefs page label", "Plugins"), MOO_STOCK_PLUGINS);
     gxml = prefs_page_xml_new_with_root (page);
     g_object_set_data (G_OBJECT (page), "moo-plugin-prefs-xml", gxml);
     g_object_set_data (G_OBJECT (page), "moo-plugin-prefs-dialog", dialog);
@@ -1445,11 +1445,15 @@ moo_plugin_attach_prefs (GtkWidget *dialog)
     cell = gtk_cell_renderer_toggle_new ();
     g_object_set (cell, "activatable", TRUE, NULL);
     g_signal_connect (cell, "toggled", G_CALLBACK (enable_toggled), store);
-    gtk_tree_view_insert_column_with_attributes (gxml->treeview, 0, "Enabled", cell,
+    /* Column label on Plugins prefs page */
+    gtk_tree_view_insert_column_with_attributes (gxml->treeview, 0,
+                                                 C_("plugin-prefs-column", "Enabled"), cell,
                                                  "active", COLUMN_ENABLED, NULL);
 
     cell = gtk_cell_renderer_text_new ();
-    gtk_tree_view_insert_column_with_attributes (gxml->treeview, 1, "Plugin", cell,
+    /* Column label on Plugins prefs page */
+    gtk_tree_view_insert_column_with_attributes (gxml->treeview, 1,
+                                                 C_("plugin-prefs-column", "Plugin"), cell,
                                                  "text", COLUMN_PLUGIN_NAME, NULL);
 
     moo_prefs_dialog_append_page (MOO_PREFS_DIALOG (dialog), GTK_WIDGET (page));

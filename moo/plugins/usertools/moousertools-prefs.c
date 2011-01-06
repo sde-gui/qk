@@ -158,12 +158,12 @@ setup_options_widgets (CommandXml *gxml)
     GtkCellRenderer *cell;
 
     store = gtk_list_store_new (1, G_TYPE_STRING);
-    // ROW_REQUIRES_NOTHING
-    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("'Requires' combo box entry", "Nothing"), -1);
-    // ROW_REQUIRES_DOC
-    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("'Requires' combo box entry", "Document"), -1);
-    // ROW_REQUIRES_FILE
-    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("'Requires' combo box entry", "File on disk"), -1);
+    /* 'Requires' combo box entry on Tools prefs page */
+    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("Requires-combo", "Nothing"), -1);
+    /* 'Requires' combo box entry on Tools prefs page */
+    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("Requires-combo", "Document"), -1);
+    /* 'Requires' combo box entry on Tools prefs page */
+    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("Requires-combo", "File on disk"), -1);
     gtk_combo_box_set_model (gxml->combo_requires, GTK_TREE_MODEL (store));
     g_object_unref (store);
 
@@ -173,12 +173,12 @@ setup_options_widgets (CommandXml *gxml)
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (gxml->combo_requires), cell, "text", 0);
 
     store = gtk_list_store_new (1, G_TYPE_STRING);
-    // ROW_SAVE_NOTHING
-    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("'Save' combo box entry", "Nothing"), -1);
-    // ROW_SAVE_ONE
-    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("'Save' combo box entry", "Current document"), -1);
-    // ROW_SAVE_ALL
-    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("'Save' combo box entry", "All documents"), -1);
+    // 'Save' combo box entry on Tools prefs page
+    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("Save-combo", "Nothing"), -1);
+    // 'Save' combo box entry on Tools prefs page
+    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("Save-combo", "Current document"), -1);
+    // 'Save' combo box entry on Tools prefs page
+    gtk_list_store_insert_with_values (store, NULL, G_MAXINT, 0, C_("Save-combo", "All documents"), -1);
     gtk_combo_box_set_model (gxml->combo_save, GTK_TREE_MODEL (store));
     g_object_unref (store);
 

@@ -552,7 +552,7 @@ create_lang_model (void)
     mime = list_to_string (_moo_lang_mgr_get_mime_types (mgr, NULL), TRUE);
     gtk_tree_store_set (store, &iter,
                         COLUMN_ID, MOO_LANG_NONE,
-                        COLUMN_NAME, "None",
+                        COLUMN_NAME, Q_("Language|None"),
                         COLUMN_CONFIG, config,
                         COLUMN_MIMETYPES, mime,
                         COLUMN_EXTENSIONS, ext,
@@ -915,8 +915,10 @@ filter_treeview_init (PrefsFiltersXml *gxml)
     populate_filter_settings_store (store);
     gtk_tree_view_set_model (gxml->filter_treeview, GTK_TREE_MODEL (store));
 
-    create_filter_cell (gxml->filter_treeview, store, "Filter", FILTER_COLUMN_FILTER);
-    create_filter_cell (gxml->filter_treeview, store, "Options", FILTER_COLUMN_CONFIG);
+    /* Column label on File Filters prefs page */
+    create_filter_cell (gxml->filter_treeview, store, C_("filter-prefs-column", "Filter"), FILTER_COLUMN_FILTER);
+    /* Column label on File Filters prefs page */
+    create_filter_cell (gxml->filter_treeview, store, C_("filter-prefs-column", "Options"), FILTER_COLUMN_CONFIG);
 
     helper = _moo_tree_helper_new (GTK_WIDGET (gxml->filter_treeview),
                                    GTK_WIDGET (gxml->new_filter_setting),

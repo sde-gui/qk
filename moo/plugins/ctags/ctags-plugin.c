@@ -115,7 +115,9 @@ ctags_window_plugin_create (CtagsWindowPlugin *plugin)
     gtk_widget_show_all (swin);
 
     label = moo_pane_label_new (GTK_STOCK_INDEX, NULL,
-                                "Functions", "Functions");
+                                /* label of Ctags plugin pane */
+                                C_("window-pane", "Functions"),
+                                C_("window-pane", "Functions"));
     moo_edit_window_add_pane (window, CTAGS_PLUGIN_ID,
                               swin, label, MOO_PANE_POS_RIGHT);
     moo_pane_label_free (label);

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-04 23:55-0800\n"
+"POT-Creation-Date: 2011-01-06 00:56-0800\n"
 "PO-Revision-Date: 2007-12-06 04:32+0800\n"
 "Last-Translator: Chaosye <chao-7410@163.com>\n"
 "Language-Team: Chaosye <chao-7410@163.com>\n"
@@ -320,7 +320,6 @@ msgid "Mime types:"
 msgstr "Mime类型:"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:5
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:9
 msgid "Options:"
 msgstr "选项:"
 
@@ -783,6 +782,23 @@ msgstr ""
 msgid "PreferencesPage|Languages"
 msgstr ""
 
+#. Menu item in the Language menu
+#: ../moo/mooedit/mooeditprefspage.c:555 ../moo/mooedit/mooeditwindow.c:3208
+msgid "Language|None"
+msgstr ""
+
+#. Column label on File Filters prefs page
+#: ../moo/mooedit/mooeditprefspage.c:919
+msgctxt "filter-prefs-column"
+msgid "Filter"
+msgstr ""
+
+#. Column label on File Filters prefs page
+#: ../moo/mooedit/mooeditprefspage.c:921
+msgctxt "filter-prefs-column"
+msgid "Options"
+msgstr ""
+
 #: ../moo/mooedit/mooeditwindow.c:362
 msgid "Create new document"
 msgstr "新建"
@@ -1055,36 +1071,60 @@ msgstr ""
 msgid "Mi_xed"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3059
+#. Item in document tab context menu
+#: ../moo/mooedit/mooeditwindow.c:1853
+msgctxt "tab-context-menu"
+msgid "Close"
+msgstr ""
+
+#. Item in document tab context menu
+#: ../moo/mooedit/mooeditwindow.c:1864
+msgctxt "tab-context-menu"
+msgid "Close All Others"
+msgstr ""
+
+#. Item in document tab context menu
+#: ../moo/mooedit/mooeditwindow.c:1881
+msgctxt "tab-context-menu"
+msgid "Detach"
+msgstr ""
+
+#: ../moo/mooedit/mooeditwindow.c:3062
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr "行: %s 列: %s"
 
-#: ../moo/mooedit/mooeditwindow.c:3060
+#: ../moo/mooedit/mooeditwindow.c:3063
 #, c-format
 msgid "Chars: %s"
 msgstr "字符: %s"
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3103
+#: ../moo/mooedit/mooeditwindow.c:3106
 msgid "OVR"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3103
+#: ../moo/mooedit/mooeditwindow.c:3106
 msgid "INS"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3200
+#: ../moo/mooedit/mooeditwindow.c:3203
 msgid "_Language"
 msgstr "语言(_L)"
 
-#. Menu item in the Language menu
-#: ../moo/mooedit/mooeditwindow.c:3205
-msgid "Language|None"
+#: ../moo/mooedit/mooplugin.c:1425
+msgctxt "Prefs page label"
+msgid "Plugins"
 msgstr ""
 
-#: ../moo/mooedit/mooplugin.c:1425
-msgid "Plugins"
+#: ../moo/mooedit/mooplugin.c:1450
+msgctxt "plugin-prefs-column"
+msgid "Enabled"
+msgstr ""
+
+#: ../moo/mooedit/mooplugin.c:1456
+msgctxt "plugin-prefs-column"
+msgid "Plugin"
 msgstr ""
 
 #: ../moo/mooedit/mooplugin-loader.c:229
@@ -1097,6 +1137,16 @@ msgstr ""
 #: ../moo/mooedit/mooplugin-loader.c:238
 #, c-format
 msgid "console message|invalid module version '%s' in file '%s'"
+msgstr ""
+
+#: ../moo/mooedit/mootextfind.c:165
+msgctxt "Dialog title"
+msgid "Replace"
+msgstr ""
+
+#: ../moo/mooedit/mootextfind.c:171
+msgctxt "Dialog title"
+msgid "Find"
 msgstr ""
 
 #: ../moo/mooedit/mootextfind.c:475
@@ -1186,6 +1236,24 @@ msgstr "常规"
 #: ../moo/plugins/moofileselector.c:891 ../moo/plugins/moofileselector.c:916
 msgid "Save As"
 msgstr "另存为"
+
+#. Column label in file selector bookmark editor
+#: ../moo/moofileview/moobookmarkmgr.c:963
+msgctxt "fileview-bookmark-editor"
+msgid "Icon"
+msgstr ""
+
+#. Column label in file selector bookmark editor
+#: ../moo/moofileview/moobookmarkmgr.c:979
+msgctxt "fileview-bookmark-editor"
+msgid "Label"
+msgstr ""
+
+#. Column label in file selector bookmark editor
+#: ../moo/moofileview/moobookmarkmgr.c:997
+msgctxt "fileview-bookmark-editor"
+msgid "Path"
+msgstr ""
 
 #: ../moo/moofileview/moofileview.c:1116 ../moo/plugins/moofileselector.c:635
 #: ../moo/plugins/moofileselector.c:636 ../moo/plugins/moofileselector.c:1273
@@ -1374,7 +1442,25 @@ msgctxt "yes"
 msgid "Shortcut|None"
 msgstr ""
 
-#: ../moo/mooutils/mooaccelprefs.c:799
+#. Column label in Configure Shortcuts dialog
+#: ../moo/mooutils/mooaccelprefs.c:261
+msgctxt "accel-editor-column"
+msgid "Action"
+msgstr ""
+
+#. Column label in Configure Shortcuts dialog
+#: ../moo/mooutils/mooaccelprefs.c:270
+msgctxt "accel-editor-column"
+msgid "Shortcut"
+msgstr ""
+
+#. Column label in Configure Shortcuts dialog
+#: ../moo/mooutils/mooaccelprefs.c:279
+msgctxt "accel-editor-column"
+msgid "Global"
+msgstr ""
+
+#: ../moo/mooutils/mooaccelprefs.c:805
 msgid "Configure Shortcuts"
 msgstr "设置快捷键"
 
@@ -1604,6 +1690,24 @@ msgstr "越南语"
 msgid "Thai"
 msgstr "泰语"
 
+#. menu item in Insert Special Character submenu of text entry context menu
+#: ../moo/mooutils/mooentry.c:536
+msgctxt "insert-special-char"
+msgid "Line End"
+msgstr ""
+
+#. menu item in Insert Special Character submenu of text entry context menu
+#: ../moo/mooutils/mooentry.c:538
+msgctxt "insert-special-char"
+msgid "Tab"
+msgstr ""
+
+#. label of Insert Special Character submenu in text entry context menu
+#: ../moo/mooutils/mooentry.c:581
+msgctxt "insert-special-char"
+msgid "Insert Special Character"
+msgstr ""
+
 #: ../moo/mooutils/moofiledialog.c:650
 msgid "Selected file is not a regular file"
 msgstr ""
@@ -1765,6 +1869,13 @@ msgstr ""
 #: ../moo/mooutils/moowindow.c:1189
 msgid "Toolbar _Style"
 msgstr "工具栏样式(_S)"
+
+#. label of Ctags plugin pane
+#: ../moo/plugins/ctags/ctags-plugin.c:119
+#: ../moo/plugins/ctags/ctags-plugin.c:120
+msgctxt "window-pane"
+msgid "Functions"
+msgstr ""
 
 #: ../moo/plugins/glade/moofileselector.glade.h:1
 msgid "Create File"
@@ -1958,6 +2069,13 @@ msgstr ""
 msgid "Lua support"
 msgstr ""
 
+#. label of Output window pane
+#: ../moo/plugins/support/mooeditwindowoutput.c:33
+#: ../moo/plugins/support/mooeditwindowoutput.c:34
+msgctxt "window-pane"
+msgid "Output"
+msgstr ""
+
 #. Output filter for shell commands
 #: ../moo/plugins/usertools/filters.xml.h:2
 msgid "Filter|Bison"
@@ -2001,40 +2119,52 @@ msgid "Output:"
 msgstr "输出:"
 
 #: ../moo/plugins/usertools/glade/moousertools.glade.h:1
-msgid "Command type:"
-msgstr "命令类型:"
-
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:2
-msgid "Context menu"
-msgstr "语法菜单"
-
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:3
 msgid "Delete item"
 msgstr "删除项目"
 
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:4
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:2
 msgid "Enabled"
 msgstr "启用"
 
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:5
-msgid "Files:"
-msgstr "文档:"
-
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:6
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:3
 msgid "Move item down"
 msgstr "下移项目"
 
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:7
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:4
 msgid "Move item up"
 msgstr "上移项目"
 
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:8
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:5
 msgid "New item"
 msgstr "新建"
 
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:10
-msgid "Tools menu"
-msgstr "工具菜单"
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:6
+msgid "_Files:"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:7
+msgid "_Requires:"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:8
+msgid "_Save:"
+msgstr ""
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:9
+msgid "_Type:"
+msgstr ""
+
+#. Label of notebook tab on User Tools prefs page, do not translate the part before |
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:11
+msgctxt "yes"
+msgid "user-tools-prefs|Context menu"
+msgstr ""
+
+#. Label of notebook tab on User Tools prefs page, do not translate the part before |
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:13
+msgctxt "yes"
+msgid "user-tools-prefs|Tools menu"
+msgstr ""
 
 #: ../moo/plugins/usertools/moocommand-exe.c:86
 msgid "Output|None"
@@ -2060,24 +2190,24 @@ msgstr "输入到文档"
 msgid "Output|New document"
 msgstr "新建文档"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:801
+#: ../moo/plugins/usertools/moocommand-exe.c:798
 msgid "Shell command"
 msgstr "Shell命令"
 
 #. Translators: these are kinds of input for a shell command, do not translate the part before |
-#: ../moo/plugins/usertools/moocommand-exe.c:1042
+#: ../moo/plugins/usertools/moocommand-exe.c:1039
 msgid "Input|None"
 msgstr "无"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:1042
+#: ../moo/plugins/usertools/moocommand-exe.c:1039
 msgid "Input|Selected lines"
 msgstr ""
 
-#: ../moo/plugins/usertools/moocommand-exe.c:1042
+#: ../moo/plugins/usertools/moocommand-exe.c:1039
 msgid "Input|Selection"
 msgstr "选项"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:1042
+#: ../moo/plugins/usertools/moocommand-exe.c:1039
 msgid "Input|Whole document"
 msgstr "全部"
 
@@ -2090,7 +2220,7 @@ msgid "Python script"
 msgstr "Python脚本"
 
 #: ../moo/plugins/usertools/moousertools.c:397
-#: ../moo/plugins/usertools/moousertools-prefs.c:408
+#: ../moo/plugins/usertools/moousertools-prefs.c:559
 msgid "Tools"
 msgstr "工具"
 
@@ -2102,9 +2232,54 @@ msgstr ""
 msgid "Configurable tools"
 msgstr ""
 
-#: ../moo/plugins/usertools/moousertools-prefs.c:108
+#: ../moo/plugins/usertools/moousertools-prefs.c:109
 msgid "New Command"
 msgstr "创建命令"
+
+#. 'Requires' combo box entry on Tools prefs page
+#: ../moo/plugins/usertools/moousertools-prefs.c:162
+msgctxt "Requires-combo"
+msgid "Nothing"
+msgstr ""
+
+#. 'Requires' combo box entry on Tools prefs page
+#: ../moo/plugins/usertools/moousertools-prefs.c:164
+msgctxt "Requires-combo"
+msgid "Document"
+msgstr ""
+
+#. 'Requires' combo box entry on Tools prefs page
+#: ../moo/plugins/usertools/moousertools-prefs.c:166
+msgctxt "Requires-combo"
+msgid "File on disk"
+msgstr ""
+
+#. 'Save' combo box entry on Tools prefs page
+#: ../moo/plugins/usertools/moousertools-prefs.c:177
+msgctxt "Save-combo"
+msgid "Nothing"
+msgstr ""
+
+#. 'Save' combo box entry on Tools prefs page
+#: ../moo/plugins/usertools/moousertools-prefs.c:179
+msgctxt "Save-combo"
+msgid "Current document"
+msgstr ""
+
+#. 'Save' combo box entry on Tools prefs page
+#: ../moo/plugins/usertools/moousertools-prefs.c:181
+msgctxt "Save-combo"
+msgid "All documents"
+msgstr ""
+
+#~ msgid "Command type:"
+#~ msgstr "命令类型:"
+
+#~ msgid "Context menu"
+#~ msgstr "语法菜单"
+
+#~ msgid "Tools menu"
+#~ msgstr "工具菜单"
 
 #~ msgid "Case sensitive"
 #~ msgstr "区分太小写"
@@ -2271,9 +2446,6 @@ msgstr "创建命令"
 #~ msgid "Go to line"
 #~ msgstr "跳到行"
 
-#~ msgid "Label:"
-#~ msgstr "标题"
-
 #~ msgid "New Folder..."
 #~ msgstr "创建目录"
 
@@ -2291,9 +2463,6 @@ msgstr "创建命令"
 
 #~ msgid "Arguments"
 #~ msgstr "参数"
-
-#~ msgid "Run options"
-#~ msgstr "运行选项"
 
 #~ msgid "Arguments:"
 #~ msgstr "参数:"

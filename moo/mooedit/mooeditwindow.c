@@ -1849,7 +1849,8 @@ notebook_populate_popup (MooNotebook        *notebook,
 
     doc = moo_edit_view_get_doc (view);
 
-    item = gtk_menu_item_new_with_label ("Close");
+    /* Item in document tab context menu */
+    item = gtk_menu_item_new_with_label (C_("tab-context-menu", "Close"));
     gtk_widget_show (item);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
     g_object_set_data (G_OBJECT (item), "moo-edit", doc);
@@ -1859,7 +1860,8 @@ notebook_populate_popup (MooNotebook        *notebook,
 
     if (moo_edit_window_num_docs (window) > 1)
     {
-        item = gtk_menu_item_new_with_label ("Close All Others");
+        /* Item in document tab context menu */
+        item = gtk_menu_item_new_with_label (C_("tab-context-menu", "Close All Others"));
         gtk_widget_show (item);
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
         g_object_set_data (G_OBJECT (item), "moo-edit", doc);
@@ -1875,7 +1877,8 @@ notebook_populate_popup (MooNotebook        *notebook,
                                                          "visible", TRUE,
                                                          (const char*) NULL)));
 
-        item = gtk_menu_item_new_with_label ("Detach");
+        /* Item in document tab context menu */
+        item = gtk_menu_item_new_with_label (C_("tab-context-menu", "Detach"));
         gtk_widget_show (item);
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
         g_object_set_data (G_OBJECT (item), "moo-edit", doc);

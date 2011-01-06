@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-04 23:55-0800\n"
+"POT-Creation-Date: 2011-01-06 00:56-0800\n"
 "PO-Revision-Date: 2007-07-11 10:00+0500\n"
 "Last-Translator: Andrey Fedoseev <andrey.fedoseev@gmail.com>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -324,7 +324,6 @@ msgid "Mime types:"
 msgstr "MIME-типы:"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:5
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:9
 msgid "Options:"
 msgstr "Параметры:"
 
@@ -800,6 +799,23 @@ msgstr ""
 msgid "PreferencesPage|Languages"
 msgstr ""
 
+#. Menu item in the Language menu
+#: ../moo/mooedit/mooeditprefspage.c:555 ../moo/mooedit/mooeditwindow.c:3208
+msgid "Language|None"
+msgstr ""
+
+#. Column label on File Filters prefs page
+#: ../moo/mooedit/mooeditprefspage.c:919
+msgctxt "filter-prefs-column"
+msgid "Filter"
+msgstr "Фильтр"
+
+#. Column label on File Filters prefs page
+#: ../moo/mooedit/mooeditprefspage.c:921
+msgctxt "filter-prefs-column"
+msgid "Options"
+msgstr "Параметры"
+
 #: ../moo/mooedit/mooeditwindow.c:362
 msgid "Create new document"
 msgstr "Создать новый документ"
@@ -1072,36 +1088,60 @@ msgstr ""
 msgid "Mi_xed"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3059
+#. Item in document tab context menu
+#: ../moo/mooedit/mooeditwindow.c:1853
+msgctxt "tab-context-menu"
+msgid "Close"
+msgstr "Закрыть"
+
+#. Item in document tab context menu
+#: ../moo/mooedit/mooeditwindow.c:1864
+msgctxt "tab-context-menu"
+msgid "Close All Others"
+msgstr "Закрыть Все Остальные"
+
+#. Item in document tab context menu
+#: ../moo/mooedit/mooeditwindow.c:1881
+msgctxt "tab-context-menu"
+msgid "Detach"
+msgstr "Отделить"
+
+#: ../moo/mooedit/mooeditwindow.c:3062
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3060
+#: ../moo/mooedit/mooeditwindow.c:3063
 #, c-format
 msgid "Chars: %s"
 msgstr ""
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3103
+#: ../moo/mooedit/mooeditwindow.c:3106
 msgid "OVR"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3103
+#: ../moo/mooedit/mooeditwindow.c:3106
 msgid "INS"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3200
+#: ../moo/mooedit/mooeditwindow.c:3203
 msgid "_Language"
 msgstr "_Язык"
 
-#. Menu item in the Language menu
-#: ../moo/mooedit/mooeditwindow.c:3205
-msgid "Language|None"
+#: ../moo/mooedit/mooplugin.c:1425
+msgctxt "Prefs page label"
+msgid "Plugins"
 msgstr ""
 
-#: ../moo/mooedit/mooplugin.c:1425
-msgid "Plugins"
+#: ../moo/mooedit/mooplugin.c:1450
+msgctxt "plugin-prefs-column"
+msgid "Enabled"
+msgstr "Включен"
+
+#: ../moo/mooedit/mooplugin.c:1456
+msgctxt "plugin-prefs-column"
+msgid "Plugin"
 msgstr ""
 
 #: ../moo/mooedit/mooplugin-loader.c:229
@@ -1115,6 +1155,16 @@ msgstr ""
 #, c-format
 msgid "console message|invalid module version '%s' in file '%s'"
 msgstr ""
+
+#: ../moo/mooedit/mootextfind.c:165
+msgctxt "Dialog title"
+msgid "Replace"
+msgstr "Заменa"
+
+#: ../moo/mooedit/mootextfind.c:171
+msgctxt "Dialog title"
+msgid "Find"
+msgstr "Поиск"
 
 #: ../moo/mooedit/mootextfind.c:475
 msgid "No search term entered"
@@ -1205,6 +1255,24 @@ msgstr "Общее"
 #: ../moo/plugins/moofileselector.c:891 ../moo/plugins/moofileselector.c:916
 msgid "Save As"
 msgstr "Сохранить как"
+
+#. Column label in file selector bookmark editor
+#: ../moo/moofileview/moobookmarkmgr.c:963
+msgctxt "fileview-bookmark-editor"
+msgid "Icon"
+msgstr "Значок"
+
+#. Column label in file selector bookmark editor
+#: ../moo/moofileview/moobookmarkmgr.c:979
+msgctxt "fileview-bookmark-editor"
+msgid "Label"
+msgstr ""
+
+#. Column label in file selector bookmark editor
+#: ../moo/moofileview/moobookmarkmgr.c:997
+msgctxt "fileview-bookmark-editor"
+msgid "Path"
+msgstr "Путь"
 
 #: ../moo/moofileview/moofileview.c:1116 ../moo/plugins/moofileselector.c:635
 #: ../moo/plugins/moofileselector.c:636 ../moo/plugins/moofileselector.c:1273
@@ -1393,7 +1461,25 @@ msgctxt "yes"
 msgid "Shortcut|None"
 msgstr "Нет"
 
-#: ../moo/mooutils/mooaccelprefs.c:799
+#. Column label in Configure Shortcuts dialog
+#: ../moo/mooutils/mooaccelprefs.c:261
+msgctxt "accel-editor-column"
+msgid "Action"
+msgstr ""
+
+#. Column label in Configure Shortcuts dialog
+#: ../moo/mooutils/mooaccelprefs.c:270
+msgctxt "accel-editor-column"
+msgid "Shortcut"
+msgstr ""
+
+#. Column label in Configure Shortcuts dialog
+#: ../moo/mooutils/mooaccelprefs.c:279
+msgctxt "accel-editor-column"
+msgid "Global"
+msgstr ""
+
+#: ../moo/mooutils/mooaccelprefs.c:805
 msgid "Configure Shortcuts"
 msgstr "Настройка горячих клавиш"
 
@@ -1623,6 +1709,24 @@ msgstr "Вьетнамская"
 msgid "Thai"
 msgstr "Тайская"
 
+#. menu item in Insert Special Character submenu of text entry context menu
+#: ../moo/mooutils/mooentry.c:536
+msgctxt "insert-special-char"
+msgid "Line End"
+msgstr ""
+
+#. menu item in Insert Special Character submenu of text entry context menu
+#: ../moo/mooutils/mooentry.c:538
+msgctxt "insert-special-char"
+msgid "Tab"
+msgstr ""
+
+#. label of Insert Special Character submenu in text entry context menu
+#: ../moo/mooutils/mooentry.c:581
+msgctxt "insert-special-char"
+msgid "Insert Special Character"
+msgstr ""
+
 #: ../moo/mooutils/moofiledialog.c:650
 msgid "Selected file is not a regular file"
 msgstr ""
@@ -1783,6 +1887,13 @@ msgstr ""
 
 #: ../moo/mooutils/moowindow.c:1189
 msgid "Toolbar _Style"
+msgstr ""
+
+#. label of Ctags plugin pane
+#: ../moo/plugins/ctags/ctags-plugin.c:119
+#: ../moo/plugins/ctags/ctags-plugin.c:120
+msgctxt "window-pane"
+msgid "Functions"
 msgstr ""
 
 #: ../moo/plugins/glade/moofileselector.glade.h:1
@@ -1983,6 +2094,13 @@ msgstr ""
 msgid "Lua support"
 msgstr ""
 
+#. label of Output window pane
+#: ../moo/plugins/support/mooeditwindowoutput.c:33
+#: ../moo/plugins/support/mooeditwindowoutput.c:34
+msgctxt "window-pane"
+msgid "Output"
+msgstr "Вывод"
+
 #. Output filter for shell commands
 #: ../moo/plugins/usertools/filters.xml.h:2
 msgid "Filter|Bison"
@@ -2026,40 +2144,52 @@ msgid "Output:"
 msgstr "Вывод:"
 
 #: ../moo/plugins/usertools/glade/moousertools.glade.h:1
-msgid "Command type:"
-msgstr "Тип команды:"
-
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:2
-msgid "Context menu"
-msgstr "Контекстное меню"
-
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:3
 msgid "Delete item"
 msgstr "Удалить"
 
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:4
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:2
 msgid "Enabled"
 msgstr "Включен"
 
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:5
-msgid "Files:"
-msgstr "Файлы:"
-
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:6
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:3
 msgid "Move item down"
 msgstr "Переместить вниз"
 
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:7
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:4
 msgid "Move item up"
 msgstr "Переместить вверх"
 
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:8
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:5
 msgid "New item"
 msgstr "Новый"
 
-#: ../moo/plugins/usertools/glade/moousertools.glade.h:10
-msgid "Tools menu"
-msgstr "Меню Инструментов"
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:6
+msgid "_Files:"
+msgstr "Файлы:"
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:7
+msgid "_Requires:"
+msgstr "Требует"
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:8
+msgid "_Save:"
+msgstr "Сохранить:"
+
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:9
+msgid "_Type:"
+msgstr "Тип:"
+
+#. Label of notebook tab on User Tools prefs page, do not translate the part before |
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:11
+msgctxt "yes"
+msgid "user-tools-prefs|Context menu"
+msgstr ""
+
+#. Label of notebook tab on User Tools prefs page, do not translate the part before |
+#: ../moo/plugins/usertools/glade/moousertools.glade.h:13
+msgctxt "yes"
+msgid "user-tools-prefs|Tools menu"
+msgstr ""
 
 #: ../moo/plugins/usertools/moocommand-exe.c:86
 msgid "Output|None"
@@ -2085,24 +2215,24 @@ msgstr "Вставить в документ"
 msgid "Output|New document"
 msgstr "Новый документ"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:801
+#: ../moo/plugins/usertools/moocommand-exe.c:798
 msgid "Shell command"
 msgstr "Команда оболочки"
 
 #. Translators: these are kinds of input for a shell command, do not translate the part before |
-#: ../moo/plugins/usertools/moocommand-exe.c:1042
+#: ../moo/plugins/usertools/moocommand-exe.c:1039
 msgid "Input|None"
 msgstr "Ничего"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:1042
+#: ../moo/plugins/usertools/moocommand-exe.c:1039
 msgid "Input|Selected lines"
 msgstr "Выделенные строки"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:1042
+#: ../moo/plugins/usertools/moocommand-exe.c:1039
 msgid "Input|Selection"
 msgstr "Выделенный текст"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:1042
+#: ../moo/plugins/usertools/moocommand-exe.c:1039
 msgid "Input|Whole document"
 msgstr "Целый документ"
 
@@ -2115,7 +2245,7 @@ msgid "Python script"
 msgstr "Питон"
 
 #: ../moo/plugins/usertools/moousertools.c:397
-#: ../moo/plugins/usertools/moousertools-prefs.c:408
+#: ../moo/plugins/usertools/moousertools-prefs.c:559
 msgid "Tools"
 msgstr "Инструменты"
 
@@ -2127,9 +2257,54 @@ msgstr ""
 msgid "Configurable tools"
 msgstr ""
 
-#: ../moo/plugins/usertools/moousertools-prefs.c:108
+#: ../moo/plugins/usertools/moousertools-prefs.c:109
 msgid "New Command"
 msgstr "Новая команда"
+
+#. 'Requires' combo box entry on Tools prefs page
+#: ../moo/plugins/usertools/moousertools-prefs.c:162
+msgctxt "Requires-combo"
+msgid "Nothing"
+msgstr "Ничего"
+
+#. 'Requires' combo box entry on Tools prefs page
+#: ../moo/plugins/usertools/moousertools-prefs.c:164
+msgctxt "Requires-combo"
+msgid "Document"
+msgstr "Документ"
+
+#. 'Requires' combo box entry on Tools prefs page
+#: ../moo/plugins/usertools/moousertools-prefs.c:166
+msgctxt "Requires-combo"
+msgid "File on disk"
+msgstr "Файл на диске"
+
+#. 'Save' combo box entry on Tools prefs page
+#: ../moo/plugins/usertools/moousertools-prefs.c:177
+msgctxt "Save-combo"
+msgid "Nothing"
+msgstr "Ничего"
+
+#. 'Save' combo box entry on Tools prefs page
+#: ../moo/plugins/usertools/moousertools-prefs.c:179
+msgctxt "Save-combo"
+msgid "Current document"
+msgstr "Текущий документ"
+
+#. 'Save' combo box entry on Tools prefs page
+#: ../moo/plugins/usertools/moousertools-prefs.c:181
+msgctxt "Save-combo"
+msgid "All documents"
+msgstr "Все документы"
+
+#~ msgid "Command type:"
+#~ msgstr "Тип команды:"
+
+#~ msgid "Context menu"
+#~ msgstr "Контекстное меню"
+
+#~ msgid "Tools menu"
+#~ msgstr "Меню Инструментов"
 
 #~ msgid "Case sensitive"
 #~ msgstr "С учетом регистра"

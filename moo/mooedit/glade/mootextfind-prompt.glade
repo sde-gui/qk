@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <glade-interface>
 <widget class="GtkDialog" id="FindPromptDialog">
-<property name="title">Replace?</property>
+<property name="title" translatable="yes">Replace?</property>
 <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
 <property name="has_separator">False</property>
 <child internal-child="vbox">

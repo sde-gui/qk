@@ -162,13 +162,13 @@ moo_find_constructor (GType           type,
     {
         use_replace = TRUE;
         stock_id = GTK_STOCK_FIND_AND_REPLACE;
-        title = "Replace";
+        title = C_("Dialog title", "Replace");
     }
     else
     {
         use_replace = FALSE;
         stock_id = GTK_STOCK_FIND;
-        title = "Find";
+        title = C_("Dialog title", "Find");
     }
 
     gtk_widget_set_sensitive (GTK_WIDGET (find->xml->backwards), !use_replace);

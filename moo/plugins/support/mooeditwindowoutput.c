@@ -1,6 +1,7 @@
 #include "mooeditwindowoutput.h"
 #include "moocmdview.h"
 #include "mooutils/moostock.h"
+#include "mooutils/mooi18n.h"
 
 GtkWidget *
 moo_edit_window_get_output (MooEditWindow *window)
@@ -27,7 +28,10 @@ moo_edit_window_get_output (MooEditWindow *window)
         gtk_widget_show_all (scrolled_window);
         g_object_set_data (G_OBJECT (scrolled_window), "moo-output", cmd_view);
 
-        label = moo_pane_label_new (MOO_STOCK_TERMINAL, NULL, "Output", "Output");
+        label = moo_pane_label_new (MOO_STOCK_TERMINAL, NULL,
+                                    /* label of Output window pane */
+                                    C_("window-pane", "Output"),
+                                    C_("window-pane", "Output"));
 
         if (!moo_edit_window_add_pane (window, "moo-edit-window-output",
                                        scrolled_window, label, MOO_PANE_POS_BOTTOM))

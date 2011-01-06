@@ -23,6 +23,7 @@
 #include "mooutils/mooundo.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooeditops.h"
+#include "mooutils/mooi18n.h"
 #include <gtk/gtkbindings.h>
 #include <gtk/gtkimagemenuitem.h>
 #include <gtk/gtkseparatormenuitem.h>
@@ -531,8 +532,10 @@ static GtkWidget *
 create_special_chars_menu (MooEntry *entry)
 {
     GtkWidget *menu = gtk_menu_new ();
-    create_special_char_item (entry, menu, "Line End", "\n");
-    create_special_char_item (entry, menu, "Tab", "\t");
+    /* menu item in Insert Special Character submenu of text entry context menu */
+    create_special_char_item (entry, menu, C_("insert-special-char", "Line End"), "\n");
+    /* menu item in Insert Special Character submenu of text entry context menu */
+    create_special_char_item (entry, menu, C_("insert-special-char", "Tab"), "\t");
     gtk_widget_show_all (menu);
     return menu;
 }
@@ -574,7 +577,8 @@ moo_entry_populate_popup (GtkEntry           *gtkentry,
         gtk_widget_show (item);
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 
-        item = gtk_menu_item_new_with_label ("Insert Special Character");
+        /* label of Insert Special Character submenu in text entry context menu */
+        item = gtk_menu_item_new_with_label (C_("insert-special-char", "Insert Special Character"));
         gtk_widget_show (item);
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
 

@@ -318,7 +318,7 @@
 <child>
 <widget class="GtkLabel" id="label12">
 <property name="visible">True</property>
-<property name="label" translatable="yes">Tools menu</property>
+<property name="label" translatable="yes" context="yes" comments="Label of notebook tab on User Tools prefs page, do not translate the part before |">user-tools-prefs|Tools menu</property>
 </widget>
 <packing>
 <property name="tab_fill">False</property>
@@ -339,7 +339,7 @@
 <child>
 <widget class="GtkLabel" id="label13">
 <property name="visible">True</property>
-<property name="label" translatable="yes">Context menu</property>
+<property name="label" translatable="yes" context="yes" comments="Label of notebook tab on User Tools prefs page, do not translate the part before |">user-tools-prefs|Context menu</property>
 </widget>
 <packing>
 <property name="position">1</property>

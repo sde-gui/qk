@@ -959,7 +959,8 @@ init_editor_dialog (BkEditorXml *xml)
 
     /* Icon */
     cell = gtk_cell_renderer_pixbuf_new ();
-    column = gtk_tree_view_column_new_with_attributes ("Icon", cell, NULL);
+    /* Column label in file selector bookmark editor */
+    column = gtk_tree_view_column_new_with_attributes (C_("fileview-bookmark-editor", "Icon"), cell, NULL);
     gtk_tree_view_column_set_cell_data_func (column, cell,
                                              (GtkTreeCellDataFunc) icon_data_func,
                                              NULL, NULL);
@@ -974,7 +975,8 @@ init_editor_dialog (BkEditorXml *xml)
     g_signal_connect (cell, "edited",
                       G_CALLBACK (label_edited), xml);
 
-    column = gtk_tree_view_column_new_with_attributes ("Label", cell, NULL);
+    /* Column label in file selector bookmark editor */
+    column = gtk_tree_view_column_new_with_attributes (C_("fileview-bookmark-editor", "Label"), cell, NULL);
     gtk_tree_view_column_set_cell_data_func (column, cell,
                                              (GtkTreeCellDataFunc) label_data_func,
                                              NULL, NULL);
@@ -991,7 +993,8 @@ init_editor_dialog (BkEditorXml *xml)
     g_signal_connect (cell, "editing-started",
                       G_CALLBACK (path_editing_started), NULL);
 
-    column = gtk_tree_view_column_new_with_attributes ("Path", cell, NULL);
+    /* Column label in file selector bookmark editor */
+    column = gtk_tree_view_column_new_with_attributes (C_("fileview-bookmark-editor", "Path"), cell, NULL);
     gtk_tree_view_column_set_cell_data_func (column, cell,
                                              (GtkTreeCellDataFunc) path_data_func,
                                              NULL, NULL);
