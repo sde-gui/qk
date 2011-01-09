@@ -339,7 +339,7 @@ init_skip_list (void)
     MooHistoryList *list = moo_history_list_get (GREP_SKIP_LIST_ID);
     g_return_if_fail (list != NULL);
     if (moo_history_list_is_empty (list))
-        moo_history_list_add (list, ".svn/;.hg/;.git/;CVS/");
+        moo_history_list_add (list, ".svn/;.hg/;.git/;CVS/;*~;*.bak;*.orig;*.rej");
 }
 
 static void
