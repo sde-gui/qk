@@ -168,6 +168,8 @@ static void          show_notebook                      (MooEditWindow      *win
                                                          MooNotebook        *notebook);
 static void          move_doc_to_split_view             (MooEditWindow      *window,
                                                          MooEdit            *doc);
+static gboolean      can_move_to_split_view             (MooEditWindow      *window);
+static gboolean      both_notebooks_visible             (MooEditWindow      *window);
 
 static void          update_window_title                (MooEditWindow      *window);
 static void          set_title_format_from_prefs        (MooEditWindow      *window);
@@ -270,6 +272,8 @@ static GtkAction *create_goto_bookmark_action   (MooWindow          *window,
 
 static void action_find_now_f                   (MooEditWindow      *window);
 static void action_find_now_b                   (MooEditWindow      *window);
+static void action_focus_doc                    (MooEditWindow      *window);
+static void action_move_to_split_view           (MooEditWindow      *window);
 static void action_abort_jobs                   (MooEditWindow      *window);
 
 static void wrap_text_toggled                   (MooEditWindow      *window,
@@ -299,7 +303,8 @@ enum {
     PROP_HAS_OPEN_DOCUMENT,
     PROP_HAS_COMMENTS,
     PROP_HAS_JOBS_RUNNING,
-    PROP_HAS_STOP_CLIENTS
+    PROP_HAS_STOP_CLIENTS,
+    PROP_CAN_MOVE_TO_SPLIT_VIEW
 };
 
 enum {
@@ -378,6 +383,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     INSTALL_PROP (PROP_HAS_COMMENTS, "has-comments");
     INSTALL_PROP (PROP_HAS_JOBS_RUNNING, "has-jobs-running");
     INSTALL_PROP (PROP_HAS_STOP_CLIENTS, "has-stop-clients");
+    INSTALL_PROP (PROP_CAN_MOVE_TO_SPLIT_VIEW, "can-move-to-split-view");
 
     moo_window_class_set_id (window_class, "Editor", "Editor");
 
@@ -563,7 +569,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     moo_window_class_new_action (window_class, "LineNumbers", NULL,
                                  "action-type::", MOO_TYPE_TOGGLE_ACTION,
                                  "display-name", _("Toggle Line Numbers Display"),
-                                 "label", _("_Show Line Numbers"),
+                                 "label", _("Show _Line Numbers"),
                                  "toggled-callback", line_numbers_toggled,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
@@ -572,9 +578,16 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "display-name", _("Focus Document"),
                                  "label", _("_Focus Document"),
                                  "default-accel", MOO_EDIT_ACCEL_FOCUS_DOC,
-                                 "closure-callback", gtk_widget_grab_focus,
-                                 "closure-proxy-func", moo_edit_window_get_active_view,
+                                 "closure-callback", action_focus_doc,
                                  "condition::sensitive", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "MoveToSplitView", NULL,
+                                 "display-name", _("Move to Split View"),
+                                 "label", _("_Move to Split View"),
+                                 "default-accel", MOO_EDIT_ACCEL_MOVE_TO_SPLIT_VIEW,
+                                 "closure-callback", action_move_to_split_view,
+                                 "condition::sensitive", "can-move-to-split-view",
                                  NULL);
 
     moo_window_class_new_action (window_class, STOP_ACTION_ID, NULL,
@@ -874,7 +887,10 @@ static void     moo_edit_window_get_property(GObject        *object,
             g_value_set_boolean (value, doc && !moo_edit_is_untitled (doc));
             break;
         case PROP_HAS_OPEN_DOCUMENT:
-            g_value_set_boolean (value, moo_edit_window_n_docs (window) != 0);
+            g_value_set_boolean (value, moo_edit_window_get_n_docs (window) != 0);
+            break;
+        case PROP_CAN_MOVE_TO_SPLIT_VIEW:
+            g_value_set_boolean (value, can_move_to_split_view (window));
             break;
         case PROP_HAS_COMMENTS:
             doc = ACTIVE_DOC (window);
@@ -1419,7 +1435,7 @@ switch_to_tab (MooEditWindow *window,
                int            n)
 {
     MooEditView *view = NULL;
-    int n_docs = moo_edit_window_n_docs (window);
+    int n_docs = moo_edit_window_get_n_docs (window);
     int i;
 
     if (n < 0)
@@ -1466,7 +1482,7 @@ action_next_tab (MooEditWindow *window)
 
     n = get_active_tab (window);
 
-    if (n < moo_edit_window_n_docs (window) - 1)
+    if (n < moo_edit_window_get_n_docs (window) - 1)
         switch_to_tab (window, n + 1);
     else
         switch_to_tab (window, 0);
@@ -1504,6 +1520,40 @@ static void
 action_find_now_b (MooEditWindow *window)
 {
     moo_edit_window_find_now (window, FALSE);
+}
+
+
+static void
+action_focus_doc (MooEditWindow *window)
+{
+    MooEditView *active_view;
+
+    active_view = ACTIVE_VIEW (window);
+    moo_return_if_fail (active_view != NULL);
+
+    if (!GTK_WIDGET_HAS_FOCUS (active_view))
+    {
+        gtk_widget_grab_focus (GTK_WIDGET (active_view));
+    }
+    else if (both_notebooks_visible (window))
+    {
+        MooNotebook *nb1 = get_notebook (window, 0);
+        MooNotebook *nb2 = get_notebook (window, 1);
+        MooEditView *view1 = get_notebook_active_view (nb1);
+        MooEditView *view2 = get_notebook_active_view (nb2);
+        if (view1 == active_view)
+            gtk_widget_grab_focus (GTK_WIDGET (view2));
+        else if (view2 == active_view)
+            gtk_widget_grab_focus (GTK_WIDGET (view1));
+        else
+            moo_return_if_reached ();
+    }
+}
+
+static void
+action_move_to_split_view (MooEditWindow *window)
+{
+    move_doc_to_split_view (window, ACTIVE_DOC (window));
 }
 
 
@@ -1911,6 +1961,13 @@ move_to_split_view_activated (GtkWidget     *item,
 /* Documents
  */
 
+static gboolean
+can_move_to_split_view (MooEditWindow *window)
+{
+    moo_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
+    return moo_edit_window_get_n_docs (window) > 1;
+}
+
 static void
 move_doc_to_split_view (MooEditWindow *window,
                         MooEdit       *doc)
@@ -2028,7 +2085,7 @@ notebook_populate_popup (MooEditWindow      *window,
                       G_CALLBACK (close_activated),
                       window);
 
-    if (moo_edit_window_n_docs (window) > 1)
+    if (moo_edit_window_get_n_docs (window) > 1)
     {
         /* Item in document tab context menu */
         item = gtk_menu_item_new_with_label (C_("tab-context-menu", "Close All Others"));
@@ -2040,7 +2097,7 @@ notebook_populate_popup (MooEditWindow      *window,
                           window);
     }
 
-    if (moo_edit_window_n_docs (window) > 1)
+    if (moo_edit_window_get_n_docs (window) > 1)
     {
         gtk_menu_shell_append (GTK_MENU_SHELL (menu),
                                GTK_WIDGET (g_object_new (GTK_TYPE_SEPARATOR_MENU_ITEM,
@@ -2565,10 +2622,10 @@ moo_edit_window_get_views (MooEditWindow *window)
 
 
 /**
- * moo_edit_window_n_docs:
+ * moo_edit_window_get_n_docs:
  */
 int
-moo_edit_window_n_docs (MooEditWindow *window)
+moo_edit_window_get_n_docs (MooEditWindow *window)
 {
     guint i;
     int n_docs = 0;
@@ -2782,6 +2839,8 @@ _moo_edit_window_insert_doc (MooEditWindow *window,
     moo_edit_window_set_active_doc (window, edit);
     edit_changed (window, edit);
     gtk_widget_grab_focus (GTK_WIDGET (view));
+
+    g_object_notify (G_OBJECT (window), "can-move-to-split-view");
 }
 
 
@@ -2852,7 +2911,6 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
     edit_changed (window, NULL);
 
     g_signal_emit (window, signals[CLOSE_DOC_AFTER], 0);
-    g_object_notify (G_OBJECT (window), "active-doc");
 
     new_view = ACTIVE_VIEW (window);
 
@@ -2860,6 +2918,11 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
         moo_edit_window_check_actions (window);
     else if (had_focus)
         gtk_widget_grab_focus (GTK_WIDGET (new_view));
+
+    g_object_freeze_notify (G_OBJECT (window));
+    g_object_notify (G_OBJECT (window), "active-doc");
+    g_object_notify (G_OBJECT (window), "can-move-to-split-view");
+    g_object_thaw_notify (G_OBJECT (window));
 
     g_object_unref (doc);
 }

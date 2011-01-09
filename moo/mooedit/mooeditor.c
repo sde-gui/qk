@@ -1585,7 +1585,7 @@ moo_editor_close_docs (MooEditor    *editor,
     if (close_docs_real (editor, docs, ask_confirm))
     {
         if (window &&
-            !moo_edit_window_n_docs (window) &&
+            !moo_edit_window_get_n_docs (window) &&
             !test_flag (editor, ALLOW_EMPTY_WINDOW))
         {
             MooEdit *doc = MOO_EDIT (g_object_new (get_doc_type (editor),

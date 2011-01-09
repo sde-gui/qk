@@ -91,7 +91,7 @@ MooEditView     *moo_edit_window_get_nth_view           (MooEditWindow  *window,
                                                          guint           n);
 MooEditArray    *moo_edit_window_get_docs               (MooEditWindow  *window);
 MooEditViewArray*moo_edit_window_get_views              (MooEditWindow  *window);
-int              moo_edit_window_n_docs                 (MooEditWindow  *window);
+int              moo_edit_window_get_n_docs             (MooEditWindow  *window);
 
 /* sinks widget */
 MooPane         *moo_edit_window_add_pane               (MooEditWindow  *window,

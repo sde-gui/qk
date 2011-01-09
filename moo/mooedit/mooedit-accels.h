@@ -40,6 +40,7 @@
 #define MOO_EDIT_ACCEL_FIND_IN_FILES "<Ctrl><Alt>F"
 
 #define MOO_EDIT_ACCEL_FOCUS_DOC "<Alt>C"
+#define MOO_EDIT_ACCEL_MOVE_TO_SPLIT_VIEW "<Alt>L"
 #define MOO_EDIT_ACCEL_SWITCH_TO_TAB "<Alt>"
 #define MOO_EDIT_ACCEL_PREV_TAB "<Alt>Left"
 #define MOO_EDIT_ACCEL_NEXT_TAB "<Alt>Right"
@@ -54,6 +55,7 @@
 #define MOO_EDIT_ACCEL_FIND_IN_FILES "<Ctrl><Meta>F"
 
 #define MOO_EDIT_ACCEL_FOCUS_DOC "<Meta>J"
+#define MOO_EDIT_ACCEL_MOVE_TO_SPLIT_VIEW ""
 #define MOO_EDIT_ACCEL_SWITCH_TO_TAB "<Meta>"
 #define MOO_EDIT_ACCEL_PREV_TAB "<Meta>Left"
 #define MOO_EDIT_ACCEL_NEXT_TAB "<Meta>Right"
