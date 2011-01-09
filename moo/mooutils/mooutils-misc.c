@@ -1211,18 +1211,25 @@ moo_getenv_bool (const char *var)
 }
 
 
+/**
+ * moo_tempdir:
+ *
+ * Return the path of &medit; temporary file directory. This directory
+ * is created automatically and is removed on exit. It is unique among
+ * all &medit; instances.
+ *
+ * Returns: (type filename)
+ **/
 char *
-moo_tempnam (void)
+moo_tempdir (void)
 {
-    int i;
-    char *filename = NULL;
-    static int counter;
-    G_LOCK_DEFINE_STATIC (counter);
-
     MOO_DO_ONCE_BEGIN
     {
+        int i;
         char *dirname = NULL;
         const char *short_name;
+
+        moo_assert (!moo_temp_dir);
 
         short_name = MOO_PACKAGE_NAME;
 
@@ -1246,7 +1253,30 @@ moo_tempnam (void)
     }
     MOO_DO_ONCE_END
 
-    g_return_val_if_fail (moo_temp_dir != NULL, NULL);
+    moo_return_val_if_fail (moo_temp_dir != NULL, NULL);
+    return moo_temp_dir;
+}
+
+/**
+ * moo_tempnam:
+ *
+ * Generate a unique filename for a temporary file. Generated filename
+ * is located inside directory returned by moo_tempdir(), and it
+ * will be automatically removed on exit.
+ *
+ * Returns: (type filename)
+ **/
+char *
+moo_tempnam (void)
+{
+    int i;
+    char *tmpdir;
+    char *filename = NULL;
+    static int counter;
+    G_LOCK_DEFINE_STATIC (counter);
+
+    tmpdir = moo_tempdir ();
+    moo_return_val_if_fail (tmpdir != NULL, NULL);
 
     G_LOCK (counter);
 
@@ -1255,7 +1285,7 @@ moo_tempnam (void)
         char *basename;
 
         basename = g_strdup_printf ("tmpfile-%03d", i);
-        filename = g_build_filename (moo_temp_dir, basename, NULL);
+        filename = g_build_filename (tmpdir, basename, NULL);
         g_free (basename);
 
         if (!g_file_test (filename, G_FILE_TEST_EXISTS))
@@ -1269,9 +1299,9 @@ moo_tempnam (void)
 
     G_UNLOCK (counter);
 
-    if (!filename)
-        g_warning ("%s: could not generate temp file name", G_STRLOC);
+    g_free (tmpdir);
 
+    moo_return_val_if_fail (filename != NULL, NULL);
     return filename;
 }
 

@@ -99,6 +99,7 @@ char      **moo_get_data_and_lib_subdirs    (const char     *subdir);
 
 gboolean    moo_getenv_bool                 (const char     *var);
 
+char       *moo_tempdir                     (void);
 char       *moo_tempnam                     (void);
 void        moo_cleanup                     (void);
 
