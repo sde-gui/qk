@@ -3,7 +3,13 @@
 
 #include <glib/gstdio.h>
 
-#if defined(G_OS_WIN32) && GLIB_CHECK_VERSION(2,22,0)
+#undef MOO_G_STAT_BROKEN
+
+#if defined(G_OS_WIN32) && GLIB_CHECK_VERSION(2,22,0) && !GLIB_CHECK_VERSION(2,26,0)
+#define MOO_G_STAT_BROKEN 1
+#endif
+
+#ifdef MOO_G_STAT_BROKEN
 
 inline static void _moo_check_stat_struct(void)
 {
@@ -21,7 +27,7 @@ G_BEGIN_DECLS
 
 inline static int moo_stat (const char *filename, struct stat *buf)
 {
-#if defined(G_OS_WIN32) && GLIB_CHECK_VERSION(2,22,0)
+#ifdef MOO_G_STAT_BROKEN
     /* _moo_check_stat_struct above checks that struct stat is okay,
        cast to void* is to avoid using glib's internal _g_stat_struct */
     return g_stat (filename, (struct _g_stat_struct*) buf);
@@ -32,7 +38,7 @@ inline static int moo_stat (const char *filename, struct stat *buf)
 
 inline static int moo_lstat (const char *filename, struct stat *buf)
 {
-#if defined(G_OS_WIN32) && GLIB_CHECK_VERSION(2,22,0)
+#ifdef MOO_G_STAT_BROKEN
     /* _moo_check_stat_struct above checks that struct stat is okay,
        cast to void* is to avoid using glib's internal _g_stat_struct */
     return g_lstat (filename, (struct _g_stat_struct*) buf);
