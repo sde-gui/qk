@@ -1,0 +1,87 @@
+diff -r 1e34387870c5 Makefile.in
+--- a/Makefile.in	Sat Jan 08 17:06:50 2011 -0800
++++ b/Makefile.in	Sat Jan 08 17:15:57 2011 -0800
+@@ -455,8 +455,8 @@
+ 	|| { echo "Gtk+Tests:ERROR: Failed to start Xvfb environment for X11 target tests."; exit 1; } \
+ 	&& DISPLAY=:$$XID && export DISPLAY
+ 
+-SRC_SUBDIRS = gdk gtk modules demos tests perf
+-SUBDIRS = po po-properties $(SRC_SUBDIRS) docs m4macros build
++SRC_SUBDIRS = gdk gtk modules
++SUBDIRS = po po-properties $(SRC_SUBDIRS)
+ 
+ # require automake 1.4
+ AUTOMAKE_OPTIONS = 1.7
+diff -r 1e34387870c5 gdk/Makefile.in
+--- a/gdk/Makefile.in	Sat Jan 08 17:06:50 2011 -0800
++++ b/gdk/Makefile.in	Sat Jan 08 17:15:57 2011 -0800
+@@ -514,7 +514,7 @@
+    --includedir=$(srcdir) \
+    --includedir=.
+ 
+-SUBDIRS = $(gdktarget) . tests
++SUBDIRS = $(gdktarget) .
+ DIST_SUBDIRS = win32 x11 quartz directfb tests
+ CLEANFILES = $(am__append_4)
+ INCLUDES = \
+diff -r 1e34387870c5 gdk/win32/gdkwindow-win32.c
+--- a/gdk/win32/gdkwindow-win32.c	Sat Jan 08 17:06:50 2011 -0800
++++ b/gdk/win32/gdkwindow-win32.c	Sat Jan 08 17:15:57 2011 -0800
+@@ -1084,7 +1084,7 @@
+     {
+       ShowWindow (GDK_WINDOW_HWND (window), SW_SHOWNOACTIVATE);
+     }
+-  else
++  else if (!IsWindowVisible (GDK_WINDOW_HWND (window)))
+     {
+       ShowWindow (GDK_WINDOW_HWND (window), SW_SHOWNORMAL);
+     }
+@@ -3454,6 +3454,8 @@
+ gdk_window_focus (GdkWindow *window,
+                   guint32    timestamp)
+ {
++  GdkWindowObject *private = (GdkWindowObject *) window;
++
+   g_return_if_fail (GDK_IS_WINDOW (window));
+ 
+   if (GDK_WINDOW_DESTROYED (window))
+@@ -3463,10 +3465,13 @@
+ 			   GDK_WINDOW_HWND (window),
+ 			   _gdk_win32_window_state_to_string (((GdkWindowObject *) window)->state)));
+ 
+-  if (((GdkWindowObject *) window)->state & GDK_WINDOW_STATE_MAXIMIZED)
++  if (private->state & GDK_WINDOW_STATE_MAXIMIZED)
+     ShowWindow (GDK_WINDOW_HWND (window), SW_SHOWMAXIMIZED);
+-  else
++  else if (private->state & GDK_WINDOW_STATE_ICONIFIED)
++    ShowWindow (GDK_WINDOW_HWND (window), SW_RESTORE);
++  else if (!IsWindowVisible (GDK_WINDOW_HWND (window)))
+     ShowWindow (GDK_WINDOW_HWND (window), SW_SHOWNORMAL);
++
+   SetFocus (GDK_WINDOW_HWND (window));
+ }
+ 
+diff -r 1e34387870c5 gtk/Makefile.in
+--- a/gtk/Makefile.in	Sat Jan 08 17:06:50 2011 -0800
++++ b/gtk/Makefile.in	Sat Jan 08 17:15:57 2011 -0800
+@@ -940,7 +940,7 @@
+ 
+ @USE_QUARTZ_FALSE@GTK_PRINT_PREVIEW_COMMAND = "evince --unlink-tempfile --preview --print-settings %s %f"
+ @USE_QUARTZ_TRUE@GTK_PRINT_PREVIEW_COMMAND = "open -a /Applications/Preview.app %f"
+-SUBDIRS = theme-bits . tests
++SUBDIRS = theme-bits .
+ DIST_SUBDIRS = theme-bits tests
+ @HAVE_CUPS_FALSE@@HAVE_PAPI_CUPS_FALSE@@HAVE_PAPI_FALSE@GTK_PRINT_BACKENDS = file,lpr
+ @HAVE_CUPS_FALSE@@HAVE_PAPI_CUPS_FALSE@@HAVE_PAPI_TRUE@GTK_PRINT_BACKENDS = file,papi
+diff -r 1e34387870c5 modules/other/gail/Makefile.in
+--- a/modules/other/gail/Makefile.in	Sat Jan 08 17:06:50 2011 -0800
++++ b/modules/other/gail/Makefile.in	Sat Jan 08 17:15:57 2011 -0800
+@@ -444,7 +444,7 @@
+ 	|| { echo "Gtk+Tests:ERROR: Failed to start Xvfb environment for X11 target tests."; exit 1; } \
+ 	&& DISPLAY=:$$XID && export DISPLAY
+ 
+-SUBDIRS = libgail-util tests
++SUBDIRS = libgail-util
+ @PLATFORM_WIN32_TRUE@no_undefined = -no-undefined
+ moduledir = $(libdir)/gtk-2.0/modules
+ module_LTLIBRARIES = libgail.la
