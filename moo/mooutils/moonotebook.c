@@ -769,13 +769,10 @@ moo_notebook_size_request (GtkWidget      *widget,
             child_req.height = MAX (child_req.height, action_req.height);
         }
 
-        if (nb->priv->arrows_visible)
-        {
-            gtk_widget_size_request (nb->priv->arrows, &action_req);
-            MAKE_POSITIVE (action_req.width, action_req.height);
-            child_req.height = MAX (child_req.height, action_req.height);
-            child_req.width += MAX (action_req.width, 2*child_req.height);
-        }
+        gtk_widget_size_request (nb->priv->arrows, &action_req);
+        MAKE_POSITIVE (action_req.width, action_req.height);
+        child_req.height = MAX (child_req.height, action_req.height);
+        child_req.width += MAX (action_req.width, 2*child_req.height);
 
         if (child_req.width > 0)
             requisition->width = MAX (requisition->width, child_req.width);
