@@ -788,7 +788,7 @@ moo_editor_new_window (MooEditor *editor)
     if (!test_flag (editor, ALLOW_EMPTY_WINDOW))
     {
         doc = MOO_EDIT (g_object_new (get_doc_type (editor), "editor", editor, (const char*) NULL));
-        _moo_edit_window_insert_doc (window, doc, -1);
+        _moo_edit_window_insert_doc (window, doc, NULL);
         moo_editor_add_doc (editor, window, doc);
         g_object_unref (doc);
     }
@@ -855,7 +855,7 @@ moo_editor_new_doc (MooEditor      *editor,
     g_return_val_if_fail (window != NULL, NULL);
 
     doc = MOO_EDIT (g_object_new (get_doc_type (editor), "editor", editor, (const char*) NULL));
-    _moo_edit_window_insert_doc (window, doc, -1);
+    _moo_edit_window_insert_doc (window, doc, NULL);
     moo_editor_add_doc (editor, window, doc);
     g_object_unref (doc);
     return doc;
@@ -866,18 +866,21 @@ void
 _moo_editor_move_doc (MooEditor     *editor,
                       MooEdit       *doc,
                       MooEditWindow *dest,
+                      MooEditView   *dest_view,
                       gboolean       focus)
 {
     MooEditWindow *old_window;
-    MooEdit *old_doc;
-    int new_pos = -1;
+    MooEdit *dest_doc = NULL;
 
     g_return_if_fail (MOO_IS_EDITOR (editor));
     g_return_if_fail (MOO_IS_EDIT (doc) && moo_edit_get_editor (doc) == editor);
     g_return_if_fail (!dest || (MOO_IS_EDIT_WINDOW (dest) && moo_edit_window_get_editor (dest) == editor));
 
     if (!dest)
+    {
         dest = moo_editor_new_window (editor);
+        dest_view = moo_edit_window_get_active_view (dest);
+    }
 
     g_object_ref (doc);
 
@@ -889,18 +892,12 @@ _moo_editor_move_doc (MooEditor     *editor,
             moo_editor_close_window (editor, old_window, FALSE);
     }
 
-    old_doc = moo_edit_window_get_active_doc (dest);
-
-    if (old_doc && moo_edit_is_empty (old_doc))
-        new_pos = _moo_edit_window_get_doc_no (dest, old_doc);
-    else
-        old_doc = NULL;
-
-    _moo_edit_window_insert_doc (dest, doc, new_pos);
+    _moo_edit_window_insert_doc (dest, doc, dest_view);
     moo_editor_add_doc (editor, dest, doc);
 
-    if (old_doc)
-        moo_editor_close_doc (editor, old_doc, FALSE);
+    dest_doc = dest_view ? moo_edit_view_get_doc (dest_view) : NULL;
+    if (dest_doc && moo_edit_is_empty (dest_doc))
+        moo_editor_close_doc (editor, dest_doc, FALSE);
 
     if (focus)
         moo_editor_set_active_doc (editor, doc);
@@ -1047,7 +1044,7 @@ moo_editor_load_file (MooEditor       *editor,
         if (!window || (info->flags & MOO_EDIT_OPEN_NEW_WINDOW))
             window = create_window (editor);
 
-        _moo_edit_window_insert_doc (window, doc, -1);
+        _moo_edit_window_insert_doc (window, doc, NULL);
         moo_editor_add_doc (editor, window, doc);
     }
 
@@ -1172,7 +1169,7 @@ moo_editor_load_file (MooEditor       *editor,
 //
 //         if (new_doc)
 //         {
-//             _moo_edit_window_insert_doc (window, doc, -1);
+//             _moo_edit_window_insert_doc (window, doc, NULL);
 //             moo_editor_add_doc (editor, window, doc);
 //         }
 //
@@ -1588,13 +1585,13 @@ moo_editor_close_docs (MooEditor    *editor,
     if (close_docs_real (editor, docs, ask_confirm))
     {
         if (window &&
-            !moo_edit_window_num_docs (window) &&
+            !moo_edit_window_n_docs (window) &&
             !test_flag (editor, ALLOW_EMPTY_WINDOW))
         {
             MooEdit *doc = MOO_EDIT (g_object_new (get_doc_type (editor),
                                                    "editor", editor,
                                                    (const char*) NULL));
-            _moo_edit_window_insert_doc (window, doc, -1);
+            _moo_edit_window_insert_doc (window, doc, NULL);
             moo_editor_add_doc (editor, window, doc);
             g_object_unref (doc);
         }

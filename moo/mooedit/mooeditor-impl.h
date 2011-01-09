@@ -21,6 +21,7 @@ void             _moo_editor_unset_focused_doc  (MooEditor      *editor,
 void             _moo_editor_move_doc           (MooEditor      *editor,
                                                  MooEdit        *doc,
                                                  MooEditWindow  *dest,
+                                                 MooEditView    *dest_view,
                                                  gboolean        focus);
 
 MooFileWatch    *_moo_editor_get_file_watch     (MooEditor      *editor);
