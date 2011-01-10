@@ -15,7 +15,15 @@
 
 #include "config.h"
 #include "mooutils-script.h"
+#include "mooutils-fs.h"
+#include "mooutils-debug.h"
 #include "mooutils.h"
+#include <stdlib.h>
+
+static char *moo_temp_dir;
+
+static void     moo_install_atexit      (void);
+static void     moo_remove_tempdir      (void);
 
 static gboolean
 quit_main_loop (GMainLoop *main_loop)
@@ -42,4 +50,144 @@ moo_spin_main_loop (double sec)
     gdk_threads_enter ();
 
     g_main_loop_unref (main_loop);
+}
+
+
+/**
+ * moo_tempdir:
+ *
+ * Return the path of &medit; temporary file directory. This directory
+ * is created automatically and is removed on exit. It is unique among
+ * all &medit; instances.
+ *
+ * Returns: (type filename)
+ **/
+char *
+moo_tempdir (void)
+{
+    MOO_DO_ONCE_BEGIN
+    {
+        int i;
+        char *dirname = NULL;
+        const char *short_name;
+
+        moo_assert (!moo_temp_dir);
+
+        short_name = MOO_PACKAGE_NAME;
+
+        for (i = 0; i < 1000; ++i)
+        {
+            char *basename;
+
+            basename = g_strdup_printf ("%s-tmpdir-%08x", short_name, g_random_int ());
+            dirname = g_build_filename (g_get_tmp_dir (), basename, NULL);
+            g_free (basename);
+
+            if (_moo_mkdir (dirname) == 0)
+                break;
+
+            g_free (dirname);
+            dirname = NULL;
+        }
+
+        moo_temp_dir = dirname;
+        moo_install_atexit ();
+    }
+    MOO_DO_ONCE_END
+
+    moo_return_val_if_fail (moo_temp_dir != NULL, NULL);
+    return g_strdup (moo_temp_dir);
+}
+
+/**
+ * moo_tempnam:
+ *
+ * Generate a unique filename for a temporary file. Generated filename
+ * is located inside directory returned by moo_tempdir(), and it
+ * will be automatically removed on exit.
+ *
+ * @extension: (type const-filename) (allow-none) (default NULL)
+ *
+ * Returns: (type filename)
+ **/
+char *
+moo_tempnam (const char *extension)
+{
+    int i;
+    char *tmpdir;
+    char *filename = NULL;
+    static int counter;
+    G_LOCK_DEFINE_STATIC (counter);
+
+    tmpdir = moo_tempdir ();
+    moo_return_val_if_fail (tmpdir != NULL, NULL);
+
+    G_LOCK (counter);
+
+    for (i = counter + 1; i < counter + 1000; ++i)
+    {
+        char *basename;
+
+        basename = g_strdup_printf ("tmpfile-%03d%s", i, extension ? extension : "");
+        filename = g_build_filename (tmpdir, basename, NULL);
+        g_free (basename);
+
+        if (!g_file_test (filename, G_FILE_TEST_EXISTS))
+            break;
+
+        g_free (filename);
+        filename = NULL;
+    }
+
+    counter = i;
+
+    G_UNLOCK (counter);
+
+    g_free (tmpdir);
+
+    moo_return_val_if_fail (filename != NULL, NULL);
+    return filename;
+}
+
+static void
+moo_remove_tempdir (void)
+{
+    if (moo_temp_dir)
+    {
+        GError *error = NULL;
+        _moo_remove_dir (moo_temp_dir, TRUE, &error);
+
+        if (error)
+        {
+            _moo_message ("%s: %s", G_STRLOC, error->message);
+            g_error_free (error);
+        }
+
+        g_free (moo_temp_dir);
+        moo_temp_dir = NULL;
+    }
+}
+
+static void
+moo_atexit_handler (void)
+{
+    moo_remove_tempdir ();
+}
+
+static void
+moo_install_atexit (void)
+{
+    static gboolean installed;
+
+    if (!installed)
+    {
+        atexit (moo_atexit_handler);
+        installed = TRUE;
+    }
+}
+
+void
+moo_cleanup (void)
+{
+    moo_remove_tempdir ();
 }

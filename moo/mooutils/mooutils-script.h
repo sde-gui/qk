@@ -20,7 +20,11 @@
 
 G_BEGIN_DECLS
 
-void    moo_spin_main_loop  (double     sec);
+void         moo_spin_main_loop     (double      sec);
+
+char        *moo_tempdir            (void);
+char        *moo_tempnam            (const char *extension);
+void         moo_cleanup            (void);
 
 G_END_DECLS
 
