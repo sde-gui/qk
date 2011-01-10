@@ -242,7 +242,8 @@ text field using default user shell on Unix systems or <command>cmd.exe</command
 Its input and output are specified by the following controls:
 <itemizedlist>
   <listitem>
-    <parameter><guilabel>Input</guilabel></parameter> entry specifies what text from the document should be passed to the command via its standard input:
+    <parameter><guilabel>Input</guilabel></parameter> entry specifies what text from the document should be passed to the command.
+    The text is passed via command's standard input, except for <parameter>Document copy</parameter> case.
     <variablelist>
     <?dbhtml list-presentation="table"?>
       <varlistentry>
@@ -262,6 +263,12 @@ Its input and output are specified by the following controls:
       <varlistentry>
         <term><parameter>Whole document</parameter></term>
         <listitem>whole document contents.</listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><parameter>Document copy</parameter></term>
+        <listitem>document contents will be saved to a temporary file and the file path will be stored
+        in <envar>INPUT_FILE</envar> environment variable. No text will be passed to the command via standard
+        input.</listitem>
       </varlistentry>
     </variablelist>
   </listitem>
@@ -337,6 +344,10 @@ following environment variables are set when scripts are executed:
     <filename><envar>$DOC_BASE</envar><envar>$DOC_EXT</envar></filename>.</listitem>
   </varlistentry>
   <varlistentry>
+    <term><envar>DOC_PATH</envar></term>
+    <listitem>full document path.</listitem>
+  </varlistentry>
+  <varlistentry>
     <term><envar>LINE</envar></term>
     <listitem><constant>1</constant>-based number of the line containing cursor.
     For example, if cursor is at the first line then <envar>LINE</envar> will be
@@ -351,6 +362,11 @@ following environment variables are set when scripts are executed:
   <varlistentry>
     <term><envar>DATA_DIR</envar></term>
     <listitem>user data directory (&medit-user-data-dir-unix; on Unix systems).</listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><envar>INPUT_FILE</envar></term>
+    <listitem>if <parameter>input</parameter> was set to "Document copy" then this is set to
+    full path of the temporary file containing document text.</listitem>
   </varlistentry>
 </variablelist>
 </para>

@@ -76,8 +76,6 @@ typedef struct {
 
 typedef MooEditActionClass MooToolActionClass;
 
-static MooCommandContext   *create_command_context  (MooEditWindow  *window,
-                                                     MooEdit        *doc);
 static MooUserToolInfo     *_moo_user_tool_info_ref (MooUserToolInfo *info);
 static void                 add_info                (MooUserToolInfo *info,
                                                      GSList        **list,
@@ -1299,7 +1297,7 @@ moo_tool_action_activate (GtkAction *gtkaction)
         doc = moo_edit_window_get_active_doc (window);
     }
 
-    ctx = create_command_context (window, doc);
+    ctx = moo_command_context_new (doc, window);
 
     moo_command_run (action->cmd, ctx);
 
@@ -1353,83 +1351,6 @@ _moo_tool_action_class_init (MooToolActionClass *klass)
                                                           (GParamFlags) G_PARAM_READWRITE));
 }
 
-
-static void
-get_extension (const char *string,
-               char      **base,
-               char      **ext)
-{
-    char *dot;
-
-    g_return_if_fail (string != NULL);
-
-    dot = strrchr (string, '.');
-
-    if (dot)
-    {
-        *base = g_strndup (string, dot - string);
-        *ext = g_strdup (dot);
-    }
-    else
-    {
-        *base = g_strdup (string);
-        *ext = g_strdup ("");
-    }
-}
-
-static MooCommandContext *
-create_command_context (MooEditWindow *window,
-                        MooEdit       *doc)
-{
-    MooCommandContext *ctx;
-    char *user_dir;
-
-    ctx = moo_command_context_new (doc, window);
-
-    if (doc && !moo_edit_is_untitled (doc))
-    {
-        char *filename, *basename;
-        char *dirname, *base = NULL, *extension = NULL;
-
-        filename = moo_edit_get_filename (doc);
-        basename = filename ? g_path_get_basename (filename) : NULL;
-        dirname = g_path_get_dirname (filename);
-        get_extension (basename, &base, &extension);
-
-        moo_command_context_set_string (ctx, "DOC", basename);
-        moo_command_context_set_string (ctx, "DOC_DIR", dirname);
-        moo_command_context_set_string (ctx, "DOC_BASE", base);
-        moo_command_context_set_string (ctx, "DOC_EXT", extension);
-
-        g_free (dirname);
-        g_free (base);
-        g_free (extension);
-        g_free (basename);
-        g_free (filename);
-    }
-
-    if (doc)
-    {
-        GValue val = { 0 };
-        MooEditView *view = moo_edit_get_view (doc);
-        g_value_init (&val, G_TYPE_INT);
-        g_value_set_int (&val, moo_text_view_get_cursor_line (GTK_TEXT_VIEW (view)));
-        moo_command_context_set (ctx, "LINE0", &val);
-        g_value_set_int (&val, moo_text_view_get_cursor_line (GTK_TEXT_VIEW (view)) + 1);
-        moo_command_context_set (ctx, "LINE", &val);
-        g_value_unset (&val);
-    }
-
-    user_dir = moo_get_user_data_dir ();
-
-    moo_command_context_set_string (ctx, "DATA_DIR", user_dir);
-    moo_command_context_set_string (ctx, "APP_PID", _moo_get_pid_string ());
-    /* XXX */
-    moo_command_context_set_string (ctx, "MEDIT_PID", _moo_get_pid_string ());
-
-    g_free (user_dir);
-    return ctx;
-}
 
 static GtkWidget *
 user_tools_plugin_prefs_page (G_GNUC_UNUSED MooPlugin *plugin)

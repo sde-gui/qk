@@ -23,6 +23,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-script.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moospawn.h"
 #include "mooutils/mootype-macros.h"
@@ -45,7 +46,7 @@
 #define SCRIPT_EXTENSION ".bat"
 #endif
 
-#define MOO_COMMAND_EXE_MAX_INPUT       (MOO_COMMAND_EXE_INPUT_DOC + 1)
+#define MOO_COMMAND_EXE_MAX_INPUT       (MOO_COMMAND_EXE_INPUT_DOC_COPY + 1)
 #define MOO_COMMAND_EXE_MAX_OUTPUT      (MOO_COMMAND_EXE_OUTPUT_NEW_DOC + 1)
 #define MOO_COMMAND_EXE_INPUT_DEFAULT   MOO_COMMAND_EXE_INPUT_NONE
 #define MOO_COMMAND_EXE_OUTPUT_DEFAULT  MOO_COMMAND_EXE_OUTPUT_NONE
@@ -55,7 +56,8 @@ typedef enum
     MOO_COMMAND_EXE_INPUT_NONE,
     MOO_COMMAND_EXE_INPUT_LINES,
     MOO_COMMAND_EXE_INPUT_SELECTION,
-    MOO_COMMAND_EXE_INPUT_DOC
+    MOO_COMMAND_EXE_INPUT_DOC,
+    MOO_COMMAND_EXE_INPUT_DOC_COPY,
 } MooCommandExeInput;
 
 typedef enum
@@ -116,7 +118,6 @@ struct _MooCommandExePrivate {
     char *filter;
 };
 
-
 G_DEFINE_TYPE (MooCommandExe, _moo_command_exe, MOO_TYPE_COMMAND)
 
 typedef MooCommandFactory MooCommandFactoryExe;
@@ -167,9 +168,30 @@ get_lines (MooEdit  *doc,
 }
 
 static char *
-get_input (MooCommandExe     *cmd,
-           MooCommandContext *ctx,
-           gboolean           select_it)
+save_input_file (MooEdit *doc)
+{
+    MooEditSaveInfo *info;
+    GError *error = NULL;
+    char *file;
+
+    file = moo_tempnam (NULL);
+    info = moo_edit_save_info_new_path (file, moo_edit_get_encoding (doc));
+
+    if (!moo_edit_save_copy (doc, info, &error))
+    {
+        g_error_free (error);
+        g_free (file);
+        file = NULL;
+    }
+
+    moo_edit_save_info_free (info);
+    return file;
+}
+
+static char *
+get_input (MooCommandExe       *cmd,
+           MooCommandContext   *ctx,
+           gboolean             select_it)
 {
     MooEdit *doc = moo_command_context_get_doc (ctx);
     MooEditView *view = doc ? moo_edit_get_view (doc) : NULL;
@@ -179,6 +201,7 @@ get_input (MooCommandExe     *cmd,
     switch (cmd->priv->input)
     {
         case MOO_COMMAND_EXE_INPUT_NONE:
+        case MOO_COMMAND_EXE_INPUT_DOC_COPY:
             return NULL;
         case MOO_COMMAND_EXE_INPUT_LINES:
             return get_lines (doc, select_it);
@@ -188,7 +211,7 @@ get_input (MooCommandExe     *cmd,
             return moo_text_view_get_text (GTK_TEXT_VIEW (view));
     }
 
-    g_return_val_if_reached (NULL);
+    moo_return_val_if_reached (NULL);
 }
 
 
@@ -196,20 +219,10 @@ static char *
 save_temp (const char *data,
            gssize      length)
 {
-    int fd;
     GError *error = NULL;
     char *filename;
 
-    fd = g_file_open_tmp ("medit-tmp-XXXXXX", &filename, &error);
-
-    if (fd < 0)
-    {
-        g_critical ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
-        return NULL;
-    }
-
-    close (fd);
+    filename = moo_tempnam (NULL);
 
     /* XXX */
     if (!_moo_save_file_utf8 (filename, data, length, &error))
@@ -232,7 +245,7 @@ make_cmd (const char *base_cmd_line,
 
     input_len = input ? strlen (input) : 0;
 
-    if (!input || !input_len)
+    if (!input_len)
         return g_strdup (base_cmd_line);
 
     if (input_len < 2048)
@@ -432,79 +445,93 @@ insert_text (MooEdit    *doc,
 
 
 static void
-set_variable (const char   *name,
-              const GValue *gval,
-              gpointer      array)
+get_extension (const char *string,
+               char      **base,
+               char      **ext)
 {
-    char *freeme = NULL;
-    const char *value = NULL;
+    char *dot;
 
-    switch (G_TYPE_FUNDAMENTAL (G_VALUE_TYPE (gval)))
+    g_return_if_fail (string != NULL);
+
+    dot = strrchr (string, '.');
+
+    if (dot)
     {
-        case G_TYPE_CHAR:
-            freeme = g_strdup_printf ("%c", g_value_get_char (gval));
-            break;
-        case G_TYPE_UCHAR:
-            freeme = g_strdup_printf ("%c", g_value_get_uchar (gval));
-            break;
-        case G_TYPE_INT:
-            freeme = g_strdup_printf ("%d", g_value_get_int (gval));
-            break;
-        case G_TYPE_UINT:
-            freeme = g_strdup_printf ("%u", g_value_get_uint (gval));
-            break;
-        case G_TYPE_LONG:
-            freeme = g_strdup_printf ("%ld", g_value_get_long (gval));
-            break;
-        case G_TYPE_ULONG:
-            freeme = g_strdup_printf ("%lu", g_value_get_ulong (gval));
-            break;
-        case G_TYPE_INT64:
-            freeme = g_strdup_printf ("%" G_GINT64_FORMAT, g_value_get_int64 (gval));
-            break;
-        case G_TYPE_UINT64:
-            freeme = g_strdup_printf ("%" G_GUINT64_FORMAT, g_value_get_uint64 (gval));
-            break;
-        case G_TYPE_STRING:
-            value = g_value_get_string (gval);
-            break;
-        default:
-            g_message ("ignoring value of type %s", g_type_name (G_VALUE_TYPE (gval)));
+        *base = g_strndup (string, dot - string);
+        *ext = g_strdup (dot);
     }
-
-    if (freeme)
-        value = freeme;
-
-    if (value)
-        g_ptr_array_add (array, g_strdup_printf ("%s=%s", name, value));
-
-    g_free (freeme);
+    else
+    {
+        *base = g_strdup (string);
+        *ext = g_strdup ("");
+    }
 }
 
 static void
-create_environment (MooCommandContext *ctx,
+create_environment (MooCommandExe     *cmd,
+                    MooCommandContext *ctx,
                     char             **working_dir,
                     char            ***envp)
 {
     GPtrArray *array;
-    MooEdit *doc;
+    MooEdit *doc = moo_command_context_get_doc (ctx);
 
     array = g_ptr_array_new ();
-    moo_command_context_foreach (ctx, set_variable, array);
 
-    if (array->len)
+    if (doc && !moo_edit_is_untitled (doc))
     {
-        g_ptr_array_add (array, NULL);
-        *envp = (char**) g_ptr_array_free (array, FALSE);
-    }
-    else
-    {
-        g_ptr_array_free (array, TRUE);
-        *envp = NULL;
+        char *filename, *basename;
+        char *dirname, *base = NULL, *extension = NULL;
+
+        filename = moo_edit_get_filename (doc);
+        basename = filename ? g_path_get_basename (filename) : NULL;
+        dirname = g_path_get_dirname (filename);
+        get_extension (basename, &base, &extension);
+
+        g_ptr_array_add (array, g_strdup_printf ("DOC=%s", basename));
+        g_ptr_array_add (array, g_strdup_printf ("DOC_DIR=%s", dirname));
+        g_ptr_array_add (array, g_strdup_printf ("DOC_BASE=%s", base));
+        g_ptr_array_add (array, g_strdup_printf ("DOC_EXT=%s", extension));
+        g_ptr_array_add (array, g_strdup_printf ("DOC_PATH=%s", filename));
+
+        g_free (basename);
+        g_free (dirname);
+        g_free (base);
+        g_free (extension);
+        g_free (filename);
     }
 
+    if (doc)
+    {
+        MooEditView *view = moo_edit_get_view (doc);
+        int line = moo_text_view_get_cursor_line (GTK_TEXT_VIEW (view));
+        g_ptr_array_add (array, g_strdup_printf ("LINE0=%d", line));
+        g_ptr_array_add (array, g_strdup_printf ("LINE=%d", line + 1));
+    }
+
+    {
+        char *data_dir = moo_get_user_data_dir ();
+        char *temp_dir = moo_tempdir ();
+        g_ptr_array_add (array, g_strdup_printf ("DATA_DIR=%s", data_dir));
+        g_ptr_array_add (array, g_strdup_printf ("TEMP_DIR=%s", temp_dir));
+        g_free (data_dir);
+        g_free (temp_dir);
+    }
+
+    g_ptr_array_add (array, g_strdup_printf ("APP_PID=%s", _moo_get_pid_string ()));
+    g_ptr_array_add (array, g_strdup_printf ("MEDIT_PID=%s", _moo_get_pid_string ()));
+
+    if (cmd->priv->input == MOO_COMMAND_EXE_INPUT_DOC_COPY)
+    {
+        char *input_file = save_input_file (doc);
+        if (input_file)
+            g_ptr_array_add (array, g_strdup_printf ("INPUT_FILE=%s", input_file));
+        g_free (input_file);
+    }
+
+    g_ptr_array_add (array, NULL);
+    *envp = (char**) g_ptr_array_free (array, FALSE);
     *working_dir = NULL;
-    doc = moo_command_context_get_doc (ctx);
 
     if (doc && !moo_edit_is_untitled (doc))
     {
@@ -695,7 +722,7 @@ moo_command_exe_run (MooCommand        *cmd_base,
     char *output = NULL;
     char *working_dir;
 
-    create_environment (ctx, &working_dir, &envp);
+    create_environment (cmd, ctx, &working_dir, &envp);
 
     switch (cmd->priv->output)
     {
@@ -758,6 +785,7 @@ moo_command_exe_check_sensitive (MooCommand *cmd_base,
         case MOO_COMMAND_EXE_INPUT_LINES:
         case MOO_COMMAND_EXE_INPUT_SELECTION:
         case MOO_COMMAND_EXE_INPUT_DOC:
+        case MOO_COMMAND_EXE_INPUT_DOC_COPY:
             options |= MOO_COMMAND_NEED_DOC;
             break;
     }
@@ -849,6 +877,8 @@ parse_input (const char *string,
         *input = MOO_COMMAND_EXE_INPUT_SELECTION;
     else if (!strcmp (string, "doc"))
         *input = MOO_COMMAND_EXE_INPUT_DOC;
+    else if (!strcmp (string, "doc-copy"))
+        *input = MOO_COMMAND_EXE_INPUT_DOC_COPY;
     else
     {
         g_warning ("unknown input type %s", string);
@@ -1036,7 +1066,13 @@ unx_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
     ExePageXml *xml;
 
     /* Translators: these are kinds of input for a shell command, do not translate the part before | */
-    const char *input_names[] = {N_("Input|None"), N_("Input|Selected lines"), N_("Input|Selection"), N_("Input|Whole document")};
+    const char *input_names[] = {
+        N_("Input|None"),
+        N_("Input|Selected lines"),
+        N_("Input|Selection"),
+        N_("Input|Whole document"),
+        N_("Input|Document copy")
+    };
 
     xml = exe_page_xml_new ();
 
@@ -1095,7 +1131,7 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
     char *new_cmd_line;
     gboolean changed = FALSE;
     int index, old_index;
-    const char *input_strings[4] = {"none", "lines", "selection", "doc"};
+    const char *input_strings[5] = { "none", "lines", "selection", "doc", "doc-copy" };
 
     xml = exe_page_xml_get (page);
     g_return_val_if_fail (xml != NULL, FALSE);

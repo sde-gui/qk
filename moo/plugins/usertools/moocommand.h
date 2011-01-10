@@ -162,28 +162,6 @@ void                moo_command_context_set_window  (MooCommandContext  *ctx,
 MooEdit            *moo_command_context_get_doc     (MooCommandContext  *ctx);
 MooEditWindow      *moo_command_context_get_window  (MooCommandContext  *ctx);
 
-void                moo_command_context_set         (MooCommandContext  *ctx,
-                                                     const char         *name,
-                                                     const GValue       *value);
-gboolean            moo_command_context_get         (MooCommandContext  *ctx,
-                                                     const char         *name,
-                                                     GValue             *value);
-void                moo_command_context_unset       (MooCommandContext  *ctx,
-                                                     const char         *name);
-void                moo_command_context_set_string  (MooCommandContext  *ctx,
-                                                     const char         *name,
-                                                     const char         *value);
-const char         *moo_command_context_get_string  (MooCommandContext  *ctx,
-                                                     const char         *name);
-
-typedef void (*MooCommandContextForeachFunc)        (const char         *name,
-                                                     const GValue       *value,
-                                                     gpointer            data);
-void                moo_command_context_foreach     (MooCommandContext  *ctx,
-                                                     MooCommandContextForeachFunc func,
-                                                     gpointer            data);
-
-
 typedef MooOutputFilter *(*MooCommandFilterFactory) (const char         *id,
                                                      gpointer            data);
 

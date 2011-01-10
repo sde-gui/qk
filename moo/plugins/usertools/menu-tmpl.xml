@@ -44,6 +44,16 @@ table.sort(lines)
 doc.replace_selected_lines(lines)
 ]]></lua:code>
   </command>
+  <command id="DiffToDisk"><!-- ###unix### -->
+    <name>Diff to Disk</name>
+    <options>need-file</options>
+    <type>exe</type>
+    <exe:input>doc-copy</exe:input>
+    <exe:code><![CDATA[
+diff -pu $DOC_PATH $INPUT_FILE > $TEMP_DIR/m.diff
+medit -r $TEMP_DIR/m.diff
+]]></exe:code>
+  </command>
   <command id="Yacc"><!-- ###unix### -->
     <name>Bison</name>
     <langs>yacc</langs>

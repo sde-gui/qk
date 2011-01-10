@@ -53,7 +53,6 @@ typedef struct {
 } Variable;
 
 struct _MooCommandContextPrivate {
-    GHashTable *vars;
     MooEditWindow *window;
     MooEdit *doc;
 };
@@ -78,8 +77,6 @@ static GHashTable *registered_factories;
 static GHashTable *registered_filters;
 
 
-static Variable    *variable_new                        (const GValue       *value);
-static void         variable_free                       (Variable           *var);
 static void         moo_command_data_take_code          (MooCommandData     *data,
                                                          char               *code);
 
@@ -566,118 +563,6 @@ out:
 }
 
 
-static Variable *
-variable_new (const GValue *value)
-{
-    Variable *var;
-    g_return_val_if_fail (G_IS_VALUE (value), NULL);
-    var = g_new0 (Variable, 1);
-    g_value_init (&var->value, G_VALUE_TYPE (value));
-    g_value_copy (value, &var->value);
-    return var;
-}
-
-
-static void
-variable_free (Variable *var)
-{
-    if (var)
-    {
-        g_value_unset (&var->value);
-        g_free (var);
-    }
-}
-
-
-void
-moo_command_context_set (MooCommandContext  *ctx,
-                         const char         *name,
-                         const GValue       *value)
-{
-    Variable *var;
-
-    g_return_if_fail (MOO_IS_COMMAND_CONTEXT (ctx));
-    g_return_if_fail (name != NULL);
-    g_return_if_fail (G_IS_VALUE (value));
-
-    var = variable_new (value);
-    g_hash_table_insert (ctx->priv->vars, g_strdup (name), var);
-}
-
-
-void
-moo_command_context_set_string (MooCommandContext *ctx,
-                                const char        *name,
-                                const char        *value)
-{
-    if (value)
-    {
-        GValue gval;
-        gval.g_type = 0;
-        g_value_init (&gval, G_TYPE_STRING);
-        g_value_set_static_string (&gval, value);
-        moo_command_context_set (ctx, name, &gval);
-        g_value_unset (&gval);
-    }
-    else
-    {
-        moo_command_context_unset (ctx, name);
-    }
-}
-
-
-gboolean
-moo_command_context_get (MooCommandContext  *ctx,
-                         const char         *name,
-                         GValue             *value)
-{
-    Variable *var;
-
-    g_return_val_if_fail (MOO_IS_COMMAND_CONTEXT (ctx), FALSE);
-    g_return_val_if_fail (name != NULL, FALSE);
-    g_return_val_if_fail (value != NULL, FALSE);
-    g_return_val_if_fail (G_VALUE_TYPE (value) == 0, FALSE);
-
-    var = g_hash_table_lookup (ctx->priv->vars, name);
-
-    if (!var)
-        return FALSE;
-
-    g_value_init (value, G_VALUE_TYPE (&var->value));
-    g_value_copy (&var->value, value);
-    return TRUE;
-}
-
-
-const char *
-moo_command_context_get_string (MooCommandContext  *ctx,
-                                const char         *name)
-{
-    Variable *var;
-
-    g_return_val_if_fail (MOO_IS_COMMAND_CONTEXT (ctx), NULL);
-    g_return_val_if_fail (name != NULL, NULL);
-
-    var = g_hash_table_lookup (ctx->priv->vars, name);
-
-    if (!var)
-        return NULL;
-
-    g_return_val_if_fail (G_VALUE_TYPE (&var->value) == G_TYPE_STRING, NULL);
-    return g_value_get_string (&var->value);
-}
-
-
-void
-moo_command_context_unset (MooCommandContext  *ctx,
-                           const char         *name)
-{
-    g_return_if_fail (MOO_IS_COMMAND_CONTEXT (ctx));
-    g_return_if_fail (name != NULL);
-    g_hash_table_remove (ctx->priv->vars, name);
-}
-
-
 static void
 moo_command_context_dispose (GObject *object)
 {
@@ -685,7 +570,6 @@ moo_command_context_dispose (GObject *object)
 
     if (ctx->priv)
     {
-        g_hash_table_destroy (ctx->priv->vars);
         if (ctx->priv->window)
             g_object_unref (ctx->priv->window);
         if (ctx->priv->doc)
@@ -767,42 +651,6 @@ static void
 moo_command_context_init (MooCommandContext *ctx)
 {
     ctx->priv = G_TYPE_INSTANCE_GET_PRIVATE (ctx, MOO_TYPE_COMMAND_CONTEXT, MooCommandContextPrivate);
-    ctx->priv->vars = g_hash_table_new_full (g_str_hash,
-                                             g_str_equal,
-                                             g_free,
-                                             (GDestroyNotify) variable_free);
-}
-
-
-static void
-ctx_foreach_func (const char *name,
-                  Variable   *var,
-                  gpointer    user_data)
-{
-    struct {
-        MooCommandContextForeachFunc func;
-        gpointer data;
-    } *data = user_data;
-
-    data->func (name, &var->value, data->data);
-}
-
-void
-moo_command_context_foreach (MooCommandContext  *ctx,
-                             MooCommandContextForeachFunc func,
-                             gpointer            func_data)
-{
-    struct {
-        MooCommandContextForeachFunc func;
-        gpointer data;
-    } data;
-
-    g_return_if_fail (MOO_IS_COMMAND_CONTEXT (ctx));
-    g_return_if_fail (func != NULL);
-
-    data.func = func;
-    data.data = func_data;
-    g_hash_table_foreach (ctx->priv->vars, (GHFunc) ctx_foreach_func, &data);
 }
 
 

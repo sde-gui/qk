@@ -102,6 +102,13 @@ moo_edit_open_info_dup (MooEditOpenInfo *info)
     return copy;
 }
 
+void
+moo_edit_open_info_free (MooEditOpenInfo *info)
+{
+    if (info)
+        g_object_unref (info);
+}
+
 static void
 moo_edit_open_info_finalize (GObject *object)
 {
@@ -202,6 +209,13 @@ moo_edit_save_info_dup (MooEditSaveInfo *info)
     return copy;
 }
 
+void
+moo_edit_save_info_free (MooEditSaveInfo *info)
+{
+    if (info)
+        g_object_unref (info);
+}
+
 static void
 moo_edit_save_info_finalize (GObject *object)
 {
@@ -261,6 +275,13 @@ moo_edit_reload_info_dup (MooEditReloadInfo *info)
     copy->line = info->line;
 
     return copy;
+}
+
+void
+moo_edit_reload_info_free (MooEditReloadInfo *info)
+{
+    if (info)
+        g_object_unref (info);
 }
 
 static void

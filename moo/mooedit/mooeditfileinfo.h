@@ -103,9 +103,11 @@ MooEditOpenInfo     *moo_edit_open_info_new_path    (const char         *path,
 MooEditOpenInfo     *moo_edit_open_info_new_uri     (const char         *uri,
                                                      const char         *encoding);
 MooEditOpenInfo     *moo_edit_open_info_dup         (MooEditOpenInfo    *info);
+void                 moo_edit_open_info_free        (MooEditOpenInfo    *info);
 
 MooEditReloadInfo   *moo_edit_reload_info_new       (const char         *encoding);
 MooEditReloadInfo   *moo_edit_reload_info_dup       (MooEditReloadInfo  *info);
+void                 moo_edit_reload_info_free      (MooEditReloadInfo  *info);
 
 MooEditSaveInfo     *moo_edit_save_info_new         (GFile              *file,
                                                      const char         *encoding);
@@ -114,6 +116,7 @@ MooEditSaveInfo     *moo_edit_save_info_new_path    (const char         *path,
 MooEditSaveInfo     *moo_edit_save_info_new_uri     (const char         *uri,
                                                      const char         *encoding);
 MooEditSaveInfo     *moo_edit_save_info_dup         (MooEditSaveInfo    *info);
+void                 moo_edit_save_info_free        (MooEditSaveInfo    *info);
 
 G_END_DECLS
 
