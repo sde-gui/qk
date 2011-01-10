@@ -1254,7 +1254,7 @@ moo_tempdir (void)
     MOO_DO_ONCE_END
 
     moo_return_val_if_fail (moo_temp_dir != NULL, NULL);
-    return moo_temp_dir;
+    return g_strdup (moo_temp_dir);
 }
 
 /**
