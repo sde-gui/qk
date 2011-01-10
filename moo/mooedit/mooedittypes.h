@@ -8,9 +8,9 @@
 
 G_BEGIN_DECLS
 
-typedef struct MooEditOpenInfo MooEditOpenInfo;
-typedef struct MooEditSaveInfo MooEditSaveInfo;
-typedef struct MooEditReloadInfo MooEditReloadInfo;
+typedef struct MooOpenInfo MooOpenInfo;
+typedef struct MooSaveInfo MooSaveInfo;
+typedef struct MooReloadInfo MooReloadInfo;
 
 typedef struct MooEdit MooEdit;
 typedef struct MooEditView MooEditView;
@@ -22,7 +22,7 @@ MOO_DECLARE_OBJECT_ARRAY (MooEditView, moo_edit_view)
 MOO_DECLARE_OBJECT_ARRAY (MooEditWindow, moo_edit_window)
 MOO_DEFINE_SLIST (MooEditList, moo_edit_list, MooEdit)
 
-MOO_DECLARE_OBJECT_ARRAY (MooEditOpenInfo, moo_edit_open_info)
+MOO_DECLARE_OBJECT_ARRAY (MooOpenInfo, moo_open_info)
 
 #define MOO_TYPE_LINE_END (moo_type_line_end ())
 GType   moo_type_line_end   (void) G_GNUC_CONST;

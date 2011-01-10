@@ -22,9 +22,9 @@
 
 G_BEGIN_DECLS
 
-MooEditSaveInfo                *_moo_edit_save_as_dialog                (MooEdit        *doc,
+MooSaveInfo                    *_moo_edit_save_as_dialog                (MooEdit        *doc,
                                                                          const char     *display_basename);
-MooEditOpenInfoArray           *_moo_edit_open_dialog                   (GtkWidget      *widget,
+MooOpenInfoArray               *_moo_edit_open_dialog                   (GtkWidget      *widget,
                                                                          MooEdit        *current_doc);
 
 MooSaveChangesResponse          _moo_edit_save_changes_dialog           (MooEdit        *doc);

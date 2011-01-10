@@ -1,42 +1,42 @@
 /**
- * class:MooEditOpenInfo: (parent GObject)
+ * class:MooOpenInfo: (parent GObject)
  **/
 
 /**
- * class:MooEditSaveInfo: (parent GObject)
+ * class:MooSaveInfo: (parent GObject)
  **/
 
 /**
- * class:MooEditReloadInfo: (parent GObject)
+ * class:MooReloadInfo: (parent GObject)
  **/
 
 #include "mooeditfileinfo.h"
 
-static void moo_edit_open_info_class_init   (MooEditOpenInfoClass *klass);
-static void moo_edit_save_info_class_init   (MooEditSaveInfoClass *klass);
-static void moo_edit_reload_info_class_init (MooEditReloadInfoClass *klass);
+static void moo_open_info_class_init   (MooOpenInfoClass *klass);
+static void moo_save_info_class_init   (MooSaveInfoClass *klass);
+static void moo_reload_info_class_init (MooReloadInfoClass *klass);
 
-MOO_DEFINE_OBJECT_ARRAY (MooEditOpenInfo, moo_edit_open_info)
+MOO_DEFINE_OBJECT_ARRAY (MooOpenInfo, moo_open_info)
 
-G_DEFINE_TYPE (MooEditOpenInfo, moo_edit_open_info, G_TYPE_OBJECT)
-G_DEFINE_TYPE (MooEditSaveInfo, moo_edit_save_info, G_TYPE_OBJECT)
-G_DEFINE_TYPE (MooEditReloadInfo, moo_edit_reload_info, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MooOpenInfo, moo_open_info, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MooSaveInfo, moo_save_info, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MooReloadInfo, moo_reload_info, G_TYPE_OBJECT)
 
 /**
- * moo_edit_open_info_new: (constructor-of MooEditOpenInfo)
+ * moo_open_info_new: (constructor-of MooOpenInfo)
  *
  * @file:
  * @encoding: (type const-utf8) (allow-none) (default NULL)
  **/
-MooEditOpenInfo *
-moo_edit_open_info_new (GFile      *file,
-                        const char *encoding)
+MooOpenInfo *
+moo_open_info_new (GFile      *file,
+                   const char *encoding)
 {
-    MooEditOpenInfo *info;
+    MooOpenInfo *info;
 
     g_return_val_if_fail (G_IS_FILE (file), NULL);
 
-    info = g_object_new (MOO_TYPE_EDIT_OPEN_INFO, NULL);
+    info = g_object_new (MOO_TYPE_OPEN_INFO, NULL);
 
     info->file = g_file_dup (file);
     info->encoding = g_strdup (encoding);
@@ -46,54 +46,54 @@ moo_edit_open_info_new (GFile      *file,
 }
 
 /**
- * moo_edit_open_info_new_path: (static-method-of MooEditOpenInfo)
+ * moo_open_info_new_path: (static-method-of MooOpenInfo)
  *
  * @path: (type const-filename)
  * @encoding: (type const-utf8) (allow-none) (default NULL)
  *
  * Returns: (transfer full)
  **/
-MooEditOpenInfo *
-moo_edit_open_info_new_path (const char *path,
-                             const char *encoding)
+MooOpenInfo *
+moo_open_info_new_path (const char *path,
+                        const char *encoding)
 {
     GFile *file = g_file_new_for_path (path);
-    MooEditOpenInfo *info = moo_edit_open_info_new (file, encoding);
+    MooOpenInfo *info = moo_open_info_new (file, encoding);
     g_object_unref (file);
     return info;
 }
 
 /**
- * moo_edit_open_info_new_uri: (static-method-of MooEditOpenInfo)
+ * moo_open_info_new_uri: (static-method-of MooOpenInfo)
  *
  * @uri: (type const-utf8)
  * @encoding: (type const-utf8) (allow-none) (default NULL)
  *
  * Returns: (transfer full)
  **/
-MooEditOpenInfo *
-moo_edit_open_info_new_uri (const char *uri,
-                            const char *encoding)
+MooOpenInfo *
+moo_open_info_new_uri (const char *uri,
+                       const char *encoding)
 {
     GFile *file = g_file_new_for_uri (uri);
-    MooEditOpenInfo *info = moo_edit_open_info_new (file, encoding);
+    MooOpenInfo *info = moo_open_info_new (file, encoding);
     g_object_unref (file);
     return info;
 }
 
 /**
- * moo_edit_open_info_dup:
+ * moo_open_info_dup:
  *
  * Returns: (transfer full)
  **/
-MooEditOpenInfo *
-moo_edit_open_info_dup (MooEditOpenInfo *info)
+MooOpenInfo *
+moo_open_info_dup (MooOpenInfo *info)
 {
-    MooEditOpenInfo *copy;
+    MooOpenInfo *copy;
 
     g_return_val_if_fail (info != NULL, NULL);
 
-    copy = moo_edit_open_info_new (info->file, info->encoding);
+    copy = moo_open_info_new (info->file, info->encoding);
     g_return_val_if_fail (copy != NULL, NULL);
 
     copy->flags = info->flags;
@@ -103,51 +103,51 @@ moo_edit_open_info_dup (MooEditOpenInfo *info)
 }
 
 void
-moo_edit_open_info_free (MooEditOpenInfo *info)
+moo_open_info_free (MooOpenInfo *info)
 {
     if (info)
         g_object_unref (info);
 }
 
 static void
-moo_edit_open_info_finalize (GObject *object)
+moo_open_info_finalize (GObject *object)
 {
-    MooEditOpenInfo *info = (MooEditOpenInfo*) object;
+    MooOpenInfo *info = (MooOpenInfo*) object;
 
     g_object_unref (info->file);
     g_free (info->encoding);
 
-    G_OBJECT_CLASS (moo_edit_open_info_parent_class)->finalize (object);
+    G_OBJECT_CLASS (moo_open_info_parent_class)->finalize (object);
 }
 
 static void
-moo_edit_open_info_class_init (MooEditOpenInfoClass *klass)
+moo_open_info_class_init (MooOpenInfoClass *klass)
 {
-    G_OBJECT_CLASS (klass)->finalize = moo_edit_open_info_finalize;
+    G_OBJECT_CLASS (klass)->finalize = moo_open_info_finalize;
 }
 
 static void
-moo_edit_open_info_init (MooEditOpenInfo *info)
+moo_open_info_init (MooOpenInfo *info)
 {
     info->line = -1;
 }
 
 
 /**
- * moo_edit_save_info_new: (constructor-of MooEditSaveInfo)
+ * moo_save_info_new: (constructor-of MooSaveInfo)
  *
  * @file:
  * @encoding: (type const-utf8) (allow-none) (default NULL)
  **/
-MooEditSaveInfo *
-moo_edit_save_info_new (GFile      *file,
-                        const char *encoding)
+MooSaveInfo *
+moo_save_info_new (GFile      *file,
+                   const char *encoding)
 {
-    MooEditSaveInfo *info;
+    MooSaveInfo *info;
 
     g_return_val_if_fail (G_IS_FILE (file), NULL);
 
-    info = g_object_new (MOO_TYPE_EDIT_SAVE_INFO, NULL);
+    info = g_object_new (MOO_TYPE_SAVE_INFO, NULL);
 
     info->file = g_file_dup (file);
     info->encoding = g_strdup (encoding);
@@ -156,100 +156,100 @@ moo_edit_save_info_new (GFile      *file,
 }
 
 /**
- * moo_edit_save_info_new_path: (static-method-of MooEditSaveInfo)
+ * moo_save_info_new_path: (static-method-of MooSaveInfo)
  *
  * @path: (type const-filename)
  * @encoding: (type const-utf8) (allow-none) (default NULL)
  *
  * Returns: (transfer full)
  **/
-MooEditSaveInfo *
-moo_edit_save_info_new_path (const char *path,
-                             const char *encoding)
+MooSaveInfo *
+moo_save_info_new_path (const char *path,
+                        const char *encoding)
 {
     GFile *file = g_file_new_for_path (path);
-    MooEditSaveInfo *info = moo_edit_save_info_new (file, encoding);
+    MooSaveInfo *info = moo_save_info_new (file, encoding);
     g_object_unref (file);
     return info;
 }
 
 /**
- * moo_edit_save_info_new_uri: (static-method-of MooEditSaveInfo)
+ * moo_save_info_new_uri: (static-method-of MooSaveInfo)
  *
  * @uri: (type const-utf8)
  * @encoding: (type const-utf8) (allow-none) (default NULL)
  *
  * Returns: (transfer full)
  **/
-MooEditSaveInfo *
-moo_edit_save_info_new_uri (const char *uri,
-                            const char *encoding)
+MooSaveInfo *
+moo_save_info_new_uri (const char *uri,
+                       const char *encoding)
 {
     GFile *file = g_file_new_for_uri (uri);
-    MooEditSaveInfo *info = moo_edit_save_info_new (file, encoding);
+    MooSaveInfo *info = moo_save_info_new (file, encoding);
     g_object_unref (file);
     return info;
 }
 
 /**
- * moo_edit_save_info_dup:
+ * moo_save_info_dup:
  *
  * Returns: (transfer full)
  **/
-MooEditSaveInfo *
-moo_edit_save_info_dup (MooEditSaveInfo *info)
+MooSaveInfo *
+moo_save_info_dup (MooSaveInfo *info)
 {
-    MooEditSaveInfo *copy;
+    MooSaveInfo *copy;
 
     g_return_val_if_fail (info != NULL, NULL);
 
-    copy = moo_edit_save_info_new (info->file, info->encoding);
+    copy = moo_save_info_new (info->file, info->encoding);
     g_return_val_if_fail (copy != NULL, NULL);
 
     return copy;
 }
 
 void
-moo_edit_save_info_free (MooEditSaveInfo *info)
+moo_save_info_free (MooSaveInfo *info)
 {
     if (info)
         g_object_unref (info);
 }
 
 static void
-moo_edit_save_info_finalize (GObject *object)
+moo_save_info_finalize (GObject *object)
 {
-    MooEditSaveInfo *info = (MooEditSaveInfo*) object;
+    MooSaveInfo *info = (MooSaveInfo*) object;
 
     g_object_unref (info->file);
     g_free (info->encoding);
 
-    G_OBJECT_CLASS (moo_edit_save_info_parent_class)->finalize (object);
+    G_OBJECT_CLASS (moo_save_info_parent_class)->finalize (object);
 }
 
 static void
-moo_edit_save_info_class_init (MooEditSaveInfoClass *klass)
+moo_save_info_class_init (MooSaveInfoClass *klass)
 {
-    G_OBJECT_CLASS (klass)->finalize = moo_edit_save_info_finalize;
+    G_OBJECT_CLASS (klass)->finalize = moo_save_info_finalize;
 }
 
 static void
-moo_edit_save_info_init (G_GNUC_UNUSED MooEditSaveInfo *info)
+moo_save_info_init (G_GNUC_UNUSED MooSaveInfo *info)
 {
 }
 
 
 /**
- * moo_edit_reload_info_new: (constructor-of MooEditReloadInfo)
+ * moo_reload_info_new: (constructor-of MooReloadInfo)
  *
  * @encoding: (type const-utf8) (allow-none) (default NULL)
  **/
-MooEditReloadInfo *
-moo_edit_reload_info_new (const char *encoding)
+MooReloadInfo *
+moo_reload_info_new (const char *encoding)
 {
-    MooEditReloadInfo *info;
+    MooReloadInfo *info;
 
-    info = g_object_new (MOO_TYPE_EDIT_RELOAD_INFO, NULL);
+    info = g_object_new (MOO_TYPE_RELOAD_INFO, NULL);
 
     info->encoding = g_strdup (encoding);
     info->line = -1;
@@ -258,18 +258,18 @@ moo_edit_reload_info_new (const char *encoding)
 }
 
 /**
- * moo_edit_reload_info_dup:
+ * moo_reload_info_dup:
  *
  * Returns: (transfer full)
  **/
-MooEditReloadInfo *
-moo_edit_reload_info_dup (MooEditReloadInfo *info)
+MooReloadInfo *
+moo_reload_info_dup (MooReloadInfo *info)
 {
-    MooEditReloadInfo *copy;
+    MooReloadInfo *copy;
 
     g_return_val_if_fail (info != NULL, NULL);
 
-    copy = moo_edit_reload_info_new (info->encoding);
+    copy = moo_reload_info_new (info->encoding);
     g_return_val_if_fail (copy != NULL, NULL);
 
     copy->line = info->line;
@@ -278,30 +278,30 @@ moo_edit_reload_info_dup (MooEditReloadInfo *info)
 }
 
 void
-moo_edit_reload_info_free (MooEditReloadInfo *info)
+moo_reload_info_free (MooReloadInfo *info)
 {
     if (info)
         g_object_unref (info);
 }
 
 static void
-moo_edit_reload_info_finalize (GObject *object)
+moo_reload_info_finalize (GObject *object)
 {
-    MooEditReloadInfo *info = (MooEditReloadInfo*) object;
+    MooReloadInfo *info = (MooReloadInfo*) object;
 
     g_free (info->encoding);
 
-    G_OBJECT_CLASS (moo_edit_reload_info_parent_class)->finalize (object);
+    G_OBJECT_CLASS (moo_reload_info_parent_class)->finalize (object);
 }
 
 static void
-moo_edit_reload_info_class_init (MooEditReloadInfoClass *klass)
+moo_reload_info_class_init (MooReloadInfoClass *klass)
 {
-    G_OBJECT_CLASS (klass)->finalize = moo_edit_reload_info_finalize;
+    G_OBJECT_CLASS (klass)->finalize = moo_reload_info_finalize;
 }
 
 static void
-moo_edit_reload_info_init (MooEditReloadInfo *info)
+moo_reload_info_init (MooReloadInfo *info)
 {
     info->line = -1;
 }

@@ -1276,13 +1276,13 @@ moo_app_load_session (MooApp *app)
 // }
 
 void
-moo_app_open_files (MooApp               *app,
-                    MooEditOpenInfoArray *files,
-                    guint32               stamp)
+moo_app_open_files (MooApp           *app,
+                    MooOpenInfoArray *files,
+                    guint32           stamp)
 {
     g_return_if_fail (MOO_IS_APP (app));
 
-    if (!moo_edit_open_info_array_is_empty (files))
+    if (!moo_open_info_array_is_empty (files))
         moo_editor_open_files (app->priv->editor, files, NULL, NULL);
 
     moo_editor_present (app->priv->editor, stamp);
@@ -1476,7 +1476,7 @@ moo_app_save_prefs (MooApp *app)
 
 #define MOO_APP_CMD_VERSION "1.0"
 
-static MooEditOpenInfoArray *
+static MooOpenInfoArray *
 moo_app_parse_files (const char      *data,
                      guint32         *stamp)
 {
@@ -1484,7 +1484,7 @@ moo_app_parse_files (const char      *data,
     MooMarkupNode *root;
     MooMarkupNode *node;
     const char *version;
-    MooEditOpenInfoArray *files;
+    MooOpenInfoArray *files;
 
     *stamp = 0;
 
@@ -1501,13 +1501,13 @@ moo_app_parse_files (const char      *data,
     }
 
     *stamp = moo_markup_uint_prop (root, "stamp", 0);
-    files = moo_edit_open_info_array_new ();
+    files = moo_open_info_array_new ();
 
     for (node = root->children; node != NULL; node = node->next)
     {
         const char *uri;
         const char *encoding;
-        MooEditOpenInfo *info;
+        MooOpenInfo *info;
         int line;
 
         if (!MOO_MARKUP_IS_ELEMENT (node))
@@ -1525,7 +1525,7 @@ moo_app_parse_files (const char      *data,
         if (!encoding || !encoding[0])
             encoding = NULL;
 
-        info = moo_edit_open_info_new_uri (uri, encoding);
+        info = moo_open_info_new_uri (uri, encoding);
 
         info->flags |= MOO_EDIT_OPEN_CREATE_NEW;
 
@@ -1540,7 +1540,7 @@ moo_app_parse_files (const char      *data,
         if (moo_markup_bool_prop (node, "reload", FALSE))
             info->flags |= MOO_EDIT_OPEN_RELOAD;
 
-        moo_edit_open_info_array_take (files, info);
+        moo_open_info_array_take (files, info);
     }
 
     moo_markup_doc_unref (xml);
@@ -1551,11 +1551,11 @@ static void
 moo_app_cmd_open_files (MooApp     *app,
                         const char *data)
 {
-    MooEditOpenInfoArray *files;
+    MooOpenInfoArray *files;
     guint32 stamp;
     files = moo_app_parse_files (data, &stamp);
     moo_app_open_files (app, files, stamp);
-    moo_edit_open_info_array_free (files);
+    moo_open_info_array_free (files);
 }
 
 G_GNUC_PRINTF(2, 3) static void
@@ -1574,9 +1574,9 @@ append_escaped (GString *str, const char *format, ...)
 }
 
 gboolean
-moo_app_send_files (MooEditOpenInfoArray *files,
-                    guint32               stamp,
-                    const char           *pid)
+moo_app_send_files (MooOpenInfoArray *files,
+                    guint32           stamp,
+                    const char       *pid)
 {
     gboolean result;
     GString *msg;
@@ -1591,9 +1591,9 @@ moo_app_send_files (MooEditOpenInfoArray *files,
     g_string_append_printf (msg, "%s<moo-app-open-files version=\"%s\" stamp=\"%u\">",
                             CMD_OPEN_FILES_S, MOO_APP_CMD_VERSION, stamp);
 
-    for (i = 0, c = moo_edit_open_info_array_get_size (files); i < c; ++i)
+    for (i = 0, c = moo_open_info_array_get_size (files); i < c; ++i)
     {
-        MooEditOpenInfo *info = files->elms[i];
+        MooOpenInfo *info = files->elms[i];
         char *uri;
 
         g_string_append (msg, "<file");

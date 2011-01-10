@@ -30,7 +30,7 @@
 #include <string.h>
 
 
-MooEditOpenInfoArray *
+MooOpenInfoArray *
 _moo_edit_open_dialog (GtkWidget *widget,
                        MooEdit   *current_doc)
 {
@@ -38,7 +38,7 @@ _moo_edit_open_dialog (GtkWidget *widget,
     const char *encoding;
     GFile *start = NULL;
     MooFileArray *files = NULL;
-    MooEditOpenInfoArray *info_array = NULL;
+    MooOpenInfoArray *info_array = NULL;
     guint i;
 
     moo_prefs_create_key (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), MOO_PREFS_STATE, G_TYPE_STRING, NULL);
@@ -75,9 +75,9 @@ _moo_edit_open_dialog (GtkWidget *widget,
         files = moo_file_dialog_get_files (dialog);
         g_return_val_if_fail (files != NULL && files->n_elms != 0, NULL);
 
-        info_array = moo_edit_open_info_array_new ();
+        info_array = moo_open_info_array_new ();
         for (i = 0; i < files->n_elms; ++i)
-            moo_edit_open_info_array_take (info_array, moo_edit_open_info_new (files->elms[i], encoding));
+            moo_open_info_array_take (info_array, moo_open_info_new (files->elms[i], encoding));
 
         g_object_unref (start);
         start = g_file_get_parent (files->elms[0]);
@@ -91,13 +91,13 @@ _moo_edit_open_dialog (GtkWidget *widget,
 }
 
 
-MooEditSaveInfo *
+MooSaveInfo *
 _moo_edit_save_as_dialog (MooEdit    *doc,
                           const char *display_basename)
 {
     const char *encoding;
     MooFileDialog *dialog;
-    MooEditSaveInfo *info;
+    MooSaveInfo *info;
     GFile *start = NULL;
     GFile *file = NULL;
 
@@ -138,7 +138,7 @@ _moo_edit_save_as_dialog (MooEdit    *doc,
     encoding = moo_file_dialog_get_encoding (dialog);
     file = moo_file_dialog_get_file (dialog);
     g_return_val_if_fail (file != NULL, NULL);
-    info = moo_edit_save_info_new (file, encoding);
+    info = moo_save_info_new (file, encoding);
 
     g_object_unref (start);
     start = g_file_get_parent (file);

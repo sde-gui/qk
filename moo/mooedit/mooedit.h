@@ -105,15 +105,15 @@ MooEditStatus    moo_edit_get_status                (MooEdit            *edit);
 MooEditState     moo_edit_get_state                 (MooEdit            *edit);
 
 gboolean         moo_edit_reload                    (MooEdit            *edit,
-                                                     MooEditReloadInfo  *info,
+                                                     MooReloadInfo      *info,
                                                      GError            **error);
 gboolean         moo_edit_save                      (MooEdit            *edit,
                                                      GError            **error);
 gboolean         moo_edit_save_as                   (MooEdit            *edit,
-                                                     MooEditSaveInfo    *info,
+                                                     MooSaveInfo        *info,
                                                      GError            **error);
 gboolean         moo_edit_save_copy                 (MooEdit            *edit,
-                                                     MooEditSaveInfo    *info,
+                                                     MooSaveInfo        *info,
                                                      GError            **error);
 gboolean         moo_edit_close                     (MooEdit            *edit,
                                                      gboolean            ask_confirm);

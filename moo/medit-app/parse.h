@@ -1,14 +1,14 @@
 #include <errno.h>
 #include <mooedit/mooeditfileinfo.h>
 
-static MooEditOpenInfo *
+static MooOpenInfo *
 parse_filename (const char *filename)
 {
     char *freeme2 = NULL;
     char *freeme1 = NULL;
     char *uri;
     int line = 0;
-    MooEditOpenInfo *info;
+    MooOpenInfo *info;
 
     freeme1 = _moo_normalize_file_path (filename);
     filename = freeme1;
@@ -72,7 +72,7 @@ parse_filename (const char *filename)
         return NULL;
     }
 
-    info = moo_edit_open_info_new_uri (uri, NULL);
+    info = moo_open_info_new_uri (uri, NULL);
 
     info->line = line - 1;
 
@@ -83,8 +83,8 @@ parse_filename (const char *filename)
 }
 
 static void
-parse_options_from_uri (const char      *optstring,
-                        MooEditOpenInfo *info)
+parse_options_from_uri (const char  *optstring,
+                        MooOpenInfo *info)
 {
     char **p, **comps;
 
@@ -115,17 +115,17 @@ parse_options_from_uri (const char      *optstring,
     g_strfreev (comps);
 }
 
-static MooEditOpenInfo *
+static MooOpenInfo *
 parse_uri (const char *scheme,
            const char *uri)
 {
     const char *question_mark;
     const char *optstring = NULL;
-    MooEditOpenInfo *info;
+    MooOpenInfo *info;
     char *real_uri;
 
     if (strcmp (scheme, "file") != 0)
-        return moo_edit_open_info_new_uri (uri, NULL);
+        return moo_open_info_new_uri (uri, NULL);
 
     question_mark = strchr (uri, '?');
 
@@ -139,7 +139,7 @@ parse_uri (const char *scheme,
         real_uri = g_strdup (uri);
     }
 
-    info = moo_edit_open_info_new_uri (real_uri, NULL);
+    info = moo_open_info_new_uri (real_uri, NULL);
 
     if (optstring)
         parse_options_from_uri (optstring, info);
@@ -171,13 +171,13 @@ parse_uri_scheme (const char *string)
     return NULL;
 }
 
-static MooEditOpenInfo *
+static MooOpenInfo *
 parse_file (const char  *string,
             char       **current_dir)
 {
     char *uri_scheme;
     char *filename;
-    MooEditOpenInfo *ret;
+    MooOpenInfo *ret;
 
     if (g_path_is_absolute (string))
         return parse_filename (string);
@@ -199,22 +199,22 @@ parse_file (const char  *string,
     return ret;
 }
 
-static MooEditOpenInfoArray *
+static MooOpenInfoArray *
 parse_files (void)
 {
     int i;
     int n_files;
     char *current_dir = NULL;
-    MooEditOpenInfoArray *files;
+    MooOpenInfoArray *files;
 
     if (!medit_opts.files || !(n_files = g_strv_length (medit_opts.files)))
         return NULL;
 
-    files = moo_edit_open_info_array_new ();
+    files = moo_open_info_array_new ();
 
     for (i = 0; i < n_files; ++i)
     {
-        MooEditOpenInfo *info;
+        MooOpenInfo *info;
 
         info = parse_file (medit_opts.files[i], &current_dir);
 
@@ -234,7 +234,7 @@ parse_files (void)
         if (!info->encoding && medit_opts.encoding && medit_opts.encoding[0])
             info->encoding = g_strdup (medit_opts.encoding);
 
-        moo_edit_open_info_array_take (files, info);
+        moo_open_info_array_take (files, info);
     }
 
     g_free (current_dir);

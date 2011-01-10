@@ -475,7 +475,7 @@ file_selector_create_file (MooFileSelector *filesel)
     char *path = NULL, *dir = NULL;
     MooEdit *doc;
     GList *selected = NULL;
-    MooEditOpenInfo *info;
+    MooOpenInfo *info;
 
     selected = _moo_file_view_get_filenames (MOO_FILE_VIEW (filesel));
 
@@ -511,7 +511,7 @@ file_selector_create_file (MooFileSelector *filesel)
     if (!path)
         goto out;
 
-    info = moo_edit_open_info_new_path (path, NULL);
+    info = moo_open_info_new_path (path, NULL);
     doc = moo_editor_new_file (moo_edit_window_get_editor (filesel->window),
                                info, GTK_WIDGET (filesel), NULL);
     g_object_unref (info);
@@ -864,9 +864,9 @@ static gboolean
 save_as_path (MooEdit    *doc,
               const char *path)
 {
-    MooEditSaveInfo *info;
+    MooSaveInfo *info;
     gboolean result;
-    info = moo_edit_save_info_new_path (path, NULL);
+    info = moo_save_info_new_path (path, NULL);
     result = moo_edit_save_as (doc, info, NULL);
     g_object_unref (info);
     return result;
@@ -937,7 +937,7 @@ doc_save_copy (MooFileSelector *filesel,
 
     if (filename)
     {
-        MooEditSaveInfo *info = moo_edit_save_info_new_path (filename, NULL);
+        MooSaveInfo *info = moo_save_info_new_path (filename, NULL);
         if (moo_edit_save_copy (doc, info, NULL))
             moo_file_selector_select_path (filesel, filename);
         g_object_unref (info);

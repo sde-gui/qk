@@ -1127,9 +1127,9 @@ config_changed (MooEdit *doc)
  * Returns: whether document was successfully reloaded
  **/
 gboolean
-moo_edit_reload (MooEdit            *doc,
-                 MooEditReloadInfo  *info,
-                 GError            **error)
+moo_edit_reload (MooEdit       *doc,
+                 MooReloadInfo *info,
+                 GError       **error)
 {
     moo_return_error_if_fail (MOO_IS_EDIT (doc));
     return moo_editor_reload (doc->priv->editor, doc, info, error);
@@ -1174,9 +1174,9 @@ moo_edit_save (MooEdit *doc,
  * moo_edit_save_as:
  **/
 gboolean
-moo_edit_save_as (MooEdit          *doc,
-                  MooEditSaveInfo  *info,
-                  GError          **error)
+moo_edit_save_as (MooEdit     *doc,
+                  MooSaveInfo *info,
+                  GError     **error)
 {
     moo_return_error_if_fail (MOO_IS_EDIT (doc));
     return moo_editor_save_as (doc->priv->editor, doc, info, error);
@@ -1186,9 +1186,9 @@ moo_edit_save_as (MooEdit          *doc,
  * moo_edit_save_copy:
  **/
 gboolean
-moo_edit_save_copy (MooEdit          *doc,
-                    MooEditSaveInfo  *info,
-                    GError          **error)
+moo_edit_save_copy (MooEdit     *doc,
+                    MooSaveInfo *info,
+                    GError     **error)
 {
     moo_return_error_if_fail (MOO_IS_EDIT (doc));
     return moo_editor_save_copy (doc->priv->editor, doc, info, error);

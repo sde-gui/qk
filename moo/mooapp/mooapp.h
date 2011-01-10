@@ -88,11 +88,11 @@ gboolean         moo_app_send_msg               (const char             *pid,
                                                  const char             *data,
                                                  int                     len);
 
-gboolean         moo_app_send_files             (MooEditOpenInfoArray   *files,
+gboolean         moo_app_send_files             (MooOpenInfoArray       *files,
                                                  guint32                 stamp,
                                                  const char             *pid);
 void             moo_app_open_files             (MooApp                 *app,
-                                                 MooEditOpenInfoArray   *files,
+                                                 MooOpenInfoArray       *files,
                                                  guint32                 stamp);
 void             moo_app_run_script             (MooApp                 *app,
                                                  const char             *script);

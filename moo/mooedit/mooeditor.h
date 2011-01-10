@@ -77,15 +77,15 @@ MooEdit             *moo_editor_new_doc             (MooEditor              *edi
                                                      MooEditWindow          *window);
 
 MooEdit             *moo_editor_new_file            (MooEditor              *editor,
-                                                     MooEditOpenInfo        *info,
+                                                     MooOpenInfo            *info,
                                                      GtkWidget              *parent,
                                                      GError                **error);
 MooEdit             *moo_editor_open_file           (MooEditor              *editor,
-                                                     MooEditOpenInfo        *info,
+                                                     MooOpenInfo            *info,
                                                      GtkWidget              *parent,
                                                      GError                **error);
 gboolean             moo_editor_open_files          (MooEditor              *editor,
-                                                     MooEditOpenInfoArray   *files,
+                                                     MooOpenInfoArray       *files,
                                                      GtkWidget              *parent,
                                                      GError                **error);
 
@@ -102,7 +102,7 @@ MooEdit             *moo_editor_open_path           (MooEditor              *edi
 
 gboolean             moo_editor_reload              (MooEditor              *editor,
                                                      MooEdit                *doc,
-                                                     MooEditReloadInfo      *info,
+                                                     MooReloadInfo          *info,
                                                      GError                **error);
 
 gboolean             moo_editor_save                (MooEditor              *editor,
@@ -110,11 +110,11 @@ gboolean             moo_editor_save                (MooEditor              *edi
                                                      GError                **error);
 gboolean             moo_editor_save_as             (MooEditor              *editor,
                                                      MooEdit                *doc,
-                                                     MooEditSaveInfo        *info,
+                                                     MooSaveInfo            *info,
                                                      GError                **error);
 gboolean             moo_editor_save_copy           (MooEditor              *editor,
                                                      MooEdit                *doc,
-                                                     MooEditSaveInfo        *info,
+                                                     MooSaveInfo            *info,
                                                      GError                **error);
 
 MooEdit             *moo_editor_get_doc             (MooEditor              *editor,

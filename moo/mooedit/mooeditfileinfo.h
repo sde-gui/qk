@@ -21,30 +21,30 @@
 
 G_BEGIN_DECLS
 
-#define MOO_TYPE_EDIT_OPEN_INFO                       (moo_edit_open_info_get_type ())
-#define MOO_EDIT_OPEN_INFO(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT_OPEN_INFO, MooEditOpenInfo))
-#define MOO_EDIT_OPEN_INFO_CLASS(klass)               (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EDIT_OPEN_INFO, MooEditOpenInfoClass))
-#define MOO_IS_EDIT_OPEN_INFO(object)                 (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_EDIT_OPEN_INFO))
-#define MOO_IS_EDIT_OPEN_INFO_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_OPEN_INFO))
-#define MOO_EDIT_OPEN_INFO_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_OPEN_INFO, MooEditOpenInfoClass))
+#define MOO_TYPE_OPEN_INFO                       (moo_open_info_get_type ())
+#define MOO_OPEN_INFO(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_OPEN_INFO, MooOpenInfo))
+#define MOO_OPEN_INFO_CLASS(klass)               (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_OPEN_INFO, MooOpenInfoClass))
+#define MOO_IS_OPEN_INFO(object)                 (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_OPEN_INFO))
+#define MOO_IS_OPEN_INFO_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_OPEN_INFO))
+#define MOO_OPEN_INFO_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_OPEN_INFO, MooOpenInfoClass))
 
-#define MOO_TYPE_EDIT_SAVE_INFO                       (moo_edit_save_info_get_type ())
-#define MOO_EDIT_SAVE_INFO(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT_SAVE_INFO, MooEditSaveInfo))
-#define MOO_EDIT_SAVE_INFO_CLASS(klass)               (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EDIT_SAVE_INFO, MooEditSaveInfoClass))
-#define MOO_IS_EDIT_SAVE_INFO(object)                 (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_EDIT_SAVE_INFO))
-#define MOO_IS_EDIT_SAVE_INFO_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_SAVE_INFO))
-#define MOO_EDIT_SAVE_INFO_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_SAVE_INFO, MooEditSaveInfoClass))
+#define MOO_TYPE_SAVE_INFO                       (moo_save_info_get_type ())
+#define MOO_SAVE_INFO(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_SAVE_INFO, MooSaveInfo))
+#define MOO_SAVE_INFO_CLASS(klass)               (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_SAVE_INFO, MooSaveInfoClass))
+#define MOO_IS_SAVE_INFO(object)                 (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_SAVE_INFO))
+#define MOO_IS_SAVE_INFO_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_SAVE_INFO))
+#define MOO_SAVE_INFO_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_SAVE_INFO, MooSaveInfoClass))
 
-#define MOO_TYPE_EDIT_RELOAD_INFO                       (moo_edit_reload_info_get_type ())
-#define MOO_EDIT_RELOAD_INFO(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT_RELOAD_INFO, MooEditReloadInfo))
-#define MOO_EDIT_RELOAD_INFO_CLASS(klass)               (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EDIT_RELOAD_INFO, MooEditReloadInfoClass))
-#define MOO_IS_EDIT_RELOAD_INFO(object)                 (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_EDIT_RELOAD_INFO))
-#define MOO_IS_EDIT_RELOAD_INFO_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_RELOAD_INFO))
-#define MOO_EDIT_RELOAD_INFO_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_RELOAD_INFO, MooEditReloadInfoClass))
+#define MOO_TYPE_RELOAD_INFO                     (moo_reload_info_get_type ())
+#define MOO_RELOAD_INFO(object)                  (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_RELOAD_INFO, MooReloadInfo))
+#define MOO_RELOAD_INFO_CLASS(klass)             (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_RELOAD_INFO, MooReloadInfoClass))
+#define MOO_IS_RELOAD_INFO(object)               (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_RELOAD_INFO))
+#define MOO_IS_RELOAD_INFO_CLASS(klass)          (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_RELOAD_INFO))
+#define MOO_RELOAD_INFO_GET_CLASS(obj)           (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_RELOAD_INFO, MooReloadInfoClass))
 
-typedef struct MooEditOpenInfoClass MooEditOpenInfoClass;
-typedef struct MooEditSaveInfoClass MooEditSaveInfoClass;
-typedef struct MooEditReloadInfoClass MooEditReloadInfoClass;
+typedef struct MooOpenInfoClass MooOpenInfoClass;
+typedef struct MooSaveInfoClass MooSaveInfoClass;
+typedef struct MooReloadInfoClass MooReloadInfoClass;
 
 typedef enum {
     MOO_EDIT_OPEN_NEW_WINDOW = 1 << 0,
@@ -53,7 +53,7 @@ typedef enum {
     MOO_EDIT_OPEN_CREATE_NEW = 1 << 3
 } MooEditOpenFlags;
 
-struct MooEditOpenInfo
+struct MooOpenInfo
 {
     GObject parent;
 
@@ -63,60 +63,60 @@ struct MooEditOpenInfo
     MooEditOpenFlags flags;
 };
 
-struct MooEditOpenInfoClass
+struct MooOpenInfoClass
 {
     GObjectClass parent_class;
 };
 
-struct MooEditReloadInfo {
+struct MooReloadInfo {
     GObject parent;
 
     char *encoding;
     int line;
 };
 
-struct MooEditReloadInfoClass
+struct MooReloadInfoClass
 {
     GObjectClass parent_class;
 };
 
-struct MooEditSaveInfo {
+struct MooSaveInfo {
     GObject parent;
 
     GFile *file;
     char *encoding;
 };
 
-struct MooEditSaveInfoClass
+struct MooSaveInfoClass
 {
     GObjectClass parent_class;
 };
 
-GType                moo_edit_open_info_get_type    (void) G_GNUC_CONST;
-GType                moo_edit_reload_info_get_type  (void) G_GNUC_CONST;
-GType                moo_edit_save_info_get_type    (void) G_GNUC_CONST;
+GType                moo_open_info_get_type     (void) G_GNUC_CONST;
+GType                moo_reload_info_get_type   (void) G_GNUC_CONST;
+GType                moo_save_info_get_type     (void) G_GNUC_CONST;
 
-MooEditOpenInfo     *moo_edit_open_info_new         (GFile              *file,
-                                                     const char         *encoding);
-MooEditOpenInfo     *moo_edit_open_info_new_path    (const char         *path,
-                                                     const char         *encoding);
-MooEditOpenInfo     *moo_edit_open_info_new_uri     (const char         *uri,
-                                                     const char         *encoding);
-MooEditOpenInfo     *moo_edit_open_info_dup         (MooEditOpenInfo    *info);
-void                 moo_edit_open_info_free        (MooEditOpenInfo    *info);
+MooOpenInfo         *moo_open_info_new          (GFile              *file,
+                                                 const char         *encoding);
+MooOpenInfo         *moo_open_info_new_path     (const char         *path,
+                                                 const char         *encoding);
+MooOpenInfo         *moo_open_info_new_uri      (const char         *uri,
+                                                 const char         *encoding);
+MooOpenInfo         *moo_open_info_dup          (MooOpenInfo        *info);
+void                 moo_open_info_free         (MooOpenInfo        *info);
 
-MooEditReloadInfo   *moo_edit_reload_info_new       (const char         *encoding);
-MooEditReloadInfo   *moo_edit_reload_info_dup       (MooEditReloadInfo  *info);
-void                 moo_edit_reload_info_free      (MooEditReloadInfo  *info);
+MooReloadInfo       *moo_reload_info_new        (const char         *encoding);
+MooReloadInfo       *moo_reload_info_dup        (MooReloadInfo      *info);
+void                 moo_reload_info_free       (MooReloadInfo      *info);
 
-MooEditSaveInfo     *moo_edit_save_info_new         (GFile              *file,
-                                                     const char         *encoding);
-MooEditSaveInfo     *moo_edit_save_info_new_path    (const char         *path,
-                                                     const char         *encoding);
-MooEditSaveInfo     *moo_edit_save_info_new_uri     (const char         *uri,
-                                                     const char         *encoding);
-MooEditSaveInfo     *moo_edit_save_info_dup         (MooEditSaveInfo    *info);
-void                 moo_edit_save_info_free        (MooEditSaveInfo    *info);
+MooSaveInfo         *moo_save_info_new          (GFile              *file,
+                                                 const char         *encoding);
+MooSaveInfo         *moo_save_info_new_path     (const char         *path,
+                                                 const char         *encoding);
+MooSaveInfo         *moo_save_info_new_uri      (const char         *uri,
+                                                 const char         *encoding);
+MooSaveInfo         *moo_save_info_dup          (MooSaveInfo        *info);
+void                 moo_save_info_free         (MooSaveInfo        *info);
 
 G_END_DECLS
 

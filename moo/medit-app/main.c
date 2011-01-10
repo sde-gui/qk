@@ -558,7 +558,7 @@ medit_main (int argc, char *argv[])
     const char *name = NULL;
     char pid_buf[32];
     GOptionContext *ctx;
-    MooEditOpenInfoArray *files;
+    MooOpenInfoArray *files;
 
     init_mem_stuff ();
     g_thread_init (NULL);
@@ -689,7 +689,7 @@ medit_main (int argc, char *argv[])
     if (files)
         moo_app_open_files (app, files, stamp);
 
-    moo_edit_open_info_array_free (files);
+    moo_open_info_array_free (files);
     g_option_context_free (ctx);
 
     if (medit_opts.ut)

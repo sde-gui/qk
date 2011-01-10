@@ -946,7 +946,7 @@ update_history_item_for_doc (MooEditor *editor,
 
 static MooEdit *
 moo_editor_load_file (MooEditor       *editor,
-                      MooEditOpenInfo *info,
+                      MooOpenInfo     *info,
                       MooEditWindow   *window,
                       GtkWidget       *parent,
                       gboolean         silent,
@@ -1082,7 +1082,7 @@ moo_editor_load_file (MooEditor       *editor,
 
 // static MooEdit *
 // moo_editor_load_file (MooEditor       *editor,
-//                       MooEditOpenInfo *info,
+//                       MooOpenInfo *info,
 //                       MooEditWindow   *window,
 //                       GtkWidget       *parent,
 //                       gboolean         silent,
@@ -1186,10 +1186,10 @@ moo_editor_load_file (MooEditor       *editor,
 // }
 
 static MooEditArray *
-_moo_editor_open_files (MooEditor              *editor,
-                        MooEditOpenInfoArray   *files,
-                        GtkWidget              *parent,
-                        GError                **error)
+_moo_editor_open_files (MooEditor         *editor,
+                        MooOpenInfoArray  *files,
+                        GtkWidget         *parent,
+                        GError           **error)
 {
     guint i;
     MooEdit *bring_to_front = NULL;
@@ -1199,7 +1199,7 @@ _moo_editor_open_files (MooEditor              *editor,
 
     moo_return_error_if_fail_p (MOO_IS_EDITOR (editor));
     moo_return_error_if_fail_p (!parent || GTK_IS_WIDGET (parent));
-    moo_return_error_if_fail_p (!moo_edit_open_info_array_is_empty (files));
+    moo_return_error_if_fail_p (!moo_open_info_array_is_empty (files));
 
     if (parent)
     {
@@ -1212,7 +1212,7 @@ _moo_editor_open_files (MooEditor              *editor,
 
     for (i = 0; i < files->n_elms; ++i)
     {
-        MooEditOpenInfo *info = files->elms[i];
+        MooOpenInfo *info = files->elms[i];
         MooEdit *doc = NULL;
 
         if (!window)
@@ -1761,7 +1761,7 @@ load_doc_session (MooEditor     *editor,
     const char *encoding;
     char *freeme = NULL;
     MooEdit *doc = NULL;
-    MooEditOpenInfo *info;
+    MooOpenInfo *info;
 
     if (file_is_uri)
     {
@@ -1786,7 +1786,7 @@ load_doc_session (MooEditor     *editor,
     }
 
     encoding = moo_markup_get_prop (elm, "encoding");
-    info = moo_edit_open_info_new_uri (uri, encoding);
+    info = moo_open_info_new_uri (uri, encoding);
 
     doc = moo_editor_load_file (editor, info, window, GTK_WIDGET (window), TRUE, FALSE, NULL);
 
@@ -2007,23 +2007,23 @@ moo_editor_get_docs (MooEditor *editor)
  * @error:
  */
 gboolean
-moo_editor_open_files (MooEditor              *editor,
-                       MooEditOpenInfoArray   *files,
-                       GtkWidget              *parent,
-                       GError                **error)
+moo_editor_open_files (MooEditor        *editor,
+                       MooOpenInfoArray *files,
+                       GtkWidget        *parent,
+                       GError          **error)
 {
     MooEditArray *docs;
     gboolean ret;
 
     moo_return_error_if_fail (MOO_IS_EDITOR (editor));
-    moo_return_error_if_fail (!moo_edit_open_info_array_is_empty (files));
+    moo_return_error_if_fail (!moo_open_info_array_is_empty (files));
 
     docs = _moo_editor_open_files (editor, files, parent, error);
     ret = !moo_edit_array_is_empty (docs);
 
     moo_assert (moo_edit_array_is_empty (docs) ||
                 moo_edit_array_get_size (docs) ==
-                    moo_edit_open_info_array_get_size (files));
+                    moo_open_info_array_get_size (files));
 
     moo_edit_array_free (docs);
     return ret;
@@ -2038,18 +2038,18 @@ moo_editor_open_files (MooEditor              *editor,
  * @error:
  */
 MooEdit *
-moo_editor_new_file (MooEditor        *editor,
-                     MooEditOpenInfo  *info,
-                     GtkWidget        *parent,
-                     GError          **error)
+moo_editor_new_file (MooEditor    *editor,
+                     MooOpenInfo  *info,
+                     GtkWidget    *parent,
+                     GError      **error)
 {
     MooEdit *doc;
-    MooEditOpenInfo *info_copy;
+    MooOpenInfo *info_copy;
 
     moo_return_error_if_fail_p (MOO_IS_EDITOR (editor));
     moo_return_error_if_fail_p (info != NULL);
 
-    info_copy = moo_edit_open_info_dup (info);
+    info_copy = moo_open_info_dup (info);
     moo_return_error_if_fail_p (info_copy != NULL);
 
     info_copy->flags |= MOO_EDIT_OPEN_CREATE_NEW;
@@ -2069,23 +2069,23 @@ moo_editor_new_file (MooEditor        *editor,
  * @error:
  */
 MooEdit *
-moo_editor_open_file (MooEditor        *editor,
-                      MooEditOpenInfo  *info,
-                      GtkWidget        *parent,
-                      GError          **error)
+moo_editor_open_file (MooEditor   *editor,
+                      MooOpenInfo *info,
+                      GtkWidget   *parent,
+                      GError     **error)
 {
     MooEditArray *docs;
-    MooEditOpenInfoArray *files;
+    MooOpenInfoArray *files;
     MooEdit *ret = NULL;
 
     moo_return_error_if_fail_p (info != NULL);
 
-    files = moo_edit_open_info_array_new ();
-    moo_edit_open_info_array_append (files, info);
+    files = moo_open_info_array_new ();
+    moo_open_info_array_append (files, info);
 
     docs = _moo_editor_open_files (editor, files, parent, error);
 
-    moo_edit_open_info_array_free (files);
+    moo_open_info_array_free (files);
 
     if (docs)
     {
@@ -2114,9 +2114,9 @@ moo_editor_open_uri (MooEditor     *editor,
                      MooEditWindow *window)
 {
     MooEdit *ret;
-    MooEditOpenInfo *info;
+    MooOpenInfo *info;
 
-    info = moo_edit_open_info_new_uri (uri, encoding);
+    info = moo_open_info_new_uri (uri, encoding);
     moo_return_val_if_fail (info != NULL, NULL);
     info->line = line;
 
@@ -2143,9 +2143,9 @@ moo_editor_open_path (MooEditor     *editor,
                       MooEditWindow *window)
 {
     MooEdit *ret;
-    MooEditOpenInfo *info;
+    MooOpenInfo *info;
 
-    info = moo_edit_open_info_new_path (path, encoding);
+    info = moo_open_info_new_path (path, encoding);
     moo_return_val_if_fail (info != NULL, NULL);
     info->line = line;
 
@@ -2372,10 +2372,10 @@ moo_editor_open_path (MooEditor     *editor,
  * moo_editor_reload:
  **/
 gboolean
-moo_editor_reload (MooEditor          *editor,
-                   MooEdit            *doc,
-                   MooEditReloadInfo  *info,
-                   GError            **error)
+moo_editor_reload (MooEditor     *editor,
+                   MooEdit       *doc,
+                   MooReloadInfo *info,
+                   GError       **error)
 {
     GError *error_here = NULL;
     int cursor_line, cursor_offset;
@@ -2597,12 +2597,12 @@ out:
  * moo_editor_save_as:
  **/
 gboolean
-moo_editor_save_as (MooEditor        *editor,
-                    MooEdit          *doc,
-                    MooEditSaveInfo  *info,
-                    GError          **error)
+moo_editor_save_as (MooEditor   *editor,
+                    MooEdit     *doc,
+                    MooSaveInfo *info,
+                    GError     **error)
 {
-    MooEditSaveInfo *freeme = NULL;
+    MooSaveInfo *freeme = NULL;
     gboolean result = FALSE;
 
     moo_return_error_if_fail (MOO_IS_EDITOR (editor));
@@ -2635,7 +2635,7 @@ moo_editor_save_as (MooEditor        *editor,
     }
     else if (!info->encoding)
     {
-        freeme = moo_edit_save_info_new (info->file, moo_edit_get_encoding (doc));
+        freeme = moo_save_info_new (info->file, moo_edit_get_encoding (doc));
         info = freeme;
     }
 
@@ -2654,10 +2654,10 @@ out:
  * moo_editor_save_copy:
  **/
 gboolean
-moo_editor_save_copy (MooEditor        *editor,
-                      MooEdit          *doc,
-                      MooEditSaveInfo  *info,
-                      GError          **error)
+moo_editor_save_copy (MooEditor   *editor,
+                      MooEdit     *doc,
+                      MooSaveInfo *info,
+                      GError     **error)
 {
     gboolean retval;
 

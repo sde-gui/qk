@@ -1220,10 +1220,10 @@ static void
 action_open (MooEditWindow *window)
 {
     MooEdit *active = moo_edit_window_get_active_doc (window);
-    MooEditOpenInfoArray *files = _moo_edit_open_dialog (GTK_WIDGET (window), active);
-    if (!moo_edit_open_info_array_is_empty (files))
+    MooOpenInfoArray *files = _moo_edit_open_dialog (GTK_WIDGET (window), active);
+    if (!moo_open_info_array_is_empty (files))
         moo_editor_open_files (window->priv->editor, files, GTK_WIDGET (window), NULL);
-    moo_edit_open_info_array_free (files);
+    moo_open_info_array_free (files);
 }
 
 
@@ -1242,12 +1242,12 @@ reopen_encoding_item_activated (const char *encoding,
 {
     MooEditWindow *window = data;
     MooEdit *doc;
-    MooEditReloadInfo *info;
+    MooReloadInfo *info;
 
     doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
 
-    info = moo_edit_reload_info_new (encoding);
+    info = moo_reload_info_new (encoding);
     moo_edit_reload (doc, info, NULL);
 }
 
