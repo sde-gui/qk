@@ -1,10 +1,6 @@
 #! /usr/bin/env python
 
-import os
-import re
 import sys
-import optparse
-import fnmatch
 
 from mpi.module import Module
 from mpi.defswriter import Writer

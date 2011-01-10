@@ -68,18 +68,25 @@ if $coverage; then
   [ -f $moo_xml ] || { echo "file $moo_xml doesn't exist"; exit 1; }
   [ -f $gtk_xml ] || { echo "file $gtk_xml doesn't exist"; exit 1; }
 
-  $PYTHON $print_functions $moo_xml $gtk_xml > all-functions.tmp || exit 1
-  sort all-functions.tmp > all-functions.tmp2 || exit 1
-  mv all-functions.tmp2 all-functions || exit 1
-  rm -f all-functions.tmp all-functions.tmp2
+  $PYTHON $print_functions $moo_xml $gtk_xml --output-lua=lua-functions.tmp --output-python=python-functions.tmp || exit 1
+  sort lua-functions.tmp > lua-functions.tmp2 && mv lua-functions.tmp2 lua-functions || exit 1
+  sort python-functions.tmp > python-functions.tmp2 && mv python-functions.tmp2 python-functions || exit 1
+  cat lua-functions python-functions | sort | uniq > all-functions
+  rm -f *-functions.tmp*
 
-  comm -3 -2 all-functions called-functions > not-covered-functions
+  grep --extended-regexp 'lua\.' called-functions | sed --regexp-extended 's/(lua|python)\.//g' | sort | uniq > lua-called-functions
+  grep --extended-regexp 'python\.' called-functions | sed --regexp-extended 's/(lua|python)\.//g' | sort | uniq > python-called-functions
+  sed --regexp-extended 's/(lua|python)\.//g' called-functions | sort | uniq > all-called-functions
+
+  comm -3 -2 lua-functions lua-called-functions > not-covered-lua-functions
+  comm -3 -2 python-functions python-called-functions > not-covered-python-functions
+  comm -3 -2 all-functions all-called-functions > not-covered-functions
 
   if [ -z "$IGNORE_COVERAGE" ] && [ -s not-covered-functions ]; then
     echo "*** Not all functions are covered, see file not-covered-functions"
     exit 1
   else
-    rm -f all-functions called-functions not-covered-functions
+    rm -f *-functions *-called-functions called-functions not-covered-*-functions not-covered-functions
     exit 0
   fi
 fi

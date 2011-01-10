@@ -3,47 +3,47 @@
  **/
 
 /**
- * class:GFile: (parent GObject)
+ * class:GFile: (parent GObject) (moo.python 0)
  **/
 
 /**
- * class:GdkPixbuf: (parent GObject)
+ * class:GdkPixbuf: (parent GObject) (moo.python 0)
  **/
 
 /**
- * class:GtkObject: (parent GObject)
+ * class:GtkObject: (parent GObject) (moo.python 0)
  **/
 
 /**
- * class:GtkAccelGroup: (parent GObject)
+ * class:GtkAccelGroup: (parent GObject) (moo.python 0)
  **/
 
 /**
- * class:GtkWidget: (parent GtkObject)
+ * class:GtkWidget: (parent GtkObject) (moo.python 0)
  **/
 
 /**
- * class:GtkContainer: (parent GtkWidget)
+ * class:GtkContainer: (parent GtkWidget) (moo.python 0)
  **/
 
 /**
- * class:GtkTextView: (parent GtkContainer)
+ * class:GtkTextView: (parent GtkContainer) (moo.python 0)
  **/
 
 /**
- * class:GtkTextBuffer: (parent GObject)
+ * class:GtkTextBuffer: (parent GObject) (moo.python 0)
  **/
 
 /**
- * boxed:GtkTextIter
+ * boxed:GtkTextIter: (moo.python 0)
  **/
 
 /**
- * boxed:GdkRectangle
+ * boxed:GdkRectangle: (moo.python 0)
  **/
 
 /**
- * enum:GtkResponseType
+ * enum:GtkResponseType: (moo.python 0)
  **/
 
 
