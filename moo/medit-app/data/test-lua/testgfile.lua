@@ -15,7 +15,7 @@ else
 end
 
 local function test1()
-  f1 = gtk.g_file_new_for_path(name1)
+  f1 = gtk.GFile.new_for_path(name1)
   f2 = f1.dup()
   tassert(f1 ~= f2)
   tassert(f1.get_basename() == 'foo')
@@ -50,7 +50,7 @@ local function test1()
 end
 
 local function test2()
-  f1 = gtk.g_file_new_for_uri('http://example.com/foo/bar.txt')
+  f1 = gtk.GFile.new_for_uri('http://example.com/foo/bar.txt')
   f2 = f1.dup()
   tassert(f2 ~= nil)
   tassert(f1 ~= f2)
@@ -79,14 +79,14 @@ local function test2()
 end
 
 local function test3()
-  f = gtk.g_file_parse_name(name1)
-  f2 = gtk.g_file_new_for_path(name1)
+  f = gtk.GFile.parse_name(name1)
+  f2 = gtk.GFile.new_for_path(name1)
   tassert(f.equal(f2))
 end
 
 local function test4()
-  f1 = gtk.g_file_new_for_uri(uri1)
-  f2 = gtk.g_file_new_for_path(name1)
+  f1 = gtk.GFile.new_for_uri(uri1)
+  f2 = gtk.GFile.new_for_path(name1)
   tassert(f1.equal(f2))
 end
 

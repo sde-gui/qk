@@ -238,6 +238,30 @@ moo_lua_lookup_method (lua_State  *L,
 }
 
 
+void
+moo_lua_register_static_methods (lua_State      *L,
+                                 const char     *package_name,
+                                 const char     *class_name,
+                                 const luaL_Reg *methods)
+{
+    std::string name(package_name);
+    name.push_back('.');
+    name.append(class_name);
+
+    if (luaL_findtable(L, LUA_GLOBALSINDEX, name.c_str(), 1))
+        luaL_error(L, "oops");
+
+    while (methods->func)
+    {
+        lua_pushcclosure(L, methods->func, 0);
+        lua_setfield(L, -2, methods->name);
+        methods++;
+    }
+
+    lua_pop (L, 1);
+}
+
+
 static LGInstance *
 get_arg_instance (lua_State *L, int arg, const char *param_name)
 {

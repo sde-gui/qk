@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooEditWindow: (parent MooWindow)
+ * class:MooEditWindow: (parent MooWindow) (moo.doc-object-name window)
  **/
 
 #ifdef HAVE_CONFIG_H
@@ -200,7 +200,7 @@ static void          view_show_line_numbers_changed     (MooEditWindow      *win
                                                          GParamSpec         *pspec,
                                                          MooEditView        *view);
 static GtkWidget    *create_tab_label                   (MooEditWindow      *window,
-                                                         MooEdit            *edit);
+                                                         MooEdit            *doc);
 static void          update_tab_label                   (MooEditWindow      *window,
                                                          MooEdit            *doc);
 static void          view_cursor_moved                  (MooEditWindow      *window,
@@ -1230,9 +1230,9 @@ action_open (MooEditWindow *window)
 static void
 action_reload (MooEditWindow *window)
 {
-    MooEdit *edit = ACTIVE_DOC (window);
-    g_return_if_fail (edit != NULL);
-    moo_edit_reload (edit, NULL, NULL);
+    MooEdit *doc = ACTIVE_DOC (window);
+    g_return_if_fail (doc != NULL);
+    moo_edit_reload (doc, NULL, NULL);
 }
 
 
@@ -1399,27 +1399,27 @@ create_doc_line_end_action (MooEditWindow *window)
 static void
 action_save (MooEditWindow *window)
 {
-    MooEdit *edit = ACTIVE_DOC (window);
-    g_return_if_fail (edit != NULL);
-    moo_editor_save (window->priv->editor, edit, NULL);
+    MooEdit *doc = ACTIVE_DOC (window);
+    g_return_if_fail (doc != NULL);
+    moo_editor_save (window->priv->editor, doc, NULL);
 }
 
 
 static void
 action_save_as (MooEditWindow *window)
 {
-    MooEdit *edit = ACTIVE_DOC (window);
-    g_return_if_fail (edit != NULL);
-    moo_editor_save_as (window->priv->editor, edit, NULL, NULL);
+    MooEdit *doc = ACTIVE_DOC (window);
+    g_return_if_fail (doc != NULL);
+    moo_editor_save_as (window->priv->editor, doc, NULL, NULL);
 }
 
 
 static void
 action_close_tab (MooEditWindow *window)
 {
-    MooEdit *edit = ACTIVE_DOC (window);
-    g_return_if_fail (edit != NULL);
-    moo_editor_close_doc (window->priv->editor, edit, TRUE);
+    MooEdit *doc = ACTIVE_DOC (window);
+    g_return_if_fail (doc != NULL);
+    moo_editor_close_doc (window->priv->editor, doc, TRUE);
 }
 
 
@@ -1908,10 +1908,10 @@ static void
 close_activated (GtkWidget     *item,
                  MooEditWindow *window)
 {
-    MooEdit *edit = g_object_get_data (G_OBJECT (item), "moo-edit");
+    MooEdit *doc = g_object_get_data (G_OBJECT (item), "moo-edit");
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (MOO_IS_EDIT (edit));
-    moo_editor_close_doc (window->priv->editor, edit, TRUE);
+    g_return_if_fail (MOO_IS_EDIT (doc));
+    moo_editor_close_doc (window->priv->editor, doc, TRUE);
 }
 
 
@@ -1920,13 +1920,13 @@ close_others_activated (GtkWidget     *item,
                         MooEditWindow *window)
 {
     MooEditArray *others;
-    MooEdit *edit = g_object_get_data (G_OBJECT (item), "moo-edit");
+    MooEdit *doc = g_object_get_data (G_OBJECT (item), "moo-edit");
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (MOO_IS_EDIT (doc));
 
     others = moo_edit_window_get_docs (window);
-    moo_edit_array_remove (others, edit);
+    moo_edit_array_remove (others, doc);
 
     if (!moo_edit_array_is_empty (others))
         moo_editor_close_docs (window->priv->editor, others, TRUE);
@@ -2766,7 +2766,7 @@ _moo_edit_window_get_doc_no (MooEditWindow *window,
 
 void
 _moo_edit_window_insert_doc (MooEditWindow *window,
-                             MooEdit       *edit,
+                             MooEdit       *doc,
                              MooEditView   *after_view)
 {
     GtkWidget *label;
@@ -2776,11 +2776,11 @@ _moo_edit_window_insert_doc (MooEditWindow *window,
     int page = -1;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (MOO_IS_EDIT (doc));
 
-    view = moo_edit_get_view (edit);
+    view = moo_edit_get_view (doc);
 
-    label = create_tab_label (window, edit);
+    label = create_tab_label (window, doc);
     gtk_widget_show (label);
 
     scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
@@ -2808,11 +2808,11 @@ _moo_edit_window_insert_doc (MooEditWindow *window,
     show_notebook (window, notebook);
     moo_notebook_insert_page (notebook, scrolledwindow, label, page);
 
-    g_signal_connect_swapped (edit, "doc_status_changed",
+    g_signal_connect_swapped (doc, "doc_status_changed",
                               G_CALLBACK (edit_changed), window);
-    g_signal_connect_swapped (edit, "notify::encoding",
+    g_signal_connect_swapped (doc, "notify::encoding",
                               G_CALLBACK (edit_encoding_changed), window);
-    g_signal_connect_swapped (edit, "notify::line-end",
+    g_signal_connect_swapped (doc, "notify::line-end",
                               G_CALLBACK (edit_line_end_changed), window);
     g_signal_connect_swapped (view, "notify::overwrite",
                               G_CALLBACK (view_overwrite_changed), window);
@@ -2820,24 +2820,24 @@ _moo_edit_window_insert_doc (MooEditWindow *window,
                               G_CALLBACK (view_wrap_mode_changed), window);
     g_signal_connect_swapped (view, "notify::show-line-numbers",
                               G_CALLBACK (view_show_line_numbers_changed), window);
-    g_signal_connect_swapped (edit, "filename_changed",
+    g_signal_connect_swapped (doc, "filename_changed",
                               G_CALLBACK (edit_filename_changed), window);
-    g_signal_connect_swapped (edit, "notify::has-comments",
+    g_signal_connect_swapped (doc, "notify::has-comments",
                               G_CALLBACK (proxy_boolean_property), window);
-    g_signal_connect_swapped (edit, "notify::lang",
+    g_signal_connect_swapped (doc, "notify::lang",
                               G_CALLBACK (edit_lang_changed), window);
     g_signal_connect_swapped (view, "cursor-moved",
                               G_CALLBACK (view_cursor_moved), window);
 
-    g_object_ref (edit);
+    g_object_ref (doc);
 
     moo_edit_window_update_doc_list (window);
-    g_signal_emit (window, signals[NEW_DOC], 0, edit);
+    g_signal_emit (window, signals[NEW_DOC], 0, doc);
 
-    _moo_doc_attach_plugins (window, edit);
+    _moo_doc_attach_plugins (window, doc);
 
-    moo_edit_window_set_active_doc (window, edit);
-    edit_changed (window, edit);
+    moo_edit_window_set_active_doc (window, doc);
+    edit_changed (window, doc);
     gtk_widget_grab_focus (GTK_WIDGET (view));
 
     g_object_notify (G_OBJECT (window), "can-move-to-split-view");
@@ -2976,10 +2976,10 @@ tab_icon_start_drag (GtkWidget      *evbox,
                      MooEditWindow  *window)
 {
     GtkTargetList *targets;
-    MooEdit *edit;
+    MooEdit *doc;
 
-    edit = g_object_get_data (G_OBJECT (evbox), "moo-edit");
-    g_return_if_fail (MOO_IS_EDIT (edit));
+    doc = g_object_get_data (G_OBJECT (evbox), "moo-edit");
+    g_return_if_fail (MOO_IS_EDIT (doc));
 
     g_signal_connect (evbox, "drag-begin", G_CALLBACK (tab_icon_drag_begin), window);
     g_signal_connect (evbox, "drag-data-get", G_CALLBACK (tab_icon_drag_data_get), window);
@@ -3069,17 +3069,17 @@ tab_icon_drag_data_get (GtkWidget      *evbox,
                         G_GNUC_UNUSED guint           time,
                         G_GNUC_UNUSED MooEditWindow  *window)
 {
-    MooEdit *edit = g_object_get_data (G_OBJECT (evbox), "moo-edit");
-    g_return_if_fail (MOO_IS_EDIT (edit));
+    MooEdit *doc = g_object_get_data (G_OBJECT (evbox), "moo-edit");
+    g_return_if_fail (MOO_IS_EDIT (doc));
 
     if (info == TARGET_MOO_EDIT_TAB)
     {
-        moo_selection_data_set_pointer (data, MOO_EDIT_TAB_ATOM, edit);
+        moo_selection_data_set_pointer (data, MOO_EDIT_TAB_ATOM, doc);
     }
     else if (info == TARGET_URI_LIST)
     {
         char *uris[] = {NULL, NULL};
-        uris[0] = moo_edit_get_uri (edit);
+        uris[0] = moo_edit_get_uri (doc);
         gtk_selection_data_set_uris (data, uris);
         g_free (uris[0]);
     }
@@ -3105,7 +3105,7 @@ tab_icon_drag_end (GtkWidget      *evbox,
 
 static GtkWidget *
 create_tab_label (MooEditWindow *window,
-                  MooEdit       *edit)
+                  MooEdit       *doc)
 {
     GtkWidget *hbox, *icon, *label, *evbox;
     GtkSizeGroup *group;
@@ -3123,7 +3123,7 @@ create_tab_label (MooEditWindow *window,
     gtk_container_add (GTK_CONTAINER (evbox), icon);
     gtk_widget_show_all (evbox);
 
-    label = gtk_label_new (moo_edit_get_display_basename (edit));
+    label = gtk_label_new (moo_edit_get_display_basename (doc));
     gtk_label_set_single_line_mode (GTK_LABEL (label), TRUE);
     gtk_widget_show (label);
     gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
@@ -3135,8 +3135,8 @@ create_tab_label (MooEditWindow *window,
     g_object_set_data (G_OBJECT (hbox), "moo-edit-icon-evbox", evbox);
     g_object_set_data (G_OBJECT (hbox), "moo-edit-label", label);
     g_object_set_data (G_OBJECT (evbox), "moo-edit-icon", icon);
-    g_object_set_data (G_OBJECT (evbox), "moo-edit", edit);
-    g_object_set_data (G_OBJECT (icon), "moo-edit", edit);
+    g_object_set_data (G_OBJECT (evbox), "moo-edit", doc);
+    g_object_set_data (G_OBJECT (icon), "moo-edit", doc);
 
     g_signal_connect (evbox, "button-press-event",
                       G_CALLBACK (tab_icon_button_press),

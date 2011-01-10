@@ -1,5 +1,18 @@
 from mpi.module import *
 
+def split_camel_case_name(name):
+    comps = []
+    cur = ''
+    for c in name:
+        if c.islower() or not cur:
+            cur += c
+        else:
+            comps.append(cur)
+            cur = c
+    if cur:
+        comps.append(cur)
+    return comps
+
 class_template = """\
 (define-object %(short_name)s
   (in-module "%(module)s")
@@ -100,6 +113,10 @@ class Writer(object):
             dic['class'] = cls.name
             self.out.write(function_start_template % dic)
             self.out.write('  (is-constructor-of %s)\n' % cls.name)
+        elif isinstance(meth, StaticMethod):
+            dic['name'] = '_'.join([c.lower() for c in split_camel_case_name(cls.short_name)] + [meth.name])
+            dic['class'] = cls.name
+            self.out.write(function_start_template % dic)
         elif isinstance(meth, VMethod):
             dic['class'] = cls.name
             self.out.write(vmethod_start_template % dic)
@@ -126,13 +143,16 @@ class Writer(object):
     def __write_class_method(self, meth, cls):
         self.__write_function_or_method(meth, cls)
 
+    def __write_static_class_method(self, meth, cls):
+        self.__write_function_or_method(meth, cls)
+
     def __write_class_methods(self, cls):
         self.out.write('; methods of %s\n\n' % cls.name)
         if cls.constructor is not None:
             self.__write_function_or_method(cls.constructor, cls)
         if hasattr(cls, 'constructable') and cls.constructable:
             cons = Constructor()
-            cons.name = '%s__new' % cls.name
+            cons.name = '%s__new__' % cls.name
             cons.c_name = cons.name
             self.__write_function_or_method(cons, cls)
         if isinstance(cls, Class):
@@ -140,6 +160,8 @@ class Writer(object):
                 self.__write_class_method(meth, cls)
         for meth in cls.methods:
             self.__write_class_method(meth, cls)
+        for meth in cls.static_methods:
+            self.__write_static_class_method(meth, cls)
 
     def __write_function(self, func):
         self.__write_function_or_method(func, None)

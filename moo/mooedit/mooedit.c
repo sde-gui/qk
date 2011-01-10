@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooEdit: (parent GObject): document object
+ * class:MooEdit: (parent GObject) (moo.doc-object-name doc): document object
  *
  * Object which represents a document. It has methods for file operations
  * and manipulating document text.

@@ -1,5 +1,5 @@
 /**
- * class:MooEditView: (parent MooTextView)
+ * class:MooEditView: (parent MooTextView) (moo.doc-object-name view)
  **/
 
 #define MOOEDIT_COMPILATION

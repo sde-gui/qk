@@ -117,6 +117,8 @@ class Writer(object):
         self.__write_docs(cls.docs)
         if cls.constructor is not None:
             self.__write_function(cls.constructor, 'constructor')
+        for meth in sorted(cls.static_methods, lambda x, y: cmp(x.name, y.name)):
+            self.__write_function(meth, 'static-method')
         for meth in sorted(cls.vmethods, lambda x, y: cmp(x.name, y.name)):
             self.__write_function(meth, 'virtual')
         for meth in sorted(cls.methods, lambda x, y: cmp(x.name, y.name)):

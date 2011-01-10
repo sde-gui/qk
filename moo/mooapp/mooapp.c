@@ -478,7 +478,7 @@ moo_app_get_property (GObject        *object,
 
 
 /**
- * moo_app_instance:
+ * moo_app_instance: (static-method-of MooApp)
  **/
 MooApp *
 moo_app_instance (void)

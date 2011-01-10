@@ -54,7 +54,7 @@
  */
 
 /**
- * g_file_new_for_path:
+ * g_file_new_for_path: (static-method-of GFile)
  *
  * @path: (type const-filename)
  *
@@ -62,7 +62,7 @@
  **/
 
 /**
- * g_file_new_for_uri:
+ * g_file_new_for_uri: (static-method-of GFile)
  *
  * @uri: (type const-utf8)
  *
@@ -70,7 +70,7 @@
  **/
 
 /**
- * g_file_parse_name:
+ * g_file_parse_name: (static-method-of GFile)
  *
  * @parse_name: (type const-utf8)
  *

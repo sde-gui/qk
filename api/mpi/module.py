@@ -97,6 +97,7 @@ class _FunctionBase(_XmlObject):
         self.c_name = None
         self.retval = None
         self.params = []
+        self.has_gerror_return = False
 
     def _parse_attribute(self, attr, value):
         if attr in ('c_name', 'name'):
@@ -125,6 +126,10 @@ class Function(_FunctionBase):
         _FunctionBase.__init__(self)
 
 class Constructor(_FunctionBase):
+    def __init__(self):
+        _FunctionBase.__init__(self)
+
+class StaticMethod(_FunctionBase):
     def __init__(self):
         _FunctionBase.__init__(self)
 
@@ -195,6 +200,7 @@ class InstanceType(GTypedType):
         GTypedType.__init__(self)
         self.constructor = None
         self.methods = []
+        self.static_methods = []
         self.__method_hash = {}
 
     def _parse_xml_element(self, elm):
@@ -203,6 +209,11 @@ class InstanceType(GTypedType):
             assert not meth.name in self.__method_hash
             self.__method_hash[meth.name] = meth
             self.methods.append(meth)
+        elif elm.tag == 'static-method':
+            meth = StaticMethod.from_xml(elm, self)
+            assert not meth.name in self.__method_hash
+            self.__method_hash[meth.name] = meth
+            self.static_methods.append(meth)
         elif elm.tag == 'constructor':
             assert not self.constructor
             self.constructor = Constructor.from_xml(elm)
@@ -307,6 +318,8 @@ class Module(object):
     def __finish_parsing_type(self, typ):
         if hasattr(typ, 'constructor') and typ.constructor is not None:
             self.__finish_parsing_method(typ.constructor, typ)
+        for meth in typ.static_methods:
+            self.__finish_parsing_method(meth, typ)
         for meth in typ.methods:
             self.__finish_parsing_method(meth, typ)
         if hasattr(typ, 'vmethods'):

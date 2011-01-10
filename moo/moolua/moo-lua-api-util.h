@@ -27,6 +27,10 @@ MooLuaMethod    moo_lua_lookup_method           (lua_State          *L,
                                                  const char         *meth);
 void            moo_lua_register_methods        (GType               type,
                                                  MooLuaMethodEntry  *entries);
+void            moo_lua_register_static_methods (lua_State          *L,
+                                                 const char         *package_name,
+                                                 const char         *class_name,
+                                                 const luaL_Reg     *methods);
 
 int             moo_lua_error                   (lua_State          *L,
                                                  const char         *fmt,

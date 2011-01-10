@@ -82,7 +82,8 @@ char           **moo_test_list_data_files   (const char         *subdir);
 
 void             moo_test_coverage_enable   (void);
 void             moo_test_coverage_write    (const char         *filename);
-void             moo_test_coverage_record   (const char         *function);
+void             moo_test_coverage_record   (const char         *lang,
+                                             const char         *function);
 
 
 G_END_DECLS

@@ -4,7 +4,7 @@ require("munit")
 require("medit")
 require("moo.os")
 
-app = medit.app_instance()
+app = medit.App.instance()
 editor = app.get_editor()
 
 local __docs_to_cleanup = {}

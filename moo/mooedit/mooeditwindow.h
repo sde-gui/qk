@@ -78,7 +78,7 @@ void             moo_edit_window_set_action_filter      (const char     *action_
 
 MooEdit         *moo_edit_window_get_active_doc         (MooEditWindow  *window);
 void             moo_edit_window_set_active_doc         (MooEditWindow  *window,
-                                                         MooEdit        *edit);
+                                                         MooEdit        *doc);
 MooEditView     *moo_edit_window_get_active_view        (MooEditWindow  *window);
 void             moo_edit_window_set_active_view        (MooEditWindow  *window,
                                                          MooEditView    *view);

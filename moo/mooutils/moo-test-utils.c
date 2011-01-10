@@ -587,10 +587,11 @@ moo_test_coverage_write (const char *filename)
 }
 
 void
-moo_test_coverage_record (const char *function)
+moo_test_coverage_record (const char *lang,
+                          const char *function)
 {
     if (G_UNLIKELY (called_functions))
         g_hash_table_insert (called_functions,
-                             g_strdup (function),
+                             g_strdup_printf ("%s.%s", lang, function),
                              GINT_TO_POINTER (TRUE));
 }

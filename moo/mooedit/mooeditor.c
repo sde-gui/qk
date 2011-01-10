@@ -478,7 +478,7 @@ moo_editor_create (gboolean embedded)
 
 
 /**
- * moo_editor_instance:
+ * moo_editor_instance: (static-method-of MooEditor)
  **/
 MooEditor *
 moo_editor_instance (void)

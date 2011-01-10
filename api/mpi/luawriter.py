@@ -9,7 +9,7 @@ tmpl_file_start = """\
 
 #include "moo-lua-api-util.h"
 
-extern "C" void moo_test_coverage_record (const char *function);
+extern "C" void moo_test_coverage_record (const char *lang, const char *function);
 
 """
 
@@ -18,7 +18,7 @@ static int
 %(cfunc)s (gpointer pself, G_GNUC_UNUSED lua_State *L, G_GNUC_UNUSED int first_arg)
 {
 #ifdef MOO_ENABLE_COVERAGE
-    moo_test_coverage_record ("%(c_name)s");
+    moo_test_coverage_record ("lua", "%(c_name)s");
 #endif
     MooLuaCurrentFunc cur_func ("%(current_function)s");
     %(Class)s *self = (%(Class)s*) pself;
@@ -29,7 +29,7 @@ static int
 %(cfunc)s (G_GNUC_UNUSED lua_State *L)
 {
 #ifdef MOO_ENABLE_COVERAGE
-    moo_test_coverage_record ("%(c_name)s");
+    moo_test_coverage_record ("lua", "%(c_name)s");
 #endif
     MooLuaCurrentFunc cur_func ("%(current_function)s");
 """
@@ -202,6 +202,7 @@ class Writer(object):
             raise RuntimeError('invalid value %s for moo.lua annotation' % (bind,))
 
         is_constructor = isinstance(meth, Constructor)
+        static_method = isinstance(meth, StaticMethod)
         own_return = is_constructor or (meth.retval and meth.retval.transfer_mode == 'full')
 
         params = []
@@ -219,11 +220,21 @@ class Writer(object):
                 params.append(p)
 
         dic = dict(name=meth.name, c_name=meth.c_name)
-        if cls and not is_constructor:
+        if cls and not is_constructor and not static_method:
             dic['cfunc'] = 'cfunc_%s_%s' % (cls.name, meth.name)
             dic['Class'] = cls.name
             dic['current_function'] = '%s.%s' % (cls.name, meth.name)
             self.out.write(tmpl_cfunc_method_start % dic)
+        elif static_method:
+            dic['cfunc'] = 'cfunc_%s_%s' % (cls.name, meth.name)
+            dic['Class'] = cls.name
+            dic['current_function'] = '%s.%s' % (cls.name, meth.name)
+            self.out.write(tmpl_cfunc_func_start % dic)
+        elif is_constructor:
+            dic['cfunc'] = 'cfunc_%s_new' % cls.name
+            dic['Class'] = cls.name
+            dic['current_function'] = '%s.new' % cls.name
+            self.out.write(tmpl_cfunc_func_start % dic)
         else:
             dic['cfunc'] = 'cfunc_%s' % meth.name
             dic['current_function'] = meth.name
@@ -241,7 +252,7 @@ class Writer(object):
 
         i = 0
         for p in params:
-            self.__write_function_param(func_body, p, i, meth, None if is_constructor else cls)
+            self.__write_function_param(func_body, p, i, meth, None if (is_constructor or static_method) else cls)
             i += 1
 
         if meth.has_gerror_return:
@@ -313,7 +324,7 @@ class Writer(object):
 
         func_call += '%s (' % meth.c_name
         first_arg = True
-        if cls and not is_constructor:
+        if cls and not is_constructor and not static_method:
             first_arg = False
             func_call += 'self'
         for i in range(len(params)):
@@ -362,16 +373,40 @@ class Writer(object):
 #             self.out.write('  )\n')
 #         self.out.write(')\n\n')
 
+    def __write_gobject_constructor(self, name, cls):
+        dic = dict(func=name, gtype_id=cls.gtype_id)
+        self.out.write("""\
+static void *%(func)s (void)
+{
+    return g_object_new (%(gtype_id)s, (char*) NULL);
+}
+
+""" % dic)
+
     def __write_class(self, cls):
         bind = cls.annotations.get('moo.lua', '1')
         if bind == '0':
-            return []
+            return ([], [])
         self.out.write('// methods of %s\n\n' % cls.name)
         method_cfuncs = []
+        static_method_cfuncs = []
         for meth in cls.methods:
             if not isinstance(meth, VMethod):
                 self.__write_function(meth, cls, method_cfuncs)
-        return method_cfuncs
+        for meth in cls.static_methods:
+            self.__write_function(meth, cls, static_method_cfuncs)
+        if cls.constructor:
+            self.__write_function(cls.constructor, cls, static_method_cfuncs)
+#         if hasattr(cls, 'constructable') and cls.constructable:
+#             cons = Constructor()
+#             cons.retval = Retval()
+#             cons.retval.type = cls
+#             cons.retval.transfer_mode = 'full'
+#             cons.name = 'new'
+#             cons.c_name = '%s__new__' % cls.name
+#             self.__write_gobject_constructor(cons.c_name, cls)
+#             self.__write_function(cons, cls, static_method_cfuncs)
+        return (method_cfuncs, static_method_cfuncs)
 
     def __write_register_module(self, module, all_method_cfuncs):
         self.out.write(tmpl_register_module_start % dict(module=module.name.lower()))
@@ -396,10 +431,12 @@ class Writer(object):
             self.out.write('\n')
 
         all_method_cfuncs = {}
+        all_static_method_cfuncs = {}
 
         for cls in module.get_classes() + module.get_boxed() + module.get_pointers():
-            method_cfuncs = self.__write_class(cls)
+            method_cfuncs, static_method_cfuncs = self.__write_class(cls)
             all_method_cfuncs[cls.name] = method_cfuncs
+            all_static_method_cfuncs[cls.short_name] = static_method_cfuncs
 
 #         for enum in module.get_enums():
 #             self.__write_enum_decl(enum)
@@ -408,18 +445,28 @@ class Writer(object):
 
         all_func_cfuncs = []
 
-        for cls in module.get_classes() + module.get_boxed() + module.get_pointers():
-            if cls.constructor:
-                self.__write_function(cls.constructor, cls, all_func_cfuncs)
+#         for cls in module.get_classes() + module.get_boxed() + module.get_pointers():
+#             if cls.constructor:
+#                 self.__write_function(cls.constructor, cls, all_func_cfuncs)
 
         for func in module.get_functions():
             self.__write_function(func, None, all_func_cfuncs)
 
-        self.out.write('const luaL_Reg %(module)s_lua_functions[] = {\n' % dic)
+        self.out.write('static const luaL_Reg %(module)s_lua_functions[] = {\n' % dic)
         for name, cfunc in all_func_cfuncs:
             self.out.write('    { "%s", %s },\n' % (name, cfunc))
         self.out.write('    { NULL, NULL }\n')
         self.out.write('};\n\n')
+
+        for cls_name in all_static_method_cfuncs:
+            cfuncs = all_static_method_cfuncs[cls_name]
+            if not cfuncs:
+                continue
+            self.out.write('static const luaL_Reg %s_lua_functions[] = {\n' % cls_name)
+            for name, cfunc in cfuncs:
+                self.out.write('    { "%s", %s },\n' % (name, cfunc))
+            self.out.write('    { NULL, NULL }\n')
+            self.out.write('};\n\n')
 
         self.__write_register_module(module, all_method_cfuncs)
 
@@ -429,7 +476,15 @@ void %(module)s_lua_api_add_to_lua (lua_State *L, const char *package_name)
     %(module)s_lua_api_register ();
 
     luaL_register (L, package_name, %(module)s_lua_functions);
-}
+
 """ % dic)
+
+        for cls_name in all_static_method_cfuncs:
+            cfuncs = all_static_method_cfuncs[cls_name]
+            if not cfuncs:
+                continue
+            self.out.write('    moo_lua_register_static_methods (L, package_name, "%s", %s_lua_functions);\n' % (cls_name, cls_name))
+
+        self.out.write("}\n")
 
         del self.module

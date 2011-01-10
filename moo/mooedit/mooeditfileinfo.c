@@ -46,7 +46,7 @@ moo_edit_open_info_new (GFile      *file,
 }
 
 /**
- * moo_edit_open_info_new_path:
+ * moo_edit_open_info_new_path: (static-method-of MooEditOpenInfo)
  *
  * @path: (type const-filename)
  * @encoding: (type const-utf8) (allow-none) (default NULL)
@@ -64,7 +64,7 @@ moo_edit_open_info_new_path (const char *path,
 }
 
 /**
- * moo_edit_open_info_new_uri:
+ * moo_edit_open_info_new_uri: (static-method-of MooEditOpenInfo)
  *
  * @uri: (type const-utf8)
  * @encoding: (type const-utf8) (allow-none) (default NULL)
@@ -149,7 +149,7 @@ moo_edit_save_info_new (GFile      *file,
 }
 
 /**
- * moo_edit_save_info_new_path:
+ * moo_edit_save_info_new_path: (static-method-of MooEditSaveInfo)
  *
  * @path: (type const-filename)
  * @encoding: (type const-utf8) (allow-none) (default NULL)
@@ -167,7 +167,7 @@ moo_edit_save_info_new_path (const char *path,
 }
 
 /**
- * moo_edit_save_info_new_uri:
+ * moo_edit_save_info_new_uri: (static-method-of MooEditSaveInfo)
  *
  * @uri: (type const-utf8)
  * @encoding: (type const-utf8) (allow-none) (default NULL)
@@ -272,6 +272,7 @@ moo_edit_reload_info_finalize (GObject *object)
 
     G_OBJECT_CLASS (moo_edit_reload_info_parent_class)->finalize (object);
 }
+
 static void
 moo_edit_reload_info_class_init (MooEditReloadInfoClass *klass)
 {

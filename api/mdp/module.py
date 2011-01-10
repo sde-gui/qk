@@ -63,6 +63,7 @@ class _GTypedType(Type):
         Type.__init__(self, name)
         self.docs = docs
         self.methods = []
+        self.static_methods = []
         self.gtype_id = gtype_id
         self.short_name = short_name
         self.annotations = {}
@@ -114,6 +115,16 @@ class Function(FunctionBase):
         FunctionBase.__init__(self, name, c_name, params, retval, docs)
 
 class Method(FunctionBase):
+    def __init__(self, name, c_name, cls, params, retval, docs):
+        FunctionBase.__init__(self, name, c_name, params, retval, docs)
+        self.cls = cls
+
+class StaticMethod(FunctionBase):
+    def __init__(self, name, c_name, cls, params, retval, docs):
+        FunctionBase.__init__(self, name, c_name, params, retval, docs)
+        self.cls = cls
+
+class Constructor(FunctionBase):
     def __init__(self, name, c_name, cls, params, retval, docs):
         FunctionBase.__init__(self, name, c_name, params, retval, docs)
         self.cls = cls
@@ -396,6 +407,7 @@ class Module(object):
         docs = pfunc.docs
         cls = None
         constructor_of = None
+        static_method_of = None
         annotations = {}
 
         if pfunc.annotations:
@@ -405,6 +417,9 @@ class Module(object):
                 if prefix == 'constructor-of':
                     assert len(pieces) == 2
                     constructor_of = pieces[1]
+                elif prefix == 'static-method-of':
+                    assert len(pieces) == 2
+                    static_method_of = pieces[1]
                 elif prefix.find('.') >= 0:
                     annotations[prefix] = ' '.join(pieces[1:])
                 else:
@@ -419,6 +434,10 @@ class Module(object):
 
         if hasattr(pfunc, 'method_of'):
             cls = pfunc.method_of
+        elif static_method_of:
+            cls = static_method_of
+        elif constructor_of:
+            cls = constructor_of
         elif params:
             m = re.match(r'(const-)?([\w\d_]+)\*', params[0].type)
             if m:
@@ -432,14 +451,17 @@ class Module(object):
             name = strip_module_prefix(name, self.name)
 
         if constructor_of:
-            func = Function(name, c_name, params, retval, docs)
+            func = Constructor(name, c_name, cls, params, retval, docs)
             func.summary = pfunc.summary
             func.annotations = annotations
             if constructor_of in self.__constructors:
                 raise RuntimeError('duplicated constructor of class %s' % constructor_of)
             self.__constructors[constructor_of] = func
         elif cls:
-            meth = Method(name, c_name, cls, params[1:], retval, docs)
+            if static_method_of:
+                meth = StaticMethod(name, c_name, cls, params, retval, docs)
+            else:
+                meth = Method(name, c_name, cls, params[1:], retval, docs)
             meth.summary = pfunc.summary
             meth.annotations = annotations
             this_class_methods = self.__methods.get(cls)
@@ -496,7 +518,12 @@ class Module(object):
                 cls = instance_types[cls]
                 for m in methods:
                     m.cls = cls
-                cls.methods += methods
+                    if isinstance(m, Method):
+                        cls.methods.append(m)
+                    elif isinstance(m, StaticMethod):
+                        cls.static_methods.append(m)
+                    else:
+                        oops()
 
         for cls in self.__vmethods:
             methods = self.__vmethods[cls]

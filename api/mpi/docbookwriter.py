@@ -96,6 +96,12 @@ class Writer(object):
         else:
             oops()
 
+    def __get_obj_name(self, cls):
+        name = cls.annotations.get('moo.doc-object-name')
+        if not name:
+            name = '_'.join([c.lower() for c in split_camel_case_name(cls.name)[1:]])
+        return name
+
     def __write_function(self, func, cls):
         if not self.__check_bind_ann(func):
             return
@@ -112,21 +118,35 @@ class Writer(object):
 
         if isinstance(func, Constructor):
             if self.mode == 'python':
+                func_title = cls.short_name
                 func_name = cls.short_name
                 func_id = '%s.%s' % (cls.short_name, cls.short_name)
             elif self.mode == 'lua':
-                func_name = 'medit.%s' % func.name
+                func_title = 'new'
+                func_name = '%s.new' % cls.short_name
                 func_id = func_name
             else:
                 oops()
         elif cls is not None:
-            func_name = func.name
-            func_id = '%s.%s' % (cls.short_name, func.name)
+            if self.mode == 'python':
+                func_title = func.name
+                func_name = func.name
+                func_id = '%s.%s' % (cls.short_name, func.name)
+            elif self.mode == 'lua':
+                func_title = func.name
+                func_name = '%s.%s' % (self.__get_obj_name(cls), func.name) \
+                                if not isinstance(func, StaticMethod) \
+                                else '%s.%s' % (cls.short_name, func.name)
+                func_id = '%s.%s' % (cls.short_name, func.name)
+            else:
+                oops()
         else:
             if self.mode == 'python':
+                func_title = func.name
                 func_name = 'moo.%s' % func.name
                 func_id = func_name
             elif self.mode == 'lua':
+                func_title = func.name
                 func_name = 'medit.%s' % func.name
                 func_id = func_name
             else:
@@ -142,7 +162,7 @@ class Writer(object):
 
         self.out.write("""\
 <sect2 id="%(mode)s.%(func_id)s">
-<title id="%(mode)s.%(func_id)s.title">%(func_name)s()</title>
+<title id="%(mode)s.%(func_id)s.title">%(func_title)s()</title>
 <programlisting>%(func_name)s(%(params_string)s)</programlisting>
 """ % locals())
 
@@ -176,6 +196,10 @@ class Writer(object):
 
         self.out.write('</sect2>\n')
 
+    def __write_gobject_constructor(self, cls):
+        func = Constructor()
+        self.__write_function(func, cls)
+
     def __write_class(self, cls):
         if not self.__check_bind_ann(cls):
             return
@@ -183,8 +207,14 @@ class Writer(object):
         do_write = False
         if cls.constructor is not None and self.__check_bind_ann(cls.constructor):
             do_write = True
+        elif self.mode != 'lua' and hasattr(cls, 'constructable') and cls.constructable:
+            do_write = True
         else:
             for meth in cls.methods:
+                if self.__check_bind_ann(meth):
+                    do_write = True
+                    break
+            for meth in cls.static_methods:
                 if self.__check_bind_ann(meth):
                     do_write = True
                     break
@@ -211,7 +241,9 @@ class Writer(object):
         if cls.constructor is not None:
             self.__write_function(cls.constructor, cls)
         if hasattr(cls, 'constructable') and cls.constructable:
-            implement_me('GObject constructor of %s' % cls.name)
+            self.__write_gobject_constructor(cls)
+        for meth in cls.static_methods:
+            self.__write_function(meth, cls)
         if isinstance(cls, Class):
             if cls.vmethods:
                 implement_me('virtual methods of %s' % cls.name)
