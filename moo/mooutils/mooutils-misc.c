@@ -1264,10 +1264,12 @@ moo_tempdir (void)
  * is located inside directory returned by moo_tempdir(), and it
  * will be automatically removed on exit.
  *
+ * @extension: (type const-filename) (allow-none) (default NULL)
+ *
  * Returns: (type filename)
  **/
 char *
-moo_tempnam (void)
+moo_tempnam (const char *extension)
 {
     int i;
     char *tmpdir;
@@ -1284,7 +1286,7 @@ moo_tempnam (void)
     {
         char *basename;
 
-        basename = g_strdup_printf ("tmpfile-%03d", i);
+        basename = g_strdup_printf ("tmpfile-%03d%s", i, extension ? extension : "");
         filename = g_build_filename (tmpdir, basename, NULL);
         g_free (basename);
 
