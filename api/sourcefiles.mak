@@ -1,4 +1,6 @@
 source_files = \
+    ../moo/moolua/medit-lua.h\
+    ../moo/moolua/medit-lua.cpp\
     ../moo/mooapp/mooappabout.c\
     ../moo/mooapp/mooappabout.h\
     ../moo/mooapp/mooapp-accels.h\

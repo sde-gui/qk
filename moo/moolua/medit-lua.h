@@ -1,32 +1,45 @@
 #ifndef MEDIT_LUA_H
 #define MEDIT_LUA_H
 
-#include "moolua/lua/moolua.h"
+#include <glib-object.h>
 
 #ifdef __cplusplus
 
-bool         medit_lua_setup        (lua_State *L,
-                                     bool       default_init);
+#include "moolua/lua/moolua.h"
 
-lua_State   *medit_lua_new          (bool        default_init);
-void         medit_lua_free         (lua_State  *L);
+bool         medit_lua_setup            (lua_State *L,
+                                         bool       default_init);
 
-bool         medit_lua_do_string    (lua_State  *L,
-                                     const char *string);
-bool         medit_lua_do_file      (lua_State  *L,
-                                     const char *filename);
+lua_State   *medit_lua_new              (bool        default_init);
+void         medit_lua_free             (lua_State  *L);
+
+bool         medit_lua_do_string        (lua_State  *L,
+                                         const char *string);
+bool         medit_lua_do_file          (lua_State  *L,
+                                         const char *filename);
 
 #endif // __cplusplus
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
-void         medit_lua_run_string   (const char *string);
-void         medit_lua_run_file     (const char *filename);
+#define MOO_TYPE_LUA_STATE      (moo_lua_state_get_type ())
+#define MOO_LUA_STATE(object)   (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_LUA_STATE, MooLuaState))
 
-#ifdef __cplusplus
-} // extern "C"
-#endif
+typedef struct MooLuaState MooLuaState;
+
+typedef enum {
+    MOO_LUA_RUN_OK,
+    MOO_LUA_RUN_INCOMPLETE,
+    MOO_LUA_RUN_ERROR
+} MooLuaRunResult;
+
+GType        moo_lua_state_get_type     (void) G_GNUC_CONST;
+char        *moo_lua_state_run_string   (MooLuaState    *lstate,
+                                         const char     *string);
+
+void         medit_lua_run_string       (const char     *string);
+void         medit_lua_run_file         (const char     *filename);
+
+G_END_DECLS
 
 #endif // MEDIT_LUA_H

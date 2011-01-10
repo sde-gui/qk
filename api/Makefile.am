@@ -49,6 +49,8 @@ moo.xml.stamp: $(docparser_files) $(source_files)
 		--source-dir $(top_srcdir)/moo/mooutils \
 		--source-dir $(top_srcdir)/moo/plugins/usertools \
 		--source-dir $(top_srcdir)/moo/plugins/support \
+		--source-file $(top_srcdir)/moo/moolua/medit-lua.cpp \
+		--source-file $(top_srcdir)/moo/moolua/medit-lua.h \
                 --skip 'moofontsel.*' \
 		--output moo.xml.tmp
 	$(AM_V_at)cmp -s moo.xml.tmp $(srcdir)/moo.xml || mv moo.xml.tmp $(srcdir)/moo.xml

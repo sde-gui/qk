@@ -71,6 +71,8 @@ headers
 
 #include "mooapp/mooapp.h"
 
+#include "moolua/medit-lua.h"
+
 %%
 modulename moo
 %%

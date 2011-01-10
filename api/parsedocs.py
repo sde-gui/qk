@@ -42,7 +42,7 @@ def parse_args():
         for source_dir in opts.source_dirs:
             for root, dirs, files in os.walk(source_dir):
                 for f in files:
-                    if f.endswith('.c') or f.endswith('.h'):
+                    if f.endswith('.c') or f.endswith('.cpp') or f.endswith('.h'):
                         if skip_pat is None or not skip_pat.match(f):
                             source_files.append(os.path.join(root, f))
     if not source_files:

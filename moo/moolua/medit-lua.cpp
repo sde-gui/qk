@@ -4,6 +4,118 @@
 #include "moolua/lua-default-init.h"
 #include "mooapp/mooapp.h"
 
+extern "C" {
+
+/**
+ * class:MooLuaState: (parent GObject) (moo.private 1) (moo.lua 0) (constructable)
+ **/
+
+typedef struct MooLuaStateClass MooLuaStateClass;
+
+struct MooLuaState
+{
+    GObject base;
+    lua_State *L;
+};
+
+struct MooLuaStateClass
+{
+    GObjectClass base_class;
+};
+
+G_DEFINE_TYPE (MooLuaState, moo_lua_state, G_TYPE_OBJECT)
+
+static void
+moo_lua_state_init (MooLuaState *lua)
+{
+    try
+    {
+        lua->L = medit_lua_new (true);
+    }
+    catch (...)
+    {
+        moo_critical ("oops");
+    }
+}
+
+static void
+moo_lua_state_finalize (GObject *object)
+{
+    MooLuaState *lua = (MooLuaState*) object;
+
+    try
+    {
+        medit_lua_free (lua->L);
+    }
+    catch (...)
+    {
+        moo_critical ("oops");
+    }
+
+    G_OBJECT_CLASS (moo_lua_state_parent_class)->finalize (object);
+}
+
+static void
+moo_lua_state_class_init (MooLuaStateClass *klass)
+{
+    G_OBJECT_CLASS (klass)->finalize = moo_lua_state_finalize;
+}
+
+/**
+ * moo_lua_state_run_string:
+ *
+ * @lua:
+ * @string: (type const-utf8)
+ *
+ * Returns: (type utf8)
+ **/
+char *
+moo_lua_state_run_string (MooLuaState *lua,
+                          const char  *string)
+{
+    moo_return_val_if_fail (lua && lua->L, g_strdup ("error:unexpected error"));
+    moo_return_val_if_fail (string != NULL, g_strdup ("error:unexpected error"));
+
+    try
+    {
+        int old_top = lua_gettop (lua->L);
+
+        if (luaL_dostring (lua->L, string) == 0)
+        {
+            GString *sret = g_string_new ("ok:");
+            int nret = lua_gettop (lua->L) - old_top;
+            if (nret > 1 || (nret == 1 && !lua_isnil (lua->L, -1)))
+                for (int i = 1; i <= nret; ++i)
+                {
+                    if (i > 1)
+                        g_string_append (sret, ", ");
+                    if (lua_isnil (lua->L, -i))
+                        g_string_append (sret, "nil");
+                    else
+                        g_string_append (sret, lua_tostring (lua->L, -i));
+                }
+            lua_pop (lua->L, nret);
+            return g_string_free (sret, FALSE);
+        }
+
+        char *ret;
+        const char *msg = lua_tostring (lua->L, -1);
+        if (strstr (msg, "<eof>"))
+            ret = g_strdup ("error:incomplete");
+        else
+            ret = g_strdup_printf ("error:%s", msg);
+        lua_pop (lua->L, lua_gettop (lua->L) - old_top);
+        return ret;
+    }
+    catch (...)
+    {
+        moo_critical ("oops");
+        return g_strdup ("error:unexpected error");
+    }
+}
+
+} // extern "C"
+
 void gtk_lua_api_add_to_lua (lua_State *L, const char *package_name);
 void moo_lua_api_add_to_lua (lua_State *L, const char *package_name);
 
