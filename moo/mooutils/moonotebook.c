@@ -2124,8 +2124,7 @@ labels_size_allocate (MooNotebook   *nb,
 
     if (nb->priv->arrows_visible)
     {
-        if (nb->priv->labels_width <=
-            nb->priv->labels_visible_width + nb->priv->arrows_size)
+        if (nb->priv->labels_width <= nb->priv->labels_visible_width)
         {
             nb->priv->arrows_visible = FALSE;
             nb->priv->arrows_size = 0;
