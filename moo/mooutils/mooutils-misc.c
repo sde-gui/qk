@@ -1237,7 +1237,7 @@ moo_tempdir (void)
         {
             char *basename;
 
-            basename = g_strdup_printf ("%s-%08x", short_name, g_random_int ());
+            basename = g_strdup_printf ("%s-tmpdir-%08x", short_name, g_random_int ());
             dirname = g_build_filename (g_get_tmp_dir (), basename, NULL);
             g_free (basename);
 
