@@ -74,7 +74,7 @@ class PyProject(SimpleProject):
                             stock_id=c[2], default_accel=c[3],
                             callback=PyProject.DoCmd(self, c[4]))
 
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
         xml = editor.get_ui_xml()
         xml.insert_markup_after(self.merge_id, "Editor/Menubar",
                                 "Project", """

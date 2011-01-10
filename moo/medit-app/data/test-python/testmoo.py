@@ -1,7 +1,7 @@
 from munit import *
 import moo
 
-editor = moo.editor_instance()
+editor = moo.Editor.instance()
 tassert(editor is not None)
 tassert(isinstance(editor, moo.Editor))
 window = editor.get_active_window()

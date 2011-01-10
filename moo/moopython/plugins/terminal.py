@@ -140,7 +140,7 @@ class Terminal(vte.Terminal):
 
 class Plugin(moo.Plugin):
     def do_init(self):
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
         xml = editor.get_ui_xml()
 
         if xml is None:

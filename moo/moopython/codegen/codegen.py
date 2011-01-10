@@ -14,6 +14,9 @@ import warnings
 
 pygtk_version = 16
 
+extra_codebefore = ''
+extra_codeafter = ''
+
 class Coverage(object):
     def __init__(self, name):
         self.name = name
@@ -233,6 +236,7 @@ class Wrapper:
     # template for method calls
     constructor_tmpl = None
     method_tmpl = None
+    static_method_tmpl = None
 
     def __init__(self, parser, objinfo, overrides, fp=FileOutput(sys.stdout)):
         self.parser = parser
@@ -317,7 +321,7 @@ class Wrapper:
         substdict.setdefault('errorreturn', 'NULL')
 
         # for methods, we want the leading comma
-        if is_method:
+        if is_method and not function_obj.is_static_method:
             info.arglist.append('')
 
         if function_obj.varargs:
@@ -355,6 +359,8 @@ class Wrapper:
             substdict['begin_allow_threads'] = ''
             substdict['end_allow_threads'] = ''
 
+        extra_dict = dict(cname=function_obj.c_name)
+
         if self.objinfo:
             substdict['typename'] = self.objinfo.c_name
         substdict.setdefault('cname',  function_obj.c_name)
@@ -362,11 +368,11 @@ class Wrapper:
         substdict['typecodes'] = info.parsestr
         substdict['parselist'] = info.get_parselist()
         substdict['arglist'] = info.get_arglist()
-        substdict['codebefore'] = deprecated + (
+        substdict['codebefore'] = deprecated + (extra_codebefore % extra_dict) + (
             string.replace(info.get_codebefore(),
             'return NULL', 'return ' + substdict['errorreturn'])
             )
-        substdict['codeafter'] = (
+        substdict['codeafter'] = (extra_codeafter % extra_dict) + (
             string.replace(info.get_codeafter(),
                            'return NULL',
                            'return ' + substdict['errorreturn']))
@@ -382,6 +388,9 @@ class Wrapper:
             substdict['parseargs'] = ''
             substdict['extraparams'] = ''
             flags = 'METH_NOARGS'
+
+        if function_obj.is_static_method:
+            flags += '|METH_STATIC'
 
         return template % substdict, flags
 
@@ -494,8 +503,9 @@ class Wrapper:
                     methflags = self.get_methflags(method_name)
                 else:
                     # write constructor from template ...
+                    tmpl = self.method_tmpl if not meth.is_static_method else self.static_method_tmpl
                     code, methflags = self.write_function_wrapper(meth,
-                        self.method_tmpl, handle_return=1, is_method=1,
+                        tmpl, handle_return=1, is_method=1,
                         substdict=self.get_initial_method_substdict(meth))
                     self.fp.write(code)
                 methods.append(self.methdef_tmpl %
@@ -934,6 +944,20 @@ class GObjectWrapper(Wrapper):
         '}\n\n'
         )
 
+    static_method_tmpl = (
+        'static PyObject *\n'
+        '_wrap_%(cname)s(G_GNUC_UNUSED PyGObject *self%(extraparams)s)\n'
+        '{\n'
+        '%(varlist)s'
+        '%(parseargs)s'
+        '%(codebefore)s'
+        '    %(begin_allow_threads)s\n'
+        '    %(setreturn)s%(cname)s(%(arglist)s);\n'
+        '    %(end_allow_threads)s\n'
+        '%(codeafter)s\n'
+        '}\n\n'
+        )
+
     method_tmpl = (
         'static PyObject *\n'
         '_wrap_%(cname)s(PyGObject *self%(extraparams)s)\n'
@@ -1250,9 +1274,23 @@ class GBoxedWrapper(Wrapper):
         '}\n\n'
         )
 
-    method_tmpl = (
+    static_method_tmpl = (
         'static PyObject *\n'
         '_wrap_%(cname)s(G_GNUC_UNUSED PyObject *self%(extraparams)s)\n'
+        '{\n'
+        '%(varlist)s'
+        '%(parseargs)s'
+        '%(codebefore)s'
+        '    %(begin_allow_threads)s\n'
+        '    %(setreturn)s%(cname)s(%(arglist)s);\n'
+        '    %(end_allow_threads)s\n'
+        '%(codeafter)s\n'
+        '}\n\n'
+        )
+
+    method_tmpl = (
+        'static PyObject *\n'
+        '_wrap_%(cname)s(PyObject *self%(extraparams)s)\n'
         '{\n'
         '%(varlist)s'
         '%(parseargs)s'
@@ -1299,9 +1337,21 @@ class GPointerWrapper(GBoxedWrapper):
         '}\n\n'
         )
 
-    method_tmpl = (
+    static_method_tmpl = (
         'static PyObject *\n'
         '_wrap_%(cname)s(G_GNUC_UNUSED PyObject *self%(extraparams)s)\n'
+        '{\n'
+        '%(varlist)s'
+        '%(parseargs)s'
+        '%(codebefore)s'
+        '    %(setreturn)s%(cname)s(%(arglist)s);\n'
+        '%(codeafter)s\n'
+        '}\n\n'
+        )
+
+    method_tmpl = (
+        'static PyObject *\n'
+        '_wrap_%(cname)s(PyObject *self%(extraparams)s)\n'
         '{\n'
         '%(varlist)s'
         '%(parseargs)s'
@@ -1661,7 +1711,7 @@ def main(argv):
     opts, args = getopt.getopt(argv[1:], "o:p:r:t:D:I:",
                         ["override=", "prefix=", "register=", "outfilename=",
                          "load-types=", "errorfilename=", "py_ssize_t-clean",
-                         "platform=", "pygtk-version="])
+                         "platform=", "codebefore=", "codeafter="])
     defines = {} # -Dkey[=val] options
     py_ssize_t_clean = False
     for opt, arg in opts:
@@ -1694,6 +1744,12 @@ def main(argv):
             defsparser.include_path.insert(0, arg)
         elif opt == '--py_ssize_t-clean':
             py_ssize_t_clean = True
+        elif opt == '--codebefore':
+            global extra_codebefore
+            extra_codebefore = open(arg).read()
+        elif opt == '--codeafter':
+            global extra_codeafter
+            extra_codeafter = open(arg).read()
     if len(args) < 1:
         print >> sys.stderr, usage
         return 1

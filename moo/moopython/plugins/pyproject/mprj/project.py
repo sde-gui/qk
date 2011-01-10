@@ -68,7 +68,7 @@ class Project(object):
         self.filename = os.path.abspath(file.path)
         self.topdir = os.path.dirname(self.filename)
 
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
         xml = editor.get_ui_xml()
         if xml is not None:
             self.merge_id = xml.new_merge_id()
@@ -83,7 +83,7 @@ class Project(object):
         pass
 
     def deinit_ui(self):
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
         xml = editor.get_ui_xml()
         xml.remove_ui(self.merge_id)
         for a in self.actions:

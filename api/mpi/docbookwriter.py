@@ -128,11 +128,7 @@ class Writer(object):
             else:
                 oops()
         elif cls is not None:
-            if self.mode == 'python':
-                func_title = func.name
-                func_name = func.name
-                func_id = '%s.%s' % (cls.short_name, func.name)
-            elif self.mode == 'lua':
+            if self.mode in ('python', 'lua'):
                 func_title = func.name
                 func_name = '%s.%s' % (self.__get_obj_name(cls), func.name) \
                                 if not isinstance(func, StaticMethod) \

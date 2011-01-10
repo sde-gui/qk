@@ -70,7 +70,7 @@ class Manager(object):
         self.init(project)
 
     def init(self, project):
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
         editor.set_property("allow-empty-window", True)
         editor.set_property("single-window", True)
 
@@ -128,7 +128,7 @@ class Manager(object):
         for a in ["NewProject", "OpenProject", "CloseProject",
                   "ProjectOptions", "OpenRecentProject"]:
             moo.window_class_remove_action(moo.EditWindow, a)
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
         editor.get_ui_xml().remove_ui(self.merge_id)
         self.merge_id = 0
         del self.project_types
@@ -169,7 +169,7 @@ class Manager(object):
                     self.recent_list.remove(project)
 
     def __set_title_prefix(self, prefix):
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
         editor.set_app_name(prefix or "medit")
 
     def detach_win(self, window):

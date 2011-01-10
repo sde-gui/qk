@@ -114,9 +114,9 @@ class Writer(object):
             self.out.write(function_start_template % dic)
             self.out.write('  (is-constructor-of %s)\n' % cls.name)
         elif isinstance(meth, StaticMethod):
-            dic['name'] = '_'.join([c.lower() for c in split_camel_case_name(cls.short_name)] + [meth.name])
             dic['class'] = cls.name
-            self.out.write(function_start_template % dic)
+            self.out.write(method_start_template % dic)
+            self.out.write('  (is-static-method #t)\n')
         elif isinstance(meth, VMethod):
             dic['class'] = cls.name
             self.out.write(vmethod_start_template % dic)

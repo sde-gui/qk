@@ -284,12 +284,15 @@ class MethodDefBase(Definition):
         self.c_name = None
         self.typecode = None
         self.of_object = None
+        self.is_static_method = False
         self.params = [] # of form (type, name, default, nullok)
         self.varargs = 0
         self.deprecated = None
         for arg in get_valid_scheme_definitions(args):
             if arg[0] == 'of-object':
                 self.of_object = arg[1]
+            elif arg[0] == 'is-static-method':
+                self.is_static_method = arg[1] in ('t', '#t')
             elif arg[0] == 'docstring':
                 self.docstring = make_docstring(arg[1:])
             elif arg[0] == 'c-name':
@@ -396,6 +399,7 @@ class FunctionDef(Definition):
         self.name = name
         self.in_module = None
         self.is_constructor_of = None
+        self.is_static_method = False
         self.ret = None
         self.caller_owns_return = None
         self.unblock_threads = None

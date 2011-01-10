@@ -36,7 +36,7 @@ class Session(object):
                 self.__parse(contents)
 
     def attach(self, window):
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
 #         saved_silent = editor.get_property("silent")
 #         editor.set_property("silent", True)
         for doc in self.__docs:

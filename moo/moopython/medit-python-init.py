@@ -1,3 +1,3 @@
 import moo
-app = moo.app_instance()
+app = moo.App.instance()
 editor = app.get_editor()

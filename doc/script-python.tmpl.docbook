@@ -10,11 +10,11 @@
 <para>When compiled with Python support, &medit; uses
 <ulink url="http://www.pygtk.org/">PyGtk</ulink>. Its functionality is
 exposed through <code>moo</code> module. You can use built-in Python console
-available from <guimenu>Tools</guimenu> to experiment with &medit; API.</para>
+available from <guimenu>Tools</guimenu> menu to experiment with &medit; API.</para>
 <note>
 Classes and functions documented here are guaranteed to work as long as you
 follow the rules from their documentation (most often there are no special
-rules, but for some functions you may only use named arguments, etc.)
+rules, but for some functions you may or may not use named arguments, etc.)
 </note>
 <warning>
 <code>moo</code> module has more classes and functions than documented here,

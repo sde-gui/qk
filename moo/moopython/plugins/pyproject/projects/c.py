@@ -90,7 +90,7 @@ class CProject(SimpleProject):
         self.add_action("CProjectBuildConfiguration",
                         factory=_BuildConfigurationActionFactory(self))
 
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
         xml = editor.get_ui_xml()
         xml.insert_markup_after(self.merge_id, "Editor/Menubar",
                                 "Project", """

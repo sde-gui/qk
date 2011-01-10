@@ -34,7 +34,7 @@ PLUGIN_ID = "Python"
 
 class Plugin(moo.Plugin):
     def do_init(self):
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
         xml = editor.get_ui_xml()
 
         if xml is None:
@@ -65,7 +65,7 @@ class Plugin(moo.Plugin):
         return True
 
     def do_deinit(self):
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
         xml = editor.get_ui_xml()
         xml.remove_ui(self.ui_merge_id)
         moo.window_class_remove_action(moo.EditWindow, "PythonConsole")
@@ -79,15 +79,15 @@ class Plugin(moo.Plugin):
         window.add(swin)
 
         dic = {}
-        dic['editor'] = moo.editor_instance()
-        dic['window'] = moo.editor_instance().get_active_window()
-        dic['view'] = moo.editor_instance().get_active_view()
-        dic['doc'] = moo.editor_instance().get_active_doc()
+        dic['editor'] = moo.Editor.instance()
+        dic['window'] = moo.Editor.instance().get_active_window()
+        dic['view'] = moo.Editor.instance().get_active_view()
+        dic['doc'] = moo.Editor.instance().get_active_doc()
         console_type = pyconsole.ConsoleType(moo.TextView)
         console = console_type(use_rlcompleter=False, start_script=
                                "import moo\nimport gtk\n", locals=dic)
         console.set_property("highlight-current-line", False)
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
         console.set_lang_by_id("python-console")
         console.modify_font(pango.FontDescription("Monospace"))
 

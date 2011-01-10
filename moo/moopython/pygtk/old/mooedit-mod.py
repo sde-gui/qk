@@ -18,7 +18,7 @@
 Contains text editor and stuff.
 
 To get an instance of Editor, the object which manages document instances,
-use editor_instance().
+use Editor.instance().
 To create new or open existing document, use Editor.create_doc().
 To save or close document use Edit.save() and Edit.close().
 To find out status of document (unsaved, deleted from disk, etc.) use
@@ -81,7 +81,7 @@ def cancel_plugin_loading():
             #edit_class_add_action(a.edit_type, a.id, a.action_type)
 
         #if self._ui:
-            #editor = editor_instance()
+            #editor = Editor.instance()
             #xml = editor.get_ui_xml()
             #self._ui_merge_id = xml.new_merge_id()
             #for item in self._ui:
@@ -94,7 +94,7 @@ def cancel_plugin_loading():
         #import moo
 
         #if self._ui_merge_id:
-            #editor = editor_instance()
+            #editor = Editor.instance()
             #xml = editor.get_ui_xml()
             #xml.remove_ui(self._ui_merge_id)
         #self._ui_merge_id = 0

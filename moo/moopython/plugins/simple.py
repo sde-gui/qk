@@ -21,7 +21,7 @@ class Plugin(moo.Plugin):
     # this method is called when plugin is loaded, once per session
     # (or after user checks Enabled in Preferences dialog)
     def do_init(self):
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
         xml = editor.get_ui_xml()
         self.ui_merge_id = xml.new_merge_id()
         # Create a new action associated with editor windows
@@ -39,7 +39,7 @@ class Plugin(moo.Plugin):
 
     # this method is called when plugin is unloaded (on program exit or when plugin is disabled)
     def do_deinit(self):
-        editor = moo.editor_instance()
+        editor = moo.Editor.instance()
         xml = editor.get_ui_xml()
         xml.remove_ui(self.ui_merge_id)
         moo.window_class_remove_action(moo.EditWindow, "AnAction")
