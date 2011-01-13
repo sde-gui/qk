@@ -276,7 +276,7 @@ passthrough (G_GNUC_UNUSED GMarkupParseContext    *ctx,
 static MooMarkupDoc *
 moo_markup_doc_new_priv (const char *name)
 {
-    MooMarkupDoc *doc = moo_new0 (MooMarkupDoc);
+    MooMarkupDoc *doc = g_slice_new0 (MooMarkupDoc);
 
     doc->type = MOO_MARKUP_DOC_NODE;
     doc->name = g_strdup (name ? name : "");
@@ -312,7 +312,7 @@ moo_markup_element_new (MooMarkupDoc   *doc,
 {
     MooMarkupElement *elm;
 
-    elm = moo_new0 (MooMarkupElement);
+    elm = g_slice_new0 (MooMarkupElement);
     add_node (doc, parent, MOO_MARKUP_NODE (elm));
 
     elm->type = MOO_MARKUP_ELEMENT_NODE;
@@ -340,7 +340,7 @@ moo_markup_text_node_new_take_string (MooMarkupNodeType   type,
 
     g_assert (type == MOO_MARKUP_TEXT_NODE || type == MOO_MARKUP_COMMENT_NODE);
 
-    node = moo_new0 (MooMarkupText);
+    node = g_slice_new0 (MooMarkupText);
     add_node (doc, parent, MOO_MARKUP_NODE (node));
 
     node->type = type;
@@ -480,19 +480,19 @@ moo_markup_node_free (MooMarkupNode *node)
     {
         case MOO_MARKUP_DOC_NODE:
             moo_markup_doc_unref_private (MOO_MARKUP_DOC (node));
-            moo_free (MooMarkupDoc, (MooMarkupDoc*) node);
+            g_slice_free (MooMarkupDoc, (MooMarkupDoc*) node);
             break;
         case MOO_MARKUP_ELEMENT_NODE:
             moo_markup_element_free (MOO_MARKUP_ELEMENT (node));
-            moo_free (MooMarkupElement, (MooMarkupElement*) node);
+            g_slice_free (MooMarkupElement, (MooMarkupElement*) node);
             break;
         case MOO_MARKUP_TEXT_NODE:
             moo_markup_text_node_free (node);
-            moo_free (MooMarkupText, (MooMarkupText*) node);
+            g_slice_free (MooMarkupText, (MooMarkupText*) node);
             break;
         case MOO_MARKUP_COMMENT_NODE:
             moo_markup_text_node_free (node);
-            moo_free (MooMarkupComment, (MooMarkupComment*) node);
+            g_slice_free (MooMarkupComment, (MooMarkupComment*) node);
             break;
         default:
             g_assert_not_reached ();

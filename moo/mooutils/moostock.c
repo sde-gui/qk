@@ -22,21 +22,10 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
-#if !GTK_CHECK_VERSION(2,10,0)
-#include "mooutils/stock-select-all-16.h"
-#include "mooutils/stock-select-all-24.h"
-#endif
-
 #define REAL_SMALL 6
 
 
 static GtkStockItem stock_items[] = {
-#if !GTK_CHECK_VERSION(2,10,0)
-    {(char*) GTK_STOCK_SELECT_ALL, (char*) "Select _All", 0, 0, (char*) "gtk20"},
-#endif
-#if !GTK_CHECK_VERSION(2,12,0)
-    {(char*) GTK_STOCK_DISCARD, (char*) "_Discard", 0, 0, (char*) "gtk20"},
-#endif
     {(char*) MOO_STOCK_SAVE_NONE, (char*) N_("Save _None"), 0, 0, (char*) GETTEXT_PACKAGE},
     {(char*) MOO_STOCK_SAVE_SELECTED, (char*) N_("Save _Selected"), 0, 0, (char*) GETTEXT_PACKAGE},
     {(char*) MOO_STOCK_FILE_COPY, (char*) "_Copy", 0, 0, (char*) "gtk20"},
@@ -144,21 +133,6 @@ add_icon_name (GtkIconFactory *factory,
     add_icon_name_if_present (set, icon_name);
 }
 
-#if !GTK_CHECK_VERSION(2,10,0)
-static void add_icon2   (GtkIconFactory *factory,
-                         const char     *stock_id,
-                         const char     *icon_name,
-                         gint            size1,
-                         const guchar   *data1,
-                         gint            size2,
-                         const guchar   *data2)
-{
-    add_default_image (size1, data1, stock_id, NULL);
-    add_default_image (size2, data2, stock_id, NULL);
-    register_stock_icon (factory, stock_id, icon_name);
-}
-#endif /* !GTK_CHECK_VERSION(2,10,0) */
-
 
 static void
 register_stock_icon_alias (GtkIconFactory *factory,
@@ -224,11 +198,6 @@ _moo_stock_init (void)
 
     add_default_image (24, MEDIT_ICON, "medit", NULL);
     add_default_image (48, MEDIT_ICON, "medit", NULL);
-
-#if !GTK_CHECK_VERSION(2,10,0)
-    add_icon2 (factory, GTK_STOCK_SELECT_ALL, "edit-select-all",
-               24, STOCK_SELECT_ALL_24, 16, STOCK_SELECT_ALL_16);
-#endif
 
     gtk_stock_add_static (stock_items, G_N_ELEMENTS (stock_items));
 

@@ -266,11 +266,6 @@ source_files = \
     ../moo/mooutils/moowin32/ms/unistd.h\
     ../moo/mooutils/moowindow.c\
     ../moo/mooutils/moowindow.h\
-    ../moo/mooutils/stock-file-24.h\
-    ../moo/mooutils/stock-file-selector-24.h\
-    ../moo/mooutils/stock-select-all-16.h\
-    ../moo/mooutils/stock-select-all-24.h\
-    ../moo/mooutils/stock-terminal-24.h\
     ../moo/plugins/support/moocmdview.c\
     ../moo/plugins/support/moocmdview.h\
     ../moo/plugins/support/mooeditwindowoutput.c\

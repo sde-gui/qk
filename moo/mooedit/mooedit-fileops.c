@@ -42,9 +42,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-#if GLIB_CHECK_VERSION(2,6,0)
-# include <glib/gstdio.h>
-#endif
+#include <glib/gstdio.h>
 
 #undef LOAD_BINARY
 #define ENCODING_LOCALE "LOCALE"

@@ -83,12 +83,6 @@ static void     moo_text_view_realize       (GtkWidget          *widget);
 static void     moo_text_view_unrealize     (GtkWidget          *widget);
 static gboolean moo_text_view_expose        (GtkWidget          *widget,
                                              GdkEventExpose     *event);
-#if !GTK_CHECK_VERSION(2,12,0)
-static gboolean moo_text_view_focus_in      (GtkWidget          *widget,
-                                             GdkEventFocus      *event);
-static gboolean moo_text_view_focus_out     (GtkWidget          *widget,
-                                             GdkEventFocus      *event);
-#endif
 static void     moo_text_view_style_set     (GtkWidget          *widget,
                                              GtkStyle           *previous_style);
 static void     moo_text_view_size_request  (GtkWidget          *widget,
@@ -157,12 +151,6 @@ static void     highlight_updated           (GtkTextView        *view,
                                              const GtkTextIter  *start,
                                              const GtkTextIter  *end);
 
-#if !GTK_CHECK_VERSION(2,12,0)
-static void     overwrite_changed           (MooTextView        *view);
-static void     check_cursor_blink          (MooTextView        *view);
-static void     moo_text_view_draw_cursor   (GtkTextView        *view,
-                                             GdkEventExpose     *event);
-#endif
 static void     set_draw_whitespace         (MooTextView        *view,
                                              MooDrawWhitespaceFlags flags);
 
@@ -284,10 +272,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     widget_class->realize = moo_text_view_realize;
     widget_class->unrealize = moo_text_view_unrealize;
     widget_class->expose_event = moo_text_view_expose;
-#if !GTK_CHECK_VERSION(2,12,0)
-    widget_class->focus_in_event = moo_text_view_focus_in;
-    widget_class->focus_out_event = moo_text_view_focus_out;
-#endif
     widget_class->style_set = moo_text_view_style_set;
     widget_class->size_request = moo_text_view_size_request;
     widget_class->size_allocate = moo_text_view_size_allocate;
@@ -295,9 +279,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     container_class->remove = moo_text_view_remove;
 
     text_view_class->move_cursor = _moo_text_view_move_cursor;
-#if !GTK_CHECK_VERSION(2,12,0)
-    text_view_class->page_horizontally = _moo_text_view_page_horizontally;
-#endif
     text_view_class->delete_from_cursor = _moo_text_view_delete_from_cursor;
     text_view_class->copy_clipboard = moo_text_view_copy_clipboard;
     text_view_class->cut_clipboard = moo_text_view_cut_clipboard;
@@ -690,9 +671,6 @@ moo_text_view_init (MooTextView *view)
 
     view->priv->last_search_stamp = -1;
 
-#if !GTK_CHECK_VERSION(2,12,0)
-    view->priv->saved_cursor_visible = TRUE;
-#endif
     view->priv->tab_indents = FALSE;
     view->priv->backspace_indents = FALSE;
     view->priv->enter_indents = TRUE;
@@ -797,10 +775,6 @@ moo_text_view_constructor (GType                  type,
     gtk_text_buffer_get_start_iter (get_buffer (view), &iter);
     view->priv->dnd_mark = gtk_text_buffer_create_mark (get_buffer (view), NULL, &iter, FALSE);
     gtk_text_mark_set_visible (view->priv->dnd_mark, FALSE);
-
-#if !GTK_CHECK_VERSION(2,12,0)
-    g_signal_connect (view, "notify::overwrite", G_CALLBACK (overwrite_changed), NULL);
-#endif
 
     target_list = gtk_target_list_new (text_view_target_table, G_N_ELEMENTS (text_view_target_table));
     gtk_target_list_add_text_targets (target_list, 0);
@@ -1971,7 +1945,7 @@ clear_clipboard (G_GNUC_UNUSED GtkClipboard *clipboard,
         contents->view->priv->clipboard = NULL;
 
     g_free (contents->text);
-    moo_free (MooTextViewClipboard, contents);
+    g_slice_free (MooTextViewClipboard, contents);
 }
 
 
@@ -1994,7 +1968,7 @@ moo_text_view_cut_or_copy (GtkTextView *text_view,
     clipboard = gtk_widget_get_clipboard (GTK_WIDGET (text_view),
                                           clipboard_type);
 
-    contents = moo_new0 (MooTextViewClipboard);
+    contents = g_slice_new0 (MooTextViewClipboard);
     contents->text = gtk_text_buffer_get_slice (buffer, &start, &end, TRUE);
     contents->view = view;
 
@@ -2159,15 +2133,6 @@ moo_text_view_unrealize (GtkWidget *widget)
         clear_primary (view);
         add_selection_clipboard (view);
     }
-
-#if !GTK_CHECK_VERSION(2,12,0)
-    if (view->priv->blink_timeout)
-    {
-        g_warning ("%s: oops", G_STRLOC);
-        g_source_remove (view->priv->blink_timeout);
-        view->priv->blink_timeout = 0;
-    }
-#endif
 
     if (view->priv->dnd.scroll_timeout)
     {
@@ -2493,11 +2458,6 @@ moo_text_view_expose (GtkWidget      *widget,
             if (view->priv->draw_whitespace != 0)
                 moo_text_view_draw_whitespace (text_view, event, &start, &end);
         }
-
-#if !GTK_CHECK_VERSION(2,12,0)
-        if (view->priv->cursor_visible)
-            moo_text_view_draw_cursor (text_view, event);
-#endif
     }
 
     view->priv->in_expose = FALSE;
@@ -2734,233 +2694,6 @@ moo_text_view_populate_popup (GtkTextView    *text_view,
     g_signal_connect_swapped (item, "activate", G_CALLBACK (moo_text_view_undo), view);
     gtk_widget_set_sensitive (item, moo_text_view_can_undo (view));
 }
-
-
-#if !GTK_CHECK_VERSION(2,12,0)
-static void
-overwrite_changed (MooTextView *view)
-{
-    GtkTextView *text_view;
-
-    text_view = GTK_TEXT_VIEW (view);
-
-    if (text_view->overwrite_mode)
-    {
-        view->priv->saved_cursor_visible = text_view->cursor_visible != 0;
-        gtk_text_view_set_cursor_visible (text_view, FALSE);
-        view->priv->overwrite_mode = TRUE;
-    }
-    else
-    {
-        gtk_text_view_set_cursor_visible (text_view,
-                                          view->priv->saved_cursor_visible);
-        view->priv->overwrite_mode = FALSE;
-    }
-
-    check_cursor_blink (view);
-}
-
-
-static gboolean
-moo_text_view_focus_in (GtkWidget          *widget,
-                        GdkEventFocus      *event)
-{
-    gboolean ret;
-    ret = GTK_WIDGET_CLASS(moo_text_view_parent_class)->focus_in_event (widget, event);
-    check_cursor_blink (MOO_TEXT_VIEW (widget));
-    return ret;
-}
-
-
-static gboolean
-moo_text_view_focus_out (GtkWidget          *widget,
-                         GdkEventFocus      *event)
-{
-    gboolean ret;
-    ret = GTK_WIDGET_CLASS(moo_text_view_parent_class)->focus_out_event (widget, event);
-    check_cursor_blink (MOO_TEXT_VIEW (widget));
-    return ret;
-}
-
-
-#define CURSOR_ON_MULTIPLIER 0.66
-#define CURSOR_OFF_MULTIPLIER 0.34
-#define CURSOR_PEND_MULTIPLIER 0.5
-
-static gboolean
-get_cursor_rectangle (GtkTextView  *view,
-                      GdkRectangle *cursor_rect)
-{
-    GtkTextIter iter;
-    GdkRectangle visible_rect;
-    GtkTextBuffer *buffer;
-    GtkTextMark *insert;
-
-    buffer = gtk_text_view_get_buffer (view);
-    insert = gtk_text_buffer_get_insert (buffer);
-    gtk_text_buffer_get_iter_at_mark (buffer, &iter, insert);
-
-    gtk_text_view_get_iter_location (view, &iter, cursor_rect);
-    gtk_text_view_get_visible_rect (view, &visible_rect);
-
-    if (gtk_text_iter_ends_line (&iter))
-        cursor_rect->width = 6;
-
-    if (gdk_rectangle_intersect (cursor_rect, &visible_rect, cursor_rect))
-    {
-        gtk_text_view_buffer_to_window_coords (view, GTK_TEXT_WINDOW_TEXT,
-                                               cursor_rect->x, cursor_rect->y,
-                                               &cursor_rect->x, &cursor_rect->y);
-        return TRUE;
-    }
-    else
-    {
-        return FALSE;
-    }
-}
-
-static void
-moo_text_view_draw_cursor (GtkTextView    *view,
-                           GdkEventExpose *event)
-{
-    GdkRectangle cursor_rect;
-
-    if (!get_cursor_rectangle (view, &cursor_rect))
-        return;
-
-    if (!gdk_rectangle_intersect (&cursor_rect, &event->area, &cursor_rect))
-        return;
-
-    gdk_draw_rectangle (event->window,
-                        GTK_WIDGET(view)->style->text_gc[GTK_STATE_NORMAL],
-                        TRUE,
-                        cursor_rect.x,
-                        cursor_rect.y,
-                        cursor_rect.width,
-                        cursor_rect.height);
-}
-
-static void
-invalidate_cursor (GtkTextView *view)
-{
-    GdkRectangle rect;
-
-    if (get_cursor_rectangle (view, &rect))
-    {
-        GdkWindow *window = gtk_text_view_get_window (view, GTK_TEXT_WINDOW_TEXT);
-        g_return_if_fail (window != NULL);
-        gdk_window_invalidate_rect (window, &rect, FALSE);
-    }
-}
-
-static gboolean
-cursor_blinks (GtkWidget *widget)
-{
-    gboolean blink;
-    GtkSettings *settings = gtk_widget_get_settings (widget);
-    g_object_get (settings, "gtk-cursor-blink", &blink, NULL);
-    return blink;
-}
-
-static int
-get_cursor_time (GtkWidget *widget)
-{
-    int time;
-    GtkSettings *settings = gtk_widget_get_settings (widget);
-    g_object_get (settings, "gtk-cursor-blink-time", &time, NULL);
-    return time;
-}
-
-static gboolean
-blink_cb (MooTextView *view)
-{
-    GtkTextView *text_view = GTK_TEXT_VIEW (view);
-    int time;
-
-    g_return_val_if_fail (view->priv->overwrite_mode, FALSE);
-
-    time = get_cursor_time (GTK_WIDGET (view));
-
-    if (view->priv->cursor_visible)
-        time *= CURSOR_OFF_MULTIPLIER;
-    else
-        time *= CURSOR_ON_MULTIPLIER;
-
-    view->priv->blink_timeout = gdk_threads_add_timeout (time, (GSourceFunc) blink_cb, view);
-    view->priv->cursor_visible = !view->priv->cursor_visible;
-    invalidate_cursor (text_view);
-
-    return FALSE;
-}
-
-
-static void
-stop_cursor_blink (MooTextView *view)
-{
-    if (view->priv->blink_timeout)
-    {
-        g_source_remove (view->priv->blink_timeout);
-        view->priv->blink_timeout = 0;
-    }
-}
-
-static void
-check_cursor_blink (MooTextView *view)
-{
-    GtkTextView *text_view = GTK_TEXT_VIEW (view);
-
-    if (view->priv->overwrite_mode && GTK_WIDGET_HAS_FOCUS (view))
-    {
-        if (cursor_blinks (GTK_WIDGET (view)))
-        {
-            if (!view->priv->blink_timeout)
-            {
-                int time = get_cursor_time (GTK_WIDGET (view)) * CURSOR_OFF_MULTIPLIER;
-                view->priv->cursor_visible = TRUE;
-                view->priv->blink_timeout = gdk_threads_add_timeout (time, (GSourceFunc) blink_cb, view);
-            }
-        }
-        else
-        {
-            view->priv->cursor_visible = TRUE;
-        }
-    }
-    else
-    {
-        view->priv->cursor_visible = FALSE;
-        stop_cursor_blink (view);
-        if (GTK_WIDGET_DRAWABLE (text_view))
-            invalidate_cursor (text_view);
-    }
-}
-
-void
-_moo_text_view_pend_cursor_blink (MooTextView *view)
-{
-    if (view->priv->overwrite_mode &&
-        GTK_WIDGET_HAS_FOCUS (view) &&
-        cursor_blinks (GTK_WIDGET (view)))
-    {
-        int time;
-
-        if (view->priv->blink_timeout != 0)
-        {
-            g_source_remove (view->priv->blink_timeout);
-            view->priv->blink_timeout = 0;
-        }
-
-        view->priv->cursor_visible = TRUE;
-
-        time = get_cursor_time (GTK_WIDGET (view)) * CURSOR_PEND_MULTIPLIER;
-        view->priv->blink_timeout = gdk_threads_add_timeout (time, (GSourceFunc) blink_cb, view);
-    }
-}
-#else /* GTK_CHECK_VERSION(2,12,0) */
-void
-_moo_text_view_pend_cursor_blink (G_GNUC_UNUSED MooTextView *view)
-{
-}
-#endif
 
 
 int

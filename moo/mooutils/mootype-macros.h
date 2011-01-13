@@ -19,24 +19,6 @@
 #include <glib-object.h>
 #include <mooutils/mooonce.h>
 
-#if !GLIB_CHECK_VERSION(2,12,0)
-#define _MOO_REGISTER_TYPE(TypeName,type_name,TYPE_PARENT,flags)                            \
-    static const GTypeInfo type_info = {                                                    \
-        sizeof (TypeName##Class),                                                           \
-        (GBaseInitFunc) NULL,                                                               \
-        (GBaseFinalizeFunc) NULL,                                                           \
-        (GClassInitFunc) type_name##_class_intern_init,                                     \
-        (GClassFinalizeFunc) NULL,                                                          \
-        NULL,   /* class_data */                                                            \
-        sizeof (TypeName),                                                                  \
-        0,      /* n_preallocs */                                                           \
-        (GInstanceInitFunc) type_name##_init,                                               \
-        NULL    /* value_table */                                                           \
-    };                                                                                      \
-                                                                                            \
-    g_define_type_id =                                                                      \
-        g_type_register_static (TYPE_PARENT, #TypeName, &type_info, (GTypeFlags) flags);
-#else
 #define _MOO_REGISTER_TYPE(TypeName,type_name,TYPE_PARENT,flags)                            \
     g_define_type_id =                                                                      \
         g_type_register_static_simple (TYPE_PARENT,                                         \
@@ -46,8 +28,6 @@
                                        sizeof (TypeName),                                   \
                                        (GInstanceInitFunc) type_name##_init,                \
                                        (GTypeFlags) flags);
-#endif
-
 
 #define MOO_DEFINE_TYPE_STATIC_WITH_CODE(TypeName,type_name,TYPE_PARENT,code)               \
                                                                                             \

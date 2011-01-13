@@ -45,7 +45,7 @@
 #endif
 
 
-#if GTK_CHECK_VERSION(2,14,0) && defined(GTK_DISABLE_DEPRECATED)
+#if defined(GTK_DISABLE_DEPRECATED)
 
 inline static void
 _moo_noop_gtk_toolbar_set_tooltips (G_GNUC_UNUSED GtkToolbar *toolbar,
@@ -55,10 +55,10 @@ _moo_noop_gtk_toolbar_set_tooltips (G_GNUC_UNUSED GtkToolbar *toolbar,
 
 #define gtk_toolbar_set_tooltips _moo_noop_gtk_toolbar_set_tooltips
 
-#endif /* gtk-2-16 && GTK_DISABLE_DEPRECATED */
+#endif /* GTK_DISABLE_DEPRECATED */
 
 
-#if GTK_CHECK_VERSION(2,16,0) && defined(GTK_DISABLE_DEPRECATED)
+#if defined(GTK_DISABLE_DEPRECATED)
 
 inline static void
 _moo_gtk_action_connect_proxy (GtkAction *action,
@@ -69,7 +69,7 @@ _moo_gtk_action_connect_proxy (GtkAction *action,
 
 #define gtk_action_connect_proxy _moo_gtk_action_connect_proxy
 
-#endif /* gtk-2-16 && GTK_DISABLE_DEPRECATED */
+#endif /* GTK_DISABLE_DEPRECATED */
 
 
 #if GTK_CHECK_VERSION(2,22,0) && defined(GTK_DISABLE_DEPRECATED)

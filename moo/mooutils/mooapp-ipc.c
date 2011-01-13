@@ -53,7 +53,7 @@ static ClientInfo *
 client_info_new (GObject        *obj,
                  MooDataCallback callback)
 {
-    ClientInfo *ci = moo_new (ClientInfo);
+    ClientInfo *ci = g_slice_new (ClientInfo);
     ci->object = obj;
     ci->callback = callback;
     ci->ref_count = 1;
@@ -72,7 +72,7 @@ client_info_unref (ClientInfo *ci)
 {
     g_return_if_fail (ci != NULL && ci->ref_count != 0);
     if (!--ci->ref_count)
-        moo_free (ClientInfo, ci);
+        g_slice_free (ClientInfo, ci);
 }
 
 static char *

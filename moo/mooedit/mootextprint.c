@@ -1689,12 +1689,6 @@ do_print_operation (GtkTextView            *view,
             break;
     }
 
-#if !GTK_CHECK_VERSION(2,11,6)
-    /* older gtk crashes in unref() */
-    if (action == GTK_PRINT_OPERATION_ACTION_EXPORT)
-        g_object_ref (op);
-#endif
-
     g_object_unref (op);
 }
 

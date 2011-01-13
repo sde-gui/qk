@@ -52,10 +52,8 @@
 #include <gtk/gtk.h>
 #include <math.h>
 
-#if GTK_CHECK_VERSION(2,10,0)
 #define ENABLE_PRINTING
 #include "mooedit/mootextprint.h"
-#endif
 
 #define ACTIVE_DOC moo_edit_window_get_active_doc
 #define ACTIVE_VIEW moo_edit_window_get_active_view
@@ -2397,7 +2395,6 @@ view_cursor_moved (MooEditWindow *window,
 }
 
 
-#if GTK_CHECK_VERSION(2,16,0)
 static void
 sync_proxies (GtkAction *action)
 {
@@ -2408,12 +2405,6 @@ sync_proxies (GtkAction *action)
         l = l->next;
     }
 }
-#else
-static void
-sync_proxies (G_GNUC_UNUSED GtkAction *action)
-{
-}
-#endif
 
 
 static void

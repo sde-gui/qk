@@ -36,11 +36,6 @@ void        _moo_text_view_move_cursor          (GtkTextView        *text_view,
                                                  gint                count,
                                                  gboolean            extend_selection);
 void        _moo_text_view_ensure_primary       (GtkTextView        *text_view);
-#if !GTK_CHECK_VERSION(2,12,0)
-void        _moo_text_view_page_horizontally    (GtkTextView        *text_view,
-                                                 int                 count,
-                                                 gboolean            extend_selection);
-#endif
 void        _moo_text_view_delete_from_cursor   (GtkTextView        *text_view,
                                                  GtkDeleteType       type,
                                                  gint                count);
@@ -60,7 +55,6 @@ int         _moo_text_view_extend_selection     (MooTextView        *view,
                                                  GtkTextIter        *selection_bound);
 
 void        _moo_text_view_check_char_inserted  (MooTextView        *view);
-void        _moo_text_view_pend_cursor_blink    (MooTextView        *view);
 int         _moo_text_view_get_line_height      (MooTextView        *view);
 void        _moo_text_view_set_line_numbers_font (MooTextView       *view,
                                                  const char         *name);
@@ -110,14 +104,6 @@ struct MooTextViewPrivate {
     /* Clipboard */
     gboolean manage_clipboard;
     MooTextViewClipboard *clipboard;
-
-#if !GTK_CHECK_VERSION(2,12,0)
-    /* Overwrite mode cursor */
-    gboolean overwrite_mode;
-    gboolean saved_cursor_visible;
-    gboolean cursor_visible;
-    guint blink_timeout;
-#endif
 
     MooTextCursor text_cursor;
 

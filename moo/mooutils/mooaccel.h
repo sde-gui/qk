@@ -49,11 +49,7 @@ gboolean      moo_accel_check_event         (GtkWidget       *widget,
                                              GdkModifierType  mods);
 
 
-#if GTK_CHECK_VERSION(2,10,0)
 #define MOO_ACCEL_MODS_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK | GDK_META_MASK)
-#else
-#define MOO_ACCEL_MODS_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
-#endif
 
 #ifndef GDK_WINDOWING_QUARTZ
 

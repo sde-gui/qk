@@ -241,7 +241,7 @@ get_item_at_path (FileList    *list,
 static Group *
 group_new (const char *name)
 {
-    Group *grp = moo_new0 (Group);
+    Group *grp = g_slice_new0 (Group);
 
     ITEM (grp)->ref_count = 1;
     ITEM (grp)->type = ITEM_GROUP;
@@ -257,7 +257,7 @@ group_free (Group *grp)
     if (grp)
     {
         g_free (grp->name);
-        moo_free (Group, grp);
+        g_slice_free (Group, grp);
     }
 }
 
@@ -308,7 +308,7 @@ file_set_doc (File    *file,
 static File *
 file_new (void)
 {
-    File *file = moo_new0 (File);
+    File *file = g_slice_new0 (File);
 
     ITEM (file)->ref_count = 1;
     ITEM (file)->type = ITEM_FILE;
@@ -390,7 +390,7 @@ file_free (File *file)
         g_free (file->uri);
         g_free (file->display_name);
         g_free (file->display_basename);
-        moo_free (File, file);
+        g_slice_free (File, file);
     }
 }
 
@@ -2133,9 +2133,7 @@ create_treeview (WindowPlugin *plugin)
     gtk_tree_view_set_search_equal_func (plugin->treeview,
                                          (GtkTreeViewSearchEqualFunc) tree_view_search_equal_func,
                                          NULL, NULL);
-#if GTK_CHECK_VERSION (2,12,0)
     gtk_tree_view_set_tooltip_column (plugin->treeview, COLUMN_TOOLTIP);
-#endif
 
     selection = gtk_tree_view_get_selection (plugin->treeview);
     gtk_tree_selection_set_mode (selection, GTK_SELECTION_MULTIPLE);

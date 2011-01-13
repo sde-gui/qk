@@ -565,9 +565,7 @@ present_window_x11 (GtkWindow *window,
     if (!GTK_WIDGET_REALIZED (window))
         gtk_widget_realize (GTK_WIDGET (window));
 
-#if GTK_CHECK_VERSION(2,8,0)
     gdk_x11_window_move_to_current_desktop (GTK_WIDGET(window)->window);
-#endif
 
     gtk_widget_show (GTK_WIDGET (window));
 
@@ -1685,26 +1683,12 @@ void
 _moo_widget_set_tooltip (GtkWidget  *widget,
                          const char *tip)
 {
-#if !GTK_CHECK_VERSION(2,11,6)
-    static GtkTooltips *tooltips;
-
-    g_return_if_fail (GTK_IS_WIDGET (widget));
-
-    if (!tooltips)
-        tooltips = gtk_tooltips_new ();
-
-    if (GTK_IS_TOOL_ITEM (widget))
-        gtk_tool_item_set_tooltip (GTK_TOOL_ITEM (widget), tooltips, tip, NULL);
-    else
-        gtk_tooltips_set_tip (tooltips, widget, tip, tip);
-#else
     g_return_if_fail (GTK_IS_WIDGET (widget));
 
     if (GTK_IS_TOOL_ITEM (widget))
         gtk_tool_item_set_tooltip_text (GTK_TOOL_ITEM (widget), tip);
     else
         gtk_widget_set_tooltip_text (widget, tip);
-#endif
 }
 
 
@@ -2212,9 +2196,7 @@ thread_io_func (GIOChannel  *source,
 
     gdk_threads_enter ();
 
-#if GLIB_CHECK_VERSION(2,12,0)
     if (!g_source_is_destroyed (g_main_current_source ()))
-#endif
         ret = ((GIOFunc) sd->func) (source, condition, sd->data);
 
     gdk_threads_leave ();
@@ -2251,35 +2233,6 @@ _moo_io_add_watch_full (GIOChannel    *channel,
                                 thread_io_func, sd, source_data_free);
 }
 
-
-const char *
-_moo_intern_string (const char *string)
-{
-    if (!string)
-        return NULL;
-
-#if GLIB_CHECK_VERSION(2,10,0)
-    return g_intern_string (string);
-#else
-    {
-        static GHashTable *hash;
-        gpointer original;
-        gpointer dummy;
-
-        if (G_UNLIKELY (!hash))
-            hash = g_hash_table_new (g_str_hash, g_str_equal);
-
-        if (!g_hash_table_lookup_extended (hash, string, &original, &dummy))
-        {
-            char *copy = g_strdup (string);
-            g_hash_table_insert (hash, copy, NULL);
-            original = copy;
-        }
-
-        return original;
-    }
-#endif
-}
 
 GdkAtom
 moo_atom_uri_list (void)

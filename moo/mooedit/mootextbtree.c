@@ -38,19 +38,6 @@ static void CHECK_INTEGRITY (BTree *tree, gboolean check_capacity);
 #endif
 
 
-#if GLIB_CHECK_VERSION(2,10,0)
-#define data_free__(data) g_slice_free (BTData, data)
-#define data_new__() g_slice_new0 (BTData)
-#define node_free__(node) g_slice_free (BTNode, node)
-#define node_new__() g_slice_new0 (BTNode)
-#else
-#define data_free__ g_free
-#define node_free__ g_free
-#define data_new__() g_new0 (BTData, 1)
-#define node_new__() g_new0 (BTNode, 1)
-#endif
-
-
 BTree*
 _moo_text_btree_new (void)
 {
@@ -118,7 +105,7 @@ bt_node_new (BTNode *parent,
              guint   count,
              guint   n_marks)
 {
-    BTNode *node = node_new__ ();
+    BTNode *node = g_slice_new0 (BTNode);
 
     node->parent = parent;
     node->count = count;
@@ -148,7 +135,7 @@ bt_node_free_rec (BTNode  *node,
                 bt_node_free_rec (node->u.children[i], removed_marks);
         }
 
-        node_free__ (node);
+        g_slice_free (BTNode, node);
     }
 }
 
@@ -156,7 +143,7 @@ bt_node_free_rec (BTNode  *node,
 static BTData*
 bt_data_new (BTNode *parent)
 {
-    BTData *data = data_new__ ();
+    BTData *data = g_slice_new0 (BTData);
     data->parent = parent;
     return data;
 }
@@ -188,7 +175,7 @@ bt_data_free (BTData  *data,
         }
 
         g_free (data->marks);
-        data_free__ (data);
+        g_slice_free (BTData, data);
     }
 }
 
@@ -355,7 +342,7 @@ merge_nodes (BTNode *parent, guint first)
     node->n_marks += next->n_marks;
 
     node_remove__ (parent, next);
-    node_free__ (next);
+    g_slice_free (BTNode, next);
 }
 
 
@@ -402,7 +389,7 @@ _moo_text_btree_delete (BTree          *tree,
             tree->depth--;
             tree->root = node->u.children[0];
             tree->root->parent = NULL;
-            node_free__ (node);
+            g_slice_free (BTNode, node);
             break;
         }
         else if (parent->n_children == 1)
@@ -411,7 +398,7 @@ _moo_text_btree_delete (BTree          *tree,
             tree->depth--;
             tree->root = node;
             node->parent = NULL;
-            node_free__ (parent);
+            g_slice_free (BTNode, parent);
             break;
         }
         else

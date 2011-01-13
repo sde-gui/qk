@@ -61,20 +61,20 @@ moo_get_icon_for_path (const char  *path,
 MooFileIcon *
 moo_file_icon_new (void)
 {
-    return moo_new (MooFileIcon);
+    return g_slice_new (MooFileIcon);
 }
 
 MooFileIcon *
 moo_file_icon_copy (MooFileIcon *icon)
 {
-    return icon ? moo_obj_dup (MooFileIcon, icon) : NULL;
+    return icon ? g_slice_dup (MooFileIcon, icon) : NULL;
 }
 
 void
 moo_file_icon_free (MooFileIcon *icon)
 {
     if (icon)
-        moo_free (MooFileIcon, icon);
+        g_slice_free (MooFileIcon, icon);
 }
 
 

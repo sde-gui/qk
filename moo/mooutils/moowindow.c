@@ -637,7 +637,7 @@ accel_entry_new (guint            key,
                  GdkModifierType  mods,
                  GtkAction       *action)
 {
-    AccelEntry *entry = moo_new0 (AccelEntry);
+    AccelEntry *entry = g_slice_new0 (AccelEntry);
     entry->keyval = key;
     entry->modifiers = mods;
     entry->action = g_object_ref (action);
@@ -650,7 +650,7 @@ accel_entry_free (AccelEntry *entry)
     if (entry)
     {
         g_object_unref (entry->action);
-        moo_free (AccelEntry, entry);
+        g_slice_free (AccelEntry, entry);
     }
 }
 

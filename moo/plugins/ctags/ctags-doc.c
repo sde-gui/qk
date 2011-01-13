@@ -409,7 +409,7 @@ _moo_ctags_entry_unref (MooCtagsEntry *entry)
         g_free (entry->name);
         g_free (entry->klass);
         g_free (entry->signature);
-        moo_free (MooCtagsEntry, entry);
+        g_slice_free (MooCtagsEntry, entry);
     }
 }
 
@@ -422,12 +422,12 @@ moo_ctags_entry_new (const tagEntry *te)
 
     g_return_val_if_fail (te != NULL, NULL);
 
-    entry = moo_new (MooCtagsEntry);
+    entry = g_slice_new (MooCtagsEntry);
     entry->ref_count = 1;
 
     entry->name = g_strdup (te->name);
     entry->line = (int) te->address.lineNumber - 1;
-    entry->kind = _moo_intern_string (te->kind);
+    entry->kind = g_intern_string (te->kind);
     entry->klass = NULL;
     entry->signature = NULL;
     entry->file_scope = te->fileScope != 0;

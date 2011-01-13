@@ -303,27 +303,6 @@ moo_text_view_home_end (MooTextView *view,
 }
 
 
-static void
-_moo_text_view_move_cursor_call_parent (GtkTextView        *text_view,
-                                        GtkMovementStep     step,
-                                        gint                count,
-                                        gboolean            extend_selection)
-{
-#if !GTK_CHECK_VERSION(2,12,0)
-    MooTextView *view = MOO_TEXT_VIEW (text_view);
-    if (view->priv->overwrite_mode)
-        gtk_text_view_set_cursor_visible (text_view, TRUE);
-#endif
-
-    GTK_TEXT_VIEW_CLASS (_moo_text_view_parent_class)->
-        move_cursor (text_view, step, count, extend_selection);
-
-#if !GTK_CHECK_VERSION(2,12,0)
-    if (view->priv->overwrite_mode)
-        gtk_text_view_set_cursor_visible (text_view, FALSE);
-#endif
-}
-
 void
 _moo_text_view_move_cursor (GtkTextView        *text_view,
                             GtkMovementStep     step,
@@ -336,7 +315,7 @@ _moo_text_view_move_cursor (GtkTextView        *text_view,
 
     if (!text_view->cursor_visible)
     {
-        _moo_text_view_move_cursor_call_parent (text_view, step, count, extend_selection);
+        GTK_TEXT_VIEW_CLASS (_moo_text_view_parent_class)->move_cursor (text_view, step, count, extend_selection);
         return;
     }
 
@@ -355,35 +334,12 @@ _moo_text_view_move_cursor (GtkTextView        *text_view,
     }
     else
     {
-        _moo_text_view_move_cursor_call_parent (text_view, step, count, extend_selection);
+        GTK_TEXT_VIEW_CLASS (_moo_text_view_parent_class)->move_cursor (text_view, step, count, extend_selection);
         return;
     }
 
     move_cursor_to (text_view, &iter, extend_selection);
-    _moo_text_view_pend_cursor_blink (MOO_TEXT_VIEW (text_view));
 }
-
-
-#if !GTK_CHECK_VERSION(2,12,0)
-void
-_moo_text_view_page_horizontally (GtkTextView *text_view,
-                                  int          count,
-                                  gboolean     extend_selection)
-{
-    MooTextView *view = MOO_TEXT_VIEW (text_view);
-
-    if (view->priv->overwrite_mode)
-        gtk_text_view_set_cursor_visible (text_view, TRUE);
-
-    GTK_TEXT_VIEW_CLASS (_moo_text_view_parent_class)->
-        page_horizontally (text_view, count, extend_selection);
-
-    if (view->priv->overwrite_mode)
-        gtk_text_view_set_cursor_visible (text_view, FALSE);
-
-    _moo_text_view_pend_cursor_blink (view);
-}
-#endif
 
 
 void
@@ -502,35 +458,10 @@ _moo_text_view_update_text_cursor (MooTextView *view,
 static void
 set_invisible_cursor (GdkWindow *window)
 {
-    GdkCursor *cursor;
-    GdkBitmap *empty_bitmap = NULL;
-
-#if !GTK_CHECK_VERSION(2,16,0) || 1
-    GdkColor useless;
-    char invisible_cursor_bits[] = { 0x0 };
-
-    useless.red = useless.green = useless.blue = 0;
-    useless.pixel = 0;
-
-    empty_bitmap =
-            gdk_bitmap_create_from_data (window,
-                                         invisible_cursor_bits,
-                                         1, 1);
-
-    cursor = gdk_cursor_new_from_pixmap (empty_bitmap,
-                                         empty_bitmap,
-                                         &useless,
-                                         &useless, 0, 0);
-#else /* GTK_CHECK_VERSION(2,16,0) */
-    cursor = gdk_cursor_new (GDK_BLANK_CURSOR);
-#endif /* GTK_CHECK_VERSION(2,16,0) */
-
+    GdkDisplay *display = gdk_drawable_get_display (window);
+    GdkCursor *cursor = gdk_cursor_new_for_display (display, GDK_BLANK_CURSOR);
     gdk_window_set_cursor (window, cursor);
-
     gdk_cursor_unref (cursor);
-
-    if (empty_bitmap)
-        g_object_unref (empty_bitmap);
 }
 
 static void
@@ -1076,15 +1007,7 @@ text_view_start_selection_dnd (GtkTextView       *text_view,
 {
     GtkTargetList *target_list;
 
-#if !GTK_CHECK_VERSION(2,10,0)
-    static const GtkTargetEntry target_table[] = {
-        { (char*) "GTK_TEXT_BUFFER_CONTENTS", GTK_TARGET_SAME_APP, 0 }
-    };
-
-    target_list = gtk_target_list_new (target_table, G_N_ELEMENTS (target_table));
-#else
     target_list = gtk_target_list_new (NULL, 0);
-#endif
 
     gtk_target_list_add_text_targets (target_list, 0);
 
@@ -1398,7 +1321,6 @@ _moo_text_view_key_press_event (GtkWidget          *widget,
     view->priv->in_key_press = FALSE;
 
     _moo_text_view_check_char_inserted (view);
-    _moo_text_view_pend_cursor_blink (view);
 
     return handled;
 }

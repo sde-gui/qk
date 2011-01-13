@@ -349,7 +349,6 @@ moo_link_label_update (MooLinkLabel *label)
     {
         char *markup;
         const char *color = NULL;
-#if GTK_CHECK_VERSION(2,10,0)
         GValue val;
         val.g_type = 0;
         g_value_init (&val, GDK_TYPE_COLOR);
@@ -357,7 +356,6 @@ moo_link_label_update (MooLinkLabel *label)
         gtk_widget_style_get_property (GTK_WIDGET (label), "link-color", &val);
         color = _moo_value_convert_to_string (&val);
         g_value_unset (&val);
-#endif
         if (!color)
             color = "#0000EE";
         markup = g_markup_printf_escaped ("<span foreground=\"%s\">%s</span>",

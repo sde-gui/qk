@@ -1162,7 +1162,7 @@ callback_data_free (CallbackData *data)
     {
         if (data->notify)
             data->notify (data->data);
-        moo_free (CallbackData, data);
+        g_slice_free (CallbackData, data);
     }
 }
 
@@ -1211,7 +1211,7 @@ moo_history_mgr_create_menu (MooHistoryMgr   *mgr,
     gtk_widget_show (menu);
     g_signal_connect (menu, "destroy", G_CALLBACK (view_destroyed), mgr);
 
-    cb_data = moo_new0 (CallbackData);
+    cb_data = g_slice_new0 (CallbackData);
     cb_data->callback = callback;
     cb_data->data = data;
     cb_data->notify = notify;
@@ -1356,10 +1356,8 @@ create_tree_view (void)
                                 G_TYPE_STRING, G_TYPE_STRING);
     gtk_tree_view_set_model (GTK_TREE_VIEW (tree_view), GTK_TREE_MODEL (store));
     gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (tree_view), FALSE);
-#if GTK_CHECK_VERSION(2,12,0)
     gtk_tree_view_set_tooltip_column (GTK_TREE_VIEW (tree_view),
                                       COLUMN_TOOLTIP);
-#endif
     gtk_tree_selection_set_mode (gtk_tree_view_get_selection (GTK_TREE_VIEW (tree_view)),
                                  GTK_SELECTION_MULTIPLE);
 
@@ -1531,7 +1529,7 @@ moo_history_mgr_create_tree_view (MooHistoryMgr   *mgr,
     gtk_widget_show (tree_view);
     g_signal_connect (tree_view, "destroy", G_CALLBACK (view_destroyed), mgr);
 
-    cb_data = moo_new0 (CallbackData);
+    cb_data = g_slice_new0 (CallbackData);
     cb_data->callback = callback;
     cb_data->data = data;
     cb_data->notify = notify;
@@ -1638,14 +1636,14 @@ moo_history_item_free (MooHistoryItem *item)
         g_free (item->uri);
         g_datalist_clear (&item->data);
         moo_file_icon_free (item->icon);
-        moo_free (MooHistoryItem, item);
+        g_slice_free (MooHistoryItem, item);
     }
 }
 
 static MooHistoryItem *
 moo_history_item_new_uri (const char *uri)
 {
-    MooHistoryItem *item = moo_new (MooHistoryItem);
+    MooHistoryItem *item = g_slice_new (MooHistoryItem);
     item->uri = g_strdup (uri);
     item->data = NULL;
     item->icon = NULL;

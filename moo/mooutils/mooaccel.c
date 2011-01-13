@@ -24,7 +24,7 @@
 
 #define MOO_ACCEL_PREFS_KEY "Shortcuts"
 
-#if GTK_CHECK_VERSION(2,10,0) && defined(GDK_WINDOWING_QUARTZ)
+#if defined(GDK_WINDOWING_QUARTZ)
 #define COMMAND_MASK GDK_META_MASK
 #else
 #define COMMAND_MASK GDK_CONTROL_MASK
@@ -546,10 +546,8 @@ parse_mod (const char *string, gssize len)
     else if (!strcmp (stripped, "cmd") ||
              !strcmp (stripped, "command"))
         mod = COMMAND_MASK;
-#if GTK_CHECK_VERSION(2,10,0)
     else if (!strcmp (stripped, "meta"))
         mod = GDK_META_MASK;
-#endif
     else if (!strncmp (stripped, "mod", 3) &&
              '1' <= stripped[3] && stripped[3] <= '5' && !stripped[4])
     {

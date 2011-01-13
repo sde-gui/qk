@@ -105,7 +105,7 @@ moo_app_input_new (const char *name,
 
     g_return_val_if_fail (callback != NULL, NULL);
 
-    ch = moo_new0 (MooAppInput);
+    ch = g_slice_new0 (MooAppInput);
 
     ch->callback = callback;
     ch->callback_data = callback_data;
@@ -148,7 +148,7 @@ moo_app_input_free (MooAppInput *ch)
 
     g_free (ch->main_path);
     g_free (ch->appname);
-    moo_free (MooAppInput, ch);
+    g_slice_free (MooAppInput, ch);
 }
 
 void
@@ -565,7 +565,7 @@ connection_free (Connection *conn)
         close (conn->fd);
 
     g_string_free (conn->buffer, TRUE);
-    moo_free (Connection, conn);
+    g_slice_free (Connection, conn);
 }
 
 static void
@@ -671,7 +671,7 @@ accept_connection (G_GNUC_UNUSED GIOChannel *source,
         return FALSE;
     }
 
-    conn = moo_new0 (Connection);
+    conn = g_slice_new0 (Connection);
     conn->ch = ch;
     conn->buffer = g_string_new_len (NULL, MAX_BUFFER_SIZE);
 
@@ -680,7 +680,7 @@ accept_connection (G_GNUC_UNUSED GIOChannel *source,
     if (conn->fd == -1)
     {
         g_warning ("%s in accept: %s", G_STRLOC, g_strerror (errno));
-        moo_free (Connection, conn);
+        g_slice_free (Connection, conn);
         return TRUE;
     }
 
@@ -688,7 +688,7 @@ accept_connection (G_GNUC_UNUSED GIOChannel *source,
                                  &conn->io, &conn->io_watch))
     {
         close (conn->fd);
-        moo_free (Connection, conn);
+        g_slice_free (Connection, conn);
         return TRUE;
     }
 
@@ -806,7 +806,7 @@ input_channel_new (const char *appname,
     g_return_val_if_fail (appname != NULL, NULL);
     g_return_val_if_fail (name != NULL, NULL);
 
-    ch = moo_new0 (InputChannel);
+    ch = g_slice_new0 (InputChannel);
 
     ch->name = g_strdup (name);
     ch->pipe_dir = get_pipe_dir (appname);
@@ -837,7 +837,7 @@ input_channel_free (InputChannel *ch)
         g_free (ch->pipe_dir);
     }
 
-    moo_free (InputChannel, ch);
+    g_slice_free (InputChannel, ch);
 }
 
 
@@ -1069,7 +1069,7 @@ input_channel_new (const char *appname,
 {
     InputChannel *ch;
 
-    ch = moo_new0 (InputChannel);
+    ch = g_slice_new0 (InputChannel);
     ch->appname = g_strdup (appname);
     ch->name = g_strdup (name);
     ch->buffer = g_string_new_len (NULL, MAX_BUFFER_SIZE);
@@ -1093,7 +1093,7 @@ input_channel_free (InputChannel *ch)
     g_free (ch->pipe_name);
     g_free (ch->appname);
     g_free (ch->name);
-    moo_free (InputChannel, ch);
+    g_slice_free (InputChannel, ch);
 }
 
 static gboolean

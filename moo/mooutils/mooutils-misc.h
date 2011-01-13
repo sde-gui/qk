@@ -166,8 +166,6 @@ moo_assign_strv (char ***where,
 
 const char *_moo_get_pid_string             (void);
 
-const char *_moo_intern_string              (const char     *string);
-
 guint       _moo_io_add_watch               (GIOChannel     *channel,
                                              GIOCondition    condition,
                                              GIOFunc         func,
@@ -184,38 +182,7 @@ gboolean    _moo_regex_escape               (const char *string,
                                              int         bytes,
                                              GString    *dest);
 
-
-#if GLIB_CHECK_VERSION(2,10,0)
-# define moo_alloc_block(sz)   g_slice_alloc (sz)
-# define moo_alloc0_block(sz)  g_slice_alloc0 (sz)
-# define moo_free_block(sz,p)  g_slice_free1 (sz, p)
-#else
-# define moo_alloc_block(sz)   g_malloc (sz)
-# define moo_alloc0_block(sz)  g_malloc0 (sz)
-# define moo_free_block(sz,p)  g_free (p)
-#endif
-
-#ifdef g_slice_dup
-# define moo_dup_block(sz,p)   g_slice_copy (sz, p)
-#else
-# define moo_dup_block(sz,p)   g_memdup (p, sz)
-#endif
-
-#define moo_new_n(type, n)      ((type*) moo_alloc_block (sizeof (type) * (n)))
-#define moo_new0_n(type, n)     ((type*) moo_alloc0_block (sizeof (type) * (n)))
-#define moo_free_n(type, n, p)  do { type *p__ = p; moo_free_block (sizeof (type) * n, p__); } while (0)
-
-#define moo_new(type)           moo_new_n (type, 1)
-#define moo_new0(type)          moo_new0_n (type, 1)
-#define moo_free(type,p)        moo_free_n (type, 1, p)
-
-#if defined(MOO_CL_GCC)
-#define moo_obj_dup(type,p)     ({ type const *cp__ = p; type *p__ = (type*) moo_dup_block (sizeof (type), cp__); p__; })
-#else
-#define moo_obj_dup(type, p)    ((type*) moo_dup_block (sizeof (type), p))
-#endif
-
-const char  *moo_error_message  (GError *error);
+const char  *moo_error_message              (GError *error);
 
 G_END_DECLS
 

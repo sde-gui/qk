@@ -583,7 +583,7 @@ moo_icon_view_dispose (GObject *object)
 static DndInfo *
 dnd_info_new (void)
 {
-    return moo_new0 (DndInfo);
+    return g_slice_new0 (DndInfo);
 }
 
 static void
@@ -597,7 +597,7 @@ dnd_info_free (DndInfo *info)
             gtk_target_list_unref (info->source_targets);
         if (info->drag_motion_context)
             g_object_unref (info->drag_motion_context);
-        moo_free (DndInfo, info);
+        g_slice_free (DndInfo, info);
     }
 }
 
@@ -1132,30 +1132,6 @@ get_drag_select_rect (MooIconView  *view,
                           view->priv->button_press_y);
 }
 
-#if !GTK_CHECK_VERSION(2,8,0)
-static GdkGC *
-get_sel_gc (MooIconView *view)
-{
-    if (!view->priv->sel_gc)
-    {
-        GtkWidget *widget = GTK_WIDGET (view);
-        GdkGCValues values;
-        gint8 dash_list[] = {1, 1};
-
-        values.line_width = 1;
-        values.line_style = GDK_LINE_ON_OFF_DASH;
-        values.foreground = widget->style->text[GTK_STATE_NORMAL];
-        view->priv->sel_gc = gdk_gc_new_with_values (widget->window, &values,
-                                                     GDK_GC_LINE_WIDTH |
-                                                        GDK_GC_FOREGROUND |
-                                                        GDK_GC_LINE_STYLE);
-        gdk_gc_set_dashes (view->priv->sel_gc, 0, dash_list, 2);
-    }
-
-    return view->priv->sel_gc;
-}
-#endif
-
 static gboolean
 moo_icon_view_expose (GtkWidget      *widget,
                       GdkEventExpose *event)
@@ -1199,7 +1175,6 @@ moo_icon_view_expose (GtkWidget      *widget,
 
     if (view->priv->drag_select)
     {
-#if GTK_CHECK_VERSION(2,8,0)
         cairo_t *cr;
         GdkRectangle rect;
         GdkColor *color;
@@ -1229,14 +1204,6 @@ moo_icon_view_expose (GtkWidget      *widget,
         cairo_stroke (cr);
 
         cairo_destroy (cr);
-#else
-        GdkRectangle rect;
-        get_drag_select_rect (view, &rect);
-        gdk_draw_rectangle (event->window,
-                            get_sel_gc (view),
-                            FALSE, rect.x, rect.y,
-                            rect.width - 1, rect.height - 1);
-#endif
     }
 
     return TRUE;
