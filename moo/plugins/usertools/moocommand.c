@@ -995,11 +995,11 @@ _moo_command_parse_item (MooMarkupNode      *elm,
             const char *code = MOO_MARKUP_ELEMENT (child)->content;
             if (code)
             {
-                if (*code == '\n')
+                if (code[0] == '\n')
                     code += 1;
-                else if (*code == '\r' && *code == '\n')
+                else if (code[0] == '\r' && code[1] == '\n')
                     code += 2;
-                else if (*code == '\r')
+                else if (code[0] == '\r')
                     code += 1;
                 moo_command_data_set_code (data, code);
             }
