@@ -59,8 +59,6 @@ AC_CHECK_TOOL(WINDRES, windres, :)
 
 AC_ARG_VAR([PYTHON], [Python executable, used to run build scripts])
 AC_CHECK_PROGS(PYTHON, python, [AC_MSG_ERROR([Python not found])])
-AC_ARG_VAR([PERL], [Perl executable, used to run build scripts])
-AC_CHECK_PROGS(PERL, perl, [AC_MSG_ERROR([Perl not found])])
 
 MOO_AC_FLAGS
 
