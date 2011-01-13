@@ -128,8 +128,6 @@ moo_sources +=				\
 	mooutils/moowindow.h		\
 	mooutils/stock-file-24.h	\
 	mooutils/stock-file-selector-24.h\
-	mooutils/stock-select-all-16.h	\
-	mooutils/stock-select-all-24.h	\
 	mooutils/stock-terminal-24.h
 
 built_moo_sources += marshals.c
