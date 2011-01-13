@@ -16,7 +16,9 @@
 #include <config.h>
 #include "moocommand-script.h"
 #include "plugins/usertools/lua-tool-setup.h"
+#ifdef MOO_ENABLE_PYTHON
 #include "plugins/usertools/python-tool-setup.h"
+#endif
 #include "mooedit/mooeditor.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
@@ -96,6 +98,7 @@ static void
 moo_command_script_run_python (MooCommandScript  *cmd,
                                MooCommandContext *ctx)
 {
+#ifdef MOO_ENABLE_PYTHON
     GtkTextBuffer *buffer = NULL;
     MooPythonState *state;
 
@@ -122,6 +125,11 @@ moo_command_script_run_python (MooCommandScript  *cmd,
         gtk_text_buffer_end_user_action (buffer);
 
     moo_python_state_free (state);
+#else
+    moo_return_if_reached ();
+    (void) cmd;
+    (void) ctx;
+#endif
 }
 
 static void
