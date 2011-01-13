@@ -438,7 +438,8 @@ static gboolean
 moo_edit_question_dialog (MooEdit    *doc,
                           const char *text,
                           const char *secondary,
-                          const char *button)
+                          const char *button,
+                          int         default_response)
 {
     int res;
     MooEditView *view;
@@ -464,6 +465,7 @@ moo_edit_question_dialog (MooEdit    *doc,
                                              GTK_RESPONSE_YES,
                                              GTK_RESPONSE_CANCEL,
                                              -1);
+    gtk_dialog_set_default_response (GTK_DIALOG (dialog), default_response);
 
     res = gtk_dialog_run (GTK_DIALOG (dialog));
     gtk_widget_destroy (dialog);
@@ -490,7 +492,7 @@ _moo_edit_save_error_enc_dialog (MooEdit    *doc,
                                  filename, encoding);
 
     result = moo_edit_question_dialog (doc, _("Save file in UTF-8 encoding?"),
-                                       secondary, GTK_STOCK_OK);
+                                       secondary, GTK_STOCK_OK, GTK_RESPONSE_YES);
 
     g_free (secondary);
     g_free (filename);
@@ -589,7 +591,8 @@ _moo_edit_reload_modified_dialog (MooEdit *doc)
     question = g_strdup_printf (_("Discard changes in file '%s'?"), name);
     result = moo_edit_question_dialog (doc, question,
                                        _("If you reload the document, changes will be discarded"),
-                                       _("_Reload"));
+                                       _("_Reload"),
+                                       GTK_RESPONSE_CANCEL);
 
     g_free (question);
     return result;
@@ -613,7 +616,7 @@ _moo_edit_overwrite_modified_dialog (MooEdit *doc)
     question = g_strdup_printf (_("Overwrite modified file '%s'?"), name);
     secondary = g_strdup_printf (_("File '%s' was modified on disk by another process. If you save it, "
                                    "changes on disk will be lost."), name);
-    result = moo_edit_question_dialog (doc, question, secondary, _("Over_write"));
+    result = moo_edit_question_dialog (doc, question, secondary, _("Over_write"), GTK_RESPONSE_CANCEL);
 
     g_free (question);
     g_free (secondary);
