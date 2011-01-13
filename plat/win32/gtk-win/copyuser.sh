@@ -110,7 +110,6 @@ atk10
 glib20
 grep
 gtk20
-gtk20-properties
 '
 
 copy_files_from_dir() {
