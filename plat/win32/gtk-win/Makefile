@@ -1,5 +1,5 @@
 top:
-	@echo "What target do you want?"
+	@echo "Do you want 'build' target?"
 	@exit 1
 
 check-make:
@@ -23,6 +23,7 @@ build-python: check-make
 	cp -fl $(mgwpythoninstdir)/include/* $(mgwtargetdir)/include/python/
 
 build: build-python build-gtk build-data
+rebuild: clean build
 
 bdist-en:
 	rm -fr $(mgwdestdir)-en

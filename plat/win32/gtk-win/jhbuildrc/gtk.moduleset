@@ -184,8 +184,7 @@
     </dependencies>
   </tarball>
 
-  <!-- GOOD -->
-<!--  <tarball id="gtk+">
+  <tarball id="gtk+">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gtk+/2.16/gtk+-2.16.6.tar.bz2"
             sha256sum="18e0f9792028e6cc5108447678f17d396f9a2cdfec1e6ab5dca98cb844f954af"/>
     <dependencies>
@@ -198,7 +197,7 @@
     <patches>
       <patch file="gtk-2.16.patch" strip="1"/>
     </patches>
-  </tarball>-->
+  </tarball>
 
 <!--  <tarball id="gtk+-2.18">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gtk+/2.18/gtk+-2.18.9.tar.bz2"
@@ -230,6 +229,14 @@
     </patches>
   </tarball>-->
 
+  <!--
+  ==================================================================================================
+  =
+  = Gtk-2.22
+  =
+  = it works pretty well, but GtkTextView drag'n'drop is completely broken
+  =
+
   <tarball id="gdk-pixbuf">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/2.22/gdk-pixbuf-2.22.1.tar.bz2"
             md5sum="716c4593ead3f9c8cca63b8b1907a561"/>
@@ -257,21 +264,7 @@
       <patch file="gtk-2.22.patch" strip="1"/>
     </patches>
   </tarball>
-
-<!--  <repository type="git" name="git.gnome.org" href="git://git.gnome.org/"/>
-  <autotools id="gtk-2-20">
-    <branch repo="git.gnome.org" module="gtk+" revision="gtk-2-20"/>
-    <dependencies>
-      <dep package="cairo"/>
-      <dep package="pango"/>
-      <dep package="atk"/>
-      <dep package="glib"/>
-      <dep package="libpng"/>
-    </dependencies>
-    <patches>
-      <patch file="gtk-2.20.patch" strip="1"/>
-    </patches>
-  </autotools>-->
+  -->
 
   <tarball id="gtk-engines">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gtk-engines/2.20/gtk-engines-2.20.0.tar.bz2"
@@ -279,17 +272,6 @@
     <dependencies>
       <dep package="gtk+"/>
     </dependencies>
-  </tarball>
-
-  <tarball id="glade3">
-    <source href="http://ftp.gnome.org/pub/gnome/sources/glade3/3.7/glade3-3.7.0.tar.bz2"
-            sha256sum="5ed8ca88f712b6944ca80ece6e16503b6ad27d3e62b708a7eae09f6c3dc755e1"/>
-    <dependencies>
-      <dep package="gtk+"/>
-    </dependencies>
-    <patches>
-      <patch file="glade3.patch" strip="1"/>
-    </patches>
   </tarball>
 
   <tarball id="hicolor-icon-theme" supports-non-srcdir-builds="no">
@@ -331,67 +313,12 @@
     </dependencies>
   </autotools>
 
-<!--  <repository type="git" name="anongit.freedesktop.org" href="git://anongit.freedesktop.org/"/>
-  <autotools id="pycairo">
-    <branch repo="anongit.freedesktop.org"
-            module="py2cairo"/>
-    <dependencies>
-      <dep package="cairo"/>
-    </dependencies>
-    <patches>
-      <patch file="pycairo.patch" strip="1"/>
-    </patches>
-  </autotools>-->
-
-<!--  <tarball id="pycairo">
-    <source href="file:///tmp/pycairo-mine-1.8.10.tar.gz"/>
-    <dependencies>
-      <dep package="cairo"/>
-    </dependencies>
-    <patches>
-      <patch file="pycairo-1.8.10.patch" strip="1"/>
-    </patches>
-  </tarball>-->
-
-<!--  <tarball id="pycairo">
-    <source href="http://cairographics.org/releases/py2cairo-1.8.10.tar.gz"
-            md5sum="87421a6a70304120555ba7ba238f3dc3"/>
-    <dependencies>
-      <dep package="cairo"/>
-    </dependencies>
-    <patches>
-      <patch file="pycairo-1.8.10.patch" strip="1"/>
-    </patches>
-  </tarball>-->
-
-<!--  <tarball id="pycairo">
-    <source href="http://cairographics.org/releases/pycairo-1.8.8.tar.gz"
-            md5sum="054da6c125cb427a003f5fd6c54f853e"/>
-    <dependencies>
-      <dep package="cairo"/>
-    </dependencies>
-    <patches>
-      <patch file="pycairo-1.8.8.patch" strip="1"/>
-    </patches>
-  </tarball>-->
-
   <autotools id="pygobject" supports-non-srcdir-builds="no">
     <branch repo="muntyan.bitbucket.org" module="pygobject"/>
     <dependencies>
       <dep package="glib"/>
     </dependencies>
   </autotools>
-
-<!--  <tarball id="pygobject">
-    <source href="http://ftp.acc.umu.se/pub/GNOME/sources/pygobject/2.26/pygobject-2.26.0.tar.bz2"
-            md5sum="7e3352c4b83ce8dc15290e86dd9c2be0"/>
-    <dependencies>
-      <dep package="glib"/>
-    </dependencies>
-    <patches>
-      <patch file="pygobject-2.26.0.patch" strip="1"/>
-    </patches>
-  </tarball>-->
 
   <autotools id="pygtk" supports-non-srcdir-builds="no">
     <branch repo="muntyan.bitbucket.org" module="pygtk"/>
@@ -401,19 +328,6 @@
       <dep package="pycairo"/>
     </dependencies>
   </autotools>
-
-<!--  <tarball id="pygtk">
-    <source href="http://ftp.acc.umu.se/pub/GNOME/sources/pygtk/2.16/pygtk-2.16.0.tar.bz2"
-            md5sum="bd0d437fefd6d5390f5d770a495cd50c"/>
-    <dependencies>
-      <dep package="gtk+"/>
-      <dep package="pygobject"/>
-      <dep package="pycairo"/>
-    </dependencies>
-    <patches>
-      <patch file="pygtk-2.16.0.patch" strip="1"/>
-    </patches>
-  </tarball>-->
 
   <metamodule id="medit-gtk-win">
     <dependencies>
