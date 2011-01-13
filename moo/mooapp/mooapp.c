@@ -824,7 +824,7 @@ moo_app_run_real (MooApp *app)
     app->priv->quit_handler_id =
             gtk_quit_add (1, (GtkFunction) on_gtk_main_quit, app);
 
-    _moo_timeout_add (100, (GSourceFunc) check_signal, NULL);
+    gdk_threads_add_timeout (100, (GSourceFunc) check_signal, NULL);
 
     app->priv->sm_client = egg_sm_client_get ();
     /* make it install log handler */

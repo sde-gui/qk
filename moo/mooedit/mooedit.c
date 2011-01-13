@@ -992,7 +992,7 @@ _moo_edit_queue_recheck_config_all (void)
 {
     if (!moo_edit_apply_config_all_idle)
         moo_edit_apply_config_all_idle =
-            moo_idle_add ((GSourceFunc) moo_edit_apply_config_all_in_idle, NULL);
+            gdk_threads_add_idle ((GSourceFunc) moo_edit_apply_config_all_in_idle, NULL);
 }
 
 
@@ -1102,9 +1102,9 @@ _moo_edit_queue_recheck_config (MooEdit *doc)
     moo_return_if_fail (!doc->priv->in_recheck_config);
     if (!doc->priv->apply_config_idle)
         doc->priv->apply_config_idle =
-                moo_idle_add_full (G_PRIORITY_HIGH,
-                                   (GSourceFunc) moo_edit_recheck_config_in_idle,
-                                   doc, NULL);
+                gdk_threads_add_idle_full (G_PRIORITY_HIGH,
+                                           (GSourceFunc) moo_edit_recheck_config_in_idle,
+                                           doc, NULL);
 }
 
 static void

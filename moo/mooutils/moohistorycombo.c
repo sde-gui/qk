@@ -427,9 +427,9 @@ moo_history_combo_changed (MooCombo *combo)
         if (hist_combo->priv->completion_popup_timeout_id)
             g_source_remove (hist_combo->priv->completion_popup_timeout_id);
         hist_combo->priv->completion_popup_timeout_id =
-                _moo_timeout_add (hist_combo->priv->completion_popup_timeout,
-                                  (GSourceFunc) popup,
-                                  combo);
+                gdk_threads_add_timeout (hist_combo->priv->completion_popup_timeout,
+                                         (GSourceFunc) popup,
+                                         combo);
     }
     else
     {

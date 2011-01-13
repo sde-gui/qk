@@ -498,9 +498,9 @@ show_progress (MooEditView *view)
     update_progress (view);
 
     view->priv->progress_timeout =
-            _moo_timeout_add (PROGRESS_TIMEOUT,
-                              (GSourceFunc) pulse_progress,
-                              view);
+            gdk_threads_add_timeout (PROGRESS_TIMEOUT,
+                                     (GSourceFunc) pulse_progress,
+                                     view);
 
     return FALSE;
 }
@@ -546,9 +546,9 @@ _moo_edit_view_set_state (MooEditView    *view,
     {
         if (!view->priv->progress_timeout)
             view->priv->progress_timeout =
-                    _moo_timeout_add (PROGRESS_TIMEOUT,
-                                      (GSourceFunc) show_progress,
-                                      view);
+                    gdk_threads_add_timeout (PROGRESS_TIMEOUT,
+                                             (GSourceFunc) show_progress,
+                                             view);
         view->priv->progress_text = g_strdup (text);
     }
 }

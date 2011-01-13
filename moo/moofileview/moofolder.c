@@ -407,10 +407,10 @@ _moo_folder_set_wanted (MooFolder      *folder,
         folder->impl->populate_func (folder->impl))
     {
         folder->impl->populate_idle_id =
-                _moo_timeout_add_full (folder->impl->populate_priority,
-                                       folder->impl->populate_timeout,
-                                       folder->impl->populate_func,
-                                       folder->impl, NULL);
+                gdk_threads_add_timeout_full (folder->impl->populate_priority,
+                                              folder->impl->populate_timeout,
+                                              folder->impl->populate_func,
+                                              folder->impl, NULL);
     }
 
     g_object_unref (folder);
@@ -615,19 +615,19 @@ get_stat_a_bit (MooFolderImpl *impl)
                 TIMER_CLEAR (impl->timer);
                 if (impl->populate_func (impl))
                     impl->populate_idle_id =
-                            _moo_timeout_add_full (impl->populate_priority,
-                                                   impl->populate_timeout,
-                                                   impl->populate_func,
-                                                   impl, NULL);
+                            gdk_threads_add_timeout_full (impl->populate_priority,
+                                                          impl->populate_timeout,
+                                                          impl->populate_func,
+                                                          impl, NULL);
             }
             else
             {
                 TIMER_CLEAR (impl->timer);
                 impl->populate_idle_id =
-                        _moo_timeout_add_full (impl->populate_priority,
-                                               impl->populate_timeout,
-                                               impl->populate_func,
-                                               impl, NULL);
+                        gdk_threads_add_timeout_full (impl->populate_priority,
+                                                      impl->populate_timeout,
+                                                      impl->populate_func,
+                                                      impl, NULL);
             }
         }
         else
@@ -908,7 +908,7 @@ file_changed (MooFolderImpl *impl,
     if (!strcmp (name, impl->path))
     {
         if (!impl->reload_idle)
-            impl->reload_idle = moo_idle_add ((GSourceFunc) moo_folder_do_reload, impl);
+            impl->reload_idle = gdk_threads_add_idle ((GSourceFunc) moo_folder_do_reload, impl);
     }
 }
 

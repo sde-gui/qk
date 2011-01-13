@@ -43,7 +43,7 @@ moo_spin_main_loop (double sec)
     moo_return_if_fail (sec > 0);
 
     main_loop = g_main_loop_new (NULL, FALSE);
-    _moo_timeout_add (sec * 1000, (GSourceFunc) quit_main_loop, main_loop);
+    gdk_threads_add_timeout (sec * 1000, (GSourceFunc) quit_main_loop, main_loop);
 
     gdk_threads_leave ();
     g_main_loop_run (main_loop);

@@ -693,9 +693,9 @@ medit_main (int argc, char *argv[])
     g_option_context_free (ctx);
 
     if (medit_opts.ut)
-        _moo_timeout_add (10, (GSourceFunc) unit_test_func, NULL);
+        gdk_threads_add_timeout (10, (GSourceFunc) unit_test_func, NULL);
     if (medit_opts.run_script)
-        _moo_timeout_add (10, (GSourceFunc) run_script_func, NULL);
+        gdk_threads_add_timeout (10, (GSourceFunc) run_script_func, NULL);
 
     retval = moo_app_run (app);
     gdk_threads_leave ();

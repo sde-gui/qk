@@ -168,20 +168,6 @@ const char *_moo_get_pid_string             (void);
 
 const char *_moo_intern_string              (const char     *string);
 
-guint        moo_idle_add_full              (gint            priority,
-                                             GSourceFunc     function,
-                                             gpointer        data,
-                                             GDestroyNotify  notify);
-guint        moo_idle_add                   (GSourceFunc     function,
-                                             gpointer        data);
-guint       _moo_timeout_add_full           (gint            priority,
-                                             guint           interval,
-                                             GSourceFunc     function,
-                                             gpointer        data,
-                                             GDestroyNotify  notify);
-guint       _moo_timeout_add                (guint           interval,
-                                             GSourceFunc     function,
-                                             gpointer        data);
 guint       _moo_io_add_watch               (GIOChannel     *channel,
                                              GIOCondition    condition,
                                              GIOFunc         func,
