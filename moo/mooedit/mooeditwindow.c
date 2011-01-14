@@ -2553,6 +2553,7 @@ moo_edit_window_set_active_view (MooEditWindow *window,
     page = get_view_page_num (window, view, &notebook);
     g_return_if_fail (page >= 0);
 
+    window->priv->active_view = view;
     moo_notebook_set_current_page (notebook, page);
     gtk_widget_grab_focus (GTK_WIDGET (view));
 }
