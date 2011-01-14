@@ -243,7 +243,7 @@ rm_fr (const char *path,
                      /* This is error message in file selector when rm
                         fails to delete a file or folder */
                      _("'rm' command failed: %s"),
-                     child_err ? child_err : "");
+                     MOO_NZS (child_err));
 
         g_free (child_err);
         return FALSE;

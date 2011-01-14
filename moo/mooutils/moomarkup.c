@@ -279,7 +279,7 @@ moo_markup_doc_new_priv (const char *name)
     MooMarkupDoc *doc = g_slice_new0 (MooMarkupDoc);
 
     doc->type = MOO_MARKUP_DOC_NODE;
-    doc->name = g_strdup (name ? name : "");
+    doc->name = g_strdup (MOO_NZS (name));
     doc->doc = doc;
     doc->ref_count = 1;
 
@@ -292,7 +292,7 @@ moo_markup_doc_set_name (MooMarkupDoc *doc,
                          const char   *name)
 {
     g_return_if_fail (MOO_MARKUP_IS_DOC (doc));
-    MOO_ASSIGN_STRING (doc->name, name ? name : "");
+    MOO_ASSIGN_STRING (doc->name, MOO_NZS (name));
 }
 
 
@@ -1024,13 +1024,14 @@ moo_markup_create_text_element (MooMarkupNode      *parent,
     g_return_val_if_fail (MOO_MARKUP_IS_ELEMENT (parent) ||
                           MOO_MARKUP_IS_DOC (parent), NULL);
     g_return_val_if_fail (path != NULL, NULL);
-    g_return_val_if_fail (content != NULL, NULL);
-    g_return_val_if_fail (g_utf8_validate (content, -1, NULL), NULL);
+    g_return_val_if_fail (!content || g_utf8_validate (content, -1, NULL), NULL);
 
     elm = (MooMarkupElement*) moo_markup_create_element (parent, path);
 
     if (!elm)
         return NULL;
+
+    content = MOO_NZS (content);
 
     moo_markup_text_node_new (MOO_MARKUP_TEXT_NODE,
                               elm->doc, MOO_MARKUP_NODE (elm),

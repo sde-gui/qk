@@ -1132,9 +1132,9 @@ moo_plugin_info_new (const char     *name,
 
     info = g_new0 (MooPluginInfo, 1);
     info->name = g_strdup (name);
-    info->description = description ? g_strdup (description) : g_strdup ("");
-    info->author = author ? g_strdup (author) : g_strdup ("");
-    info->version = version ? g_strdup (version) : g_strdup ("");
+    info->description = g_strdup (MOO_NZS (description));
+    info->author = g_strdup (MOO_NZS (author));
+    info->version = g_strdup (MOO_NZS (version));
 
     return info;
 }

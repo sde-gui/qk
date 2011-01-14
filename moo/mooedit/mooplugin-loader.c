@@ -181,10 +181,7 @@ parse_plugin_info (GKeyFile         *key_file,
     if (g_key_file_has_key (key_file, GROUP_PLUGIN, KEY_VISIBLE, NULL))
         visible = g_key_file_get_boolean (key_file, GROUP_PLUGIN, KEY_VISIBLE, NULL);
 
-    info = moo_plugin_info_new (name ? name : plugin_id,
-                                description ? description : "",
-                                author ? author : "",
-                                version ? version : "");
+    info = moo_plugin_info_new (name ? name : plugin_id, description, author, version);
     params = moo_plugin_params_new (enabled, visible);
 
     *info_p = info;

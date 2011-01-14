@@ -222,7 +222,7 @@ script_factory_load_data (G_GNUC_UNUSED MooCommandFactory *factory,
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (xml->textview));
 
     code = moo_command_data_get_code (data);
-    gtk_text_buffer_set_text (buffer, code ? code : "", -1);
+    gtk_text_buffer_set_text (buffer, MOO_NZS (code), -1);
 }
 
 

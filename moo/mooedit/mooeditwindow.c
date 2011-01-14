@@ -1677,7 +1677,7 @@ create_bookmark_item (MooEditWindow   *window,
 
     bk_text = _moo_edit_bookmark_get_text (bk);
     label = g_strdup_printf ("%d - \"%s\"", 1 + moo_line_mark_get_line (MOO_LINE_MARK (bk)),
-                             bk_text ? bk_text : "");
+                             MOO_NZS (bk_text));
     g_free (bk_text);
 
     if (bk->no)

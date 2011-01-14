@@ -365,8 +365,7 @@ moo_cmd_view_run_command_full (MooCmdView  *view,
     if (!(argv = _moo_win32_lame_parse_cmd_line (cmd, &error)))
     {
         moo_line_view_write_line (MOO_LINE_VIEW (view),
-                                  error ? error->message :
-                                    "Could not parse command line",
+                                  moo_error_message (error),
                                   -1, view->priv->error_tag);
         g_error_free (error);
         goto out;
@@ -387,7 +386,7 @@ moo_cmd_view_run_command_full (MooCmdView  *view,
 
     if (!view->priv->cmd)
     {
-        const char *message = error ? error->message : "Failed";
+        const char *message = moo_error_message (error);
         moo_line_view_write_line (MOO_LINE_VIEW (view), message, -1,
                                   view->priv->error_tag);
         if (error)

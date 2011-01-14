@@ -332,7 +332,7 @@ goto_current_doc_dir (MooFileSelector *filesel)
 
     if (error)
     {
-        g_warning ("%s: %s", G_STRFUNC, error ? error->message : "FAILED");
+        g_warning ("%s: %s", G_STRFUNC, moo_error_message (error));
         g_error_free (error);
     }
 

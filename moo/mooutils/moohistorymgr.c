@@ -711,7 +711,7 @@ load_file (MooHistoryMgr *mgr)
     {
         g_critical ("%s: could not load file '%s': %s",
                     G_STRLOC, filename,
-                    error ? error->message : "");
+                    moo_error_message (error));
         g_error_free (error);
     }
 
@@ -842,7 +842,7 @@ moo_history_mgr_save (MooHistoryMgr *mgr)
     {
         g_critical ("%s: could not save file '%s': %s",
                     G_STRLOC, filename,
-                    error ? error->message : "");
+                    moo_error_message (error));
         g_error_free (error);
     }
 }

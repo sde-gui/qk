@@ -16,6 +16,7 @@
 #include "moofileselector.h"
 #include "mooutils/mooprefspage.h"
 #include "mooutils/mooutils-treeview.h"
+#include "mooutils/mooutils.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/moostock.h"
 #include "mooutils/moohelp.h"
@@ -358,10 +359,10 @@ helper_update_widgets (PrefsPageXml *gxml,
                             COLUMN_MIMETYPES, &mimetypes, -1);
     }
 
-    gtk_entry_set_text (gxml->label, label ? label : "");
-    gtk_entry_set_text (gxml->command, command ? command : "");
-    gtk_entry_set_text (gxml->extensions, extensions ? extensions : "");
-    gtk_entry_set_text (gxml->mimetypes, mimetypes ? mimetypes : "");
+    gtk_entry_set_text (gxml->label, MOO_NZS (label));
+    gtk_entry_set_text (gxml->command, MOO_NZS (command));
+    gtk_entry_set_text (gxml->extensions, MOO_NZS (extensions));
+    gtk_entry_set_text (gxml->mimetypes, MOO_NZS (mimetypes));
     gtk_widget_set_sensitive (GTK_WIDGET (gxml->table), sensitive);
 
     g_free (label);

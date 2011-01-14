@@ -642,7 +642,7 @@ test_moo_file_writer (void)
     writer = moo_config_writer_new (filename, TRUE, &error);
     TEST_ASSERT_MSG (writer != NULL,
                      "moo_cfg_writer_new failed: %s",
-                     error ? error->message : "");
+                     moo_error_message (error));
     if (error)
     {
         g_error_free (error);
@@ -656,7 +656,7 @@ test_moo_file_writer (void)
         moo_file_writer_write (writer, "third\nlalalala\n", 6);
         TEST_ASSERT_MSG (moo_file_writer_close (writer, &error),
                          "moo_file_writer_close failed: %s",
-                         error ? error->message : "");
+                         moo_error_message (error));
         if (error)
         {
             g_error_free (error);
@@ -677,7 +677,7 @@ test_moo_file_writer (void)
     writer = moo_config_writer_new (filename, TRUE, &error);
     TEST_ASSERT_MSG (writer != NULL,
                      "moo_config_writer_new failed: %s",
-                     error ? error->message : "");
+                     moo_error_message (error));
     if (writer)
     {
         moo_file_writer_write (writer, "First line\n", -1);
@@ -685,7 +685,7 @@ test_moo_file_writer (void)
         moo_file_writer_write (writer, "Third\nlalalala\n", 6);
         TEST_ASSERT_MSG (moo_file_writer_close (writer, &error),
                          "moo_file_writer_close failed: %s",
-                         error ? error->message : "");
+                         moo_error_message (error));
         if (error)
         {
             g_error_free (error);

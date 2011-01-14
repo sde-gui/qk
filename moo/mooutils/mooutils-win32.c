@@ -204,7 +204,7 @@ moo_win32_get_dll_dir (const char *dll)
     	if (!dll_utf16)
     	{
             g_critical ("could not convert name '%s' to UTF16: %s",
-                        dll, error ? error->message : "");
+                        dll, moo_error_message (error));
             g_error_free (error);
             return g_strdup (".");
     	}

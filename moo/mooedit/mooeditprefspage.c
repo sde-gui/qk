@@ -661,9 +661,9 @@ helper_update_widgets (PrefsLangsXml      *gxml,
                         -1);
     g_return_if_fail (id != NULL);
 
-    gtk_entry_set_text (gxml->extensions, ext ? ext : "");
-    gtk_entry_set_text (gxml->mimetypes, mime ? mime : "");
-    gtk_entry_set_text (gxml->config, conf ? conf : "");
+    gtk_entry_set_text (gxml->extensions, MOO_NZS (ext));
+    gtk_entry_set_text (gxml->mimetypes, MOO_NZS (mime));
+    gtk_entry_set_text (gxml->config, MOO_NZS (conf));
     gtk_widget_set_sensitive (GTK_WIDGET (gxml->mimetypes), lang != NULL);
     gtk_widget_set_sensitive (GTK_WIDGET (gxml->label_mimetypes), lang != NULL);
 

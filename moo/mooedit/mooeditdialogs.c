@@ -427,7 +427,7 @@ _moo_edit_save_error_dialog (MooEdit *doc,
 
     msg = g_strdup_printf (_("Could not save file\n%s"), filename);
 
-    moo_error_dialog (msg, error ? error->message : NULL,
+    moo_error_dialog (msg, moo_error_message (error),
                       GTK_WIDGET (moo_edit_get_view (doc)));
 
     g_free (msg);
@@ -562,7 +562,7 @@ _moo_edit_reload_error_dialog (MooEdit *doc,
     /* Could not reload file foo.txt */
     msg = g_strdup_printf (_("Could not reload file\n%s"), filename);
     /* XXX */
-    moo_error_dialog (msg, error ? error->message : NULL,
+    moo_error_dialog (msg, moo_error_message (error),
                       GTK_WIDGET (moo_edit_get_view (doc)));
 
     g_free (msg);

@@ -967,7 +967,8 @@ file_list_load_config (FileList    *list,
     if (!doc)
     {
         g_critical ("%s: could not open file %s: %s",
-                    G_STRFUNC, filename, error ? error->message : "");
+                    G_STRFUNC, filename,
+                    moo_error_message (error));
         g_error_free (error);
         return;
     }
@@ -1126,7 +1127,8 @@ file_list_save_config (FileList   *list,
     if (!moo_save_config_file (filename, buffer->str, buffer->len, &error))
     {
         g_critical ("%s: could not save file %s: %s",
-                    G_STRLOC, filename, error ? error->message : "");
+                    G_STRLOC, filename,
+                    moo_error_message (error));
         g_error_free (error);
     }
 

@@ -2152,17 +2152,6 @@ moo_enable_win32_error_message (void)
 }
 
 
-#if 0
-#undef moo_str_equal
-gboolean
-moo_str_equal (const char *s1,
-               const char *s2)
-{
-    return !strcmp (s1 ? s1 : "", s2 ? s2 : "");
-}
-#endif
-
-
 typedef struct {
     GSourceFunc func;
     gpointer data;
@@ -2236,7 +2225,10 @@ moo_atom_uri_list (void)
 const char *
 moo_error_message (GError *error)
 {
-    moo_return_val_if_fail (error != NULL, "error");
+    /* "Unknown error" may be displayed if there is a bug in the program
+       and proper error message has not been set. It doesn't provide any
+       useful information obviously */
+    moo_return_val_if_fail (error != NULL, _("Unknown error"));
     return error->message;
 }
 

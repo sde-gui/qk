@@ -1109,7 +1109,7 @@ unx_factory_load_data (G_GNUC_UNUSED MooCommandFactory *factory,
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (xml->textview));
 
     cmd_line = moo_command_data_get_code (data);
-    gtk_text_buffer_set_text (buffer, cmd_line ? cmd_line : "", -1);
+    gtk_text_buffer_set_text (buffer, MOO_NZS (cmd_line), -1);
 
     parse_input (moo_command_data_get (data, KEY_INPUT), &index);
     gtk_combo_box_set_active (xml->input, index);

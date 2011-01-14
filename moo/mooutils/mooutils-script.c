@@ -128,7 +128,7 @@ moo_tempnam (const char *extension)
     {
         char *basename;
 
-        basename = g_strdup_printf ("tmpfile-%03d%s", i, extension ? extension : "");
+        basename = g_strdup_printf ("tmpfile-%03d%s", i, MOO_NZS (extension));
         filename = g_build_filename (tmpdir, basename, NULL);
         g_free (basename);
 

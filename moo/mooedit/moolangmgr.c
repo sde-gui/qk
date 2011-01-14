@@ -1055,14 +1055,14 @@ save_one (const char *lang_id,
     if (info->globs_modified)
     {
         char *string = list_to_string (info->globs);
-        moo_markup_create_text_element (lang_node, ELEMENT_EXTENSIONS, string ? string : "");
+        moo_markup_create_text_element (lang_node, ELEMENT_EXTENSIONS, string);
         g_free (string);
     }
 
     if (info->mime_types_modified)
     {
         char *string = list_to_string (info->mime_types);
-        moo_markup_create_text_element (lang_node, ELEMENT_EXTENSIONS, string ? string : "");
+        moo_markup_create_text_element (lang_node, ELEMENT_EXTENSIONS, string);
         g_free (string);
     }
 

@@ -147,6 +147,14 @@ moo_str_equal (const char *s1,
     return strcmp (s1 ? s1 : "", s2 ? s2 : "") == 0;
 }
 
+static inline const char *
+moo_nonnull_str (const char *s)
+{
+    return s ? s : "";
+}
+
+#define MOO_NZS(s) (moo_nonnull_str (s))
+
 static inline void
 moo_assign_string (char       **where,
                    const char  *value)

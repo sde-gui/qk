@@ -86,14 +86,14 @@ run_command (const char *command_template,
 
     if (!command)
     {
-        moo_critical ("%s", error ? error->message : "error");
+        moo_critical ("%s", moo_error_message (error));
         g_error_free (error);
         error = NULL;
     }
 
     if (command && !moo_spawn_command_line_async_with_flags (command, MOO_SPAWN_WIN32_HIDDEN_CONSOLE, &error))
     {
-        moo_warning ("%s", error ? error->message : "error");
+        moo_warning ("%s", moo_error_message (error));
         g_error_free (error);
     }
 

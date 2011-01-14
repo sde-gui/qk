@@ -3300,7 +3300,7 @@ file_view_do_delete_selected (MooFileView *fileview,
                                             path_utf8);
 
                 moo_error_dialog (text,
-                                  error ? error->message : NULL,
+                                  moo_error_message (error),
                                   GTK_WIDGET (fileview));
 
                 g_free (path_utf8);

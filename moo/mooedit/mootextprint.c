@@ -1671,7 +1671,7 @@ do_print_operation (GtkTextView            *view,
                                                    GTK_MESSAGE_ERROR,
                                                    GTK_BUTTONS_CLOSE,
                                                    "Error:\n%s",
-                                                   error ? error->message : "");
+                                                   moo_error_message (error));
             gtk_dialog_run (GTK_DIALOG (error_dialog));
             gtk_widget_destroy (error_dialog);
             g_error_free (error);
@@ -1750,7 +1750,7 @@ _moo_print_operation_get_n_pages (MooPrintOperation *op)
 #define SET_TEXT(wid,setting)                                           \
 G_STMT_START {                                                          \
     const char *s__ = moo_prefs_get_string (setting);                   \
-    gtk_entry_set_text (xml->wid, s__ ? s__ : "");                      \
+    gtk_entry_set_text (xml->wid, MOO_NZS (s__));                       \
 } G_STMT_END
 
 #define GET_TEXT(wid,setting)                                           \

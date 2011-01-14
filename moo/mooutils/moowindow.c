@@ -852,13 +852,13 @@ moo_window_set_property (GObject      *object,
     {
         case PROP_TOOLBAR_UI_NAME:
             name = g_value_get_string (value);
-            MOO_ASSIGN_STRING (window->priv->toolbar_ui_name, name ? name : "");
+            MOO_ASSIGN_STRING (window->priv->toolbar_ui_name, MOO_NZS (name));
             g_object_notify (object, "toolbar-ui-name");
             break;
 
         case PROP_MENUBAR_UI_NAME:
             name = g_value_get_string (value);
-            MOO_ASSIGN_STRING (window->priv->menubar_ui_name, name ? name : "");
+            MOO_ASSIGN_STRING (window->priv->menubar_ui_name, MOO_NZS (name));
             g_object_notify (object, "menubar-ui-name");
             break;
 
@@ -990,7 +990,7 @@ moo_window_set_title (MooWindow  *window,
     old_title = gtk_window_get_title (GTK_WINDOW (window));
 
     if (!moo_str_equal (title, old_title))
-        gtk_window_set_title (GTK_WINDOW (window), title ? title : "");
+        gtk_window_set_title (GTK_WINDOW (window), MOO_NZS (title));
 }
 
 
