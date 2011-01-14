@@ -67,7 +67,7 @@ moo_test_run_lua_file (const char *basename)
     if ((contents = moo_test_load_data_file (filename)))
     {
         lua_State *L = medit_lua_new (NULL);
-        moo_return_if_fail (L != NULL);
+        g_return_if_fail (L != NULL);
 
         g_assert (lua_gettop (L) == 0);
 
@@ -127,7 +127,7 @@ moo_test_lua (MooTestOptions opts)
     data->files = moo_test_list_data_files ("test-lua");
 
     if (g_strv_length (data->files) == 0)
-        moo_critical ("no lua test files found");
+        g_critical ("no lua test files found");
 
     for (p = data->files; p && *p; ++p)
     {

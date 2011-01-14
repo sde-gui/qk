@@ -208,8 +208,8 @@ _moo_edit_view_apply_config (MooEditView *view)
     guint tab_width;
     char *word_chars;
 
-    moo_return_if_fail (MOO_IS_EDIT_VIEW (view));
-    moo_return_if_fail (view->priv->doc && view->priv->doc->config);
+    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
+    g_return_if_fail (view->priv->doc && view->priv->doc->config);
 
     moo_edit_config_get (view->priv->doc->config,
                          "wrap-mode", &wrap_mode,
@@ -446,7 +446,7 @@ void
 _moo_edit_view_set_progress_text (MooEditView *view,
                                   const char  *text)
 {
-    moo_return_if_fail (MOO_IS_EDIT_VIEW (view));
+    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
     g_free (view->priv->progress_text);
     view->priv->progress_text = g_strdup (text);
     update_progress (view);
@@ -512,9 +512,9 @@ _moo_edit_view_set_state (MooEditView    *view,
                           GDestroyNotify  cancel,
                           gpointer        data)
 {
-    moo_return_if_fail (MOO_IS_EDIT_VIEW (view));
-    moo_return_if_fail (state == MOO_EDIT_STATE_NORMAL ||
-                        view->priv->state == MOO_EDIT_STATE_NORMAL);
+    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
+    g_return_if_fail (state == MOO_EDIT_STATE_NORMAL ||
+                      view->priv->state == MOO_EDIT_STATE_NORMAL);
 
     view->priv->cancel_op = cancel;
     view->priv->cancel_data = data;
@@ -561,8 +561,8 @@ _moo_edit_view_ui_set_line_wrap (MooEditView *view,
     GtkWrapMode mode;
     gboolean old_enabled;
 
-    moo_return_if_fail (MOO_IS_EDIT_VIEW (view));
-    moo_return_if_fail (view->priv->doc && view->priv->doc->config);
+    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
+    g_return_if_fail (view->priv->doc && view->priv->doc->config);
 
     g_object_get (view, "wrap-mode", &mode, NULL);
 
@@ -591,7 +591,7 @@ _moo_edit_view_ui_set_show_line_numbers (MooEditView *view,
     gboolean old_show;
 
     g_return_if_fail (MOO_IS_EDIT_VIEW (view));
-    moo_return_if_fail (view->priv->doc && view->priv->doc->config);
+    g_return_if_fail (view->priv->doc && view->priv->doc->config);
 
     g_object_get (view, "show-line-numbers", &old_show, NULL);
 

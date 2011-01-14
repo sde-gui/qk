@@ -142,8 +142,8 @@ collect_valist (GType        type,
 
         if (!pspec)
         {
-            g_warning ("%s: could not find property '%s' for class '%s'",
-                       G_STRLOC, prop_name, g_type_name (type));
+            g_warning ("could not find property '%s' for class '%s'",
+                       prop_name, g_type_name (type));
 
             _moo_param_array_free ((GParameter*) props->data, props->len);
             g_array_free (props, FALSE);
@@ -159,7 +159,7 @@ collect_valist (GType        type,
 
         if (error)
         {
-            g_critical ("%s: %s", G_STRLOC, error);
+            g_critical ("%s", error);
             g_free (error);
             g_value_unset (&param.value);
             g_free ((char*)param.name);
@@ -342,8 +342,8 @@ moo_action_factory_new_a (GType       action_type,
 
         if (!pspec)
         {
-            g_warning ("%s: could not find property '%s' for class '%s'",
-                       G_STRLOC, prop_name, g_type_name (action_type));
+            g_warning ("could not find property '%s' for class '%s'",
+                       prop_name, g_type_name (action_type));
 
             _moo_param_array_free ((GParameter*) props->data, props->len);
             g_array_free (props, FALSE);

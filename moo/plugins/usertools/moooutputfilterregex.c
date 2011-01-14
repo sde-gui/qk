@@ -354,7 +354,7 @@ find_match (const char   *text,
 
         if (p_start == pos && p_end == pos)
         {
-            g_warning ("%s: empty match", G_STRLOC);
+            g_warning ("empty match");
             continue;
         }
 
@@ -449,7 +449,7 @@ process_action (MooOutputFilterRegex *filter,
         case ACTION_POP:
             if (!*list)
             {
-                g_critical ("%s: error in %s", G_STRLOC, text);
+                g_critical ("error in %s", text);
             }
             else
             {
@@ -660,7 +660,7 @@ pattern_info_new (OutputType  type,
 
     if (!re)
     {
-        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_warning ("%s", error->message);
         g_error_free (error);
         return NULL;
     }
@@ -725,7 +725,7 @@ get_re_all (GSList    *patterns,
 
     if (!regex)
     {
-        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_warning ("%s", error->message);
         g_error_free (error);
     }
 

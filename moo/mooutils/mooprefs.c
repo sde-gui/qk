@@ -183,7 +183,7 @@ moo_prefs_create_key (const char   *key,
 
     if (error)
     {
-        g_warning ("%s: could not read value: %s", G_STRLOC, error);
+        g_warning ("could not read value: %s", error);
         g_free (error);
         return;
     }
@@ -222,7 +222,7 @@ moo_prefs_get (const char *key)
     val = item ? &item->value : NULL;
 
     if (!item)
-        moo_warning ("key '%s' not registered", key);
+        g_warning ("key '%s' not registered", key);
 
     return val;
 }
@@ -255,7 +255,7 @@ moo_prefs_set (const char     *key,
 
     if (!item)
     {
-        moo_warning ("key '%s' not registered", key);
+        g_warning ("key '%s' not registered", key);
         return;
     }
 
@@ -347,7 +347,7 @@ moo_prefs_new_key (const char   *key,
         case G_TYPE_INT:
             break;
         default:
-            moo_warning ("bad type '%s'", g_type_name (value_type));
+            g_warning ("bad type '%s'", g_type_name (value_type));
             return;
     }
 
@@ -400,7 +400,7 @@ prefs_new_key_from_string (const char   *key,
         value_type = G_TYPE_STRING;
     else
     {
-        moo_critical ("unknown value type '%s'", type);
+        g_critical ("unknown value type '%s'", type);
         return;
     }
 
@@ -505,7 +505,7 @@ item_set_type (PrefsItem      *item,
 
     if (type != item->type)
     {
-        moo_critical ("oops");
+        g_critical ("oops");
         item->type = type;
         _moo_value_change_type (&item->value, type);
         _moo_value_change_type (&item->default_value, type);
@@ -578,13 +578,13 @@ process_item (MooMarkupElement *elm,
 
     if (strcmp (elm->name, "item") != 0)
     {
-        moo_critical ("bad element '%s'", elm->name);
+        g_critical ("bad element '%s'", elm->name);
         return;
     }
 
     name = moo_markup_get_prop (MOO_MARKUP_NODE (elm), "name");
     type = moo_markup_get_prop (MOO_MARKUP_NODE (elm), "type");
-    moo_return_if_fail (name && *name && type && *type);
+    g_return_if_fail (name && *name && type && *type);
 
     prefs_new_key_from_string (name, type, elm->content, prefs_kind);
 
@@ -633,7 +633,7 @@ load_file (const char  *file,
 
     if (!root)
     {
-        moo_warning ("element '%s' missing in file %s", MOO_PREFS_ELEMENT, file);
+        g_warning ("element '%s' missing in file %s", MOO_PREFS_ELEMENT, file);
         moo_markup_doc_unref (xml);
         return FALSE;
     }
@@ -641,7 +641,7 @@ load_file (const char  *file,
     version = moo_markup_get_prop (root, PROP_VERSION);
     if (!version || strcmp (version, MOO_PREFS_VERSION) != 0)
     {
-        moo_warning ("invalid version '%s'in file %s", version, file);
+        g_warning ("invalid version '%s'in file %s", version, file);
         moo_markup_doc_unref (xml);
         return FALSE;
     }
@@ -650,7 +650,7 @@ load_file (const char  *file,
     {
         if (*target)
         {
-            g_warning ("%s: implement me", G_STRLOC);
+            g_warning ("implement me");
             moo_markup_doc_unref (*target);
         }
 
@@ -756,7 +756,7 @@ write_item (const char    *key,
             type = "bool";
             break;
         default:
-            moo_return_if_reached ();
+            g_return_if_reached ();
     }
 
     elm = moo_markup_create_text_element (root, "item", string);
@@ -881,8 +881,7 @@ save_file (const char    *file,
     {
         if (g_file_test (file, G_FILE_TEST_EXISTS))
             if (_moo_unlink (file))
-                g_critical ("%s: %s", G_STRLOC,
-                            g_strerror (errno));
+                g_critical ("%s", g_strerror (errno));
         return TRUE;
     }
 
@@ -1036,9 +1035,8 @@ moo_prefs_get_filename (const char *key)
 
     if (!val)
     {
-        g_warning ("%s: could not convert '%s' to filename encoding",
-                   G_STRLOC, utf8_val);
-        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_warning ("could not convert '%s' to filename encoding: %s",
+                   utf8_val, moo_error_message (error));
         g_error_free (error);
     }
 
@@ -1070,12 +1068,12 @@ moo_prefs_get_bool (const char *key)
 {
     const GValue *value;
 
-    moo_return_val_if_fail (key != NULL, FALSE);
+    g_return_val_if_fail (key != NULL, FALSE);
 
     value = moo_prefs_get (key);
 
-    moo_return_val_if_fail (value != NULL, FALSE);
-    moo_return_val_if_fail (G_VALUE_TYPE (value) == G_TYPE_BOOLEAN, FALSE);
+    g_return_val_if_fail (value != NULL, FALSE);
+    g_return_val_if_fail (G_VALUE_TYPE (value) == G_TYPE_BOOLEAN, FALSE);
 
     return g_value_get_boolean (value);
 }
@@ -1091,12 +1089,12 @@ moo_prefs_get_int (const char *key)
 {
     const GValue *value;
 
-    moo_return_val_if_fail (key != NULL, 0);
+    g_return_val_if_fail (key != NULL, 0);
 
     value = moo_prefs_get (key);
 
-    moo_return_val_if_fail (value != NULL, 0);
-    moo_return_val_if_fail (G_VALUE_TYPE (value) == G_TYPE_INT, 0);
+    g_return_val_if_fail (value != NULL, 0);
+    g_return_val_if_fail (G_VALUE_TYPE (value) == G_TYPE_INT, 0);
 
     return g_value_get_int (value);
 }
@@ -1148,7 +1146,7 @@ moo_prefs_set_filename (const char     *key,
 
     if (!utf8_val)
     {
-        g_warning ("%s: could not convert '%s' to utf8", G_STRLOC, val);
+        g_warning ("could not convert '%s' to utf8", val);
         return;
     }
 
@@ -1194,7 +1192,7 @@ moo_prefs_set_int (const char *key,
 {
     GValue gval = { 0 };
 
-    moo_return_if_fail (key != NULL);
+    g_return_if_fail (key != NULL);
 
     g_value_init (&gval, G_TYPE_INT);
     g_value_set_int (&gval, val);
@@ -1215,7 +1213,7 @@ moo_prefs_set_bool (const char *key,
 {
     GValue gval = { 0 };
 
-    moo_return_if_fail (key != NULL);
+    g_return_if_fail (key != NULL);
 
     g_value_init (&gval, G_TYPE_BOOLEAN);
     g_value_set_boolean (&gval, val);

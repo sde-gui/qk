@@ -300,7 +300,7 @@ PyObject *_moo_gvalue_to_pyobject (const GValue *val)
 
     if (!obj && !PyErr_Occurred ())
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         PyErr_Format (PyExc_TypeError, "could not convert value of type %s",
                       g_type_name (G_VALUE_TYPE (val)));
     }
@@ -327,7 +327,7 @@ _moo_pyobject_to_gvalue (PyObject *object,
         if (pyg_value_from_pyobject (value, object) == 0)
             return;
 
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         g_value_unset (value);
     }
 

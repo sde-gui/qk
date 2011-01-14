@@ -620,7 +620,7 @@ moo_markup_text_node_print (MooMarkupNode  *node,
 
     if (!g_utf8_validate (text->text, -1, (const char**) &p))
     {
-        g_critical ("%s: invalid UTF8", G_STRLOC);
+        g_critical ("invalid UTF8");
         *p = 0;
     }
 
@@ -639,7 +639,7 @@ moo_markup_comment_node_print (MooMarkupNode *node,
 
     if (!g_utf8_validate (text->text, -1, (const char**) &p))
     {
-        g_critical ("%s: invalid UTF8", G_STRLOC);
+        g_critical ("invalid UTF8");
         *p = 0;
     }
 
@@ -1081,8 +1081,8 @@ moo_markup_create_file_element (MooMarkupNode      *parent,
 
     if (!filename_utf8)
     {
-        g_warning ("%s: could not convert '%s' to utf8",
-                   G_STRLOC, filename);
+        g_warning ("could not convert '%s' to utf8",
+                   filename);
         return NULL;
     }
 

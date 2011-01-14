@@ -369,8 +369,7 @@ moo_line_mark_set_background (MooLineMark    *mark,
         if (gdk_color_parse (color, &gdk_color))
             moo_line_mark_set_background_gdk (mark, &gdk_color);
         else
-            g_warning ("%s: could not parse color '%s'",
-                       G_STRLOC, color);
+            g_warning ("could not parse color '%s'", color);
     }
     else
     {
@@ -410,8 +409,8 @@ moo_line_mark_get_markup (MooLineMark *mark)
 int
 moo_line_mark_get_line (MooLineMark *mark)
 {
-    moo_return_val_if_fail (MOO_IS_LINE_MARK (mark), -1);
-    moo_return_val_if_fail (mark->priv->line != NULL, -1);
+    g_return_val_if_fail (MOO_IS_LINE_MARK (mark), -1);
+    g_return_val_if_fail (mark->priv->line != NULL, -1);
 
     if (_moo_line_buffer_get_stamp (mark->priv->line_buf) != mark->priv->stamp)
     {

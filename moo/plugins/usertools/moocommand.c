@@ -450,7 +450,7 @@ static gboolean
 check_context (MooCommandOptions  options,
                MooEdit           *doc)
 {
-    moo_return_val_if_fail (!doc || MOO_IS_EDIT (doc), FALSE);
+    g_return_val_if_fail (!doc || MOO_IS_EDIT (doc), FALSE);
 
     if ((options & MOO_COMMAND_NEED_DOC) && !doc)
         return FALSE;
@@ -958,7 +958,7 @@ _moo_command_parse_item (MooMarkupNode      *elm,
         !(factory_name = MOO_MARKUP_ELEMENT (child)->content) ||
         !*factory_name)
     {
-        moo_warning ("missing or empty '%s' element in tool '%s' in file '%s'", KEY_TYPE, name, filename);
+        g_warning ("missing or empty '%s' element in tool '%s' in file '%s'", KEY_TYPE, name, filename);
         goto error;
     }
 
@@ -969,8 +969,8 @@ _moo_command_parse_item (MooMarkupNode      *elm,
 
     if (!factory)
     {
-        moo_warning ("unknown command type '%s' in tool '%s' in file '%s'",
-                     factory_name, name, filename);
+        g_warning ("unknown command type '%s' in tool '%s' in file '%s'",
+                   factory_name, name, filename);
         goto error;
     }
 
@@ -1010,8 +1010,8 @@ _moo_command_parse_item (MooMarkupNode      *elm,
 
             if (index < 0)
             {
-                moo_warning ("invalid element '%s' in item '%s' in file '%s'",
-                             child->name, name, filename);
+                g_warning ("invalid element '%s' in item '%s' in file '%s'",
+                           child->name, name, filename);
                 goto error;
             }
 

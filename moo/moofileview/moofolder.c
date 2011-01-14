@@ -502,7 +502,7 @@ get_names (MooFolderImpl *impl)
         }
         else
         {
-            g_critical ("%s: _moo_file_new() failed for '%s'", G_STRLOC, name);
+            g_critical ("_moo_file_new() failed for '%s'", name);
         }
     }
 
@@ -837,8 +837,8 @@ start_monitor (MooFolderImpl *impl)
 
     if (!impl->fam_request)
     {
-        g_warning ("%s: moo_file_watch_create_monitor failed for path '%s'", G_STRLOC, impl->path);
-        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_warning ("moo_file_watch_create_monitor failed for path '%s': %s",
+                   impl->path, moo_error_message (error));
         g_error_free (error);
         return;
     }
@@ -993,9 +993,7 @@ moo_folder_do_reload (MooFolderImpl *impl)
 
     if (!dir)
     {
-        g_warning ("%s: could not open directory %s",
-                   G_STRLOC, impl->path);
-        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_warning ("could not open directory %s: %s", impl->path, moo_error_message (error));
         g_error_free (error);
         folder_emit_deleted (impl);
         return FALSE;

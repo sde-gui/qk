@@ -259,7 +259,7 @@ _moo_event_queue_disconnect (guint event_id)
     client = get_event_client (event_id);
 
     if (!client)
-        g_warning ("%s: no client with id %d", G_STRLOC, event_id);
+        g_warning ("no client with id %d", event_id);
     else
         queue.clients = queue_client_list_remove (queue.clients, client);
 
@@ -527,7 +527,7 @@ moo_async_job_start (MooAsyncJob *job)
                                    FALSE, &error);
     if (!job->thread)
     {
-        g_critical ("%s: could not start thread: %s", G_STRLOC, error->message);
+        g_critical ("could not start thread: %s", moo_error_message (error));
         g_error_free (error);
         goto out;
     }

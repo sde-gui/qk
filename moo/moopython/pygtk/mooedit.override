@@ -185,7 +185,7 @@ _wrap_moo_line_view_set_line_data (PyObject *self, PyObject *args)
 
     if (pyg_value_from_pyobject (&data, py_data))
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         return NULL;
     }
 

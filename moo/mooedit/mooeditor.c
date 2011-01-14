@@ -387,12 +387,9 @@ moo_editor_finalize (GObject *object)
 
         if (!moo_file_watch_close (editor->priv->file_watch, &error))
         {
-            g_warning ("%s: error in moo_file_watch_close", G_STRLOC);
-            if (error)
-            {
-                g_warning ("%s: %s", G_STRLOC, error->message);
-                g_error_free (error);
-            }
+            g_warning ("error in moo_file_watch_close: %s", moo_error_message (error));
+            g_error_free (error);
+            error = NULL;
         }
 
         moo_file_watch_unref (editor->priv->file_watch);
@@ -1739,7 +1736,7 @@ filename_from_utf8 (const char *encoded)
 
         if (!filename || !len || filename[len-1] != 0)
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
             return NULL;
         }
 
@@ -2117,7 +2114,7 @@ moo_editor_open_uri (MooEditor     *editor,
     MooOpenInfo *info;
 
     info = moo_open_info_new_uri (uri, encoding);
-    moo_return_val_if_fail (info != NULL, NULL);
+    g_return_val_if_fail (info != NULL, NULL);
     info->line = line;
 
     ret = moo_editor_open_file (editor, info, window ? GTK_WIDGET (window) : NULL, NULL);
@@ -2146,7 +2143,7 @@ moo_editor_open_path (MooEditor     *editor,
     MooOpenInfo *info;
 
     info = moo_open_info_new_path (path, encoding);
-    moo_return_val_if_fail (info != NULL, NULL);
+    g_return_val_if_fail (info != NULL, NULL);
     info->line = line;
 
     ret = moo_editor_open_file (editor, info, window ? GTK_WIDGET (window) : NULL, NULL);
@@ -2680,8 +2677,8 @@ doc_array_find_norm_name (MooEditArray *docs,
 {
     guint i;
 
-    moo_return_val_if_fail (docs != NULL, NULL);
-    moo_return_val_if_fail (norm_name != NULL, NULL);
+    g_return_val_if_fail (docs != NULL, NULL);
+    g_return_val_if_fail (norm_name != NULL, NULL);
 
     for (i = 0; i < docs->n_elms; ++i)
     {
@@ -2707,11 +2704,11 @@ moo_editor_get_doc (MooEditor *editor,
     MooEdit *doc = NULL;
     guint i;
 
-    moo_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    moo_return_val_if_fail (G_IS_FILE (file), NULL);
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    g_return_val_if_fail (G_IS_FILE (file), NULL);
 
     norm_name = _moo_file_get_normalized_name (file);
-    moo_return_val_if_fail (norm_name != NULL, NULL);
+    g_return_val_if_fail (norm_name != NULL, NULL);
 
     doc = doc_array_find_norm_name (editor->priv->windowless, norm_name);
 
@@ -2739,8 +2736,8 @@ moo_editor_get_doc_for_path (MooEditor  *editor,
     GFile *file;
     MooEdit *doc;
 
-    moo_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    moo_return_val_if_fail (path != NULL, NULL);
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    g_return_val_if_fail (path != NULL, NULL);
 
     file = g_file_new_for_path (path);
     doc = moo_editor_get_doc (editor, file);
@@ -2762,8 +2759,8 @@ moo_editor_get_doc_for_uri (MooEditor  *editor,
     GFile *file;
     MooEdit *doc;
 
-    moo_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    moo_return_val_if_fail (uri != NULL, NULL);
+    g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
+    g_return_val_if_fail (uri != NULL, NULL);
 
     file = g_file_new_for_uri (uri);
     doc = moo_editor_get_doc (editor, file);

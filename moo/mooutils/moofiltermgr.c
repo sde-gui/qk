@@ -626,7 +626,7 @@ filter_store_list_user_filters (FilterStore *store)
 
     if (!gtk_tree_model_iter_nth_child (GTK_TREE_MODEL (store->filters), &iter, NULL, offset))
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         return NULL;
     }
 
@@ -936,7 +936,7 @@ mgr_load_set (MooFilterMgr      *mgr,
 
             if (!glob || !glob[0])
             {
-                g_warning ("%s: empty glob in filter entry", G_STRLOC);
+                g_warning ("empty glob in filter entry");
                 continue;
             }
 
@@ -951,7 +951,7 @@ mgr_load_set (MooFilterMgr      *mgr,
 
             if (!glob || !glob[0])
             {
-                g_warning ("%s: empty glob in filter entry", G_STRLOC);
+                g_warning ("empty glob in filter entry");
                 continue;
             }
 
@@ -962,7 +962,7 @@ mgr_load_set (MooFilterMgr      *mgr,
 
             if (!user && !description)
             {
-                g_warning ("%s: no description in filter entry", G_STRLOC);
+                g_warning ("no description in filter entry");
                 continue;
             }
 
@@ -982,7 +982,7 @@ mgr_load_set (MooFilterMgr      *mgr,
         }
         else
         {
-            g_warning ("%s: invalid '%s' element", G_STRLOC, elm->name);
+            g_warning ("invalid '%s' element", elm->name);
         }
     }
 }
@@ -1023,7 +1023,7 @@ mgr_load (MooFilterMgr *mgr)
 
             if (!user_id || !user_id[0])
             {
-                g_warning ("%s: empty user id", G_STRLOC);
+                g_warning ("empty user id");
                 continue;
             }
 
@@ -1031,7 +1031,7 @@ mgr_load (MooFilterMgr *mgr)
         }
         else
         {
-            g_warning ("%s: invalid '%s' element", G_STRLOC, elm->name);
+            g_warning ("invalid '%s' element", elm->name);
         }
     }
 

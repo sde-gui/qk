@@ -48,7 +48,7 @@ py_action_factory_func (MooWindow  *window,
 
     if (!PyObject_TypeCheck (result, &PyGtkAction_Type))
     {
-        g_critical ("%s: got invalid value", G_STRLOC);
+        g_critical ("got invalid value");
         Py_DECREF (result);
         return NULL;
     }

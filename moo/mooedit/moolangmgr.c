@@ -211,7 +211,7 @@ moo_lang_mgr_get_lang (MooLangMgr *mgr,
 {
     MooLang *lang;
 
-    moo_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     if (!name)
         return NULL;
@@ -219,7 +219,7 @@ moo_lang_mgr_get_lang (MooLangMgr *mgr,
     lang = _moo_lang_mgr_find_lang (mgr, name);
 
     if (!lang)
-        moo_message ("could not find language '%s'", name);
+        g_message ("could not find language '%s'", name);
 
     return lang;
 }
@@ -231,8 +231,8 @@ _moo_lang_mgr_find_lang (MooLangMgr *mgr,
     char *id;
     LangInfo *info;
 
-    moo_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
-    moo_return_val_if_fail (name != NULL, NULL);
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (name != NULL, NULL);
 
     if (!strcmp (name, MOO_LANG_NONE))
         return NULL;
@@ -262,12 +262,12 @@ get_lang_by_extension (MooLangMgr *mgr,
     GSList *langs, *l;
     gboolean found = FALSE;
 
-    moo_return_val_if_fail (filename != NULL, NULL);
+    g_return_val_if_fail (filename != NULL, NULL);
 
     read_langs (mgr);
 
     basename = g_path_get_basename (filename);
-    moo_return_val_if_fail (basename != NULL, NULL);
+    g_return_val_if_fail (basename != NULL, NULL);
 
     langs = moo_lang_mgr_get_available_langs (mgr);
 
@@ -347,7 +347,7 @@ filename_blacklisted (MooLangMgr *mgr,
     read_langs (mgr);
 
     basename = g_path_get_basename (filename);
-    moo_return_val_if_fail (basename != NULL, FALSE);
+    g_return_val_if_fail (basename != NULL, FALSE);
 
     info = get_lang_info (mgr, MOO_LANG_NONE, FALSE);
 
@@ -377,8 +377,8 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr *mgr,
     const char *mime_type;
     char *filename;
 
-    moo_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
-    moo_return_val_if_fail (G_IS_FILE (file), NULL);
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (G_IS_FILE (file), NULL);
 
     read_langs (mgr);
 
@@ -418,8 +418,8 @@ get_lang_for_filename (MooLangMgr *mgr,
     MooLang *lang = NULL;
     const char *mime_type;
 
-    moo_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
-    moo_return_val_if_fail (filename != NULL, NULL);
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (filename != NULL, NULL);
 
     read_langs (mgr);
 
@@ -464,8 +464,8 @@ get_lang_for_mime_type (MooLangMgr *mgr,
     MooLang *lang = NULL;
     gboolean found = FALSE;
 
-    moo_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
-    moo_return_val_if_fail (mime != NULL, NULL);
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (mime != NULL, NULL);
 
     langs = moo_lang_mgr_get_available_langs (mgr);
 
@@ -573,7 +573,7 @@ load_lang_node (MooLangMgr    *mgr,
     MooMarkupNode *node;
 
     lang_id = moo_markup_get_prop (lang_node, PROP_LANG_ID);
-    moo_return_if_fail (lang_id != NULL);
+    g_return_if_fail (lang_id != NULL);
 
     for (node = lang_node->children; node != NULL; node = node->next)
     {
@@ -597,7 +597,7 @@ load_lang_node (MooLangMgr    *mgr,
         {
             /* 'extensions' is leftover from previous versions */
             if (strcmp (node->name, "extensions") != 0)
-                g_warning ("%s: ignoring node '%s'", G_STRLOC, node->name);
+                g_warning ("ignoring node '%s'", node->name);
         }
     }
 }
@@ -620,7 +620,7 @@ load_config (MooLangMgr *mgr)
     mgr->modified = FALSE;
 
     xml = moo_prefs_get_markup (MOO_PREFS_RC);
-    moo_return_if_fail (xml != NULL);
+    g_return_if_fail (xml != NULL);
 
     root = moo_markup_get_element (xml, ELEMENT_LANG_CONFIG);
 
@@ -634,7 +634,7 @@ load_config (MooLangMgr *mgr)
 
         if (strcmp (node->name, ELEMENT_LANG))
         {
-            g_warning ("%s: invalid '%s' element", G_STRLOC, node->name);
+            g_warning ("invalid '%s' element", node->name);
             continue;
         }
 
@@ -648,7 +648,7 @@ load_config (MooLangMgr *mgr)
 MooTextStyleScheme *
 moo_lang_mgr_get_active_scheme (MooLangMgr *mgr)
 {
-    moo_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     read_schemes (mgr);
 
@@ -662,7 +662,7 @@ _moo_lang_mgr_set_active_scheme (MooLangMgr *mgr,
 {
     MooTextStyleScheme *scheme = NULL;
 
-    moo_return_if_fail (MOO_IS_LANG_MGR (mgr));
+    g_return_if_fail (MOO_IS_LANG_MGR (mgr));
 
     read_schemes (mgr);
 
@@ -672,7 +672,7 @@ _moo_lang_mgr_set_active_scheme (MooLangMgr *mgr,
         scheme = g_hash_table_lookup (mgr->schemes, SCHEME_DEFAULT);
 
     if (!scheme)
-        moo_message ("could not find style scheme '%s'", name ? name : "<NULL>");
+        g_message ("could not find style scheme '%s'", name ? name : "<NULL>");
     else
         mgr->active_scheme = scheme;
 }
@@ -691,7 +691,7 @@ moo_lang_mgr_list_schemes (MooLangMgr *mgr)
 {
     GSList *list = NULL;
 
-    moo_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     read_schemes (mgr);
     g_hash_table_foreach (mgr->schemes, (GHFunc) prepend_scheme, &list);
@@ -720,7 +720,7 @@ read_schemes (MooLangMgr *mgr)
 
         if (!scheme)
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
         }
         else
         {
@@ -740,7 +740,7 @@ moo_lang_mgr_get_sections (MooLangMgr *mgr)
     GSList *sections = NULL;
     const char * const *ids = NULL;
 
-    moo_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     read_langs (mgr);
 
@@ -772,7 +772,7 @@ moo_lang_mgr_get_available_langs (MooLangMgr *mgr)
     GSList *list = NULL;
     const char *const *ids = NULL;
 
-    moo_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     read_langs (mgr);
 
@@ -798,13 +798,13 @@ _moo_lang_mgr_get_globs (MooLangMgr *mgr,
     char *id;
     LangInfo *info;
 
-    moo_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     read_langs (mgr);
 
     id = _moo_lang_id_from_name (lang_id);
     info = get_lang_info (mgr, id, FALSE);
-    moo_return_val_if_fail (info != NULL, NULL);
+    g_return_val_if_fail (info != NULL, NULL);
 
     g_free (id);
     return string_list_copy (info->globs);
@@ -818,13 +818,13 @@ _moo_lang_mgr_get_mime_types (MooLangMgr *mgr,
     char *id;
     LangInfo *info;
 
-    moo_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     read_langs (mgr);
 
     id = _moo_lang_id_from_name (lang_id);
     info = get_lang_info (mgr, id, FALSE);
-    moo_return_val_if_fail (info != NULL, NULL);
+    g_return_val_if_fail (info != NULL, NULL);
 
     g_free (id);
     return string_list_copy (info->mime_types);
@@ -866,7 +866,7 @@ set_globs_or_mime_types (MooLangMgr *mgr,
     id = _moo_lang_id_from_name (lang_id);
     info = get_lang_info (mgr, id, FALSE);
 
-    moo_return_if_fail (info != NULL);
+    g_return_if_fail (info != NULL);
 
     new = _moo_lang_parse_string_list (string);
     old = globs ? _moo_lang_mgr_get_globs (mgr, id) :
@@ -916,7 +916,7 @@ _moo_lang_mgr_set_globs (MooLangMgr *mgr,
                          const char *lang_id,
                          const char *globs)
 {
-    moo_return_if_fail (MOO_IS_LANG_MGR (mgr));
+    g_return_if_fail (MOO_IS_LANG_MGR (mgr));
     set_globs_or_mime_types (mgr, lang_id, globs, TRUE);
 }
 
@@ -926,7 +926,7 @@ _moo_lang_mgr_set_mime_types (MooLangMgr *mgr,
                               const char *lang_id,
                               const char *mime)
 {
-    moo_return_if_fail (MOO_IS_LANG_MGR (mgr));
+    g_return_if_fail (MOO_IS_LANG_MGR (mgr));
     set_globs_or_mime_types (mgr, lang_id, mime, FALSE);
 }
 
@@ -938,7 +938,7 @@ _moo_lang_mgr_get_config (MooLangMgr *mgr,
     char *id;
     const char *config;
 
-    moo_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
+    g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
 
     read_langs (mgr);
 
@@ -959,7 +959,7 @@ _moo_lang_mgr_set_config (MooLangMgr *mgr,
     char *norm = NULL;
     const char *old;
 
-    moo_return_if_fail (MOO_IS_LANG_MGR (mgr));
+    g_return_if_fail (MOO_IS_LANG_MGR (mgr));
 
     read_langs (mgr);
 
@@ -991,8 +991,8 @@ _moo_lang_mgr_update_config (MooLangMgr     *mgr,
 {
     const char *lang_config;
 
-    moo_return_if_fail (MOO_IS_LANG_MGR (mgr));
-    moo_return_if_fail (MOO_IS_EDIT_CONFIG (config));
+    g_return_if_fail (MOO_IS_LANG_MGR (mgr));
+    g_return_if_fail (MOO_IS_EDIT_CONFIG (config));
 
     read_langs (mgr);
 
@@ -1082,13 +1082,13 @@ _moo_lang_mgr_save_config (MooLangMgr *mgr)
         MooMarkupNode *root;
     } data;
 
-    moo_return_if_fail (MOO_IS_LANG_MGR (mgr));
+    g_return_if_fail (MOO_IS_LANG_MGR (mgr));
 
     if (!mgr->modified)
         return;
 
     xml = moo_prefs_get_markup (MOO_PREFS_RC);
-    moo_return_if_fail (xml != NULL);
+    g_return_if_fail (xml != NULL);
 
     mgr->modified = FALSE;
     root = moo_markup_get_element (xml, ELEMENT_LANG_CONFIG);

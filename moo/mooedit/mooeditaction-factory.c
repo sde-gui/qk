@@ -276,7 +276,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
         /* ignore id property */
         if (!strcmp (name, "id") || !strcmp (name, "name"))
         {
-            g_critical ("%s: id property specified", G_STRLOC);
+            g_critical ("id property specified");
             goto error;
         }
 
@@ -287,7 +287,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
 
             if (err)
             {
-                g_warning ("%s: %s", G_STRLOC, err);
+                g_warning ("%s", err);
                 g_free (err);
                 goto error;
             }
@@ -296,7 +296,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
 
             if (!g_type_is_a (action_type, MOO_TYPE_ACTION_BASE))
             {
-                g_warning ("%s: invalid action type %s", G_STRLOC, g_type_name (action_type));
+                g_warning ("invalid action type %s", g_type_name (action_type));
                 goto error;
             }
 
@@ -311,7 +311,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
 
             if (!suffix || !suffix[1] || !suffix[2])
             {
-                g_warning ("%s: invalid condition name '%s'", G_STRLOC, name);
+                g_warning ("invalid condition name '%s'", name);
                 goto error;
             }
 
@@ -320,7 +320,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
 
             if (!name)
             {
-                g_warning ("%s: unterminated '%s' property", G_STRLOC, suffix);
+                g_warning ("unterminated '%s' property", suffix);
                 goto error;
             }
 
@@ -341,8 +341,8 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
 
             if (!pspec)
             {
-                g_warning ("%s: no property '%s' in class '%s'",
-                           G_STRLOC, name, g_type_name (action_type));
+                g_warning ("no property '%s' in class '%s'",
+                           name, g_type_name (action_type));
                 goto error;
             }
 
@@ -351,7 +351,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
 
             if (err)
             {
-                g_warning ("%s: %s", G_STRLOC, err);
+                g_warning ("%s", err);
                 g_free (err);
                 g_value_unset (&param.value);
                 goto error;
@@ -374,7 +374,7 @@ moo_edit_class_new_actionv (MooEditClass       *klass,
 
         if (!action_factory)
         {
-            g_warning ("%s: error in moo_object_factory_new_a()", G_STRLOC);
+            g_warning ("error in moo_object_factory_new_a()");
             goto error;
         }
 

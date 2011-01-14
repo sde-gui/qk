@@ -492,7 +492,7 @@ moo_python_api_init (void)
 //
 //     if (!moo_python_init (MOO_PY_API_VERSION, &api))
 //     {
-//         g_warning ("%s: oops", G_STRLOC);
+//         g_warning ("oops");
 //         return FALSE;
 //     }
 //

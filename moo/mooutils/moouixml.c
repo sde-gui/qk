@@ -287,7 +287,7 @@ parse_object (MooMarkupNode *mnode)
 
     if (!name || !name[0])
     {
-        g_warning ("%s: object name missing", G_STRLOC);
+        g_warning ("object name missing");
         return NULL;
     }
 
@@ -327,7 +327,7 @@ parse_widget (MooMarkupNode *mnode)
 
     if (!name || !name[0])
     {
-        g_warning ("%s: widget name missing", G_STRLOC);
+        g_warning ("widget name missing");
         return NULL;
     }
 
@@ -367,7 +367,7 @@ parse_placeholder (MooMarkupNode *mnode)
 
     if (!name || !name[0])
     {
-        g_warning ("%s: placeholder name missing", G_STRLOC);
+        g_warning ("placeholder name missing");
         return NULL;
     }
 
@@ -547,7 +547,7 @@ parse_markup (MooMarkupNode *mnode)
     else if (!strcmp (mnode->name, "placeholder"))
         return parse_placeholder (mnode);
 
-    g_warning ("%s: unknown element '%s'", G_STRLOC, mnode->name);
+    g_warning ("unknown element '%s'", mnode->name);
     return NULL;
 }
 
@@ -639,12 +639,8 @@ moo_ui_xml_add_ui_from_string (MooUiXml   *xml,
 
     if (!doc)
     {
-        g_critical ("%s: could not parse markup", G_STRLOC);
-        if (error)
-        {
-            g_critical ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
+        g_critical ("could not parse markup: %s", moo_error_message (error));
+        g_error_free (error);
         return;
     }
 
@@ -705,8 +701,8 @@ placeholder_check (Node *node)
                 break;
 
             default:
-                g_warning ("%s: invalid placeholder child type %s",
-                           G_STRLOC, NODE_TYPE_NAME[child->type]);
+                g_warning ("invalid placeholder child type %s",
+                           NODE_TYPE_NAME[child->type]);
                 return FALSE;
         }
     }
@@ -737,8 +733,8 @@ item_check (Node *node)
                 break;
 
             default:
-                g_warning ("%s: invalid item child type %s",
-                           G_STRLOC, NODE_TYPE_NAME[child->type]);
+                g_warning ("invalid item child type %s",
+                           NODE_TYPE_NAME[child->type]);
                 return FALSE;
         }
     }
@@ -769,8 +765,8 @@ widget_check (Node *node)
                 break;
 
             default:
-                g_warning ("%s: invalid widget child type %s",
-                           G_STRLOC, NODE_TYPE_NAME[child->type]);
+                g_warning ("invalid widget child type %s",
+                           NODE_TYPE_NAME[child->type]);
                 return FALSE;
         }
     }
@@ -800,8 +796,8 @@ container_check (Node *node)
                 break;
 
             default:
-                g_warning ("%s: invalid widget child type %s",
-                           G_STRLOC, NODE_TYPE_NAME[child->type]);
+                g_warning ("invalid widget child type %s",
+                           NODE_TYPE_NAME[child->type]);
                 return FALSE;
         }
     }
@@ -841,15 +837,15 @@ xml_add_markup (MooUiXml       *xml,
         case ITEM:
         case SEPARATOR:
         case PLACEHOLDER:
-            g_warning ("%s: invalid toplevel type %s",
-                       G_STRLOC, NODE_TYPE_NAME[node->type]);
+            g_warning ("invalid toplevel type %s",
+                       NODE_TYPE_NAME[node->type]);
             node_free (node);
             return;
     }
 
     if (moo_ui_xml_get_node (xml, node->name))
     {
-        g_warning ("%s: implement me?", G_STRLOC);
+        g_warning ("implement me?");
         node_free (node);
         return;
     }
@@ -940,8 +936,8 @@ moo_ui_xml_add_item (MooUiXml       *xml,
 
         case MOO_UI_NODE_CONTAINER:
         case MOO_UI_NODE_SEPARATOR:
-            g_warning ("%s: can't add item to node of type %s",
-                       G_STRLOC, NODE_TYPE_NAME[parent->type]);
+            g_warning ("can't add item to node of type %s",
+                       NODE_TYPE_NAME[parent->type]);
     }
 
     item = item_new (name, action);
@@ -989,8 +985,8 @@ moo_ui_xml_insert (MooUiXml       *xml,
 
     if (parent->type == MOO_UI_NODE_SEPARATOR)
     {
-        g_warning ("%s: can't add stuff to node of type %s",
-                   G_STRLOC, NODE_TYPE_NAME[parent->type]);
+        g_warning ("can't add stuff to node of type %s",
+                   NODE_TYPE_NAME[parent->type]);
         return;
     }
 
@@ -998,12 +994,8 @@ moo_ui_xml_insert (MooUiXml       *xml,
 
     if (!doc)
     {
-        g_warning ("%s: could not parse markup", G_STRLOC);
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
+        g_warning ("could not parse markup: %s", moo_error_message (error));
+        g_error_free (error);
         return;
     }
 
@@ -1035,8 +1027,8 @@ moo_ui_xml_insert (MooUiXml       *xml,
             case CONTAINER:
                 if (parent->type != CONTAINER)
                 {
-                    g_warning ("%s: can not add node of type %s to node of type %s",
-                               G_STRLOC, NODE_TYPE_NAME[node->type],
+                    g_warning ("can not add node of type %s to node of type %s",
+                               NODE_TYPE_NAME[node->type],
                                NODE_TYPE_NAME[parent->type]);
                     node_free (node);
                     continue;
@@ -1048,8 +1040,8 @@ moo_ui_xml_insert (MooUiXml       *xml,
             case SEPARATOR:
                 if (parent->type == SEPARATOR || parent->type == CONTAINER)
                 {
-                    g_warning ("%s: can not add node of type %s to node of type %s",
-                               G_STRLOC, NODE_TYPE_NAME[node->type],
+                    g_warning ("can not add node of type %s to node of type %s",
+                               NODE_TYPE_NAME[node->type],
                                NODE_TYPE_NAME[parent->type]);
                     node_free (node);
                     continue;
@@ -1812,8 +1804,7 @@ create_menu_item (MooUiXml       *xml,
         if (!action)
         {
 #if REPORT_UNKNOWN_ACTIONS
-            g_critical ("%s: could not find action '%s'",
-                        G_STRLOC, item->action);
+            g_critical ("could not find action '%s'", item->action);
 #endif
             return;
         }
@@ -2092,8 +2083,8 @@ fill_menu_shell (MooUiXml       *xml,
                 break;
 
             default:
-                g_warning ("%s: invalid menu item type %s",
-                           G_STRLOC, NODE_TYPE_NAME[node->type]);
+                g_warning ("invalid menu item type %s",
+                           NODE_TYPE_NAME[node->type]);
                 return FALSE;
         }
     }
@@ -2223,7 +2214,7 @@ create_tool_item (MooUiXml       *xml,
         {
             if (!IS_MENU_TOOL_BUTTON (tool_item))
             {
-                g_critical ("%s: oops", G_STRLOC);
+                g_critical ("oops");
             }
             else
             {
@@ -2300,8 +2291,8 @@ fill_toolbar (MooUiXml       *xml,
                 break;
 
             default:
-                g_warning ("%s: invalid tool item type %s",
-                           G_STRLOC, NODE_TYPE_NAME[node->type]);
+                g_warning ("invalid tool item type %s",
+                           NODE_TYPE_NAME[node->type]);
                 return FALSE;
         }
 
@@ -2366,14 +2357,14 @@ moo_ui_xml_create_widget (MooUiXml            *xml,
 
     if (node->type != WIDGET)
     {
-        g_warning ("%s: can create widgets only for nodes of type %s",
-                   G_STRLOC, NODE_TYPE_NAME[WIDGET]);
+        g_warning ("can create widgets only for nodes of type %s",
+                   NODE_TYPE_NAME[WIDGET]);
         return NULL;
     }
 
     if (type < 1 || type > 3)
     {
-        g_warning ("%s: invalid widget type %u", G_STRLOC, type);
+        g_warning ("invalid widget type %u", type);
         return NULL;
     }
 
@@ -2632,7 +2623,7 @@ update_widgets (MooUiXml       *xml,
             break;
 
         case UPDATE_CHANGE_NODE:
-            g_warning ("%s: implement me", G_STRLOC);
+            g_warning ("implement me");
             break;
 
         default:

@@ -264,7 +264,7 @@ moo_edit_finalize (GObject *object)
 void
 _moo_edit_closed (MooEdit *doc)
 {
-    moo_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (MOO_IS_EDIT (doc));
 
     _moo_edit_remove_untitled (doc);
     _moo_edit_instances = moo_edit_list_remove (_moo_edit_instances, doc);
@@ -322,7 +322,7 @@ moo_edit_dispose (GObject *object)
 MooActionCollection *
 _moo_edit_get_actions (MooEdit *doc)
 {
-    moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
     return doc->priv->actions;
 }
 
@@ -959,7 +959,7 @@ moo_edit_get_lang_id (MooEdit *doc)
 {
     MooLang *lang = NULL;
 
-    moo_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
 
     if (!doc->priv->in_recheck_config)
     {
@@ -1049,7 +1049,7 @@ moo_edit_apply_config (MooEdit *doc)
 static void
 moo_edit_recheck_config (MooEdit *doc)
 {
-    moo_return_if_fail (!doc->priv->in_recheck_config);
+    g_return_if_fail (!doc->priv->in_recheck_config);
 
     if (doc->priv->apply_config_idle)
     {
@@ -1099,7 +1099,7 @@ moo_edit_recheck_config_in_idle (MooEdit *edit)
 void
 _moo_edit_queue_recheck_config (MooEdit *doc)
 {
-    moo_return_if_fail (!doc->priv->in_recheck_config);
+    g_return_if_fail (!doc->priv->in_recheck_config);
     if (!doc->priv->apply_config_idle)
         doc->priv->apply_config_idle =
                 gdk_threads_add_idle_full (G_PRIORITY_HIGH,

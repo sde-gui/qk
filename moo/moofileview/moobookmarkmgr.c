@@ -345,7 +345,7 @@ moo_bookmark_mgr_load (MooBookmarkMgr *mgr)
 
             if (!path_utf8 || !path_utf8[0])
             {
-                g_warning ("%s: empty path in bookmark", G_STRLOC);
+                g_warning ("empty path in bookmark");
                 continue;
             }
 
@@ -353,8 +353,7 @@ moo_bookmark_mgr_load (MooBookmarkMgr *mgr)
 
             if (!path)
             {
-                g_warning ("%s: could not convert '%s' to filename encoding",
-                           G_STRLOC, path_utf8);
+                g_warning ("could not convert '%s' to filename encoding", path_utf8);
                 continue;
             }
 
@@ -370,7 +369,7 @@ moo_bookmark_mgr_load (MooBookmarkMgr *mgr)
         }
         else
         {
-            g_warning ("%s: invalid '%s' element", G_STRLOC, node->name);
+            g_warning ("invalid '%s' element", node->name);
         }
     }
 

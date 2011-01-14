@@ -634,11 +634,8 @@ moo_app_init_ui (MooApp *app)
             break;
         }
 
-        if (error->domain != G_FILE_ERROR || error->code != G_FILE_ERROR_NOENT)
-        {
-            g_warning ("%s: could not open file '%s'", G_STRLOC, *p);
-            g_warning ("%s: %s", G_STRLOC, error->message);
-        }
+        if (!(error && error->domain == G_FILE_ERROR && error->code == G_FILE_ERROR_NOENT))
+            g_warning ("could not open file '%s': %s", *p, moo_error_message (error));
 
         g_error_free (error);
     }
@@ -846,7 +843,7 @@ void
 moo_app_set_exit_status (MooApp *app,
                          int     value)
 {
-    moo_return_if_fail (MOO_IS_APP (app));
+    g_return_if_fail (MOO_IS_APP (app));
     app->priv->exit_status = value;
 }
 
@@ -1324,7 +1321,7 @@ moo_app_exec_cmd (MooApp             *app,
             break;
 
         default:
-            g_warning ("%s: got unknown command %c %d", G_STRLOC, cmd, code);
+            g_warning ("got unknown command %c %d", cmd, code);
     }
 }
 
@@ -1441,13 +1438,8 @@ moo_app_load_prefs (MooApp *app)
                          app->priv->rc_files[MOO_PREFS_STATE],
                          &error))
     {
-        g_warning ("%s: could not read config files", G_STRLOC);
-
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
+        g_warning ("could not read config files: %s", moo_error_message (error));
+        g_error_free (error);
     }
 
     g_strfreev (sys_files);
@@ -1463,13 +1455,8 @@ moo_app_save_prefs (MooApp *app)
                          app->priv->rc_files[MOO_PREFS_STATE],
                          &error))
     {
-        g_warning ("%s: could not save config files", G_STRLOC);
-
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
+        g_warning ("could not save config files: %s", moo_error_message (error));
+        g_error_free (error);
     }
 }
 

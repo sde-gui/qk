@@ -415,8 +415,7 @@ add_row (GtkActionGroup    *group,
         GtkTreePath *path = gtk_tree_row_reference_get_path (row);
         if (!path || !gtk_tree_model_get_iter (GTK_TREE_MODEL (page->store), &parent, path))
         {
-            g_critical ("%s: got invalid path for group %s",
-                        G_STRLOC, group_name);
+            g_critical ("got invalid path for group %s", group_name);
             gtk_tree_path_free (path);
             return FALSE;
         }
@@ -608,7 +607,7 @@ accel_set (MooAccelPrefsPage *page)
     path = gtk_tree_row_reference_get_path (page->current_row);
     if (!path || !gtk_tree_model_get_iter (GTK_TREE_MODEL (page->store), &iter, path))
     {
-        g_critical ("%s: got invalid path", G_STRLOC);
+        g_critical ("got invalid path");
         gtk_tree_path_free (path);
         return;
     }
@@ -643,7 +642,7 @@ shortcut_none_toggled (MooAccelPrefsPage *page)
     path = gtk_tree_row_reference_get_path (page->current_row);
     if (!path || !gtk_tree_model_get_iter (GTK_TREE_MODEL (page->store), &iter, path))
     {
-        g_critical ("%s: got invalid path", G_STRLOC);
+        g_critical ("got invalid path");
         gtk_tree_path_free (path);
         return;
     }
@@ -676,7 +675,7 @@ shortcut_default_toggled (MooAccelPrefsPage *page)
 
     if (!path || !gtk_tree_model_get_iter (GTK_TREE_MODEL (page->store), &iter, path))
     {
-        g_critical ("%s: got invalid path", G_STRLOC);
+        g_critical ("got invalid path");
         gtk_tree_path_free (path);
         return;
     }
@@ -732,7 +731,7 @@ shortcut_custom_toggled (MooAccelPrefsPage *page)
 
     if (!path || !gtk_tree_model_get_iter (GTK_TREE_MODEL (page->store), &iter, path))
     {
-        g_critical ("%s: got invalid path", G_STRLOC);
+        g_critical ("got invalid path");
         gtk_tree_path_free (path);
         return;
     }

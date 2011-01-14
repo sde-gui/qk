@@ -106,7 +106,7 @@ _moo_find_script (const char *name,
 
     if (!path)
     {
-        g_warning ("%s: could not find %s script", G_STRLOC, name);
+        g_warning ("could not find %s script", name);
         path = g_strdup (name);
     }
 
@@ -141,20 +141,20 @@ open_uri (const char *uri,
 {
     gboolean result = FALSE;
     const char *argv[3];
-    GError *err = NULL;
+    GError *error = NULL;
 
     argv[0] = get_xdg_script (email ? SCRIPT_XDG_EMAIL : SCRIPT_XDG_OPEN);
     argv[1] = uri;
     argv[2] = NULL;
 
     result = g_spawn_async (NULL, (char**) argv, NULL, (GSpawnFlags) 0, NULL, NULL,
-                            NULL, &err);
+                            NULL, &error);
 
-    if (err)
+    if (!result)
     {
-        g_warning ("%s: error in g_spawn_async", G_STRLOC);
-        g_warning ("%s: %s", G_STRLOC, err->message);
-        g_error_free (err);
+        g_warning ("error in g_spawn_async: %s", moo_error_message (error));
+        g_error_free (error);
+        error = NULL;
     }
 
     return result;
@@ -290,7 +290,7 @@ is_minimized (Display *display, XID w)
 
     if (gdk_error_trap_pop () || ret != Success)
     {
-        g_warning ("%s: oops", G_STRLOC);
+        g_warning ("oops");
         return FALSE;
     }
 
@@ -302,7 +302,7 @@ is_minimized (Display *display, XID w)
 
     if (actual_type_return != XA_ATOM)
     {
-        g_critical ("%s: actual_type_return != XA_WINDOW", G_STRLOC);
+        g_critical ("actual_type_return != XA_ATOM");
         XFree (data);
         return FALSE;
     }
@@ -360,7 +360,7 @@ _moo_get_top_window (GSList *windows)
     {
         if (!GTK_IS_WINDOW (l->data))
         {
-            g_critical ("%s: invalid parameter passed", G_STRLOC);
+            g_critical ("invalid parameter passed");
             return NULL;
         }
     }
@@ -370,7 +370,7 @@ _moo_get_top_window (GSList *windows)
 
     if (!xids->len)
     {
-        g_critical ("%s: zero length array of x ids", G_STRLOC);
+        g_critical ("zero length array of x ids");
         g_array_free (xids, TRUE);
         return NULL;
     }
@@ -379,7 +379,7 @@ _moo_get_top_window (GSList *windows)
 
     if (!display)
     {
-        g_critical ("%s: !display", G_STRLOC);
+        g_critical ("!display");
         g_array_free (xids, TRUE);
         return NULL;
     }
@@ -401,14 +401,14 @@ _moo_get_top_window (GSList *windows)
 
     if (gdk_error_trap_pop () || ret != Success)
     {
-        g_critical ("%s: error in XGetWindowProperty", G_STRLOC);
+        g_critical ("error in XGetWindowProperty");
         g_array_free (xids, TRUE);
         return NULL;
     }
 
     if (!nitems_return)
     {
-        g_critical ("%s: !nitems_return", G_STRLOC);
+        g_critical ("!nitems_return");
         XFree (data);
         g_array_free (xids, TRUE);
         return NULL;
@@ -416,7 +416,7 @@ _moo_get_top_window (GSList *windows)
 
     if (actual_type_return != XA_WINDOW)
     {
-        g_critical ("%s: actual_type_return != XA_WINDOW", G_STRLOC);
+        g_critical ("actual_type_return != XA_WINDOW");
         XFree (data);
         g_array_free (xids, TRUE);
         return NULL;
@@ -435,7 +435,7 @@ _moo_get_top_window (GSList *windows)
 
     XFree (data);
     g_array_free (xids, TRUE);
-    g_warning ("%s: all minimized?", G_STRLOC);
+    g_warning ("all minimized?");
     return GTK_WINDOW (windows->data);
 }
 
@@ -479,7 +479,7 @@ _moo_window_is_hidden (GtkWindow  *window)
         DWORD err = GetLastError ();
         char *msg = g_win32_error_message (err);
         g_return_val_if_fail (msg != NULL, FALSE);
-        g_warning ("%s: %s", G_STRLOC, msg);
+        g_warning ("%s", msg);
         g_free (msg);
         return FALSE;
     }
@@ -1239,7 +1239,7 @@ moo_set_user_data_dir (const char *path)
     G_LOCK (moo_user_data_dir);
 
     if (moo_user_data_dir)
-        g_critical ("%s: user data dir already set", G_STRLOC);
+        g_critical ("user data dir already set");
 
     g_free (moo_user_data_dir);
     moo_user_data_dir = g_strdup (path);
@@ -2228,7 +2228,7 @@ moo_error_message (GError *error)
     /* "Unknown error" may be displayed if there is a bug in the program
        and proper error message has not been set. It doesn't provide any
        useful information obviously */
-    moo_return_val_if_fail (error != NULL, _("Unknown error"));
+    g_return_val_if_fail (error != NULL, _("Unknown error"));
     return error->message;
 }
 

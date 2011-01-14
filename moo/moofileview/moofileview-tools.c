@@ -80,20 +80,20 @@ run_command (const char *command_template,
     GRegex *regex;
 
     regex = g_regex_new ("%[fF]", 0, 0, NULL);
-    moo_return_if_fail (regex != NULL);
+    g_return_if_fail (regex != NULL);
 
     command = g_regex_replace_literal (regex, command_template, -1, 0, files, 0, &error);
 
     if (!command)
     {
-        moo_critical ("%s", moo_error_message (error));
+        g_critical ("%s", moo_error_message (error));
         g_error_free (error);
         error = NULL;
     }
 
     if (command && !moo_spawn_command_line_async_with_flags (command, MOO_SPAWN_WIN32_HIDDEN_CONSOLE, &error))
     {
-        moo_warning ("%s", moo_error_message (error));
+        g_warning ("%s", moo_error_message (error));
         g_error_free (error);
     }
 
@@ -114,7 +114,7 @@ moo_file_view_tool_action_activate (GtkAction *_action)
 
     has_small_f = strstr (action->command, "%f") != NULL;
     has_cap_f = strstr (action->command, "%F") != NULL;
-    moo_return_if_fail (has_small_f + has_cap_f == 1);
+    g_return_if_fail (has_small_f + has_cap_f == 1);
 
     files = _moo_file_view_get_filenames (action->fileview);
     g_return_if_fail (files != NULL);
@@ -302,7 +302,7 @@ _moo_file_view_tools_load (MooFileView *fileview)
 
         if (strcmp (child->name, "tool"))
         {
-            g_warning ("%s: unknown node '%s'", G_STRLOC, child->name);
+            g_warning ("unknown node '%s'", child->name);
             continue;
         }
 
@@ -313,13 +313,13 @@ _moo_file_view_tools_load (MooFileView *fileview)
 
         if (!label)
         {
-            g_warning ("%s: label missing", G_STRLOC);
+            g_warning ("label missing");
             continue;
         }
 
         if (!command)
         {
-            g_warning ("%s: command missing", G_STRLOC);
+            g_warning ("command missing");
             continue;
         }
 

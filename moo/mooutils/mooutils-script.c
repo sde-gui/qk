@@ -40,7 +40,7 @@ moo_spin_main_loop (double sec)
 {
     GMainLoop *main_loop;
 
-    moo_return_if_fail (sec > 0);
+    g_return_if_fail (sec > 0);
 
     main_loop = g_main_loop_new (NULL, FALSE);
     gdk_threads_add_timeout (sec * 1000, (GSourceFunc) quit_main_loop, main_loop);
@@ -95,7 +95,7 @@ moo_tempdir (void)
     }
     MOO_DO_ONCE_END
 
-    moo_return_val_if_fail (moo_temp_dir != NULL, NULL);
+    g_return_val_if_fail (moo_temp_dir != NULL, NULL);
     return g_strdup (moo_temp_dir);
 }
 
@@ -120,7 +120,7 @@ moo_tempnam (const char *extension)
     G_LOCK_DEFINE_STATIC (counter);
 
     tmpdir = moo_tempdir ();
-    moo_return_val_if_fail (tmpdir != NULL, NULL);
+    g_return_val_if_fail (tmpdir != NULL, NULL);
 
     G_LOCK (counter);
 
@@ -145,7 +145,7 @@ moo_tempnam (const char *extension)
 
     g_free (tmpdir);
 
-    moo_return_val_if_fail (filename != NULL, NULL);
+    g_return_val_if_fail (filename != NULL, NULL);
     return filename;
 }
 
@@ -159,7 +159,7 @@ moo_remove_tempdir (void)
 
         if (error)
         {
-            _moo_message ("%s: %s", G_STRLOC, error->message);
+            _moo_message ("%s", error->message);
             g_error_free (error);
         }
 

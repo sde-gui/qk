@@ -231,12 +231,12 @@ moo_file_watch_unref (MooFileWatch *watch)
 
     if (watch->alive)
     {
-        g_warning ("%s: finalizing open watch", G_STRLOC);
+        g_warning ("finalizing open watch");
 
         if (!moo_file_watch_close (watch, &error))
         {
-            g_warning ("%s: error in moo_file_watch_close()", G_STRLOC);
-            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_warning ("error in moo_file_watch_close(): %s",
+                       moo_error_message (error));
             g_error_free (error);
         }
     }
@@ -672,7 +672,7 @@ fam_event_to_file_event (FAMEvent     *fe,
             return NULL;
 
         default:
-            g_warning ("%s: unknown FAM code %d", G_STRLOC, fe->code);
+            g_warning ("unknown FAM code %d", fe->code);
             return NULL;
     }
 
@@ -699,8 +699,8 @@ read_fam_events (G_GNUC_UNUSED GIOChannel *source,
 
         if (watch->alive && !moo_file_watch_close (watch, &error))
         {
-            g_warning ("%s: error in moo_file_watch_close()", G_STRLOC);
-            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_warning ("error in moo_file_watch_close(): %s",
+                       moo_error_message (error));
             g_error_free (error);
         }
 
@@ -746,8 +746,7 @@ read_fam_events (G_GNUC_UNUSED GIOChannel *source,
 
         if (!moo_file_watch_close (watch, &error))
         {
-            g_warning ("%s: error in moo_file_watch_close()", G_STRLOC);
-            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_warning ("%s", moo_error_message (error));
             g_error_free (error);
         }
 
@@ -1047,7 +1046,7 @@ fam_thread_add_path (FAMThread  *thr,
 
     if (thr->n_events >= MAXIMUM_WAIT_OBJECTS)
     {
-        g_critical ("%s: too many folders watched", G_STRLOC);
+        g_critical ("too many folders watched");
         return;
     }
 
@@ -1115,8 +1114,8 @@ fam_thread_remove_path (FAMThread  *thr,
         }
     }
 
-    g_critical ("%s: can't remove watch %d, request %d",
-                G_STRLOC, watch_id, request);
+    g_critical ("can't remove watch %d, request %d",
+                watch_id, request);
 }
 
 static void
@@ -1217,7 +1216,7 @@ fam_thread_main (FAMThread *thr)
         if (ret == (int) WAIT_FAILED)
         {
             char *msg = g_win32_error_message (GetLastError ());
-            g_critical ("%s: %s", G_STRLOC, msg);
+            g_critical ("%s", msg);
             g_free (msg);
             break;
         }
@@ -1228,7 +1227,7 @@ fam_thread_main (FAMThread *thr)
             fam_thread_check_dir (thr, ret - WAIT_OBJECT_0);
         else
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
             break;
         }
     }
@@ -1384,8 +1383,7 @@ fam_win32_init (void)
         if (!fam->thread_data.events[0])
         {
             char *msg = g_win32_error_message (GetLastError ());
-            g_critical ("%s: could not create incoming event", G_STRLOC);
-            g_critical ("%s: %s", G_STRLOC, msg);
+            g_critical ("could not create incoming event: %s", msg);
             g_free (msg);
             return FALSE;
         }
@@ -1397,8 +1395,7 @@ fam_win32_init (void)
 
         if (!g_thread_create ((GThreadFunc) fam_thread_main, &fam->thread_data, FALSE, &error))
         {
-            g_critical ("%s: could not start watch thread", G_STRLOC);
-            g_critical ("%s: %s", G_STRLOC, error->message);
+            g_critical ("could not start watch thread: %s", moo_error_message (error));
             g_error_free (error);
         }
         else

@@ -113,7 +113,7 @@ moo_python_state_new (gboolean default_init)
     if (!state->locals)
     {
         moo_python_state_free (state);
-        moo_return_val_if_reached (NULL);
+        g_return_val_if_reached (NULL);
     }
 
     if (default_init && !moo_python_run_string (state, MEDIT_PYTHON_INIT_PY))
@@ -143,8 +143,8 @@ moo_python_run_string_impl (MooPythonState *state,
     PyObject *pyret;
     gboolean ret = TRUE;
 
-    moo_return_val_if_fail (state && state->locals, FALSE);
-    moo_return_val_if_fail (string != NULL, FALSE);
+    g_return_val_if_fail (state && state->locals, FALSE);
+    g_return_val_if_fail (string != NULL, FALSE);
 
     pyret = run_string (string, filename, NULL, state->locals);
 
@@ -157,7 +157,7 @@ moo_python_run_string_impl (MooPythonState *state,
         if (PyErr_Occurred ())
             PyErr_Print ();
         else
-            moo_critical ("oops");
+            g_critical ("oops");
         ret = FALSE;
     }
 
@@ -180,13 +180,13 @@ moo_python_run_file (MooPythonState *state,
     GError *error = NULL;
     gboolean ret;
 
-    moo_return_val_if_fail (state && state->locals, FALSE);
-    moo_return_val_if_fail (filename != NULL, FALSE);
+    g_return_val_if_fail (state && state->locals, FALSE);
+    g_return_val_if_fail (filename != NULL, FALSE);
 
     if (!g_file_get_contents (filename, &contents, NULL, &error))
     {
-        moo_warning ("could not read file '%s': %s",
-                     filename, moo_error_message (error));
+        g_warning ("could not read file '%s': %s",
+                   filename, moo_error_message (error));
         return FALSE;
     }
 
@@ -204,7 +204,7 @@ medit_python_run_string_impl (const char *string,
     MooPythonState *state;
     gboolean ret;
 
-    moo_return_val_if_fail (string != NULL, FALSE);
+    g_return_val_if_fail (string != NULL, FALSE);
 
     state = moo_python_state_new (default_init);
 
@@ -232,12 +232,12 @@ medit_python_run_file (const char *filename,
     GError *error = NULL;
     gboolean ret;
 
-    moo_return_val_if_fail  (filename != NULL, FALSE);
+    g_return_val_if_fail  (filename != NULL, FALSE);
 
     if (!g_file_get_contents (filename, &contents, NULL, &error))
     {
-        moo_warning ("could not read file '%s': %s",
-                     filename, moo_error_message (error));
+        g_warning ("could not read file '%s': %s",
+                   filename, moo_error_message (error));
         return FALSE;
     }
 

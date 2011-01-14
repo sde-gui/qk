@@ -445,11 +445,11 @@ moo_test_set_data_dir (const char *dir)
 {
     char *tmp;
 
-    moo_return_if_fail (dir != NULL);
+    g_return_if_fail (dir != NULL);
 
     if (!g_file_test (dir, G_FILE_TEST_IS_DIR))
     {
-        moo_critical ("not a directory: %s", dir);
+        g_critical ("not a directory: %s", dir);
         return;
     }
 
@@ -497,8 +497,8 @@ moo_test_list_data_files (const char *dir)
 
     if (!(gdir = g_dir_open (dir, 0, &error)))
     {
-        moo_warning ("could not open directory '%s': %s",
-                     dir, moo_error_message (error));
+        g_warning ("could not open directory '%s': %s",
+                   dir, moo_error_message (error));
         g_error_free (error);
         error = NULL;
     }
@@ -550,7 +550,7 @@ static GHashTable *called_functions = NULL;
 void
 moo_test_coverage_enable (void)
 {
-    moo_return_if_fail (called_functions == NULL);
+    g_return_if_fail (called_functions == NULL);
     called_functions = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 }
 
@@ -569,15 +569,15 @@ moo_test_coverage_write (const char *filename)
     GString *content;
     GError *error = NULL;
 
-    moo_return_if_fail (called_functions != NULL);
-    moo_return_if_fail (filename != NULL);
+    g_return_if_fail (called_functions != NULL);
+    g_return_if_fail (filename != NULL);
 
     content = g_string_new (NULL);
     g_hash_table_foreach (called_functions, (GHFunc) add_func, content);
 
     if (!g_file_set_contents (filename, content->str, -1, &error))
     {
-        moo_critical ("could not save file %s: %s", filename, moo_error_message (error));
+        g_critical ("could not save file %s: %s", filename, moo_error_message (error));
         g_error_free (error);
     }
 

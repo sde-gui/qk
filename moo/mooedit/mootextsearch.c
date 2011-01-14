@@ -457,14 +457,12 @@ moo_text_search_forward (const GtkTextIter      *start,
 
     regex = get_regex (str, flags, &error);
 
-    if (error)
-    {
-        g_warning ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
-    }
-
     if (!regex)
+    {
+        g_warning ("%s", moo_error_message (error));
+        g_error_free (error);
         return FALSE;
+    }
 
     return _moo_text_search_regex_forward (start, end, regex,
                                            match_start, match_end,
@@ -514,14 +512,12 @@ moo_text_search_backward (const GtkTextIter      *start,
 
     regex = get_regex (str, flags, &error);
 
-    if (error)
-    {
-        g_warning ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
-    }
-
     if (!regex)
+    {
+        g_warning ("%s", moo_error_message (error));
+        g_error_free (error);
         return FALSE;
+    }
 
     return _moo_text_search_regex_backward (start, end, regex,
                                             match_start, match_end,
@@ -562,7 +558,7 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
 
         if (!g_regex_check_replacement (replacement, &has_references, &error))
         {
-            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_warning ("%s", moo_error_message (error));
             g_error_free (error);
             return 0;
         }
@@ -573,7 +569,7 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
 
             if (error)
             {
-                g_warning ("%s: %s", G_STRLOC, error->message);
+                g_warning ("%s", moo_error_message (error));
                 g_error_free (error);
                 return 0;
             }
@@ -652,7 +648,7 @@ moo_text_replace_regex_all_real (GtkTextIter            *start,
 
             if (!freeme_here)
             {
-                g_warning ("%s: %s", G_STRLOC, error->message);
+                g_warning ("%s", moo_error_message (error));
                 g_error_free (error);
                 g_match_info_free (match_info);
                 goto out;
@@ -786,14 +782,12 @@ moo_text_replace_all (GtkTextIter            *start,
         GError *error = NULL;
         MooRegex *regex = get_regex (text, flags, &error);
 
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
-
         if (!regex)
+        {
+            g_warning ("%s", moo_error_message (error));
+            g_error_free (error);
             return 0;
+        }
 
         return _moo_text_replace_regex_all (start, end, regex, replacement,
                                             flags & MOO_TEXT_SEARCH_REPL_LITERAL);
@@ -864,14 +858,12 @@ _moo_text_replace_all_interactive (GtkTextIter            *start,
         GError *error = NULL;
         MooRegex *regex = get_regex (text, flags, &error);
 
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
-
         if (!regex)
+        {
+            g_warning ("%s", moo_error_message (error));
+            g_error_free (error);
             return 0;
+        }
 
         return _moo_text_replace_regex_all_interactive (start, end, regex, replacement,
                                                         flags & MOO_TEXT_SEARCH_REPL_LITERAL,

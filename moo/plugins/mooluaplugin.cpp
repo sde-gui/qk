@@ -63,7 +63,7 @@ moo_lua_module_load (const char *filename)
 static void
 moo_lua_module_unload (MooLuaModule *mod)
 {
-    moo_return_if_fail (mod != NULL);
+    g_return_if_fail (mod != NULL);
     if (mod->L)
         medit_lua_free (mod->L);
     g_free (mod);

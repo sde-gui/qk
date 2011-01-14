@@ -92,7 +92,7 @@ moo_file_props_dialog_response (GtkDialog  *dialog,
             break;
 
         default:
-            g_warning ("%s: unknown response code", G_STRLOC);
+            g_warning ("unknown response code");
     }
 
     gtk_widget_destroy (GTK_WIDGET (dialog));
@@ -124,19 +124,19 @@ moo_file_props_dialog_ok (MooFilePropsDialog *dialog)
 
     if (!old_path || !new_path)
     {
-        g_warning ("%s: oops", G_STRLOC);
+        g_warning ("oops");
         goto out;
     }
 
     if (!_moo_file_system_move_file (_moo_folder_get_file_system (dialog->folder),
                                      old_path, new_path, &error))
     {
-        g_warning ("%s: could not rename '%s' to '%s'",
-                   G_STRLOC, old_path, new_path);
+        g_warning ("could not rename '%s' to '%s'",
+                   old_path, new_path);
 
         if (error)
         {
-            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_warning ("%s", error->message);
             g_error_free (error);
         }
 
@@ -240,7 +240,7 @@ _moo_file_props_dialog_set_file (MooFilePropsDialog *dialog,
 
         if (!p[1])
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
             break;
         }
 
@@ -446,7 +446,7 @@ _moo_file_view_save_drop_dialog (GtkWidget  *parent,
 
         if (!text[0])
         {
-            g_critical ("%s: ooops", G_STRLOC);
+            g_critical ("oops");
             goto out;
         }
 

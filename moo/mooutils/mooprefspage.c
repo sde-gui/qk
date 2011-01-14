@@ -414,8 +414,8 @@ setting_get_value (GtkWidget      *widget,
         }
     }
 
-    g_warning ("%s: could not get value of type '%s' from widget '%s'",
-               G_STRLOC, g_type_name (value->g_type),
+    g_warning ("could not get value of type '%s' from widget '%s'",
+               g_type_name (value->g_type),
                g_type_name (G_OBJECT_TYPE (widget)));
     return FALSE;
 }
@@ -467,8 +467,8 @@ setting_set_value (GtkWidget    *widget,
         }
     }
 
-    g_warning ("%s: could not set value of type '%s' to widget '%s'",
-               G_STRLOC, g_type_name (value->g_type),
+    g_warning ("could not set value of type '%s' to widget '%s'",
+               g_type_name (value->g_type),
                g_type_name (G_OBJECT_TYPE (widget)));
 }
 

@@ -173,7 +173,7 @@ save_store (MooTreeHelper *helper,
 
         if (!label && !command)
         {
-            g_warning ("%s: neither label nor command given", G_STRLOC);
+            g_warning ("neither label nor command given");
             g_free (label);
             g_free (command);
             g_free (extensions);
@@ -236,7 +236,7 @@ populate_store (GtkListStore *store)
 
         if (strcmp (child->name, "tool"))
         {
-            g_warning ("%s: unknown node '%s'", G_STRLOC, child->name);
+            g_warning ("unknown node '%s'", child->name);
             continue;
         }
 
@@ -247,13 +247,13 @@ populate_store (GtkListStore *store)
 
         if (!label)
         {
-            g_warning ("%s: label missing", G_STRLOC);
+            g_warning ("label missing");
             continue;
         }
 
         if (!command)
         {
-            g_warning ("%s: command missing", G_STRLOC);
+            g_warning ("command missing");
             continue;
         }
 

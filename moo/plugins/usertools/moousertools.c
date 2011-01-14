@@ -554,8 +554,8 @@ parse_params (MooUserToolInfo  *info,
         }
         else
         {
-            g_warning ("%s: unknown option %s=%s in file %s",
-                       G_STRLOC, key, value, filename);
+            g_warning ("unknown option %s=%s in file %s",
+                       key, value, filename);
         }
     }
 }
@@ -621,7 +621,7 @@ load_directory (const char       *path,
 
     if (!dir)
     {
-        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_warning ("%s", error->message);
         g_error_free (error);
         return;
     }
@@ -678,7 +678,7 @@ parse_command (MooMarkupNode    *elm,
 
     if (strcmp (elm->name, ELEMENT_COMMAND) != 0)
     {
-        moo_warning ("invalid element '%s' in file '%s'", elm->name, file);
+        g_warning ("invalid element '%s' in file '%s'", elm->name, file);
         return NULL;
     }
 
@@ -694,7 +694,7 @@ parse_command (MooMarkupNode    *elm,
 
     if (!info->id)
     {
-        moo_warning ("tool id missing in file %s", file);
+        g_warning ("tool id missing in file %s", file);
         _moo_user_tool_info_unref (info);
         return NULL;
     }
@@ -737,14 +737,14 @@ parse_command (MooMarkupNode    *elm,
         else if (strcmp (child->name, KEY_LANGS) == 0)
         {
             if (info->filter)
-                moo_warning ("duplicated filter in tool '%s' in file '%s'", info->id, file);
+                g_warning ("duplicated filter in tool '%s' in file '%s'", info->id, file);
             else
                 info->filter = g_strdup_printf ("langs: %s", MOO_MARKUP_ELEMENT (child)->content);
         }
         else if (strcmp (child->name, KEY_FILTER) == 0)
         {
             if (info->filter)
-                moo_warning ("duplicated filter in tool '%s' in file '%s'", info->id, file);
+                g_warning ("duplicated filter in tool '%s' in file '%s'", info->id, file);
             else
                 info->filter = g_strdup (MOO_MARKUP_ELEMENT (child)->content);
         }
@@ -754,13 +754,13 @@ parse_command (MooMarkupNode    *elm,
         }
         else if (!strchr (child->name, ':'))
         {
-            moo_warning ("invalid element '%s' in tool '%s' in file '%s'", child->name, info->id, file);
+            g_warning ("invalid element '%s' in tool '%s' in file '%s'", child->name, info->id, file);
         }
     }
 
     if (!info->name)
     {
-        moo_warning ("tool name missing in tool '%s' in file '%s'", info->id, file);
+        g_warning ("tool name missing in tool '%s' in file '%s'", info->id, file);
         _moo_user_tool_info_unref (info);
         return NULL;
     }
@@ -789,15 +789,15 @@ parse_markup (MooMarkupDoc    *doc,
     const char *version;
 
     root = moo_markup_get_root_element (doc, ELEMENT_ROOT);
-    moo_return_val_if_fail (root != NULL, NULL);
+    g_return_val_if_fail (root != NULL, NULL);
 
     version = moo_markup_get_prop (root, PROP_VERSION);
-    moo_return_val_if_fail (version != NULL, NULL);
+    g_return_val_if_fail (version != NULL, NULL);
 
     if (strcmp (version, CURRENT_TOOLS_VERSION) != 0)
     {
-        moo_message ("incompatible user tools file version '%s', '%s' expected",
-                     version, CURRENT_TOOLS_VERSION);
+        g_message ("incompatible user tools file version '%s', '%s' expected",
+                   version, CURRENT_TOOLS_VERSION);
         return NULL;
     }
 
@@ -835,7 +835,7 @@ parse_file_simple (const char     *filename,
     }
     else
     {
-        moo_warning ("could not load file '%s': %s", filename, moo_error_message (error));
+        g_warning ("could not load file '%s': %s", filename, moo_error_message (error));
         g_error_free (error);
     }
 
@@ -1105,14 +1105,14 @@ _moo_edit_save_user_tools (MooUserToolType  type,
     MooFileWriter *writer;
     char *filename;
 
-    moo_return_if_fail (type < N_TOOLS);
+    g_return_if_fail (type < N_TOOLS);
 
     filename = moo_get_user_data_file (FILENAMES[type]);
-    moo_return_if_fail (filename != NULL);
+    g_return_if_fail (filename != NULL);
 
     if (!(writer = moo_config_writer_new (filename, TRUE, &error)))
     {
-        moo_critical ("could not open file '%s': %s", filename, moo_error_message (error));
+        g_critical ("could not open file '%s': %s", filename, moo_error_message (error));
         g_error_free (error);
         g_free (filename);
         return;
@@ -1167,7 +1167,7 @@ _moo_edit_save_user_tools (MooUserToolType  type,
 
     if (!moo_file_writer_close (writer, &error))
     {
-        moo_critical ("could not save file '%s': %s", filename, moo_error_message (error));
+        g_critical ("could not save file '%s': %s", filename, moo_error_message (error));
         g_error_free (error);
     }
 

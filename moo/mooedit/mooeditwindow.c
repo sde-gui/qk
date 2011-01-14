@@ -1133,7 +1133,7 @@ check_format (const char *format)
         return DEFAULT_TITLE_FORMAT;
     if (!g_utf8_validate (format, -1, NULL))
     {
-        g_critical ("%s: window title format is not valid UTF8", G_STRLOC);
+        g_critical ("window title format is not valid UTF8");
         return DEFAULT_TITLE_FORMAT;
     }
     return format;
@@ -1527,7 +1527,7 @@ action_focus_doc (MooEditWindow *window)
     MooEditView *active_view;
 
     active_view = ACTIVE_VIEW (window);
-    moo_return_if_fail (active_view != NULL);
+    g_return_if_fail (active_view != NULL);
 
     if (!GTK_WIDGET_HAS_FOCUS (active_view))
     {
@@ -1544,7 +1544,7 @@ action_focus_doc (MooEditWindow *window)
         else if (view2 == active_view)
             gtk_widget_grab_focus (GTK_WIDGET (view1));
         else
-            moo_return_if_reached ();
+            g_return_if_reached ();
     }
 }
 
@@ -1695,7 +1695,7 @@ create_bookmark_item (MooEditWindow   *window,
         }
         else
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
         }
 
         g_free (action_name);
@@ -1962,7 +1962,7 @@ move_to_split_view_activated (GtkWidget     *item,
 static gboolean
 can_move_to_split_view (MooEditWindow *window)
 {
-    moo_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
     return moo_edit_window_get_n_docs (window) > 1;
 }
 
@@ -1979,8 +1979,8 @@ move_doc_to_split_view (MooEditWindow *window,
     MooEditView *view;
     int n_pages1, n_pages2;
 
-    moo_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    moo_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (MOO_IS_EDIT (doc));
 
     view = moo_edit_get_view (doc);
     old_page = get_view_page_num (window, view, &old_nb);
@@ -1988,7 +1988,7 @@ move_doc_to_split_view (MooEditWindow *window,
 
     nb1 = get_notebook (window, 0);
     nb2 = get_notebook (window, 1);
-    moo_return_if_fail (nb1 && nb2);
+    g_return_if_fail (nb1 && nb2);
 
     new_nb = old_nb == nb1 ? nb2 : nb1;
 
@@ -2037,8 +2037,8 @@ void
 _moo_edit_window_set_focused_view (MooEditWindow *window,
                                    MooEditView   *view)
 {
-    moo_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    moo_return_if_fail (MOO_IS_EDIT_VIEW (view));
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
     window->priv->active_view = view;
 }
 
@@ -2177,8 +2177,8 @@ static MooNotebook *
 get_notebook (MooEditWindow *window,
               int            i)
 {
-    moo_return_val_if_fail (window->priv->notebooks != NULL, NULL);
-    moo_return_val_if_fail (i >= 0 && i < (int) window->priv->notebooks->n_elms, NULL);
+    g_return_val_if_fail (window->priv->notebooks != NULL, NULL);
+    g_return_val_if_fail (i >= 0 && i < (int) window->priv->notebooks->n_elms, NULL);
     return window->priv->notebooks->elms[i];
 }
 
@@ -2188,7 +2188,7 @@ get_notebook_active_view (MooNotebook *notebook)
     GtkWidget *swin;
     int page;
 
-    moo_return_val_if_fail (notebook != NULL, NULL);
+    g_return_val_if_fail (notebook != NULL, NULL);
 
     page = moo_notebook_get_current_page (notebook);
 
@@ -2214,8 +2214,8 @@ get_active_notebook (MooEditWindow *window)
     nb1 = get_notebook (window, 0);
     nb2 = get_notebook (window, 1);
 
-    moo_return_val_if_fail (nb2 != NULL, nb1);
-    moo_return_val_if_fail (nb1 != NULL, nb2);
+    g_return_val_if_fail (nb2 != NULL, nb1);
+    g_return_val_if_fail (nb1 != NULL, nb2);
 
     if (!GTK_WIDGET_VISIBLE (nb2))
         return nb1;
@@ -2230,7 +2230,7 @@ get_active_notebook (MooEditWindow *window)
         else if (moo_notebook_page_num (nb2, swin) >= 0)
             return nb2;
         else
-            moo_return_val_if_reached (nb1);
+            g_return_val_if_reached (nb1);
     }
 
     if (moo_notebook_get_n_pages (nb1) > 0)
@@ -2284,7 +2284,7 @@ notebook_close_button_clicked (GtkWidget     *button,
                                MooEditWindow *window)
 {
     MooNotebook *notebook = g_object_get_data (G_OBJECT (button), "moo-notebook");
-    moo_return_if_fail (notebook != NULL);
+    g_return_if_fail (notebook != NULL);
     moo_editor_close_doc (window->priv->editor, get_notebook_active_doc (notebook), TRUE);
 }
 
@@ -2501,7 +2501,7 @@ moo_edit_window_get_active_doc (MooEditWindow  *window)
 MooEditView *
 moo_edit_window_get_active_view (MooEditWindow *window)
 {
-    moo_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
 
     if (moo_notebook_array_is_empty (window->priv->notebooks))
         return NULL;
@@ -2512,7 +2512,7 @@ moo_edit_window_get_active_view (MooEditWindow *window)
         int page;
         MooNotebook *notebook = get_active_notebook (window);
 
-        moo_return_val_if_fail (notebook != NULL, NULL);
+        g_return_val_if_fail (notebook != NULL, NULL);
 
         page = moo_notebook_get_current_page (notebook);
 
@@ -2662,7 +2662,7 @@ get_active_tab (MooEditWindow *window)
     guint i;
     MooNotebook *notebook = get_active_notebook (window);
 
-    moo_return_val_if_fail (notebook != NULL, -1);
+    g_return_val_if_fail (notebook != NULL, -1);
 
     for (i = 0; i < window->priv->notebooks->n_elms; ++i)
     {
@@ -2675,7 +2675,7 @@ get_active_tab (MooEditWindow *window)
         tab += moo_notebook_get_n_pages (window->priv->notebooks->elms[i]);
     }
 
-    moo_return_val_if_reached (-1);
+    g_return_val_if_reached (-1);
 }
 
 static int
@@ -2787,7 +2787,7 @@ _moo_edit_window_insert_doc (MooEditWindow *window,
     {
         page = get_view_page_num (window, after_view, &notebook);
         if (page < 0)
-            moo_critical ("oops");
+            g_critical ("oops");
     }
 
     if (page < 0)
@@ -3076,7 +3076,7 @@ tab_icon_drag_data_get (GtkWidget      *evbox,
     }
     else
     {
-        moo_critical ("drag-data-get oops");
+        g_critical ("drag-data-get oops");
         gtk_selection_data_set_text (data, "", -1);
     }
 }
@@ -4426,7 +4426,7 @@ notebook_drag_data_recv (GtkWidget          *widget,
 
             if (!doc)
             {
-                g_critical ("%s: oops", G_STRLOC);
+                g_critical ("oops");
                 gdk_drag_status (context, 0, time);
                 return;
             }

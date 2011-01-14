@@ -714,7 +714,7 @@ moo_print_operation_calc_page_size (MooPrintOperation    *op,
 
     if (page->height < 0)
     {
-        g_critical ("%s: page messed up", G_STRLOC);
+        g_critical ("page messed up");
         page->y = 0.;
         page->height = gtk_print_context_get_height (context);
     }
@@ -2051,8 +2051,8 @@ hf_format_parse (const char *format_string)
                 switch (p[2])
                 {
                     case 0:
-                        g_warning ("%s: trailing '%%E' in %s",
-                                   G_STRLOC, format_string);
+                        g_warning ("trailing '%%E' in %s",
+                                   format_string);
                         goto error;
                     case 'f':
                         ADD_CHUNK (format, HF_FORMAT_BASENAME, NULL, 0);
@@ -2071,8 +2071,8 @@ hf_format_parse (const char *format_string)
                         str = p = p + 3;
                         break;
                     default:
-                        g_warning ("%s: unknown format '%%E%c' in %s",
-                                   G_STRLOC, p[2], format_string);
+                        g_warning ("unknown format '%%E%c' in %s",
+                                   p[2], format_string);
                         goto error;
                 }
                 break;
@@ -2112,7 +2112,7 @@ eval_strftime (GString    *dest,
 
     if (!result)
     {
-        g_warning ("%s: strftime failed", G_STRLOC);
+        g_warning ("strftime failed");
         return;
     }
 
@@ -2120,7 +2120,7 @@ eval_strftime (GString    *dest,
 
     if (!retval)
     {
-        g_warning ("%s: could not convert result of strftime to UTF8", G_STRLOC);
+        g_warning ("could not convert result of strftime to UTF8");
         return;
     }
 
@@ -2161,13 +2161,13 @@ hf_format_eval (HFFormat         *format,
                 break;
             case HF_FORMAT_FILENAME:
                 if (!filename)
-                    g_critical ("%s: filename is NULL", G_STRLOC);
+                    g_critical ("filename is NULL");
                 else
                     g_string_append (string, filename);
                 break;
             case HF_FORMAT_BASENAME:
                 if (!basename)
-                    g_critical ("%s: basename is NULL", G_STRLOC);
+                    g_critical ("basename is NULL");
                 else
                     g_string_append (string, basename);
                 break;

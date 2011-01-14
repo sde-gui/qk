@@ -211,7 +211,7 @@ get_input (MooCommandExe       *cmd,
             return moo_text_view_get_text (GTK_TEXT_VIEW (view));
     }
 
-    moo_return_val_if_reached (NULL);
+    g_return_val_if_reached (NULL);
 }
 
 
@@ -227,7 +227,7 @@ save_temp (const char *data,
     /* XXX */
     if (!_moo_save_file_utf8 (filename, data, length, &error))
     {
-        g_critical ("%s: %s", G_STRLOC, error->message);
+        g_critical ("%s", error->message);
         g_error_free (error);
         g_free (filename);
         return NULL;
@@ -1004,7 +1004,7 @@ init_filter_combo (GtkComboBox *combo)
 
         if (!name)
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
             continue;
         }
 

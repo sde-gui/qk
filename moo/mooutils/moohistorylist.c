@@ -910,7 +910,7 @@ _moo_history_list_load (MooHistoryList *list)
 
             if (!entry || !entry[0])
             {
-                g_warning ("%s: empty recent entry", G_STRLOC);
+                g_warning ("empty recent entry");
                 continue;
             }
 
@@ -918,7 +918,7 @@ _moo_history_list_load (MooHistoryList *list)
         }
         else
         {
-            g_warning ("%s: invalid '%s' element", G_STRLOC, node->name);
+            g_warning ("invalid '%s' element", node->name);
         }
     }
 

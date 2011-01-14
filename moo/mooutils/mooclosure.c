@@ -195,7 +195,7 @@ moo_closure_signal_new (gpointer    object,
 
         if (query.n_params > 0)
         {
-            g_warning ("%s: implement me", G_STRLOC);
+            g_warning ("implement me");
             return NULL;
         }
     }

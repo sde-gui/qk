@@ -398,7 +398,7 @@ moo_file_dialog_create_widget (MooFileDialog *dialog)
             break;
 
         default:
-            g_critical ("%s: incorrect dialog type specified", G_STRLOC);
+            g_critical ("incorrect dialog type specified");
             return NULL;
     }
 
@@ -687,7 +687,7 @@ moo_file_dialog_run (MooFileDialog *dialog)
             }
 
         default:
-            g_critical ("%s: incorrect dialog type specified", G_STRLOC);
+            g_critical ("incorrect dialog type specified");
     }
 
 out:

@@ -189,7 +189,7 @@ moo_menu_mgr_finalize (GObject *object)
 
     if (mgr->priv->menus)
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         menu_list_foreach (mgr->priv->menus, (MenuListFunc) menu_free, NULL);
         menu_list_free_links (mgr->priv->menus);
     }

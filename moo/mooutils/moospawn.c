@@ -279,7 +279,7 @@ process_line (MooCmd      *cmd,
 
         if (g_get_charset (&charset))
         {
-            g_warning ("%s: invalid unicode:\n%s", G_STRLOC, line);
+            g_warning ("invalid unicode:\n%s", line);
 
             if (end > line)
                 real_line = g_strndup (line, end - line);
@@ -295,9 +295,9 @@ process_line (MooCmd      *cmd,
 
             if (!real_line)
             {
-                g_warning ("%s: could not convert text to UTF-8:\n%.*s",
-                           G_STRLOC, (int) len, line);
-                g_warning ("%s: %s", G_STRLOC, error->message);
+                g_warning ("could not convert text to UTF-8:\n%.*s",
+                           (int) len, line);
+                g_warning ("%s", moo_error_message (error));
             }
         }
     }
@@ -358,7 +358,7 @@ command_out_or_err (MooCmd         *cmd,
 
     if (error)
     {
-        g_warning ("%s: %s", G_STRLOC, error->message);
+        g_warning ("%s", moo_error_message (error));
         g_error_free (error);
         return FALSE;
     }

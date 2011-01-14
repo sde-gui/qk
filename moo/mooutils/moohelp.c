@@ -267,8 +267,7 @@ open_html_file (const char *path,
 
     if (err)
     {
-        g_warning ("%s: error in g_spawn_async", G_STRLOC);
-        g_warning ("%s: %s", G_STRLOC, err->message);
+        g_warning ("error in g_spawn_async: %s", moo_error_message (err));
         g_error_free (err);
     }
 }

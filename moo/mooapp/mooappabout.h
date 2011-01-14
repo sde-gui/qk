@@ -102,7 +102,7 @@ get_system_name (void)
     if (uname (&name) != 0)
     {
         int err = errno;
-        g_critical ("%s: %s", G_STRLOC, g_strerror (err));
+        g_critical ("%s", g_strerror (err));
         return g_strdup ("unknown");
     }
 

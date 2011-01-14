@@ -524,7 +524,7 @@ moo_html_load_url (GtkTextView *view,
 
     if (!moo_html_parse_url (url, &scheme, &base, &anchor))
     {
-        g_warning ("%s: invalid url '%s'", G_STRLOC, url);
+        g_warning ("invalid url '%s'", url);
         return FALSE;
     }
 
@@ -659,7 +659,7 @@ _moo_html_load_memory (GtkTextView *view,
 
     if (!doc)
     {
-        g_warning ("%s: htmlReadMemory failed", G_STRLOC);
+        g_warning ("htmlReadMemory failed");
         return FALSE;
     }
 
@@ -1261,8 +1261,8 @@ moo_html_goto_anchor (GtkTextView *view,
 
     if (!mark)
     {
-        g_warning ("%s: could not find anchor '%s'",
-                   G_STRLOC, anchor);
+        g_warning ("could not find anchor '%s'",
+                   anchor);
         return FALSE;
     }
     else
@@ -1411,7 +1411,7 @@ moo_html_load_doc (GtkTextView *view,
         }
         else
         {
-            g_warning ("%s: unknown node '%s'", G_STRLOC, node->name);
+            g_warning ("unknown node '%s'", node->name);
         }
     }
 }
@@ -1439,7 +1439,7 @@ moo_html_load_head (GtkTextView *view,
         }
         else
         {
-            g_message ("%s: unknown node '%s'", G_STRLOC, child->name);
+            g_message ("unknown node '%s'", child->name);
         }
     }
 }
@@ -1845,7 +1845,7 @@ process_elm_body (GtkTextView    *view,
 
         else if (IS_ELEMENT (child))
         {
-            g_message ("%s: unknown node '%s'", G_STRLOC, child->name);
+            g_message ("unknown node '%s'", child->name);
             process_elm_body (view, buffer, child, current, iter);
         }
         else if (IS_COMMENT (child))
@@ -1854,7 +1854,7 @@ process_elm_body (GtkTextView    *view,
         }
         else
         {
-            g_warning ("%s: unknown node", G_STRLOC);
+            g_warning ("unknown node");
         }
     }
 }
@@ -1995,7 +1995,7 @@ make_li_number (int     count,
     {
         case OL_UPPER_ROMAN:
         case OL_LOWER_ROMAN:
-            g_warning ("%s: implement me", G_STRLOC);
+            g_warning ("implement me");
         case OL_NUM:
             return g_strdup_printf (" %d. ", count);
         case OL_LOWER_ALPHA:
@@ -2040,8 +2040,8 @@ process_ol_elm (GtkTextView    *view,
             list_type = OL_UPPER_ROMAN;
         else
         {
-            g_warning ("%s: invalid type attribute '%s'",
-                       G_STRLOC, type);
+            g_warning ("invalid type attribute '%s'",
+                       type);
         }
     }
 
@@ -2072,7 +2072,7 @@ process_ol_elm (GtkTextView    *view,
         }
         else
         {
-            g_message ("%s: unknown node '%s'", G_STRLOC, child->name);
+            g_message ("unknown node '%s'", child->name);
             process_elm_body (view, buffer, child, current, iter);
         }
     }
@@ -2171,7 +2171,7 @@ process_font_elm (GtkTextView   *view,
 
         if (!size[0] || size[0] < '1' || size[0] > '7')
         {
-            g_warning ("%s: invalid size '%s'", G_STRLOC, size);
+            g_warning ("invalid size '%s'", size);
         }
         else
         {
@@ -2367,9 +2367,7 @@ process_img_elm (GtkTextView    *view,
 
     if (!pixbuf)
     {
-        g_message ("%s: could not load image '%s'",
-                   G_STRLOC, path);
-        g_message ("%s: %s", G_STRLOC, error->message);
+        g_message ("could not load image '%s': %s", path, moo_error_message (error));
         g_error_free (error);
         goto try_alt;
     }

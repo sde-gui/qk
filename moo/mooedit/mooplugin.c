@@ -257,15 +257,15 @@ moo_plugin_register (const char            *id,
 
     if (moo_plugin_registered (type))
     {
-        g_warning ("%s: plugin '%s' already registered",
-                   G_STRLOC, g_type_name (type));
+        g_warning ("plugin '%s' already registered",
+                   g_type_name (type));
         return FALSE;
     }
 
     if (!plugin_info_check (info))
     {
-        g_warning ("%s: invalid info in plugin '%s'",
-                   G_STRLOC, g_type_name (type));
+        g_warning ("invalid info in plugin '%s'",
+                   g_type_name (type));
         return FALSE;
     }
 
@@ -277,8 +277,8 @@ moo_plugin_register (const char            *id,
 
     if (moo_plugin_lookup (moo_plugin_id (plugin)))
     {
-        _moo_message ("%s: plugin with id %s already registered",
-                      G_STRLOC, moo_plugin_id (plugin));
+        _moo_message ("plugin with id %s already registered",
+                      moo_plugin_id (plugin));
         g_object_unref (plugin);
         return FALSE;
     }
@@ -664,7 +664,7 @@ moo_doc_plugin_lookup (const char     *plugin_id,
 MooEditWindow *
 moo_win_plugin_get_window (MooWinPlugin *wplugin)
 {
-    moo_return_val_if_fail (MOO_IS_WIN_PLUGIN (wplugin), NULL);
+    g_return_val_if_fail (MOO_IS_WIN_PLUGIN (wplugin), NULL);
     return wplugin->window;
 }
 
@@ -674,7 +674,7 @@ moo_win_plugin_get_window (MooWinPlugin *wplugin)
 MooPlugin *
 moo_win_plugin_get_plugin (MooWinPlugin *wplugin)
 {
-    moo_return_val_if_fail (MOO_IS_WIN_PLUGIN (wplugin), NULL);
+    g_return_val_if_fail (MOO_IS_WIN_PLUGIN (wplugin), NULL);
     return wplugin->plugin;
 }
 
@@ -684,7 +684,7 @@ moo_win_plugin_get_plugin (MooWinPlugin *wplugin)
 MooEditWindow *
 moo_doc_plugin_get_window (MooDocPlugin *dplugin)
 {
-    moo_return_val_if_fail (MOO_IS_DOC_PLUGIN (dplugin), NULL);
+    g_return_val_if_fail (MOO_IS_DOC_PLUGIN (dplugin), NULL);
     return dplugin->window;
 }
 
@@ -694,7 +694,7 @@ moo_doc_plugin_get_window (MooDocPlugin *dplugin)
 MooEdit *
 moo_doc_plugin_get_doc (MooDocPlugin *dplugin)
 {
-    moo_return_val_if_fail (MOO_IS_DOC_PLUGIN (dplugin), NULL);
+    g_return_val_if_fail (MOO_IS_DOC_PLUGIN (dplugin), NULL);
     return dplugin->doc;
 }
 
@@ -704,7 +704,7 @@ moo_doc_plugin_get_doc (MooDocPlugin *dplugin)
 MooPlugin *
 moo_doc_plugin_get_plugin (MooDocPlugin *dplugin)
 {
-    moo_return_val_if_fail (MOO_IS_DOC_PLUGIN (dplugin), NULL);
+    g_return_val_if_fail (MOO_IS_DOC_PLUGIN (dplugin), NULL);
     return dplugin->plugin;
 }
 
@@ -986,7 +986,7 @@ moo_plugin_shutdown (void)
 
     if (plugin_store->list)
     {
-        g_critical ("%s: could not unregister all plugins", G_STRLOC);
+        g_critical ("could not unregister all plugins");
         g_slist_free (plugin_store->list);
         plugin_store->list = NULL;
     }
@@ -1288,7 +1288,7 @@ sync_pages (MooPrefsDialog *dialog)
                 {
                     if (!MOO_IS_PREFS_PAGE (plugin_page))
                     {
-                        g_critical ("%s: oops", G_STRLOC);
+                        g_critical ("oops");
                     }
                     else
                     {
@@ -1594,7 +1594,7 @@ moo_plugin_call_method_valist (gpointer        plugin,
 
         if (error)
         {
-            g_warning ("%s: %s", G_STRLOC, error);
+            g_warning ("%s", error);
             g_free (error);
 
             while (i--)
@@ -1635,7 +1635,7 @@ moo_plugin_call_method_valist (gpointer        plugin,
         }
         else
         {
-            g_warning ("%s: %s", G_STRLOC, error);
+            g_warning ("%s", error);
             g_free (error);
         }
     }

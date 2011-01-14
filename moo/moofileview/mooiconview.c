@@ -3492,7 +3492,7 @@ _moo_icon_view_set_cursor (MooIconView *view,
     {
         _moo_icon_view_scroll_to_cell (view, path);
         /* TODO */
-        g_warning ("%s: implement me", G_STRLOC);
+        g_warning ("implement me");
     }
 }
 
@@ -3840,7 +3840,7 @@ drag_scroll_timeout (MooIconView *view)
 
     if (!GTK_IS_WINDOW (toplevel))
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         goto out;
     }
 
@@ -3931,7 +3931,7 @@ moo_icon_view_drag_motion (GtkWidget      *widget,
     {
         if (info->drag_motion_context)
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
             g_object_unref (info->drag_motion_context);
             info->drag_motion_context = NULL;
         }
@@ -3944,7 +3944,7 @@ moo_icon_view_drag_motion (GtkWidget      *widget,
     {
         if (info->drag_motion_context)
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
             g_object_unref (info->drag_motion_context);
         }
 

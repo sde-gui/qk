@@ -545,7 +545,7 @@ get_color (GtkSourceStyle *style,
 	{
 		if (color == NULL || !gdk_color_parse (color, dest))
 		{
-			g_warning ("%s: invalid color '%s'", G_STRLOC,
+			g_warning ("invalid color '%s'",
 				   color != NULL ? color : "(null)");
 			return FALSE;
 		}

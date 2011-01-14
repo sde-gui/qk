@@ -22,6 +22,7 @@
 #include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooedit-impl.h"
+#include "mooutils/mooutils.h"
 #include <glib/gregex.h>
 #include <string.h>
 
@@ -421,7 +422,7 @@ get_filter_regex (const char *pattern)
 
         if (!regex)
         {
-            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_warning ("%s", moo_error_message (error));
             g_error_free (error);
             return NULL;
         }

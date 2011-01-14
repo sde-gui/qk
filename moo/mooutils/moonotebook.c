@@ -2672,7 +2672,7 @@ drag_scroll (MooNotebook *nb)
     if (max_offset <= 0)
     {
         drag_scroll_stop (nb);
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         retval = FALSE;
         goto out;
     }
@@ -2789,7 +2789,7 @@ tab_drag_start (MooNotebook    *nb,
 
     if (!translate_coords (nb->priv->tab_window, event->window, &event_x, &event_y))
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         return;
     }
 
@@ -2835,7 +2835,7 @@ tab_drag_motion (MooNotebook    *nb,
 
         if (!translate_coords (nb->priv->tab_window, event->window, &event_x, &event_y))
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
             return;
         }
     }
@@ -3258,7 +3258,7 @@ moo_notebook_maybe_popup (MooNotebook    *nb,
 
     if (!translate_coords (nb->priv->tab_window, event->window, &event_x, &event_y))
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         return FALSE;
     }
 

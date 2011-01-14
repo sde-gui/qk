@@ -1072,8 +1072,8 @@ moo_text_view_set_property (GObject        *object,
             }
             else if (!g_type_is_a (G_OBJECT_TYPE (buffer), view->priv->buffer_type))
             {
-                g_critical ("%s: buffer '%s' is not of type '%s', ignoring it",
-                            G_STRLOC, g_type_name (G_OBJECT_TYPE (buffer)),
+                g_critical ("buffer '%s' is not of type '%s', ignoring it",
+                            g_type_name (G_OBJECT_TYPE (buffer)),
                             g_type_name (view->priv->buffer_type));
                 buffer = GTK_TEXT_BUFFER (g_object_new (view->priv->buffer_type, (const char*) NULL));
             }
@@ -2196,13 +2196,13 @@ update_gc (MooTextView     *view,
     {
         if (!gdk_color_parse (view->priv->colors[color_num], &color))
         {
-            g_warning ("%s: could not parse color %s", G_STRLOC,
+            g_warning ("could not parse color %s",
                        view->priv->colors[color_num]);
             color = widget->style->bg[GTK_STATE_NORMAL];
         }
         else if (!gdk_colormap_alloc_color (colormap, &color, FALSE, TRUE))
         {
-            g_warning ("%s: failed to allocate color", G_STRLOC);
+            g_warning ("failed to allocate color");
             color = widget->style->bg[GTK_STATE_NORMAL];
         }
     }
@@ -2523,7 +2523,7 @@ highlight_updated (GtkTextView       *text_view,
 
     if (view->priv->in_expose)
     {
-        g_critical ("%s: oops\n", G_STRLOC);
+        g_critical ("oops");
 
         if (!view->priv->update_idle)
             view->priv->update_idle =
@@ -2583,14 +2583,14 @@ void
 moo_text_tag_set_cursor (GtkTextTag    *tag,
                          GdkCursorType  cursor)
 {
-    moo_return_if_fail (GTK_IS_TEXT_TAG (tag));
+    g_return_if_fail (GTK_IS_TEXT_TAG (tag));
     g_object_set_qdata (G_OBJECT (tag), cursor_quark (), GINT_TO_POINTER (cursor));
 }
 
 GdkCursorType
 moo_text_tag_get_cursor (GtkTextTag *tag)
 {
-    moo_return_val_if_fail (GTK_IS_TEXT_TAG (tag), 0);
+    g_return_val_if_fail (GTK_IS_TEXT_TAG (tag), 0);
     return GPOINTER_TO_INT (g_object_get_qdata (G_OBJECT (tag), cursor_quark ()));
 }
 #endif

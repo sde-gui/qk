@@ -48,7 +48,7 @@ private:
 const char *
 moo_lua_current_function (void)
 {
-    moo_return_val_if_fail (function_stack.size () > 0, "`none'");
+    g_return_val_if_fail (function_stack.size () > 0, "`none'");
     return function_stack.back ().c_str ();
 }
 
@@ -209,7 +209,7 @@ moo_lua_lookup_method (lua_State  *L,
     GType *p;
     MooLuaMethod meth = NULL;
 
-    moo_return_val_if_fail (name != NULL, NULL);
+    g_return_val_if_fail (name != NULL, NULL);
 
     meth = lookup_method_simple (type, name);
 
@@ -381,7 +381,7 @@ cfunc_call_named_method (lua_State *L)
     const char *meth = get_arg_string (L, lua_upvalueindex (2), NULL);
 
     MooLuaMethod func = moo_lua_lookup_method (L, self->type, meth);
-    moo_return_val_if_fail (func != NULL, 0);
+    g_return_val_if_fail (func != NULL, 0);
 
     return func (self->instance, L, first_arg);
 }
@@ -413,7 +413,7 @@ cfunc_ginstance__gc (lua_State *L)
             case G_TYPE_POINTER:
                 break;
             default:
-                moo_critical ("%s", g_type_name (self->type));
+                g_critical ("%s", g_type_name (self->type));
                 moo_assert_not_reached ();
                 break;
         }
@@ -430,7 +430,7 @@ moo_lua_push_ginstance (lua_State *L,
                         GType      type_fundamental,
                         gboolean   make_copy)
 {
-    moo_return_val_if_fail (L != NULL, 0);
+    g_return_val_if_fail (L != NULL, 0);
 
     if (!instance)
     {
@@ -468,7 +468,7 @@ moo_lua_push_ginstance (lua_State *L,
     else if (type_fundamental == G_TYPE_OBJECT)
         lg->instance = g_object_ref (instance);
     else
-        moo_return_val_if_reached (0);
+        g_return_val_if_reached (0);
 
     return 1;
 }

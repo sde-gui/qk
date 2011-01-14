@@ -223,7 +223,7 @@ get_options (CommandXml  *gxml,
     row_requires = gtk_combo_box_get_active (gxml->combo_requires);
     if (row_requires < 0 || row_requires >= ROW_REQUIRES_INVALID)
     {
-        moo_critical ("oops");
+        g_critical ("oops");
         row_requires = ROW_REQUIRES_DOC;
     }
 
@@ -238,14 +238,14 @@ get_options (CommandXml  *gxml,
             requires = "need-file";
             break;
         default:
-            moo_critical ("oops");
+            g_critical ("oops");
             break;
     }
 
     row_save = gtk_combo_box_get_active (gxml->combo_save);
     if (row_save < 0 || row_save >= ROW_SAVE_INVALID)
     {
-        moo_critical ("oops");
+        g_critical ("oops");
         row_save = ROW_SAVE_NOTHING;
     }
 
@@ -260,7 +260,7 @@ get_options (CommandXml  *gxml,
             save = "need-save-all";
             break;
         default:
-            moo_critical ("oops");
+            g_critical ("oops");
             break;
     }
 

@@ -343,7 +343,7 @@ moo_big_paned_finalize (GObject *object)
 
     if (paned->priv->drop_outline)
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         gdk_window_set_user_data (paned->priv->drop_outline, NULL);
         gdk_window_destroy (paned->priv->drop_outline);
     }

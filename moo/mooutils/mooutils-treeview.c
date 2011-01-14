@@ -386,9 +386,7 @@ _moo_tree_helper_set_modified (MooTreeHelper *helper,
 
 #ifdef MOO_DEBUG
     if (!helper->modified && modified)
-    {
-        g_message ("%s: helper modified", G_STRLOC);
-    }
+        g_message ("helper modified");
 #endif
 
     helper->modified = modified != 0;
@@ -611,7 +609,7 @@ moo_tree_helper_delete_row (MooTreeHelper *helper)
 
     if (!gtk_tree_selection_get_selected (selection, &model, &iter))
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         return;
     }
 
@@ -648,7 +646,7 @@ moo_tree_helper_row_move (MooTreeHelper *helper,
 
     if (!gtk_tree_selection_get_selected (selection, &model, &iter))
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         return;
     }
 
@@ -845,7 +843,7 @@ moo_tree_helper_set_valist (MooTreeHelper *helper,
 
         if (column >= n_columns)
         {
-            g_warning ("%s: invalid column number %d", G_STRLOC, column);
+            g_warning ("invalid column number %d", column);
             break;
         }
 
@@ -856,7 +854,7 @@ moo_tree_helper_set_valist (MooTreeHelper *helper,
 
         if (error)
         {
-            g_warning ("%s: %s", G_STRLOC, error);
+            g_warning ("%s", error);
             g_free (error);
             break;
         }

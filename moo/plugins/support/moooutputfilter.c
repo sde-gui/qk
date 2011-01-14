@@ -193,7 +193,7 @@ moo_output_filter_output_line (MooOutputFilter *filter,
     gboolean result = FALSE;
 
     if (line[0] && line[1] && line[strlen(line) - 1] == '\n')
-        g_warning ("%s: oops", G_STRLOC);
+        g_warning ("oops");
 
     g_signal_emit (filter, signals[sig], 0, line, &result);
 

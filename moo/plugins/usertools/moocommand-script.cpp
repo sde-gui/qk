@@ -70,7 +70,7 @@ moo_command_script_run_lua (MooCommandScript  *cmd,
     if (luaL_loadstring (L, cmd->code) != 0)
     {
         const char *msg = lua_tostring (L, -1);
-        g_critical ("%s: %s", G_STRLOC, msg ? msg : "ERROR");
+        g_critical ("%s", msg ? msg : "ERROR");
         medit_lua_free (L);
         return;
     }
@@ -84,7 +84,7 @@ moo_command_script_run_lua (MooCommandScript  *cmd,
     if (lua_pcall (L, 0, 0, 0) != 0)
     {
         const char *msg = lua_tostring (L, -1);
-        g_critical ("%s: %s", G_STRLOC, msg ? msg : "ERROR");
+        g_critical ("%s", msg ? msg : "ERROR");
         lua_pop (L, 1);
     }
 
@@ -105,7 +105,7 @@ moo_command_script_run_python (MooCommandScript  *cmd,
     g_return_if_fail (cmd->code != NULL);
 
     state = moo_python_state_new (TRUE);
-    moo_return_if_fail (state != NULL);
+    g_return_if_fail (state != NULL);
 
     if (!moo_python_run_string (state, PYTHON_TOOL_SETUP_PY))
     {
@@ -126,7 +126,7 @@ moo_command_script_run_python (MooCommandScript  *cmd,
 
     moo_python_state_free (state);
 #else
-    moo_return_if_reached ();
+    g_return_if_reached ();
     (void) cmd;
     (void) ctx;
 #endif
@@ -147,7 +147,7 @@ moo_command_script_run (MooCommand        *cmd_base,
             moo_command_script_run_python (cmd, ctx);
             break;
         default:
-            moo_return_if_reached ();
+            g_return_if_reached ();
     }
 }
 

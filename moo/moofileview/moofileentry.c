@@ -542,8 +542,8 @@ completion_parse_text (MooFileEntryCompletion *cmpl,
                                       path, &dirname, &display_dirname,
                                       &display_basename, &error))
     {
-        _moo_message ("%s: could not parse path '%s'", G_STRLOC, path);
-        _moo_message ("%s: %s", G_STRLOC, error->message);
+        _moo_message ("could not parse path '%s'", path);
+        _moo_message ("%s", moo_error_message (error));
         goto out;
     }
 
@@ -556,7 +556,7 @@ completion_parse_text (MooFileEntryCompletion *cmpl,
     /* this was needed in the widget */
     if (text_len <= cmpl->priv->display_basename_len)
     {
-        g_warning ("%s: something wrong", G_STRLOC);
+        g_warning ("something is wrong");
         goto out;
     }
 #endif
@@ -571,8 +571,8 @@ completion_parse_text (MooFileEntryCompletion *cmpl,
                                               &error);
         if (!folder)
         {
-            _moo_message ("%s: could not get folder '%s'", G_STRLOC, dirname);
-            _moo_message ("%s: %s", G_STRLOC, error->message);
+            _moo_message ("could not get folder '%s'", dirname);
+            _moo_message ("%s", moo_error_message (error));
             g_error_free (error);
             goto out;
         }
@@ -646,7 +646,7 @@ completion_tab_key (MooFileEntryCompletion *cmpl)
 
         if (!prefix)
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
         }
         else if (prefix->len > cmpl->priv->display_basename_len)
         {
@@ -713,7 +713,7 @@ completion_popup_tab_key_press (MooFileEntryCompletion *cmpl)
 
         if (!prefix)
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
             return FALSE;
         }
 

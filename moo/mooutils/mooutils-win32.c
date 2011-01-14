@@ -239,7 +239,7 @@ _moo_win32_open_uri (const char *uri)
     if ((int)h <= 32)
     {
         char *msg = g_win32_error_message (GetLastError());
-        moo_warning ("could not open uri '%s': %s", uri, msg);
+        g_warning ("could not open uri '%s': %s", uri, msg);
         g_free (msg);
         return FALSE;
     }

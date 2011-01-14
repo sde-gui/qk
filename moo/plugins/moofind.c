@@ -742,20 +742,17 @@ process_grep_line (MooLineView *view,
 
     if (errno)
     {
-        g_warning ("%s: could not parse number '%s'",
-                   G_STRLOC, number);
+        g_warning ("could not parse number '%s'", number);
         line_no = -1;
     }
     else if (line_no_64 > G_MAXINT)
     {
-        g_warning ("%s: number '%s' is too large",
-                   G_STRLOC, number);
+        g_warning ("number '%s' is too large", number);
         line_no = -1;
     }
     else if (line_no_64 == 0)
     {
-        g_warning ("%s: number '%s' is zero",
-                   G_STRLOC, number);
+        g_warning ("number '%s' is zero", number);
         line_no = -1;
     }
     else
@@ -780,8 +777,7 @@ process_grep_line (MooLineView *view,
     return TRUE;
 
 parse_error:
-    g_warning ("%s: could not parse line '%s'",
-               G_STRLOC, line);
+    g_warning ("could not parse line '%s'", line);
     g_free (filename);
     g_free (number);
     return FALSE;

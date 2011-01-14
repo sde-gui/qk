@@ -367,7 +367,7 @@ filter_setting_new (const char *filter,
 
     if (!setting->filter)
     {
-        moo_warning ("could not parse filter '%s'", filter);
+        g_warning ("could not parse filter '%s'", filter);
         filter_setting_free (setting);
         setting = NULL;
     }
@@ -437,7 +437,7 @@ filter_settings_store_load (FilterSettingsStore *store)
 
         if (strcmp (node->name, ELEMENT_SETTING))
         {
-            g_warning ("%s: invalid '%s' element", G_STRLOC, node->name);
+            g_warning ("invalid '%s' element", node->name);
             continue;
         }
 

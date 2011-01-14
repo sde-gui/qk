@@ -279,12 +279,12 @@ pages_list_selection_changed (MooPrefsDialog *dialog,
     }
     else
     {
-        g_critical ("%s: nothing selected", G_STRLOC);
+        g_critical ("nothing selected");
 
         if (gtk_tree_model_get_iter_first (model, &iter))
             gtk_tree_selection_select_iter (selection, &iter);
         else
-            g_critical ("%s: list is empty", G_STRLOC);
+            g_critical ("list is empty");
     }
 }
 

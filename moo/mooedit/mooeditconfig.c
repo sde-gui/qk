@@ -292,8 +292,8 @@ moo_edit_config_install_setting (GParamSpec *pspec)
 
     if (moo_edit_config_lookup_spec (pspec->name, NULL, TRUE))
     {
-        g_warning ("%s: setting named '%s' already exists",
-                   G_STRLOC, pspec->name);
+        g_warning ("setting named '%s' already exists",
+                   pspec->name);
         return 0;
     }
 
@@ -482,8 +482,7 @@ moo_edit_config_set_valist (MooEditConfig  *config,
 
         if (!pspec)
         {
-            g_warning ("%s: there is no setting named `%s'",
-                       G_STRLOC, name);
+            g_warning ("there is no setting named `%s'", name);
             break;
         }
 
@@ -492,7 +491,7 @@ moo_edit_config_set_valist (MooEditConfig  *config,
 
         if (error)
         {
-            g_warning ("%s: %s", G_STRLOC, error);
+            g_warning ("%s", error);
             g_free (error);
             g_value_unset (&value);
             break;
@@ -730,7 +729,7 @@ moo_edit_config_parse_one (MooEditConfig  *config,
 
     if (!pspec)
     {
-        g_warning ("%s: no setting named '%s'", G_STRLOC, name);
+        g_warning ("no setting named '%s'", name);
         return;
     }
 
@@ -745,8 +744,8 @@ moo_edit_config_parse_one (MooEditConfig  *config,
     if (result)
         moo_edit_config_set_value (config, prop_id, source, &gval);
     else
-        g_warning ("%s: could not convert '%s' to type '%s'",
-                   G_STRLOC, value, g_type_name (G_VALUE_TYPE (&gval)));
+        g_warning ("could not convert '%s' to type '%s'",
+                   value, g_type_name (G_VALUE_TYPE (&gval)));
 
     g_value_unset (&gval);
 }
@@ -816,8 +815,7 @@ moo_edit_config_parse (MooEditConfig  *config,
 
         if (!colon && !assign)
         {
-            g_warning ("%s: invalid config string '%s'",
-                       G_STRLOC, string);
+            g_warning ("invalid config string '%s'", string);
             return;
         }
 
@@ -831,8 +829,7 @@ moo_edit_config_parse (MooEditConfig  *config,
 
         if (name_end == name_start)
         {
-            g_warning ("%s: invalid config string '%s'",
-                       G_STRLOC, string);
+            g_warning ("invalid config string '%s'", string);
             return;
         }
 
@@ -842,8 +839,7 @@ moo_edit_config_parse (MooEditConfig  *config,
 
             if (!*value_start || *value_start == ';' || *value_start == ',')
             {
-                g_warning ("%s: invalid config string '%s'",
-                           G_STRLOC, string);
+                g_warning ("invalid config string '%s'", string);
                 return;
             }
 
@@ -862,8 +858,7 @@ moo_edit_config_parse (MooEditConfig  *config,
 
             if (!(separator = g_utf8_get_char (value_start)))
             {
-                g_warning ("%s: invalid config string '%s'",
-                           G_STRLOC, string);
+                g_warning ("invalid config string '%s'", string);
                 return;
             }
 
@@ -872,8 +867,7 @@ moo_edit_config_parse (MooEditConfig  *config,
                                        separator);
             if (!value_end)
             {
-                g_warning ("%s: unterminated value in '%s'",
-                           G_STRLOC, string);
+                g_warning ("unterminated value in '%s'", string);
                 return;
             }
 
@@ -905,19 +899,19 @@ moo_edit_config_install_alias (const char     *name,
 
     if (!pspec)
     {
-        g_warning ("%s: no setting named '%s'", G_STRLOC, name);
+        g_warning ("no setting named '%s'", name);
         return;
     }
 
     if (moo_edit_config_lookup_spec (alias, NULL, TRUE))
     {
-        g_warning ("%s: setting named '%s' already exists", G_STRLOC, alias);
+        g_warning ("setting named '%s' already exists", alias);
         return;
     }
 
     if (g_hash_table_lookup (aliases, alias))
     {
-        g_warning ("%s: alias '%s' already exists", G_STRLOC, alias);
+        g_warning ("alias '%s' already exists", alias);
         return;
     }
 

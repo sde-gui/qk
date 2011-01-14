@@ -77,7 +77,7 @@ _moo_file_find_mime_type (MooFile    *file,
     if (!file->mime_type || !file->mime_type[0])
     {
         /* this should not happen */
-        _moo_message ("%s: oops, %s", G_STRLOC, file->display_name);
+        _moo_message ("oops, %s", file->display_name);
         file->mime_type = MOO_MIME_TYPE_UNKNOWN;
     }
 
@@ -169,7 +169,7 @@ moo_get_collation_key (const char *str,
       UCCreateCollator (NULL, 0, kUCCollateStandardOptions, &collator);
 
       if (!collator)
-        g_warning ("%s: UCCreateCollator failed", G_STRLOC);
+        g_warning ("UCCreateCollator failed");
     }
 
   return create_collation_key (collator, str, len);
@@ -194,7 +194,7 @@ moo_get_collation_key_for_filename (const char *str,
                         &collator);
 
       if (!collator)
-        g_warning ("%s: UCCreateCollator failed", G_STRLOC);
+        g_warning ("UCCreateCollator failed");
     }
 
   return create_collation_key (collator, str, len);
@@ -345,8 +345,7 @@ _moo_file_stat (MooFile    *file,
         {
             MOO_DEBUG_CODE({
                 gchar *display_name = g_filename_display_name (fullname);
-                _moo_message ("%s: file '%s' does not exist",
-                              G_STRLOC, display_name);
+                _moo_message ("file '%s' does not exist", display_name);
                 g_free (display_name);
             });
             file->info = 0;
@@ -356,9 +355,8 @@ _moo_file_stat (MooFile    *file,
             MOO_DEBUG_CODE({
                 int save_errno = errno;
                 gchar *display_name = g_filename_display_name (fullname);
-                _moo_message ("%s: error getting information for '%s': %s",
-                              G_STRLOC, display_name,
-                              g_strerror (save_errno));
+                _moo_message ("error getting information for '%s': %s",
+                              display_name, g_strerror (save_errno));
                 g_free (display_name);
             });
             file->info = MOO_FILE_INFO_IS_LOCKED | MOO_FILE_INFO_EXISTS;
@@ -382,8 +380,7 @@ _moo_file_stat (MooFile    *file,
                 {
                     MOO_DEBUG_CODE({
                         gchar *display_name = g_filename_display_name (fullname);
-                        _moo_message ("%s: file '%s' is a broken link",
-                                      G_STRLOC, display_name);
+                        _moo_message ("file '%s' is a broken link", display_name);
                         g_free (display_name);
                     });
                     file->info = MOO_FILE_INFO_IS_LINK;
@@ -393,9 +390,8 @@ _moo_file_stat (MooFile    *file,
                     MOO_DEBUG_CODE({
                         int save_errno = errno;
                         gchar *display_name = g_filename_display_name (fullname);
-                        _moo_message ("%s: error getting information for '%s': %s",
-                                      G_STRLOC, display_name,
-                                      g_strerror (save_errno));
+                        _moo_message ("error getting information for '%s': %s",
+                                      display_name, g_strerror (save_errno));
                         g_free (display_name);
                     });
                     file->info = MOO_FILE_INFO_IS_LOCKED | MOO_FILE_INFO_EXISTS;
@@ -410,9 +406,8 @@ _moo_file_stat (MooFile    *file,
                 MOO_DEBUG_CODE({
                     int save_errno = errno;
                     gchar *display_name = g_filename_display_name (fullname);
-                    _moo_message ("%s: error getting link target for '%s': %s",
-                                  G_STRLOC, display_name,
-                                  g_strerror (save_errno));
+                    _moo_message ("error getting link target for '%s': %s",
+                                  display_name, g_strerror (save_errno));
                     g_free (display_name);
                 });
             }

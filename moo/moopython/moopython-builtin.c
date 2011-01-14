@@ -36,13 +36,13 @@ _moo_python_builtin_init (void)
     {
         if (!moo_python_api_init ())
         {
-            g_warning ("%s: oops", G_STRLOC);
+            g_warning ("oops");
             return FALSE;
         }
 
         if (!_moo_pygtk_init ())
         {
-            g_warning ("%s: could not initialize moo module", G_STRLOC);
+            g_warning ("could not initialize moo module");
             PyErr_Print ();
             moo_python_api_deinit ();
             return FALSE;

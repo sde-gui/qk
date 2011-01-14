@@ -377,7 +377,7 @@ pixels_from_icon_size (GdkScreen   *screen,
 
     if (!gtk_icon_size_lookup_for_settings (settings, size, &width, &height))
     {
-        g_critical ("%s: invalid icon size", G_STRLOC);
+        g_critical ("invalid icon size");
         size = GTK_ICON_SIZE_MENU;
         gtk_icon_size_lookup_for_settings (settings, size, &width, &height);
     }
@@ -406,7 +406,7 @@ get_named_icon (GtkIconTheme *icon_theme,
     if (pixbuf && (gdk_pixbuf_get_width (pixbuf) < 5 ||
                    gdk_pixbuf_get_height (pixbuf) < 5))
     {
-        moo_dmsg ("%s: got zero size icon '%s'", G_STRLOC, icon_name);
+        moo_dmsg ("got zero size icon '%s'", icon_name);
         g_object_unref (pixbuf);
         pixbuf = NULL;
     }
@@ -575,7 +575,7 @@ create_mime_icon_type (GtkIconTheme *icon_theme,
 
     if (!separator)
     {
-        g_warning ("%s: mime type '%s' is invalid", G_STRLOC, mime_type);
+        g_warning ("mime type '%s' is invalid", mime_type);
         return NULL;
     }
 
@@ -634,7 +634,7 @@ create_mime_icon_exact (GtkIconTheme *icon_theme,
 
     if (!separator)
     {
-        g_warning ("%s: mime type '%s' is invalid", G_STRLOC, mime_type);
+        g_warning ("mime type '%s' is invalid", mime_type);
         return NULL;
     }
 

@@ -187,7 +187,7 @@ moo_fold_finalize (GObject *object)
     MooFold *fold = MOO_FOLD (object);
 
     if (!fold->deleted)
-        g_critical ("%s: oops, crash pending...", G_STRLOC);
+        g_critical ("oops, crash pending...");
 
     G_OBJECT_CLASS (moo_fold_parent_class)->finalize (object);
 }

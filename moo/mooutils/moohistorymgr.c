@@ -363,7 +363,7 @@ add_file (MooHistoryMgr  *mgr,
 
     if (g_hash_table_lookup (mgr->priv->hash, uri) != NULL)
     {
-        g_critical ("%s: duplicated uri '%s'", G_STRLOC, uri);
+        g_critical ("duplicated uri '%s'", uri);
         moo_history_item_free (item);
         return;
     }
@@ -384,15 +384,15 @@ parse_element (const char     *filename,
 
     if (strcmp (elm->name, ELM_ITEM) != 0)
     {
-        g_critical ("%s: in file '%s': invalid element '%s'",
-                    G_STRLOC, filename ? filename : "NONE", elm->name);
+        g_critical ("in file '%s': invalid element '%s'",
+                    filename ? filename : "NONE", elm->name);
         return FALSE;
     }
 
     if (!(uri = moo_markup_get_prop (elm, PROP_URI)))
     {
-        g_critical ("%s: in file '%s': attribute '%s' missing",
-                    G_STRLOC, filename ? filename : "NONE", PROP_URI);
+        g_critical ("in file '%s': attribute '%s' missing",
+                    filename ? filename : "NONE", PROP_URI);
         return FALSE;
     }
 
@@ -408,8 +408,8 @@ parse_element (const char     *filename,
 
         if (strcmp (child->name, ELM_DATA) != 0)
         {
-            g_critical ("%s: in file '%s': invalid element '%s'",
-                        G_STRLOC, filename ? filename : "NONE", child->name);
+            g_critical ("in file '%s': invalid element '%s'",
+                        filename ? filename : "NONE", child->name);
             continue;
         }
 
@@ -418,14 +418,14 @@ parse_element (const char     *filename,
 
         if (!key || !key[0])
         {
-            g_critical ("%s: in file '%s': attribute '%s' missing",
-                        G_STRLOC, filename ? filename : "NONE", PROP_KEY);
+            g_critical ("in file '%s': attribute '%s' missing",
+                        filename ? filename : "NONE", PROP_KEY);
             continue;
         }
         else if (!value || !value[0])
         {
-            g_critical ("%s: in file '%s': attribute '%s' missing",
-                        G_STRLOC, filename ? filename : "NONE", PROP_VALUE);
+            g_critical ("in file '%s': attribute '%s' missing",
+                        filename ? filename : "NONE", PROP_VALUE);
             continue;
         }
 
@@ -709,9 +709,8 @@ load_file (MooHistoryMgr *mgr)
 
     if (!moo_parse_markup_file (filename, &parser, &data, &error))
     {
-        g_critical ("%s: could not load file '%s': %s",
-                    G_STRLOC, filename,
-                    moo_error_message (error));
+        g_critical ("could not load file '%s': %s",
+                    filename, moo_error_message (error));
         g_error_free (error);
     }
 
@@ -730,22 +729,21 @@ parse_update_item (MooMarkupDoc   *xml,
 
     if (!(root = moo_markup_get_root_element (xml, ELM_UPDATE)))
     {
-        g_critical ("%s: missing element %s",
-                    G_STRLOC, ELM_UPDATE);
+        g_critical ("missing element %s", ELM_UPDATE);
         return FALSE;
     }
 
     if (!(version = moo_markup_get_prop (root, PROP_VERSION)) ||
         strcmp (version, PROP_VERSION_VALUE) != 0)
     {
-        g_critical ("%s: invalid version value '%s'",
-                    G_STRLOC, version ? version : "(null)");
+        g_critical ("invalid version value '%s'",
+                    version ? version : "(null)");
         return FALSE;
     }
 
     if (!(update_type_string = moo_markup_get_prop (root, PROP_TYPE)))
     {
-        g_critical ("%s: attribute '%s' missing", G_STRLOC, PROP_TYPE);
+        g_critical ("attribute '%s' missing", PROP_TYPE);
         return FALSE;
     }
 
@@ -757,8 +755,8 @@ parse_update_item (MooMarkupDoc   *xml,
         *type = UPDATE_ITEM_UPDATE;
     else
     {
-        g_critical ("%s: invalid value '%s' for attribute '%s'",
-                    G_STRLOC, update_type_string, PROP_TYPE);
+        g_critical ("invalid value '%s' for attribute '%s'",
+                    update_type_string, PROP_TYPE);
         return FALSE;
     }
 
@@ -766,7 +764,7 @@ parse_update_item (MooMarkupDoc   *xml,
         if (MOO_MARKUP_IS_ELEMENT (child))
             return parse_element (NULL, child, item);
 
-    g_critical ("%s: element '%s' missing", G_STRLOC, ELM_ITEM);
+    g_critical ("element '%s' missing", ELM_ITEM);
     return FALSE;
 }
 
@@ -840,9 +838,8 @@ moo_history_mgr_save (MooHistoryMgr *mgr)
 
     if (error)
     {
-        g_critical ("%s: could not save file '%s': %s",
-                    G_STRLOC, filename,
-                    moo_error_message (error));
+        g_critical ("could not save file '%s': %s",
+                    filename, moo_error_message (error));
         g_error_free (error);
     }
 }
@@ -1087,7 +1084,7 @@ ipc_callback (GObject    *obj,
 
     if (!xml)
     {
-        g_critical ("%s: got invalid data: %.*s", G_STRLOC, (int) len, data);
+        g_critical ("got invalid data: %.*s", (int) len, data);
         return;
     }
 

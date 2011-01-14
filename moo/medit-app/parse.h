@@ -31,7 +31,7 @@ parse_filename (const char *filename)
                                   G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES, 0, &error);
         if (!re)
         {
-            moo_critical ("could not compile regex: %s", error->message);
+            g_critical ("could not compile regex: %s", error->message);
             g_error_free (error);
         }
         else

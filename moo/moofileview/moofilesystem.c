@@ -20,7 +20,7 @@
 #include "moofolder-private.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-mem.h"
-#include "mooutils/mooutils-macros.h"
+#include "mooutils/mooutils.h"
 #include "marshals.h"
 #include <gio/gio.h>
 #include <errno.h>
@@ -423,8 +423,7 @@ _moo_file_system_get_file_watch (MooFileSystem *fs)
         fs->priv->fam = moo_file_watch_new (&error);
         if (!fs->priv->fam)
         {
-            g_warning ("%s: moo_fam_open failed", G_STRLOC);
-            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_warning ("moo_fam_open failed: %s", moo_error_message (error));
             g_error_free (error);
         }
     }

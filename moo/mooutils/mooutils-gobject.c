@@ -1287,7 +1287,7 @@ _moo_param_array_add_type_valist (GParameter *src,
 
         if (G_TYPE_FUNDAMENTAL (type) == G_TYPE_INVALID)
         {
-            g_warning ("%s: invalid type id passed", G_STRLOC);
+            g_warning ("invalid type id passed");
             _moo_param_array_free ((GParameter*)copy->data, copy->len);
             g_array_free (copy, FALSE);
             return NULL;
@@ -1299,7 +1299,7 @@ _moo_param_array_add_type_valist (GParameter *src,
 
         if (error)
         {
-            g_critical ("%s: %s", G_STRLOC, error);
+            g_critical ("%s", error);
             g_free (error);
             g_value_unset (&param.value);
             g_free ((char*)param.name);
@@ -1350,8 +1350,8 @@ _moo_param_array_add_valist (GType       type,
         GParamSpec *pspec = g_object_class_find_property (klass, name);
 
         if (!pspec) {
-            g_warning ("%s: class '%s' doesn't have property '%s'",
-                       G_STRLOC, g_type_name (type), name);
+            g_warning ("class '%s' doesn't have property '%s'",
+                       g_type_name (type), name);
             _moo_param_array_free ((GParameter*)copy->data, copy->len);
             g_array_free (copy, FALSE);
             return NULL;
@@ -1362,7 +1362,7 @@ _moo_param_array_add_valist (GType       type,
         G_VALUE_COLLECT (&param.value, var_args, 0, &error);
 
         if (error) {
-            g_critical ("%s: %s", G_STRLOC, error);
+            g_critical ("%s", error);
             g_free (error);
             g_value_unset (&param.value);
             g_free ((char*)param.name);
@@ -1410,8 +1410,8 @@ _moo_param_array_collect_valist (GType       type,
 
         if (!pspec)
         {
-            g_warning ("%s: class '%s' doesn't have property '%s'",
-                       G_STRLOC, g_type_name (type), prop_name);
+            g_warning ("class '%s' doesn't have property '%s'",
+                       g_type_name (type), prop_name);
             _moo_param_array_free ((GParameter*)params->data, params->len);
             g_array_free (params, FALSE);
             g_type_class_unref (klass);
@@ -1424,7 +1424,7 @@ _moo_param_array_collect_valist (GType       type,
 
         if (error)
         {
-            g_critical ("%s: %s", G_STRLOC, error);
+            g_critical ("%s", error);
             g_free (error);
             g_value_unset (&param.value);
             g_free ((char*)param.name);
@@ -1637,11 +1637,11 @@ prop_watch_new (GObject            *target,
     if (!source_pspec || !target_pspec)
     {
         if (!source_pspec)
-            g_warning ("%s: no property '%s' in class '%s'",
-                       G_STRLOC, source_prop, g_type_name (G_OBJECT_TYPE (source)));
+            g_warning ("no property '%s' in class '%s'",
+                       source_prop, g_type_name (G_OBJECT_TYPE (source)));
         if (!target_pspec)
-            g_warning ("%s: no property '%s' in class '%s'",
-                       G_STRLOC, target_prop, g_type_name (G_OBJECT_TYPE (target)));
+            g_warning ("no property '%s' in class '%s'",
+                       target_prop, g_type_name (G_OBJECT_TYPE (target)));
         return NULL;
     }
 
@@ -1902,8 +1902,8 @@ check_signal (GObject    *obj,
 
     if (!g_signal_parse_name (signal, G_OBJECT_TYPE (obj), signal_id, detail, FALSE))
     {
-        g_warning ("%s: could not parse signal '%s' of '%s' object",
-                   G_STRLOC, signal, g_type_name (G_OBJECT_TYPE (obj)));
+        g_warning ("could not parse signal '%s' of '%s' object",
+                   signal, g_type_name (G_OBJECT_TYPE (obj)));
         return FALSE;
     }
 
@@ -1911,7 +1911,7 @@ check_signal (GObject    *obj,
 
     if (query.n_params > 0)
     {
-        g_warning ("%s: implement me", G_STRLOC);
+        g_warning ("implement me");
         return FALSE;
     }
 
@@ -1924,11 +1924,11 @@ check_signal (GObject    *obj,
         case G_TYPE_INT:
         case G_TYPE_UINT:
             if (!any_return)
-                g_warning ("%s: implement me", G_STRLOC);
+                g_warning ("implement me");
             return FALSE;
 
         default:
-            g_warning ("%s: implement me", G_STRLOC);
+            g_warning ("implement me");
             return FALSE;
     }
 

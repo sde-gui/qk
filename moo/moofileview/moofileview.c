@@ -1350,7 +1350,7 @@ init_gui (MooFileView *fileview)
     }
     else
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
     }
 
     entry = _moo_file_entry_new ();
@@ -2021,13 +2021,8 @@ moo_file_view_go_home (MooFileView *fileview)
 
     if (!moo_file_view_chdir_path (fileview, moo_file_view_get_home_dir (fileview), &error))
     {
-        g_warning ("%s: could not go home", G_STRLOC);
-
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
+        g_warning ("could not go home: %s", moo_error_message (error));
+        g_error_free (error);
     }
 }
 
@@ -2059,14 +2054,10 @@ file_list_row_activated (MooFileView    *fileview,
 
         if (!moo_file_view_chdir_path (fileview, _moo_file_name (file), &error))
         {
-            g_warning ("%s: could not go into '%s'",
-                       G_STRLOC, _moo_file_name (file));
-
-            if (error)
-            {
-                g_warning ("%s: %s", G_STRLOC, error->message);
-                g_error_free (error);
-            }
+            g_warning ("could not go into '%s': %s",
+                       _moo_file_name (file),
+                       moo_error_message (error));
+            g_error_free (error);
 
             _moo_folder_check_exists (fileview->priv->current_dir,
                                       _moo_file_name (file));
@@ -2270,14 +2261,8 @@ moo_file_view_go (MooFileView *fileview,
 
         if (!moo_file_view_chdir_path (fileview, dir, &error))
         {
-            g_warning ("%s: could not go into '%s'",
-                       G_STRLOC, dir);
-
-            if (error)
-            {
-                g_warning ("%s: %s", G_STRLOC, error->message);
-                g_error_free (error);
-            }
+            g_warning ("could not go into '%s': %s", dir, moo_error_message (error));
+            g_error_free (error);
         }
         else
         {
@@ -3047,8 +3032,8 @@ fileview_set_filter (MooFileView    *fileview,
 
     if (filter && (gtk_file_filter_get_needed (filter) & GTK_FILE_FILTER_URI))
     {
-        g_warning ("%s: The filter set wants uri, but i do not know "
-                   "how to work with uri's. Ignoring", G_STRLOC);
+        g_warning ("The filter set wants uri, but i do not know "
+                   "how to work with uri's. Ignoring");
         return;
     }
 
@@ -3398,33 +3383,21 @@ file_view_create_folder (MooFileView *fileview)
 
     if (!path)
     {
-        _moo_message ("%s: could not make path for '%s'", G_STRLOC, name);
-
-        if (error)
-        {
-            _moo_message ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
-
+        _moo_message ("could not make path for '%s': %s", name, moo_error_message (error));
         goto out;
     }
 
     if (!_moo_file_system_create_folder (fileview->priv->file_system, path, &error))
     {
-        _moo_message ("%s: could not create folder '%s'", G_STRLOC, name);
-
-        if (error)
-        {
-            _moo_message ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
-
+        _moo_message ("could not create folder '%s': %s", name, moo_error_message (error));
         goto out;
     }
 
     _moo_file_view_select_display_name (fileview, name);
 
 out:
+    if (error)
+        g_error_free (error);
     g_free (path);
     g_free (name);
 }
@@ -4281,7 +4254,7 @@ moo_file_view_key_press (MooFileView    *fileview,
 {
     if (fileview->priv->entry_state)
     {
-        g_warning ("%s: something wrong", G_STRLOC);
+        g_warning ("oops");
         stop_path_entry (fileview, FALSE);
         return FALSE;
     }
@@ -4622,13 +4595,8 @@ file_view_activate_filename (MooFileView    *fileview,
     {
         if (!moo_file_view_chdir_path (fileview, path, &error))
         {
-            g_warning ("%s: could not chdir to %s",
-                       G_STRLOC, path);
-            if (error)
-            {
-                g_warning ("%s: %s", G_STRLOC, error->message);
-                g_error_free (error);
-            }
+            g_warning ("could not chdir to %s: %s", path, moo_error_message (error));
+            g_error_free (error);
         }
 
         g_free (path);
@@ -4648,15 +4616,8 @@ file_view_activate_filename (MooFileView    *fileview,
 
     if (!moo_file_view_chdir_path (fileview, dirname, &error))
     {
-        g_warning ("%s: could not chdir to %s",
-                    G_STRLOC, dirname);
-
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
-
+        g_warning ("could not chdir to %s: %s", dirname, moo_error_message (error));
+        g_error_free (error);
         g_free (path);
         g_free (dirname);
         g_free (basename);
@@ -5177,7 +5138,7 @@ drop_open_timeout_func2 (MooFileView *fileview)
         }
         else
         {
-            g_warning ("%s: oops", G_STRLOC);
+            g_warning ("oops");
         }
 
         if (goto_dir && moo_file_view_chdir_path (fileview, goto_dir, NULL))
@@ -5290,7 +5251,7 @@ drag_data_received (MooFileView    *fileview,
 
     if (!current_dir)
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         _moo_file_view_drag_finish (fileview, context, FALSE, FALSE, time);
         return;
     }
@@ -5339,7 +5300,7 @@ drag_drop (MooFileView    *fileview,
 
     if (!current_dir)
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         _moo_file_view_drag_finish (fileview, context, FALSE, FALSE, time);
         return FALSE;
     }
@@ -5388,7 +5349,7 @@ moo_file_view_drop (MooFileView    *fileview,
     }
     else
     {
-        g_warning ("%s: oops", G_STRLOC);
+        g_warning ("oops");
         return FALSE;
     }
 }
@@ -5422,7 +5383,7 @@ moo_file_view_drop_data_received (MooFileView    *fileview,
         }
         else
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
         }
 
         g_strfreev (uris);
@@ -5437,7 +5398,7 @@ moo_file_view_drop_data_received (MooFileView    *fileview,
             success = moo_file_view_drop_text (fileview, text, path, widget,
                                                context, x, y, time, &delete);
         else
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
 
         g_free (text);
     }
@@ -5752,9 +5713,7 @@ run_command_on_files (MooFileView *fileview,
 
     if (!_moo_unix_spawn_async (argv, G_SPAWN_SEARCH_PATH, &error))
     {
-        g_critical ("%s: could not spawn '%s'",
-                    G_STRLOC, first_args[0]);
-        g_critical ("%s: %s", G_STRLOC, error->message);
+        g_critical ("could not spawn '%s': %s", first_args[0], moo_error_message (error));
         g_error_free (error);
         goto out;
     }
@@ -5940,7 +5899,7 @@ drop_item_activated (GObject     *item,
 //
 //     if (g_file_test (name, G_FILE_TEST_EXISTS))
 //     {
-//         g_critical ("%s: oops", G_STRLOC);
+//         g_critical ("oops");
 //         goto out;
 //     }
 //
@@ -5979,7 +5938,7 @@ moo_file_view_drop_uris (MooFileView    *fileview,
 
         if (!file)
         {
-            g_warning ("%s: %s", G_STRLOC, error->message);
+            g_warning ("%s", moo_error_message (error));
             g_error_free (error);
             goto out;
         }
@@ -5989,7 +5948,7 @@ moo_file_view_drop_uris (MooFileView    *fileview,
 
     if (!filenames)
     {
-        g_warning ("%s: got empty uri list", G_STRLOC);
+        g_warning ("got empty uri list");
         goto out;
     }
 
@@ -6000,7 +5959,7 @@ moo_file_view_drop_uris (MooFileView    *fileview,
 //
 //         if (same_path (destdir, filenames->data))
 //         {
-//             g_warning ("%s: dragging folder to itself", G_STRLOC);
+//             g_warning ("dragging folder to itself");
 //             goto out;
 //         }
 //
@@ -6060,7 +6019,7 @@ moo_file_view_drop_uris (MooFileView    *fileview,
             break;
 
         default:
-            g_warning ("%s: oops", G_STRLOC);
+            g_warning ("oops");
             action = GDK_ACTION_ASK;
     }
 
@@ -6160,7 +6119,7 @@ moo_file_view_drop_text (G_GNUC_UNUSED MooFileView *fileview,
 
         if (g_file_test (name, G_FILE_TEST_EXISTS))
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
             goto out;
         }
 

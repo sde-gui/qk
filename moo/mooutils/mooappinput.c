@@ -186,7 +186,7 @@ commit (GString **buffer)
 
     if (!(*buffer)->len)
     {
-        moo_dmsg ("%s: got empty command", G_STRLOC);
+        moo_dmsg ("got empty command");
         return;
     }
 
@@ -492,7 +492,7 @@ do_write (int         fd,
         {
             if (errno != EAGAIN && errno != EINTR)
             {
-                g_warning ("%s in write: %s", G_STRLOC, g_strerror (errno));
+                g_warning ("in write: %s", g_strerror (errno));
                 return FALSE;
             }
         }
@@ -628,14 +628,14 @@ read_input (G_GNUC_UNUSED GIOChannel *source,
     if (n <= 0)
     {
         if (n < 0)
-            moo_dmsg ("%s: %s", G_STRLOC, g_strerror (errno));
+            moo_dmsg ("%s", g_strerror (errno));
         else
-            moo_dmsg ("%s: EOF", G_STRLOC);
+            moo_dmsg ("EOF");
         goto remove;
     }
     else
     {
-        moo_dmsg ("%s: got bytes: '%s'", G_STRLOC, conn->buffer->str);
+        moo_dmsg ("got bytes: '%s'", conn->buffer->str);
     }
 
     if (do_commit)
@@ -643,8 +643,7 @@ read_input (G_GNUC_UNUSED GIOChannel *source,
 
     if (!do_commit && (condition & (G_IO_ERR | G_IO_HUP)))
     {
-        moo_dmsg ("%s: %s", G_STRLOC,
-                  (condition & G_IO_ERR) ? "G_IO_ERR" : "G_IO_HUP");
+        moo_dmsg ("%s", (condition & G_IO_ERR) ? "G_IO_ERR" : "G_IO_HUP");
         goto remove;
     }
 
@@ -679,7 +678,7 @@ accept_connection (G_GNUC_UNUSED GIOChannel *source,
 
     if (conn->fd == -1)
     {
-        g_warning ("%s in accept: %s", G_STRLOC, g_strerror (errno));
+        g_warning ("in accept: %s", g_strerror (errno));
         g_slice_free (Connection, conn);
         return TRUE;
     }
@@ -707,7 +706,7 @@ try_connect (const char *filename,
 
     if (strlen (filename) + 1 > sizeof addr.sun_path)
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         return FALSE;
     }
 
@@ -717,7 +716,7 @@ try_connect (const char *filename,
 
     if (fd == -1)
     {
-        g_warning ("%s in socket for %s: %s", G_STRLOC, filename, g_strerror (errno));
+        g_warning ("in socket for %s: %s", filename, g_strerror (errno));
         return FALSE;
     }
 
@@ -749,14 +748,13 @@ input_channel_start (InputChannel *ch,
     if (try_connect (ch->path, NULL))
     {
         if (!may_fail)
-            g_warning ("%s: '%s' is already in use",
-                       G_STRLOC, ch->path);
+            g_warning ("'%s' is already in use", ch->path);
         return FALSE;
     }
 
     if (strlen (ch->path) + 1 > sizeof addr.sun_path)
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         return FALSE;
     }
 
@@ -767,13 +765,13 @@ input_channel_start (InputChannel *ch,
 
     if ((ch->fd = socket (PF_UNIX, SOCK_STREAM, 0)) == -1)
     {
-        g_warning ("%s in socket for %s: %s", G_STRLOC, ch->path, g_strerror (errno));
+        g_warning ("in socket for %s: %s", ch->path, g_strerror (errno));
         return FALSE;
     }
 
     if (bind (ch->fd, (struct sockaddr*) &addr, sizeof addr) == -1)
     {
-        g_warning ("%s in bind for %s: %s", G_STRLOC, ch->path, g_strerror (errno));
+        g_warning ("in bind for %s: %s", ch->path, g_strerror (errno));
         close (ch->fd);
         ch->fd = -1;
         return FALSE;
@@ -781,7 +779,7 @@ input_channel_start (InputChannel *ch,
 
     if (listen (ch->fd, 5) == -1)
     {
-        g_warning ("%s in listen for %s: %s", G_STRLOC, ch->path, g_strerror (errno));
+        g_warning ("in listen for %s: %s", ch->path, g_strerror (errno));
         close (ch->fd);
     	ch->fd = -1;
     	return FALSE;
@@ -974,8 +972,7 @@ listener_main (ListenerInfo *info)
             if (err != ERROR_PIPE_CONNECTED)
             {
                 char *msg = g_win32_error_message (err);
-                _moo_message_async ("%s: error in ConnectNamedPipe()", G_STRLOC);
-                _moo_message_async ("%s: %s", G_STRLOC, msg);
+                _moo_message_async ("%s: error in ConnectNamedPipe(): %s", G_STRLOC, msg);
                 CloseHandle (input);
                 g_free (msg);
                 break;

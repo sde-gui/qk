@@ -115,7 +115,7 @@ cfunc__execute (lua_State *L)
     if (!argv)
     {
         lua_pushinteger (L, 2);
-        moo_message ("could not parse command line '%s': %s", command, error->message);
+        g_message ("could not parse command line '%s': %s", command, error->message);
         g_error_free (error);
         return 1;
     }
@@ -126,7 +126,7 @@ cfunc__execute (lua_State *L)
                        &exit_status, &error))
     {
         lua_pushinteger (L, 2);
-        moo_message ("could not run command '%s': %s", command, error->message);
+        g_message ("could not run command '%s': %s", command, error->message);
         g_error_free (error);
         g_strfreev (argv);
         return 1;

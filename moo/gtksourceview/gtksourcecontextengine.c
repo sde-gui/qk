@@ -787,7 +787,7 @@ apply_tags (GtkSourceContextEngine *ce,
 
 		if (style_start_at > style_end_at)
 		{
-			g_critical ("%s: oops", G_STRLOC);
+			g_critical ("oops");
 		}
 		else
 		{
@@ -2921,18 +2921,18 @@ apply_sub_patterns (Segment         *state,
 		if (where == SUB_PATTERN_WHERE_START)
 		{
 			if (line->start_at + start_pos != state->start_at)
-				g_critical ("%s: oops", G_STRLOC);
+				g_critical ("oops");
 			else if (line->start_at + end_pos > state->end_at)
-				g_critical ("%s: oops", G_STRLOC);
+				g_critical ("oops");
 			else
 				state->start_len = line->start_at + end_pos - state->start_at;
 		}
 		else
 		{
 			if (line->start_at + start_pos < state->start_at)
-				g_critical ("%s: oops", G_STRLOC);
+				g_critical ("oops");
 			else if (line->start_at + end_pos != state->end_at)
-				g_critical ("%s: oops", G_STRLOC);
+				g_critical ("oops");
 			else
 				state->end_len = state->end_at - line->start_at - start_pos;
 		}
@@ -3178,7 +3178,7 @@ create_reg_all (Context           *context,
 				 * or parser need to check it */
 				else
 				{
-					/* g_critical ("%s: oops", G_STRLOC); */
+					/* g_critical ("oops"); */
 					append = FALSE;
 				}
 

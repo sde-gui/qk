@@ -421,7 +421,7 @@ _moo_edit_save_error_dialog (MooEdit *doc,
 {
     char *filename, *msg = NULL;
 
-    moo_return_if_fail (G_IS_FILE (file));
+    g_return_if_fail (G_IS_FILE (file));
 
     filename = moo_file_get_display_name (file);
 
@@ -555,7 +555,7 @@ _moo_edit_reload_error_dialog (MooEdit *doc,
 
     if (!filename)
     {
-        moo_critical ("oops");
+        g_critical ("oops");
         filename = "";
     }
 
@@ -584,7 +584,7 @@ _moo_edit_reload_modified_dialog (MooEdit *doc)
 
     if (!name)
     {
-        moo_critical ("oops");
+        g_critical ("oops");
         name = "";
     }
 
@@ -609,7 +609,7 @@ _moo_edit_overwrite_modified_dialog (MooEdit *doc)
 
     if (!name)
     {
-        moo_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         name = "";
     }
 
@@ -675,12 +675,12 @@ _moo_text_regex_error_dialog (GtkWidget  *parent,
     if (error)
     {
         if (error->domain != G_REGEX_ERROR)
-            g_warning ("%s: unknown error domain", G_STRLOC);
+            g_warning ("unknown error domain");
         msg_text = g_strdup (error->message);
     }
     else
     {
-        msg_text = g_strdup_printf ("Invalid regular expression");
+        msg_text = g_strdup_printf (_("Invalid regular expression"));
     }
 
     dialog = gtk_message_dialog_new (NULL,

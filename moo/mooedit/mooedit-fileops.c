@@ -29,7 +29,7 @@
 #include "mooutils/mooencodings.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mootype-macros.h"
-#include "mooutils/mooutils-messages.h"
+#include "mooutils/mooutils.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/moocompat.h"
 #include <string.h>
@@ -101,7 +101,7 @@ _moo_signal_accumulator_save_response (G_GNUC_UNUSED GSignalInvocationHint  *ihi
     {
         g_value_set_enum (return_accu, MOO_EDIT_SAVE_RESPONSE_CONTINUE);
         if (ret != MOO_EDIT_SAVE_RESPONSE_CONTINUE)
-            moo_critical ("invalid save response value %d", ret);
+            g_critical ("invalid save response value %d", ret);
         return TRUE;
     }
 }
@@ -122,9 +122,9 @@ _moo_edit_file_is_new (GFile *file)
 {
     gboolean is_new;
     char *filename;
-    moo_return_val_if_fail (G_IS_FILE (file), FALSE);
+    g_return_val_if_fail (G_IS_FILE (file), FALSE);
     filename = g_file_get_path (file);
-    moo_return_val_if_fail (filename != NULL, FALSE);
+    g_return_val_if_fail (filename != NULL, FALSE);
     is_new = !g_file_test (filename, G_FILE_TEST_EXISTS);
     g_free (filename);
     return is_new;
@@ -244,7 +244,7 @@ set_encoding_error (GError **error)
 MooLineEndType
 moo_edit_get_line_end_type (MooEdit *edit)
 {
-    moo_return_val_if_fail (MOO_IS_EDIT (edit), MOO_LE_DEFAULT);
+    g_return_val_if_fail (MOO_IS_EDIT (edit), MOO_LE_DEFAULT);
     if (edit->priv->line_end_type == MOO_LE_NONE)
         return MOO_LE_DEFAULT;
     else
@@ -256,8 +256,8 @@ moo_edit_set_line_end_type_full (MooEdit        *edit,
                                  MooLineEndType  le,
                                  gboolean        quiet)
 {
-    moo_return_if_fail (MOO_IS_EDIT (edit));
-    moo_return_if_fail (le > 0);
+    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (le > 0);
 
     if (edit->priv->line_end_type != le)
     {
@@ -274,7 +274,7 @@ void
 moo_edit_set_line_end_type (MooEdit        *edit,
                             MooLineEndType  le)
 {
-    moo_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (MOO_IS_EDIT (edit));
     moo_edit_set_line_end_type_full (edit, le, FALSE);
 }
 
@@ -334,7 +334,7 @@ get_encodings (void)
 
     if (!result)
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         result = g_slist_prepend (NULL, g_strdup ("UTF-8"));
     }
 
@@ -354,9 +354,9 @@ try_load (MooEdit      *edit,
     gboolean enable_highlight;
     LoadResult result = ERROR_FILE;
 
-    moo_return_val_if_fail (MOO_IS_EDIT (edit), result);
-    moo_return_val_if_fail (G_IS_FILE (file), result);
-    moo_return_val_if_fail (encoding && encoding[0], result);
+    g_return_val_if_fail (MOO_IS_EDIT (edit), result);
+    g_return_val_if_fail (G_IS_FILE (file), result);
+    g_return_val_if_fail (encoding && encoding[0], result);
 
     view = moo_edit_get_view (edit);
     buffer = moo_edit_get_buffer (edit);
@@ -534,8 +534,8 @@ do_load (MooEdit      *edit,
     LoadResult result = ERROR_FILE;
     char *path;
 
-    moo_return_val_if_fail (G_IS_FILE (gfile), ERROR_FILE);
-    moo_return_val_if_fail (encoding != NULL, ERROR_FILE);
+    g_return_val_if_fail (G_IS_FILE (gfile), ERROR_FILE);
+    g_return_val_if_fail (encoding != NULL, ERROR_FILE);
 
     if (!(path = g_file_get_path (gfile)))
     {
@@ -1044,10 +1044,10 @@ file_watch_callback (G_GNUC_UNUSED MooFileWatch *watch,
 {
     MooEdit *edit = MOO_EDIT (data);
 
-    moo_return_if_fail (MOO_IS_EDIT (data));
-    moo_return_if_fail (event->monitor_id == edit->priv->file_monitor_id);
-    moo_return_if_fail (edit->priv->filename != NULL);
-    moo_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
+    g_return_if_fail (MOO_IS_EDIT (data));
+    g_return_if_fail (event->monitor_id == edit->priv->file_monitor_id);
+    g_return_if_fail (edit->priv->filename != NULL);
+    g_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
 
     switch (event->code)
     {
@@ -1065,7 +1065,7 @@ file_watch_callback (G_GNUC_UNUSED MooFileWatch *watch,
             break;
 
         case MOO_FILE_EVENT_CREATED:
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
             break;
     }
 
@@ -1080,14 +1080,14 @@ _moo_edit_start_file_watch (MooEdit *edit)
     GError *error = NULL;
 
     watch = _moo_editor_get_file_watch (edit->priv->editor);
-    moo_return_if_fail (watch != NULL);
+    g_return_if_fail (watch != NULL);
 
     if (edit->priv->file_monitor_id)
         moo_file_watch_cancel_monitor (watch, edit->priv->file_monitor_id);
     edit->priv->file_monitor_id = 0;
 
-    moo_return_if_fail ((edit->priv->status & MOO_EDIT_CHANGED_ON_DISK) == 0);
-    moo_return_if_fail (edit->priv->filename != NULL);
+    g_return_if_fail ((edit->priv->status & MOO_EDIT_CHANGED_ON_DISK) == 0);
+    g_return_if_fail (edit->priv->filename != NULL);
 
     edit->priv->file_monitor_id =
         moo_file_watch_create_monitor (watch, edit->priv->filename,
@@ -1096,15 +1096,9 @@ _moo_edit_start_file_watch (MooEdit *edit)
 
     if (!edit->priv->file_monitor_id)
     {
-        g_warning ("%s: could not start watch for '%s'",
-                   G_STRLOC, edit->priv->filename);
-
-        if (error)
-        {
-            g_warning ("%s: %s", G_STRLOC, error->message);
-            g_error_free (error);
-        }
-
+        g_warning ("could not start watch for '%s': %s",
+                   edit->priv->filename, moo_error_message (error));
+        g_error_free (error);
         return;
     }
 }
@@ -1116,7 +1110,7 @@ _moo_edit_stop_file_watch (MooEdit *edit)
     MooFileWatch *watch;
 
     watch = _moo_editor_get_file_watch (edit->priv->editor);
-    moo_return_if_fail (watch != NULL);
+    g_return_if_fail (watch != NULL);
 
     if (edit->priv->file_monitor_id)
         moo_file_watch_cancel_monitor (watch, edit->priv->file_monitor_id);
@@ -1127,8 +1121,8 @@ _moo_edit_stop_file_watch (MooEdit *edit)
 static void
 check_file_status (MooEdit *edit)
 {
-    moo_return_if_fail (edit->priv->filename != NULL);
-    moo_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
+    g_return_if_fail (edit->priv->filename != NULL);
+    g_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
 
     if (edit->priv->deleted_from_disk)
         file_deleted (edit);
@@ -1140,7 +1134,7 @@ check_file_status (MooEdit *edit)
 static void
 file_modified_on_disk (MooEdit *edit)
 {
-    moo_return_if_fail (edit->priv->filename != NULL);
+    g_return_if_fail (edit->priv->filename != NULL);
     edit->priv->modified_on_disk = FALSE;
     edit->priv->deleted_from_disk = FALSE;
     _moo_edit_stop_file_watch (edit);
@@ -1151,7 +1145,7 @@ file_modified_on_disk (MooEdit *edit)
 static void
 file_deleted (MooEdit *edit)
 {
-    moo_return_if_fail (edit->priv->filename != NULL);
+    g_return_if_fail (edit->priv->filename != NULL);
     edit->priv->modified_on_disk = FALSE;
     edit->priv->deleted_from_disk = FALSE;
     _moo_edit_stop_file_watch (edit);
@@ -1210,10 +1204,10 @@ moo_file_get_display_basename (GFile *file)
     char *name;
     const char *slash;
 
-    moo_return_val_if_fail (G_IS_FILE (file), NULL);
+    g_return_val_if_fail (G_IS_FILE (file), NULL);
 
     name = moo_file_get_display_name (file);
-    moo_return_val_if_fail (name != NULL, NULL);
+    g_return_val_if_fail (name != NULL, NULL);
 
     slash = strrchr (name, '/');
 
@@ -1234,7 +1228,7 @@ moo_file_get_display_basename (GFile *file)
 char *
 _moo_edit_normalize_filename_for_comparison (const char *filename)
 {
-    moo_return_val_if_fail (filename != NULL, NULL);
+    g_return_val_if_fail (filename != NULL, NULL);
 #ifdef __WIN32__
     /* XXX */
     char *tmp = g_utf8_normalize (filename, -1, G_NORMALIZE_ALL_COMPOSE);
@@ -1258,7 +1252,7 @@ _moo_file_get_normalized_name (GFile *file)
     char *tmp = NULL;
     char *tmp2 = NULL;
 
-    moo_return_val_if_fail (G_IS_FILE (file), NULL);
+    g_return_val_if_fail (G_IS_FILE (file), NULL);
 
     tmp = g_file_get_path (file);
 
@@ -1270,7 +1264,7 @@ _moo_file_get_normalized_name (GFile *file)
     else
     {
         tmp = g_file_get_uri (file);
-        moo_return_val_if_fail (tmp != NULL, NULL);
+        g_return_val_if_fail (tmp != NULL, NULL);
         ret = _moo_edit_normalize_uri_for_comparison (tmp);
     }
 

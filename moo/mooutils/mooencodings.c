@@ -260,7 +260,7 @@ get_enc_mgr (void)
             enc = (Encoding*) g_hash_table_lookup (mgr->encodings, moo_encoding_aliases[i].name);
 
             if (!enc)
-                g_critical ("%s: oops %s", G_STRLOC, moo_encoding_aliases[i].name);
+                g_critical ("oops %s", moo_encoding_aliases[i].name);
             else
                 g_hash_table_insert (mgr->encodings, (char*)
                                      moo_encoding_aliases[i].alias,

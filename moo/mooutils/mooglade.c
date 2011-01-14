@@ -341,13 +341,12 @@ set_mnemonics (MooGladeXML    *xml,
         mnemonic = GTK_WIDGET (moo_glade_xml_get_widget (xml, node->props->mnemonic_widget));
 
         if (!mnemonic)
-            g_warning ("%s: could not find widget '%s'",
-                       G_STRLOC,
+            g_warning ("could not find widget '%s'",
                        node->props->mnemonic_widget ?
                                node->props->mnemonic_widget : "NULL");
         else if (!GTK_IS_LABEL (node->widget))
-            g_warning ("%s: mnemonic widget property specified for widget of class %s",
-                       G_STRLOC, g_type_name (G_OBJECT_TYPE (node->widget)));
+            g_warning ("mnemonic widget property specified for widget of class %s",
+                       g_type_name (G_OBJECT_TYPE (node->widget)));
         else
             set_mnemonic_widget (GTK_LABEL (node->widget), mnemonic);
     }
@@ -461,7 +460,7 @@ set_custom_props (MooGladeXML    *xml,
                   !xml->priv->prop_func (xml, node->id, node->widget,
                                          prop, value, xml->priv->prop_func_data))
         {
-            /* g_message ("%s: unknown property '%s'", G_STRLOC, prop); */
+            /* g_message ("unknown property '%s'", prop); */
         }
     }
 }
@@ -485,8 +484,7 @@ connect_special_signal (MooGladeXML    *xml,
             if (!strcmp (signal->object, "invert"))
                 invert = TRUE;
             else
-                g_warning ("%s: invalid string '%s'",
-                           G_STRLOC, signal->object);
+                g_warning ("invalid string '%s'", signal->object);
         }
 
         moo_bind_sensitive (btn, node->widget, invert);
@@ -515,15 +513,14 @@ connect_signals (MooGladeXML    *xml,
 
         if (!signal->name || !signal->name[0])
         {
-            g_warning ("%s: empty signal name in widget %s",
-                       G_STRLOC, node->id);
+            g_warning ("empty signal name in widget %s", node->id);
             continue;
         }
 
         if (!signal->handler || !signal->handler[0])
         {
-            g_warning ("%s: empty handler of signal '%s' in widget %s",
-                       G_STRLOC, signal->name, node->id);
+            g_warning ("empty handler of signal '%s' in widget %s",
+                       signal->name, node->id);
             continue;
         }
 
@@ -549,14 +546,14 @@ connect_signals (MooGladeXML    *xml,
 
             if (!object)
             {
-                g_warning ("%s: could not find object '%s' for signal '%s' of widget '%s'",
-                           G_STRLOC, signal->object, signal->name, node->id);
+                g_warning ("could not find object '%s' for signal '%s' of widget '%s'",
+                           signal->object, signal->name, node->id);
                 continue;
             }
         }
 
-        g_warning ("%s: unconnected signal '%s' of widget '%s'",
-                   G_STRLOC, signal->name, node->id);
+        g_warning ("unconnected signal '%s' of widget '%s'",
+                   signal->name, node->id);
     }
 
     for (lch = node->children; lch != NULL; lch = lch->next)
@@ -607,7 +604,7 @@ set_special_props (MooGladeXML    *xml,
         if (GTK_IS_TOOLBAR (widget))
             gtk_toolbar_set_tooltips (GTK_TOOLBAR (widget), TRUE);
         else
-            g_warning ("%s: oops", G_STRLOC);
+            g_warning ("oops");
     }
 
     if (props->mask & PROP_HISTORY)
@@ -616,7 +613,7 @@ set_special_props (MooGladeXML    *xml,
             gtk_option_menu_set_history (GTK_OPTION_MENU (widget),
                                          props->history);
         else
-            g_warning ("%s: oops", G_STRLOC);
+            g_warning ("oops");
     }
 
     if (props->mask & PROP_RADIO_GROUP)
@@ -692,7 +689,7 @@ moo_glade_xml_create_widget (MooGladeXML *xml,
         {
             if (!props->label)
             {
-                g_warning ("%s: oops", G_STRLOC);
+                g_warning ("oops");
             }
             if (type == GTK_TYPE_MENU_ITEM)
             {
@@ -737,7 +734,7 @@ moo_glade_xml_create_widget (MooGladeXML *xml,
             }
             else
             {
-                g_warning ("%s: oops", G_STRLOC);
+                g_warning ("oops");
             }
         }
     }
@@ -924,14 +921,14 @@ pack_children (MooGladeXML    *xml,
 
             if (index <= 0)
             {
-                g_warning ("%s: oops", G_STRLOC);
+                g_warning ("oops");
             }
             else
             {
                 Child *page_child = (Child*) g_slist_nth_data (child_list_to_gslist (parent_node->children), index - 1);
 
                 if (!page_child->widget || !page_child->widget->widget)
-                    g_message ("%s: empty notebook page with non-empty label", G_STRLOC);
+                    g_message ("empty notebook page with non-empty label");
                 else
                     gtk_notebook_set_tab_label (GTK_NOTEBOOK (parent_widget),
                                                 page_child->widget->widget,
@@ -963,7 +960,7 @@ pack_children (MooGladeXML    *xml,
 
                 if (!dialog || !GTK_IS_DIALOG (dialog))
                 {
-                    g_warning ("%s: oops", G_STRLOC);
+                    g_warning ("oops");
                 }
                 else
                 {
@@ -1435,7 +1432,7 @@ widget_props_add (WidgetProps  *props,
               GTK_IS_TEXT_VIEW_CLASS (klass))
     {
         if (value && value[0])
-            g_message ("%s: ignoring TextView text property", G_STRLOC);
+            g_message ("ignoring TextView text property");
     }
     else if (!strcmp (name, "group") &&
               (GTK_IS_RADIO_BUTTON_CLASS (klass) ||
@@ -1478,7 +1475,7 @@ widget_props_add (WidgetProps  *props,
     {
 #if 0
 //         if (value && value[0])
-//             g_message ("%s: ignoring ComboBox items property", G_STRLOC);
+//             g_message ("ignoring ComboBox items property");
 #endif
     }
     else
@@ -1791,8 +1788,8 @@ parse_property (GParamSpec     *param_spec,
 
         if (errno)
         {
-            g_warning ("%s: could not convert string '%s' to an int",
-                       G_STRLOC, value);
+            g_warning ("could not convert string '%s' to an int",
+                       value);
             return FALSE;
         }
         else
@@ -1813,8 +1810,8 @@ parse_property (GParamSpec     *param_spec,
 
         if (errno)
         {
-            g_warning ("%s: could not convert string '%s' to a guint",
-                       G_STRLOC, value);
+            g_warning ("could not convert string '%s' to a guint",
+                       value);
             return FALSE;
         }
         else
@@ -1834,8 +1831,8 @@ parse_property (GParamSpec     *param_spec,
 
         if (errno)
         {
-            g_warning ("%s: could not convert string '%s' to double",
-                       G_STRLOC, value);
+            g_warning ("could not convert string '%s' to double",
+                       value);
             return FALSE;
         }
         else
@@ -1855,8 +1852,8 @@ parse_property (GParamSpec     *param_spec,
         if (!_moo_value_convert_from_string (value, &param->value))
         {
             const char *type_name = g_type_name (param_spec->value_type);
-            g_warning ("%s: can not convert string '%s' to a value of type %s",
-                       G_STRLOC, value, type_name ? type_name : "<unknown>");
+            g_warning ("can not convert string '%s' to a value of type %s",
+                       value, type_name ? type_name : "<unknown>");
             return FALSE;
         }
     }
@@ -1865,8 +1862,8 @@ parse_property (GParamSpec     *param_spec,
         if (!_moo_value_convert_from_string (value, &param->value))
         {
             const char *type_name = g_type_name (param_spec->value_type);
-            g_warning ("%s: can not convert string '%s' to a value of type %s",
-                       G_STRLOC, value, type_name ? type_name : "<unknown>");
+            g_warning ("can not convert string '%s' to a value of type %s",
+                       value, type_name ? type_name : "<unknown>");
             return FALSE;
         }
     }
@@ -1876,7 +1873,7 @@ parse_property (GParamSpec     *param_spec,
 
         if (!pixbuf)
         {
-            g_message ("%s: could not find %s", G_STRLOC, value);
+            g_message ("could not find %s", value);
             g_value_set_object (&param->value, NULL);
         }
         else
@@ -1892,8 +1889,8 @@ parse_property (GParamSpec     *param_spec,
         if (!adjustment)
         {
             const char *type_name = g_type_name (param_spec->value_type);
-            g_warning ("%s: could not convert string '%s' to a value of type %s",
-                       G_STRLOC, value, type_name ? type_name : "<unknown>");
+            g_warning ("could not convert string '%s' to a value of type %s",
+                       value, type_name ? type_name : "<unknown>");
             return FALSE;
         }
         else
@@ -1911,8 +1908,8 @@ parse_property (GParamSpec     *param_spec,
     else
     {
         const char *type_name = g_type_name (param_spec->value_type);
-        g_warning ("%s: could not convert string '%s' to a value of type %s",
-                   G_STRLOC, value, type_name ? type_name : "<unknown>");
+        g_warning ("could not convert string '%s' to a value of type %s",
+                   value, type_name ? type_name : "<unknown>");
         return FALSE;
     }
 
@@ -1942,8 +1939,8 @@ parse_int (const char *value)
 
     if (errno)
     {
-        g_warning ("%s: could not convert string '%s' to an int",
-                   G_STRLOC, value);
+        g_warning ("could not convert string '%s' to an int",
+                   value);
         return 0;
     }
     else
@@ -2146,7 +2143,7 @@ moo_glade_xml_parse_memory (MooGladeXML    *xml,
         }
         else
         {
-            g_warning ("%s: %s", G_STRLOC, error_here->message);
+            g_warning ("%s", moo_error_message (error_here));
             g_error_free (error_here);
         }
     }
@@ -2200,7 +2197,7 @@ moo_glade_xml_new_from_buf (const char     *buffer,
         }
         else
         {
-            g_warning ("%s: %s", G_STRLOC, error_here->message);
+            g_warning ("%s", moo_error_message (error_here));
             g_error_free (error_here);
         }
 
@@ -2294,11 +2291,11 @@ moo_glade_xml_parse_markup (MooGladeXML  *xml,
         else if (strcmp (elm->name, "requires") == 0 ||
                  strcmp (elm->name, "requires-version") == 0)
         {
-//             g_message ("%s: ignoring '%s'", G_STRLOC, elm->name);
+//             g_message ("ignoring '%s'", elm->name);
         }
         else
         {
-            g_warning ("%s: invalid element '%s'", G_STRLOC, elm->name);
+            g_warning ("invalid element '%s'", elm->name);
         }
     }
     FOREACH_ELM_END;

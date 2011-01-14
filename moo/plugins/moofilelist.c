@@ -874,8 +874,8 @@ parse_node (FileList      *list,
 
         if (!(name = moo_markup_get_prop (elm, PROP_NAME)) || !name[0])
         {
-            g_critical ("%s: in file %s, element %s: name missing",
-                        G_STRLOC, filename, elm->name);
+            g_critical ("in file %s, element %s: name missing",
+                        filename, elm->name);
             return;
         }
 
@@ -895,8 +895,8 @@ parse_node (FileList      *list,
 
         if (!(uri = moo_markup_get_prop (elm, PROP_URI)) || !uri[0])
         {
-            g_critical ("%s: in file %s, element %s: uri missing",
-                        G_STRLOC, filename, elm->name);
+            g_critical ("in file %s, element %s: uri missing",
+                        filename, elm->name);
             return;
         }
 
@@ -913,8 +913,8 @@ parse_node (FileList      *list,
 
         if (*ui_config)
         {
-            g_critical ("%s: in file %s, duplicated element %s",
-                        G_STRLOC, filename, elm->name);
+            g_critical ("in file %s, duplicated element %s",
+                        filename, elm->name);
             return;
         }
 
@@ -942,8 +942,8 @@ parse_node (FileList      *list,
     }
     else
     {
-        g_critical ("%s: in file %s: unexpected element '%s'",
-                    G_STRLOC, filename, elm->name);
+        g_critical ("in file %s: unexpected element '%s'",
+                    filename, elm->name);
     }
 }
 
@@ -1052,7 +1052,7 @@ format_item (FileList    *list,
     }
     else
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
     }
 
     g_free (indent_s);
@@ -1126,9 +1126,8 @@ file_list_save_config (FileList   *list,
 
     if (!moo_save_config_file (filename, buffer->str, buffer->len, &error))
     {
-        g_critical ("%s: could not save file %s: %s",
-                    G_STRLOC, filename,
-                    moo_error_message (error));
+        g_critical ("could not save file %s: %s",
+                    filename, moo_error_message (error));
         g_error_free (error);
     }
 

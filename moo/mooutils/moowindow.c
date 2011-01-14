@@ -985,7 +985,7 @@ moo_window_set_title (MooWindow  *window,
 {
     const char *old_title;
 
-    moo_return_if_fail (window != NULL);
+    g_return_if_fail (window != NULL);
 
     old_title = gtk_window_get_title (GTK_WINDOW (window));
 
@@ -2074,7 +2074,7 @@ collect_params_and_props (guint              n_callback_args,
 
         if (!action_factory)
         {
-            g_warning ("%s: error in moo_action_factory_new_a()", G_STRLOC);
+            g_warning ("oops");
             goto error;
         }
 
@@ -2156,7 +2156,7 @@ moo_window_class_new_action (MooWindowClass     *klass,
     if (!success)
     {
         if (error)
-            g_critical ("%s: %s", G_STRLOC, error);
+            g_critical ("%s", error);
         g_free (error);
         return;
     }
@@ -2194,7 +2194,7 @@ _moo_window_class_new_action_callback (MooWindowClass *klass,
     if (!success)
     {
         if (error)
-            g_critical ("%s: %s", G_STRLOC, error);
+            g_critical ("%s", error);
         g_free (error);
         return;
     }

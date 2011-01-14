@@ -424,8 +424,8 @@ moo_paned_constructor (GType                  type,
             paned->button_box = gtk_hbox_new (FALSE, button_spacing);
             break;
         default:
-            g_warning ("%s: invalid 'pane-position' property value '%u',"
-                       "falling back to MOO_PANE_POS_LEFT", G_STRLOC,
+            g_warning ("invalid 'pane-position' property value '%u',"
+                       "falling back to MOO_PANE_POS_LEFT",
                        paned->priv->pane_position);
             paned->priv->pane_position = MOO_PANE_POS_LEFT;
             paned->button_box = gtk_vbox_new (FALSE, button_spacing);
@@ -1974,7 +1974,7 @@ compute_window_offset (MooPaned  *paned,
     }
 
     if (!window)
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
 }
 
 void
@@ -2468,7 +2468,7 @@ moo_paned_set_focus_child (GtkContainer *container,
 
         if (!new_focus)
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
             GTK_CONTAINER_CLASS(moo_paned_parent_class)->set_focus_child (container, widget);
             paned->priv->focus = FOCUS_NONE;
             paned->priv->focus_pane = NULL;

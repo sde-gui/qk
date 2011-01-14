@@ -36,7 +36,7 @@ moo_edit_window_get_output (MooEditWindow *window)
         if (!moo_edit_window_add_pane (window, "moo-edit-window-output",
                                        scrolled_window, label, MOO_PANE_POS_BOTTOM))
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
             moo_pane_label_free (label);
             return NULL;
         }

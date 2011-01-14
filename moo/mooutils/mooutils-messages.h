@@ -254,6 +254,26 @@ _MOO_DEFINE_LOG_FUNC (debug, DEBUG)
 
 #endif /* varargs macros */
 
+#undef g_critical
+#undef g_error
+#undef g_warning
+#undef g_message
+#undef g_debug
+#define g_critical moo_critical
+#define g_error moo_error
+#define g_warning moo_warning
+#define g_message moo_message
+#define g_debug moo_debug
+
+#undef g_return_if_fail
+#undef g_return_if_reached
+#undef g_return_val_if_fail
+#undef g_return_val_if_reached
+#define g_return_if_fail moo_return_if_fail
+#define g_return_val_if_fail moo_return_val_if_fail
+#define g_return_if_reached moo_return_if_reached
+#define g_return_val_if_reached moo_return_val_if_reached
+
 #ifdef MOO_DEV_MODE
 
 inline static int __moo_test_func (void)

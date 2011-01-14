@@ -384,8 +384,8 @@ moo_line_view_set_cursor (MooLineView    *view,
                           int             line,
                           MooTextCursor   cursor)
 {
-    moo_return_if_fail (MOO_IS_LINE_VIEW (view));
-    moo_return_if_fail (line >= 0 && line < gtk_text_buffer_get_line_count (get_buffer (view)));
+    g_return_if_fail (MOO_IS_LINE_VIEW (view));
+    g_return_if_fail (line >= 0 && line < gtk_text_buffer_get_line_count (get_buffer (view)));
 
     if (cursor)
         g_hash_table_insert (view->priv->cursors, GINT_TO_POINTER (line), GINT_TO_POINTER (cursor));
@@ -400,8 +400,8 @@ moo_line_view_set_data (MooLineView    *view,
                         gpointer        data,
                         GDestroyNotify  free_func)
 {
-    moo_return_if_fail (MOO_IS_LINE_VIEW (view));
-    moo_return_if_fail (line >= 0 && line < gtk_text_buffer_get_line_count (get_buffer (view)));
+    g_return_if_fail (MOO_IS_LINE_VIEW (view));
+    g_return_if_fail (line >= 0 && line < gtk_text_buffer_get_line_count (get_buffer (view)));
 
     if (data)
         _moo_data_insert_ptr (view->priv->line_data,
@@ -584,8 +584,7 @@ moo_line_view_write (MooLineView    *view,
         if (text_utf8)
             gtk_text_buffer_insert_with_tags (buffer, &iter, text_utf8, -1, tag, NULL);
         else
-            g_warning ("%s: could not convert '%s' to utf8",
-                       G_STRLOC, text);
+            g_warning ("could not convert '%s' to utf8", text);
 
         g_free (text_utf8);
     }

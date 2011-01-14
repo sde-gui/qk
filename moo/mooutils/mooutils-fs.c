@@ -505,7 +505,7 @@ moo_filenames_from_locale (char **files)
         conv[i] = moo_filename_from_locale (*files);
 
         if (!conv[i])
-            g_warning ("%s: could not convert '%s' to UTF8", G_STRLOC, *files);
+            g_warning ("could not convert '%s' to UTF8", *files);
         else
             ++i;
     }
@@ -597,7 +597,7 @@ _moo_chdir (const char *path)
 //     if (_moo_chdir (dirname) != 0)
 //     {
 //         int err = errno;
-//         g_warning ("%s: %s", G_STRLOC, g_strerror (err));
+//         g_warning ("%s", g_strerror (err));
 //     }
 //     else
 //     {
@@ -610,7 +610,7 @@ _moo_chdir (const char *path)
 //         if (_moo_chdir (working_dir) != 0)
 //         {
 //             int err = errno;
-//             g_warning ("%s: %s", G_STRLOC, g_strerror (err));
+//             g_warning ("%s", g_strerror (err));
 //         }
 //     }
 //
@@ -1448,14 +1448,12 @@ _moo_glob_new (const char *pattern)
 
     g_free (re_pattern);
 
-    if (error)
-    {
-        g_warning ("%s: %s", G_STRLOC, error->message);
-        g_error_free (error);
-    }
-
     if (!re)
+    {
+        g_warning ("%s", moo_error_message (error));
+        g_error_free (error);
         return NULL;
+    }
 
     gl = g_new0 (MooGlob, 1);
     gl->re = re;

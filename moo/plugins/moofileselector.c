@@ -275,7 +275,7 @@ moo_file_selector_activate (MooFileView    *fileview,
     if (moo_stat (path, &statbuf) != 0)
     {
         int err = errno;
-        g_warning ("%s: error in stat(%s): %s", G_STRLOC, path, g_strerror (err));
+        g_warning ("error in stat(%s): %s", path, g_strerror (err));
         return;
     }
 
@@ -428,7 +428,7 @@ new_file_dialog (GtkWidget   *parent,
 
         if (!text[0])
         {
-            g_critical ("%s: ooops", G_STRLOC);
+            g_critical ("oops");
             goto out;
         }
 
@@ -483,7 +483,7 @@ file_selector_create_file (MooFileSelector *filesel)
     {
         if (selected->next)
         {
-            g_critical ("%s: oops", G_STRLOC);
+            g_critical ("oops");
             goto out;
         }
 
@@ -537,7 +537,7 @@ file_selector_open_files (MooFileSelector *filesel)
 
     if (!selected)
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         return;
     }
 
@@ -692,12 +692,12 @@ moo_file_selector_drop_data_received (MooFileView    *fileview,
 
     if (info != TARGET_MOO_EDIT_TAB)
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         goto parent;
     }
     else if (data->length < 0)
     {
-        g_warning ("%s: could not get MOO_EDIT_TAB data", G_STRLOC);
+        g_warning ("could not get MOO_EDIT_TAB data");
         goto error;
     }
 
@@ -705,7 +705,7 @@ moo_file_selector_drop_data_received (MooFileView    *fileview,
 
     if (!MOO_IS_EDIT (doc))
     {
-        g_critical ("%s: oops", G_STRLOC);
+        g_critical ("oops");
         goto error;
     }
 
@@ -790,7 +790,7 @@ save_as_dialog (GtkWidget   *parent,
 
         if (!text[0])
         {
-            g_critical ("%s: ooops", G_STRLOC);
+            g_critical ("oops");
             goto out;
         }
 

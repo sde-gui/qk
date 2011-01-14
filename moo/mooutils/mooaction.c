@@ -250,7 +250,7 @@ moo_action_constructor (GType                  type,
             moo_closure_ref_sink (closure);
         }
         else
-            g_critical ("%s: closure data missing", G_STRLOC);
+            g_critical ("closure data missing");
     }
 
     object = G_OBJECT_CLASS(moo_action_parent_class)->constructor (type, n_props, props);
@@ -663,8 +663,8 @@ toggle_watch_new (GObject    *master,
 
     if (!pspec)
     {
-        g_warning ("%s: no property '%s' in class '%s'",
-                   G_STRLOC, prop, g_type_name (G_OBJECT_TYPE (master)));
+        g_warning ("no property '%s' in class '%s'",
+                   prop, g_type_name (G_OBJECT_TYPE (master)));
         return NULL;
     }
 
