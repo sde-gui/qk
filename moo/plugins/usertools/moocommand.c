@@ -434,7 +434,7 @@ save_all (MooEdit *doc)
 
     for (i = 0; i < docs->n_elms; ++i)
     {
-        if (!save_one (docs->elms[i]))
+        if (!moo_edit_is_untitled(docs->elms[i]) && !save_one (docs->elms[i]))
         {
             result = FALSE;
             break;
