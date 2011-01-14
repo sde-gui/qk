@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-06 00:56-0800\n"
+"POT-Creation-Date: 2011-01-14 01:31-0800\n"
 "PO-Revision-Date: 2008-02-04 21:47+0100\n"
 "Last-Translator: Christian Dywan <christian@twotoasts.de>\n"
 "Language-Team: Christian Dywan <christian@twotoasts.de>\n"
@@ -28,87 +28,87 @@ msgid "Run new instance of application"
 msgstr "Eine neue Instanz der Anwendung starten"
 
 #. help message for command line option --use-session
-#: ../moo/medit-app/main.c:122
+#: ../moo/medit-app/main.c:118
 msgid "Load and save session"
 msgstr "Sitzung laden und speichern"
 
 #. help message for command line option --pid=PID
-#: ../moo/medit-app/main.c:128
+#: ../moo/medit-app/main.c:120
 msgid "Use existing instance with process id PID"
 msgstr "Eine vorhandene Instanz mit der Prozesskennung PID benutzen"
 
 #. "PID" part in "--pid=PID"
-#: ../moo/medit-app/main.c:129
+#: ../moo/medit-app/main.c:121
 msgid "PID"
 msgstr "PID"
 
 #. help message for command line option --app-name=NAME
-#: ../moo/medit-app/main.c:131
+#: ../moo/medit-app/main.c:123
 msgid "Set instance name to NAME if it's not already running"
 msgstr "Namen der Instanz auf NAME setzen wenn sie noch nicht läuft"
 
 #. "NAME" part in "--app-name=NAME"
-#: ../moo/medit-app/main.c:132
+#: ../moo/medit-app/main.c:124
 msgid "NAME"
 msgstr "NAME"
 
 #. help message for command line option --new-window
-#: ../moo/medit-app/main.c:134
+#: ../moo/medit-app/main.c:126
 msgid "Open file(s) in a new window"
 msgstr "Datei(en) in einem neuen Fenster öffnen"
 
 #. help message for command line option --new-tab
-#: ../moo/medit-app/main.c:136
+#: ../moo/medit-app/main.c:128
 msgid "Open file(s) in a new tab"
 msgstr "Datei(en) in einem neuen Reiter öffnen"
 
 #. help message for command line option --line=LINE
-#: ../moo/medit-app/main.c:142
+#: ../moo/medit-app/main.c:134
 msgid "Open file and position cursor on line LINE"
 msgstr "Datei öffnen und Schreibmarke in Zeile ZEILE setzen"
 
 #. "LINE" part in --line=LINE
-#: ../moo/medit-app/main.c:143
+#: ../moo/medit-app/main.c:135
 msgid "LINE"
 msgstr "ZEILE"
 
 #. help message for command line option --encoding=ENCODING
-#: ../moo/medit-app/main.c:145
+#: ../moo/medit-app/main.c:137
 msgid "Use provided character encoding"
 msgstr ""
 
 #. "ENCODING" part in --encoding=ENCODING
-#: ../moo/medit-app/main.c:146
+#: ../moo/medit-app/main.c:138
 msgid "ENCODING"
 msgstr ""
 
 #. help message for command line option --reload
-#: ../moo/medit-app/main.c:148
+#: ../moo/medit-app/main.c:140
 msgid "Automatically reload file if it was modified on disk"
 msgstr ""
 
 #. help message for command line option --geometry=WIDTHxHEIGHT[+X+Y]
-#: ../moo/medit-app/main.c:160
+#: ../moo/medit-app/main.c:152
 msgid "Default window size and position"
 msgstr ""
 
 #. "WIDTHxHEIGHT[+X+Y]" part in --geometry=WIDTHxHEIGHT[+X+Y]
-#: ../moo/medit-app/main.c:161
+#: ../moo/medit-app/main.c:153
 msgid "WIDTHxHEIGHT[+X+Y]"
 msgstr ""
 
 #. help message for command line option --version
-#: ../moo/medit-app/main.c:163
+#: ../moo/medit-app/main.c:155
 msgid "Show version information and exit"
 msgstr "Versionsinformationen anzeigen und beenden"
 
 #. "FILES" part in "medit [OPTION...] [FILES]"
-#: ../moo/medit-app/main.c:175
+#: ../moo/medit-app/main.c:167
 msgid "FILES"
 msgstr "DATEIEN"
 
 #. error message for wrong commmand line
-#: ../moo/medit-app/main.c:203
+#: ../moo/medit-app/main.c:195
 #, c-format
 msgid "%s and %s options may not be used simultaneously\n"
 msgstr "Die Optionen %s und %s können nicht gleichzeitig benutzt werden\n"
@@ -179,11 +179,11 @@ msgstr ""
 "Christian Dywan <a href=\"mailto:christian@twotoasts.de\">&lt;"
 "christian@twotoasts.de&gt;</a>"
 
-#: ../moo/mooapp/mooapp.c:997
+#: ../moo/mooapp/mooapp.c:998
 msgid "Report a Bug..."
 msgstr ""
 
-#: ../moo/mooapp/mooapp.c:1357
+#: ../moo/mooapp/mooapp.c:1358
 #, c-format
 msgid ""
 "The following URL will be opened:\n"
@@ -193,12 +193,12 @@ msgid ""
 "It contains medit version and your operating system name (%s)"
 msgstr ""
 
-#: ../moo/mooapp/mooapp.c:1364
+#: ../moo/mooapp/mooapp.c:1365
 msgid "Open URL?"
 msgstr ""
 
 #. Prefs dialog title, like "medit Preferences"
-#: ../moo/mooapp/mooapp.c:1408
+#: ../moo/mooapp/mooapp.c:1409
 #, c-format
 msgid "%s Preferences"
 msgstr "%s Einstellungen"
@@ -472,7 +472,7 @@ msgid "lines"
 msgstr "Zeilen"
 
 #: ../moo/mooedit/glade/mooprintpreview.glade.h:1
-#: ../moo/mooedit/mooeditwindow.c:686 ../moo/mooedit/mooeditwindow.c:687
+#: ../moo/mooedit/mooeditwindow.c:722 ../moo/mooedit/mooeditwindow.c:723
 msgid "Print..."
 msgstr "Drucken..."
 
@@ -538,7 +538,7 @@ msgid "_Whole words only"
 msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind-prompt.glade.h:1
-#: ../moo/mooedit/mooeditwindow.c:471
+#: ../moo/mooedit/mooeditwindow.c:500
 msgid "Find _Next"
 msgstr "_Nächstes"
 
@@ -559,7 +559,7 @@ msgid "_Replace"
 msgstr "_Ersetzen"
 
 #: ../moo/mooedit/glade/mootextgotoline.glade.h:1
-#: ../moo/mooedit/mooeditwindow.c:521
+#: ../moo/mooedit/mooeditwindow.c:550
 msgid "Go to Line"
 msgstr "Gehe zu Zeile"
 
@@ -615,7 +615,6 @@ msgstr[1] ""
 "%u Dokumente wurden nicht gespeichert. Änderungen vor dem Schließen "
 "speichern?"
 
-#. Could not save file foo.txt
 #: ../moo/mooedit/mooeditdialogs.c:428
 #, c-format
 msgid ""
@@ -625,32 +624,19 @@ msgstr ""
 "Datei konnte nicht gespeichert werden\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:430
-msgid "Could not save file"
-msgstr "Datei konnte nicht gespeichert werden"
-
-#. Error saving file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:452
+#: ../moo/mooedit/mooeditdialogs.c:490
 #, c-format
 msgid ""
-"Error saving file\n"
-"%s"
+"Could not save file %s in encoding %s. Do you want to save it in UTF-8 "
+"encoding instead?"
 msgstr ""
-"Fehler beim Speichern der Datei\n"
-"%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:454
-msgid "Error saving file"
-msgstr "Fehler beim Speichern der Datei"
-
-#: ../moo/mooedit/mooeditdialogs.c:456
-#, c-format
-msgid ""
-"Could not convert file to encoding %s. File was saved in UTF-8 encoding."
+#: ../moo/mooedit/mooeditdialogs.c:494
+msgid "Save file in UTF-8 encoding?"
 msgstr ""
 
 #. Could not open file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:481
+#: ../moo/mooedit/mooeditdialogs.c:516
 #, c-format
 msgid ""
 "Could not open file\n"
@@ -659,11 +645,11 @@ msgstr ""
 "Datei konnte nicht geöffnet werden\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:483
+#: ../moo/mooedit/mooeditdialogs.c:518
 msgid "Could not open file"
 msgstr "Datei konnte nicht geöffnet werden"
 
-#: ../moo/mooedit/mooeditdialogs.c:489
+#: ../moo/mooedit/mooeditdialogs.c:524
 #, c-format
 msgid ""
 "Could not open file using character encoding %s. The file may be binary or "
@@ -672,7 +658,7 @@ msgstr ""
 "Datei konnte nicht mit Zeichensatz %s geöffnet werden. Die Datei ist evtl. "
 "binär oder der Zeichensatz wurde falsch angegeben."
 
-#: ../moo/mooedit/mooeditdialogs.c:493
+#: ../moo/mooedit/mooeditdialogs.c:528
 #, c-format
 msgid ""
 "Could not detect file character encoding. Please make sure the file is not "
@@ -683,7 +669,7 @@ msgstr ""
 "Öffnen-Dialog zu wählen."
 
 #. Could not reload file foo.txt
-#: ../moo/mooedit/mooeditdialogs.c:528
+#: ../moo/mooedit/mooeditdialogs.c:563
 #, c-format
 msgid ""
 "Could not reload file\n"
@@ -692,25 +678,25 @@ msgstr ""
 "Datei konnte nicht neu geladen werden\n"
 "%s"
 
-#: ../moo/mooedit/mooeditdialogs.c:593
+#: ../moo/mooedit/mooeditdialogs.c:591
 #, c-format
 msgid "Discard changes in file '%s'?"
 msgstr "Änderungen an Datei »%s« verwerfen?"
 
-#: ../moo/mooedit/mooeditdialogs.c:595
+#: ../moo/mooedit/mooeditdialogs.c:593
 msgid "If you reload the document, changes will be discarded"
 msgstr "Wenn Sie das Dokument neu laden werden alle Änderungen zurückgesetzt"
 
-#: ../moo/mooedit/mooeditdialogs.c:596 ../moo/mooedit/mooeditwindow.c:379
+#: ../moo/mooedit/mooeditdialogs.c:594 ../moo/mooedit/mooeditwindow.c:408
 msgid "_Reload"
 msgstr "Neu _laden"
 
-#: ../moo/mooedit/mooeditdialogs.c:617
+#: ../moo/mooedit/mooeditdialogs.c:616
 #, c-format
 msgid "Overwrite modified file '%s'?"
 msgstr "Veränderte Datei »%s« überschreiben?"
 
-#: ../moo/mooedit/mooeditdialogs.c:618
+#: ../moo/mooedit/mooeditdialogs.c:617
 #, c-format
 msgid ""
 "File '%s' was modified on disk by another process. If you save it, changes "
@@ -719,11 +705,11 @@ msgstr ""
 "Der Inhalt der Datei »%s« auf dem Datenträger wurde von einem anderen "
 "Prozess geändert. Beim Speichern gehen alle Änderungen verloren."
 
-#: ../moo/mooedit/mooeditdialogs.c:620
+#: ../moo/mooedit/mooeditdialogs.c:619
 msgid "Over_write"
 msgstr "Ü_berschreiben"
 
-#: ../moo/mooedit/mooeditdialogs.c:641
+#: ../moo/mooedit/mooeditdialogs.c:640
 msgid ""
 "Beginning of document reached.\n"
 "Continue from the end?"
@@ -731,7 +717,7 @@ msgstr ""
 "Anfang des Dokuments erreicht.\n"
 "Vom Ende an weitermachen?"
 
-#: ../moo/mooedit/mooeditdialogs.c:644
+#: ../moo/mooedit/mooeditdialogs.c:643
 msgid ""
 "End of document reached.\n"
 "Continue from the beginning?"
@@ -739,11 +725,11 @@ msgstr ""
 "Ende des Dokuments wurde erreicht.\n"
 "Vom Anfang an weitermachen?"
 
-#: ../moo/mooedit/mooedit-fileops.c:1328 ../moo/plugins/moofileselector.c:509
+#: ../moo/mooedit/mooedit-fileops.c:1309 ../moo/plugins/moofileselector.c:509
 msgid "Untitled"
 msgstr "Unbenannt"
 
-#: ../moo/mooedit/mooedit-fileops.c:1330
+#: ../moo/mooedit/mooedit-fileops.c:1311
 #, c-format
 msgid "Untitled %d"
 msgstr "Unbenannt %d"
@@ -796,7 +782,7 @@ msgid "PreferencesPage|Languages"
 msgstr ""
 
 #. Menu item in the Language menu
-#: ../moo/mooedit/mooeditprefspage.c:555 ../moo/mooedit/mooeditwindow.c:3208
+#: ../moo/mooedit/mooeditprefspage.c:555 ../moo/mooedit/mooeditwindow.c:3623
 msgid "Language|None"
 msgstr "Keine"
 
@@ -812,316 +798,330 @@ msgctxt "filter-prefs-column"
 msgid "Options"
 msgstr "Optionen"
 
-#: ../moo/mooedit/mooeditwindow.c:362
+#: ../moo/mooedit/mooeditwindow.c:391
 msgid "Create new document"
 msgstr "Neues Dokument erstellen"
 
-#: ../moo/mooedit/mooeditwindow.c:370
+#: ../moo/mooedit/mooeditwindow.c:399
 msgid "_Open..."
 msgstr "Ö_ffnen..."
 
-#: ../moo/mooedit/mooeditwindow.c:371
+#: ../moo/mooedit/mooeditwindow.c:400
 msgid "Open..."
 msgstr "Öffnen..."
 
-#: ../moo/mooedit/mooeditwindow.c:378 ../moo/moofileview/moofileview.c:1282
+#: ../moo/mooedit/mooeditwindow.c:407 ../moo/moofileview/moofileview.c:1282
 #: ../moo/moofileview/moofileview.c:1283
 msgid "Reload"
 msgstr "Neu laden"
 
-#: ../moo/mooedit/mooeditwindow.c:380
+#: ../moo/mooedit/mooeditwindow.c:409
 msgid "Reload document"
 msgstr "Dokument neu laden"
 
-#: ../moo/mooedit/mooeditwindow.c:411
+#: ../moo/mooedit/mooeditwindow.c:440
 msgid "Save _As..."
 msgstr "Speichern _unter..."
 
-#: ../moo/mooedit/mooeditwindow.c:412
+#: ../moo/mooedit/mooeditwindow.c:441
 msgid "Save as..."
 msgstr "Speichern unter..."
 
-#: ../moo/mooedit/mooeditwindow.c:422
+#: ../moo/mooedit/mooeditwindow.c:451
 msgid "Close document"
 msgstr "Dokument schließen"
 
-#: ../moo/mooedit/mooeditwindow.c:430
+#: ../moo/mooedit/mooeditwindow.c:459
 msgid "Close All"
 msgstr "Alle Schließen"
 
-#: ../moo/mooedit/mooeditwindow.c:431
+#: ../moo/mooedit/mooeditwindow.c:460
 msgid "Close A_ll"
 msgstr "Alle Schließen"
 
-#: ../moo/mooedit/mooeditwindow.c:432
+#: ../moo/mooedit/mooeditwindow.c:461
 msgid "Close all documents"
 msgstr "Alle Dokumente schließen"
 
-#: ../moo/mooedit/mooeditwindow.c:439
+#: ../moo/mooedit/mooeditwindow.c:468
 msgid "Previous Tab"
 msgstr "Voheriger Reiter"
 
-#: ../moo/mooedit/mooeditwindow.c:440
+#: ../moo/mooedit/mooeditwindow.c:469
 msgid "_Previous Tab"
 msgstr "_Voheriger Reiter"
 
-#: ../moo/mooedit/mooeditwindow.c:441
+#: ../moo/mooedit/mooeditwindow.c:470
 msgid "Previous tab"
 msgstr "Voheriger Reiter"
 
-#: ../moo/mooedit/mooeditwindow.c:449
+#: ../moo/mooedit/mooeditwindow.c:478
 msgid "Next Tab"
 msgstr "Nächster Reiter"
 
-#: ../moo/mooedit/mooeditwindow.c:450
+#: ../moo/mooedit/mooeditwindow.c:479
 msgid "_Next Tab"
 msgstr "_Nächster Reiter"
 
-#: ../moo/mooedit/mooeditwindow.c:451
+#: ../moo/mooedit/mooeditwindow.c:480
 msgid "Next tab"
 msgstr "Nächster Reiter"
 
-#: ../moo/mooedit/mooeditwindow.c:470
+#: ../moo/mooedit/mooeditwindow.c:499
 msgid "Find Next"
 msgstr "Weitersuchen"
 
-#: ../moo/mooedit/mooeditwindow.c:472
+#: ../moo/mooedit/mooeditwindow.c:501
 msgid "Find next"
 msgstr "Weitersuchen"
 
-#: ../moo/mooedit/mooeditwindow.c:481
+#: ../moo/mooedit/mooeditwindow.c:510
 msgid "Find Previous"
 msgstr "Voheriges suchen"
 
-#: ../moo/mooedit/mooeditwindow.c:482
+#: ../moo/mooedit/mooeditwindow.c:511
 msgid "Find _Previous"
 msgstr "_Voheriges suchen"
 
-#: ../moo/mooedit/mooeditwindow.c:483
+#: ../moo/mooedit/mooeditwindow.c:512
 msgid "Find previous"
 msgstr "Voheriges suchen"
 
-#: ../moo/mooedit/mooeditwindow.c:503
+#: ../moo/mooedit/mooeditwindow.c:532
 msgid "Find Current Word"
 msgstr "Aktuelles Wort suchen"
 
-#: ../moo/mooedit/mooeditwindow.c:504
+#: ../moo/mooedit/mooeditwindow.c:533
 msgid "Find Current _Word"
 msgstr "Aktuelles _Wort suchen"
 
-#: ../moo/mooedit/mooeditwindow.c:512
+#: ../moo/mooedit/mooeditwindow.c:541
 msgid "Find Current Word Backwards"
 msgstr "Aktuelles Wort rückwärts suchen"
 
-#: ../moo/mooedit/mooeditwindow.c:513
+#: ../moo/mooedit/mooeditwindow.c:542
 msgid "Find Current Word _Backwards"
 msgstr "Aktuelles Wort _rückwärts suchen"
 
-#: ../moo/mooedit/mooeditwindow.c:522
+#: ../moo/mooedit/mooeditwindow.c:551
 msgid "_Go to Line..."
 msgstr "_Gehe zu Zeile..."
 
-#: ../moo/mooedit/mooeditwindow.c:523
+#: ../moo/mooedit/mooeditwindow.c:552
 msgid "Go to line..."
 msgstr "Gehe zu Zeile..."
 
-#: ../moo/mooedit/mooeditwindow.c:532
+#: ../moo/mooedit/mooeditwindow.c:561
 msgid "Toggle Text Wrapping"
 msgstr "Textumbruch umschalten"
 
-#: ../moo/mooedit/mooeditwindow.c:533
+#: ../moo/mooedit/mooeditwindow.c:562
 msgid "_Wrap Text"
 msgstr "Text _umbrechen"
 
-#: ../moo/mooedit/mooeditwindow.c:540
+#: ../moo/mooedit/mooeditwindow.c:569
 msgid "Toggle Line Numbers Display"
 msgstr "Zeilennummernanzeige umschalten"
 
-#: ../moo/mooedit/mooeditwindow.c:541
-msgid "_Show Line Numbers"
-msgstr "_Zeilennummern anzeigen"
+#: ../moo/mooedit/mooeditwindow.c:570
+msgid "Show _Line Numbers"
+msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:547
+#: ../moo/mooedit/mooeditwindow.c:576
 msgid "Focus Document"
 msgstr "Dokument fokussieren"
 
-#: ../moo/mooedit/mooeditwindow.c:548
+#: ../moo/mooedit/mooeditwindow.c:577
 msgid "_Focus Document"
 msgstr "Dokument _fokussieren"
 
-#: ../moo/mooedit/mooeditwindow.c:594
+#: ../moo/mooedit/mooeditwindow.c:584
+msgid "Move to Split View"
+msgstr ""
+
+#: ../moo/mooedit/mooeditwindow.c:585
+msgid "_Move to Split View"
+msgstr ""
+
+#: ../moo/mooedit/mooeditwindow.c:630
 msgid "Toggle Bookmark"
 msgstr "Lesezeichen umschalten"
 
-#: ../moo/mooedit/mooeditwindow.c:595
+#: ../moo/mooedit/mooeditwindow.c:631
 msgid "Toggle _Bookmark"
 msgstr "_Lesezeichen umschalten"
 
-#: ../moo/mooedit/mooeditwindow.c:603
+#: ../moo/mooedit/mooeditwindow.c:639
 msgid "Next Bookmark"
 msgstr "Nächstes Lesezeichen"
 
-#: ../moo/mooedit/mooeditwindow.c:604
+#: ../moo/mooedit/mooeditwindow.c:640
 msgid "_Next Bookmark"
 msgstr "_Nächstes Lesezeichen"
 
-#: ../moo/mooedit/mooeditwindow.c:611
+#: ../moo/mooedit/mooeditwindow.c:647
 msgid "Previous Bookmark"
 msgstr "Voheriges Lesezeichen"
 
-#: ../moo/mooedit/mooeditwindow.c:612
+#: ../moo/mooedit/mooeditwindow.c:648
 msgid "_Previous Bookmark"
 msgstr "_Voheriges Lesezeichen"
 
 #. action
-#: ../moo/mooedit/mooeditwindow.c:620 ../moo/mooedit/mooeditwindow.c:621
-#: ../moo/mooedit/mooeditwindow.c:622
+#: ../moo/mooedit/mooeditwindow.c:656 ../moo/mooedit/mooeditwindow.c:657
+#: ../moo/mooedit/mooeditwindow.c:658
 msgid "Comment"
 msgstr "Kommentieren"
 
 #. action
-#: ../moo/mooedit/mooeditwindow.c:630 ../moo/mooedit/mooeditwindow.c:631
-#: ../moo/mooedit/mooeditwindow.c:632
+#: ../moo/mooedit/mooeditwindow.c:666 ../moo/mooedit/mooeditwindow.c:667
+#: ../moo/mooedit/mooeditwindow.c:668
 msgid "Uncomment"
 msgstr "Entkommentieren"
 
 #. Insensitive menu item which appears in Window menu with no documents open
-#: ../moo/mooedit/mooeditwindow.c:660
+#: ../moo/mooedit/mooeditwindow.c:696
 msgid "No Documents"
 msgstr "Keine Dokumente"
 
-#: ../moo/mooedit/mooeditwindow.c:668
+#: ../moo/mooedit/mooeditwindow.c:704
 msgid "Page Setup"
 msgstr "Seite einrichten"
 
-#: ../moo/mooedit/mooeditwindow.c:669
+#: ../moo/mooedit/mooeditwindow.c:705
 msgid "Page S_etup..."
 msgstr "Seite einrichten..."
 
-#: ../moo/mooedit/mooeditwindow.c:670
+#: ../moo/mooedit/mooeditwindow.c:706
 msgid "Page Setup..."
 msgstr "Seite einrichten..."
 
-#: ../moo/mooedit/mooeditwindow.c:695 ../moo/mooedit/mooeditwindow.c:1737
+#: ../moo/mooedit/mooeditwindow.c:731 ../moo/mooedit/mooeditwindow.c:1869
 msgid "Export as PDF"
 msgstr "Als PDF exportieren"
 
-#: ../moo/mooedit/mooeditwindow.c:696
+#: ../moo/mooedit/mooeditwindow.c:732
 msgid "E_xport as PDF..."
 msgstr "Als PDF exportieren..."
 
-#: ../moo/mooedit/mooeditwindow.c:697
+#: ../moo/mooedit/mooeditwindow.c:733
 msgid "Export as PDF..."
 msgstr "Als PDF exportieren..."
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file]"
-#: ../moo/mooedit/mooeditwindow.c:919
+#: ../moo/mooedit/mooeditwindow.c:1004
 #, c-format
 msgid "%s [new file]"
 msgstr "%s [neue Datei]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk]"
-#: ../moo/mooedit/mooeditwindow.c:922
+#: ../moo/mooedit/mooeditwindow.c:1007
 #, c-format
 msgid "%s [modified on disk]"
 msgstr "%s [auf Datenträger geändert"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted]"
-#: ../moo/mooedit/mooeditwindow.c:925
+#: ../moo/mooedit/mooeditwindow.c:1010
 #, c-format
 msgid "%s [deleted]"
 msgstr "%s [gelöscht]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:933
+#: ../moo/mooedit/mooeditwindow.c:1018
 #, c-format
 msgid "%s [new file] [modified]"
 msgstr "%s [neue Datei] [geändert]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:936
+#: ../moo/mooedit/mooeditwindow.c:1021
 #, c-format
 msgid "%s [modified on disk] [modified]"
 msgstr "%s [auf Datenträger geändert] [geändert]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted] [modified]"
-#: ../moo/mooedit/mooeditwindow.c:939
+#: ../moo/mooedit/mooeditwindow.c:1024
 #, c-format
 msgid "%s [deleted] [modified]"
 msgstr "%s [gelöscht] [geändert]"
 
 #. Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified]"
-#: ../moo/mooedit/mooeditwindow.c:942
+#: ../moo/mooedit/mooeditwindow.c:1027
 #, c-format
 msgid "%s [modified]"
 msgstr "%s [geändert]"
 
-#: ../moo/mooedit/mooeditwindow.c:1173
+#: ../moo/mooedit/mooeditwindow.c:1258
 msgid "Reopen Using Encoding"
 msgstr "Mit Zeichensatz neu öffnen"
 
-#: ../moo/mooedit/mooeditwindow.c:1223
+#: ../moo/mooedit/mooeditwindow.c:1308
 msgid "_Encoding"
 msgstr "_Zeichensatz"
 
-#: ../moo/mooedit/mooeditwindow.c:1278
+#: ../moo/mooedit/mooeditwindow.c:1363
 msgid "Line En_dings"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1285
+#: ../moo/mooedit/mooeditwindow.c:1370
 msgid "_Windows (CR+LF)"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1294
+#: ../moo/mooedit/mooeditwindow.c:1379
 msgid "_Unix (LF)"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1298
+#: ../moo/mooedit/mooeditwindow.c:1383
 msgid "_Mac (CR)"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:1302
+#: ../moo/mooedit/mooeditwindow.c:1387
 msgid "Mi_xed"
 msgstr ""
 
 #. Item in document tab context menu
-#: ../moo/mooedit/mooeditwindow.c:1853
+#: ../moo/mooedit/mooeditwindow.c:2078
 msgctxt "tab-context-menu"
 msgid "Close"
 msgstr ""
 
 #. Item in document tab context menu
-#: ../moo/mooedit/mooeditwindow.c:1864
+#: ../moo/mooedit/mooeditwindow.c:2089
 msgctxt "tab-context-menu"
 msgid "Close All Others"
 msgstr ""
 
 #. Item in document tab context menu
-#: ../moo/mooedit/mooeditwindow.c:1881
+#: ../moo/mooedit/mooeditwindow.c:2106
 msgctxt "tab-context-menu"
 msgid "Detach"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3062
+#. Item in document tab context menu
+#: ../moo/mooedit/mooeditwindow.c:2115
+msgctxt "tab-context-menu"
+msgid "Move to Split View"
+msgstr ""
+
+#: ../moo/mooedit/mooeditwindow.c:3477
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr "Zeile: %s Spalte: %s"
 
-#: ../moo/mooedit/mooeditwindow.c:3063
+#: ../moo/mooedit/mooeditwindow.c:3478
 #, c-format
 msgid "Chars: %s"
 msgstr "Zeichen: %s"
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3106
+#: ../moo/mooedit/mooeditwindow.c:3521
 msgid "OVR"
 msgstr "ÜBER"
 
-#: ../moo/mooedit/mooeditwindow.c:3106
+#: ../moo/mooedit/mooeditwindow.c:3521
 msgid "INS"
 msgstr "EINF"
 
-#: ../moo/mooedit/mooeditwindow.c:3203
+#: ../moo/mooedit/mooeditwindow.c:3618
 msgid "_Language"
 msgstr "_Sprache"
 
@@ -1140,14 +1140,14 @@ msgctxt "plugin-prefs-column"
 msgid "Plugin"
 msgstr ""
 
-#: ../moo/mooedit/mooplugin-loader.c:229
+#: ../moo/mooedit/mooplugin-loader.c:226
 #, c-format
 msgid ""
 "console message|ignoring file '%s', module version '%s' is not compatible "
 "with current version %u.%u"
 msgstr ""
 
-#: ../moo/mooedit/mooplugin-loader.c:238
+#: ../moo/mooedit/mooplugin-loader.c:235
 #, c-format
 msgid "console message|invalid module version '%s' in file '%s'"
 msgstr ""
@@ -1271,7 +1271,7 @@ msgstr "Ort"
 
 #: ../moo/moofileview/moofileview.c:1116 ../moo/plugins/moofileselector.c:635
 #: ../moo/plugins/moofileselector.c:636 ../moo/plugins/moofileselector.c:1273
-#: ../moo/plugins/moofileselector-prefs.c:71
+#: ../moo/plugins/moofileselector-prefs.c:72
 msgid "File Selector"
 msgstr "Dateiauswahl"
 
@@ -1778,31 +1778,31 @@ msgstr "Anheften"
 msgid "Keep on top"
 msgstr "Immer zuoberst"
 
-#: ../moo/mooutils/moostock.c:40
+#: ../moo/mooutils/moostock.c:29
 msgid "Save _None"
 msgstr "_Keine speichern"
 
-#: ../moo/mooutils/moostock.c:41
+#: ../moo/mooutils/moostock.c:30
 msgid "Save _Selected"
 msgstr "_Ausgewählte speichern"
 
-#: ../moo/mooutils/moostock.c:43
+#: ../moo/mooutils/moostock.c:32
 msgid "Move"
 msgstr "Bewegen"
 
-#: ../moo/mooutils/moostock.c:44
+#: ../moo/mooutils/moostock.c:33
 msgid "Link"
 msgstr "Verknüpfung"
 
-#: ../moo/mooutils/moostock.c:46 ../moo/plugins/moofileselector.c:1120
+#: ../moo/mooutils/moostock.c:35 ../moo/plugins/moofileselector.c:1120
 msgid "Save Copy"
 msgstr "Kopie speichern"
 
-#: ../moo/mooutils/moostock.c:47
+#: ../moo/mooutils/moostock.c:36
 msgid "_New Folder"
 msgstr "_Neuer Ordner"
 
-#: ../moo/mooutils/moostock.c:48
+#: ../moo/mooutils/moostock.c:37
 msgid "New _Window"
 msgstr "Neues _Fenster"
 
@@ -1831,16 +1831,23 @@ msgstr "%s konnte nicht entfernt werden: %s"
 msgid "Could not rename file %s to %s: %s"
 msgstr "%s konnte nicht zu %s umbenannt werden: %s"
 
-#: ../moo/mooutils/mooutils-misc.c:1877
+#: ../moo/mooutils/mooutils-misc.c:1747
 #, c-format
 msgid ""
 "console message|in file %s, line %d, function %s:\n"
 "%s"
 msgstr ""
 
-#: ../moo/mooutils/mooutils-misc.c:1976
+#: ../moo/mooutils/mooutils-misc.c:1846
 #, c-format
 msgid "console message|in file %s, line %d, function %s: %s"
+msgstr ""
+
+#. "Unknown error" may be displayed if there is a bug in the program
+#. and proper error message has not been set. It doesn't provide any
+#. useful information obviously
+#: ../moo/mooutils/mooutils-misc.c:2231
+msgid "Unknown error"
 msgstr ""
 
 #: ../moo/mooutils/moowindow.c:239
@@ -1864,23 +1871,23 @@ msgstr "Statusleiste anzeigen"
 msgid "Could not parse geometry string '%s'\n"
 msgstr ""
 
-#: ../moo/mooutils/moowindow.c:1176
+#: ../moo/mooutils/moowindow.c:1191
 msgid "_Icons Only"
 msgstr "Nur _Symbole"
 
-#: ../moo/mooutils/moowindow.c:1177
+#: ../moo/mooutils/moowindow.c:1192
 msgid "_Labels Only"
 msgstr "Nur _Text"
 
-#: ../moo/mooutils/moowindow.c:1178
+#: ../moo/mooutils/moowindow.c:1193
 msgid "Labels _Below Icons"
 msgstr "Text _unter Symbolen"
 
-#: ../moo/mooutils/moowindow.c:1179
+#: ../moo/mooutils/moowindow.c:1194
 msgid "Labels Be_side Icons"
 msgstr "Text _neben Symbolen"
 
-#: ../moo/mooutils/moowindow.c:1189
+#: ../moo/mooutils/moowindow.c:1204
 msgid "Toolbar _Style"
 msgstr "Werkzeugleistenstil"
 
@@ -2187,69 +2194,72 @@ msgctxt "yes"
 msgid "user-tools-prefs|Tools menu"
 msgstr ""
 
-#: ../moo/plugins/usertools/moocommand-exe.c:86
+#: ../moo/plugins/usertools/moocommand-exe.c:88
 msgid "Output|None"
 msgstr "Keine"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:87
+#: ../moo/plugins/usertools/moocommand-exe.c:89
 msgid "Output|None, asynchronous"
 msgstr "Keine, asynchron"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:89
+#: ../moo/plugins/usertools/moocommand-exe.c:91
 msgid "Output|Console"
 msgstr "Konsole"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:91
+#: ../moo/plugins/usertools/moocommand-exe.c:93
 msgid "Output|Output pane"
 msgstr "Ausgabeleiste"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:92
+#: ../moo/plugins/usertools/moocommand-exe.c:94
 msgid "Output|Insert into the document"
 msgstr "Ins Dokument einfügen"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:93
+#: ../moo/plugins/usertools/moocommand-exe.c:95
 msgid "Output|New document"
 msgstr "Neues Dokument"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:798
+#: ../moo/plugins/usertools/moocommand-exe.c:826
 msgid "Shell command"
 msgstr "Kommandozeilenbefehl"
 
-#. Translators: these are kinds of input for a shell command, do not translate the part before |
-#: ../moo/plugins/usertools/moocommand-exe.c:1039
+#: ../moo/plugins/usertools/moocommand-exe.c:1070
 msgid "Input|None"
 msgstr "Keine"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:1039
+#: ../moo/plugins/usertools/moocommand-exe.c:1071
 msgid "Input|Selected lines"
 msgstr "Ausgewählte Zeilen"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:1039
+#: ../moo/plugins/usertools/moocommand-exe.c:1072
 msgid "Input|Selection"
 msgstr "Auswahl"
 
-#: ../moo/plugins/usertools/moocommand-exe.c:1039
+#: ../moo/plugins/usertools/moocommand-exe.c:1073
 msgid "Input|Whole document"
 msgstr "Gesamtes Dokument"
 
-#: ../moo/plugins/usertools/moocommand-script.cpp:271
+#: ../moo/plugins/usertools/moocommand-exe.c:1074
+msgid "Input|Document copy"
+msgstr ""
+
+#: ../moo/plugins/usertools/moocommand-script.cpp:279
 msgid "Lua script"
 msgstr "Luaskript"
 
-#: ../moo/plugins/usertools/moocommand-script.cpp:277
+#: ../moo/plugins/usertools/moocommand-script.cpp:285
 msgid "Python script"
 msgstr "Pythonskript"
 
-#: ../moo/plugins/usertools/moousertools.c:397
+#: ../moo/plugins/usertools/moousertools.c:395
 #: ../moo/plugins/usertools/moousertools-prefs.c:559
 msgid "Tools"
 msgstr "Werkzeuge"
 
-#: ../moo/plugins/usertools/moousertools.c:1456
+#: ../moo/plugins/usertools/moousertools.c:1377
 msgid "User Tools"
 msgstr ""
 
-#: ../moo/plugins/usertools/moousertools.c:1457
+#: ../moo/plugins/usertools/moousertools.c:1378
 msgid "Configurable tools"
 msgstr ""
 
@@ -2292,6 +2302,19 @@ msgstr ""
 msgctxt "Save-combo"
 msgid "All documents"
 msgstr ""
+
+#~ msgid "Could not save file"
+#~ msgstr "Datei konnte nicht gespeichert werden"
+
+#~ msgid ""
+#~ "Error saving file\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Fehler beim Speichern der Datei\n"
+#~ "%s"
+
+#~ msgid "Error saving file"
+#~ msgstr "Fehler beim Speichern der Datei"
 
 #~ msgid "Command type:"
 #~ msgstr "Befehlstyp:"
