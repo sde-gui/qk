@@ -18,6 +18,7 @@
 
 #include <gtk/gtk.h>
 #include <mooutils/mooutils-messages.h>
+#include <string.h>
 
 G_BEGIN_DECLS
 
@@ -139,8 +140,12 @@ char      **moo_splitlines                  (const char     *string);
 
 char     **_moo_strv_reverse                (char          **str_array);
 
-gboolean   _moo_str_equal                   (const char     *s1,
-                                             const char     *s2);
+static inline gboolean
+moo_str_equal (const char *s1,
+               const char *s2)
+{
+    return strcmp (s1 ? s1 : "", s2 ? s2 : "") == 0;
+}
 
 static inline void
 moo_assign_string (char       **where,

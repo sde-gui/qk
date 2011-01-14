@@ -242,7 +242,7 @@ script_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
     new_code = moo_text_view_get_text (GTK_TEXT_VIEW (xml->textview));
     code = moo_command_data_get_code (data);
 
-    if (!_moo_str_equal (code, new_code))
+    if (!moo_str_equal (code, new_code))
     {
         moo_command_data_set_code (data, new_code);
         changed = TRUE;

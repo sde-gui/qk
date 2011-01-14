@@ -648,7 +648,7 @@ moo_edit_set_encoding (MooEdit    *edit,
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_return_if_fail (encoding != NULL);
 
-    if (!_moo_str_equal (encoding, edit->priv->encoding))
+    if (!moo_str_equal (encoding, edit->priv->encoding))
     {
         MOO_ASSIGN_STRING (edit->priv->encoding, encoding);
         g_object_notify (G_OBJECT (edit), "encoding");

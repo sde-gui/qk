@@ -271,7 +271,7 @@ get_options (CommandXml  *gxml,
     else
         string = g_strdup (save);
 
-    if (!_moo_str_equal (*dest, string))
+    if (!moo_str_equal (*dest, string))
     {
         g_free (*dest);
         *dest = string;

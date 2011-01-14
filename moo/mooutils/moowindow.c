@@ -989,7 +989,7 @@ moo_window_set_title (MooWindow  *window,
 
     old_title = gtk_window_get_title (GTK_WINDOW (window));
 
-    if (!_moo_str_equal (title, old_title))
+    if (!moo_str_equal (title, old_title))
         gtk_window_set_title (GTK_WINDOW (window), title ? title : "");
 }
 

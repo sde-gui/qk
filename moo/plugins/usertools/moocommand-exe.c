@@ -1139,7 +1139,7 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
     new_cmd_line = moo_text_view_get_text (GTK_TEXT_VIEW (xml->textview));
     cmd_line = moo_command_data_get_code (data);
 
-    if (!_moo_str_equal (cmd_line, new_cmd_line))
+    if (!moo_str_equal (cmd_line, new_cmd_line))
     {
         moo_command_data_set_code (data, new_cmd_line);
         changed = TRUE;
@@ -1181,7 +1181,7 @@ unx_factory_save_data (G_GNUC_UNUSED MooCommandFactory *factory,
         if (!old_filter)
             old_filter = "default";
 
-        if (!_moo_str_equal (old_filter, new_filter))
+        if (!moo_str_equal (old_filter, new_filter))
         {
             moo_command_data_set (data, KEY_FILTER, new_filter);
             changed = TRUE;

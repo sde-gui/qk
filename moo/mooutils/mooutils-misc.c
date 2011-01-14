@@ -2131,14 +2131,6 @@ _moo_strv_reverse (char **str_array)
 }
 
 
-gboolean
-_moo_str_equal (const char *s1,
-                const char *s2)
-{
-    return strcmp (s1 ? s1 : "", s2 ? s2 : "") == 0;
-}
-
-
 #if defined(__WIN32__) && !defined(MOO_DEBUG)
 static guint saved_win32_error_mode;
 #endif

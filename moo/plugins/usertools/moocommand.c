@@ -228,13 +228,13 @@ default_data_equal (MooCommandFactory *factory,
     {
         val1 = moo_command_data_get (data1, i);
         val2 = moo_command_data_get (data2, i);
-        if (!_moo_str_equal (val1, val2))
+        if (!moo_str_equal (val1, val2))
             return FALSE;
     }
 
     val1 = moo_command_data_get_code (data1);
     val2 = moo_command_data_get_code (data2);
-    return _moo_str_equal (val1, val2);
+    return moo_str_equal (val1, val2);
 }
 
 static void

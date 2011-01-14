@@ -977,7 +977,7 @@ _moo_lang_mgr_set_config (MooLangMgr *mgr,
     id = _moo_lang_id_from_name (lang_id);
     old = g_hash_table_lookup (mgr->config, id);
 
-    if (!_moo_str_equal (old, norm))
+    if (!moo_str_equal (old, norm))
         mgr->modified = TRUE;
 
     g_hash_table_insert (mgr->config, id, norm);

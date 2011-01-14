@@ -875,7 +875,7 @@ filter_cell_edited (GtkCellRendererText *cell,
 
     gtk_tree_model_get (GTK_TREE_MODEL (store), &iter, column, &old_text, -1);
 
-    if (!_moo_str_equal (old_text, text))
+    if (!moo_str_equal (old_text, text))
     {
         gtk_list_store_set (store, &iter, column, text, -1);
         filter_store_set_modified (store, TRUE);

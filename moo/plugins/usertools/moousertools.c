@@ -1034,11 +1034,11 @@ info_equal (MooUserToolInfo *info1,
            info1->position == info2->position &&
            info1->position == info2->position &&
            info1->cmd_factory == info2->cmd_factory &&
-           _moo_str_equal (info1->name, info2->name) &&
-           _moo_str_equal (info1->accel, info2->accel) &&
-           _moo_str_equal (info1->menu, info2->menu) &&
-           _moo_str_equal (info1->filter, info2->filter) &&
-           _moo_str_equal (info1->options, info2->options) &&
+           moo_str_equal (info1->name, info2->name) &&
+           moo_str_equal (info1->accel, info2->accel) &&
+           moo_str_equal (info1->menu, info2->menu) &&
+           moo_str_equal (info1->filter, info2->filter) &&
+           moo_str_equal (info1->options, info2->options) &&
            _moo_command_factory_data_equal (info1->cmd_factory, info1->cmd_data, info2->cmd_data);
 }
 
