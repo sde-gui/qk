@@ -979,6 +979,21 @@ moo_window_get_property (GObject      *object,
 }
 
 
+void
+moo_window_set_title (MooWindow  *window,
+                      const char *title)
+{
+    const char *old_title;
+
+    moo_return_if_fail (window != NULL);
+
+    old_title = gtk_window_get_title (GTK_WINDOW (window));
+
+    if (!_moo_str_equal (title, old_title))
+        gtk_window_set_title (GTK_WINDOW (window), title ? title : "");
+}
+
+
 static void
 moo_window_update_toolbar (MooWindow *window)
 {

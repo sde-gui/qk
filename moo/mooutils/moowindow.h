@@ -71,6 +71,9 @@ void        moo_window_apply_prefs          (MooWindow  *window);
 void        moo_window_message              (MooWindow  *window,
                                              const char *text);
 
+void        moo_window_set_title            (MooWindow  *window,
+                                             const char *title);
+
 void        moo_window_set_edit_ops_widget  (MooWindow  *window,
                                              GtkWidget  *widget);
 

@@ -1121,7 +1121,7 @@ update_window_title (MooEditWindow *window)
     else
         title = parse_title_format (window->priv->title_format_no_doc, NULL);
 
-    gtk_window_set_title (GTK_WINDOW (window), title);
+    moo_window_set_title (MOO_WINDOW (window), title);
 
     g_free (title);
 }
