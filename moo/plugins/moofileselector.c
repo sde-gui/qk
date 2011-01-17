@@ -662,7 +662,7 @@ moo_file_selector_drop (MooFileView    *fileview,
     target = gtk_drag_dest_find_target (widget, context, filesel->targets);
 
     if (target != MOO_EDIT_TAB_ATOM)
-        return MOO_FILE_VIEW_CLASS(_moo_file_selector_parent_class)->
+        return MOO_FILE_VIEW_CLASS (_moo_file_selector_parent_class)->
                 drop (fileview, path, widget, context, x, y, time);
 
     filesel->waiting_for_tab = TRUE;
@@ -684,7 +684,8 @@ moo_file_selector_drop_data_received (MooFileView    *fileview,
                                       guint           info,
                                       guint           time)
 {
-    MooEdit *doc;
+    MooEditTab *tab;
+    MooEditView *view;
     MooFileSelector *filesel = MOO_FILE_SELECTOR (fileview);
 
     if (!filesel->waiting_for_tab)
@@ -701,16 +702,19 @@ moo_file_selector_drop_data_received (MooFileView    *fileview,
         goto error;
     }
 
-    doc = moo_selection_data_get_pointer (data, MOO_EDIT_TAB_ATOM);
+    tab = moo_selection_data_get_pointer (data, MOO_EDIT_TAB_ATOM);
 
-    if (!MOO_IS_EDIT (doc))
+    if (!MOO_IS_EDIT_TAB (tab))
     {
         g_critical ("oops");
         goto error;
     }
 
+    view = moo_edit_tab_get_active_view (tab);
+
     moo_file_selector_drop_doc (MOO_FILE_SELECTOR (fileview),
-                                doc, path, widget, context,
+                                moo_edit_view_get_doc (view),
+                                path, widget, context,
                                 x, y, time);
     return TRUE;
 

@@ -369,15 +369,19 @@ moo_edit_action_check_state (MooEditAction *action)
 
 
 void
-_moo_edit_check_actions (MooEdit *edit)
+_moo_edit_check_actions (MooEdit     *edit,
+                         MooEditView *view)
 {
     GtkActionGroup *group = moo_edit_get_actions (edit);
     GList *actions = gtk_action_group_list_actions (group);
 
     while (actions)
     {
-        if (MOO_IS_EDIT_ACTION (actions->data))
-            moo_edit_action_check_state (actions->data);
+        GtkAction *action = actions->data;
+        g_object_set_data (G_OBJECT (action), "moo-edit", edit);
+        g_object_set_data (G_OBJECT (action), "moo-edit-view", view);
+        if (MOO_IS_EDIT_ACTION (action))
+            moo_edit_action_check_state (MOO_EDIT_ACTION (action));
         actions = g_list_delete_link (actions, actions);
     }
 }

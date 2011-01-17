@@ -61,27 +61,30 @@ struct MooEditClass
 };
 
 
-GType            moo_edit_get_type                  (void) G_GNUC_CONST;
+GType                moo_edit_get_type                  (void) G_GNUC_CONST;
 
-MooEditView     *moo_edit_get_view                  (MooEdit            *doc);
-MooEditWindow   *moo_edit_get_window                (MooEdit            *doc);
-MooEditor       *moo_edit_get_editor                (MooEdit            *doc);
+MooEditor           *moo_edit_get_editor                (MooEdit            *doc);
+MooEditWindow       *moo_edit_get_window                (MooEdit            *doc);
 
-GtkTextBuffer   *moo_edit_get_buffer                (MooEdit            *doc);
+MooEditViewArray    *moo_edit_get_views                 (MooEdit            *doc);
+MooEditView         *moo_edit_get_view                  (MooEdit            *doc);
+int                  moo_edit_get_n_views               (MooEdit            *doc);
 
-GFile           *moo_edit_get_file                  (MooEdit            *edit);
+GtkTextBuffer       *moo_edit_get_buffer                (MooEdit            *doc);
 
-char            *moo_edit_get_uri                   (MooEdit            *edit);
+GFile               *moo_edit_get_file                  (MooEdit            *edit);
 
-char            *moo_edit_get_filename              (MooEdit            *edit);
-const char      *moo_edit_get_display_name          (MooEdit            *edit);
-const char      *moo_edit_get_display_basename      (MooEdit            *edit);
+char                *moo_edit_get_uri                   (MooEdit            *edit);
 
-const char      *moo_edit_get_encoding              (MooEdit            *edit);
-void             moo_edit_set_encoding              (MooEdit            *edit,
-                                                     const char         *encoding);
+char                *moo_edit_get_filename              (MooEdit            *edit);
+const char          *moo_edit_get_display_name          (MooEdit            *edit);
+const char          *moo_edit_get_display_basename      (MooEdit            *edit);
 
-char            *moo_edit_get_lang_id               (MooEdit            *edit);
+const char          *moo_edit_get_encoding              (MooEdit            *edit);
+void                 moo_edit_set_encoding              (MooEdit            *edit,
+                                                         const char         *encoding);
+
+char                *moo_edit_get_lang_id               (MooEdit            *edit);
 
 #ifdef __WIN32__
 #define MOO_LE_DEFAULT MOO_LE_WIN32
@@ -89,34 +92,34 @@ char            *moo_edit_get_lang_id               (MooEdit            *edit);
 #define MOO_LE_DEFAULT MOO_LE_UNIX
 #endif
 
-MooLineEndType   moo_edit_get_line_end_type         (MooEdit            *edit);
-void             moo_edit_set_line_end_type         (MooEdit            *edit,
-                                                     MooLineEndType      le);
+MooLineEndType       moo_edit_get_line_end_type         (MooEdit            *edit);
+void                 moo_edit_set_line_end_type         (MooEdit            *edit,
+                                                         MooLineEndType      le);
 
-gboolean         moo_edit_is_empty                  (MooEdit            *edit);
-gboolean         moo_edit_is_untitled               (MooEdit            *edit);
-gboolean         moo_edit_is_modified               (MooEdit            *edit);
-void             moo_edit_set_modified              (MooEdit            *edit,
-                                                     gboolean            modified);
-gboolean         moo_edit_get_clean                 (MooEdit            *edit);
-void             moo_edit_set_clean                 (MooEdit            *edit,
-                                                     gboolean            clean);
-MooEditStatus    moo_edit_get_status                (MooEdit            *edit);
-MooEditState     moo_edit_get_state                 (MooEdit            *edit);
+gboolean             moo_edit_is_empty                  (MooEdit            *edit);
+gboolean             moo_edit_is_untitled               (MooEdit            *edit);
+gboolean             moo_edit_is_modified               (MooEdit            *edit);
+void                 moo_edit_set_modified              (MooEdit            *edit,
+                                                         gboolean            modified);
+gboolean             moo_edit_get_clean                 (MooEdit            *edit);
+void                 moo_edit_set_clean                 (MooEdit            *edit,
+                                                         gboolean            clean);
+MooEditStatus        moo_edit_get_status                (MooEdit            *edit);
+MooEditState         moo_edit_get_state                 (MooEdit            *edit);
 
-gboolean         moo_edit_reload                    (MooEdit            *edit,
-                                                     MooReloadInfo      *info,
-                                                     GError            **error);
-gboolean         moo_edit_save                      (MooEdit            *edit,
-                                                     GError            **error);
-gboolean         moo_edit_save_as                   (MooEdit            *edit,
-                                                     MooSaveInfo        *info,
-                                                     GError            **error);
-gboolean         moo_edit_save_copy                 (MooEdit            *edit,
-                                                     MooSaveInfo        *info,
-                                                     GError            **error);
-gboolean         moo_edit_close                     (MooEdit            *edit,
-                                                     gboolean            ask_confirm);
+gboolean             moo_edit_reload                    (MooEdit            *edit,
+                                                         MooReloadInfo      *info,
+                                                         GError            **error);
+gboolean             moo_edit_save                      (MooEdit            *edit,
+                                                         GError            **error);
+gboolean             moo_edit_save_as                   (MooEdit            *edit,
+                                                         MooSaveInfo        *info,
+                                                         GError            **error);
+gboolean             moo_edit_save_copy                 (MooEdit            *edit,
+                                                         MooSaveInfo        *info,
+                                                         GError            **error);
+gboolean             moo_edit_close                     (MooEdit            *edit,
+                                                         gboolean            ask_confirm);
 
 G_END_DECLS
 

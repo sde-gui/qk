@@ -24,7 +24,10 @@ G_BEGIN_DECLS
 
 struct MooEditPrivate {
     MooEditor *editor;
-    MooEditView *view;
+
+    GtkTextBuffer *buffer;
+    MooEditViewArray *views;
+    MooEditView *active_view;
 
     gulong modified_changed_handler_id;
     guint apply_config_idle;
@@ -61,7 +64,6 @@ struct MooEditPrivate {
 };
 
 void    _moo_edit_remove_untitled   (MooEdit    *doc);
-void    _moo_edit_apply_prefs       (MooEdit    *doc);
 
 G_END_DECLS
 

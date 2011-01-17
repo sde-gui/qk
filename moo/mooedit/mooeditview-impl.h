@@ -5,8 +5,9 @@
 
 G_BEGIN_DECLS
 
-void            _moo_edit_view_set_doc                  (MooEditView    *view,
-                                                         MooEdit        *doc);
+MooEditView    *_moo_edit_view_new                      (MooEdit        *doc);
+
+void            _moo_edit_view_apply_prefs              (MooEditView    *view);
 void            _moo_edit_view_apply_config             (MooEditView    *view);
 
 MooEditState    _moo_edit_view_get_state                (MooEditView    *view);

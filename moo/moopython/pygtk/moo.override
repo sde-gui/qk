@@ -103,6 +103,9 @@ import gtk.Object as PyGtkObject_Type
 import gtk.Container as PyGtkContainer_Type
 import gtk.AccelGroup as PyGtkAccelGroup_Type
 import gtk.Notebook as PyGtkNotebook_Type
+import gtk.Paned as PyGtkPaned_Type
+import gtk.HPaned as PyGtkHPaned_Type
+import gtk.VPaned as PyGtkVPaned_Type
 import gio.File as PyGFile_Type
 %%
 ignore-glob

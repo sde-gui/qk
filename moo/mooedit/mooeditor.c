@@ -868,6 +868,7 @@ _moo_editor_move_doc (MooEditor     *editor,
 {
     MooEditWindow *old_window;
     MooEdit *dest_doc = NULL;
+    MooEditTab *tab;
 
     g_return_if_fail (MOO_IS_EDITOR (editor));
     g_return_if_fail (MOO_IS_EDIT (doc) && moo_edit_get_editor (doc) == editor);
@@ -879,17 +880,20 @@ _moo_editor_move_doc (MooEditor     *editor,
         dest_view = moo_edit_window_get_active_view (dest);
     }
 
+    tab = moo_edit_view_get_tab (moo_edit_get_view (doc));
+
+    g_object_ref (tab);
     g_object_ref (doc);
 
     if ((old_window = moo_edit_get_window (doc)))
     {
-        _moo_edit_window_remove_doc (old_window, doc, FALSE);
+        _moo_edit_window_remove_doc (old_window, doc);
 
         if (!moo_edit_window_get_active_doc (old_window))
             moo_editor_close_window (editor, old_window, FALSE);
     }
 
-    _moo_edit_window_insert_doc (dest, doc, dest_view);
+    _moo_edit_window_insert_tab (dest, tab, dest_view);
     moo_editor_add_doc (editor, dest, doc);
 
     dest_doc = dest_view ? moo_edit_view_get_doc (dest_view) : NULL;
@@ -900,6 +904,7 @@ _moo_editor_move_doc (MooEditor     *editor,
         moo_editor_set_active_doc (editor, doc);
 
     g_object_unref (doc);
+    g_object_unref (tab);
 }
 
 
@@ -1512,7 +1517,7 @@ do_close_doc (MooEditor *editor,
     update_history_item_for_doc (editor, doc, TRUE);
 
     if (window)
-        _moo_edit_window_remove_doc (window, doc, TRUE);
+        _moo_edit_window_remove_doc (window, doc);
     else
         _moo_doc_detach_plugins (NULL, doc);
 
@@ -1582,7 +1587,7 @@ moo_editor_close_docs (MooEditor    *editor,
     if (close_docs_real (editor, docs, ask_confirm))
     {
         if (window &&
-            !moo_edit_window_get_n_docs (window) &&
+            !moo_edit_window_get_n_tabs (window) &&
             !test_flag (editor, ALLOW_EMPTY_WINDOW))
         {
             MooEdit *doc = MOO_EDIT (g_object_new (get_doc_type (editor),
@@ -2374,10 +2379,10 @@ moo_editor_reload (MooEditor     *editor,
                    MooReloadInfo *info,
                    GError       **error)
 {
+    guint i;
     GError *error_here = NULL;
-    int cursor_line, cursor_offset;
-    GtkTextIter iter;
-    MooEditView *view;
+    MooEditView *active_view;
+    MooEditViewArray *views;
 
     moo_return_error_if_fail (MOO_IS_EDITOR (editor));
 
@@ -2411,15 +2416,27 @@ moo_editor_reload (MooEditor     *editor,
         return FALSE;
     }
 
-    view = moo_edit_get_view (doc);
-    moo_text_view_get_cursor (GTK_TEXT_VIEW (view), &iter);
-    cursor_line = gtk_text_iter_get_line (&iter);
-    cursor_offset = moo_text_iter_get_visual_line_offset (&iter, 8);
+    views = moo_edit_get_views (doc);
+    active_view = moo_edit_get_view (doc);
 
-    if (info != NULL && info->line >= 0 && info->line != cursor_line)
+    for (i = 0; i < moo_edit_view_array_get_size (views); ++i)
     {
-        cursor_line = info->line;
-        cursor_offset = 0;
+        int cursor_line, cursor_offset;
+        GtkTextIter iter;
+        MooEditView *view = views->elms[i];
+
+        moo_text_view_get_cursor (GTK_TEXT_VIEW (view), &iter);
+        cursor_line = gtk_text_iter_get_line (&iter);
+        cursor_offset = moo_text_iter_get_visual_line_offset (&iter, 8);
+
+        if (info != NULL && info->line >= 0 && info->line != cursor_line)
+        {
+            cursor_line = info->line;
+            cursor_offset = 0;
+        }
+
+        g_object_set_data (G_OBJECT (view), "moo-reload-cursor-line", GINT_TO_POINTER (cursor_line));
+        g_object_set_data (G_OBJECT (view), "moo-reload-cursor-offset", GINT_TO_POINTER (cursor_offset));
     }
 
     if (!_moo_edit_reload_file (doc, info ? info->encoding : NULL, &error_here))
@@ -2434,13 +2451,23 @@ moo_editor_reload (MooEditor     *editor,
             g_propagate_error (error, error_here);
         }
 
-        moo_text_view_undo (MOO_TEXT_VIEW (view));
+        moo_text_view_undo (MOO_TEXT_VIEW (active_view));
         g_object_set_data (G_OBJECT (doc), "moo-scroll-to", NULL);
         return FALSE;
     }
 
-    moo_text_view_move_cursor (MOO_TEXT_VIEW (view), cursor_line,
-                               cursor_offset, TRUE, FALSE);
+    for (i = 0; i < moo_edit_view_array_get_size (views); ++i)
+    {
+        int cursor_line, cursor_offset;
+        MooEditView *view = views->elms[i];
+
+        cursor_line = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (view), "moo-reload-cursor-line"));
+        cursor_offset = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (view), "moo-reload-cursor-offset"));
+
+        moo_text_view_move_cursor (MOO_TEXT_VIEW (view), cursor_line,
+                                   cursor_offset, TRUE, FALSE);
+    }
+
     return TRUE;
 }
 

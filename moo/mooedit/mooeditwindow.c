@@ -17,6 +17,10 @@
  * class:MooEditWindow: (parent MooWindow) (moo.doc-object-name window)
  **/
 
+/**
+ * class:MooEditTab: (parent GtkHPaned) (moo.doc-object-name tab)
+ **/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -24,7 +28,7 @@
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-impl.h"
 #include "mooedit/mooeditdialogs.h"
-#include "mooedit/mooeditwindow-impl.h"
+#include "mooedit/mooeditwindow-priv.h"
 #include "mooedit/mooedit-accels.h"
 #include "mooedit/mooeditor-impl.h"
 #include "mooedit/mooeditview-impl.h"
@@ -57,6 +61,7 @@
 
 #define ACTIVE_DOC moo_edit_window_get_active_doc
 #define ACTIVE_VIEW moo_edit_window_get_active_view
+#define ACTIVE_TAB moo_edit_window_get_active_tab
 
 #define LANG_ACTION_ID "LanguageMenu"
 #define STOP_ACTION_ID "StopJob"
@@ -111,6 +116,7 @@ struct MooEditWindowPrivate {
 };
 
 MOO_DEFINE_OBJECT_ARRAY (MooEditWindow, moo_edit_window)
+MOO_DEFINE_OBJECT_ARRAY (MooEditTab, moo_edit_tab)
 
 enum {
     TARGET_MOO_EDIT_TAB = 1,
@@ -153,9 +159,6 @@ static int           get_active_tab                     (MooEditWindow      *win
 static MooNotebook  *get_notebook                       (MooEditWindow      *window,
                                                          int                 i);
 static MooNotebook  *get_active_notebook                (MooEditWindow      *window);
-static int           get_view_num                       (MooEditWindow      *window,
-                                                         MooEditView        *view,
-                                                         MooNotebook       **pnotebook);
 static int           get_view_page_num                  (MooEditWindow      *window,
                                                          MooEditView        *view,
                                                          MooNotebook       **pnotebook);
@@ -165,7 +168,7 @@ static void          save_doc_paned_config              (MooEditWindow      *win
 static void          show_notebook                      (MooEditWindow      *window,
                                                          MooNotebook        *notebook);
 static void          move_doc_to_split_view             (MooEditWindow      *window,
-                                                         MooEdit            *doc);
+                                                         MooEditView        *view);
 static gboolean      can_move_to_split_view             (MooEditWindow      *window);
 static gboolean      both_notebooks_visible             (MooEditWindow      *window);
 
@@ -198,20 +201,22 @@ static void          view_show_line_numbers_changed     (MooEditWindow      *win
                                                          GParamSpec         *pspec,
                                                          MooEditView        *view);
 static GtkWidget    *create_tab_label                   (MooEditWindow      *window,
+                                                         MooEditTab         *tab,
                                                          MooEdit            *doc);
-static void          update_tab_label                   (MooEditWindow      *window,
+static void          update_tab_labels                  (MooEditWindow      *window,
                                                          MooEdit            *doc);
 static void          view_cursor_moved                  (MooEditWindow      *window,
                                                          GtkTextIter        *iter,
                                                          MooEditView        *view);
 static void          update_lang_menu                   (MooEditWindow      *window);
 static void          update_doc_view_actions            (MooEditWindow      *window);
+static void          update_split_view_actions          (MooEditWindow      *window);
 
 static void          create_statusbar                   (MooEditWindow      *window);
 static void          update_statusbar                   (MooEditWindow      *window);
-static MooEdit      *get_nth_tab                        (MooNotebook        *notebook,
+static MooEditTab   *get_nth_tab                        (MooNotebook        *notebook,
                                                          guint               n);
-static MooEditView  *get_nth_view                       (MooNotebook        *notebook,
+static MooEdit      *get_nth_doc                        (MooNotebook        *notebook,
                                                          guint               n);
 
 static GtkAction    *create_lang_action                 (MooEditWindow      *window);
@@ -279,7 +284,6 @@ static void wrap_text_toggled                   (MooEditWindow      *window,
 static void line_numbers_toggled                (MooEditWindow      *window,
                                                  gboolean            active);
 
-
 #ifdef ENABLE_PRINTING
 static void action_page_setup      (MooEditWindow    *window);
 static void action_print           (MooEditWindow    *window);
@@ -287,8 +291,18 @@ static void action_print_preview   (MooEditWindow    *window);
 static void action_print_pdf       (MooEditWindow    *window);
 #endif
 
+static void         moo_edit_tab_set_focused_view       (MooEditTab     *tab,
+                                                         MooEditView    *view);
+static MooEditTab  *moo_edit_tab_new                    (MooEdit        *doc);
+static void         split_view_horizontal_toggled       (MooEditWindow  *window,
+                                                         gboolean        active);
+static void         split_view_vertical_toggled         (MooEditWindow  *window,
+                                                         gboolean        active);
+static void         action_focus_next_split_view        (MooEditWindow  *window);
+static void         update_split_view_actions           (MooEditWindow  *window);
 
-/* MOO_TYPE_EDIT_WINDOW */
+
+G_DEFINE_TYPE (MooEditTab, moo_edit_tab, GTK_TYPE_HPANED)
 G_DEFINE_TYPE (MooEditWindow, moo_edit_window, MOO_TYPE_WINDOW)
 
 enum {
@@ -588,6 +602,29 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "can-move-to-split-view",
                                  NULL);
 
+    moo_window_class_new_action (window_class, "SplitViewHorizontal", NULL,
+                                 "action-type::", MOO_TYPE_TOGGLE_ACTION,
+                                 "display-name", _("Split View Horizontally"),
+                                 "label", _("Split View Horizontally"),
+                                 "toggled-callback", split_view_horizontal_toggled,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "SplitViewVertical", NULL,
+                                 "action-type::", MOO_TYPE_TOGGLE_ACTION,
+                                 "display-name", _("Split View Vertically"),
+                                 "label", _("Split View Vertically"),
+                                 "toggled-callback", split_view_vertical_toggled,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "CycleSplitViews", NULL,
+                                 "display-name", _("Focus Next Split View"),
+                                 "label", _("Focus Next Split View"),
+                                 "closure-callback", action_focus_next_split_view,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
     moo_window_class_new_action (window_class, STOP_ACTION_ID, NULL,
                                  "display-name", GTK_STOCK_STOP,
                                  "label", GTK_STOCK_STOP,
@@ -885,7 +922,7 @@ static void     moo_edit_window_get_property(GObject        *object,
             g_value_set_boolean (value, doc && !moo_edit_is_untitled (doc));
             break;
         case PROP_HAS_OPEN_DOCUMENT:
-            g_value_set_boolean (value, moo_edit_window_get_n_docs (window) != 0);
+            g_value_set_boolean (value, moo_edit_window_get_n_tabs (window) != 0);
             break;
         case PROP_CAN_MOVE_TO_SPLIT_VIEW:
             g_value_set_boolean (value, can_move_to_split_view (window));
@@ -1432,8 +1469,8 @@ static void
 switch_to_tab (MooEditWindow *window,
                int            n)
 {
-    MooEditView *view = NULL;
-    int n_docs = moo_edit_window_get_n_docs (window);
+    MooEditTab *tab = NULL;
+    int n_docs = moo_edit_window_get_n_tabs (window);
     int i;
 
     if (n < 0)
@@ -1449,14 +1486,14 @@ switch_to_tab (MooEditWindow *window,
         if (n < n_pages)
         {
             moo_notebook_set_current_page (notebook, n);
-            view = get_nth_view (notebook, n);
+            tab = get_nth_tab (notebook, n);
             break;
         }
         n -= n_pages;
     }
 
-    if (view)
-        gtk_widget_grab_focus (GTK_WIDGET (view));
+    if (tab)
+        gtk_widget_grab_focus (GTK_WIDGET (moo_edit_tab_get_active_view (tab)));
 }
 
 static void
@@ -1480,7 +1517,7 @@ action_next_tab (MooEditWindow *window)
 
     n = get_active_tab (window);
 
-    if (n < moo_edit_window_get_n_docs (window) - 1)
+    if (n < moo_edit_window_get_n_tabs (window) - 1)
         switch_to_tab (window, n + 1);
     else
         switch_to_tab (window, 0);
@@ -1551,7 +1588,7 @@ action_focus_doc (MooEditWindow *window)
 static void
 action_move_to_split_view (MooEditWindow *window)
 {
-    move_doc_to_split_view (window, ACTIVE_DOC (window));
+    move_doc_to_split_view (window, ACTIVE_VIEW (window));
 }
 
 
@@ -1565,10 +1602,10 @@ action_abort_jobs (MooEditWindow *window)
 static void
 action_toggle_bookmark (MooEditWindow *window)
 {
-    MooEdit *doc = ACTIVE_DOC (window);
-    MooEditView *view = moo_edit_get_view (doc);
-    g_return_if_fail (doc != NULL);
-    moo_edit_toggle_bookmark (doc, moo_text_view_get_cursor_line (GTK_TEXT_VIEW (view)));
+    MooEditView *view = ACTIVE_VIEW (window);
+    g_return_if_fail (view != NULL);
+    moo_edit_toggle_bookmark (moo_edit_view_get_doc (view),
+                              moo_text_view_get_cursor_line (GTK_TEXT_VIEW (view)));
 }
 
 
@@ -1577,17 +1614,17 @@ action_next_bookmark (MooEditWindow *window)
 {
     int cursor;
     GSList *bookmarks;
-    MooEdit *doc = ACTIVE_DOC (window);
-    MooEditView *view = moo_edit_get_view (doc);
+    MooEditView *view = ACTIVE_VIEW (window);
+    MooEdit *doc = moo_edit_view_get_doc (view);
 
-    g_return_if_fail (doc != NULL);
+    g_return_if_fail (view != NULL);
 
     cursor = moo_text_view_get_cursor_line (GTK_TEXT_VIEW (view));
     bookmarks = moo_edit_get_bookmarks_in_range (doc, cursor + 1, -1);
 
     if (bookmarks)
     {
-        moo_edit_goto_bookmark (doc, bookmarks->data);
+        moo_edit_view_goto_bookmark (view, bookmarks->data);
         g_slist_free (bookmarks);
     }
 }
@@ -1598,10 +1635,10 @@ action_prev_bookmark (MooEditWindow *window)
 {
     int cursor;
     GSList *bookmarks = NULL;
-    MooEdit *doc = ACTIVE_DOC (window);
-    MooEditView *view = moo_edit_get_view (doc);
+    MooEditView *view = ACTIVE_VIEW (window);
+    MooEdit *doc = moo_edit_view_get_doc (view);
 
-    g_return_if_fail (doc != NULL);
+    g_return_if_fail (view != NULL);
 
     cursor = moo_text_view_get_cursor_line (GTK_TEXT_VIEW (view));
 
@@ -1611,7 +1648,7 @@ action_prev_bookmark (MooEditWindow *window)
     if (bookmarks)
     {
         GSList *last = g_slist_last (bookmarks);
-        moo_edit_goto_bookmark (doc, last->data);
+        moo_edit_view_goto_bookmark (view, last->data);
         g_slist_free (bookmarks);
     }
 }
@@ -1621,7 +1658,7 @@ static void
 goto_bookmark_activated (GtkAction *action,
                          gpointer   data)
 {
-    MooEdit *doc;
+    MooEditView *view;
     MooEditWindow *window;
     MooEditBookmark *bk;
     guint n = GPOINTER_TO_UINT (data);
@@ -1629,11 +1666,11 @@ goto_bookmark_activated (GtkAction *action,
     window = _moo_action_get_window (action);
     g_return_if_fail (window != NULL);
 
-    doc = ACTIVE_DOC (window);
-    g_return_if_fail (doc != NULL);
+    view = ACTIVE_VIEW (window);
+    g_return_if_fail (view != NULL);
 
-    if ((bk = moo_edit_get_bookmark (doc, n)))
-        moo_edit_goto_bookmark (doc, bk);
+    if ((bk = moo_edit_get_bookmark (moo_edit_view_get_doc (view), n)))
+        moo_edit_view_goto_bookmark (view, bk);
 }
 
 static GtkAction *
@@ -1663,17 +1700,18 @@ create_goto_bookmark_action (MooWindow *window,
 static void
 bookmark_item_activated (GtkWidget *item)
 {
-    moo_edit_goto_bookmark (g_object_get_data (G_OBJECT (item), "moo-edit"),
-                            g_object_get_data (G_OBJECT (item), "moo-bookmark"));
+    moo_edit_view_goto_bookmark (g_object_get_data (G_OBJECT (item), "moo-edit-view"),
+                                 g_object_get_data (G_OBJECT (item), "moo-bookmark"));
 }
 
 static GtkWidget *
 create_bookmark_item (MooEditWindow   *window,
-                      MooEdit         *doc,
+                      MooEditView     *view,
                       MooEditBookmark *bk)
 {
     char *label, *bk_text;
     GtkWidget *item = NULL;
+    MooEdit *doc = moo_edit_view_get_doc (view);
 
     bk_text = _moo_edit_bookmark_get_text (bk);
     label = g_strdup_printf ("%d - \"%s\"", 1 + moo_line_mark_get_line (MOO_LINE_MARK (bk)),
@@ -1709,6 +1747,7 @@ create_bookmark_item (MooEditWindow   *window,
 
     g_object_set_data_full (G_OBJECT (item), "moo-bookmark", g_object_ref (bk), g_object_unref);
     g_object_set_data_full (G_OBJECT (item), "moo-edit", g_object_ref (doc), g_object_unref);
+    g_object_set_data_full (G_OBJECT (item), "moo-edit-view", g_object_ref (view), g_object_unref);
 
     g_free (label);
 
@@ -1722,6 +1761,7 @@ populate_bookmark_menu (MooEditWindow *window,
 {
     GtkAction *pn;
     MooEdit *doc;
+    MooEditView *view;
     GtkWidget *item;
     const GSList *bookmarks;
     GList *children, *l;
@@ -1741,8 +1781,8 @@ populate_bookmark_menu (MooEditWindow *window,
 
     g_list_free (children);
 
-
-    doc = ACTIVE_DOC (window);
+    view = ACTIVE_VIEW (window);
+    doc = view ? moo_edit_view_get_doc (view) : NULL;
     bookmarks = doc ? moo_edit_list_bookmarks (doc) : NULL;
 
     pn = moo_window_get_action (MOO_WINDOW (window), "PreviousBookmark");
@@ -1760,7 +1800,7 @@ populate_bookmark_menu (MooEditWindow *window,
 
     while (bookmarks)
     {
-        item = create_bookmark_item (window, doc, bookmarks->data);
+        item = create_bookmark_item (window, view, bookmarks->data);
         gtk_widget_show (item);
         g_object_set_data (G_OBJECT (item), "moo-bookmark-menu-item", GINT_TO_POINTER (TRUE));
         gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, ++pos);
@@ -1950,8 +1990,8 @@ static void
 move_to_split_view_activated (GtkWidget     *item,
                               MooEditWindow *window)
 {
-    MooEdit *doc = g_object_get_data (G_OBJECT (item), "moo-edit");
-    move_doc_to_split_view (window, doc);
+    MooEditView *view = g_object_get_data (G_OBJECT (item), "moo-edit-view");
+    move_doc_to_split_view (window, view);
 }
 
 
@@ -1963,26 +2003,26 @@ static gboolean
 can_move_to_split_view (MooEditWindow *window)
 {
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
-    return moo_edit_window_get_n_docs (window) > 1;
+    return moo_edit_window_get_n_tabs (window) > 1;
 }
 
 static void
 move_doc_to_split_view (MooEditWindow *window,
-                        MooEdit       *doc)
+                        MooEditView   *view)
 {
     MooNotebook *nb1;
     MooNotebook *nb2;
     int old_page;
     MooNotebook *old_nb, *new_nb;
-    GtkWidget *swin;
+    MooEditTab *tab;
     GtkWidget *label;
-    MooEditView *view;
+    MooEdit *doc;
     int n_pages1, n_pages2;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
 
-    view = moo_edit_get_view (doc);
+    doc = moo_edit_view_get_doc (view);
     old_page = get_view_page_num (window, view, &old_nb);
     g_return_if_fail (old_page >= 0);
 
@@ -2015,31 +2055,39 @@ move_doc_to_split_view (MooEditWindow *window,
     if (n_pages2)
         show_notebook (window, nb2);
 
-    swin = GTK_WIDGET (view)->parent;
-    g_object_ref (swin);
+    tab = moo_edit_view_get_tab (view);
+    g_object_ref (tab);
 
     if (window->priv->active_view == view)
         window->priv->active_view = NULL;
 
-    gtk_container_remove (GTK_CONTAINER (old_nb), swin);
-    label = create_tab_label (window, doc);
+    gtk_container_remove (GTK_CONTAINER (old_nb), GTK_WIDGET (tab));
+    label = create_tab_label (window, tab, doc);
     gtk_widget_show (label);
-    moo_notebook_insert_page (new_nb, swin, label,
+    moo_notebook_insert_page (new_nb, GTK_WIDGET (tab), label,
                               moo_notebook_get_current_page (new_nb) + 1);
 
-    moo_edit_window_set_active_doc (window, doc);
+    moo_edit_window_set_active_view (window, view);
     edit_changed (window, doc);
 
-    g_object_unref (swin);
+    g_object_unref (tab);
 }
 
 void
 _moo_edit_window_set_focused_view (MooEditWindow *window,
                                    MooEditView   *view)
 {
+    MooEditTab *tab;
+
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT_VIEW (view));
+
+    tab = moo_edit_view_get_tab (view);
+    g_return_if_fail (MOO_IS_EDIT_TAB (tab));
+
     window->priv->active_view = view;
+
+    moo_edit_tab_set_focused_view (tab, view);
 }
 
 static void
@@ -2049,7 +2097,7 @@ notebook_switch_page (MooNotebook   *notebook,
 {
     if (notebook == get_active_notebook (window))
     {
-        edit_changed (window, get_nth_tab (notebook, page_num));
+        edit_changed (window, get_nth_doc (notebook, page_num));
         moo_edit_window_check_actions (window);
         moo_edit_window_update_doc_list (window);
         g_object_notify (G_OBJECT (window), "active-doc");
@@ -2067,9 +2115,9 @@ notebook_populate_popup (MooEditWindow      *window,
     GtkWidget *item;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), TRUE);
-    g_return_val_if_fail (GTK_IS_SCROLLED_WINDOW (child), TRUE);
+    g_return_val_if_fail (MOO_IS_EDIT_TAB (child), TRUE);
 
-    view = MOO_EDIT_VIEW (gtk_bin_get_child (GTK_BIN (child)));
+    view = moo_edit_tab_get_active_view (MOO_EDIT_TAB (child));
     g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), TRUE);
 
     doc = moo_edit_view_get_doc (view);
@@ -2079,23 +2127,25 @@ notebook_populate_popup (MooEditWindow      *window,
     gtk_widget_show (item);
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
     g_object_set_data (G_OBJECT (item), "moo-edit", doc);
+    g_object_set_data (G_OBJECT (item), "moo-edit-tab", child);
     g_signal_connect (item, "activate",
                       G_CALLBACK (close_activated),
                       window);
 
-    if (moo_edit_window_get_n_docs (window) > 1)
+    if (moo_edit_window_get_n_tabs (window) > 1)
     {
         /* Item in document tab context menu */
         item = gtk_menu_item_new_with_label (C_("tab-context-menu", "Close All Others"));
         gtk_widget_show (item);
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
         g_object_set_data (G_OBJECT (item), "moo-edit", doc);
+        g_object_set_data (G_OBJECT (item), "moo-edit-tab", child);
         g_signal_connect (item, "activate",
                           G_CALLBACK (close_others_activated),
                           window);
     }
 
-    if (moo_edit_window_get_n_docs (window) > 1)
+    if (moo_edit_window_get_n_tabs (window) > 1)
     {
         gtk_menu_shell_append (GTK_MENU_SHELL (menu),
                                GTK_WIDGET (g_object_new (GTK_TYPE_SEPARATOR_MENU_ITEM,
@@ -2107,6 +2157,7 @@ notebook_populate_popup (MooEditWindow      *window,
         gtk_widget_show (item);
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
         g_object_set_data (G_OBJECT (item), "moo-edit", doc);
+        g_object_set_data (G_OBJECT (item), "moo-edit-tab", child);
         g_signal_connect (item, "activate",
                           G_CALLBACK (detach_activated),
                           window);
@@ -2116,6 +2167,7 @@ notebook_populate_popup (MooEditWindow      *window,
         gtk_widget_show (item);
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
         g_object_set_data (G_OBJECT (item), "moo-edit", doc);
+        g_object_set_data (G_OBJECT (item), "moo-edit-tab", child);
         g_signal_connect (item, "activate",
                           G_CALLBACK (move_to_split_view_activated),
                           window);
@@ -2141,7 +2193,7 @@ notebook_button_press (MooNotebook    *notebook,
         return FALSE;
 
     moo_editor_close_doc (window->priv->editor,
-                          get_nth_tab (notebook, n),
+                          get_nth_doc (notebook, n),
                           TRUE);
 
     return TRUE;
@@ -2185,7 +2237,7 @@ get_notebook (MooEditWindow *window,
 static MooEditView *
 get_notebook_active_view (MooNotebook *notebook)
 {
-    GtkWidget *swin;
+    GtkWidget *tab;
     int page;
 
     g_return_val_if_fail (notebook != NULL, NULL);
@@ -2195,8 +2247,8 @@ get_notebook_active_view (MooNotebook *notebook)
     if (page < 0)
         return NULL;
 
-    swin = moo_notebook_get_nth_page (notebook, page);
-    return MOO_EDIT_VIEW (gtk_bin_get_child (GTK_BIN (swin)));
+    tab = moo_notebook_get_nth_page (notebook, page);
+    return moo_edit_tab_get_active_view (MOO_EDIT_TAB (tab));
 }
 
 static MooEdit *
@@ -2224,10 +2276,10 @@ get_active_notebook (MooEditWindow *window)
 
     if (window->priv->active_view)
     {
-        GtkWidget *swin = GTK_WIDGET (window->priv->active_view)->parent;
-        if (moo_notebook_page_num (nb1, swin) >= 0)
+        MooEditTab *tab = moo_edit_view_get_tab (window->priv->active_view);
+        if (moo_notebook_page_num (nb1, GTK_WIDGET (tab)) >= 0)
             return nb1;
-        else if (moo_notebook_page_num (nb2, swin) >= 0)
+        else if (moo_notebook_page_num (nb2, GTK_WIDGET (tab)) >= 0)
             return nb2;
         else
             g_return_val_if_reached (nb1);
@@ -2346,6 +2398,7 @@ edit_changed (MooEditWindow *window,
         g_object_notify (G_OBJECT (window), "has-comments");
         g_object_thaw_notify (G_OBJECT (window));
 
+        update_split_view_actions (window);
         update_window_title (window);
         update_statusbar (window);
         update_lang_menu (window);
@@ -2355,7 +2408,7 @@ edit_changed (MooEditWindow *window,
     }
 
     if (doc)
-        update_tab_label (window, doc);
+        update_tab_labels (window, doc);
 }
 
 static void
@@ -2508,7 +2561,7 @@ moo_edit_window_get_active_view (MooEditWindow *window)
 
     if (!window->priv->active_view)
     {
-        GtkWidget *swin;
+        GtkWidget *tab;
         int page;
         MooNotebook *notebook = get_active_notebook (window);
 
@@ -2519,11 +2572,21 @@ moo_edit_window_get_active_view (MooEditWindow *window)
         if (page < 0)
             return NULL;
 
-        swin = moo_notebook_get_nth_page (notebook, page);
-        window->priv->active_view = MOO_EDIT_VIEW (gtk_bin_get_child (GTK_BIN (swin)));
+        tab = moo_notebook_get_nth_page (notebook, page);
+        window->priv->active_view = moo_edit_tab_get_active_view (MOO_EDIT_TAB (tab));
     }
 
     return window->priv->active_view;
+}
+
+/**
+ * moo_edit_window_get_active_tab:
+ */
+MooEditTab *
+moo_edit_window_get_active_tab (MooEditWindow *window)
+{
+    MooEditView *view = moo_edit_window_get_active_view (window);
+    return view ? moo_edit_view_get_tab (view) : NULL;
 }
 
 
@@ -2534,7 +2597,37 @@ void
 moo_edit_window_set_active_doc (MooEditWindow *window,
                                 MooEdit       *doc)
 {
-    moo_edit_window_set_active_view (window, moo_edit_get_view (doc));
+    MooEditView *view;
+
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (MOO_IS_EDIT (doc));
+
+    view = moo_edit_get_view (doc);
+
+    if (moo_edit_view_get_window (view) != window)
+    {
+        guint i;
+        MooEditViewArray *views;
+
+        view = NULL;
+        views = moo_edit_get_views (doc);
+
+        for (i = 0; i < moo_edit_view_array_get_size (views); ++i)
+        {
+            MooEditView *tmp = views->elms[i];
+            if (moo_edit_view_get_window (view) == window)
+            {
+                view = tmp;
+                break;
+            }
+        }
+
+        moo_edit_view_array_free (views);
+    }
+
+    g_return_if_fail (view != NULL);
+
+    moo_edit_window_set_active_view (window, view);
 }
 
 /**
@@ -2558,6 +2651,17 @@ moo_edit_window_set_active_view (MooEditWindow *window,
     gtk_widget_grab_focus (GTK_WIDGET (view));
 }
 
+/**
+ * moo_edit_window_set_active_tab:
+ */
+void
+moo_edit_window_set_active_tab (MooEditWindow *window,
+                                MooEditTab    *tab)
+{
+    MooEditView *view = moo_edit_tab_get_active_view (tab);
+    moo_edit_window_set_active_view (window, view);
+}
+
 
 /**
  * moo_edit_window_get_docs:
@@ -2567,21 +2671,25 @@ moo_edit_window_set_active_view (MooEditWindow *window,
 MooEditArray *
 moo_edit_window_get_docs (MooEditWindow *window)
 {
-    MooEditViewArray *views;
+    MooEditTabArray *tabs;
     MooEditArray *docs;
     guint i;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
 
-    views = moo_edit_window_get_views (window);
-    g_return_val_if_fail (views != NULL, NULL);
+    tabs = moo_edit_window_get_tabs (window);
+    g_return_val_if_fail (tabs != NULL, NULL);
 
     docs = moo_edit_array_new ();
 
-    for (i = 0; i < views->n_elms; i++)
-        moo_edit_array_append (docs, moo_edit_view_get_doc (views->elms[i]));
+    for (i = 0; i < tabs->n_elms; i++)
+    {
+        MooEdit *doc = moo_edit_tab_get_doc (tabs->elms[i]);
+        if (moo_edit_array_find (docs, doc) < 0)
+            moo_edit_array_append (docs, doc);
+    }
 
-    moo_edit_view_array_free (views);
+    moo_edit_tab_array_free (tabs);
     return docs;
 }
 
@@ -2602,22 +2710,52 @@ moo_edit_window_get_views (MooEditWindow *window)
 
     for (inb = 0; inb < 2; inb++)
     {
-        int i;
+        int ipage;
         MooNotebook *notebook = get_notebook (window, inb);
         int n_pages = moo_notebook_get_n_pages (notebook);
-        for (i = 0; i < n_pages; i++)
-            moo_edit_view_array_append (views, get_nth_view (notebook, i));
+        for (ipage = 0; ipage < n_pages; ipage++)
+        {
+            MooEditTab *tab = get_nth_tab (notebook, ipage);
+            MooEditViewArray *tab_views = moo_edit_tab_get_views (tab);
+            moo_edit_view_array_append_array (views, tab_views);
+            moo_edit_view_array_free (tab_views);
+        }
     }
 
     return views;
 }
 
+/**
+ * moo_edit_window_get_tabs:
+ */
+MooEditTabArray *
+moo_edit_window_get_tabs (MooEditWindow *window)
+{
+    int inb;
+    MooEditTabArray *tabs;
+
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
+
+    tabs = moo_edit_tab_array_new ();
+
+    for (inb = 0; inb < 2; inb++)
+    {
+        int ipage;
+        MooNotebook *notebook = get_notebook (window, inb);
+        int n_pages = moo_notebook_get_n_pages (notebook);
+        for (ipage = 0; ipage < n_pages; ipage++)
+            moo_edit_tab_array_append (tabs, get_nth_tab (notebook, ipage));
+    }
+
+    return tabs;
+}
+
 
 /**
- * moo_edit_window_get_n_docs:
+ * moo_edit_window_get_n_tabs:
  */
 int
-moo_edit_window_get_n_docs (MooEditWindow *window)
+moo_edit_window_get_n_tabs (MooEditWindow *window)
 {
     guint i;
     int n_docs = 0;
@@ -2635,25 +2773,19 @@ moo_edit_window_get_n_docs (MooEditWindow *window)
 
 
 static MooEdit *
+get_nth_doc (MooNotebook *notebook,
+             guint        n)
+{
+    MooEditTab *tab = get_nth_tab (notebook, n);
+    return tab ? moo_edit_tab_get_doc (tab) : NULL;
+}
+
+static MooEditTab *
 get_nth_tab (MooNotebook *notebook,
              guint        n)
 {
-    MooEditView *view = get_nth_view (notebook, n);
-    return view ? moo_edit_view_get_doc (view) : NULL;
-}
-
-static MooEditView *
-get_nth_view (MooNotebook   *notebook,
-              guint          n)
-{
-    GtkWidget *swin;
-
-    swin = moo_notebook_get_nth_page (notebook, n);
-
-    if (swin)
-        return MOO_EDIT_VIEW (gtk_bin_get_child (GTK_BIN (swin)));
-    else
-        return NULL;
+    GtkWidget *tab = moo_notebook_get_nth_page (notebook, n);
+    return tab ? MOO_EDIT_TAB (tab) : NULL;
 }
 
 static int
@@ -2685,17 +2817,17 @@ get_view_page_num (MooEditWindow  *window,
                    MooNotebook   **pnotebook)
 {
     int i;
-    GtkWidget *swin;
+    MooEditTab *tab;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), -1);
     g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), -1);
 
-    swin = GTK_WIDGET (view)->parent;
+    tab = moo_edit_view_get_tab (view);
 
     for (i = 0; i < 2; ++i)
     {
         MooNotebook *notebook = get_notebook (window, i);
-        int page = moo_notebook_page_num (notebook, swin);
+        int page = moo_notebook_page_num (notebook, GTK_WIDGET (tab));
         if (page >= 0)
         {
             if (pnotebook)
@@ -2710,49 +2842,50 @@ get_view_page_num (MooEditWindow  *window,
 }
 
 static int
-get_view_num (MooEditWindow  *window,
-              MooEditView    *view,
-              MooNotebook   **pnotebook)
+get_tab_num (MooEditWindow *window,
+             MooEditTab    *tab)
 {
     int i;
     int pages;
-    GtkWidget *swin;
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), -1);
-    g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), -1);
-
-    swin = GTK_WIDGET (view)->parent;
+    g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), -1);
 
     for (i = 0, pages = 0; i < 2; ++i)
     {
         MooNotebook *notebook = get_notebook (window, i);
-        int page = moo_notebook_page_num (notebook, swin);
+        int page = moo_notebook_page_num (notebook, GTK_WIDGET (tab));
         if (page >= 0)
-        {
-            if (pnotebook)
-                *pnotebook = notebook;
             return pages + page;
-        }
         pages += moo_notebook_get_n_pages (notebook);
     }
 
-    if (pnotebook)
-        *pnotebook = NULL;
     return -1;
 }
 
-static int
-get_doc_num (MooEditWindow *window,
-             MooEdit       *doc)
+
+static void
+connect_view (MooEditWindow *window,
+              MooEditView   *view)
 {
-    return get_view_num (window, moo_edit_get_view (doc), NULL);
+    g_signal_connect_swapped (view, "notify::overwrite",
+                              G_CALLBACK (view_overwrite_changed), window);
+    g_signal_connect_swapped (view, "notify::wrap-mode",
+                              G_CALLBACK (view_wrap_mode_changed), window);
+    g_signal_connect_swapped (view, "notify::show-line-numbers",
+                              G_CALLBACK (view_show_line_numbers_changed), window);
+    g_signal_connect_swapped (view, "cursor-moved",
+                              G_CALLBACK (view_cursor_moved), window);
 }
 
-int
-_moo_edit_window_get_doc_no (MooEditWindow *window,
-                             MooEdit       *doc)
+static void
+disconnect_view (MooEditWindow *window,
+                 MooEditView   *view)
 {
-    return get_doc_num (window, doc);
+    g_signal_handlers_disconnect_by_func (view, (gpointer) view_cursor_moved, window);
+    g_signal_handlers_disconnect_by_func (view, (gpointer) view_overwrite_changed, window);
+    g_signal_handlers_disconnect_by_func (view, (gpointer) view_wrap_mode_changed, window);
+    g_signal_handlers_disconnect_by_func (view, (gpointer) view_show_line_numbers_changed, window);
 }
 
 
@@ -2761,28 +2894,41 @@ _moo_edit_window_insert_doc (MooEditWindow *window,
                              MooEdit       *doc,
                              MooEditView   *after_view)
 {
-    GtkWidget *label;
-    GtkWidget *scrolledwindow;
-    MooEditView *view;
-    MooNotebook *notebook = NULL;
-    int page = -1;
+    MooEditTab *tab;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (!moo_edit_get_window (doc));
+    g_return_if_fail (!after_view || moo_edit_view_get_window (after_view) == window);
 
-    view = moo_edit_get_view (doc);
+    g_assert (moo_edit_get_n_views (doc) == 1);
 
-    label = create_tab_label (window, doc);
+    tab = moo_edit_tab_new (doc);
+    _moo_edit_window_insert_tab (window, tab, after_view);
+}
+
+void
+_moo_edit_window_insert_tab (MooEditWindow *window,
+                             MooEditTab    *tab,
+                             MooEditView   *after_view)
+{
+    GtkWidget *label;
+    MooEdit *doc;
+    MooEditViewArray *views;
+    MooNotebook *notebook = NULL;
+    int page = -1;
+    guint i;
+
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+    g_return_if_fail (MOO_IS_EDIT_TAB (tab));
+    g_return_if_fail (!moo_edit_tab_get_window (tab));
+    g_return_if_fail (!after_view || moo_edit_view_get_window (after_view) == window);
+
+    doc = moo_edit_tab_get_doc (tab);
+    views = moo_edit_get_views (doc);
+
+    label = create_tab_label (window, tab, doc);
     gtk_widget_show (label);
-
-    scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
-    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow),
-                                    GTK_POLICY_AUTOMATIC,
-                                    GTK_POLICY_AUTOMATIC);
-    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow),
-                                         GTK_SHADOW_ETCHED_IN);
-    gtk_container_add (GTK_CONTAINER (scrolledwindow), GTK_WIDGET (view));
-    gtk_widget_show_all (scrolledwindow);
 
     if (after_view)
     {
@@ -2798,7 +2944,7 @@ _moo_edit_window_insert_doc (MooEditWindow *window,
     }
 
     show_notebook (window, notebook);
-    moo_notebook_insert_page (notebook, scrolledwindow, label, page);
+    moo_notebook_insert_page (notebook, GTK_WIDGET (tab), label, page);
 
     g_signal_connect_swapped (doc, "doc_status_changed",
                               G_CALLBACK (edit_changed), window);
@@ -2806,20 +2952,15 @@ _moo_edit_window_insert_doc (MooEditWindow *window,
                               G_CALLBACK (edit_encoding_changed), window);
     g_signal_connect_swapped (doc, "notify::line-end",
                               G_CALLBACK (edit_line_end_changed), window);
-    g_signal_connect_swapped (view, "notify::overwrite",
-                              G_CALLBACK (view_overwrite_changed), window);
-    g_signal_connect_swapped (view, "notify::wrap-mode",
-                              G_CALLBACK (view_wrap_mode_changed), window);
-    g_signal_connect_swapped (view, "notify::show-line-numbers",
-                              G_CALLBACK (view_show_line_numbers_changed), window);
     g_signal_connect_swapped (doc, "filename_changed",
                               G_CALLBACK (edit_filename_changed), window);
     g_signal_connect_swapped (doc, "notify::has-comments",
                               G_CALLBACK (proxy_boolean_property), window);
     g_signal_connect_swapped (doc, "notify::lang",
                               G_CALLBACK (edit_lang_changed), window);
-    g_signal_connect_swapped (view, "cursor-moved",
-                              G_CALLBACK (view_cursor_moved), window);
+
+    for (i = 0; i < moo_edit_view_array_get_size (views); ++i)
+        connect_view (window, views->elms[i]);
 
     g_object_ref (doc);
 
@@ -2830,47 +2971,54 @@ _moo_edit_window_insert_doc (MooEditWindow *window,
 
     moo_edit_window_set_active_doc (window, doc);
     edit_changed (window, doc);
-    gtk_widget_grab_focus (GTK_WIDGET (view));
+    gtk_widget_grab_focus (GTK_WIDGET (moo_edit_get_view (doc)));
 
     g_object_notify (G_OBJECT (window), "can-move-to-split-view");
+
+    moo_edit_view_array_free (views);
 }
 
 
 void
-_moo_edit_window_remove_doc (MooEditWindow  *window,
-                             MooEdit        *doc,
-                             gboolean        destroy)
+_moo_edit_window_remove_doc (MooEditWindow *window,
+                             MooEdit       *doc)
 {
     int page;
     GtkAction *action;
     MooEditView *new_view;
-    gboolean had_focus;
-    MooEditView *view;
+    MooEditViewArray *views;
+    gboolean had_focus = FALSE;
     MooNotebook *notebook = NULL;
+    guint i;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (doc));
 
-    view = moo_edit_get_view (doc);
+    views = moo_edit_get_views (doc);
+    g_return_if_fail (moo_edit_view_array_get_size (views) > 0);
 
-    page = get_view_page_num (window, view, &notebook);
+    page = get_view_page_num (window, views->elms[0], &notebook);
     g_return_if_fail (notebook != NULL && page >= 0);
 
-    if (view == window->priv->active_view)
-        window->priv->active_view = NULL;
+    for (i = 0; i < views->n_elms; ++i)
+    {
+        MooEditView *view = views->elms[i];
 
-    had_focus = GTK_WIDGET_HAS_FOCUS (view);
+        if (view == window->priv->active_view)
+            window->priv->active_view = NULL;
+
+        had_focus = had_focus || GTK_WIDGET_HAS_FOCUS (view);
+    }
 
     g_signal_emit (window, signals[CLOSE_DOC], 0, doc);
 
     g_signal_handlers_disconnect_by_func (doc, (gpointer) edit_changed, window);
     g_signal_handlers_disconnect_by_func (doc, (gpointer) edit_filename_changed, window);
     g_signal_handlers_disconnect_by_func (doc, (gpointer) proxy_boolean_property, window);
-    g_signal_handlers_disconnect_by_func (view, (gpointer) view_cursor_moved, window);
     g_signal_handlers_disconnect_by_func (doc, (gpointer) edit_lang_changed, window);
-    g_signal_handlers_disconnect_by_func (view, (gpointer) view_overwrite_changed, window);
-    g_signal_handlers_disconnect_by_func (view, (gpointer) view_wrap_mode_changed, window);
-    g_signal_handlers_disconnect_by_func (view, (gpointer) view_show_line_numbers_changed, window);
+
+    for (i = 0; i < views->n_elms; ++i)
+        disconnect_view (window, views->elms[i]);
 
     _moo_doc_detach_plugins (window, doc);
 
@@ -2887,10 +3035,6 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
 
     moo_edit_window_update_doc_list (window);
 
-    /* removing scrolled window from the notebook will destroy the scrolled window,
-     * and that in turn will destroy the doc if it's not removed before */
-    if (!destroy)
-        gtk_container_remove (GTK_CONTAINER (GTK_WIDGET (view)->parent), GTK_WIDGET (view));
     moo_notebook_remove_page (notebook, page);
 
     if (moo_notebook_get_n_pages (notebook) == 0)
@@ -2916,6 +3060,7 @@ _moo_edit_window_remove_doc (MooEditWindow  *window,
     g_object_notify (G_OBJECT (window), "can-move-to-split-view");
     g_object_thaw_notify (G_OBJECT (window));
 
+    moo_edit_view_array_free (views);
     g_object_unref (doc);
 }
 
@@ -3062,11 +3207,14 @@ tab_icon_drag_data_get (GtkWidget      *evbox,
                         G_GNUC_UNUSED MooEditWindow  *window)
 {
     MooEdit *doc = g_object_get_data (G_OBJECT (evbox), "moo-edit");
+    MooEditView *view = g_object_get_data (G_OBJECT (evbox), "moo-edit-view");
+
     g_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
 
     if (info == TARGET_MOO_EDIT_TAB)
     {
-        moo_selection_data_set_pointer (data, MOO_EDIT_TAB_ATOM, doc);
+        moo_selection_data_set_pointer (data, MOO_EDIT_TAB_ATOM, view);
     }
     else if (info == TARGET_URI_LIST)
     {
@@ -3097,6 +3245,7 @@ tab_icon_drag_end (GtkWidget      *evbox,
 
 static GtkWidget *
 create_tab_label (MooEditWindow *window,
+                  MooEditTab    *tab,
                   MooEdit       *doc)
 {
     GtkWidget *hbox, *icon, *label, *evbox;
@@ -3126,9 +3275,12 @@ create_tab_label (MooEditWindow *window,
     g_object_set_data (G_OBJECT (hbox), "moo-edit-icon", icon);
     g_object_set_data (G_OBJECT (hbox), "moo-edit-icon-evbox", evbox);
     g_object_set_data (G_OBJECT (hbox), "moo-edit-label", label);
+    g_object_set_data (G_OBJECT (hbox), "moo-edit-tab", tab);
     g_object_set_data (G_OBJECT (evbox), "moo-edit-icon", icon);
     g_object_set_data (G_OBJECT (evbox), "moo-edit", doc);
+    g_object_set_data (G_OBJECT (evbox), "moo-edit-tab", tab);
     g_object_set_data (G_OBJECT (icon), "moo-edit", doc);
+    g_object_set_data (G_OBJECT (icon), "moo-edit-tab", tab);
 
     g_signal_connect (evbox, "button-press-event",
                       G_CALLBACK (tab_icon_button_press),
@@ -3155,22 +3307,20 @@ set_tab_icon (GtkWidget *image,
 }
 
 static void
-update_tab_label (MooEditWindow *window,
-                  MooEdit       *doc)
+update_tab_label (MooEditTab    *tab,
+                  MooNotebook   *notebook)
 {
     GtkWidget *hbox, *icon, *label, *evbox;
     MooEditStatus status;
     char *label_text;
     gboolean modified, deleted;
     GdkPixbuf *pixbuf;
-    MooEditView *view;
-    MooNotebook *notebook = NULL;
+    MooEdit *doc;
 
-    view = moo_edit_get_view (doc);
-    g_return_if_fail (view != NULL);
+    doc = moo_edit_tab_get_doc (tab);
+    g_return_if_fail (doc != NULL);
 
-    get_view_page_num (window, view, &notebook);
-    hbox = moo_notebook_get_tab_label (notebook, GTK_WIDGET (view)->parent);
+    hbox = moo_notebook_get_tab_label (notebook, GTK_WIDGET (tab));
     g_return_if_fail (GTK_IS_WIDGET (hbox));
 
     icon = g_object_get_data (G_OBJECT (hbox), "moo-edit-icon");
@@ -3218,6 +3368,26 @@ update_tab_label (MooEditWindow *window,
     set_tab_icon (icon, pixbuf);
 
     g_free (label_text);
+}
+
+static void
+update_tab_labels (MooEditWindow *window,
+                   MooEdit       *doc)
+{
+    guint inb;
+
+    for (inb = 0; inb < window->priv->notebooks->n_elms; inb++)
+    {
+        int i;
+        MooNotebook *notebook = get_notebook (window, inb);
+        int n_pages = moo_notebook_get_n_pages (notebook);
+        for (i = 0; i < n_pages; i++)
+        {
+            MooEditTab *tab = get_nth_tab (notebook, i);
+            if (doc == moo_edit_tab_get_doc (tab))
+                update_tab_label (tab, notebook);
+        }
+    }
 }
 
 
@@ -3495,9 +3665,9 @@ do_update_statusbar (MooEditWindow *window)
     GtkTextBuffer *buffer;
     gboolean ovr;
 
-    doc = ACTIVE_DOC (window);
+    view = ACTIVE_VIEW (window);
 
-    if (!doc)
+    if (!view)
     {
         gtk_widget_set_sensitive (window->priv->info, FALSE);
         set_statusbar_numbers (window, 0, 0, -1);
@@ -3506,7 +3676,7 @@ do_update_statusbar (MooEditWindow *window)
 
     gtk_widget_set_sensitive (window->priv->info, TRUE);
 
-    view = moo_edit_get_view (doc);
+    doc = moo_edit_view_get_doc (view);
     buffer = moo_edit_get_buffer (doc);
 
     gtk_text_buffer_get_iter_at_mark (buffer, &iter,
@@ -4121,11 +4291,15 @@ moo_edit_window_job_finished (MooEditWindow  *window,
  */
 
 static int
-compare_docs_for_menu (MooEdit *doc1,
-                       MooEdit *doc2)
+compare_tabs_for_menu (MooEditTab *tab1,
+                       MooEditTab *tab2)
 {
     char *k1, *k2;
     int result;
+    MooEdit *doc1, *doc2;
+
+    doc1 = moo_edit_tab_get_doc (tab1);
+    doc2 = moo_edit_tab_get_doc (tab2);
 
     k1 = g_utf8_collate_key_for_filename (moo_edit_get_display_basename (doc1), -1);
     k2 = g_utf8_collate_key_for_filename (moo_edit_get_display_basename (doc2), -1);
@@ -4134,8 +4308,8 @@ compare_docs_for_menu (MooEdit *doc1,
 
     if (!result)
     {
-        MooEditWindow *window = moo_edit_get_window (doc1);
-        result = get_doc_num (window, doc1) - get_doc_num (window, doc2);
+        MooEditWindow *window = moo_edit_tab_get_window (tab1);
+        result = get_tab_num (window, tab1) - get_tab_num (window, tab2);
     }
 
     g_free (k2);
@@ -4144,14 +4318,14 @@ compare_docs_for_menu (MooEdit *doc1,
 }
 
 static void
-doc_menu_item_activated (MooEdit *doc)
+doc_menu_item_activated (MooEditTab *tab)
 {
     MooEditWindow *window;
 
-    window = moo_edit_get_window (doc);
+    window = moo_edit_tab_get_window (tab);
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
 
-    moo_edit_window_set_active_doc (window, doc);
+    moo_edit_window_set_active_tab (window, tab);
 }
 
 static void
@@ -4159,8 +4333,8 @@ populate_window_menu (MooEditWindow *window,
                       GtkWidget     *menu,
                       GtkWidget     *no_docs_item)
 {
-    MooEdit *active_doc;
-    MooEditArray *docs;
+    MooEditTab *active_tab;
+    MooEditTabArray *tabs;
     GList *children, *l;
     int pos;
     guint i;
@@ -4180,11 +4354,11 @@ populate_window_menu (MooEditWindow *window,
 
     g_list_free (children);
 
-    docs = moo_edit_window_get_docs (window);
+    tabs = moo_edit_window_get_tabs (window);
 
-    if (moo_edit_array_is_empty (docs))
+    if (moo_edit_tab_array_is_empty (tabs))
     {
-        moo_edit_array_free (docs);
+        moo_edit_tab_array_free (tabs);
         return;
     }
 
@@ -4193,24 +4367,25 @@ populate_window_menu (MooEditWindow *window,
     gtk_widget_show (item);
     gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, ++pos);
 
-    moo_edit_array_sort (docs, (GCompareFunc) compare_docs_for_menu);
-    active_doc = ACTIVE_DOC (window);
+    moo_edit_tab_array_sort (tabs, (GCompareFunc) compare_tabs_for_menu);
+    active_tab = ACTIVE_TAB (window);
 
-    for (i = 0; i < docs->n_elms; ++i)
+    for (i = 0; i < tabs->n_elms; ++i)
     {
         int idx;
-        MooEdit *doc = docs->elms[i];
+        MooEditTab *tab = tabs->elms[i];
+        MooEdit *doc = moo_edit_tab_get_doc (tab);
 
-        idx = get_doc_num (window, doc);
+        idx = get_tab_num (window, tab);
 
         item = gtk_check_menu_item_new_with_label (moo_edit_get_display_basename (doc));
         _moo_widget_set_tooltip (item, moo_edit_get_display_name (doc));
-        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), doc == active_doc);
+        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), tab == active_tab);
         gtk_check_menu_item_set_draw_as_radio (GTK_CHECK_MENU_ITEM (item), TRUE);
         g_object_set_data (G_OBJECT (item), "moo-document-menu-item", GINT_TO_POINTER (TRUE));
         gtk_widget_show (item);
         gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, ++pos);
-        g_signal_connect_swapped (item, "activate", G_CALLBACK (doc_menu_item_activated), doc);
+        g_signal_connect_swapped (item, "activate", G_CALLBACK (doc_menu_item_activated), tab);
 
         if (idx < 9)
         {
@@ -4222,7 +4397,7 @@ populate_window_menu (MooEditWindow *window,
         }
     }
 
-    moo_edit_array_free (docs);
+    moo_edit_tab_array_free (tabs);
 }
 
 static void
@@ -4342,14 +4517,16 @@ notebook_drag_data_recv (GtkWidget          *widget,
         if (data->target == MOO_EDIT_TAB_ATOM)
         {
             GtkWidget *toplevel;
-            MooEdit *doc = moo_selection_data_get_pointer (data, MOO_EDIT_TAB_ATOM);
-            MooEditView *view;
             MooNotebook *src_notebook = NULL;
+            MooEdit *doc;
+            MooEditView *view;
+
+            view = moo_selection_data_get_pointer (data, MOO_EDIT_TAB_ATOM);
+            doc = view ? moo_edit_view_get_doc (view) : NULL;
 
             if (!doc)
                 goto out;
 
-            view = moo_edit_get_view (doc);
             toplevel = gtk_widget_get_toplevel (GTK_WIDGET (view));
 
             if (toplevel == GTK_WIDGET (window))
@@ -4360,7 +4537,7 @@ notebook_drag_data_recv (GtkWidget          *widget,
                                       get_notebook_active_view (MOO_NOTEBOOK (widget)),
                                       TRUE);
             else if (src_notebook != MOO_NOTEBOOK (widget))
-                move_doc_to_split_view (window, doc);
+                move_doc_to_split_view (window, view);
 
             goto out;
         }
@@ -4421,18 +4598,18 @@ notebook_drag_data_recv (GtkWidget          *widget,
         if (info == TARGET_MOO_EDIT_TAB)
         {
             GtkWidget *toplevel;
-            MooEdit *doc = moo_selection_data_get_pointer (data, MOO_EDIT_TAB_ATOM);
             MooEditView *view;
             gboolean can_move = TRUE;
 
-            if (!doc)
+            view = moo_selection_data_get_pointer (data, MOO_EDIT_TAB_ATOM);
+
+            if (!view)
             {
                 g_critical ("oops");
                 gdk_drag_status (context, 0, time);
                 return;
             }
 
-            view = moo_edit_get_view (doc);
             toplevel = gtk_widget_get_toplevel (GTK_WIDGET (view));
 
             if (toplevel == GTK_WIDGET (window))
@@ -4461,4 +4638,416 @@ notebook_drag_data_recv (GtkWidget          *widget,
 out:
     if (!finished)
         gtk_drag_finish (context, FALSE, FALSE, time);
+}
+
+
+/**************************************************************************************************
+ *
+ * MooEditTab
+ *
+ *************************************************************************************************/
+
+static void
+moo_edit_tab_class_init (G_GNUC_UNUSED MooEditTabClass *klass)
+{
+}
+
+static void
+moo_edit_tab_init (MooEditTab *tab)
+{
+    tab->vpaned1 = gtk_vpaned_new ();
+    tab->vpaned2 = gtk_vpaned_new ();
+    gtk_paned_pack1 (GTK_PANED (tab), tab->vpaned1, TRUE, FALSE);
+    gtk_paned_pack2 (GTK_PANED (tab), tab->vpaned2, TRUE, FALSE);
+}
+
+static GtkWidget *
+create_view_scrolled_window (MooEditView *view)
+{
+    GtkWidget *swin = gtk_scrolled_window_new (NULL, NULL);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (swin),
+                                    GTK_POLICY_AUTOMATIC,
+                                    GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (swin),
+                                         GTK_SHADOW_ETCHED_IN);
+
+    gtk_container_add (GTK_CONTAINER (swin), GTK_WIDGET (view));
+    gtk_widget_show_all (swin);
+    return swin;
+}
+
+static GtkWidget *
+create_view_in_scrolled_window (MooEdit *doc)
+{
+    MooEditView *view = _moo_edit_view_new (doc);
+    return create_view_scrolled_window (view);
+}
+
+static MooEditTab *
+moo_edit_tab_new (MooEdit *doc)
+{
+    MooEditView *view;
+    MooEditTab *tab;
+    GtkWidget *swin;
+
+    g_return_val_if_fail (moo_edit_get_n_views (doc) == 1, NULL);
+
+    view = moo_edit_get_view (doc);
+    tab = g_object_new (MOO_TYPE_EDIT_TAB, NULL);
+
+    swin = create_view_scrolled_window (view);
+    gtk_paned_pack1 (GTK_PANED (tab->vpaned1), swin, TRUE, FALSE);
+    gtk_widget_show (tab->vpaned1);
+    gtk_widget_show (GTK_WIDGET (tab));
+
+    return tab;
+}
+
+MooEdit *
+moo_edit_tab_get_doc (MooEditTab *tab)
+{
+    MooEditView *view;
+
+    g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), NULL);
+
+    view = moo_edit_tab_get_active_view (tab);
+    return view ? moo_edit_view_get_doc (view) : NULL;
+}
+
+MooEditViewArray *
+moo_edit_tab_get_views (MooEditTab *tab)
+{
+    MooEditViewArray *views;
+    int i;
+
+    g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), NULL);
+
+    views = moo_edit_view_array_new ();
+
+    for (i = 0; i < 2; ++i)
+    {
+        GList *children = gtk_container_get_children (GTK_CONTAINER (i == 0 ? tab->vpaned1 : tab->vpaned2));
+        while (children)
+        {
+            MooEditView *view = MOO_EDIT_VIEW (gtk_bin_get_child (children->data));
+            moo_edit_view_array_append (views, view);
+            children = g_list_delete_link (children, children);
+        }
+    }
+
+    return views;
+}
+
+MooEditView *
+moo_edit_tab_get_active_view (MooEditTab *tab)
+{
+    g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), NULL);
+
+    if (!tab->active_view)
+    {
+        int i;
+        for (i = 0; !tab->active_view && i < 2; ++i)
+        {
+            GList *children = gtk_container_get_children (GTK_CONTAINER (i == 0 ? tab->vpaned1 : tab->vpaned2));
+            if (children)
+                tab->active_view = MOO_EDIT_VIEW (gtk_bin_get_child (children->data));
+            g_list_free (children);
+        }
+    }
+
+    return tab->active_view;
+}
+
+static void
+moo_edit_tab_set_focused_view (MooEditTab  *tab,
+                               MooEditView *view)
+{
+    g_return_if_fail (MOO_IS_EDIT_TAB (tab));
+    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
+    g_return_if_fail (moo_edit_view_get_tab (view) == tab);
+    tab->active_view = view;
+}
+
+MooEditWindow *
+moo_edit_tab_get_window (MooEditTab *tab)
+{
+    GtkWidget *toplevel;
+    g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), NULL);
+    toplevel = gtk_widget_get_toplevel (GTK_WIDGET (tab));
+    if (!toplevel || !gtk_widget_is_toplevel (toplevel))
+        return NULL;
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (toplevel), NULL);
+    return MOO_EDIT_WINDOW (toplevel);
+}
+
+static MooEditView *
+moo_edit_tab_get_view (MooEditTab *tab, int ipaned, int iview)
+{
+    GtkWidget *paned;
+    GtkWidget *swin;
+    g_return_val_if_fail (ipaned == 1 || ipaned == 2, NULL);
+    g_return_val_if_fail (iview == 1 || iview == 2, NULL);
+    if (ipaned == 1)
+        paned = tab->vpaned1;
+    else
+        paned = tab->vpaned2;
+    if (iview == 1)
+        swin = gtk_paned_get_child1 (GTK_PANED (paned));
+    else
+        swin = gtk_paned_get_child2 (GTK_PANED (paned));
+    return swin ? MOO_EDIT_VIEW (gtk_bin_get_child (GTK_BIN (swin))) : NULL;
+}
+
+static void
+moo_edit_tab_focus_next_view (MooEditTab *tab)
+{
+    int i = 0;
+    int cur;
+    MooEditView *focus_chain[4] = { 0 };
+    MooEditView *view;
+
+    focus_chain[i++] = moo_edit_tab_get_view (tab, 1, 1);
+
+    if (GTK_WIDGET_VISIBLE (tab->vpaned2))
+    {
+        if ((view = moo_edit_tab_get_view (tab, 2, 1)))
+            focus_chain[i++] = view;
+        g_assert (view != NULL);
+        if ((view = moo_edit_tab_get_view (tab, 2, 2)))
+            focus_chain[i++] = view;
+    }
+
+    if ((view = moo_edit_tab_get_view (tab, 1, 2)))
+        focus_chain[i++] = view;
+
+    for (cur = 0; cur < 4; ++cur)
+        if (focus_chain[cur] && GTK_WIDGET_HAS_FOCUS (focus_chain[cur]))
+            break;
+
+    cur++;
+    if (cur >= 4 || !focus_chain[cur])
+        cur = 0;
+
+    gtk_widget_grab_focus (GTK_WIDGET (focus_chain[cur]));
+}
+
+/*
+ * +-------------+
+ * |      |      |
+ * |      |      |
+ * |      |      |
+ * |      |      |
+ * |      |      |
+ * +-------------+
+ */
+static gboolean
+moo_edit_tab_get_split_horizontal (MooEditTab *tab)
+{
+    g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), FALSE);
+    return GTK_WIDGET_VISIBLE (tab->vpaned1) &&
+           GTK_WIDGET_VISIBLE (tab->vpaned2);
+}
+
+/*
+ * +-------------+
+ * |      |      |
+ * |      |      |
+ * |      |      |
+ * |      |      |
+ * |      |      |
+ * +-------------+
+ */
+static gboolean
+moo_edit_tab_set_split_horizontal (MooEditTab *tab,
+                                   gboolean    split)
+{
+    g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), FALSE);
+
+    if (!!split == moo_edit_tab_get_split_horizontal (tab))
+        return FALSE;
+
+    if (!split)
+    {
+        gboolean has_focus;
+        MooEditView *view1 = moo_edit_tab_get_view (tab, 2, 1);
+        MooEditView *view2 = moo_edit_tab_get_view (tab, 2, 2);
+
+        g_assert (view1 != NULL);
+
+        has_focus = (view1 && GTK_WIDGET_HAS_FOCUS (view1)) ||
+                    (view2 && GTK_WIDGET_HAS_FOCUS (view2));
+
+        if (view1)
+            gtk_container_remove (GTK_CONTAINER (tab->vpaned2), GTK_WIDGET (view1)->parent);
+        if (view2)
+            gtk_container_remove (GTK_CONTAINER (tab->vpaned2), GTK_WIDGET (view2)->parent);
+
+        gtk_widget_hide (tab->vpaned2);
+
+        if (has_focus)
+            gtk_widget_grab_focus (GTK_WIDGET (moo_edit_tab_get_view (tab, 1, 1)));
+    }
+    else
+    {
+        GtkWidget *swin;
+        MooEditView *view1 = moo_edit_tab_get_view (tab, 1, 1);
+        MooEditView *view2 = moo_edit_tab_get_view (tab, 1, 2);
+        MooEdit *doc = moo_edit_tab_get_doc (tab);
+
+        g_assert (view1 != NULL);
+        g_assert (!GTK_WIDGET_VISIBLE (tab->vpaned2));
+        g_assert (!gtk_container_get_children (GTK_CONTAINER (tab->vpaned2)));
+
+        swin = create_view_in_scrolled_window (doc);
+        gtk_paned_pack1 (GTK_PANED (tab->vpaned2), swin, TRUE, FALSE);
+
+        if (view2)
+        {
+            swin = create_view_in_scrolled_window (doc);
+            gtk_paned_pack2 (GTK_PANED (tab->vpaned2), swin, TRUE, FALSE);
+        }
+
+        gtk_widget_show_all (tab->vpaned2);
+    }
+
+    return TRUE;
+}
+
+/*
+ * +--------------+
+ * |              |
+ * |              |
+ * |--------------|
+ * |              |
+ * |              |
+ * +--------------+
+ */
+static gboolean
+moo_edit_tab_get_split_vertical (MooEditTab *tab)
+{
+    g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), FALSE);
+    return gtk_paned_get_child1 (GTK_PANED (tab->vpaned1)) &&
+           gtk_paned_get_child2 (GTK_PANED (tab->vpaned1));
+}
+
+/*
+ * +--------------+
+ * |              |
+ * |              |
+ * |--------------|
+ * |              |
+ * |              |
+ * +--------------+
+ */
+static gboolean
+moo_edit_tab_set_split_vertical (MooEditTab *tab,
+                                 gboolean    split)
+{
+    g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), FALSE);
+
+    if (!!split == moo_edit_tab_get_split_vertical (tab))
+        return FALSE;
+
+    if (!split)
+    {
+        gboolean has_focus;
+        MooEditView *view1;
+        MooEditView *view2;
+
+        view1 = moo_edit_tab_get_view (tab, 1, 2);
+        view2 = moo_edit_tab_get_view (tab, 2, 2);
+
+        g_assert (view1 != NULL);
+
+        has_focus = (view1 && GTK_WIDGET_HAS_FOCUS (view1)) ||
+                    (view2 && GTK_WIDGET_HAS_FOCUS (view2));
+
+        if (view1)
+            gtk_container_remove (GTK_CONTAINER (tab->vpaned1), GTK_WIDGET (view1)->parent);
+        if (view2)
+            gtk_container_remove (GTK_CONTAINER (tab->vpaned2), GTK_WIDGET (view2)->parent);
+
+        if (has_focus)
+            gtk_widget_grab_focus (GTK_WIDGET (moo_edit_tab_get_view (tab, 1, 1)));
+    }
+    else
+    {
+        GtkWidget *swin;
+        MooEdit *doc = moo_edit_tab_get_doc (tab);
+
+        swin = create_view_in_scrolled_window (doc);
+        gtk_paned_pack2 (GTK_PANED (tab->vpaned1), swin, TRUE, FALSE);
+
+        if (GTK_WIDGET_VISIBLE (tab->vpaned2))
+        {
+            g_assert (gtk_paned_get_child1 (GTK_PANED (tab->vpaned2)) != NULL);
+            swin = create_view_in_scrolled_window (doc);
+            gtk_paned_pack2 (GTK_PANED (tab->vpaned2), swin, TRUE, FALSE);
+        }
+    }
+
+    return TRUE;
+}
+
+
+static void
+split_view_horizontal_toggled (MooEditWindow *window,
+                               gboolean       active)
+{
+    MooEditTab *tab = ACTIVE_TAB (window);
+    g_return_if_fail (tab != NULL);
+    if (moo_edit_tab_set_split_horizontal (tab, active))
+        update_split_view_actions (window);
+}
+
+static void
+split_view_vertical_toggled (MooEditWindow *window,
+                             gboolean       active)
+{
+    MooEditTab *tab = ACTIVE_TAB (window);
+    g_return_if_fail (tab != NULL);
+    if (moo_edit_tab_set_split_vertical (tab, active))
+        update_split_view_actions (window);
+}
+
+static void
+action_focus_next_split_view (MooEditWindow *window)
+{
+    MooEditTab *tab = ACTIVE_TAB (window);
+    g_return_if_fail (tab != NULL);
+    moo_edit_tab_focus_next_view (tab);
+    update_doc_view_actions (window);
+}
+
+static void
+update_split_view_actions (MooEditWindow *window)
+{
+    GtkAction *action_split_horizontal;
+    GtkAction *action_split_vertical;
+    GtkAction *action_cycle;
+    gboolean has_split_horizontal;
+    gboolean has_split_vertical;
+    MooEditTab *tab = ACTIVE_TAB (window);
+
+    if (!tab)
+        return;
+
+    action_cycle = moo_window_get_action (MOO_WINDOW (window), "CycleSplitViews");
+    g_return_if_fail (action_cycle != NULL);
+    action_split_horizontal = moo_window_get_action (MOO_WINDOW (window), "SplitViewHorizontal");
+    g_return_if_fail (action_split_horizontal != NULL);
+    action_split_vertical = moo_window_get_action (MOO_WINDOW (window), "SplitViewVertical");
+    g_return_if_fail (action_split_vertical != NULL);
+
+    has_split_horizontal = moo_edit_tab_get_split_horizontal (tab);
+    has_split_vertical = moo_edit_tab_get_split_vertical (tab);
+
+    gtk_action_set_sensitive (action_cycle, has_split_horizontal || has_split_vertical);
+    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action_split_horizontal), has_split_horizontal);
+    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action_split_vertical), has_split_vertical);
+
+    /* XXX menu item and action go out of sync for some reason */
+    sync_proxies (action_cycle);
+    sync_proxies (action_split_horizontal);
+    sync_proxies (action_split_vertical);
 }

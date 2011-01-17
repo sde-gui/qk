@@ -45,6 +45,7 @@ struct MooEditViewClass
 GType            moo_edit_view_get_type     (void) G_GNUC_CONST;
 
 MooEdit         *moo_edit_view_get_doc      (MooEditView    *view);
+MooEditTab      *moo_edit_view_get_tab      (MooEditView    *view);
 MooEditWindow   *moo_edit_view_get_window   (MooEditView    *view);
 MooEditor       *moo_edit_view_get_editor   (MooEditView    *view);
 

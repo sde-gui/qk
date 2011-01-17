@@ -264,13 +264,15 @@ moo_edit_add_bookmark (MooEdit *edit,
                        guint    line,
                        guint    no)
 {
+    guint i;
     MooEditBookmark *bk;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_return_if_fail (line < get_line_count (edit));
     g_return_if_fail (moo_edit_get_bookmark_at_line (edit, line) == NULL);
 
-    g_object_set (moo_edit_get_view (edit), "show-line-marks", TRUE, (char*) 0);
+    for (i = 0; i < edit->priv->views->n_elms; ++i)
+        g_object_set (edit->priv->views->elms[i], "show-line-marks", TRUE, (char*) 0);
 
     bk = MOO_EDIT_BOOKMARK (g_object_new (MOO_TYPE_EDIT_BOOKMARK, "background", get_bookmark_color (edit), (char*) 0));
     moo_text_buffer_add_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bk), line);
@@ -430,16 +432,16 @@ moo_edit_get_bookmark (MooEdit *edit,
 
 
 void
-moo_edit_goto_bookmark (MooEdit         *edit,
-                        MooEditBookmark *bk)
+moo_edit_view_goto_bookmark (MooEditView     *view,
+                             MooEditBookmark *bk)
 {
     int cursor;
 
-    g_return_if_fail (MOO_IS_EDIT (edit));
+    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
     g_return_if_fail (MOO_IS_EDIT_BOOKMARK (bk));
 
     cursor = moo_line_mark_get_line (MOO_LINE_MARK (bk));
-    moo_text_view_move_cursor (MOO_TEXT_VIEW (moo_edit_get_view (edit)),
+    moo_text_view_move_cursor (MOO_TEXT_VIEW (view),
                                cursor, 0, FALSE, FALSE);
 }
 

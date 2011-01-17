@@ -24,9 +24,18 @@
 
 G_BEGIN_DECLS
 
-#define MOO_EDIT_IS_BUSY(edit) (_moo_edit_view_get_state (moo_edit_get_view (edit)) != MOO_EDIT_STATE_NORMAL)
+#define MOO_EDIT_IS_BUSY(doc) (_moo_edit_is_busy (doc))
 
 extern MooEditList *_moo_edit_instances;
+
+void        _moo_edit_set_focused_view          (MooEdit        *doc,
+                                                 MooEditView    *view);
+void        _moo_edit_add_view                  (MooEdit        *doc,
+                                                 MooEditView    *view);
+void        _moo_edit_remove_view               (MooEdit        *doc,
+                                                 MooEditView    *view);
+
+gboolean    _moo_edit_is_busy                   (MooEdit        *doc);
 
 char       *_moo_file_get_normalized_name       (GFile          *file);
 char       *_moo_edit_get_normalized_name       (MooEdit        *edit);
@@ -34,7 +43,8 @@ char       *_moo_edit_get_normalized_name       (MooEdit        *edit);
 char       *_moo_edit_get_utf8_filename         (MooEdit        *edit);
 
 void        _moo_edit_add_class_actions         (MooEdit        *edit);
-void        _moo_edit_check_actions             (MooEdit        *edit);
+void        _moo_edit_check_actions             (MooEdit        *edit,
+                                                 MooEditView    *view);
 void        _moo_edit_class_init_actions        (MooEditClass   *klass);
 
 void        _moo_edit_status_changed            (MooEdit        *edit);

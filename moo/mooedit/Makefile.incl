@@ -50,6 +50,7 @@ moo_sources +=				\
 	mooedit/mooedit-private.h	\
 	mooedit/mooeditwindow.c		\
 	mooedit/mooeditwindow-impl.h	\
+	mooedit/mooeditwindow-priv.h	\
 	mooedit/mooeditfileinfo.c	\
 	mooedit/moofold.c		\
 	mooedit/moofold.h		\

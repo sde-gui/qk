@@ -107,15 +107,27 @@ moo_edit_view_dispose (GObject *object)
 }
 
 
-void
-_moo_edit_view_set_doc (MooEditView *view,
-                        MooEdit     *doc)
+MooEditView *
+_moo_edit_view_new (MooEdit *doc)
 {
-    moo_assert (MOO_IS_EDIT_VIEW (view));
-    moo_assert (MOO_IS_EDIT (doc));
-    moo_assert (!view->priv->doc);
+    MooEditView *view;
+    MooIndenter *indent;
+
+    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+
+    view = g_object_new (MOO_TYPE_EDIT_VIEW, "buffer", moo_edit_get_buffer (doc), NULL);
     view->priv->doc = doc;
     view->priv->editor = moo_edit_get_editor (doc);
+
+    g_assert (gtk_text_view_get_buffer (GTK_TEXT_VIEW (view)) == moo_edit_get_buffer (doc));
+
+    indent = moo_indenter_new (doc);
+    moo_text_view_set_indenter (MOO_TEXT_VIEW (view), indent);
+    g_object_unref (indent);
+
+    _moo_edit_add_view (doc, view);
+
+    return view;
 }
 
 
@@ -148,6 +160,7 @@ moo_edit_view_focus_in (GtkWidget     *widget,
     if (GTK_WIDGET_CLASS (moo_edit_view_parent_class)->focus_in_event)
         retval = GTK_WIDGET_CLASS (moo_edit_view_parent_class)->focus_in_event (widget, event);
 
+    _moo_edit_set_focused_view (view->priv->doc, view);
     _moo_edit_window_set_focused_view (moo_edit_view_get_window (view), view);
 
     return retval;
@@ -182,6 +195,21 @@ moo_edit_view_get_editor (MooEditView *view)
 {
     g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), NULL);
     return view->priv->editor;
+}
+
+MooEditTab *
+moo_edit_view_get_tab (MooEditView *view)
+{
+    GtkWidget *parent;
+
+    g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), NULL);
+
+    if (GTK_IS_SCROLLED_WINDOW (parent = gtk_widget_get_parent (GTK_WIDGET (view))))
+        if (GTK_IS_PANED (parent = gtk_widget_get_parent (parent)))
+            if (MOO_IS_EDIT_TAB (parent = gtk_widget_get_parent (parent)))
+                return MOO_EDIT_TAB (parent);
+
+    return NULL;
 }
 
 MooEditWindow *
@@ -222,6 +250,8 @@ _moo_edit_view_apply_config (MooEditView *view)
     moo_text_view_set_show_line_numbers (MOO_TEXT_VIEW (view), line_numbers);
     moo_text_view_set_tab_width (MOO_TEXT_VIEW (view), tab_width);
     moo_text_view_set_word_chars (MOO_TEXT_VIEW (view), word_chars);
+
+    gtk_widget_queue_draw (GTK_WIDGET (view));
 
     g_free (word_chars);
 }
@@ -359,19 +389,18 @@ _moo_edit_view_do_popup (MooEditView    *view,
     MooUiXml *xml;
     MooEditWindow *window;
     GtkMenu *menu;
-    MooActionCollection *actions;
 
     window = moo_edit_view_get_window (view);
     xml = moo_editor_get_doc_ui_xml (view->priv->editor);
     g_return_if_fail (xml != NULL);
 
-    actions = _moo_edit_get_actions (view->priv->doc);
-    menu = (GtkMenu*) moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup", actions,
+    _moo_edit_check_actions (view->priv->doc, view);
+
+    menu = (GtkMenu*) moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup",
+                                                _moo_edit_get_actions (view->priv->doc),
                                                 window ? MOO_WINDOW(window)->accel_group : NULL);
     g_return_if_fail (menu != NULL);
     g_object_ref_sink (menu);
-
-    _moo_edit_check_actions (view->priv->doc);
 
     if (event)
     {

@@ -46,7 +46,7 @@ static void moo_edit_class_new_action_custom    (MooEditClass       *klass,
                                                  GDestroyNotify      notify);
 
 static void append_special_char_menuitems       (GtkMenuShell       *menu,
-                                                 GtkTextView        *view);
+                                                 MooEditView        *view);
 
 
 #define MOO_EDIT_ACTIONS_QUARK (moo_edit_actions_quark ())
@@ -603,22 +603,19 @@ _moo_edit_add_class_actions (MooEdit *edit)
 static GtkWidget *
 create_input_methods_menu_item (GtkAction *action)
 {
-    MooEdit *doc;
-    GtkTextView *view;
+    MooEditView *view;
     GtkWidget *item, *menu;
     gboolean visible = TRUE;
 
-    doc = g_object_get_data (G_OBJECT (action), "moo-edit");
-    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
-
-    view = GTK_TEXT_VIEW (moo_edit_get_view (doc));
+    view = g_object_get_data (G_OBJECT (action), "moo-edit-view");
+    g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), NULL);
 
     item = gtk_menu_item_new ();
     menu = gtk_menu_new ();
     gtk_widget_show (menu);
     gtk_menu_item_set_submenu (GTK_MENU_ITEM (item), menu);
 
-    gtk_im_multicontext_append_menuitems (GTK_IM_MULTICONTEXT (view->im_context),
+    gtk_im_multicontext_append_menuitems (GTK_IM_MULTICONTEXT (GTK_TEXT_VIEW (view)->im_context),
 					  GTK_MENU_SHELL (menu));
 
     g_object_get (gtk_widget_get_settings (GTK_WIDGET (view)),
@@ -632,15 +629,12 @@ create_input_methods_menu_item (GtkAction *action)
 static GtkWidget *
 create_special_chars_menu_item (GtkAction *action)
 {
-    MooEdit *doc;
-    GtkTextView *view;
+    MooEditView *view;
     GtkWidget *item, *menu;
     gboolean visible = TRUE;
 
-    doc = g_object_get_data (G_OBJECT (action), "moo-edit");
-    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
-
-    view = GTK_TEXT_VIEW (moo_edit_get_view (doc));
+    view = g_object_get_data (G_OBJECT (action), "moo-edit-view");
+    g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), NULL);
 
     item = gtk_menu_item_new ();
     menu = gtk_menu_new ();
@@ -786,7 +780,7 @@ bidi_menu_item_activate (GtkWidget   *menuitem,
 
 static void
 append_special_char_menuitems (GtkMenuShell *menu,
-                               GtkTextView  *view)
+                               MooEditView  *view)
 {
     guint i;
 
