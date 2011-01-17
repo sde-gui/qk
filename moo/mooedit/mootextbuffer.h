@@ -45,6 +45,9 @@ struct MooTextBufferClass
 {
     GtkTextBufferClass parent_class;
 
+    gboolean (* undo)           (MooTextBuffer      *buffer);
+    gboolean (* redo)           (MooTextBuffer      *buffer);
+
     void (*cursor_moved)        (MooTextBuffer      *buffer,
                                  const GtkTextIter  *iter);
     void (*selection_changed)   (MooTextBuffer      *buffer);
@@ -80,12 +83,15 @@ gboolean    moo_text_buffer_get_highlight               (MooTextBuffer      *buf
 void        moo_text_buffer_set_brackets                (MooTextBuffer      *buffer,
                                                          const char         *brackets);
 
+gboolean    moo_text_buffer_can_redo                    (MooTextBuffer      *buffer);
+gboolean    moo_text_buffer_can_undo                    (MooTextBuffer      *buffer);
+void        moo_text_buffer_begin_non_undoable_action   (MooTextBuffer      *buffer);
+void        moo_text_buffer_end_non_undoable_action     (MooTextBuffer      *buffer);
+
 void        moo_text_buffer_freeze                      (MooTextBuffer      *buffer);
 void        moo_text_buffer_thaw                        (MooTextBuffer      *buffer);
 void        moo_text_buffer_begin_non_interactive_action(MooTextBuffer      *buffer);
 void        moo_text_buffer_end_non_interactive_action  (MooTextBuffer      *buffer);
-void        moo_text_buffer_begin_not_undoable_action   (MooTextBuffer      *buffer);
-void        moo_text_buffer_end_not_undoable_action     (MooTextBuffer      *buffer);
 
 gboolean    moo_text_buffer_has_text                    (MooTextBuffer      *buffer);
 gboolean    moo_text_buffer_has_selection               (MooTextBuffer      *buffer);

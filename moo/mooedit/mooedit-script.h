@@ -21,9 +21,6 @@ void         moo_edit_set_cursor_pos            (MooEdit            *doc,
                                                  const GtkTextIter  *pos);
 GtkTextIter *moo_edit_get_selection_start_pos   (MooEdit            *doc);
 GtkTextIter *moo_edit_get_selection_end_pos     (MooEdit            *doc);
-void         moo_edit_set_selection             (MooEdit            *doc,
-                                                 const GtkTextIter  *start,
-                                                 const GtkTextIter  *end);
 
 int          moo_edit_get_char_count            (MooEdit            *doc);
 int          moo_edit_get_line_count            (MooEdit            *doc);
@@ -66,7 +63,7 @@ void         moo_edit_cut                       (MooEdit            *doc);
 void         moo_edit_copy                      (MooEdit            *doc);
 void         moo_edit_paste                     (MooEdit            *doc);
 
-void         moo_edit_select_text               (MooEdit            *doc,
+void         moo_edit_select_range              (MooEdit            *doc,
                                                  const GtkTextIter  *start,
                                                  const GtkTextIter  *end);
 void         moo_edit_select_lines              (MooEdit            *doc,

@@ -1,5 +1,6 @@
 #include "mooedit/mooedit-script.h"
 #include "mooedit/mootextview.h"
+#include "mooedit/mootextbuffer.h"
 #include "mooutils/mooutils.h"
 
 /**
@@ -9,7 +10,7 @@ gboolean
 moo_edit_can_undo (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
-    return moo_text_view_can_undo (MOO_TEXT_VIEW (moo_edit_get_view (doc)));
+    return moo_text_buffer_can_undo (MOO_TEXT_BUFFER (moo_edit_get_buffer (doc)));
 }
 
 /**
@@ -19,7 +20,7 @@ gboolean
 moo_edit_can_redo (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
-    return moo_text_view_can_redo (MOO_TEXT_VIEW (moo_edit_get_view (doc)));
+    return moo_text_buffer_can_redo (MOO_TEXT_BUFFER (moo_edit_get_buffer (doc)));
 }
 
 /**
@@ -49,7 +50,7 @@ void
 moo_edit_begin_non_undoable_action (MooEdit *doc)
 {
     g_return_if_fail (MOO_IS_EDIT (doc));
-    moo_text_view_begin_non_undoable_action (MOO_TEXT_VIEW (moo_edit_get_view (doc)));
+    moo_text_buffer_begin_non_undoable_action (MOO_TEXT_BUFFER (moo_edit_get_buffer (doc)));
 }
 
 /**
@@ -79,7 +80,7 @@ void
 moo_edit_end_non_undoable_action (MooEdit *doc)
 {
     g_return_if_fail (MOO_IS_EDIT (doc));
-    moo_text_view_end_non_undoable_action (MOO_TEXT_VIEW (moo_edit_get_view (doc)));
+    moo_text_buffer_end_non_undoable_action (MOO_TEXT_BUFFER (moo_edit_get_buffer (doc)));
 }
 
 /**
@@ -173,18 +174,6 @@ moo_edit_set_cursor_pos (MooEdit           *doc,
 {
     g_return_if_fail (MOO_IS_EDIT (doc));
     gtk_text_buffer_place_cursor (moo_edit_get_buffer (doc), pos);
-}
-
-/**
- * moo_edit_set_selection:
- **/
-void
-moo_edit_set_selection (MooEdit           *doc,
-                        const GtkTextIter *start,
-                        const GtkTextIter *end)
-{
-    g_return_if_fail (MOO_IS_EDIT (doc));
-    gtk_text_buffer_select_range (moo_edit_get_buffer (doc), start, end);
 }
 
 /**
@@ -564,14 +553,14 @@ moo_edit_paste (MooEdit *doc)
 }
 
 /**
- * moo_edit_select_text:
+ * moo_edit_select_range:
  *
  * Select text from @start to @end.
  **/
 void
-moo_edit_select_text (MooEdit           *doc,
-                      const GtkTextIter *start,
-                      const GtkTextIter *end)
+moo_edit_select_range (MooEdit           *doc,
+                       const GtkTextIter *start,
+                       const GtkTextIter *end)
 {
     g_return_if_fail (MOO_IS_EDIT (doc));
     g_return_if_fail (start != NULL);
@@ -848,6 +837,5 @@ moo_edit_replace_selected_text (MooEdit    *doc,
 gboolean
 moo_edit_has_selection (MooEdit *doc)
 {
-    MooEditView *view = moo_edit_get_view (doc);
-    return moo_text_view_has_selection (MOO_TEXT_VIEW (view));
+    return moo_text_buffer_has_selection (MOO_TEXT_BUFFER (moo_edit_get_buffer (doc)));
 }

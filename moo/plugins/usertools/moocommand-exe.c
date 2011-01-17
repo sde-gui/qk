@@ -18,6 +18,7 @@
 #endif
 #include "moocommand-exe.h"
 #include "mooedit/mooeditor.h"
+#include "mooedit/mooedit-script.h"
 #include "moocmdview.h"
 #include "mooeditwindowoutput.h"
 #include "mooutils/mooi18n.h"
@@ -194,7 +195,6 @@ get_input (MooCommandExe       *cmd,
            gboolean             select_it)
 {
     MooEdit *doc = moo_command_context_get_doc (ctx);
-    MooEditView *view = doc ? moo_edit_get_view (doc) : NULL;
 
     g_return_val_if_fail (cmd->priv->input == MOO_COMMAND_EXE_INPUT_NONE || doc != NULL, NULL);
 
@@ -206,9 +206,9 @@ get_input (MooCommandExe       *cmd,
         case MOO_COMMAND_EXE_INPUT_LINES:
             return get_lines (doc, select_it);
         case MOO_COMMAND_EXE_INPUT_SELECTION:
-            return moo_text_view_get_selection (GTK_TEXT_VIEW (view));
+            return moo_edit_get_selected_text (doc);
         case MOO_COMMAND_EXE_INPUT_DOC:
-            return moo_text_view_get_text (GTK_TEXT_VIEW (view));
+            return moo_edit_get_text (doc, NULL, NULL);
     }
 
     g_return_val_if_reached (NULL);

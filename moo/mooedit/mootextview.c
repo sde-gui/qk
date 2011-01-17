@@ -197,10 +197,10 @@ enum {
     GOTO_LINE_INTERACTIVE,
     CURSOR_MOVED,
     CHAR_INSERTED,
-    UNDO,
-    REDO,
     LINE_MARK_CLICKED,
     START_QUICK_SEARCH,
+    UNDO,
+    REDO,
     LAST_SIGNAL
 };
 
@@ -292,8 +292,6 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
     klass->find_prev_interactive = find_prev_interactive;
     klass->replace_interactive = replace_interactive;
     klass->goto_line_interactive = goto_line_interactive;
-    klass->undo = moo_text_view_undo;
-    klass->redo = moo_text_view_redo;
     klass->char_inserted = moo_text_view_char_inserted;
     klass->apply_style_scheme = moo_text_view_apply_style_scheme;
     klass->get_text_cursor = moo_text_view_get_text_cursor;
@@ -520,22 +518,22 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                                      G_PARAM_READABLE));
 
     signals[UNDO] =
-            g_signal_new ("undo",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooTextViewClass, undo),
-                          g_signal_accumulator_true_handled, NULL,
-                          _moo_marshal_BOOLEAN__VOID,
-                          G_TYPE_BOOLEAN, 0);
+            _moo_signal_new_cb ("undo",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                                G_CALLBACK (moo_text_view_undo),
+                                g_signal_accumulator_true_handled, NULL,
+                                _moo_marshal_BOOLEAN__VOID,
+                                G_TYPE_BOOLEAN, 0);
 
     signals[REDO] =
-            g_signal_new ("redo",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-                          G_STRUCT_OFFSET (MooTextViewClass, redo),
-                          g_signal_accumulator_true_handled, NULL,
-                          _moo_marshal_BOOLEAN__VOID,
-                          G_TYPE_BOOLEAN, 0);
+            _moo_signal_new_cb ("redo",
+                                G_OBJECT_CLASS_TYPE (klass),
+                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                                G_CALLBACK (moo_text_view_redo),
+                                g_signal_accumulator_true_handled, NULL,
+                                _moo_marshal_BOOLEAN__VOID,
+                                G_TYPE_BOOLEAN, 0);
 
     signals[DELETE_SELECTION] =
             _moo_signal_new_cb ("delete-selection",
@@ -844,13 +842,6 @@ moo_text_view_finalize (GObject *object)
 }
 
 
-GtkWidget *
-moo_text_view_new (void)
-{
-    return GTK_WIDGET (g_object_new (MOO_TYPE_TEXT_VIEW, (const char*) NULL));
-}
-
-
 static void
 moo_text_view_delete_selection (MooTextView *view)
 {
@@ -970,22 +961,6 @@ moo_text_view_can_undo (MooTextView *view)
 {
     g_return_val_if_fail (MOO_IS_TEXT_VIEW (view), FALSE);
     return moo_undo_stack_can_undo (get_undo_stack (view));
-}
-
-
-void
-moo_text_view_begin_non_undoable_action (MooTextView *view)
-{
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    moo_undo_stack_freeze (get_undo_stack (view));
-}
-
-
-void
-moo_text_view_end_non_undoable_action (MooTextView *view)
-{
-    g_return_if_fail (MOO_IS_TEXT_VIEW (view));
-    moo_undo_stack_thaw (get_undo_stack (view));
 }
 
 

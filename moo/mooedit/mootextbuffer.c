@@ -117,6 +117,8 @@ static MooUndoAction *delete_action_new             (GtkTextBuffer      *buffer,
 static void     before_undo_redo                    (MooTextBuffer      *buffer);
 #endif
 static void     after_undo_redo                     (MooTextBuffer      *buffer);
+static void     proxy_notify_can_undo_redo          (MooTextBuffer      *buffer,
+                                                     GParamSpec         *pspec);
 
 static void     line_mark_moved                     (MooTextBuffer      *buffer,
                                                      MooLineMark        *mark);
@@ -149,7 +151,9 @@ enum {
     PROP_BRACKET_MISMATCH_STYLE,
     PROP_HAS_TEXT,
     PROP_HAS_SELECTION,
-    PROP_LANG
+    PROP_LANG,
+    PROP_CAN_UNDO,
+    PROP_CAN_REDO
 };
 
 
@@ -243,6 +247,22 @@ moo_text_buffer_class_init (MooTextBufferClass *klass)
                                              "lang",
                                              MOO_TYPE_LANG,
                                              (GParamFlags) G_PARAM_READWRITE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_CAN_UNDO,
+                                     g_param_spec_boolean ("can-undo",
+                                             "can-undo",
+                                             "can-undo",
+                                             FALSE,
+                                             G_PARAM_READABLE));
+
+    g_object_class_install_property (gobject_class,
+                                     PROP_CAN_REDO,
+                                     g_param_spec_boolean ("can-redo",
+                                             "can-redo",
+                                             "can-redo",
+                                             FALSE,
+                                             G_PARAM_READABLE));
 
     signals[HIGHLIGHT_UPDATED] =
             g_signal_new ("highlight_updated",
@@ -365,6 +385,11 @@ moo_text_buffer_init (MooTextBuffer *buffer)
                            buffer, NULL,
                            G_CONNECT_AFTER | G_CONNECT_SWAPPED);
 
+    g_signal_connect_swapped (buffer->priv->undo_stack, "notify::can-undo",
+                              G_CALLBACK (proxy_notify_can_undo_redo), buffer);
+    g_signal_connect_swapped (buffer->priv->undo_stack, "notify::can-redo",
+                              G_CALLBACK (proxy_notify_can_undo_redo), buffer);
+
     moo_text_buffer_set_brackets (buffer, NULL);
 }
 
@@ -446,18 +471,18 @@ _moo_text_buffer_get_undo_stack (MooTextBuffer *buffer)
 }
 
 
-void
-moo_text_buffer_begin_not_undoable_action (MooTextBuffer *buffer)
+gboolean
+moo_text_buffer_can_redo (MooTextBuffer *buffer)
 {
-    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
-    moo_undo_stack_freeze (buffer->priv->undo_stack);
+    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), FALSE);
+    return moo_undo_stack_can_redo (buffer->priv->undo_stack);
 }
 
-void
-moo_text_buffer_end_not_undoable_action (MooTextBuffer *buffer)
+gboolean
+moo_text_buffer_can_undo (MooTextBuffer *buffer)
 {
-    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
-    moo_undo_stack_thaw (buffer->priv->undo_stack);
+    g_return_val_if_fail (MOO_IS_TEXT_BUFFER (buffer), FALSE);
+    return moo_undo_stack_can_undo (buffer->priv->undo_stack);
 }
 
 
@@ -778,6 +803,13 @@ after_undo_redo (MooTextBuffer *buffer)
 #endif
 }
 
+static void
+proxy_notify_can_undo_redo (MooTextBuffer *buffer,
+                            GParamSpec    *pspec)
+{
+    g_object_notify (G_OBJECT (buffer), pspec->name);
+}
+
 
 void
 moo_text_buffer_set_lang (MooTextBuffer  *buffer,
@@ -1027,6 +1059,21 @@ moo_text_buffer_thaw (MooTextBuffer *buffer)
 {
     g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
     thaw_cursor_moved (buffer);
+}
+
+
+void
+moo_text_buffer_begin_non_undoable_action (MooTextBuffer *buffer)
+{
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+    moo_undo_stack_freeze (buffer->priv->undo_stack);
+}
+
+void
+moo_text_buffer_end_non_undoable_action (MooTextBuffer *buffer)
+{
+    g_return_if_fail (MOO_IS_TEXT_BUFFER (buffer));
+    moo_undo_stack_thaw (buffer->priv->undo_stack);
 }
 
 

@@ -49,9 +49,6 @@ struct MooTextViewClass
 {
     GtkTextViewClass parent_class;
 
-    gboolean (* undo)               (MooTextView    *view);
-    gboolean (* redo)               (MooTextView    *view);
-
     gboolean (* char_inserted)      (MooTextView    *view,
                                      GtkTextIter    *where, /* points to position after the char */
                                      const char     *character); /* single character as string */
@@ -88,7 +85,6 @@ struct MooTextViewClass
 
 GType        moo_text_view_get_type                 (void) G_GNUC_CONST;
 
-GtkWidget   *moo_text_view_new                      (void);
 void         moo_text_view_set_buffer_type          (MooTextView        *view,
                                                      GType               type);
 
@@ -103,8 +99,6 @@ gboolean     moo_text_view_can_redo                 (MooTextView        *view);
 gboolean     moo_text_view_can_undo                 (MooTextView        *view);
 gboolean     moo_text_view_redo                     (MooTextView        *view);
 gboolean     moo_text_view_undo                     (MooTextView        *view);
-void         moo_text_view_begin_non_undoable_action(MooTextView        *view);
-void         moo_text_view_end_non_undoable_action  (MooTextView        *view);
 
 void         moo_text_view_set_font_from_string     (MooTextView        *view,
                                                      const char         *font);

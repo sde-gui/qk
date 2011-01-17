@@ -172,7 +172,7 @@ if doc.has_selection() then
 else
   pos = doc.get_cursor_pos().get_offset()
   doc.insert_text('$ $')
-  doc.set_selection(pos + 1, pos + 2)
+  doc.select_range(pos + 1, pos + 2)
 end
 ]]></lua:code>
   </command>

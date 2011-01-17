@@ -18,6 +18,7 @@
 #endif
 
 #include "mooedit/mooplugin-macro.h"
+#include "mooedit/mooedit-script.h"
 #include "plugins/mooplugin-builtin.h"
 #include "moofileview/moofileentry.h"
 #include "moocmdview.h"
@@ -495,10 +496,10 @@ init_grep_dialog (MooEditWindow *window,
     view = moo_edit_window_get_active_view (window);
     doc = view ? moo_edit_view_get_doc (view) : NULL;
 
-    if (view)
+    if (doc)
     {
-        char *sel = moo_text_view_get_selection (GTK_TEXT_VIEW (view));
-        if (sel && !strchr (sel, '\n'))
+        char *sel = moo_edit_get_selected_text (doc);
+        if (sel && *sel && !strchr (sel, '\n'))
             gtk_entry_set_text (GTK_ENTRY (pattern_entry), sel);
         g_free (sel);
     }

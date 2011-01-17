@@ -349,7 +349,6 @@ try_load (MooEdit      *edit,
           const char   *encoding,
           GError      **error)
 {
-    MooEditView *view;
     GtkTextBuffer *buffer;
     gboolean enable_highlight;
     LoadResult result = ERROR_FILE;
@@ -358,14 +357,13 @@ try_load (MooEdit      *edit,
     g_return_val_if_fail (G_IS_FILE (file), result);
     g_return_val_if_fail (encoding && encoding[0], result);
 
-    view = moo_edit_get_view (edit);
     buffer = moo_edit_get_buffer (edit);
     gtk_text_buffer_set_text (buffer, "", 0);
 
-    g_object_get (view, "enable-highlight", &enable_highlight, (char*) 0);
-    g_object_set (view, "enable-highlight", FALSE, (char*) 0);
+    g_object_get (buffer, "highlight-syntax", &enable_highlight, (char*) 0);
+    g_object_set (buffer, "highlight-syntax", FALSE, (char*) 0);
     result = do_load (edit, file, encoding, error);
-    g_object_set (view, "enable-highlight", enable_highlight, (char*) 0);
+    g_object_set (buffer, "highlight-syntax", enable_highlight, (char*) 0);
 
     return result;
 }
@@ -407,7 +405,6 @@ moo_edit_load_local (MooEdit     *edit,
 {
     GtkTextIter start;
     GtkTextBuffer *buffer;
-    MooTextView *view;
     gboolean undo;
     LoadResult result = ERROR_FILE;
     char *freeme = NULL;
@@ -424,7 +421,6 @@ moo_edit_load_local (MooEdit     *edit,
     else
         undo = TRUE;
 
-    view = MOO_TEXT_VIEW (moo_edit_get_view (edit));
     buffer = moo_edit_get_buffer (edit);
 
     block_buffer_signals (edit);
@@ -432,7 +428,7 @@ moo_edit_load_local (MooEdit     *edit,
     if (undo)
         gtk_text_buffer_begin_user_action (buffer);
     else
-        moo_text_view_begin_non_undoable_action (view);
+        moo_text_buffer_begin_non_undoable_action (MOO_TEXT_BUFFER (buffer));
 
     moo_text_buffer_begin_non_interactive_action (MOO_TEXT_BUFFER (buffer));
 
@@ -510,7 +506,7 @@ moo_edit_load_local (MooEdit     *edit,
     if (undo)
         gtk_text_buffer_end_user_action (buffer);
     else
-        moo_text_view_end_non_undoable_action (view);
+        moo_text_buffer_end_non_undoable_action (MOO_TEXT_BUFFER (buffer));
 
     moo_text_buffer_end_non_interactive_action (MOO_TEXT_BUFFER (buffer));
 
@@ -771,12 +767,10 @@ moo_edit_reload_local (MooEdit    *edit,
     GtkTextBuffer *buffer;
     gboolean result, enable_highlight;
     GFile *file;
-    MooEditView *view;
 
     file = moo_edit_get_file (edit);
     moo_return_error_if_fail (G_IS_FILE (file));
 
-    view = moo_edit_get_view (edit);
     buffer = moo_edit_get_buffer (edit);
 
     block_buffer_signals (edit);
@@ -784,15 +778,15 @@ moo_edit_reload_local (MooEdit    *edit,
 
     gtk_text_buffer_get_bounds (buffer, &start, &end);
     gtk_text_buffer_delete (buffer, &start, &end);
-    g_object_get (view, "enable-highlight", &enable_highlight, (char*) 0);
-    g_object_set (view, "enable-highlight", FALSE, (char*) 0);
+    g_object_get (buffer, "highlight-syntax", &enable_highlight, (char*) 0);
+    g_object_set (buffer, "highlight-syntax", FALSE, (char*) 0);
 
     result = _moo_edit_load_file (edit, file,
                                   encoding ? encoding : edit->priv->encoding,
                                   NULL,
                                   error);
 
-    g_object_set (view, "enable-highlight", enable_highlight, (char*) 0);
+    g_object_set (buffer, "highlight-syntax", enable_highlight, (char*) 0);
     gtk_text_buffer_end_user_action (buffer);
     unblock_buffer_signals (edit);
 
