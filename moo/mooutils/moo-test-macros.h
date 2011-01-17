@@ -254,8 +254,13 @@ TEST_CHECK_WARNING (void)
                          "%s", msg)
 
 #define TEST_ASSERT_MSG(cond,format,...)                            \
-    moo_test_assert_msg (!!(cond), __FILE__, __LINE__,              \
-                         format, __VA_ARGS__)
+G_STMT_START {                                                      \
+    if (cond)                                                       \
+        moo_test_assert_impl (TRUE, "", __FILE__, __LINE__);        \
+    else                                                            \
+        moo_test_assert_msg (FALSE, __FILE__, __LINE__,             \
+                             format, __VA_ARGS__);                  \
+} G_STMT_END
 
 #define TEST_ASSERT(cond)                                           \
     moo_test_assert_impl (!!(cond), (char*) #cond,                  \
