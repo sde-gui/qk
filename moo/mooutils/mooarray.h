@@ -36,6 +36,7 @@ array_type##_foreach (const ArrayType *ar,                              \
 void array_type##_sort (ArrayType *ar, GCompareFunc func);              \
 int array_type##_find (const ArrayType *ar, ElmType *elm);              \
 void array_type##_remove (ArrayType *ar, ElmType *elm);                 \
+void array_type##_clear (ArrayType *ar);                                \
 guint array_type##_insert_sorted (ArrayType *ar, ElmType *elm,          \
                                     GCompareFunc func);                 \
                                                                         \
@@ -138,6 +139,24 @@ void array_type##_remove (ArrayType *ar, ElmType *elm)                  \
             free_elm (elm);                                             \
             return;                                                     \
         }                                                               \
+    }                                                                   \
+}                                                                       \
+                                                                        \
+void array_type##_clear (ArrayType *ar)                                 \
+{                                                                       \
+    g_return_if_fail (ar != NULL);                                      \
+                                                                        \
+    if (ar->n_elms)                                                     \
+    {                                                                   \
+        guint i;                                                        \
+        guint n_elms = ar->n_elms;                                      \
+        ElmType **elms = ar->elms;                                      \
+        MOO_IP_ARRAY_INIT (ElmType*, ar, elms, 0);                      \
+                                                                        \
+        for (i = 0; i < n_elms; ++i)                                    \
+            free_elm (elms[i]);                                         \
+                                                                        \
+        g_free (elms);                                                  \
     }                                                                   \
 }                                                                       \
                                                                         \
