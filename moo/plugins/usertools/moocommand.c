@@ -23,6 +23,7 @@
 #include "moocommand-exe.h"
 #include "moooutputfilterregex.h"
 #include "mooedit/mooeditwindow.h"
+#include "mooedit/mooeditor.h"
 #include "mooedit/mooedit-enums.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooutils-misc.h"
@@ -418,19 +419,13 @@ save_one (MooEdit *doc)
 }
 
 static gboolean
-save_all (MooEdit *doc)
+save_all (void)
 {
-    MooEditWindow *window;
-    MooEditArray *docs;
     guint i;
+    MooEditArray *docs;
     gboolean result = TRUE;
 
-    g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
-
-    window = moo_edit_get_window (doc);
-    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
-
-    docs = moo_edit_window_get_docs (window);
+    docs = moo_editor_get_docs (moo_editor_instance ());
 
     for (i = 0; i < docs->n_elms; ++i)
     {
@@ -482,7 +477,7 @@ moo_command_run (MooCommand         *cmd,
 
     if (cmd->options & MOO_COMMAND_NEED_SAVE_ALL)
     {
-        if (!save_all (doc))
+        if (!save_all ())
             return;
     }
     else if (cmd->options & MOO_COMMAND_NEED_SAVE)
