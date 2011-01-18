@@ -36,7 +36,7 @@
 #include <cairo-win32.h>
 #endif
 
-MOO_DEBUG_INIT(printing, TRUE)
+MOO_DEBUG_INIT (printing, FALSE)
 
 #define SEPARATOR_POINTS 1.
 
