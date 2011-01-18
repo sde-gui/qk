@@ -1858,7 +1858,7 @@ selection_changed (MooTextView   *view,
 {
     GtkClipboard *clipboard;
 
-    if (!view->priv->manage_clipboard)
+    if (!GTK_WIDGET_REALIZED (view) || !GTK_WIDGET_HAS_FOCUS (view) || !view->priv->manage_clipboard)
         return;
 
     clipboard = gtk_widget_get_clipboard (GTK_WIDGET (view),
