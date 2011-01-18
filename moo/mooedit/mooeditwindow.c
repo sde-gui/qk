@@ -4795,7 +4795,7 @@ moo_edit_tab_get_window (MooEditTab *tab)
     GtkWidget *toplevel;
     g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), NULL);
     toplevel = gtk_widget_get_toplevel (GTK_WIDGET (tab));
-    if (!toplevel || !gtk_widget_is_toplevel (toplevel))
+    if (!toplevel || !GTK_WIDGET_TOPLEVEL (toplevel))
         return NULL;
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (toplevel), NULL);
     return MOO_EDIT_WINDOW (toplevel);
@@ -4925,8 +4925,11 @@ moo_edit_tab_set_split_horizontal (MooEditTab *tab,
         g_assert (!GTK_WIDGET_VISIBLE (tab->vpaned2));
         g_assert (!gtk_container_get_children (GTK_CONTAINER (tab->vpaned2)));
 
-        swin = create_view_in_scrolled_window (tab);
-        gtk_paned_pack1 (GTK_PANED (tab->vpaned2), swin, TRUE, FALSE);
+        if (view1)
+        {
+            swin = create_view_in_scrolled_window (tab);
+            gtk_paned_pack1 (GTK_PANED (tab->vpaned2), swin, TRUE, FALSE);
+        }
 
         if (view2)
         {
