@@ -77,8 +77,6 @@ source_files = \
     ../moo/mooedit/mooplugin-loader.c\
     ../moo/mooedit/mooplugin-loader.h\
     ../moo/mooedit/mooplugin-macro.h\
-    ../moo/mooedit/mooprintpreview.c\
-    ../moo/mooedit/mooprintpreview.h\
     ../moo/mooedit/mootextbtree.c\
     ../moo/mooedit/mootextbtree.h\
     ../moo/mooedit/mootextbuffer.c\

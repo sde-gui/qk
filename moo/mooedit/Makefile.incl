@@ -72,8 +72,6 @@ moo_sources +=				\
 	mooedit/mooplugin-loader.c	\
 	mooedit/mooplugin-loader.h	\
 	mooedit/mooplugin-macro.h	\
-	mooedit/mooprintpreview.c	\
-	mooedit/mooprintpreview.h	\
 	mooedit/mootextbtree.c		\
 	mooedit/mootextbtree.h		\
 	mooedit/mootextbuffer.c		\
@@ -95,7 +93,6 @@ moo_sources +=				\
 	mooedit/mooeditor-tests.h
 
 EXTRA_DIST +=						\
-	mooedit/glade/mooprintpreview.glade		\
 	mooedit/glade/moopluginprefs.glade		\
 	mooedit/glade/mooeditprefs-view.glade		\
 	mooedit/glade/mooeditprefs-file.glade		\
@@ -112,7 +109,6 @@ EXTRA_DIST +=						\
 	mooedit/glade/moostatusbar.glade
 
 built_moo_sources +=					\
-	mooedit/mooprintpreview-gxml.h			\
 	mooedit/moopluginprefs-gxml.h			\
 	mooedit/mooeditprefs-view-gxml.h		\
 	mooedit/mooeditprefs-file-gxml.h		\

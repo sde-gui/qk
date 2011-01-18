@@ -20,7 +20,7 @@
 #ifndef MOO_TEXT_PRINT_PRIVATE_H
 #define MOO_TEXT_PRINT_PRIVATE_H
 
-#include <mooedit/mooprintpreview.h>
+#include <mooedit/mootextprint.h>
 
 G_BEGIN_DECLS
 
@@ -70,8 +70,6 @@ typedef struct {
 
 GType   _moo_print_settings_get_type            (void) G_GNUC_CONST;
 
-void    _moo_print_operation_set_preview        (MooPrintOperation  *print,
-                                                 MooPrintPreview    *preview);
 GtkWindow *_moo_print_operation_get_parent      (MooPrintOperation  *print);
 int     _moo_print_operation_get_n_pages        (MooPrintOperation  *print);
 
