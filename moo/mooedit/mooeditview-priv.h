@@ -13,6 +13,7 @@ struct MooEditViewPrivate
 {
     MooEdit *doc;
     MooEditor *editor;
+    MooEditTab *tab;
 
     MooEditState state;
     guint progress_timeout;

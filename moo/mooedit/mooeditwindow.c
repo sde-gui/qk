@@ -4698,9 +4698,10 @@ create_view_scrolled_window (MooEditView *view)
 }
 
 static GtkWidget *
-create_view_in_scrolled_window (MooEdit *doc)
+create_view_in_scrolled_window (MooEditTab *tab)
 {
-    MooEditView *view = _moo_edit_view_new (doc);
+    MooEditView *view = _moo_edit_view_new (tab->doc);
+    _moo_edit_view_set_tab (view, tab);
     return create_view_scrolled_window (view);
 }
 
@@ -4717,6 +4718,8 @@ moo_edit_tab_new (MooEdit *doc)
     tab->doc = g_object_ref (doc);
 
     view = moo_edit_get_view (doc);
+    _moo_edit_view_set_tab (view, tab);
+
     swin = create_view_scrolled_window (view);
     gtk_paned_pack1 (GTK_PANED (tab->vpaned1), swin, TRUE, FALSE);
     gtk_widget_show (tab->vpaned1);
@@ -4922,12 +4925,12 @@ moo_edit_tab_set_split_horizontal (MooEditTab *tab,
         g_assert (!GTK_WIDGET_VISIBLE (tab->vpaned2));
         g_assert (!gtk_container_get_children (GTK_CONTAINER (tab->vpaned2)));
 
-        swin = create_view_in_scrolled_window (tab->doc);
+        swin = create_view_in_scrolled_window (tab);
         gtk_paned_pack1 (GTK_PANED (tab->vpaned2), swin, TRUE, FALSE);
 
         if (view2)
         {
-            swin = create_view_in_scrolled_window (tab->doc);
+            swin = create_view_in_scrolled_window (tab);
             gtk_paned_pack2 (GTK_PANED (tab->vpaned2), swin, TRUE, FALSE);
         }
 
@@ -5005,13 +5008,13 @@ moo_edit_tab_set_split_vertical (MooEditTab *tab,
     {
         GtkWidget *swin;
 
-        swin = create_view_in_scrolled_window (tab->doc);
+        swin = create_view_in_scrolled_window (tab);
         gtk_paned_pack2 (GTK_PANED (tab->vpaned1), swin, TRUE, FALSE);
 
         if (GTK_WIDGET_VISIBLE (tab->vpaned2))
         {
             g_assert (gtk_paned_get_child1 (GTK_PANED (tab->vpaned2)) != NULL);
-            swin = create_view_in_scrolled_window (tab->doc);
+            swin = create_view_in_scrolled_window (tab);
             gtk_paned_pack2 (GTK_PANED (tab->vpaned2), swin, TRUE, FALSE);
         }
     }

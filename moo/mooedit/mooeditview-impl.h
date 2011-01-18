@@ -7,6 +7,8 @@ G_BEGIN_DECLS
 
 MooEditView    *_moo_edit_view_new                      (MooEdit        *doc);
 void            _moo_edit_view_unset_doc                (MooEditView    *view);
+void            _moo_edit_view_set_tab                  (MooEditView    *view,
+                                                         MooEditTab     *tab);
 
 void            _moo_edit_view_apply_prefs              (MooEditView    *view);
 void            _moo_edit_view_apply_config             (MooEditView    *view);

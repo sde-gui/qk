@@ -212,17 +212,18 @@ moo_edit_view_get_editor (MooEditView *view)
 MooEditTab *
 moo_edit_view_get_tab (MooEditView *view)
 {
-    GtkWidget *parent;
-
     g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), NULL);
+    return view->priv->tab;
+}
 
-    if (GTK_IS_SCROLLED_WINDOW (parent = gtk_widget_get_parent (GTK_WIDGET (view))))
-        if (GTK_IS_PANED (parent = gtk_widget_get_parent (parent)))
-            if (GTK_IS_PANED (parent = gtk_widget_get_parent (parent)))
-                if (MOO_IS_EDIT_TAB (parent = gtk_widget_get_parent (parent)))
-                    return MOO_EDIT_TAB (parent);
-
-    return NULL;
+void
+_moo_edit_view_set_tab (MooEditView *view,
+                        MooEditTab  *tab)
+{
+    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
+    g_return_if_fail (MOO_IS_EDIT_TAB (tab));
+    g_return_if_fail (view->priv->tab == NULL);
+    view->priv->tab = tab;
 }
 
 MooEditWindow *
