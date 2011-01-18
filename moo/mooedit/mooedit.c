@@ -352,12 +352,17 @@ _moo_edit_remove_view (MooEdit     *doc,
     g_return_if_fail (MOO_IS_EDIT (doc));
     g_return_if_fail (MOO_IS_EDIT_VIEW (view));
 
-    g_assert (moo_edit_view_array_find (doc->priv->views, view) >= 0);
+    g_return_if_fail (moo_edit_view_array_find (doc->priv->views, view) >= 0);
 
     if (view == doc->priv->active_view)
         doc->priv->active_view = NULL;
 
+    g_object_ref (view);
+
     moo_edit_view_array_remove (doc->priv->views, view);
+    _moo_edit_view_unset_doc (view);
+
+    g_object_unref (view);
 }
 
 

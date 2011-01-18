@@ -81,6 +81,13 @@ moo_edit_view_finalize (GObject *object)
 }
 
 
+void
+_moo_edit_view_unset_doc (MooEditView *view)
+{
+    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
+    view->priv->doc = NULL;
+}
+
 static void
 moo_edit_view_dispose (GObject *object)
 {
@@ -88,7 +95,12 @@ moo_edit_view_dispose (GObject *object)
 
     moo_assert (!view->priv->progress);
 
-    view->priv->doc = NULL;
+    if (view->priv->doc)
+    {
+        _moo_edit_remove_view (view->priv->doc, view);
+        g_assert (view->priv->doc == NULL);
+        view->priv->doc = NULL;
+    }
 
     view->priv->progress = NULL;
     view->priv->progressbar = NULL;

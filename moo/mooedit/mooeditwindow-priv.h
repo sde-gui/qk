@@ -10,6 +10,8 @@ struct MooEditTab
     GtkHPaned base;
     GtkWidget *vpaned1;
     GtkWidget *vpaned2;
+
+    MooEdit *doc;
     MooEditView *active_view;
 };
 

@@ -4648,17 +4648,34 @@ out:
  *************************************************************************************************/
 
 static void
-moo_edit_tab_class_init (G_GNUC_UNUSED MooEditTabClass *klass)
-{
-}
-
-static void
 moo_edit_tab_init (MooEditTab *tab)
 {
     tab->vpaned1 = gtk_vpaned_new ();
     tab->vpaned2 = gtk_vpaned_new ();
     gtk_paned_pack1 (GTK_PANED (tab), tab->vpaned1, TRUE, FALSE);
     gtk_paned_pack2 (GTK_PANED (tab), tab->vpaned2, TRUE, FALSE);
+}
+
+static void
+moo_edit_tab_dispose (GObject *object)
+{
+    MooEditTab *tab = MOO_EDIT_TAB (object);
+
+    if (tab->doc)
+    {
+        g_object_unref (tab->doc);
+        tab->doc = NULL;
+    }
+
+    G_OBJECT_CLASS (moo_edit_tab_parent_class)->dispose (object);
+}
+
+static void
+moo_edit_tab_class_init (MooEditTabClass *klass)
+{
+    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+    object_class->dispose = moo_edit_tab_dispose;
 }
 
 static GtkWidget *
@@ -4692,9 +4709,10 @@ moo_edit_tab_new (MooEdit *doc)
 
     g_return_val_if_fail (moo_edit_get_n_views (doc) == 1, NULL);
 
-    view = moo_edit_get_view (doc);
     tab = g_object_new (MOO_TYPE_EDIT_TAB, NULL);
+    tab->doc = g_object_ref (doc);
 
+    view = moo_edit_get_view (doc);
     swin = create_view_scrolled_window (view);
     gtk_paned_pack1 (GTK_PANED (tab->vpaned1), swin, TRUE, FALSE);
     gtk_widget_show (tab->vpaned1);
@@ -4706,12 +4724,8 @@ moo_edit_tab_new (MooEdit *doc)
 MooEdit *
 moo_edit_tab_get_doc (MooEditTab *tab)
 {
-    MooEditView *view;
-
     g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), NULL);
-
-    view = moo_edit_tab_get_active_view (tab);
-    return view ? moo_edit_view_get_doc (view) : NULL;
+    return tab->doc;
 }
 
 MooEditViewArray *
@@ -4878,9 +4892,16 @@ moo_edit_tab_set_split_horizontal (MooEditTab *tab,
                     (view2 && GTK_WIDGET_HAS_FOCUS (view2));
 
         if (view1)
+        {
+            _moo_edit_remove_view (tab->doc, view1);
             gtk_container_remove (GTK_CONTAINER (tab->vpaned2), GTK_WIDGET (view1)->parent);
+        }
+
         if (view2)
+        {
+            _moo_edit_remove_view (tab->doc, view2);
             gtk_container_remove (GTK_CONTAINER (tab->vpaned2), GTK_WIDGET (view2)->parent);
+        }
 
         gtk_widget_hide (tab->vpaned2);
 
@@ -4892,18 +4913,17 @@ moo_edit_tab_set_split_horizontal (MooEditTab *tab,
         GtkWidget *swin;
         MooEditView *view1 = moo_edit_tab_get_view (tab, 1, 1);
         MooEditView *view2 = moo_edit_tab_get_view (tab, 1, 2);
-        MooEdit *doc = moo_edit_tab_get_doc (tab);
 
         g_assert (view1 != NULL);
         g_assert (!GTK_WIDGET_VISIBLE (tab->vpaned2));
         g_assert (!gtk_container_get_children (GTK_CONTAINER (tab->vpaned2)));
 
-        swin = create_view_in_scrolled_window (doc);
+        swin = create_view_in_scrolled_window (tab->doc);
         gtk_paned_pack1 (GTK_PANED (tab->vpaned2), swin, TRUE, FALSE);
 
         if (view2)
         {
-            swin = create_view_in_scrolled_window (doc);
+            swin = create_view_in_scrolled_window (tab->doc);
             gtk_paned_pack2 (GTK_PANED (tab->vpaned2), swin, TRUE, FALSE);
         }
 
@@ -4963,9 +4983,16 @@ moo_edit_tab_set_split_vertical (MooEditTab *tab,
                     (view2 && GTK_WIDGET_HAS_FOCUS (view2));
 
         if (view1)
+        {
+            _moo_edit_remove_view (tab->doc, view1);
             gtk_container_remove (GTK_CONTAINER (tab->vpaned1), GTK_WIDGET (view1)->parent);
+        }
+
         if (view2)
+        {
+            _moo_edit_remove_view (tab->doc, view2);
             gtk_container_remove (GTK_CONTAINER (tab->vpaned2), GTK_WIDGET (view2)->parent);
+        }
 
         if (has_focus)
             gtk_widget_grab_focus (GTK_WIDGET (moo_edit_tab_get_view (tab, 1, 1)));
@@ -4973,15 +5000,14 @@ moo_edit_tab_set_split_vertical (MooEditTab *tab,
     else
     {
         GtkWidget *swin;
-        MooEdit *doc = moo_edit_tab_get_doc (tab);
 
-        swin = create_view_in_scrolled_window (doc);
+        swin = create_view_in_scrolled_window (tab->doc);
         gtk_paned_pack2 (GTK_PANED (tab->vpaned1), swin, TRUE, FALSE);
 
         if (GTK_WIDGET_VISIBLE (tab->vpaned2))
         {
             g_assert (gtk_paned_get_child1 (GTK_PANED (tab->vpaned2)) != NULL);
-            swin = create_view_in_scrolled_window (doc);
+            swin = create_view_in_scrolled_window (tab->doc);
             gtk_paned_pack2 (GTK_PANED (tab->vpaned2), swin, TRUE, FALSE);
         }
     }
