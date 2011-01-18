@@ -11,11 +11,9 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooutils/mooutils.h"
 #include "mooutils/moocompat.h"
-#include "mooedit/mooeditprogress-gxml.h"
 
 MOO_DEFINE_OBJECT_ARRAY (MooEditView, moo_edit_view)
 
-static void     moo_edit_view_finalize              (GObject            *object);
 static void     moo_edit_view_dispose               (GObject            *object);
 
 static gboolean moo_edit_view_focus_in              (GtkWidget          *widget,
@@ -47,7 +45,6 @@ moo_edit_view_class_init (MooEditViewClass *klass)
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     MooTextViewClass *textview_class = MOO_TEXT_VIEW_CLASS (klass);
 
-    gobject_class->finalize = moo_edit_view_finalize;
     gobject_class->dispose = moo_edit_view_dispose;
 
     widget_class->popup_menu = moo_edit_view_popup_menu;
@@ -69,18 +66,6 @@ moo_edit_view_init (MooEditView *view)
     view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_EDIT_VIEW, MooEditViewPrivate);
 }
 
-
-static void
-moo_edit_view_finalize (GObject *object)
-{
-    G_GNUC_UNUSED MooEditView *view = MOO_EDIT_VIEW (object);
-
-    moo_assert (view->priv->state == MOO_EDIT_STATE_NORMAL);
-
-    G_OBJECT_CLASS (moo_edit_view_parent_class)->finalize (object);
-}
-
-
 void
 _moo_edit_view_unset_doc (MooEditView *view)
 {
@@ -93,27 +78,12 @@ moo_edit_view_dispose (GObject *object)
 {
     MooEditView *view = MOO_EDIT_VIEW (object);
 
-    moo_assert (!view->priv->progress);
-
     if (view->priv->doc)
     {
         _moo_edit_remove_view (view->priv->doc, view);
         g_assert (view->priv->doc == NULL);
         view->priv->doc = NULL;
     }
-
-    view->priv->progress = NULL;
-    view->priv->progressbar = NULL;
-
-    if (view->priv->progress_timeout)
-    {
-        moo_assert_not_reached ();
-        g_source_remove (view->priv->progress_timeout);
-        view->priv->progress_timeout = 0;
-    }
-
-    g_free (view->priv->progress_text);
-    view->priv->progress_text = NULL;
 
     G_OBJECT_CLASS (moo_edit_view_parent_class)->dispose (object);
 }
@@ -437,163 +407,6 @@ moo_edit_view_popup_menu (GtkWidget *widget)
 {
     _moo_edit_view_do_popup (MOO_EDIT_VIEW (widget), NULL);
     return TRUE;
-}
-
-
-/*****************************************************************************/
-/* progress dialogs and stuff
- */
-
-MooEditState
-_moo_edit_view_get_state (MooEditView *view)
-{
-    g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), MOO_EDIT_STATE_NORMAL);
-    return view->priv->state;
-}
-
-
-static void
-position_progress (MooEditView *view)
-{
-    GtkAllocation *allocation;
-    int x, y;
-
-    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
-    g_return_if_fail (GTK_IS_WIDGET (view->priv->progress));
-
-    if (!GTK_WIDGET_REALIZED (view))
-        return;
-
-    allocation = &GTK_WIDGET(view)->allocation;
-
-    x = allocation->width/2 - PROGRESS_WIDTH/2;
-    y = allocation->height/2 - PROGRESS_HEIGHT/2;
-    gtk_text_view_move_child (GTK_TEXT_VIEW (view),
-                              view->priv->progress,
-                              x, y);
-}
-
-static void
-update_progress (MooEditView *view)
-{
-    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
-    g_return_if_fail (view->priv->progress_text != NULL);
-    g_return_if_fail (view->priv->state != MOO_EDIT_STATE_NORMAL);
-
-    if (view->priv->progressbar)
-        gtk_progress_bar_set_text (GTK_PROGRESS_BAR (view->priv->progressbar),
-                                   view->priv->progress_text);
-}
-
-void
-_moo_edit_view_set_progress_text (MooEditView *view,
-                                  const char  *text)
-{
-    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
-    g_free (view->priv->progress_text);
-    view->priv->progress_text = g_strdup (text);
-    update_progress (view);
-}
-
-
-static gboolean
-pulse_progress (MooEditView *view)
-{
-    g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), FALSE);
-    g_return_val_if_fail (GTK_IS_WIDGET (view->priv->progressbar), FALSE);
-    gtk_progress_bar_pulse (GTK_PROGRESS_BAR (view->priv->progressbar));
-    update_progress (view);
-    return TRUE;
-}
-
-static void
-progress_cancel_clicked (MooEditView *view)
-{
-    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
-    if (view->priv->state && view->priv->cancel_op)
-        view->priv->cancel_op (view->priv->cancel_data);
-}
-
-static gboolean
-show_progress (MooEditView *view)
-{
-    ProgressDialogXml *xml;
-
-    view->priv->progress_timeout = 0;
-
-    g_return_val_if_fail (!view->priv->progress, FALSE);
-
-    xml = progress_dialog_xml_new ();
-
-    view->priv->progress = GTK_WIDGET (xml->ProgressDialog);
-    view->priv->progressbar = GTK_WIDGET (xml->progressbar);
-    g_assert (GTK_IS_WIDGET (view->priv->progressbar));
-
-    g_signal_connect_swapped (xml->cancel, "clicked",
-                              G_CALLBACK (progress_cancel_clicked),
-                              view);
-
-    gtk_text_view_add_child_in_window (GTK_TEXT_VIEW (view),
-                                       view->priv->progress,
-                                       GTK_TEXT_WINDOW_WIDGET,
-                                       0, 0);
-    position_progress (view);
-    update_progress (view);
-
-    view->priv->progress_timeout =
-            gdk_threads_add_timeout (PROGRESS_TIMEOUT,
-                                     (GSourceFunc) pulse_progress,
-                                     view);
-
-    return FALSE;
-}
-
-void
-_moo_edit_view_set_state (MooEditView    *view,
-                          MooEditState    state,
-                          const char     *text,
-                          GDestroyNotify  cancel,
-                          gpointer        data)
-{
-    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
-    g_return_if_fail (state == MOO_EDIT_STATE_NORMAL ||
-                      view->priv->state == MOO_EDIT_STATE_NORMAL);
-
-    view->priv->cancel_op = cancel;
-    view->priv->cancel_data = data;
-
-    if (state == view->priv->state)
-        return;
-
-    view->priv->state = state;
-    gtk_text_view_set_editable (GTK_TEXT_VIEW (view), !state);
-
-    if (!state)
-    {
-        if (view->priv->progress)
-        {
-            GtkWidget *tmp = view->priv->progress;
-            view->priv->progress = NULL;
-            view->priv->progressbar = NULL;
-            gtk_widget_destroy (tmp);
-        }
-
-        g_free (view->priv->progress_text);
-        view->priv->progress_text = NULL;
-
-        if (view->priv->progress_timeout)
-            g_source_remove (view->priv->progress_timeout);
-        view->priv->progress_timeout = 0;
-    }
-    else
-    {
-        if (!view->priv->progress_timeout)
-            view->priv->progress_timeout =
-                    gdk_threads_add_timeout (PROGRESS_TIMEOUT,
-                                             (GSourceFunc) show_progress,
-                                             view);
-        view->priv->progress_text = g_strdup (text);
-    }
 }
 
 

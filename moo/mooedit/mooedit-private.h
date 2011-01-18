@@ -17,6 +17,7 @@
 #define MOO_EDIT_PRIVATE_H
 
 #include "mooedit/mooedit-impl.h"
+#include "mooedit/mooeditprogress.h"
 
 G_BEGIN_DECLS
 
@@ -49,6 +50,9 @@ struct MooEditPrivate {
     guint file_monitor_id;
     gboolean modified_on_disk;
     gboolean deleted_from_disk;
+
+    MooEditState state;
+    MooEditProgress *progress;
 
     /***********************************************************************/
     /* Bookmarks

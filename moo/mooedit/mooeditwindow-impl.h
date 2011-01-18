@@ -2,6 +2,7 @@
 #define MOO_EDIT_WINDOW_IMPL_H
 
 #include "mooedit/mooeditwindow.h"
+#include "mooedit/mooeditprogress.h"
 
 G_BEGIN_DECLS
 
@@ -20,6 +21,9 @@ void             _moo_edit_window_set_use_tabs      (void);
 
 void             _moo_edit_tab_set_focused_view     (MooEditTab     *tab,
                                                      MooEditView    *view);
+
+MooEditProgress *_moo_edit_tab_create_progress      (MooEditTab     *tab);
+void             _moo_edit_tab_destroy_progress     (MooEditTab     *tab);
 
 G_END_DECLS
 

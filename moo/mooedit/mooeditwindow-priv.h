@@ -9,6 +9,8 @@ struct MooEditTab
 {
     GtkVBox base;
 
+    MooEditProgress *progress;
+
     GtkWidget *hpaned;
     GtkWidget *vpaned1;
     GtkWidget *vpaned2;

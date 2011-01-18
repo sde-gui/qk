@@ -1863,18 +1863,18 @@ action_page_setup (MooEditWindow *window)
 static void
 action_print (MooEditWindow *window)
 {
-    gpointer doc = ACTIVE_DOC (window);
-    g_return_if_fail (doc != NULL);
-    _moo_edit_print (doc, GTK_WIDGET (window));
+    MooEditView *view = ACTIVE_VIEW (window);
+    g_return_if_fail (view != NULL);
+    _moo_edit_print (GTK_TEXT_VIEW (view), GTK_WIDGET (window));
 }
 
 
 static void
 action_print_preview (MooEditWindow *window)
 {
-    gpointer doc = ACTIVE_DOC (window);
-    g_return_if_fail (doc != NULL);
-    _moo_edit_print_preview (doc, GTK_WIDGET (window));
+    MooEditView *view = ACTIVE_VIEW (window);
+    g_return_if_fail (view != NULL);
+    _moo_edit_print_preview (GTK_TEXT_VIEW (view), GTK_WIDGET (window));
 }
 
 
@@ -1884,7 +1884,10 @@ action_print_pdf (MooEditWindow *window)
     char *start_name;
     const char *doc_name, *dot;
     const char *filename;
-    gpointer doc = ACTIVE_DOC (window);
+    MooEditView *view = ACTIVE_VIEW (window);
+    MooEdit *doc = view ? moo_edit_view_get_doc (view) : NULL;
+
+    g_return_if_fail (view != NULL);
 
     doc_name = doc ? moo_edit_get_display_basename (doc) : "output";
     dot = strrchr (doc_name, '.');
@@ -1900,9 +1903,6 @@ action_print_pdf (MooEditWindow *window)
         start_name = g_strdup_printf ("%s.pdf", doc_name);
     }
 
-    doc = ACTIVE_DOC (window);
-    g_return_if_fail (doc != NULL);
-
     filename = moo_file_dialogp (GTK_WIDGET (window),
                                  MOO_FILE_DIALOG_SAVE,
                                  start_name,
@@ -1911,7 +1911,7 @@ action_print_pdf (MooEditWindow *window)
                                  NULL);
 
     if (filename)
-        _moo_edit_export_pdf (doc, filename);
+        _moo_edit_export_pdf (GTK_TEXT_VIEW (view), filename);
 
     g_free (start_name);
 }
@@ -2465,7 +2465,7 @@ view_wrap_mode_changed (MooEditWindow *window,
                         G_GNUC_UNUSED GParamSpec *pspec,
                         MooEditView   *view)
 {
-    gpointer action;
+    GtkAction *action;
     GtkWrapMode mode;
 
     if (view != ACTIVE_VIEW (window))
@@ -2475,7 +2475,7 @@ view_wrap_mode_changed (MooEditWindow *window,
     g_return_if_fail (action != NULL);
 
     g_object_get (view, "wrap-mode", &mode, NULL);
-    gtk_toggle_action_set_active (action, mode != GTK_WRAP_NONE);
+    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), mode != GTK_WRAP_NONE);
 
     /* XXX menu item and action go out of sync for some reason */
     sync_proxies (action);
@@ -2487,7 +2487,7 @@ view_show_line_numbers_changed (MooEditWindow *window,
                                 G_GNUC_UNUSED GParamSpec *pspec,
                                 MooEditView   *view)
 {
-    gpointer action;
+    GtkAction *action;
     gboolean show;
 
     if (view != ACTIVE_VIEW (window))
@@ -2497,7 +2497,7 @@ view_show_line_numbers_changed (MooEditWindow *window,
     g_return_if_fail (action != NULL);
 
     g_object_get (view, "show-line-numbers", &show, NULL);
-    gtk_toggle_action_set_active (action, show);
+    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), show);
 
     /* XXX menu item and action go out of sync for some reason */
     sync_proxies (action);
@@ -5083,4 +5083,27 @@ update_split_view_actions (MooEditWindow *window)
     sync_proxies (action_cycle);
     sync_proxies (action_split_horizontal);
     sync_proxies (action_split_vertical);
+}
+
+
+MooEditProgress *
+_moo_edit_tab_create_progress (MooEditTab *tab)
+{
+    g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), NULL);
+    g_return_val_if_fail (!tab->progress, tab->progress);
+
+    tab->progress = _moo_edit_progress_new ();
+    gtk_box_pack_start (GTK_BOX (tab), GTK_WIDGET (tab->progress), FALSE, FALSE, 0);
+    gtk_box_reorder_child (GTK_BOX (tab), GTK_WIDGET (tab->progress), 0);
+
+    return tab->progress;
+}
+
+void
+_moo_edit_tab_destroy_progress (MooEditTab *tab)
+{
+    g_return_if_fail (MOO_IS_EDIT_TAB (tab));
+    g_return_if_fail (tab->progress != NULL);
+    gtk_widget_destroy (GTK_WIDGET (tab->progress));
+    tab->progress = NULL;
 }

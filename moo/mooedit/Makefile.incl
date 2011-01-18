@@ -48,6 +48,8 @@ moo_sources +=				\
 	mooedit/mooeditprefs.c		\
 	mooedit/mooeditprefspage.c	\
 	mooedit/mooedit-private.h	\
+	mooedit/mooeditprogress.h	\
+	mooedit/mooeditprogress.c	\
 	mooedit/mooeditwindow.c		\
 	mooedit/mooeditwindow-impl.h	\
 	mooedit/mooeditwindow-priv.h	\

@@ -28,43 +28,51 @@ G_BEGIN_DECLS
 
 extern MooEditList *_moo_edit_instances;
 
-void        _moo_edit_set_focused_view          (MooEdit        *doc,
-                                                 MooEditView    *view);
-void        _moo_edit_add_view                  (MooEdit        *doc,
-                                                 MooEditView    *view);
-void        _moo_edit_remove_view               (MooEdit        *doc,
-                                                 MooEditView    *view);
+void             _moo_edit_set_focused_view         (MooEdit        *doc,
+                                                     MooEditView    *view);
+void             _moo_edit_add_view                 (MooEdit        *doc,
+                                                     MooEditView    *view);
+void             _moo_edit_remove_view              (MooEdit        *doc,
+                                                     MooEditView    *view);
 
-gboolean    _moo_edit_is_busy                   (MooEdit        *doc);
+gboolean         _moo_edit_is_busy                  (MooEdit        *doc);
+MooEditState     _moo_edit_get_state                (MooEdit        *doc);
+void             _moo_edit_set_progress_text        (MooEdit        *doc,
+                                                     const char     *text);
+void             _moo_edit_set_state                (MooEdit        *doc,
+                                                     MooEditState    state,
+                                                     const char     *text,
+                                                     GDestroyNotify  cancel,
+                                                     gpointer        data);
 
-char       *_moo_file_get_normalized_name       (GFile          *file);
-char       *_moo_edit_get_normalized_name       (MooEdit        *edit);
+char            *_moo_file_get_normalized_name      (GFile          *file);
+char            *_moo_edit_get_normalized_name      (MooEdit        *edit);
 
-char       *_moo_edit_get_utf8_filename         (MooEdit        *edit);
+char            *_moo_edit_get_utf8_filename        (MooEdit        *edit);
 
-void        _moo_edit_add_class_actions         (MooEdit        *edit);
-void        _moo_edit_check_actions             (MooEdit        *edit,
-                                                 MooEditView    *view);
-void        _moo_edit_class_init_actions        (MooEditClass   *klass);
+void             _moo_edit_add_class_actions        (MooEdit        *edit);
+void             _moo_edit_check_actions            (MooEdit        *edit,
+                                                     MooEditView    *view);
+void             _moo_edit_class_init_actions       (MooEditClass   *klass);
 
-void        _moo_edit_status_changed            (MooEdit        *edit);
+void             _moo_edit_status_changed           (MooEdit        *edit);
 
-gboolean    _moo_edit_has_comments              (MooEdit        *edit,
-                                                 gboolean       *single_line,
-                                                 gboolean       *multi_line);
-void        _moo_edit_comment                   (MooEdit        *edit);
-void        _moo_edit_uncomment                 (MooEdit        *edit);
+gboolean         _moo_edit_has_comments             (MooEdit        *edit,
+                                                     gboolean       *single_line,
+                                                     gboolean       *multi_line);
+void             _moo_edit_comment                  (MooEdit        *edit);
+void             _moo_edit_uncomment                (MooEdit        *edit);
 
 #define MOO_EDIT_GOTO_BOOKMARK_ACTION "GoToBookmark"
-void        _moo_edit_delete_bookmarks          (MooEdit        *edit,
-                                                 gboolean        in_destroy);
-void        _moo_edit_line_mark_moved           (MooEdit        *edit,
-                                                 MooLineMark    *mark);
-void        _moo_edit_line_mark_deleted         (MooEdit        *edit,
-                                                 MooLineMark    *mark);
-gboolean    _moo_edit_line_mark_clicked         (MooTextView    *view,
-                                                 int             line);
-void        _moo_edit_update_bookmarks_style    (MooEdit        *edit);
+void             _moo_edit_delete_bookmarks         (MooEdit        *edit,
+                                                     gboolean        in_destroy);
+void             _moo_edit_line_mark_moved          (MooEdit        *edit,
+                                                     MooLineMark    *mark);
+void             _moo_edit_line_mark_deleted        (MooEdit        *edit,
+                                                     MooLineMark    *mark);
+gboolean         _moo_edit_line_mark_clicked        (MooTextView    *view,
+                                                     int             line);
+void             _moo_edit_update_bookmarks_style   (MooEdit        *edit);
 
 /***********************************************************************/
 /* Preferences

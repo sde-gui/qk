@@ -13,15 +13,6 @@ void            _moo_edit_view_set_tab                  (MooEditView    *view,
 void            _moo_edit_view_apply_prefs              (MooEditView    *view);
 void            _moo_edit_view_apply_config             (MooEditView    *view);
 
-MooEditState    _moo_edit_view_get_state                (MooEditView    *view);
-void            _moo_edit_view_set_progress_text        (MooEditView    *view,
-                                                         const char     *text);
-void            _moo_edit_view_set_state                (MooEditView    *view,
-                                                         MooEditState    state,
-                                                         const char     *text,
-                                                         GDestroyNotify  cancel,
-                                                         gpointer        data);
-
 void            _moo_edit_view_ui_set_line_wrap         (MooEditView    *view,
                                                          gboolean        enabled);
 void            _moo_edit_view_ui_set_show_line_numbers (MooEditView    *view,

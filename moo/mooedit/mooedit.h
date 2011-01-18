@@ -65,7 +65,7 @@ GType                moo_edit_get_type                  (void) G_GNUC_CONST;
 
 MooEditor           *moo_edit_get_editor                (MooEdit            *doc);
 MooEditWindow       *moo_edit_get_window                (MooEdit            *doc);
-
+MooEditTab          *moo_edit_get_tab                   (MooEdit            *doc);
 MooEditViewArray    *moo_edit_get_views                 (MooEdit            *doc);
 MooEditView         *moo_edit_get_view                  (MooEdit            *doc);
 int                  moo_edit_get_n_views               (MooEdit            *doc);

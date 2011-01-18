@@ -30,6 +30,7 @@
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooeditor-impl.h"
+#include "mooedit/mooeditwindow-impl.h"
 #include "mooedit/moolangmgr.h"
 #include "marshals.h"
 #include "mooutils/mooutils-fs.h"
@@ -266,6 +267,8 @@ void
 _moo_edit_closed (MooEdit *doc)
 {
     g_return_if_fail (MOO_IS_EDIT (doc));
+
+    moo_assert (doc->priv->state == MOO_EDIT_STATE_NORMAL);
 
     _moo_edit_remove_untitled (doc);
     _moo_edit_instances = moo_edit_list_remove (_moo_edit_instances, doc);
@@ -711,6 +714,16 @@ moo_edit_get_editor (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
     return doc->priv->editor;
+}
+
+/**
+ * moo_edit_get_tab:
+ **/
+MooEditTab *
+moo_edit_get_tab (MooEdit *doc)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    return moo_edit_view_get_tab (moo_edit_get_view (doc));
 }
 
 /**
@@ -1314,15 +1327,69 @@ moo_edit_save_copy (MooEdit     *doc,
 gboolean
 _moo_edit_is_busy (MooEdit *doc)
 {
-    guint i;
-
     g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
+    return _moo_edit_get_state (doc) != MOO_EDIT_STATE_NORMAL;
+}
+
+MooEditState
+_moo_edit_get_state (MooEdit *doc)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (doc), MOO_EDIT_STATE_NORMAL);
+    return doc->priv->state;
+}
+
+void
+_moo_edit_set_progress_text (MooEdit    *doc,
+                             const char *text)
+{
+    g_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (doc->priv->state != MOO_EDIT_STATE_NORMAL);
+    g_return_if_fail (doc->priv->progress != NULL);
+    _moo_edit_progress_set_text (doc->priv->progress, text);
+}
+
+void
+_moo_edit_set_state (MooEdit        *doc,
+                     MooEditState    state,
+                     const char     *text,
+                     GDestroyNotify  cancel,
+                     gpointer        data)
+{
+    guint i;
+    MooEditTab *tab;
+
+    g_return_if_fail (MOO_IS_EDIT (doc));
+    g_return_if_fail (state == MOO_EDIT_STATE_NORMAL ||
+                      doc->priv->state == MOO_EDIT_STATE_NORMAL);
+
+    if (doc->priv->progress)
+        _moo_edit_progress_set_cancel_func (doc->priv->progress, cancel, data);
+
+    if (state == doc->priv->state)
+        return;
+
+    doc->priv->state = state;
 
     for (i = 0; i < moo_edit_view_array_get_size (doc->priv->views); ++i)
-        if (_moo_edit_view_get_state (doc->priv->views->elms[i]) != MOO_EDIT_STATE_NORMAL)
-            return TRUE;
+        gtk_text_view_set_editable (GTK_TEXT_VIEW (doc->priv->views->elms[i]), !state);
 
-    return FALSE;
+    tab = moo_edit_get_tab (doc);
+
+    if (!tab)
+        return;
+
+    if (!state)
+    {
+        _moo_edit_tab_destroy_progress (tab);
+        g_object_unref (doc->priv->progress);
+        doc->priv->progress = NULL;
+    }
+    else
+    {
+        doc->priv->progress = _moo_edit_tab_create_progress (tab);
+        _moo_edit_progress_start (doc->priv->progress, text, cancel, data);
+        g_object_ref (doc->priv->progress);
+    }
 }
 
 
