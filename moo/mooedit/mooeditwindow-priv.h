@@ -7,7 +7,9 @@ G_BEGIN_DECLS
 
 struct MooEditTab
 {
-    GtkHPaned base;
+    GtkVBox base;
+
+    GtkWidget *hpaned;
     GtkWidget *vpaned1;
     GtkWidget *vpaned2;
 
@@ -17,7 +19,7 @@ struct MooEditTab
 
 struct MooEditTabClass
 {
-    GtkHPanedClass base_class;
+    GtkVBoxClass base_class;
 };
 
 G_END_DECLS

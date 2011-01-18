@@ -218,8 +218,9 @@ moo_edit_view_get_tab (MooEditView *view)
 
     if (GTK_IS_SCROLLED_WINDOW (parent = gtk_widget_get_parent (GTK_WIDGET (view))))
         if (GTK_IS_PANED (parent = gtk_widget_get_parent (parent)))
-            if (MOO_IS_EDIT_TAB (parent = gtk_widget_get_parent (parent)))
-                return MOO_EDIT_TAB (parent);
+            if (GTK_IS_PANED (parent = gtk_widget_get_parent (parent)))
+                if (MOO_IS_EDIT_TAB (parent = gtk_widget_get_parent (parent)))
+                    return MOO_EDIT_TAB (parent);
 
     return NULL;
 }

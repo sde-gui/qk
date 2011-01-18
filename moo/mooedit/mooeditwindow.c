@@ -18,7 +18,7 @@
  **/
 
 /**
- * class:MooEditTab: (parent GtkHPaned) (moo.doc-object-name tab)
+ * class:MooEditTab: (parent GtkVBox) (moo.doc-object-name tab)
  **/
 
 #ifdef HAVE_CONFIG_H
@@ -302,7 +302,7 @@ static void         action_focus_next_split_view        (MooEditWindow  *window)
 static void         update_split_view_actions           (MooEditWindow  *window);
 
 
-G_DEFINE_TYPE (MooEditTab, moo_edit_tab, GTK_TYPE_HPANED)
+G_DEFINE_TYPE (MooEditTab, moo_edit_tab, GTK_TYPE_VBOX)
 G_DEFINE_TYPE (MooEditWindow, moo_edit_window, MOO_TYPE_WINDOW)
 
 enum {
@@ -4650,10 +4650,14 @@ out:
 static void
 moo_edit_tab_init (MooEditTab *tab)
 {
+    gtk_box_set_homogeneous (GTK_BOX (tab), FALSE);
+    tab->hpaned = gtk_hpaned_new ();
     tab->vpaned1 = gtk_vpaned_new ();
     tab->vpaned2 = gtk_vpaned_new ();
-    gtk_paned_pack1 (GTK_PANED (tab), tab->vpaned1, TRUE, FALSE);
-    gtk_paned_pack2 (GTK_PANED (tab), tab->vpaned2, TRUE, FALSE);
+    gtk_paned_pack1 (GTK_PANED (tab->hpaned), tab->vpaned1, TRUE, FALSE);
+    gtk_paned_pack2 (GTK_PANED (tab->hpaned), tab->vpaned2, TRUE, FALSE);
+    gtk_widget_show (tab->hpaned);
+    gtk_box_pack_start (GTK_BOX (tab), tab->hpaned, TRUE, TRUE, 0);
 }
 
 static void
