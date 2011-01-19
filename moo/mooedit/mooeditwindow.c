@@ -3220,6 +3220,12 @@ tab_icon_drag_end (GtkWidget      *evbox,
 }
 
 
+static void
+tab_close_button_clicked (MooEdit *doc)
+{
+    moo_edit_close (doc, TRUE);
+}
+
 static GtkWidget *
 create_tab_label (MooEditWindow *window,
                   MooEditTab    *tab,
@@ -3245,6 +3251,57 @@ create_tab_label (MooEditWindow *window,
     gtk_label_set_single_line_mode (GTK_LABEL (label), TRUE);
     gtk_widget_show (label);
     gtk_box_pack_start (GTK_BOX (hbox), label, TRUE, TRUE, 0);
+
+    if (0)
+    {
+        GtkWidget *frame;
+        GtkWidget *button;
+        GtkWidget *icon;
+
+        {
+            static gboolean been_here;
+            if (!been_here)
+            {
+                been_here = TRUE;
+                gtk_rc_parse_string (
+                    "style \"moo-edit-tab-close-button\" {\n"
+                    "   GtkWidget::focus-line-width = 0\n"
+                    "   GtkWidget::focus-padding = 0\n"
+                    "   GtkButton::default-border = { 0, 0, 0, 0 }\n"
+                    "   GtkButton::default-outside-border = { 0, 0, 0, 0 }\n"
+                    "   GtkButton::inner-border = { 0, 0, 0, 0 }\n"
+                    "}\n"
+                    "widget \"*.moo-edit-tab-close-button\" style \"moo-edit-tab-close-button\""
+                );
+            }
+        }
+
+        frame = gtk_aspect_frame_new (NULL, 0.5, 0.5, 1.0, FALSE);
+        gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_NONE);
+
+        button = gtk_button_new ();
+
+        icon = _moo_create_small_icon (MOO_SMALL_ICON_CLOSE);
+        gtk_widget_set_size_request (icon, 9, 9);
+
+        gtk_container_add (GTK_CONTAINER (button), icon);
+
+        gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
+        gtk_button_set_focus_on_click (GTK_BUTTON (button), FALSE);
+        gtk_widget_set_name (button, "moo-edit-tab-close-button");
+        g_signal_connect_swapped (button, "clicked",
+                                  G_CALLBACK (tab_close_button_clicked),
+                                  doc);
+
+        gtk_container_add (GTK_CONTAINER (frame), button);
+        gtk_widget_show_all (frame);
+
+        gtk_container_set_border_width (GTK_CONTAINER (frame), 0);
+        gtk_container_set_border_width (GTK_CONTAINER (button), 0);
+
+        gtk_box_pack_start (GTK_BOX (hbox), frame, FALSE, FALSE, 0);
+        gtk_size_group_add_widget (group, frame);
+    }
 
     gtk_size_group_add_widget (group, evbox);
     gtk_size_group_add_widget (group, label);
