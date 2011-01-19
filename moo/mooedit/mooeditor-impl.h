@@ -13,11 +13,6 @@ G_BEGIN_DECLS
 
 MooHistoryMgr   *_moo_editor_get_history_mgr    (MooEditor      *editor);
 
-void             _moo_editor_set_focused_doc    (MooEditor      *editor,
-                                                 MooEdit        *doc);
-void             _moo_editor_unset_focused_doc  (MooEditor      *editor,
-                                                 MooEdit        *doc);
-
 void             _moo_editor_move_doc           (MooEditor      *editor,
                                                  MooEdit        *doc,
                                                  MooEditWindow  *dest,

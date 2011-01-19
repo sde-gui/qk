@@ -39,8 +39,6 @@ struct MooEditorPrivate {
     MooFileWatch        *file_watch;
     MooEditorOptions     opts;
 
-    MooEdit             *focused_doc;
-
     GType                window_type;
     GType                doc_type;
 

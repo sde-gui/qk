@@ -18,8 +18,6 @@ static void     moo_edit_view_dispose               (GObject            *object)
 
 static gboolean moo_edit_view_focus_in              (GtkWidget          *widget,
                                                      GdkEventFocus      *event);
-static gboolean moo_edit_view_focus_out             (GtkWidget          *widget,
-                                                     GdkEventFocus      *event);
 static gboolean moo_edit_view_popup_menu            (GtkWidget          *widget);
 static gboolean moo_edit_view_drag_motion           (GtkWidget          *widget,
                                                      GdkDragContext     *context,
@@ -51,7 +49,6 @@ moo_edit_view_class_init (MooEditViewClass *klass)
     widget_class->drag_motion = moo_edit_view_drag_motion;
     widget_class->drag_drop = moo_edit_view_drag_drop;
     widget_class->focus_in_event = moo_edit_view_focus_in;
-    widget_class->focus_out_event = moo_edit_view_focus_out;
 
     textview_class->line_mark_clicked = moo_edit_view_line_mark_clicked;
     textview_class->apply_style_scheme = moo_edit_view_apply_style_scheme;
@@ -129,37 +126,19 @@ moo_edit_view_apply_style_scheme (MooTextView        *view,
     _moo_edit_update_bookmarks_style (moo_edit_view_get_doc (MOO_EDIT_VIEW (view)));
 }
 
+
 static gboolean
 moo_edit_view_focus_in (GtkWidget     *widget,
                         GdkEventFocus *event)
 {
     gboolean retval = FALSE;
     MooEditView *view = MOO_EDIT_VIEW (widget);
-    MooEdit *doc = moo_edit_view_get_doc (view);
-
-    _moo_editor_set_focused_doc (view->priv->editor, doc);
 
     if (GTK_WIDGET_CLASS (moo_edit_view_parent_class)->focus_in_event)
         retval = GTK_WIDGET_CLASS (moo_edit_view_parent_class)->focus_in_event (widget, event);
 
     _moo_edit_set_focused_view (view->priv->doc, view);
     _moo_edit_window_set_focused_view (moo_edit_view_get_window (view), view);
-
-    return retval;
-}
-
-static gboolean
-moo_edit_view_focus_out (GtkWidget     *widget,
-                         GdkEventFocus *event)
-{
-    gboolean retval = FALSE;
-    MooEditView *view = MOO_EDIT_VIEW (widget);
-    MooEdit *doc = moo_edit_view_get_doc (view);
-
-    _moo_editor_unset_focused_doc (view->priv->editor, doc);
-
-    if (GTK_WIDGET_CLASS (moo_edit_view_parent_class)->focus_out_event)
-        retval = GTK_WIDGET_CLASS (moo_edit_view_parent_class)->focus_out_event (widget, event);
 
     return retval;
 }

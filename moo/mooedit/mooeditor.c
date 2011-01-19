@@ -106,7 +106,6 @@ enum {
     PROP_SINGLE_WINDOW,
     PROP_SAVE_BACKUPS,
     PROP_STRIP_WHITESPACE,
-    PROP_FOCUSED_DOC,
     PROP_EMBEDDED
 };
 
@@ -182,10 +181,6 @@ moo_editor_class_init (MooEditorClass *klass)
     g_object_class_install_property (gobject_class, PROP_STRIP_WHITESPACE,
         g_param_spec_boolean ("strip-whitespace", "strip-whitespace", "strip-whitespace",
                               FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
-
-    g_object_class_install_property (gobject_class, PROP_FOCUSED_DOC,
-        g_param_spec_object ("focused-doc", "focused-doc", "focused-doc",
-                             MOO_TYPE_EDIT, G_PARAM_READABLE));
 
     g_object_class_install_property (gobject_class, PROP_EMBEDDED,
         g_param_spec_boolean ("embedded", "embedded", "embedded",
@@ -355,10 +350,6 @@ moo_editor_get_property (GObject        *object,
             g_value_set_boolean (value, test_flag (editor, EMBEDDED));
             break;
 
-        case PROP_FOCUSED_DOC:
-            g_value_set_object (value, editor->priv->focused_doc);
-            break;
-
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
@@ -404,37 +395,6 @@ moo_editor_finalize (GObject *object)
     moo_edit_array_free (editor->priv->windowless);
 
     G_OBJECT_CLASS (moo_editor_parent_class)->finalize (object);
-}
-
-
-void
-_moo_editor_set_focused_doc (MooEditor *editor,
-                             MooEdit   *doc)
-{
-    g_return_if_fail (MOO_IS_EDITOR (editor));
-    g_return_if_fail (MOO_IS_EDIT (doc));
-    g_return_if_fail (moo_edit_get_editor (doc) == editor);
-
-    if (editor->priv->focused_doc != doc)
-    {
-        editor->priv->focused_doc = doc;
-        g_object_notify (G_OBJECT (editor), "focused-doc");
-    }
-}
-
-void
-_moo_editor_unset_focused_doc (MooEditor *editor,
-                               MooEdit   *doc)
-{
-    g_return_if_fail (MOO_IS_EDITOR (editor));
-    g_return_if_fail (MOO_IS_EDIT (doc));
-    g_return_if_fail (moo_edit_get_editor (doc) == editor);
-
-    if (editor->priv->focused_doc == doc)
-    {
-        editor->priv->focused_doc = NULL;
-        g_object_notify (G_OBJECT (editor), "focused-doc");
-    }
 }
 
 
