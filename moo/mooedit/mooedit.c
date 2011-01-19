@@ -324,12 +324,35 @@ void
 _moo_edit_set_active_view (MooEdit     *doc,
                            MooEditView *view)
 {
+    GtkTextBuffer *buffer;
+
     g_return_if_fail (MOO_IS_EDIT (doc));
     g_return_if_fail (MOO_IS_EDIT_VIEW (view));
 
     g_return_if_fail (moo_edit_view_array_find (doc->priv->views, view) >= 0);
 
+    buffer = moo_edit_get_buffer (doc);
+
+    if (doc->priv->active_view != NULL && doc->priv->active_view != view)
+    {
+        GtkTextIter iter;
+        GtkTextMark *mark = _moo_edit_view_get_fake_cursor_mark (doc->priv->active_view);
+        gtk_text_buffer_get_iter_at_mark (buffer, &iter, gtk_text_buffer_get_insert (buffer));
+        gtk_text_buffer_move_mark (buffer, mark, &iter);
+    }
+
+    if (doc->priv->dead_active_view ||
+        (doc->priv->active_view != NULL && doc->priv->active_view != view))
+    {
+        GtkTextIter iter;
+        GtkTextBuffer *buffer = moo_edit_get_buffer (doc);
+        GtkTextMark *mark = _moo_edit_view_get_fake_cursor_mark (view);
+        gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark);
+        gtk_text_buffer_place_cursor (buffer, &iter);
+    }
+
     doc->priv->active_view = view;
+    doc->priv->dead_active_view = FALSE;
 }
 
 void
@@ -359,7 +382,10 @@ _moo_edit_remove_view (MooEdit     *doc,
     g_return_if_fail (moo_edit_view_array_find (doc->priv->views, view) >= 0);
 
     if (view == doc->priv->active_view)
+    {
         doc->priv->active_view = NULL;
+        doc->priv->dead_active_view = TRUE;
+    }
 
     g_object_ref (view);
 

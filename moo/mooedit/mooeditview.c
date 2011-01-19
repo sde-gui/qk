@@ -76,6 +76,13 @@ moo_edit_view_dispose (GObject *object)
 {
     MooEditView *view = MOO_EDIT_VIEW (object);
 
+    if (view->priv->fake_cursor_mark)
+    {
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
+        gtk_text_buffer_delete_mark (buffer, view->priv->fake_cursor_mark);
+        view->priv->fake_cursor_mark = NULL;
+    }
+
     if (view->priv->doc)
     {
         _moo_edit_remove_view (view->priv->doc, view);
@@ -189,6 +196,23 @@ moo_edit_view_get_window (MooEditView *view)
         return MOO_EDIT_WINDOW (toplevel);
     else
         return NULL;
+}
+
+
+GtkTextMark *
+_moo_edit_view_get_fake_cursor_mark (MooEditView *view)
+{
+    g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), NULL);
+
+    if (!view->priv->fake_cursor_mark)
+    {
+        GtkTextIter iter;
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
+        gtk_text_buffer_get_start_iter (buffer, &iter);
+        view->priv->fake_cursor_mark = gtk_text_buffer_create_mark (buffer, NULL, &iter, FALSE);
+    }
+
+    return view->priv->fake_cursor_mark;
 }
 
 

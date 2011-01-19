@@ -29,6 +29,7 @@ struct MooEditPrivate {
     GtkTextBuffer *buffer;
     MooEditViewArray *views;
     MooEditView *active_view;
+    gboolean dead_active_view;
 
     gulong modified_changed_handler_id;
     guint apply_config_idle;

@@ -10,6 +10,7 @@ struct MooEditViewPrivate
     MooEdit *doc;
     MooEditor *editor;
     MooEditTab *tab;
+    GtkTextMark *fake_cursor_mark;
 };
 
 G_END_DECLS

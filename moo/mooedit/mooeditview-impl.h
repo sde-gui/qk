@@ -10,6 +10,8 @@ void            _moo_edit_view_unset_doc                (MooEditView    *view);
 void            _moo_edit_view_set_tab                  (MooEditView    *view,
                                                          MooEditTab     *tab);
 
+GtkTextMark    *_moo_edit_view_get_fake_cursor_mark     (MooEditView    *view);
+
 void            _moo_edit_view_apply_prefs              (MooEditView    *view);
 void            _moo_edit_view_apply_config             (MooEditView    *view);
 
