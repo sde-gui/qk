@@ -162,6 +162,10 @@ static void     draw_marks_background       (MooTextView        *view,
                                              GdkEventExpose     *event);
 static gboolean update_n_lines_idle         (MooTextView        *view);
 
+static void     add_line_mark               (MooTextView        *view,
+                                             MooLineMark        *mark);
+static void     remove_line_mark            (MooTextView        *view,
+                                             MooLineMark        *mark);
 static void     line_mark_added             (MooTextView        *view,
                                              MooLineMark        *mark);
 static void     line_mark_deleted           (MooTextView        *view,
@@ -704,6 +708,72 @@ moo_text_view_set_buffer_type (MooTextView *view,
         view->priv->buffer_type = type;
 }
 
+static void
+connect_buffer (MooTextView *view)
+{
+    MooUndoStack *undo_stack;
+    GtkTextBuffer *buffer = view->priv->buffer;
+
+    g_return_if_fail (buffer != NULL);
+
+    g_signal_connect_swapped (buffer, "changed",
+                              G_CALLBACK (buffer_changed), view);
+    g_signal_connect_swapped (buffer, "cursor_moved",
+                              G_CALLBACK (cursor_moved), view);
+    g_signal_connect_swapped (buffer, "selection-changed",
+                              G_CALLBACK (selection_changed), view);
+    g_signal_connect_swapped (buffer, "highlight-updated",
+                              G_CALLBACK (highlight_updated), view);
+    g_signal_connect_swapped (buffer, "notify::has-selection",
+                              G_CALLBACK (proxy_prop_notify), view);
+    g_signal_connect_swapped (buffer, "notify::has-text",
+                              G_CALLBACK (proxy_prop_notify), view);
+
+    undo_stack = _moo_text_buffer_get_undo_stack (MOO_TEXT_BUFFER (buffer));
+    g_signal_connect_swapped (undo_stack, "notify::can-undo",
+                              G_CALLBACK (proxy_notify_can_undo_redo), view);
+    g_signal_connect_swapped (undo_stack, "notify::can-redo",
+                              G_CALLBACK (proxy_notify_can_undo_redo), view);
+
+    g_signal_connect_data (buffer, "insert-text",
+                           G_CALLBACK (insert_text_cb), view,
+                           NULL, G_CONNECT_AFTER | G_CONNECT_SWAPPED);
+
+    g_signal_connect_swapped (buffer, "line-mark-added",
+                              G_CALLBACK (line_mark_added), view);
+    g_signal_connect_swapped (buffer, "line-mark-moved",
+                              G_CALLBACK (line_mark_moved), view);
+    g_signal_connect_swapped (buffer, "line-mark-deleted",
+                              G_CALLBACK (line_mark_deleted), view);
+    g_signal_connect_swapped (buffer, "fold-added",
+                              G_CALLBACK (fold_added), view);
+    g_signal_connect_swapped (buffer, "fold-deleted",
+                              G_CALLBACK (fold_deleted), view);
+    g_signal_connect_swapped (buffer, "fold-toggled",
+                              G_CALLBACK (fold_toggled), view);
+}
+
+static void
+disconnect_buffer (MooTextView *view)
+{
+    MooUndoStack *undo_stack;
+
+    if (!view->priv->buffer)
+        return;
+
+    g_signal_handlers_disconnect_matched (view->priv->buffer,
+                                          G_SIGNAL_MATCH_DATA,
+                                          0, 0, NULL, NULL,
+                                          view);
+
+    undo_stack = _moo_text_buffer_get_undo_stack (MOO_TEXT_BUFFER (view->priv->buffer));
+
+    g_signal_handlers_disconnect_matched (undo_stack,
+                                          G_SIGNAL_MATCH_DATA,
+                                          0, 0, NULL, NULL,
+                                          view);
+}
+
 static GObject*
 moo_text_view_constructor (GType                  type,
                            guint                  n_construct_properties,
@@ -712,8 +782,6 @@ moo_text_view_constructor (GType                  type,
     GtkTargetList *target_list;
     GObject *object;
     MooTextView *view;
-    MooUndoStack *undo_stack;
-    GtkTextIter iter;
 
     object = G_OBJECT_CLASS (moo_text_view_parent_class)->constructor (
         type, n_construct_properties, construct_param);
@@ -724,55 +792,18 @@ moo_text_view_constructor (GType                  type,
     {
         view->priv->buffer = GTK_TEXT_BUFFER (g_object_new (view->priv->buffer_type, (const char*) NULL));
         gtk_text_view_set_buffer (GTK_TEXT_VIEW (view), view->priv->buffer);
-        g_object_unref (view->priv->buffer);
     }
+
+    g_assert (view->priv->buffer == gtk_text_view_get_buffer (GTK_TEXT_VIEW (view)));
 
     view->priv->constructed = TRUE;
 
-    g_object_set (get_buffer (view),
+    g_object_set (view->priv->buffer,
                   "highlight-matching-brackets", view->priv->highlight_matching_brackets,
                   "highlight-mismatching-brackets", view->priv->highlight_mismatching_brackets,
                   NULL);
 
-    g_signal_connect_swapped (get_buffer (view), "changed",
-                              G_CALLBACK (buffer_changed), view);
-    g_signal_connect_swapped (get_buffer (view), "cursor_moved",
-                              G_CALLBACK (cursor_moved), view);
-    g_signal_connect_swapped (get_buffer (view), "selection-changed",
-                              G_CALLBACK (selection_changed), view);
-    g_signal_connect_swapped (get_buffer (view), "highlight-updated",
-                              G_CALLBACK (highlight_updated), view);
-    g_signal_connect_swapped (get_buffer (view), "notify::has-selection",
-                              G_CALLBACK (proxy_prop_notify), view);
-    g_signal_connect_swapped (get_buffer (view), "notify::has-text",
-                              G_CALLBACK (proxy_prop_notify), view);
-
-    undo_stack = _moo_text_buffer_get_undo_stack (get_moo_buffer (view));
-    g_signal_connect_swapped (undo_stack, "notify::can-undo",
-                              G_CALLBACK (proxy_notify_can_undo_redo), view);
-    g_signal_connect_swapped (undo_stack, "notify::can-redo",
-                              G_CALLBACK (proxy_notify_can_undo_redo), view);
-
-    g_signal_connect_data (get_buffer (view), "insert-text",
-                           G_CALLBACK (insert_text_cb), view,
-                           NULL, G_CONNECT_AFTER | G_CONNECT_SWAPPED);
-
-    g_signal_connect_swapped (get_buffer (view), "line-mark-added",
-                              G_CALLBACK (line_mark_added), view);
-    g_signal_connect_swapped (get_buffer (view), "line-mark-moved",
-                              G_CALLBACK (line_mark_moved), view);
-    g_signal_connect_swapped (get_buffer (view), "line-mark-deleted",
-                              G_CALLBACK (line_mark_deleted), view);
-    g_signal_connect_swapped (get_buffer (view), "fold-added",
-                              G_CALLBACK (fold_added), view);
-    g_signal_connect_swapped (get_buffer (view), "fold-deleted",
-                              G_CALLBACK (fold_deleted), view);
-    g_signal_connect_swapped (get_buffer (view), "fold-toggled",
-                              G_CALLBACK (fold_toggled), view);
-
-    gtk_text_buffer_get_start_iter (get_buffer (view), &iter);
-    view->priv->dnd_mark = gtk_text_buffer_create_mark (get_buffer (view), NULL, &iter, FALSE);
-    gtk_text_mark_set_visible (view->priv->dnd_mark, FALSE);
+    connect_buffer (view);
 
     target_list = gtk_target_list_new (text_view_target_table, G_N_ELEMENTS (text_view_target_table));
     gtk_target_list_add_text_targets (target_list, 0);
@@ -786,8 +817,15 @@ moo_text_view_constructor (GType                  type,
 static void
 moo_text_view_dispose (GObject *object)
 {
-    GSList *l;
     MooTextView *view = MOO_TEXT_VIEW (object);
+
+    disconnect_buffer (view);
+
+    if (view->priv->buffer)
+    {
+        g_object_unref (view->priv->buffer);
+        view->priv->buffer = NULL;
+    }
 
     if (view->priv->clipboard)
     {
@@ -801,16 +839,8 @@ moo_text_view_dispose (GObject *object)
         view->priv->indenter = NULL;
     }
 
-    for (l = view->priv->line_marks; l != NULL; l = l->next)
-    {
-        MooLineMark *mark = l->data;
-        _moo_line_mark_set_pretty (mark, FALSE);
-        g_signal_handlers_disconnect_by_func (mark, (gpointer) line_mark_changed, view);
-        g_object_unref (mark);
-    }
-
-    g_slist_free (view->priv->line_marks);
-    view->priv->line_marks = NULL;
+    while (view->priv->line_marks)
+        remove_line_mark (view, view->priv->line_marks->data);
 
     if (view->priv->style_scheme)
     {
@@ -1062,8 +1092,6 @@ moo_text_view_set_property (GObject        *object,
 
             gtk_text_view_set_buffer (GTK_TEXT_VIEW (view), buffer);
             view->priv->buffer = buffer;
-
-            g_object_unref (buffer);
             break;
 
         case PROP_INDENTER:
@@ -3425,17 +3453,36 @@ invalidate_line (MooTextView *view,
 
 
 static void
+add_line_mark (MooTextView *view,
+               MooLineMark *mark)
+{
+    view->priv->line_marks = g_slist_prepend (view->priv->line_marks,
+                                              g_object_ref (mark));
+    g_signal_connect_swapped (mark, "changed",
+                              G_CALLBACK (line_mark_changed), view);
+}
+
+static void
+remove_line_mark (MooTextView *view,
+                  MooLineMark *mark)
+{
+    if (g_slist_find (view->priv->line_marks, mark))
+    {
+        view->priv->line_marks = g_slist_remove (view->priv->line_marks, mark);
+        g_signal_handlers_disconnect_by_func (mark, (gpointer) line_mark_changed, view);
+        g_object_unref (mark);
+    }
+}
+
+
+static void
 line_mark_deleted (MooTextView *view,
                    MooLineMark *mark)
 {
     if (_moo_line_mark_get_pretty (mark))
-    {
-        _moo_line_mark_set_pretty (mark, FALSE);
-        view->priv->line_marks = g_slist_remove (view->priv->line_marks, mark);
-        g_signal_handlers_disconnect_by_func (mark, (gpointer) line_mark_changed, view);
-        g_object_unref (mark);
         gtk_widget_queue_draw (GTK_WIDGET (view));
-    }
+
+    remove_line_mark (view, mark);
 }
 
 
@@ -3463,14 +3510,12 @@ line_mark_added (MooTextView *view,
 {
     g_return_if_fail (!g_slist_find (view->priv->line_marks, mark));
 
+    add_line_mark (view, mark);
+
     if (!moo_line_mark_get_visible (mark))
         return;
 
     _moo_line_mark_set_pretty (mark, TRUE);
-    view->priv->line_marks = g_slist_prepend (view->priv->line_marks,
-                                              g_object_ref (mark));
-    g_signal_connect_swapped (mark, "changed",
-                              G_CALLBACK (line_mark_changed), view);
 
     if (GTK_WIDGET_REALIZED (view))
         _moo_line_mark_realize (mark, GTK_WIDGET (view));

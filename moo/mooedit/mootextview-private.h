@@ -184,14 +184,6 @@ struct MooTextViewPrivate {
     } dnd;
 
     /***********************************************************************/
-    /* Drag'n'drop from outside
-     */
-    gboolean drag_inside;
-    gboolean drag_drop;
-    GtkTargetList *targets;
-    GtkTextMark *dnd_mark;
-
-    /***********************************************************************/
     /* Children
      */
     GtkWidget *children[4];
