@@ -274,7 +274,8 @@ _moo_edit_closed (MooEdit *doc)
     _moo_edit_remove_untitled (doc);
     _moo_edit_instances = moo_edit_list_remove (_moo_edit_instances, doc);
 
-    moo_edit_view_array_clear (doc->priv->views);
+    while (!moo_edit_view_array_is_empty (doc->priv->views))
+        gtk_widget_destroy (GTK_WIDGET (doc->priv->views->elms[0]));
 
     if (doc->config)
     {
