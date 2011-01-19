@@ -131,7 +131,7 @@ moo_edit_action_set_file_filter (MooEditAction *action,
     _moo_edit_filter_free (action->priv->file_filter);
 
     if (string && string[0])
-        action->priv->file_filter = _moo_edit_filter_new (string);
+        action->priv->file_filter = _moo_edit_filter_new (string, MOO_EDIT_FILTER_ACTION);
     else
         action->priv->file_filter = NULL;
 

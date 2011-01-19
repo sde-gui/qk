@@ -4038,7 +4038,7 @@ moo_edit_window_set_action_filter (const char        *action_id,
     g_return_if_fail (type < N_ACTION_CHECKS);
 
     if (filter_string && filter_string[0])
-        filter = _moo_edit_filter_new (filter_string);
+        filter = _moo_edit_filter_new (filter_string, MOO_EDIT_FILTER_ACTION);
 
     if (filter)
         moo_edit_window_set_action_check (action_id, type,

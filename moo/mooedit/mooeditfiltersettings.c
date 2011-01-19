@@ -36,7 +36,8 @@ MOO_DEBUG_INIT(filters, FALSE)
 typedef enum {
     MOO_EDIT_FILTER_LANGS,
     MOO_EDIT_FILTER_GLOBS,
-    MOO_EDIT_FILTER_REGEX
+    MOO_EDIT_FILTER_REGEX,
+    MOO_EDIT_FILTER_INVALID
 } MooEditFilterType;
 
 struct MooEditFilter {
@@ -45,6 +46,7 @@ struct MooEditFilter {
         GSList *langs;
         GSList *globs;
         GRegex *regex;
+        char *string;
     } u;
 };
 
@@ -60,8 +62,15 @@ typedef struct {
 static FilterSettingsStore *settings_store;
 
 
-static char *filter_settings_store_get_setting (FilterSettingsStore *store,
-                                                MooEdit             *doc);
+static char             *filter_settings_store_get_setting  (FilterSettingsStore    *store,
+                                                             MooEdit                *doc);
+
+static MooEditFilter    *moo_edit_filter_new_langs          (const char             *string,
+                                                             GError                **error);
+static MooEditFilter    *moo_edit_filter_new_regex          (const char             *string,
+                                                             GError                **error);
+static MooEditFilter    *moo_edit_filter_new_globs          (const char             *string,
+                                                             GError                **error);
 
 static char *
 moo_edit_filter_get_string (MooEditFilter     *filter,
@@ -87,6 +96,8 @@ moo_edit_filter_get_string (MooEditFilter     *filter,
             case MOO_EDIT_FILTER_REGEX:
                 g_string_append (str, "regex:");
                 break;
+            case MOO_EDIT_FILTER_INVALID:
+                break;
         }
     }
 
@@ -104,34 +115,57 @@ moo_edit_filter_get_string (MooEditFilter     *filter,
         case MOO_EDIT_FILTER_REGEX:
             g_string_append (str, g_regex_get_pattern (filter->u.regex));
             break;
+        case MOO_EDIT_FILTER_INVALID:
+            g_string_append (str, filter->u.string);
+            break;
     }
 
     return g_string_free (str, FALSE);
 }
 
-static MooEditFilter *
-_moo_edit_filter_new_full (const char *string,
-                           gboolean    default_regex)
+MooEditFilter *
+_moo_edit_filter_new_full (const char         *string,
+                           MooEditFilterKind   kind,
+                           GError            **error)
 {
     g_return_val_if_fail (string && string[0], NULL);
 
     if (!strncmp (string, "langs:", strlen ("langs:")))
-        return _moo_edit_filter_new_langs (string + strlen ("langs:"));
+        return moo_edit_filter_new_langs (string + strlen ("langs:"), error);
     if (!strncmp (string, "globs:", strlen ("globs:")))
-        return _moo_edit_filter_new_globs (string + strlen ("globs:"));
+        return moo_edit_filter_new_globs (string + strlen ("globs:"), error);
     if (!strncmp (string, "regex:", strlen ("regex:")))
-        return _moo_edit_filter_new_regex (string + strlen ("regex:"));
+        return moo_edit_filter_new_regex (string + strlen ("regex:"), error);
 
-    if (default_regex)
-        return _moo_edit_filter_new_regex (string);
-    else
-        return _moo_edit_filter_new_globs (string);
+    switch (kind)
+    {
+        case MOO_EDIT_FILTER_CONFIG:
+            return moo_edit_filter_new_regex (string, error);
+        case MOO_EDIT_FILTER_ACTION:
+            return moo_edit_filter_new_globs (string, error);
+    }
+
+    g_return_val_if_reached (NULL);
 }
 
 MooEditFilter *
-_moo_edit_filter_new (const char *string)
+_moo_edit_filter_new (const char        *string,
+                      MooEditFilterKind  kind)
 {
-    return _moo_edit_filter_new_full (string, FALSE);
+    GError *error = NULL;
+    MooEditFilter *filter;
+
+    g_return_val_if_fail (string != NULL, NULL);
+
+    filter = _moo_edit_filter_new_full (string, kind, &error);
+
+    if (error)
+    {
+        g_warning ("could not parse filter '%s': %s", string, error->message);
+        g_error_free (error);
+    }
+
+    return filter;
 }
 
 static GSList *
@@ -160,12 +194,13 @@ _moo_edit_parse_langs (const char *string)
     return g_slist_reverse (list);
 }
 
-MooEditFilter *
-_moo_edit_filter_new_langs (const char *string)
+static MooEditFilter *
+moo_edit_filter_new_langs (const char  *string,
+                           GError     **error)
 {
     MooEditFilter *filt;
 
-    g_return_val_if_fail (string != NULL, NULL);
+    moo_return_error_if_fail_p (string != NULL);
 
     filt = g_new0 (MooEditFilter, 1);
     filt->type = MOO_EDIT_FILTER_LANGS;
@@ -174,28 +209,38 @@ _moo_edit_filter_new_langs (const char *string)
     return filt;
 }
 
-MooEditFilter *
-_moo_edit_filter_new_regex (const char *string)
+static MooEditFilter *
+moo_edit_regex_new_invalid (const char  *string,
+                            GError     **error)
+{
+    MooEditFilter *filt;
+
+    moo_return_error_if_fail_p (string != NULL);
+
+    filt = g_new0 (MooEditFilter, 1);
+    filt->type = MOO_EDIT_FILTER_INVALID;
+    filt->u.string = g_strdup (string);
+
+    return filt;
+}
+
+static MooEditFilter *
+moo_edit_filter_new_regex (const char  *string,
+                           GError     **error)
 {
     MooEditFilter *filt;
     GRegex *regex;
-    GError *error = NULL;
 
-    g_return_val_if_fail (string != NULL, NULL);
+    moo_return_error_if_fail_p (string != NULL);
 
     regex = g_regex_new (string, G_REGEX_OPTIMIZE
 #ifdef __WIN32__
                                 | G_REGEX_CASELESS
 #endif
-                         , 0, &error);
+                         , 0, error);
 
     if (!regex)
-    {
-        g_warning ("%s: invalid regex '%s': %s", G_STRFUNC,
-                   string, error->message);
-        g_error_free (NULL);
-        return NULL;
-    }
+        return moo_edit_regex_new_invalid (string, NULL);
 
     filt = g_new0 (MooEditFilter, 1);
     filt->type = MOO_EDIT_FILTER_REGEX;
@@ -230,18 +275,26 @@ parse_globs (const char *string)
     return g_slist_reverse (list);
 }
 
-MooEditFilter *
-_moo_edit_filter_new_globs (const char *string)
+static MooEditFilter *
+moo_edit_filter_new_globs (const char  *string,
+                           GError     **error)
 {
     MooEditFilter *filt;
 
-    g_return_val_if_fail (string != NULL, NULL);
+    moo_return_error_if_fail_p (string != NULL);
 
     filt = g_new0 (MooEditFilter, 1);
     filt->type = MOO_EDIT_FILTER_GLOBS;
     filt->u.globs = parse_globs (string);
 
     return filt;
+}
+
+gboolean
+_moo_edit_filter_valid (MooEditFilter *filter)
+{
+    g_return_val_if_fail (filter != NULL, FALSE);
+    return filter->type != MOO_EDIT_FILTER_INVALID;
 }
 
 void
@@ -259,6 +312,9 @@ _moo_edit_filter_free (MooEditFilter *filter)
             case MOO_EDIT_FILTER_REGEX:
                 if (filter->u.regex)
                     g_regex_unref (filter->u.regex);
+                break;
+            case MOO_EDIT_FILTER_INVALID:
+                g_free (filter->u.string);
                 break;
         }
 
@@ -334,6 +390,8 @@ _moo_edit_filter_match (MooEditFilter *filter,
             return moo_edit_filter_check_langs (filter->u.langs, doc);
         case MOO_EDIT_FILTER_REGEX:
             return moo_edit_filter_check_regex (filter->u.regex, doc);
+        case MOO_EDIT_FILTER_INVALID:
+            return FALSE;
     }
 
     g_return_val_if_reached (FALSE);
@@ -362,7 +420,7 @@ filter_setting_new (const char *filter,
     g_return_val_if_fail (config != NULL, NULL);
 
     setting = g_new0 (FilterSetting, 1);
-    setting->filter = _moo_edit_filter_new_full (filter, TRUE);
+    setting->filter = _moo_edit_filter_new (filter, MOO_EDIT_FILTER_CONFIG);
     setting->config = g_strdup (config);
 
     if (!setting->filter)

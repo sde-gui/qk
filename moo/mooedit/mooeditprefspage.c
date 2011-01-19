@@ -796,6 +796,8 @@ prefs_page_apply_lang_prefs (MooPrefsPage *page)
  */
 
 enum {
+    FILTER_COLUMN_INVALID,
+    FILTER_COLUMN_INVALID_TOOLTIP,
     FILTER_COLUMN_FILTER,
     FILTER_COLUMN_CONFIG,
     FILTER_NUM_COLUMNS
@@ -820,6 +822,65 @@ filter_store_get_modified (gpointer store)
            _moo_tree_helper_get_modified (g_object_get_data (store, "tree-helper"));
 }
 
+static gboolean
+check_filter (const char  *string,
+              char       **message)
+{
+    gboolean result;
+    MooEditFilter *filter;
+    GError *error = NULL;
+
+    if (message)
+        *message = NULL;
+
+    if (!string || !string[0])
+        return TRUE;
+
+    filter = _moo_edit_filter_new_full (string, MOO_EDIT_FILTER_CONFIG, &error);
+    g_return_val_if_fail (filter != NULL, FALSE);
+
+    result = _moo_edit_filter_valid (filter);
+
+    if (error && message)
+        *message = g_strdup (error->message);
+
+    if (error)
+        g_error_free (error);
+
+    _moo_edit_filter_free (filter);
+    return result;
+}
+
+static void
+check_filter_row (GtkListStore *store,
+                  GtkTreeIter  *iter)
+{
+    gboolean invalid;
+    char *filter = NULL;
+    char *message = NULL;
+
+    gtk_tree_model_get (GTK_TREE_MODEL (store), iter,
+                        FILTER_COLUMN_FILTER, &filter,
+                        -1);
+    g_return_if_fail (filter != NULL);
+
+    invalid = !check_filter (filter, &message);
+
+    if (invalid)
+        gtk_list_store_set (store, iter,
+                            FILTER_COLUMN_INVALID, TRUE,
+                            FILTER_COLUMN_INVALID_TOOLTIP, message,
+                            -1);
+    else
+        gtk_list_store_set (store, iter,
+                            FILTER_COLUMN_INVALID, FALSE,
+                            FILTER_COLUMN_INVALID_TOOLTIP, NULL,
+                            -1);
+
+    g_free (message);
+    g_free (filter);
+}
+
 static void
 populate_filter_settings_store (GtkListStore *store)
 {
@@ -832,14 +893,26 @@ populate_filter_settings_store (GtkListStore *store)
     while (l)
     {
         GtkTreeIter iter;
+        const char *filter;
+        const char *config;
+        gboolean valid;
+        char *message = NULL;
 
         g_return_if_fail (l->next != NULL);
 
+        filter = l->data;
+        config = l->next->data;
+        valid = check_filter (filter, &message);
+
         gtk_list_store_append (store, &iter);
         gtk_list_store_set (store, &iter,
-                            FILTER_COLUMN_FILTER, l->data,
-                            FILTER_COLUMN_CONFIG, l->next->data,
+                            FILTER_COLUMN_INVALID, !valid,
+                            FILTER_COLUMN_INVALID_TOOLTIP, message,
+                            FILTER_COLUMN_FILTER, filter,
+                            FILTER_COLUMN_CONFIG, config,
                             -1);
+
+        g_free (message);
 
         l = l->next->next;
     }
@@ -879,6 +952,7 @@ filter_cell_edited (GtkCellRendererText *cell,
     {
         gtk_list_store_set (store, &iter, column, text, -1);
         filter_store_set_modified (store, TRUE);
+        check_filter_row (store, &iter);
     }
 
     g_free (old_text);
@@ -887,17 +961,42 @@ filter_cell_edited (GtkCellRendererText *cell,
 
 
 static void
-create_filter_cell (GtkTreeView  *treeview,
-                    GtkListStore *store,
-                    const char   *title,
-                    int           column_id)
+filter_icon_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
+                       GtkCellRenderer *cell,
+                       GtkTreeModel    *model,
+                       GtkTreeIter     *iter)
+{
+    gboolean invalid;
+    gtk_tree_model_get (model, iter, FILTER_COLUMN_INVALID, &invalid, -1);
+    g_object_set (cell, "visible", invalid, NULL);
+}
+
+static void
+create_filter_column (GtkTreeView  *treeview,
+                      GtkListStore *store,
+                      const char   *title,
+                      int           column_id)
 {
     GtkTreeViewColumn *column;
     GtkCellRenderer *cell;
 
-    cell = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes (title, cell, "text", column_id, NULL);
+    column = gtk_tree_view_column_new ();
+    gtk_tree_view_column_set_title (column, title);
     gtk_tree_view_append_column (treeview, column);
+
+    if (column_id == FILTER_COLUMN_FILTER)
+    {
+        cell = gtk_cell_renderer_pixbuf_new ();
+        g_object_set (cell, "stock-id", GTK_STOCK_DIALOG_ERROR, NULL);
+        gtk_tree_view_column_pack_start (column, cell, FALSE);
+        gtk_tree_view_column_set_cell_data_func (column, cell,
+                                                 (GtkTreeCellDataFunc) filter_icon_data_func,
+                                                 NULL, NULL);
+    }
+
+    cell = gtk_cell_renderer_text_new ();
+    gtk_tree_view_column_pack_start (column, cell, TRUE);
+    gtk_tree_view_column_set_attributes (column, cell, "text", column_id, NULL);
 
     g_object_set (cell, "editable", TRUE, NULL);
     g_object_set_data (G_OBJECT (cell), "filter-store-column-id", GINT_TO_POINTER (column_id));
@@ -911,14 +1010,16 @@ filter_treeview_init (PrefsFiltersXml *gxml)
     GtkListStore *store;
     MooTreeHelper *helper;
 
-    store = gtk_list_store_new (FILTER_NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING);
+    store = gtk_list_store_new (FILTER_NUM_COLUMNS, G_TYPE_BOOLEAN, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
     populate_filter_settings_store (store);
     gtk_tree_view_set_model (gxml->filter_treeview, GTK_TREE_MODEL (store));
 
     /* Column label on File Filters prefs page */
-    create_filter_cell (gxml->filter_treeview, store, C_("filter-prefs-column", "Filter"), FILTER_COLUMN_FILTER);
+    create_filter_column (gxml->filter_treeview, store, C_("filter-prefs-column", "Filter"), FILTER_COLUMN_FILTER);
     /* Column label on File Filters prefs page */
-    create_filter_cell (gxml->filter_treeview, store, C_("filter-prefs-column", "Options"), FILTER_COLUMN_CONFIG);
+    create_filter_column (gxml->filter_treeview, store, C_("filter-prefs-column", "Options"), FILTER_COLUMN_CONFIG);
+
+    gtk_tree_view_set_tooltip_column (gxml->filter_treeview, FILTER_COLUMN_INVALID_TOOLTIP);
 
     helper = _moo_tree_helper_new (GTK_WIDGET (gxml->filter_treeview),
                                    GTK_WIDGET (gxml->new_filter_setting),

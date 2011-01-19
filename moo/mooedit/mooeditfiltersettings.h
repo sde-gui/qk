@@ -27,20 +27,27 @@ G_BEGIN_DECLS
 
 typedef struct MooEditFilter MooEditFilter;
 
-MooEditFilter  *_moo_edit_filter_new                    (const char     *string);
-MooEditFilter  *_moo_edit_filter_new_langs              (const char     *string);
-MooEditFilter  *_moo_edit_filter_new_regex              (const char     *string);
-MooEditFilter  *_moo_edit_filter_new_globs              (const char     *string);
-void            _moo_edit_filter_free                   (MooEditFilter  *filter);
-gboolean        _moo_edit_filter_match                  (MooEditFilter  *filter,
-                                                         MooEdit        *doc);
+typedef enum {
+    MOO_EDIT_FILTER_CONFIG,
+    MOO_EDIT_FILTER_ACTION
+} MooEditFilterKind;
+
+MooEditFilter  *_moo_edit_filter_new                    (const char         *string,
+                                                         MooEditFilterKind   kind);
+MooEditFilter  *_moo_edit_filter_new_full               (const char         *string,
+                                                         MooEditFilterKind   kind,
+                                                         GError            **error);
+gboolean        _moo_edit_filter_valid                  (MooEditFilter      *filter);
+void            _moo_edit_filter_free                   (MooEditFilter      *filter);
+gboolean        _moo_edit_filter_match                  (MooEditFilter      *filter,
+                                                         MooEdit            *doc);
 
 void            _moo_edit_filter_settings_load          (void);
 
 GSList         *_moo_edit_filter_settings_get_strings   (void);
-void            _moo_edit_filter_settings_set_strings   (GSList     *strings);
+void            _moo_edit_filter_settings_set_strings   (GSList             *strings);
 
-char           *_moo_edit_filter_settings_get_for_doc   (MooEdit        *doc);
+char           *_moo_edit_filter_settings_get_for_doc   (MooEdit            *doc);
 
 
 G_END_DECLS
