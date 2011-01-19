@@ -6,6 +6,7 @@
 #include "mooedit/mooeditview-priv.h"
 #include "mooedit/mooedit-impl.h"
 #include "mooedit/mooeditwindow-impl.h"
+#include "mooedit/mooedittab-impl.h"
 #include "mooedit/mooeditor-impl.h"
 #include "mooedit/mooeditbookmark.h"
 #include "mooedit/mooeditprefs.h"
@@ -137,8 +138,8 @@ moo_edit_view_focus_in (GtkWidget     *widget,
     if (GTK_WIDGET_CLASS (moo_edit_view_parent_class)->focus_in_event)
         retval = GTK_WIDGET_CLASS (moo_edit_view_parent_class)->focus_in_event (widget, event);
 
-    _moo_edit_set_focused_view (view->priv->doc, view);
-    _moo_edit_window_set_focused_view (moo_edit_view_get_window (view), view);
+    _moo_edit_set_active_view (view->priv->doc, view);
+    _moo_edit_tab_set_focused_view (moo_edit_view_get_tab (view), view);
 
     return retval;
 }

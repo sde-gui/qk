@@ -99,7 +99,7 @@ struct MooEditWindowPrivate {
 
     GtkWidget *doc_paned;
     MooNotebookArray *notebooks;
-    MooEditView *active_view;
+    MooEditTab *active_tab;
     guint save_params_idle;
 
     char *title_format;
@@ -2008,7 +2008,6 @@ move_tab_to_split_view (MooEditWindow *window,
     GtkWidget *label;
     MooEdit *doc;
     int n_pages1, n_pages2;
-    MooEditView *active_view;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT_TAB (tab));
@@ -2049,11 +2048,7 @@ move_tab_to_split_view (MooEditWindow *window,
 
     g_object_ref (tab);
 
-    active_view = window->priv->active_view;
-    window->priv->active_view = NULL;
-
-    if (!active_view || moo_edit_view_get_tab (active_view) != tab)
-        active_view = moo_edit_tab_get_active_view (tab);
+    window->priv->active_tab = NULL;
 
     gtk_container_remove (GTK_CONTAINER (old_nb), GTK_WIDGET (tab));
     label = create_tab_label (window, tab, doc);
@@ -2061,27 +2056,20 @@ move_tab_to_split_view (MooEditWindow *window,
     moo_notebook_insert_page (new_nb, GTK_WIDGET (tab), label,
                               moo_notebook_get_current_page (new_nb) + 1);
 
-    moo_edit_window_set_active_view (window, active_view);
+    moo_edit_window_set_active_view (window, moo_edit_tab_get_active_view (tab));
     edit_changed (window, doc);
 
     g_object_unref (tab);
 }
 
 void
-_moo_edit_window_set_focused_view (MooEditWindow *window,
-                                   MooEditView   *view)
+_moo_edit_window_set_active_tab (MooEditWindow *window,
+                                 MooEditTab    *tab)
 {
-    MooEditTab *tab;
-
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
-
-    tab = moo_edit_view_get_tab (view);
     g_return_if_fail (MOO_IS_EDIT_TAB (tab));
-
-    window->priv->active_view = view;
-
-    _moo_edit_tab_set_focused_view (tab, view);
+    g_return_if_fail (moo_edit_tab_get_window (tab) == window);
+    window->priv->active_tab = tab;
 }
 
 static void
@@ -2268,16 +2256,8 @@ get_active_notebook (MooEditWindow *window)
     else if (!GTK_WIDGET_VISIBLE (nb1))
         return nb2;
 
-    if (window->priv->active_view)
-    {
-        MooEditTab *tab = moo_edit_view_get_tab (window->priv->active_view);
-        if (moo_notebook_page_num (nb1, GTK_WIDGET (tab)) >= 0)
-            return nb1;
-        else if (moo_notebook_page_num (nb2, GTK_WIDGET (tab)) >= 0)
-            return nb2;
-        else
-            g_return_val_if_reached (nb1);
-    }
+    if (window->priv->active_tab)
+        return MOO_NOTEBOOK (gtk_widget_get_parent (GTK_WIDGET (window->priv->active_tab)));
 
     if (moo_notebook_get_n_pages (nb1) > 0)
         return nb1;
@@ -2548,12 +2528,22 @@ moo_edit_window_get_active_doc (MooEditWindow  *window)
 MooEditView *
 moo_edit_window_get_active_view (MooEditWindow *window)
 {
+    MooEditTab *tab = moo_edit_window_get_active_tab (window);
+    return tab ? moo_edit_tab_get_active_view (tab) : NULL;
+}
+
+/**
+ * moo_edit_window_get_active_tab:
+ */
+MooEditTab *
+moo_edit_window_get_active_tab (MooEditWindow *window)
+{
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
 
     if (moo_notebook_array_is_empty (window->priv->notebooks))
         return NULL;
 
-    if (!window->priv->active_view)
+    if (!window->priv->active_tab)
     {
         GtkWidget *tab;
         int page;
@@ -2567,20 +2557,10 @@ moo_edit_window_get_active_view (MooEditWindow *window)
             return NULL;
 
         tab = moo_notebook_get_nth_page (notebook, page);
-        window->priv->active_view = moo_edit_tab_get_active_view (MOO_EDIT_TAB (tab));
+        window->priv->active_tab = MOO_EDIT_TAB (tab);
     }
 
-    return window->priv->active_view;
-}
-
-/**
- * moo_edit_window_get_active_tab:
- */
-MooEditTab *
-moo_edit_window_get_active_tab (MooEditWindow *window)
-{
-    MooEditView *view = moo_edit_window_get_active_view (window);
-    return view ? moo_edit_view_get_tab (view) : NULL;
+    return window->priv->active_tab;
 }
 
 
@@ -2640,7 +2620,7 @@ moo_edit_window_set_active_view (MooEditWindow *window,
     page = get_view_page_num (window, view, &notebook);
     g_return_if_fail (page >= 0);
 
-    window->priv->active_view = view;
+    window->priv->active_tab = moo_edit_view_get_tab (view);
     moo_notebook_set_current_page (notebook, page);
     gtk_widget_grab_focus (GTK_WIDGET (view));
 }
@@ -2983,10 +2963,14 @@ _moo_edit_window_remove_doc (MooEditWindow *window,
     MooEditViewArray *views;
     gboolean had_focus = FALSE;
     MooNotebook *notebook = NULL;
+    MooEditTab *tab;
     guint i;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (doc));
+
+    tab = moo_edit_get_tab (doc);
+    g_return_if_fail (MOO_IS_EDIT_TAB (tab));
 
     views = moo_edit_get_views (doc);
     g_return_if_fail (moo_edit_view_array_get_size (views) > 0);
@@ -2994,13 +2978,12 @@ _moo_edit_window_remove_doc (MooEditWindow *window,
     page = get_view_page_num (window, views->elms[0], &notebook);
     g_return_if_fail (notebook != NULL && page >= 0);
 
+    if (tab == window->priv->active_tab)
+        window->priv->active_tab = NULL;
+
     for (i = 0; i < views->n_elms; ++i)
     {
         MooEditView *view = views->elms[i];
-
-        if (view == window->priv->active_view)
-            window->priv->active_view = NULL;
-
         had_focus = had_focus || GTK_WIDGET_HAS_FOCUS (view);
     }
 

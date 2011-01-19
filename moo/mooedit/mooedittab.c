@@ -4,6 +4,7 @@
 
 #include "mooedittab-impl.h"
 #include "mooeditview-impl.h"
+#include "mooeditwindow-impl.h"
 #include "mooedit-impl.h"
 #include <mooutils/moocompat.h>
 
@@ -176,6 +177,7 @@ _moo_edit_tab_set_focused_view (MooEditTab  *tab,
     g_return_if_fail (MOO_IS_EDIT_VIEW (view));
     g_return_if_fail (moo_edit_view_get_tab (view) == tab);
     tab->active_view = view;
+    _moo_edit_window_set_active_tab (moo_edit_tab_get_window (tab), tab);
 }
 
 MooEditWindow *

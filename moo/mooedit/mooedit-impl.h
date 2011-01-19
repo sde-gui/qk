@@ -28,11 +28,11 @@ G_BEGIN_DECLS
 
 extern MooEditList *_moo_edit_instances;
 
-void             _moo_edit_set_focused_view         (MooEdit        *doc,
-                                                     MooEditView    *view);
 void             _moo_edit_add_view                 (MooEdit        *doc,
                                                      MooEditView    *view);
 void             _moo_edit_remove_view              (MooEdit        *doc,
+                                                     MooEditView    *view);
+void             _moo_edit_set_active_view          (MooEdit        *doc,
                                                      MooEditView    *view);
 
 gboolean         _moo_edit_is_busy                  (MooEdit        *doc);

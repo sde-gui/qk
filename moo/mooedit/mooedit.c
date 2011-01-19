@@ -321,13 +321,13 @@ moo_edit_dispose (GObject *object)
 
 
 void
-_moo_edit_set_focused_view (MooEdit     *doc,
-                            MooEditView *view)
+_moo_edit_set_active_view (MooEdit     *doc,
+                           MooEditView *view)
 {
     g_return_if_fail (MOO_IS_EDIT (doc));
     g_return_if_fail (MOO_IS_EDIT_VIEW (view));
 
-    g_assert (moo_edit_view_array_find (doc->priv->views, view) >= 0);
+    g_return_if_fail (moo_edit_view_array_find (doc->priv->views, view) >= 0);
 
     doc->priv->active_view = view;
 }
