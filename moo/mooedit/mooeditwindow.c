@@ -167,8 +167,8 @@ static MooEdit      *get_notebook_active_doc            (MooNotebook        *not
 static void          save_doc_paned_config              (MooEditWindow      *window);
 static void          show_notebook                      (MooEditWindow      *window,
                                                          MooNotebook        *notebook);
-static void          move_doc_to_split_view             (MooEditWindow      *window,
-                                                         MooEditView        *view);
+static void          move_tab_to_split_view             (MooEditWindow      *window,
+                                                         MooEditTab         *tab);
 static gboolean      can_move_to_split_view             (MooEditWindow      *window);
 static gboolean      both_notebooks_visible             (MooEditWindow      *window);
 
@@ -1588,7 +1588,7 @@ action_focus_doc (MooEditWindow *window)
 static void
 action_move_to_split_view (MooEditWindow *window)
 {
-    move_doc_to_split_view (window, ACTIVE_VIEW (window));
+    move_tab_to_split_view (window, ACTIVE_TAB (window));
 }
 
 
@@ -1991,7 +1991,7 @@ move_to_split_view_activated (GtkWidget     *item,
                               MooEditWindow *window)
 {
     MooEditView *view = g_object_get_data (G_OBJECT (item), "moo-edit-view");
-    move_doc_to_split_view (window, view);
+    move_tab_to_split_view (window, moo_edit_view_get_tab (view));
 }
 
 
@@ -2007,24 +2007,24 @@ can_move_to_split_view (MooEditWindow *window)
 }
 
 static void
-move_doc_to_split_view (MooEditWindow *window,
-                        MooEditView   *view)
+move_tab_to_split_view (MooEditWindow *window,
+                        MooEditTab    *tab)
 {
     MooNotebook *nb1;
     MooNotebook *nb2;
-    int old_page;
     MooNotebook *old_nb, *new_nb;
-    MooEditTab *tab;
     GtkWidget *label;
     MooEdit *doc;
     int n_pages1, n_pages2;
+    MooEditView *active_view;
 
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
+    g_return_if_fail (MOO_IS_EDIT_TAB (tab));
 
-    doc = moo_edit_view_get_doc (view);
-    old_page = get_view_page_num (window, view, &old_nb);
-    g_return_if_fail (old_page >= 0);
+    doc = moo_edit_tab_get_doc (tab);
+    old_nb = MOO_NOTEBOOK (gtk_widget_get_parent (GTK_WIDGET (tab)));
+    g_assert (MOO_IS_NOTEBOOK (old_nb) &&
+              gtk_widget_get_toplevel (GTK_WIDGET (old_nb)) == GTK_WIDGET (window));
 
     nb1 = get_notebook (window, 0);
     nb2 = get_notebook (window, 1);
@@ -2055,11 +2055,13 @@ move_doc_to_split_view (MooEditWindow *window,
     if (n_pages2)
         show_notebook (window, nb2);
 
-    tab = moo_edit_view_get_tab (view);
     g_object_ref (tab);
 
-    if (window->priv->active_view == view)
-        window->priv->active_view = NULL;
+    active_view = window->priv->active_view;
+    window->priv->active_view = NULL;
+
+    if (!active_view || moo_edit_view_get_tab (active_view) != tab)
+        active_view = moo_edit_tab_get_active_view (tab);
 
     gtk_container_remove (GTK_CONTAINER (old_nb), GTK_WIDGET (tab));
     label = create_tab_label (window, tab, doc);
@@ -2067,7 +2069,7 @@ move_doc_to_split_view (MooEditWindow *window,
     moo_notebook_insert_page (new_nb, GTK_WIDGET (tab), label,
                               moo_notebook_get_current_page (new_nb) + 1);
 
-    moo_edit_window_set_active_view (window, view);
+    moo_edit_window_set_active_view (window, active_view);
     edit_changed (window, doc);
 
     g_object_unref (tab);
@@ -3207,14 +3209,14 @@ tab_icon_drag_data_get (GtkWidget      *evbox,
                         G_GNUC_UNUSED MooEditWindow  *window)
 {
     MooEdit *doc = g_object_get_data (G_OBJECT (evbox), "moo-edit");
-    MooEditView *view = g_object_get_data (G_OBJECT (evbox), "moo-edit-view");
+    MooEditTab *tab = g_object_get_data (G_OBJECT (evbox), "moo-edit-tab");
 
     g_return_if_fail (MOO_IS_EDIT (doc));
-    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
+    g_return_if_fail (MOO_IS_EDIT_TAB (tab));
 
     if (info == TARGET_MOO_EDIT_TAB)
     {
-        moo_selection_data_set_pointer (data, MOO_EDIT_TAB_ATOM, view);
+        moo_selection_data_set_pointer (data, MOO_EDIT_TAB_ATOM, tab);
     }
     else if (info == TARGET_URI_LIST)
     {
@@ -4517,27 +4519,29 @@ notebook_drag_data_recv (GtkWidget          *widget,
         if (data->target == MOO_EDIT_TAB_ATOM)
         {
             GtkWidget *toplevel;
-            MooNotebook *src_notebook = NULL;
+            GtkWidget *src_notebook = NULL;
             MooEdit *doc;
-            MooEditView *view;
+            MooEditTab *tab;
 
-            view = moo_selection_data_get_pointer (data, MOO_EDIT_TAB_ATOM);
-            doc = view ? moo_edit_view_get_doc (view) : NULL;
+            tab = moo_selection_data_get_pointer (data, MOO_EDIT_TAB_ATOM);
+            doc = tab ? moo_edit_tab_get_doc (tab) : NULL;
 
             if (!doc)
                 goto out;
 
-            toplevel = gtk_widget_get_toplevel (GTK_WIDGET (view));
+            toplevel = gtk_widget_get_toplevel (GTK_WIDGET (tab));
 
             if (toplevel == GTK_WIDGET (window))
-                get_view_page_num (window, view, &src_notebook);
+                src_notebook = gtk_widget_get_parent (GTK_WIDGET (tab));
+
+            g_assert (!src_notebook || MOO_IS_NOTEBOOK (src_notebook));
 
             if (toplevel != GTK_WIDGET (window))
                 _moo_editor_move_doc (window->priv->editor, doc, window,
                                       get_notebook_active_view (MOO_NOTEBOOK (widget)),
                                       TRUE);
-            else if (src_notebook != MOO_NOTEBOOK (widget))
-                move_doc_to_split_view (window, view);
+            else if (src_notebook != widget)
+                move_tab_to_split_view (window, tab);
 
             goto out;
         }
@@ -4598,25 +4602,26 @@ notebook_drag_data_recv (GtkWidget          *widget,
         if (info == TARGET_MOO_EDIT_TAB)
         {
             GtkWidget *toplevel;
-            MooEditView *view;
+            MooEditTab *tab;
             gboolean can_move = TRUE;
 
-            view = moo_selection_data_get_pointer (data, MOO_EDIT_TAB_ATOM);
+            tab = moo_selection_data_get_pointer (data, MOO_EDIT_TAB_ATOM);
 
-            if (!view)
+            if (!tab)
             {
                 g_critical ("oops");
                 gdk_drag_status (context, 0, time);
                 return;
             }
 
-            toplevel = gtk_widget_get_toplevel (GTK_WIDGET (view));
+            toplevel = gtk_widget_get_toplevel (GTK_WIDGET (tab));
 
             if (toplevel == GTK_WIDGET (window))
             {
-                MooNotebook *src_notebook = NULL;
-                get_view_page_num (window, view, &src_notebook);
-                can_move = src_notebook != MOO_NOTEBOOK (widget);
+                GtkWidget *src_notebook = NULL;
+                src_notebook = gtk_widget_get_parent (GTK_WIDGET (tab));
+                g_assert (MOO_IS_NOTEBOOK (widget));
+                can_move = src_notebook != widget;
             }
 
             if (!can_move)
