@@ -50,6 +50,8 @@ source_files = \
     ../moo/mooedit/mooedit-private.h\
     ../moo/mooedit/mooedit-script.c\
     ../moo/mooedit/mooedit-script.h\
+    ../moo/mooedit/mooedittab.c\
+    ../moo/mooedit/mooedittab.h\
     ../moo/mooedit/mooedittypes.h\
     ../moo/mooedit/mooeditview.c\
     ../moo/mooedit/mooeditview.h\

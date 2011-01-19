@@ -30,6 +30,7 @@
 #include "mooedit/mootextbuffer.h"
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooeditor-impl.h"
+#include "mooedit/mooedittab-impl.h"
 #include "mooedit/mooeditwindow-impl.h"
 #include "mooedit/moolangmgr.h"
 #include "marshals.h"
