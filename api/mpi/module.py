@@ -142,6 +142,11 @@ class VMethod(_FunctionBase):
         _FunctionBase.__init__(self)
         self.c_name = "fake"
 
+class Signal(_FunctionBase):
+    def __init__(self):
+        _FunctionBase.__init__(self)
+        self.c_name = "fake"
+
 class Type(_XmlObject):
     def __init__(self):
         _XmlObject.__init__(self)
@@ -233,8 +238,10 @@ class Class(InstanceType):
         InstanceType.__init__(self)
         self.parent = None
         self.vmethods = []
+        self.signals = []
         self.constructable = None
         self.__vmethod_hash = {}
+        self.__signal_hash = {}
 
     def _parse_attribute(self, attr, value):
         if attr in ('parent'):
@@ -251,6 +258,11 @@ class Class(InstanceType):
             assert not meth.name in self.__vmethod_hash
             self.__vmethod_hash[meth.name] = meth
             self.vmethods.append(meth)
+        elif elm.tag == 'signal':
+            meth = Signal.from_xml(elm, self)
+            assert not meth.name in self.__signal_hash
+            self.__signal_hash[meth.name] = meth
+            self.signals.append(meth)
         else:
             InstanceType._parse_xml_element(self, elm)
 
@@ -324,6 +336,9 @@ class Module(object):
             self.__finish_parsing_method(meth, typ)
         if hasattr(typ, 'vmethods'):
             for meth in typ.vmethods:
+                self.__finish_parsing_method(meth, typ)
+        if hasattr(typ, 'signals'):
+            for meth in typ.signals:
                 self.__finish_parsing_method(meth, typ)
 
     def __finish_parsing(self):

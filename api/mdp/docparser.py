@@ -145,11 +145,19 @@ class Flags(Symbol):
     def __init__(self, name, annotations, docs, block):
         Symbol.__init__(self, name, annotations, docs, block)
 
-class Function(Symbol):
+class FunctionBase(Symbol):
     def __init__(self, name, annotations, params, retval, docs, block):
         Symbol.__init__(self, name, annotations, docs, block)
         self.params = params
         self.retval = retval
+
+class Signal(FunctionBase):
+    def __init__(self, name, annotations, params, retval, docs, block):
+        FunctionBase.__init__(self, name, annotations, params, retval, docs, block)
+
+class Function(FunctionBase):
+    def __init__(self, name, annotations, params, retval, docs, block):
+        FunctionBase.__init__(self, name, annotations, params, retval, docs, block)
 
 class VMethod(Function):
     def __init__(self, name, annotations, params, retval, docs, block):
@@ -177,9 +185,11 @@ class Parser(object):
         self.classes = []
         self.enums = []
         self.functions = []
+        self.signals = []
         self.vmethods = []
         self.__classes_dict = {}
         self.__functions_dict = {}
+        self.__signal_dict = {}
         self.__vmethods_dict = {}
 
     def __split_block(self, block):
@@ -280,17 +290,29 @@ class Parser(object):
             else:
                 raise ParseError('unknown attribute %s' % (attr[0],), block)
 
-        if ':' in db.symbol:
-            raise ParseError('bad function name %s' % (db.symbol,), block)
+        if '::' in db.symbol:
+            What = Signal
+            symbol_dict = self.__signal_dict
+            symbol_list = self.signals
+        elif ':' in db.symbol:
+            What = Property
+            symbol_dict = self.__prop_dict
+            symbol_list = self.properties
+        else:
+            What = Function
+            symbol_dict = self.__functions_dict
+            symbol_list = self.functions
 
-        func = Function(db.symbol, db.annotations, params, retval, db.docs, block)
+        db.symbol = db.symbol.replace('-', '_')
+
+        func = What(db.symbol, db.annotations, params, retval, db.docs, block)
         func.summary = db.summary
         if DEBUG:
             print 'func.name:', func.name
-        if func.name in self.__functions_dict:
-            raise ParseError('duplicated function %s' % (func.name,), block)
-        self.__functions_dict[func.name] = func
-        self.functions.append(func)
+        if func.name in symbol_dict:
+            raise ParseError('duplicated symbol %s' % (func.name,), block)
+        symbol_dict[func.name] = func
+        symbol_list.append(func)
 
     def __parse_class(self, block):
         db = DoxBlock(block)
@@ -443,16 +465,19 @@ class Parser(object):
         while 1:
             pos = string.find(buf, '/*', lastpos)
             if pos >= 0:
-                if buf[pos:pos+len('/**vtable:')] != '/**vtable:':
+                if buf[pos:pos+len('/**vtable:')] == '/**vtable:':
+                    parts.append(buf[lastpos:pos+len('/**vtable:')])
+                    lastpos = pos + len('/**vtable:')
+                elif buf[pos:pos+len('/**signal:')] == '/**signal:':
+                    parts.append(buf[lastpos:pos+len('/**signal:')])
+                    lastpos = pos + len('/**signal:')
+                else:
                     parts.append(buf[lastpos:pos])
                     pos = string.find(buf, '*/', pos)
                     if pos >= 0:
                         lastpos = pos + 2
                     else:
                         break
-                else:
-                    parts.append(buf[lastpos:pos+len('/**vtable:')])
-                    lastpos = pos + len('/**vtable:')
             else:
                 parts.append(buf[lastpos:])
                 break
@@ -530,7 +555,7 @@ class Parser(object):
 
     def __read_declarations_in_buf(self, buf, filename):
         vproto_pat=re.compile(r"""
-        /\*\*\s*vtable:(?P<vtable>[\w\d_]+)\s*\*\*/\s*
+        /\*\*\s*(?P<what>(vtable|signal)):(?P<vtable>[\w\d_]+)\s*\*\*/\s*
         (?P<ret>(-|\w|\&|\*)+\s*)  # return type
         \s+                   # skip whitespace
         \(\s*\*\s*(?P<vfunc>\w+)\s*\)
@@ -557,6 +582,7 @@ class Parser(object):
 
             fname = None
             vfname = None
+            is_signal = False
             m = proto_pat.match(p)
             if m is None:
                 if DEBUG:
@@ -572,9 +598,11 @@ class Parser(object):
                     continue
                 else:
                     vfname = m.group('vfunc')
+                    if m.group('what') == 'signal':
+                        is_signal = True
                     if DEBUG:
                         print 'proto_pat matched', repr(m.group(0))
-                        print '+++ vfname', vfname
+                        print '+++ ', ('vfunc', 'signal')[is_signal], vfname
             else:
                 if DEBUG:
                     print 'proto_pat matched', repr(m.group(0))
@@ -588,12 +616,23 @@ class Parser(object):
                     continue
                 if DEBUG:
                     print 'match:|%s|' % fname
-            else:
-                func = self.__vmethods_dict.get(vfname)
+            elif not is_signal:
+                full_name = '%s::%s' % (m.group('vtable'), m.group('vfunc'))
+                func = self.__vmethods_dict.get(full_name)
                 if func is None:
-                    func = VMethod('virtual:%s:%s' % (m.group('vtable'), m.group('vfunc')), None, None, None, None, None)
-                    self.__vmethods_dict[func.name] = func
+                    func = VMethod(full_name, None, None, None, None, None)
+                    self.__vmethods_dict[full_name] = func
                     self.vmethods.append(func)
+                if DEBUG:
+                    print 'match:|%s|' % func.name
+            else:
+                full_name = '%s::%s' % (m.group('vtable'), m.group('vfunc'))
+                func = self.__signal_dict.get(full_name)
+                print func
+                if func is None:
+                    func = Signal(full_name, None, None, None, None, None)
+                    self.__signal_dict[full_name] = func
+                    self.signals.append(func)
                 if DEBUG:
                     print 'match:|%s|' % func.name
 

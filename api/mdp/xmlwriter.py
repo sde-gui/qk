@@ -119,6 +119,8 @@ class Writer(object):
             self.__write_function(cls.constructor, 'constructor')
         for meth in sorted(cls.static_methods, lambda x, y: cmp(x.name, y.name)):
             self.__write_function(meth, 'static-method')
+        for meth in sorted(cls.signals, lambda x, y: cmp(x.name, y.name)):
+            self.__write_function(meth, 'signal')
         for meth in sorted(cls.vmethods, lambda x, y: cmp(x.name, y.name)):
             self.__write_function(meth, 'virtual')
         for meth in sorted(cls.methods, lambda x, y: cmp(x.name, y.name)):
@@ -153,8 +155,11 @@ class Writer(object):
         self.__end_tag(tag)
 
     def __write_function(self, func, tag):
-        dic = dict(name=func.name)
-        if tag != 'virtual':
+        name=func.name
+        if tag == 'signal':
+            name = name.replace('_', '-')
+        dic = dict(name=name)
+        if tag != 'virtual' and tag != 'signal':
             dic['c_name'] = func.c_name
         for k in func.annotations:
             dic[k] = func.annotations[k]

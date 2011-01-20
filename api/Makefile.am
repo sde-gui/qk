@@ -22,7 +22,6 @@ gendocs_files =			\
 	gendocbook.py		\
 	mpi/__init__.py		\
 	mpi/module.py		\
-	mpi/texiwriter.py	\
 	mpi/docbookwriter.py
 
 EXTRA_DIST =			\

@@ -14,7 +14,7 @@ def read_files(files, opts):
     p = Parser()
     p.read_files(files)
     mod = Module('Moo' if not opts.module else opts.module)
-    mod.init_from_dox(p.classes + p.enums + p.functions + p.vmethods)
+    mod.init_from_dox(p.classes + p.enums + p.functions + p.vmethods + p.signals)
     return mod
 
 def parse_args():

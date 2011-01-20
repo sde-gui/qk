@@ -86,6 +86,7 @@ class Class(_InstanceType):
         _InstanceType.__init__(self, name, short_name, gtype_id, docs)
         self.parent = parent
         self.vmethods = []
+        self.signals = []
 
 class Boxed(_InstanceType):
     def __init__(self, name, short_name, gtype_id, docs):
@@ -134,6 +135,11 @@ class VMethod(FunctionBase):
         FunctionBase.__init__(self, name, name, params, retval, docs)
         self.cls = cls
 
+class Signal(FunctionBase):
+    def __init__(self, name, cls, params, retval, docs):
+        FunctionBase.__init__(self, name, name, params, retval, docs)
+        self.cls = cls
+
 class ParamBase(object):
     def __init__(self, typ, docs):
         object.__init__(self)
@@ -175,6 +181,7 @@ class Module(object):
         self.__methods = {}
         self.__constructors = {}
         self.__vmethods = {}
+        self.__signals = {}
         self.types = {}
         self.enums = []
 
@@ -376,8 +383,7 @@ class Module(object):
         return param
 
     def __add_vmethod(self, pfunc):
-        _, cls, name = pfunc.name.split(':')
-        assert _ == 'virtual'
+        cls, name = pfunc.name.split('::')
         params = []
         retval = None
         docs = pfunc.docs
@@ -398,6 +404,29 @@ class Module(object):
             this_class_methods = []
             self.__vmethods[cls] = this_class_methods
         this_class_methods.append(meth)
+
+    def __add_signal(self, pfunc):
+        cls, name = pfunc.name.split('::')
+        params = []
+        retval = None
+        docs = pfunc.docs
+        if pfunc.annotations:
+            for a in pfunc.annotations:
+                raise RuntimeError("unknown annotation '%s' in function %s" % (a, name))
+
+        if pfunc.params:
+            for p in pfunc.params:
+                params.append(self.__parse_param(p))
+
+        if pfunc.retval:
+            retval = self.__parse_retval(pfunc.retval)
+
+        meth = Signal(name, cls, params[1:], retval, docs)
+        this_class_signals = self.__signals.get(cls)
+        if not this_class_signals:
+            this_class_signals = []
+            self.__signals[cls] = this_class_signals
+        this_class_signals.append(meth)
 
     def __add_function(self, pfunc):
         name = pfunc.name
@@ -489,6 +518,8 @@ class Module(object):
                 self.__add_flags(b)
             elif isinstance(b, dparser.VMethod):
                 self.__add_vmethod(b)
+            elif isinstance(b, dparser.Signal):
+                self.__add_signal(b)
             elif isinstance(b, dparser.Function):
                 self.__add_function(b)
             else:
@@ -534,6 +565,16 @@ class Module(object):
                 for m in methods:
                     m.cls = cls
                 cls.vmethods += methods
+
+        for cls in self.__signals:
+            signals = self.__signals[cls]
+            if not cls in instance_types:
+                raise RuntimeError('Signals of unknown class %s' % cls)
+            else:
+                cls = instance_types[cls]
+                for s in signals:
+                    s.cls = cls
+                cls.signals += signals
 
         def format_func(func):
             if func.retval and func.retval.type:

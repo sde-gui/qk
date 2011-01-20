@@ -197,6 +197,25 @@ moo_editor_class_init (MooEditorClass *klass)
                           MOO_TYPE_EDIT_WINDOW,
                           G_TYPE_BOOLEAN);
 
+    /**
+     * MooEditor::before-save:
+     *
+     * @editor: the object which received the signal
+     * @doc: the document which is about to be saved on disk
+     * @file: the #GFile object which represents saved file
+     *
+     * This signal is emitted when the document is going to be saved on disk.
+     * Callbacks may modify document content. Callbacks should return
+     * #MOO_EDIT_SAVE_RESPONSE_CANCEL if document should not be saved, and
+     * #MOO_EDIT_SAVE_RESPONSE_CONTINUE otherwise.
+     *
+     * For example, if before saving the file must be checked out from a version
+     * control system, a callback can do that and return #MOO_EDIT_SAVE_RESPONSE_CANCEL
+     * if check out failed.
+     *
+     * Returns: #MOO_EDIT_SAVE_RESPONSE_CANCEL to cancel saving,
+     * #MOO_EDIT_SAVE_RESPONSE_CONTINUE otherwise.
+     **/
     signals[BEFORE_SAVE] =
             g_signal_new ("before-save",
                           G_OBJECT_CLASS_TYPE (klass),
@@ -208,6 +227,16 @@ moo_editor_class_init (MooEditorClass *klass)
                           MOO_TYPE_EDIT,
                           G_TYPE_FILE);
 
+    /**
+     * MooEditor::after-save:
+     *
+     * @editor: the object which received the signal
+     * @doc: the document which was saved on disk
+     *
+     * This signal is emitted after the document has been successfully saved on disk.
+     * Callbacks must not modify document content because it may be closed immediately
+     * after this signal is emitted and the changes will be lost.
+     **/
     signals[AFTER_SAVE] =
             g_signal_new ("after-save",
                           G_OBJECT_CLASS_TYPE (klass),

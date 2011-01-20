@@ -243,6 +243,8 @@ class Writer(object):
         if isinstance(cls, Class):
             if cls.vmethods:
                 implement_me('virtual methods of %s' % cls.name)
+            if cls.signals:
+                implement_me('signals of %s' % cls.name)
         for meth in cls.methods:
             self.__write_function(meth, cls)
 
