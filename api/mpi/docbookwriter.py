@@ -47,6 +47,9 @@ class Writer(object):
 
         self.section_suffix = ' (%s)' % self.mode.capitalize()
 
+    def __format_symbol_ref(self, symbol):
+        return symbol
+
     def __string_to_bool(self, s):
         if s == '0':
             return False
@@ -75,7 +78,6 @@ class Writer(object):
     def __format_doc(self, doc):
         text = doc.text
         text = re.sub(r'@([\w\d_]+)(?!\{)', r'<parameter>\1</parameter>', text)
-        text = re.sub(r'%method{([\w\d_]+(\(\))?)}', r'<function>\1</function>', text)
         text = re.sub(r'%NULL\b', '<constant>%s</constant>' % self.constants['NULL'], text)
         text = re.sub(r'%TRUE\b', '<constant>%s</constant>' % self.constants['TRUE'], text)
         text = re.sub(r'%FALSE\b', '<constant>%s</constant>' % self.constants['FALSE'], text)
@@ -84,6 +86,10 @@ class Writer(object):
             return '<function><link linkend="%(mode)s.%(func_id)s" endterm="%(mode)s.%(func_id)s.title"></link></function>' % \
                 dict(func_id=m.group(1), mode=self.mode)
         text = re.sub(r'([\w\d_.]+)\(\)', repl_func, text)
+
+        def repl_func(m):
+            return self.__format_symbol_ref(m.group(1))
+        text = re.sub(r'#([\w\d_]+)', repl_func, text)
 
         assert not re.search(r'NULL|TRUE|FALSE', text)
         return text
@@ -118,33 +124,37 @@ class Writer(object):
 
         if isinstance(func, Constructor):
             if self.mode == 'python':
-                func_title = cls.short_name
+                func_title = cls.short_name + '()'
                 func_name = cls.short_name
-                func_id = '%s.%s' % (cls.short_name, cls.short_name)
             elif self.mode == 'lua':
-                func_title = 'new'
+                func_title = 'new' + '()'
                 func_name = '%s.new' % cls.short_name
-                func_id = func_name
+            else:
+                oops()
+        elif isinstance(func, Signal):
+            if self.mode == 'python':
+                func_title = 'signal ' + func.name
+                func_name = func.name
+            elif self.mode == 'lua':
+                func_title = 'signal ' + func.name
+                func_name = func.name
             else:
                 oops()
         elif cls is not None:
             if self.mode in ('python', 'lua'):
-                func_title = func.name
+                func_title = func.name + '()'
                 func_name = '%s.%s' % (self.__get_obj_name(cls), func.name) \
                                 if not isinstance(func, StaticMethod) \
                                 else '%s.%s' % (cls.short_name, func.name)
-                func_id = '%s.%s' % (cls.short_name, func.name)
             else:
                 oops()
         else:
             if self.mode == 'python':
-                func_title = func.name
+                func_title = func.name + '()'
                 func_name = 'moo.%s' % func.name
-                func_id = func_name
             elif self.mode == 'lua':
-                func_title = func.name
+                func_title = func.name + '()'
                 func_name = 'medit.%s' % func.name
-                func_id = func_name
             else:
                 oops()
 
@@ -153,12 +163,12 @@ class Writer(object):
         if func.summary:
             oops(func_id)
 
-        func_id = func.c_name
+        func_id = func.symbol_id()
         mode = self.mode
 
         self.out.write("""\
 <sect2 id="%(mode)s.%(func_id)s">
-<title id="%(mode)s.%(func_id)s.title">%(func_title)s()</title>
+<title id="%(mode)s.%(func_id)s.title">%(func_title)s</title>
 <programlisting>%(func_name)s(%(params_string)s)</programlisting>
 """ % locals())
 
@@ -210,10 +220,17 @@ class Writer(object):
                 if self.__check_bind_ann(meth):
                     do_write = True
                     break
-            for meth in cls.static_methods:
-                if self.__check_bind_ann(meth):
-                    do_write = True
-                    break
+            if not do_write:
+                for meth in cls.static_methods:
+                    if self.__check_bind_ann(meth):
+                        do_write = True
+                        break
+            if not do_write and hasattr(cls, 'signals'):
+                for meth in cls.signals:
+                    if self.__check_bind_ann(meth):
+                        do_write = True
+                        break
+
         if not do_write:
             return
 
@@ -234,6 +251,9 @@ class Writer(object):
         if cls.doc:
             self.out.write('<para>%s</para>\n' % self.__format_doc(cls.doc))
 
+        if hasattr(cls, 'signals') and cls.signals:
+            for signal in cls.signals:
+                self.__write_function(signal, cls)
         if cls.constructor is not None:
             self.__write_function(cls.constructor, cls)
         if hasattr(cls, 'constructable') and cls.constructable:
@@ -243,8 +263,6 @@ class Writer(object):
         if isinstance(cls, Class):
             if cls.vmethods:
                 implement_me('virtual methods of %s' % cls.name)
-            if cls.signals:
-                implement_me('signals of %s' % cls.name)
         for meth in cls.methods:
             self.__write_function(meth, cls)
 

@@ -125,27 +125,53 @@ class Function(_FunctionBase):
     def __init__(self):
         _FunctionBase.__init__(self)
 
-class Constructor(_FunctionBase):
-    def __init__(self):
-        _FunctionBase.__init__(self)
+    def symbol_id(self):
+        return self.c_name
 
-class StaticMethod(_FunctionBase):
+class _MethodBase(_FunctionBase):
     def __init__(self):
-        _FunctionBase.__init__(self)
+        super(_MethodBase, self).__init__()
 
-class Method(_FunctionBase):
-    def __init__(self):
-        _FunctionBase.__init__(self)
+    def _parse_xml(self, elm, cls):
+        super(_MethodBase, self)._parse_xml(elm, cls)
+        self.cls = cls
 
-class VMethod(_FunctionBase):
+class Constructor(_MethodBase):
     def __init__(self):
-        _FunctionBase.__init__(self)
+        super(Constructor, self).__init__()
+
+    def symbol_id(self):
+        return self.c_name
+
+class StaticMethod(_MethodBase):
+    def __init__(self):
+        super(StaticMethod, self).__init__()
+
+    def symbol_id(self):
+        return self.c_name
+
+class Method(_MethodBase):
+    def __init__(self):
+        super(Method, self).__init__()
+
+    def symbol_id(self):
+        return self.c_name
+
+class VMethod(_MethodBase):
+    def __init__(self):
+        super(VMethod, self).__init__()
         self.c_name = "fake"
 
-class Signal(_FunctionBase):
+    def symbol_id(self):
+        return '%s::%s' % (self.cls.name, self.name)
+
+class Signal(_MethodBase):
     def __init__(self):
-        _FunctionBase.__init__(self)
+        super(Signal, self).__init__()
         self.c_name = "fake"
+
+    def symbol_id(self):
+        return '%s::%s' % (self.cls.name, self.name)
 
 class Type(_XmlObject):
     def __init__(self):
@@ -153,6 +179,9 @@ class Type(_XmlObject):
         self.name = None
         self.c_name = None
         self.gtype_id = None
+
+    def symbol_id(self):
+        return self.name
 
 class BasicType(Type):
     def __init__(self, name):
@@ -221,7 +250,7 @@ class InstanceType(GTypedType):
             self.static_methods.append(meth)
         elif elm.tag == 'constructor':
             assert not self.constructor
-            self.constructor = Constructor.from_xml(elm)
+            self.constructor = Constructor.from_xml(elm, self)
         else:
             GTypedType._parse_xml_element(self, elm)
 
@@ -287,6 +316,7 @@ class Module(object):
         self.__import_modules = []
         self.__parsing_done = False
         self.__types = {}
+        self.__symbols = {}
 
     def __add_type(self, typ):
         if typ.name in self.__class_hash:
@@ -318,6 +348,11 @@ class Module(object):
         return BasicType(typ)
 
     def __finish_parsing_method(self, meth, typ):
+        sym_id = meth.symbol_id()
+        if self.__symbols.get(sym_id):
+            raise RuntimeError('duplicate symbol %s' % sym_id)
+        self.__symbols[sym_id] = meth
+
         for p in meth.params:
             p.type = self.__finish_type(p.type)
         if meth.retval:
@@ -341,16 +376,24 @@ class Module(object):
             for meth in typ.signals:
                 self.__finish_parsing_method(meth, typ)
 
+    def __add_type_symbol(self, typ):
+        sym_id = typ.symbol_id()
+        if self.__symbols.get(sym_id):
+            raise RuntimeError('duplicate symbol %s' % sym_id)
+        self.__symbols[sym_id] = typ
+
     def __finish_parsing(self):
         if self.__parsing_done:
             return
 
         for typ in self.__classes + self.__boxed + self.__pointers + self.__enums:
+            self.__add_type_symbol(typ)
             self.__types[typ.name] = typ
 
         for module in self.__import_modules:
             for typ in module.get_classes() + module.get_boxed() + \
                        module.get_pointers() + module.get_enums():
+                self.__add_type_symbol(typ)
                 self.__types[typ.name] = typ
 
         for typ in self.__classes + self.__boxed + self.__pointers:

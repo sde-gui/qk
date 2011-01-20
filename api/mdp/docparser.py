@@ -187,10 +187,7 @@ class Parser(object):
         self.functions = []
         self.signals = []
         self.vmethods = []
-        self.__classes_dict = {}
-        self.__functions_dict = {}
-        self.__signal_dict = {}
-        self.__vmethods_dict = {}
+        self.__symbol_dict = {}
 
     def __split_block(self, block):
         chunks = []
@@ -292,26 +289,23 @@ class Parser(object):
 
         if '::' in db.symbol:
             What = Signal
-            symbol_dict = self.__signal_dict
+            db.symbol = 'signal:' + db.symbol.replace('_', '-').replace('::', ':')
             symbol_list = self.signals
         elif ':' in db.symbol:
             What = Property
-            symbol_dict = self.__prop_dict
+            db.symbol = 'property:' + db.symbol.replace('_', '-')
             symbol_list = self.properties
         else:
             What = Function
-            symbol_dict = self.__functions_dict
             symbol_list = self.functions
-
-        db.symbol = db.symbol.replace('-', '_')
 
         func = What(db.symbol, db.annotations, params, retval, db.docs, block)
         func.summary = db.summary
         if DEBUG:
             print 'func.name:', func.name
-        if func.name in symbol_dict:
+        if func.name in self.__symbol_dict:
             raise ParseError('duplicated symbol %s' % (func.name,), block)
-        symbol_dict[func.name] = func
+        self.__symbol_dict[func.name] = func
         symbol_list.append(func)
 
     def __parse_class(self, block):
@@ -449,13 +443,17 @@ class Parser(object):
             raise ParseError('unterminated block in file %s' % (filename,))
 
     def read_files(self, filenames):
+        sys.stderr.write('parsing gtk-doc comments... ')
+        sys.stderr.flush()
         for f in filenames:
-            print >> sys.stderr, 'parsing gtk-doc comments in file', f
             self.__read_comments(f)
+        sys.stderr.write('done\n')
+        sys.stderr.write('parsing declarations... ')
+        sys.stderr.flush()
         for f in filenames:
             if f.endswith('.h'):
-                print >> sys.stderr, 'parsing declarations in file', f
                 self.__read_declarations(f)
+        sys.stderr.write('done\n')
 
     # Code copied from h2def.py by Toby D. Reeves <toby@max.rl.plh.af.mil>
 
@@ -611,27 +609,26 @@ class Parser(object):
             if ret in ('return', 'else', 'if', 'switch'):
                 continue
             if fname:
-                func = self.__functions_dict.get(fname)
+                func = self.__symbol_dict.get(fname)
                 if func is None:
                     continue
                 if DEBUG:
                     print 'match:|%s|' % fname
             elif not is_signal:
-                full_name = '%s::%s' % (m.group('vtable'), m.group('vfunc'))
-                func = self.__vmethods_dict.get(full_name)
+                symbol_name = 'vfunc:%s:%s' % (m.group('vtable'), m.group('vfunc'))
+                func = self.__symbol_dict.get(symbol_name)
                 if func is None:
-                    func = VMethod(full_name, None, None, None, None, None)
-                    self.__vmethods_dict[full_name] = func
+                    func = VMethod(symbol_name, None, None, None, None, None)
+                    self.__symbol_dict[symbol_name] = func
                     self.vmethods.append(func)
                 if DEBUG:
                     print 'match:|%s|' % func.name
             else:
-                full_name = '%s::%s' % (m.group('vtable'), m.group('vfunc'))
-                func = self.__signal_dict.get(full_name)
-                print func
+                symbol_name = ('signal:%s:%s' % (m.group('vtable'), m.group('vfunc'))).replace('_', '-')
+                func = self.__symbol_dict.get(symbol_name)
                 if func is None:
-                    func = Signal(full_name, None, None, None, None, None)
-                    self.__signal_dict[full_name] = func
+                    func = Signal(symbol_name, None, None, None, None, None)
+                    self.__symbol_dict[symbol_name] = func
                     self.signals.append(func)
                 if DEBUG:
                     print 'match:|%s|' % func.name

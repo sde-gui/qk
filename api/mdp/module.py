@@ -383,7 +383,8 @@ class Module(object):
         return param
 
     def __add_vmethod(self, pfunc):
-        cls, name = pfunc.name.split('::')
+        _, cls, name = pfunc.name.split(':')
+        assert _ == 'vfunc'
         params = []
         retval = None
         docs = pfunc.docs
@@ -406,7 +407,8 @@ class Module(object):
         this_class_methods.append(meth)
 
     def __add_signal(self, pfunc):
-        cls, name = pfunc.name.split('::')
+        _, cls, name = pfunc.name.split(':')
+        assert _ == 'signal'
         params = []
         retval = None
         docs = pfunc.docs
