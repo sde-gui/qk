@@ -32,6 +32,8 @@ void            moo_lua_register_static_methods (lua_State          *L,
                                                  const char         *class_name,
                                                  const luaL_Reg     *methods);
 
+void            moo_lua_register_gobject        (void);
+
 int             moo_lua_error                   (lua_State          *L,
                                                  const char         *fmt,
                                                  ...) G_GNUC_PRINTF (2, 3);

@@ -19,8 +19,9 @@
 #include "mooedit/mooplugin-loader.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-messages.h"
-#include "lua-module-setup.h"
-#include "moolua/medit-lua.h"
+#include "moolua/lua-module-init.h"
+#include "moolua/lua-plugin-init.h"
+#include "medit-lua.h"
 #include "mooutils/moolist.h"
 
 #define MOO_LUA_PLUGIN_ID "MooLua"
@@ -43,7 +44,7 @@ moo_lua_module_load (const char *filename)
     if (!L)
         return NULL;
 
-    if (!medit_lua_do_string (L, LUA_MODULE_SETUP_CODE))
+    if (!medit_lua_do_string (L, LUA_MODULE_INIT))
     {
         medit_lua_free (L);
         return NULL;
@@ -120,7 +121,7 @@ _moo_lua_plugin_init (void)
 {
     MooPluginLoader loader = { load_lua_module, NULL, NULL };
     moo_plugin_loader_register (&loader, "Lua");
-    MooPluginParams params = { TRUE, FALSE };
+    MooPluginParams params = { TRUE, TRUE };
     return moo_plugin_register (MOO_LUA_PLUGIN_ID,
                                 moo_lua_plugin_get_type (),
                                 &moo_lua_plugin_info,

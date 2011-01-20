@@ -124,8 +124,14 @@ add_raw_api (lua_State *L)
 {
     g_assert (lua_gettop (L) == 0);
 
+    moo_lua_register_gobject ();
+
+    g_assert (lua_gettop (L) == 0);
+
     gtk_lua_api_add_to_lua (L, "gtk");
     lua_pop(L, 1);
+
+    g_assert (lua_gettop (L) == 0);
 
     moo_lua_api_add_to_lua (L, "medit");
     lua_pop(L, 1);
@@ -160,19 +166,44 @@ medit_lua_setup (lua_State *L,
     }
 }
 
+struct MeditLuaData {
+    int ref_count;
+};
+
+static MeditLuaData *medit_lua_data_new (void)
+{
+    MeditLuaData *data = g_slice_new0 (MeditLuaData);
+    data->ref_count = 1;
+    return data;
+}
+
+static void medit_lua_data_free (MeditLuaData *data)
+{
+    if (data)
+    {
+        g_dataset_destroy (data);
+        g_slice_free (MeditLuaData, data);
+    }
+}
+
 lua_State *
 medit_lua_new (bool default_init)
 {
-    lua_State *L = lua_open ();
+    lua_State *L = luaL_newstate ();
     g_return_val_if_fail (L != NULL, NULL);
 
     luaL_openlibs (L);
     moo_lua_add_user_path (L);
 
+    MeditLuaData *data = medit_lua_data_new ();
+    lua_pushlightuserdata (L, data);
+    lua_setfield (L, LUA_REGISTRYINDEX, "_MEDIT_LUA_DATA");
+
     moo_assert (lua_gettop (L) == 0);
 
     if (!medit_lua_setup (L, default_init))
     {
+        medit_lua_data_free (data);
         lua_close (L);
         return NULL;
     }
@@ -182,20 +213,97 @@ medit_lua_new (bool default_init)
     return L;
 }
 
+static MeditLuaData *
+medit_lua_get_data (lua_State *L)
+{
+    g_return_val_if_fail (L != NULL, NULL);
+
+    try
+    {
+        lua_getfield (L, LUA_REGISTRYINDEX, "_MEDIT_LUA_DATA");
+        MeditLuaData *data = (MeditLuaData*) lua_touserdata (L, -1);
+        lua_pop (L, 1);
+        return data;
+    }
+    catch (...)
+    {
+        g_critical ("oops");
+        return NULL;
+    }
+}
+
+void
+medit_lua_unref (lua_State *L)
+{
+    MeditLuaData *data = medit_lua_get_data (L);
+    g_return_if_fail (data != NULL);
+
+    if (!--data->ref_count)
+    {
+        lua_close (L);
+        medit_lua_data_free (data);
+    }
+}
+
+void
+medit_lua_ref (lua_State *L)
+{
+    MeditLuaData *data = medit_lua_get_data (L);
+    g_return_if_fail (data != NULL);
+    ++data->ref_count;
+}
+
+void
+medit_lua_free (lua_State *L)
+{
+    if (L)
+        medit_lua_unref (L);
+}
+
+void
+medit_lua_set (lua_State      *L,
+               const char     *key,
+               gpointer        data,
+               GDestroyNotify  notify)
+{
+    g_return_if_fail (L != NULL);
+    g_return_if_fail (key != NULL);
+
+    MeditLuaData *mdata = medit_lua_get_data (L);
+    g_return_if_fail (mdata != NULL);
+
+    g_dataset_set_data_full (mdata, key, data, notify);
+}
+
+gpointer
+medit_lua_get (lua_State  *L,
+               const char *key)
+{
+    g_return_val_if_fail (L != NULL, NULL);
+    g_return_val_if_fail (key != NULL, NULL);
+
+    MeditLuaData *mdata = medit_lua_get_data (L);
+    g_return_val_if_fail (mdata != NULL, NULL);
+
+    return g_dataset_get_data (mdata, key);
+}
+
 bool
 medit_lua_do_string (lua_State *L, const char *string)
 {
     g_return_val_if_fail (L != NULL, FALSE);
     g_return_val_if_fail (string != NULL, FALSE);
 
+    bool retval = true;
+
     if (luaL_dostring (L, string) != 0)
     {
         const char *msg = lua_tostring (L, -1);
         g_critical ("%s", msg ? msg : "ERROR");
-        return false;
+        retval = false;
     }
 
-    return true;
+    return retval;
 }
 
 bool
@@ -216,16 +324,6 @@ medit_lua_do_file (lua_State *L, const char *filename)
     gboolean ret = medit_lua_do_string (L, content);
     g_free (content);
     return ret;
-}
-
-void
-medit_lua_free (lua_State *L)
-{
-    if (L)
-    {
-//         mom::lua_cleanup (L);
-        lua_close (L);
-    }
 }
 
 

@@ -7,16 +7,25 @@
 
 #include "moolua/lua/moolua.h"
 
-bool         medit_lua_setup            (lua_State *L,
-                                         bool       default_init);
+bool         medit_lua_setup            (lua_State      *L,
+                                         bool            default_init);
 
-lua_State   *medit_lua_new              (bool        default_init);
-void         medit_lua_free             (lua_State  *L);
+lua_State   *medit_lua_new              (bool            default_init);
+void         medit_lua_ref              (lua_State      *L);
+void         medit_lua_unref            (lua_State      *L);
+void         medit_lua_free             (lua_State      *L);
 
-bool         medit_lua_do_string        (lua_State  *L,
-                                         const char *string);
-bool         medit_lua_do_file          (lua_State  *L,
-                                         const char *filename);
+void         medit_lua_set              (lua_State      *L,
+                                         const char     *key,
+                                         gpointer        data,
+                                         GDestroyNotify  notify);
+gpointer     medit_lua_get              (lua_State      *L,
+                                         const char     *key);
+
+bool         medit_lua_do_string        (lua_State      *L,
+                                         const char     *string);
+bool         medit_lua_do_file          (lua_State      *L,
+                                         const char     *filename);
 
 #endif // __cplusplus
 

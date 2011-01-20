@@ -30,8 +30,8 @@ moo_plugin_init (void)
         _moo_python_builtin_init ();
 #endif
 
-//     if (!moo_getenv_bool ("MOO_DISABLE_LUA"))
-//         _moo_lua_plugin_init ();
+    if (!moo_getenv_bool ("MOO_DISABLE_LUA"))
+        _moo_lua_plugin_init ();
 
     _moo_file_selector_plugin_init ();
     _moo_file_list_plugin_init ();

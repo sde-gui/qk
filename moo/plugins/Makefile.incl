@@ -19,13 +19,6 @@ built_plugins_sources +=				\
 	plugins/moofind-gxml.h				\
 	plugins/moogrep-gxml.h
 
-EXTRA_DIST += plugins/lua-module-setup.lua
-built_plugins_sources += plugins/lua-module-setup.h
-plugins/lua-module-setup.h: plugins/lua-module-setup.lua $(top_srcdir)/tools/xml2h.py
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/plugins/lua-module-setup.lua \
-		plugins/lua-module-setup.h.tmp LUA_MODULE_SETUP_CODE \
-		&& mv plugins/lua-module-setup.h.tmp plugins/lua-module-setup.h
-
 include plugins/ctags/Makefile.incl
 include plugins/usertools/Makefile.incl
 include plugins/support/Makefile.incl

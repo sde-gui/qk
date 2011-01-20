@@ -1,4 +1,5 @@
 #include "moo-lua-api-util.h"
+#include "medit-lua.h"
 #include "moolua/lua/lauxlib.h"
 #include "mooutils/mooutils.h"
 #include <vector>
@@ -149,7 +150,7 @@ moo_lua_register_methods (GType              type,
     }
 }
 
-void
+static void
 moo_lua_register_method (GType         type,
                          const char   *name,
                          MooLuaMethod  meth)
@@ -488,6 +489,362 @@ moo_lua_push_object (lua_State *L,
         return 1;
     }
 }
+
+
+struct CallbacksData
+{
+    GSList *closures; // SignalClosure*
+};
+
+static CallbacksData *get_callbacks_data (lua_State *L)
+{
+    CallbacksData *data = (CallbacksData*) medit_lua_get (L, "moo-lua-callbacks");
+
+    if (!data)
+    {
+        data = g_new0 (CallbacksData, 1);
+        medit_lua_set (L, "moo-lua-callbacks", data, g_free);
+    }
+
+    return data;
+}
+
+struct SignalClosure
+{
+    GClosure base;
+    lua_State *L;
+    GObject *instance;
+    int cb_ref;
+};
+
+static void signal_closure_finalize (G_GNUC_UNUSED gpointer dummy, GClosure *gclosure)
+{
+    g_message ("signal_closure_finalize");
+
+    SignalClosure *closure = (SignalClosure*) gclosure;
+
+    if (closure->L)
+    {
+        CallbacksData *data = get_callbacks_data (closure->L);
+        data->closures = g_slist_remove (data->closures, closure);
+        luaL_unref (closure->L, LUA_REGISTRYINDEX, closure->cb_ref);
+        medit_lua_unref (closure->L);
+    }
+}
+
+static int
+push_param_gvalue (lua_State *L, const GValue *value)
+{
+    GType type = G_VALUE_TYPE (value);
+    GType type_fundamental = G_TYPE_FUNDAMENTAL (type);
+
+    // XXX overflows
+
+    switch (type_fundamental)
+    {
+        case G_TYPE_BOOLEAN:
+            lua_pushboolean (L, g_value_get_boolean (value));
+            return 1;
+
+        case G_TYPE_INT:
+            lua_pushnumber (L, g_value_get_int (value));
+            return 1;
+        case G_TYPE_UINT:
+            lua_pushnumber (L, g_value_get_uint (value));
+            return 1;
+        case G_TYPE_LONG:
+            lua_pushnumber (L, g_value_get_long (value));
+            return 1;
+        case G_TYPE_ULONG:
+            lua_pushnumber (L, g_value_get_ulong (value));
+            return 1;
+        case G_TYPE_INT64:
+            lua_pushnumber (L, g_value_get_int64 (value));
+            return 1;
+        case G_TYPE_UINT64:
+            lua_pushnumber (L, g_value_get_uint64 (value));
+            return 1;
+        case G_TYPE_FLOAT:
+            lua_pushnumber (L, g_value_get_float (value));
+            return 1;
+        case G_TYPE_DOUBLE:
+            lua_pushnumber (L, g_value_get_double (value));
+            return 1;
+
+        case G_TYPE_ENUM:
+            lua_pushinteger (L, g_value_get_enum (value));
+            return 1;
+        case G_TYPE_FLAGS:
+            lua_pushinteger (L, g_value_get_flags (value));
+            return 1;
+
+        case G_TYPE_STRING:
+            return moo_lua_push_string_copy (L, g_value_get_string (value));
+
+        case G_TYPE_POINTER:
+            return moo_lua_push_instance (L, g_value_get_pointer (value), type, TRUE);
+        case G_TYPE_BOXED:
+            return moo_lua_push_instance (L, g_value_get_boxed (value), type, TRUE);
+        case G_TYPE_OBJECT:
+            return moo_lua_push_instance (L, g_value_get_object (value), type, TRUE);
+
+        case G_TYPE_INTERFACE:
+            {
+                if (GObject *obj = (GObject*) g_value_get_object (value))
+                    return moo_lua_push_instance (L, obj, G_OBJECT_TYPE (obj), TRUE);
+                lua_pushnil (L);
+                return 1;
+            }
+
+        default:
+            g_critical ("don't know how to handle value of type %s", g_type_name (type));
+            return 0;
+    }
+}
+
+static void get_ret_gvalue (lua_State *L, GValue *value)
+{
+    GType type = G_VALUE_TYPE (value);
+    GType type_fundamental = G_TYPE_FUNDAMENTAL (type);
+
+    switch (type_fundamental)
+    {
+        case G_TYPE_BOOLEAN:
+            g_value_set_boolean (value, lua_toboolean (L, -1));
+            break;
+
+        // XXX overflows
+
+        case G_TYPE_INT:
+            g_value_set_int (value, lua_tointeger (L, -1));
+            break;
+        case G_TYPE_UINT:
+            g_value_set_uint (value, lua_tointeger (L, -1));
+            break;
+        case G_TYPE_LONG:
+            g_value_set_long (value, lua_tointeger (L, -1));
+            break;
+        case G_TYPE_ULONG:
+            g_value_set_ulong (value, lua_tointeger (L, -1));
+            break;
+        case G_TYPE_INT64:
+            g_value_set_int64 (value, lua_tointeger (L, -1));
+            break;
+        case G_TYPE_UINT64:
+            g_value_set_uint64 (value, lua_tointeger (L, -1));
+            break;
+        case G_TYPE_FLOAT:
+            g_value_set_float (value, lua_tonumber (L, -1));
+            break;
+        case G_TYPE_DOUBLE:
+            g_value_set_double (value, lua_tonumber (L, -1));
+            break;
+
+        case G_TYPE_ENUM:
+            g_value_set_enum (value, moo_lua_get_arg_enum (L, -1, "<retval>", type));
+            break;
+        case G_TYPE_FLAGS:
+            g_value_set_flags (value, moo_lua_get_arg_enum (L, -1, "<retval>", type));
+            break;
+
+        case G_TYPE_STRING:
+            g_value_set_string (value, moo_lua_get_arg_string (L, -1, "<retval>"));
+            break;
+
+        case G_TYPE_POINTER:
+            g_value_set_pointer (value, moo_lua_get_arg_instance (L, -1, "<retval>", type));
+            break;
+        case G_TYPE_BOXED:
+            g_value_set_boxed (value, moo_lua_get_arg_instance (L, -1, "<retval>", type));
+            break;
+        case G_TYPE_OBJECT:
+            g_value_set_object (value, moo_lua_get_arg_instance (L, -1, "<retval>", type));
+            break;
+
+        default:
+            g_critical ("don't know how to handle return value of type %s", g_type_name (type));
+            break;
+    }
+}
+
+static void
+signal_closure_marshal (SignalClosure *closure,
+                        GValue        *return_value,
+                        guint          n_param_values,
+                        const GValue  *param_values)
+{
+    lua_State *L = closure->L;
+
+    g_return_if_fail (L != NULL);
+
+    int n_pushed = 0;
+
+    try
+    {
+        lua_rawgeti (L, LUA_REGISTRYINDEX, closure->cb_ref);
+        n_pushed++;
+
+        for (guint i = 0; i < n_param_values; ++i)
+        {
+            int pushed_here = push_param_gvalue (L, &param_values[i]);
+            if (!pushed_here)
+                goto out;
+            n_pushed += pushed_here;
+        }
+
+        // ok, pushed the arguments successfully
+
+        int n_args = n_pushed - 1;
+        n_pushed = 0;
+
+        if (lua_pcall (L, n_args, 1, 0) == 0)
+        {
+            get_ret_gvalue (L, return_value);
+            lua_pop (L, 1);
+        }
+        else
+        {
+            const char *msg = lua_tostring (L, -1);
+            g_critical ("%s", msg ? msg : "ERROR");
+            lua_pop (L, 1);
+        }
+    }
+    catch (...)
+    {
+        g_critical ("oops");
+    }
+
+out:
+    if (n_pushed > 0)
+        lua_pop (L, n_pushed);
+}
+
+static GClosure *signal_closure_new (lua_State *L, GObject *instance, int cb_ref)
+{
+    GClosure *gclosure = g_closure_new_simple (sizeof (SignalClosure), NULL);
+    SignalClosure *closure = (SignalClosure*) gclosure;
+
+    closure->L = L;
+    closure->instance = instance;
+    closure->cb_ref = cb_ref;
+
+    CallbacksData *data = get_callbacks_data (L);
+    data->closures = g_slist_prepend (data->closures, closure);
+    medit_lua_ref (L);
+
+    g_closure_set_marshal (gclosure, (GClosureMarshal) signal_closure_marshal);
+    g_closure_add_finalize_notifier (gclosure, NULL, signal_closure_finalize);
+
+    return gclosure;
+}
+
+static int
+cfunc_GObject_connect_impl (gpointer pself, lua_State *L, int first_arg, gboolean after)
+{
+    GObject *self = G_OBJECT (pself);
+
+    const char *signal = moo_lua_get_arg_utf8 (L, first_arg, "signal");
+
+    // first check it's something we can call
+
+    int cb_arg = first_arg + 1;
+
+    switch (lua_type (L, cb_arg))
+    {
+        case LUA_TLIGHTUSERDATA:
+        case LUA_TTABLE:
+        case LUA_TFUNCTION:
+        case LUA_TUSERDATA:
+            break;
+        default:
+            moo_lua_arg_error (L, cb_arg, "callback",
+                               "expected a callable object, got %s",
+                               lua_typename (L, cb_arg));
+    }
+
+    // ref the callback
+    lua_pushvalue (L, cb_arg);
+    int cb_ref = luaL_ref (L, LUA_REGISTRYINDEX);
+
+    GClosure *closure = signal_closure_new (L, self, cb_ref);
+    g_closure_ref (closure);
+    g_closure_sink (closure);
+    gulong cb_id = g_signal_connect_closure (self, signal, closure, after);
+    g_closure_unref (closure);
+
+    moo_lua_push_int (L, cb_id);
+    return 1;
+}
+
+static int
+cfunc_GObject_connect (gpointer pself, lua_State *L, int first_arg)
+{
+    MooLuaCurrentFunc cur_func ("GObject.connect");
+    return cfunc_GObject_connect_impl (pself, L, first_arg, FALSE);
+}
+
+static int
+cfunc_GObject_connect_after (gpointer pself, lua_State *L, int first_arg)
+{
+    MooLuaCurrentFunc cur_func ("GObject.connect_after");
+    return cfunc_GObject_connect_impl (pself, L, first_arg, TRUE);
+}
+
+static int cfunc_GObject_disconnect (gpointer pself, lua_State *L, int first_arg)
+{
+    MooLuaCurrentFunc cur_func ("GObject.disconnect");
+
+    GObject *self = G_OBJECT (pself);
+    gulong cb_id = lua_tointeger (L, first_arg);
+
+    g_signal_handler_disconnect (self, cb_id);
+
+    return 0;
+}
+
+static int cfunc_GObject_signal_handler_block (gpointer pself, lua_State *L, int first_arg)
+{
+    MooLuaCurrentFunc cur_func ("GObject.signal_handler_block");
+
+    GObject *self = G_OBJECT (pself);
+    gulong cb_id = lua_tointeger (L, first_arg);
+
+    g_signal_handler_block (self, cb_id);
+
+    return 0;
+}
+
+static int cfunc_GObject_signal_handler_unblock (gpointer pself, lua_State *L, int first_arg)
+{
+    MooLuaCurrentFunc cur_func ("GObject.signal_handler_unblock");
+
+    GObject *self = G_OBJECT (pself);
+    gulong cb_id = lua_tointeger (L, first_arg);
+
+    g_signal_handler_unblock (self, cb_id);
+
+    return 0;
+}
+
+void
+moo_lua_register_gobject (void)
+{
+    MOO_DO_ONCE_BEGIN
+    {
+        MooLuaMethodEntry methods[] = {
+            { "connect", cfunc_GObject_connect },
+            { "connect_after", cfunc_GObject_connect_after },
+            { "disconnect", cfunc_GObject_disconnect },
+            { "signal_handler_block", cfunc_GObject_signal_handler_block },
+            { "signal_handler_unblock", cfunc_GObject_signal_handler_unblock },
+            { NULL, NULL }
+        };
+
+        moo_lua_register_methods (G_TYPE_OBJECT, methods);
+    }
+    MOO_DO_ONCE_END
+}
+
 
 int
 moo_lua_push_instance (lua_State *L,
