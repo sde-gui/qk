@@ -55,12 +55,17 @@ struct MooEditWindowClass
 {
     MooWindowClass          parent_class;
 
+    /**signal:MooEditWindow**/
+    MooCloseResponse (*before_close)    (MooEditWindow  *window);
+    /**signal:MooEditWindow**/
+    void             (*will_close)      (MooEditWindow  *window);
+
     /* these do not open or close document */
-    void (*new_doc)         (MooEditWindow  *window,
-                             MooEdit        *doc);
-    void (*close_doc)       (MooEditWindow  *window,
-                             MooEdit        *doc);
-    void (*close_doc_after) (MooEditWindow  *window);
+    void             (*new_doc)         (MooEditWindow  *window,
+                                         MooEdit        *doc);
+    void             (*close_doc)       (MooEditWindow  *window,
+                                         MooEdit        *doc);
+    void             (*close_doc_after) (MooEditWindow  *window);
 };
 
 #define MOO_EDIT_TAB_ATOM_NAME "MOO_EDIT_TAB"

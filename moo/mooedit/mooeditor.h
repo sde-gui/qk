@@ -55,17 +55,28 @@ struct MooEditorClass
 {
     GObjectClass base_class;
 
-    gboolean (*close_window) (MooEditor     *editor,
-                              MooEditWindow *window,
-                              gboolean       ask_confirm);
+    MooCloseResponse     (*before_close_window) (MooEditor     *editor,
+                                                 MooEditWindow *window);
+    /**signal:MooEditor**/
+    void                 (*will_close_window)   (MooEditor     *editor,
+                                                 MooEditWindow *window);
+    void                 (*after_close_window)  (MooEditor     *editor);
 
     /**signal:MooEditor**/
-    MooEditSaveResponse (*before_save)  (MooEditor     *editor,
-                                         MooEdit       *doc,
-                                         GFile         *file);
+    MooCloseResponse     (*will_close_doc)      (MooEditor     *editor,
+                                                 MooEdit       *doc);
+
     /**signal:MooEditor**/
-    void                (*after_save)   (MooEditor     *editor,
-                                         MooEdit       *doc);
+    MooSaveResponse      (*before_save)  (MooEditor     *editor,
+                                          MooEdit       *doc,
+                                          GFile         *file);
+    /**signal:MooEditor**/
+    void                 (*will_save)    (MooEditor     *editor,
+                                          MooEdit       *doc,
+                                          GFile         *file);
+    /**signal:MooEditor**/
+    void                 (*after_save)   (MooEditor     *editor,
+                                          MooEdit       *doc);
 };
 
 
@@ -143,16 +154,12 @@ MooEditWindowArray  *moo_editor_get_windows         (MooEditor              *edi
 MooEditArray        *moo_editor_get_docs            (MooEditor              *editor);
 
 gboolean             moo_editor_close_window        (MooEditor              *editor,
-                                                     MooEditWindow          *window,
-                                                     gboolean                ask_confirm);
+                                                     MooEditWindow          *window);
 gboolean             moo_editor_close_doc           (MooEditor              *editor,
-                                                     MooEdit                *doc,
-                                                     gboolean                ask_confirm);
+                                                     MooEdit                *doc);
 gboolean             moo_editor_close_docs          (MooEditor              *editor,
-                                                     MooEditArray           *docs,
-                                                     gboolean                ask_confirm);
-gboolean            _moo_editor_close_all           (MooEditor              *editor,
-                                                     gboolean                ask_confirm);
+                                                     MooEditArray           *docs);
+gboolean            _moo_editor_close_all           (MooEditor              *editor);
 
 MooUiXml            *moo_editor_get_doc_ui_xml      (MooEditor              *editor);
 MooUiXml            *moo_editor_get_ui_xml          (MooEditor              *editor);

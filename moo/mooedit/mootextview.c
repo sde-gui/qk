@@ -152,7 +152,7 @@ static void     highlight_updated           (GtkTextView        *view,
                                              const GtkTextIter  *end);
 
 static void     set_draw_whitespace         (MooTextView        *view,
-                                             MooDrawWhitespaceFlags flags);
+                                             MooDrawWsFlags      flags);
 
 static void     buffer_changed              (MooTextView        *view);
 static void     update_left_margin          (MooTextView        *view);
@@ -385,7 +385,7 @@ static void moo_text_view_class_init (MooTextViewClass *klass)
                                      g_param_spec_flags ("draw-whitespace",
                                              "draw-whitespace",
                                              "draw-whitespace",
-                                             MOO_TYPE_DRAW_WHITESPACE_FLAGS,
+                                             MOO_TYPE_DRAW_WS_FLAGS,
                                              0,
                                              (GParamFlags) G_PARAM_READWRITE));
 
@@ -2376,15 +2376,15 @@ moo_text_view_draw_whitespace (GtkTextView       *text_view,
 
             if (g_unichar_isspace (c))
             {
-                if ((trailing && (view->priv->draw_whitespace & MOO_DRAW_TRAILING_SPACES) != 0) ||
-                    (c == '\t' && (view->priv->draw_whitespace & MOO_DRAW_TABS) != 0) ||
-                    (c != '\t' && (view->priv->draw_whitespace & MOO_DRAW_SPACES) != 0))
+                if ((trailing && (view->priv->draw_whitespace & MOO_DRAW_WS_TRAILING) != 0) ||
+                    (c == '\t' && (view->priv->draw_whitespace & MOO_DRAW_WS_TABS) != 0) ||
+                    (c != '\t' && (view->priv->draw_whitespace & MOO_DRAW_WS_SPACES) != 0))
                         draw_tab_at_iter (text_view, event, &iter);
             }
             else if (trailing)
             {
                 trailing = FALSE;
-                if ((view->priv->draw_whitespace & ~MOO_DRAW_TRAILING_SPACES) == 0)
+                if ((view->priv->draw_whitespace & ~MOO_DRAW_WS_TRAILING) == 0)
                     break;
             }
         }
@@ -2546,8 +2546,8 @@ highlight_updated (GtkTextView       *text_view,
 
 
 static void
-set_draw_whitespace (MooTextView            *view,
-                     MooDrawWhitespaceFlags  flags)
+set_draw_whitespace (MooTextView    *view,
+                     MooDrawWsFlags  flags)
 {
     g_return_if_fail (MOO_IS_TEXT_VIEW (view));
 

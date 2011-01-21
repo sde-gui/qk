@@ -37,6 +37,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-enums.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooi18n.h"
@@ -67,19 +68,21 @@ static MooEditWindow *create_window             (MooEditor      *editor);
 static void          moo_editor_add_doc         (MooEditor      *editor,
                                                  MooEditWindow  *window,
                                                  MooEdit        *doc);
-static MooEditSaveResponse moo_editor_before_save (MooEditor    *editor,
+static MooSaveResponse moo_editor_before_save   (MooEditor    *editor,
                                                  MooEdit        *doc,
                                                  GFile          *file);
-static gboolean      close_window_handler       (MooEditor      *editor,
-                                                 MooEditWindow  *window,
-                                                 gboolean        ask_confirm);
+static void          moo_editor_will_save       (MooEditor    *editor,
+                                                 MooEdit        *doc,
+                                                 GFile          *file);
+static MooCloseResponse moo_editor_before_close_window
+                                                (MooEditor      *editor,
+                                                 MooEditWindow  *window);
 static void          do_close_window            (MooEditor      *editor,
                                                  MooEditWindow  *window);
 static void          do_close_doc               (MooEditor      *editor,
                                                  MooEdit        *doc);
 static gboolean      close_docs_real            (MooEditor      *editor,
-                                                 MooEditArray   *docs,
-                                                 gboolean        ask_confirm);
+                                                 MooEditArray   *docs);
 static MooEditArray *find_modified              (MooEditArray   *docs);
 
 static void          add_new_window_action      (void);
@@ -110,8 +113,12 @@ enum {
 };
 
 enum {
-    CLOSE_WINDOW,
+    BEFORE_CLOSE_WINDOW,
+    WILL_CLOSE_WINDOW,
+    AFTER_CLOSE_WINDOW,
+    WILL_CLOSE_DOC,
     BEFORE_SAVE,
+    WILL_SAVE,
     AFTER_SAVE,
     LAST_SIGNAL
 };
@@ -152,8 +159,9 @@ moo_editor_class_init (MooEditorClass *klass)
     gobject_class->set_property = moo_editor_set_property;
     gobject_class->get_property = moo_editor_get_property;
 
-    klass->close_window = close_window_handler;
+    klass->before_close_window = moo_editor_before_close_window;
     klass->before_save = moo_editor_before_save;
+    klass->will_save = moo_editor_will_save;
 
     _moo_edit_init_config ();
     g_type_class_unref (g_type_class_ref (MOO_TYPE_EDIT));
@@ -186,16 +194,61 @@ moo_editor_class_init (MooEditorClass *klass)
         g_param_spec_boolean ("embedded", "embedded", "embedded",
                               FALSE, (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT)));
 
-    signals[CLOSE_WINDOW] =
-            g_signal_new ("close-window",
+    signals[BEFORE_CLOSE_WINDOW] =
+            g_signal_new ("before-close-window",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooEditorClass, close_window),
-                          g_signal_accumulator_true_handled, NULL,
-                          _moo_marshal_BOOLEAN__OBJECT_BOOLEAN,
-                          G_TYPE_BOOLEAN, 2,
-                          MOO_TYPE_EDIT_WINDOW,
-                          G_TYPE_BOOLEAN);
+                          G_STRUCT_OFFSET (MooEditorClass, before_close_window),
+                          moo_signal_accumulator_continue_cancel,
+                          GINT_TO_POINTER (MOO_CLOSE_RESPONSE_CONTINUE),
+                          _moo_marshal_ENUM__OBJECT,
+                          MOO_TYPE_CLOSE_RESPONSE, 1,
+                          MOO_TYPE_EDIT_WINDOW);
+
+    /**
+     * MooEditor::will-close-window:
+     *
+     * @editor: the object which received the signal
+     * @window: the window which is about to be closed
+     *
+     * This signal is emitted before the window is closed.
+     **/
+    signals[WILL_CLOSE_WINDOW] =
+            g_signal_new ("will-close-window",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditorClass, will_close_window),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          MOO_TYPE_EDIT_WINDOW);
+
+    signals[AFTER_CLOSE_WINDOW] =
+            g_signal_new ("after-close-window",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditorClass, after_close_window),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
+
+    /**
+     * MooEditor::will-close-doc:
+     *
+     * @editor: the object which received the signal
+     * @doc: the document which is about to be closed
+     *
+     * This signal is emitted before the document is closed.
+     **/
+    signals[WILL_CLOSE_DOC] =
+            g_signal_new ("will-close-doc",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditorClass, will_close_doc),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          MOO_TYPE_EDIT);
 
     /**
      * MooEditor::before-save:
@@ -205,25 +258,50 @@ moo_editor_class_init (MooEditorClass *klass)
      * @file: the #GFile object which represents saved file
      *
      * This signal is emitted when the document is going to be saved on disk.
-     * Callbacks may modify document content. Callbacks should return
-     * #MOO_EDIT_SAVE_RESPONSE_CANCEL if document should not be saved, and
-     * #MOO_EDIT_SAVE_RESPONSE_CONTINUE otherwise.
+     * Callbacks should return #MOO_SAVE_RESPONSE_CANCEL if document
+     * should not be saved, and #MOO_SAVE_RESPONSE_CONTINUE otherwise.
      *
      * For example, if before saving the file must be checked out from a version
-     * control system, a callback can do that and return #MOO_EDIT_SAVE_RESPONSE_CANCEL
-     * if check out failed.
+     * control system, a callback can do that and return #MOO_SAVE_RESPONSE_CANCEL
+     * if checkout failed.
      *
-     * Returns: #MOO_EDIT_SAVE_RESPONSE_CANCEL to cancel saving,
-     * #MOO_EDIT_SAVE_RESPONSE_CONTINUE otherwise.
+     * Callbacks should not modify document content. If you need to modify
+     * it before saving, use MooEditor::will-save signal instead.
+     *
+     * Returns: #MOO_SAVE_RESPONSE_CANCEL to cancel saving,
+     * #MOO_SAVE_RESPONSE_CONTINUE otherwise.
      **/
     signals[BEFORE_SAVE] =
             g_signal_new ("before-save",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooEditorClass, before_save),
-                          (GSignalAccumulator) _moo_signal_accumulator_save_response, NULL,
+                          moo_signal_accumulator_continue_cancel,
+                          GINT_TO_POINTER (MOO_SAVE_RESPONSE_CONTINUE),
                           _moo_marshal_ENUM__OBJECT_OBJECT,
-                          MOO_TYPE_EDIT_SAVE_RESPONSE, 2,
+                          MOO_TYPE_SAVE_RESPONSE, 2,
+                          MOO_TYPE_EDIT,
+                          G_TYPE_FILE);
+
+    /**
+     * MooEditor::will-save:
+     *
+     * @editor: the object which received the signal
+     * @doc: the document which is about to be saved on disk
+     * @file: the #GFile object which represents saved file
+     *
+     * This signal is emitted when the document is going to be saved on disk,
+     * after MooEditor::before-save signal. Callbacks may modify document
+     * content at this point.
+     **/
+    signals[WILL_SAVE] =
+            g_signal_new ("will-save",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditorClass, will_save),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT_OBJECT,
+                          G_TYPE_NONE, 2,
                           MOO_TYPE_EDIT,
                           G_TYPE_FILE);
 
@@ -234,8 +312,6 @@ moo_editor_class_init (MooEditorClass *klass)
      * @doc: the document which was saved on disk
      *
      * This signal is emitted after the document has been successfully saved on disk.
-     * Callbacks must not modify document content because it may be closed immediately
-     * after this signal is emitted and the changes will be lost.
      **/
     signals[AFTER_SAVE] =
             g_signal_new ("after-save",
@@ -879,7 +955,7 @@ _moo_editor_move_doc (MooEditor     *editor,
         _moo_edit_window_remove_doc (old_window, doc);
 
         if (!moo_edit_window_get_active_doc (old_window))
-            moo_editor_close_window (editor, old_window, FALSE);
+            moo_editor_close_window (editor, old_window);
     }
 
     _moo_edit_window_insert_tab (dest, tab, dest_view);
@@ -887,7 +963,7 @@ _moo_editor_move_doc (MooEditor     *editor,
 
     dest_doc = dest_view ? moo_edit_view_get_doc (dest_view) : NULL;
     if (dest_doc && moo_edit_is_empty (dest_doc))
-        moo_editor_close_doc (editor, dest_doc, FALSE);
+        moo_editor_close_doc (editor, dest_doc);
 
     if (focus)
         moo_editor_set_active_doc (editor, doc);
@@ -994,7 +1070,7 @@ moo_editor_load_file (MooEditor       *editor,
     {
         if ((info->flags & MOO_EDIT_OPEN_CREATE_NEW) && _moo_edit_file_is_new (info->file))
         {
-            _moo_edit_set_status (doc, MOO_EDIT_NEW);
+            _moo_edit_set_status (doc, MOO_EDIT_STATUS_NEW);
             _moo_edit_set_file (doc, info->file, info->encoding);
         }
         else
@@ -1342,10 +1418,9 @@ find_busy (MooEditArray *docs)
     return NULL;
 }
 
-static gboolean
-close_window_handler (MooEditor     *editor,
-                      MooEditWindow *window,
-                      gboolean       ask_confirm)
+static MooCloseResponse
+moo_editor_before_close_window (MooEditor     *editor,
+                                MooEditWindow *window)
 {
     MooSaveChangesResponse response;
     MooEditArray *modified;
@@ -1363,12 +1438,12 @@ close_window_handler (MooEditor     *editor,
     {
         moo_editor_set_active_doc (editor, busy);
         moo_edit_array_free (docs);
-        return TRUE;
+        return MOO_CLOSE_RESPONSE_CANCEL;
     }
 
     modified = find_modified (docs);
 
-    if (moo_edit_array_is_empty (modified) || !ask_confirm)
+    if (moo_edit_array_is_empty (modified))
     {
         do_close = TRUE;
     }
@@ -1429,23 +1504,18 @@ close_window_handler (MooEditor     *editor,
 
     moo_edit_array_free (modified);
     moo_edit_array_free (docs);
-    return !do_close;
+    return do_close ? MOO_CLOSE_RESPONSE_CONTINUE : MOO_CLOSE_RESPONSE_CANCEL;
 }
 
 
 /**
  * moo_editor_close_window:
- *
- * @editor:
- * @window:
- * @ask_confirm: (default TRUE)
  */
 gboolean
 moo_editor_close_window (MooEditor      *editor,
-                         MooEditWindow  *window,
-                         gboolean        ask_confirm)
+                         MooEditWindow  *window)
 {
-    gboolean stopped = FALSE;
+    MooCloseResponse response = MOO_CLOSE_RESPONSE_CONTINUE;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
@@ -1455,14 +1525,17 @@ moo_editor_close_window (MooEditor      *editor,
 
     g_object_ref (window);
 
-    g_signal_emit (editor, signals[CLOSE_WINDOW], 0, window, ask_confirm, &stopped);
+    g_signal_emit (editor, signals[BEFORE_CLOSE_WINDOW], 0, window, &response);
 
-    if (!stopped && moo_edit_window_array_find (editor->priv->windows, window) >= 0)
+    if (response != MOO_CLOSE_RESPONSE_CANCEL && moo_edit_window_array_find (editor->priv->windows, window) >= 0)
+        g_signal_emit_by_name (window, "before-close", &response);
+
+    if (response != MOO_CLOSE_RESPONSE_CANCEL && moo_edit_window_array_find (editor->priv->windows, window) >= 0)
         do_close_window (editor, window);
 
     g_object_unref (window);
 
-    return !stopped;
+    return response != MOO_CLOSE_RESPONSE_CANCEL;
 }
 
 
@@ -1473,6 +1546,9 @@ do_close_window (MooEditor      *editor,
     MooEditArray *docs;
     guint i;
 
+    g_signal_emit (editor, signals[WILL_CLOSE_WINDOW], 0, window);
+    g_signal_emit_by_name (window, "will-close");
+
     docs = moo_edit_window_get_docs (window);
 
     for (i = 0; i < docs->n_elms; ++i)
@@ -1482,6 +1558,8 @@ do_close_window (MooEditor      *editor,
 
     _moo_window_detach_plugins (window);
     gtk_widget_destroy (GTK_WIDGET (window));
+
+    g_signal_emit (editor, signals[AFTER_CLOSE_WINDOW], 0);
 
     moo_edit_array_free (docs);
 }
@@ -1494,6 +1572,9 @@ do_close_doc (MooEditor *editor,
     MooEditWindow *window;
 
     g_object_ref (doc);
+
+    g_signal_emit (editor, signals[WILL_CLOSE_DOC], 0, doc);
+    g_signal_emit_by_name (doc, "will-close");
 
     window = moo_edit_get_window (doc);
 
@@ -1517,22 +1598,17 @@ do_close_doc (MooEditor *editor,
 
 /**
  * moo_editor_close_doc:
- *
- * @editor:
- * @doc:
- * @ask_confirm: (default TRUE)
  */
 gboolean
 moo_editor_close_doc (MooEditor *editor,
-                      MooEdit   *doc,
-                      gboolean   ask_confirm)
+                      MooEdit   *doc)
 {
     gboolean result;
     MooEditArray *docs;
 
     docs = moo_edit_array_new ();
     moo_edit_array_append (docs, doc);
-    result = moo_editor_close_docs (editor, docs, ask_confirm);
+    result = moo_editor_close_docs (editor, docs);
     moo_edit_array_free (docs);
     return result;
 }
@@ -1540,15 +1616,10 @@ moo_editor_close_doc (MooEditor *editor,
 
 /**
  * moo_editor_close_docs:
- *
- * @editor:
- * @docs:
- * @ask_confirm: (default TRUE)
  */
 gboolean
 moo_editor_close_docs (MooEditor    *editor,
-                       MooEditArray *docs,
-                       gboolean      ask_confirm)
+                       MooEditArray *docs)
 {
     guint i;
     MooEditWindow *window;
@@ -1573,7 +1644,7 @@ moo_editor_close_docs (MooEditor    *editor,
 
     window = moo_edit_get_window (docs->elms[0]);
 
-    if (close_docs_real (editor, docs, ask_confirm))
+    if (close_docs_real (editor, docs))
     {
         if (window &&
             !moo_edit_window_get_n_tabs (window) &&
@@ -1598,8 +1669,7 @@ moo_editor_close_docs (MooEditor    *editor,
 
 static gboolean
 close_docs_real (MooEditor    *editor,
-                 MooEditArray *docs,
-                 gboolean      ask_confirm)
+                 MooEditArray *docs)
 {
     MooSaveChangesResponse response;
     MooEditArray *modified;
@@ -1607,7 +1677,7 @@ close_docs_real (MooEditor    *editor,
 
     modified = find_modified (docs);
 
-    if (moo_edit_array_is_empty (modified) || !ask_confirm)
+    if (moo_edit_array_is_empty (modified))
     {
         do_close = TRUE;
     }
@@ -1693,8 +1763,7 @@ find_modified (MooEditArray *docs)
 
 
 gboolean
-_moo_editor_close_all (MooEditor *editor,
-                       gboolean   ask_confirm)
+_moo_editor_close_all (MooEditor *editor)
 {
     guint i;
     MooEditWindowArray *windows;
@@ -1705,7 +1774,7 @@ _moo_editor_close_all (MooEditor *editor,
 
     for (i = 0; i < windows->n_elms; ++i)
     {
-        if (!moo_editor_close_window (editor, windows->elms[i], ask_confirm))
+        if (!moo_editor_close_window (editor, windows->elms[i]))
         {
             moo_edit_window_array_free (windows);
             return FALSE;
@@ -2273,7 +2342,7 @@ moo_editor_open_path (MooEditor     *editor,
 //     if (!doc)
 //         doc = moo_editor_new_doc (editor, window);
 //
-//     _moo_edit_set_status (doc, MOO_EDIT_NEW);
+//     _moo_edit_set_status (doc, MOO_EDIT_STATUS_NEW);
 //     _moo_edit_set_file (doc, file, encoding);
 //     moo_editor_set_active_doc (editor, doc);
 //     gtk_widget_grab_focus (GTK_WIDGET (doc));
@@ -2322,7 +2391,7 @@ moo_editor_open_path (MooEditor     *editor,
 //     if (!doc)
 //         doc = moo_editor_new_doc (editor, window);
 //
-//     _moo_edit_set_status (doc, MOO_EDIT_NEW);
+//     _moo_edit_set_status (doc, MOO_EDIT_STATUS_NEW);
 //     file = g_file_new_for_path (filename);
 //     _moo_edit_set_file (doc, file, encoding);
 //     moo_editor_set_active_doc (editor, doc);
@@ -2461,12 +2530,12 @@ moo_editor_reload (MooEditor     *editor,
 }
 
 
-static MooEditSaveResponse
+static MooSaveResponse
 moo_editor_before_save (G_GNUC_UNUSED MooEditor *editor,
                         G_GNUC_UNUSED MooEdit *doc,
                         G_GNUC_UNUSED GFile *file)
 {
-    return MOO_EDIT_SAVE_RESPONSE_CONTINUE;
+    return MOO_SAVE_RESPONSE_CONTINUE;
 }
 
 static MooEditSaveFlags
@@ -2480,6 +2549,17 @@ moo_editor_get_save_flags (MooEditor *editor)
     return flags;
 }
 
+static void
+moo_editor_will_save (G_GNUC_UNUSED MooEditor *editor,
+                      MooEdit *doc,
+                      G_GNUC_UNUSED GFile *file)
+{
+    if (moo_edit_config_get_bool (doc->config, "strip"))
+        _moo_edit_strip_whitespace (doc);
+    if (moo_edit_config_get_bool (doc->config, "add-newline"))
+        _moo_edit_ensure_newline (doc);
+}
+
 static gboolean
 do_save (MooEditor    *editor,
          MooEdit      *doc,
@@ -2487,18 +2567,16 @@ do_save (MooEditor    *editor,
          const char   *encoding,
          GError      **error)
 {
-    gboolean strip;
-    gboolean add_newline;
-    int response = MOO_EDIT_SAVE_RESPONSE_CONTINUE;
+    int response = MOO_SAVE_RESPONSE_CONTINUE;
     GError *error_here = NULL;
     gboolean result;
 
     g_signal_emit (editor, signals[BEFORE_SAVE], 0, doc, file, &response);
 
-    if (response != MOO_EDIT_SAVE_RESPONSE_CANCEL)
+    if (response != MOO_SAVE_RESPONSE_CANCEL)
         g_signal_emit_by_name (doc, "before-save", file, &response);
 
-    if (response == MOO_EDIT_SAVE_RESPONSE_CANCEL)
+    if (response == MOO_SAVE_RESPONSE_CANCEL)
     {
         g_set_error (error,
                      MOO_EDIT_SAVE_ERROR,
@@ -2507,13 +2585,8 @@ do_save (MooEditor    *editor,
         return FALSE;
     }
 
-    strip = moo_edit_config_get_bool (doc->config, "strip");
-    add_newline = moo_edit_config_get_bool (doc->config, "add-newline");
-
-    if (strip)
-        _moo_edit_strip_whitespace (doc);
-    if (add_newline)
-        _moo_edit_ensure_newline (doc);
+    g_signal_emit (editor, signals[WILL_SAVE], 0, doc, file);
+    g_signal_emit_by_name (doc, "will-save", file);
 
     result = _moo_edit_save_file (doc, file, encoding,
                                   moo_editor_get_save_flags (editor),
@@ -2587,7 +2660,7 @@ moo_editor_save (MooEditor  *editor,
     encoding = g_strdup (moo_edit_get_encoding (doc));
 
     if (!is_embedded (editor) &&
-        (moo_edit_get_status (doc) & MOO_EDIT_MODIFIED_ON_DISK) &&
+        (moo_edit_get_status (doc) & MOO_EDIT_STATUS_MODIFIED_ON_DISK) &&
         !_moo_edit_overwrite_modified_dialog (doc))
     {
         g_set_error (error,

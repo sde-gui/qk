@@ -32,6 +32,7 @@
 #include "mooutils/mooutils-mem.h"
 #include "mooutils/mooeditops.h"
 #include "mooutils/mootype-macros.h"
+#include "mooutils/mooutils-enums.h"
 #include "mooutils/moocompat.h"
 #include <gtk/gtk.h>
 #include <gobject/gvaluecollector.h>
@@ -154,6 +155,8 @@ static void         moo_window_set_statusbar_visible    (MooWindow      *window,
 static GtkAction   *create_toolbar_style_action         (MooWindow      *window,
                                                          gpointer        dummy);
 
+static MooCloseResponse moo_window_close_handler        (MooWindow      *window);
+
 static void         moo_window_set_focus                (GtkWindow      *window,
                                                          GtkWidget      *widget);
 static void         moo_window_disconnect_eo_widget     (MooWindow      *window);
@@ -196,7 +199,6 @@ enum {
 
 enum {
     CLOSE,
-    APPLY_PREFS,
     LAST_SIGNAL
 };
 
@@ -230,6 +232,8 @@ moo_window_class_init (MooWindowClass *klass)
     widget_class->delete_event = moo_window_delete_event;
     widget_class->key_press_event = moo_window_key_press_event;
     window_class->set_focus = moo_window_set_focus;
+
+    klass->close = moo_window_close_handler;
 
     moo_window_class_set_id (klass, "MooWindow", "Window");
 
@@ -394,18 +398,10 @@ moo_window_class_init (MooWindowClass *klass)
                       G_OBJECT_CLASS_TYPE (klass),
                       G_SIGNAL_RUN_LAST,
                       G_STRUCT_OFFSET (MooWindowClass, close),
-                      g_signal_accumulator_true_handled, NULL,
-                      _moo_marshal_BOOL__VOID,
-                      G_TYPE_BOOLEAN, 0);
-
-    signals[APPLY_PREFS] =
-            g_signal_new ("apply-prefs",
-                      G_OBJECT_CLASS_TYPE (klass),
-                      G_SIGNAL_RUN_LAST,
-                      G_STRUCT_OFFSET (MooWindowClass, apply_prefs),
-                      NULL, NULL,
-                      _moo_marshal_VOID__VOID,
-                      G_TYPE_NONE, 0);
+                      moo_signal_accumulator_continue_cancel,
+                      GINT_TO_POINTER (MOO_CLOSE_RESPONSE_CONTINUE),
+                      _moo_marshal_ENUM__VOID,
+                      MOO_TYPE_CLOSE_RESPONSE, 0);
 }
 
 
@@ -626,9 +622,9 @@ static gboolean
 moo_window_delete_event (GtkWidget      *widget,
                          G_GNUC_UNUSED GdkEventAny *event)
 {
-    gboolean result = FALSE;
+    MooCloseResponse result = FALSE;
     g_signal_emit_by_name (widget, "close", &result);
-    return result;
+    return TRUE;
 }
 
 
@@ -801,28 +797,28 @@ moo_window_save_size (MooWindow *window)
 }
 
 
+static MooCloseResponse
+moo_window_close_handler (G_GNUC_UNUSED MooWindow *window)
+{
+    return MOO_CLOSE_RESPONSE_CONTINUE;
+}
+
 gboolean
 moo_window_close (MooWindow *window)
 {
-    gboolean result = FALSE;
-    g_signal_emit_by_name (window, "close", &result);
-    if (!result)
+    MooCloseResponse response = MOO_CLOSE_RESPONSE_CONTINUE;
+
+    g_signal_emit_by_name (window, "close", &response);
+
+    if (response == MOO_CLOSE_RESPONSE_CANCEL)
+    {
+        return FALSE;
+    }
+    else
     {
         gtk_widget_destroy (GTK_WIDGET (window));
         return TRUE;
     }
-    else
-    {
-        return FALSE;
-    }
-}
-
-
-void
-moo_window_apply_prefs (MooWindow *window)
-{
-    g_return_if_fail (MOO_IS_WINDOW (window));
-    g_signal_emit (window, signals[APPLY_PREFS], 0);
 }
 
 

@@ -81,7 +81,7 @@ test_basic (void)
     doc2 = moo_editor_open_path (editor, filename, NULL, -1, NULL);
     TEST_ASSERT (doc2 == doc);
 
-    TEST_ASSERT (moo_edit_close (doc, TRUE));
+    TEST_ASSERT (moo_edit_close (doc));
     TEST_ASSERT (moo_editor_get_doc_for_path (editor, filename) == NULL);
 
     g_file_set_contents (filename, TT4, -1, NULL);
@@ -89,21 +89,21 @@ test_basic (void)
     TEST_ASSERT (doc != NULL);
     TEST_ASSERT (moo_edit_save (doc, NULL));
     check_contents (filename, TT4);
-    TEST_ASSERT (moo_edit_close (doc, TRUE));
+    TEST_ASSERT (moo_edit_close (doc));
 
     g_file_set_contents (filename, TT5, -1, NULL);
     doc = moo_editor_open_path (editor, filename, NULL, -1, NULL);
     TEST_ASSERT (doc != NULL);
     TEST_ASSERT (moo_edit_save (doc, NULL));
     check_contents (filename, TT5);
-    TEST_ASSERT (moo_edit_close (doc, TRUE));
+    TEST_ASSERT (moo_edit_close (doc));
 
     g_file_set_contents (filename, TT6, -1, NULL);
     doc = moo_editor_open_path (editor, filename, NULL, -1, NULL);
     TEST_ASSERT (doc != NULL);
     TEST_ASSERT (moo_edit_save (doc, NULL));
     check_contents (filename, TT6);
-    TEST_ASSERT (moo_edit_close (doc, TRUE));
+    TEST_ASSERT (moo_edit_close (doc));
 
     g_object_unref (info);
     g_free (filename);
@@ -169,7 +169,7 @@ test_encodings_1 (const char *name,
         MooSaveInfo *info = moo_save_info_new_path (filename2, NULL);
         TEST_ASSERT (moo_edit_save_as (doc, info, NULL));
         TEST_ASSERT_SAME_FILE_CONTENT (filename2, filename);
-        TEST_ASSERT (moo_edit_close (doc, TRUE));
+        TEST_ASSERT (moo_edit_close (doc));
         g_object_unref (info);
     }
 

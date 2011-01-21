@@ -67,7 +67,7 @@ static void     moo_edit_get_property           (GObject        *object,
                                                  GValue         *value,
                                                  GParamSpec     *pspec);
 
-static MooEditSaveResponse moo_edit_before_save (MooEdit        *doc,
+static MooSaveResponse moo_edit_before_save     (MooEdit        *doc,
                                                  GFile          *file);
 
 static void     config_changed                  (MooEdit        *edit);
@@ -87,7 +87,9 @@ static void     moo_edit_thaw_notify            (MooEdit        *doc);
 enum {
     DOC_STATUS_CHANGED,
     FILENAME_CHANGED,
+    WILL_CLOSE,
     BEFORE_SAVE,
+    WILL_SAVE,
     AFTER_SAVE,
     LAST_SIGNAL
 };
@@ -165,16 +167,80 @@ moo_edit_class_init (MooEditClass *klass)
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
 
+    /**
+     * MooEdit::will-close:
+     *
+     * @doc: the object which received the signal
+     *
+     * This signal is emitted before the document is closed.
+     **/
+    signals[WILL_CLOSE] =
+            g_signal_new ("will-close",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditClass, will_close),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
+
+    /**
+     * MooEdit::before-save:
+     *
+     * @doc: the object which received the signal
+     * @file: the #GFile object which represents saved file
+     *
+     * This signal is emitted when the document is going to be saved on disk.
+     * Callbacks should return #MOO_SAVE_RESPONSE_CANCEL if document
+     * should not be saved, and #MOO_SAVE_RESPONSE_CONTINUE otherwise.
+     *
+     * For example, if before saving the file must be checked out from a version
+     * control system, a callback can do that and return #MOO_SAVE_RESPONSE_CANCEL
+     * if checkout failed.
+     *
+     * Callbacks should not modify document content. If you need to modify
+     * it before saving, use MooEdit::will-save signal instead.
+     *
+     * Returns: #MOO_SAVE_RESPONSE_CANCEL to cancel saving,
+     * #MOO_SAVE_RESPONSE_CONTINUE otherwise.
+     **/
     signals[BEFORE_SAVE] =
             g_signal_new ("before-save",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooEditClass, before_save),
-                          (GSignalAccumulator) _moo_signal_accumulator_save_response, NULL,
+                          moo_signal_accumulator_continue_cancel,
+                          GINT_TO_POINTER (MOO_SAVE_RESPONSE_CONTINUE),
                           _moo_marshal_ENUM__OBJECT,
-                          MOO_TYPE_EDIT_SAVE_RESPONSE, 1,
+                          MOO_TYPE_SAVE_RESPONSE, 1,
                           G_TYPE_FILE);
 
+    /**
+     * MooEdit::will-save:
+     *
+     * @doc: the object which received the signal
+     * @file: the #GFile object which represents saved file
+     *
+     * This signal is emitted when the document is going to be saved on disk,
+     * after MooEdit::before-save signal. Callbacks may modify document
+     * content at this point.
+     **/
+    signals[WILL_SAVE] =
+            g_signal_new ("will-save",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditClass, will_save),
+                          NULL, NULL,
+                          _moo_marshal_VOID__OBJECT,
+                          G_TYPE_NONE, 1,
+                          G_TYPE_FILE);
+
+    /**
+     * MooEdit::after-save:
+     *
+     * @doc: the object which received the signal
+     *
+     * This signal is emitted after the document has been successfully saved on disk.
+     **/
     signals[AFTER_SAVE] =
             g_signal_new ("after-save",
                           G_OBJECT_CLASS_TYPE (klass),
@@ -450,7 +516,7 @@ moo_edit_set_modified (MooEdit            *edit,
                                   edit->priv->modified_changed_handler_id);
     }
 
-    modify_status (edit, MOO_EDIT_MODIFIED, modified);
+    modify_status (edit, MOO_EDIT_STATUS_MODIFIED, modified);
 
     _moo_edit_status_changed (edit);
 }
@@ -464,7 +530,7 @@ moo_edit_set_clean (MooEdit  *edit,
                     gboolean  clean)
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
-    modify_status (edit, MOO_EDIT_CLEAN, clean);
+    modify_status (edit, MOO_EDIT_STATUS_CLEAN, clean);
     _moo_edit_status_changed (edit);
 }
 
@@ -475,7 +541,7 @@ gboolean
 moo_edit_get_clean (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return (edit->priv->status & MOO_EDIT_CLEAN) ? TRUE : FALSE;
+    return (edit->priv->status & MOO_EDIT_STATUS_CLEAN) ? TRUE : FALSE;
 }
 
 
@@ -1296,24 +1362,21 @@ moo_edit_reload (MooEdit       *doc,
  * moo_edit_close:
  *
  * @edit:
- * @ask_confirm: (default TRUE): whether user should be asked if he wants
- * to save changes before closing if the document is modified.
  *
  * Returns: whether document was closed
  **/
 gboolean
-moo_edit_close (MooEdit        *edit,
-                gboolean        ask_confirm)
+moo_edit_close (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return moo_editor_close_doc (edit->priv->editor, edit, ask_confirm);
+    return moo_editor_close_doc (edit->priv->editor, edit);
 }
 
-static MooEditSaveResponse
+static MooSaveResponse
 moo_edit_before_save (G_GNUC_UNUSED MooEdit *doc,
                       G_GNUC_UNUSED GFile *file)
 {
-    return MOO_EDIT_SAVE_RESPONSE_CONTINUE;
+    return MOO_SAVE_RESPONSE_CONTINUE;
 }
 
 /**

@@ -2233,6 +2233,31 @@ moo_error_message (GError *error)
 }
 
 
+gboolean
+moo_signal_accumulator_continue_cancel (G_GNUC_UNUSED GSignalInvocationHint *ihint,
+                                        GValue                *return_accu,
+                                        const GValue          *handler_return,
+                                        gpointer               val_continue)
+{
+    int ret = g_value_get_enum (handler_return);
+    int ival_continue = GPOINTER_TO_INT (val_continue);
+    int ival_cancel = ival_continue + 1;
+
+    if (ret == ival_cancel)
+    {
+        g_value_set_enum (return_accu, ival_cancel);
+        return FALSE;
+    }
+    else
+    {
+        g_value_set_enum (return_accu, ival_continue);
+        if (ret != ival_continue)
+            g_critical ("invalid return value %d", ret);
+        return TRUE;
+    }
+}
+
+
 static char *debug_domains;
 void _moo_set_debug (const char *domains);
 gboolean moo_debug_enabled (const char *domain, gboolean def_enabled);

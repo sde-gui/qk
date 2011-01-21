@@ -5,6 +5,7 @@
 #include <mooutils/mooarray.h>
 #include <mooutils/moolist.h>
 #include <mooutils/mootype-macros.h>
+#include <mooedit/mooedit-enum-types.h>
 
 G_BEGIN_DECLS
 

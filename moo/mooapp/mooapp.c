@@ -33,6 +33,7 @@
 #include "mooedit/mooeditor.h"
 #include "mooedit/mooplugin.h"
 #include "mooedit/mooeditfileinfo.h"
+#include "mooedit/mooedit-enums.h"
 #include "mooutils/mooprefsdialog.h"
 #include "marshals.h"
 #include "mooutils/mooappinput.h"
@@ -564,25 +565,20 @@ moo_app_get_editor (MooApp *app)
 }
 
 
-static gboolean
-close_editor_window (MooApp *app)
+static void
+editor_after_close_window (MooApp *app)
 {
     MooEditWindowArray *windows;
-    gboolean ret = FALSE;
 
     if (!app->priv->running || app->priv->in_try_quit)
-        return FALSE;
+        return;
 
     windows = moo_editor_get_windows (app->priv->editor);
 
-    if (moo_edit_window_array_get_size (windows) == 1)
-    {
+    if (moo_edit_window_array_get_size (windows) == 0)
         moo_app_quit (app);
-        ret = TRUE;
-    }
 
     moo_edit_window_array_free (windows);
-    return ret;
 }
 
 static void
@@ -597,8 +593,8 @@ moo_app_init_editor (MooApp *app)
 {
     app->priv->editor = moo_editor_create (FALSE);
 
-    g_signal_connect_swapped (app->priv->editor, "close-window",
-                              G_CALLBACK (close_editor_window), app);
+    g_signal_connect_swapped (app->priv->editor, "after-close-window",
+                              G_CALLBACK (editor_after_close_window), app);
 
     /* if ui_xml wasn't set yet, then moo_app_get_ui_xml()
        will get editor's xml */
@@ -856,7 +852,7 @@ moo_app_try_quit_real (MooApp *app)
 
     moo_app_save_session (app);
 
-    if (!_moo_editor_close_all (app->priv->editor, TRUE))
+    if (!_moo_editor_close_all (app->priv->editor))
         return TRUE;
 
     return FALSE;
@@ -895,7 +891,7 @@ moo_app_quit_real (MooApp *app)
     g_object_unref (app->priv->sm_client);
     app->priv->sm_client = NULL;
 
-    _moo_editor_close_all (app->priv->editor, FALSE);
+    _moo_editor_close_all (app->priv->editor);
 
     moo_plugin_shutdown ();
 

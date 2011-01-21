@@ -48,6 +48,7 @@
 #include "mooutils/moofiledialog.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/moocompat.h"
+#include "mooutils/mooutils-enums.h"
 #include "mooedit/moostatusbar-gxml.h"
 #include <string.h>
 #include <gtk/gtk.h>
@@ -145,7 +146,9 @@ static void     moo_edit_window_get_property    (GObject            *object,
                                                  GValue             *value,
                                                  GParamSpec         *pspec);
 
-static gboolean      moo_edit_window_close              (MooWindow          *window);
+static MooCloseResponse moo_edit_window_close_handler   (MooWindow          *window);
+
+static MooCloseResponse moo_edit_window_before_close    (MooEditWindow      *window);
 
 static void          queue_save_window_config           (MooEditWindow      *window);
 
@@ -312,6 +315,8 @@ enum {
 };
 
 enum {
+    BEFORE_CLOSE,
+    WILL_CLOSE,
     NEW_DOC,
     CLOSE_DOC,
     CLOSE_DOC_AFTER,
@@ -320,11 +325,9 @@ enum {
 
 static guint signals[NUM_SIGNALS];
 
-
 #define INSTALL_PROP(prop_id,name)                                          \
     g_object_class_install_property (gobject_class, prop_id,                \
         g_param_spec_boolean (name, name, name, FALSE, G_PARAM_READABLE))
-
 
 static void
 moo_edit_window_class_init (MooEditWindowClass *klass)
@@ -341,7 +344,9 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     gobject_class->set_property = moo_edit_window_set_property;
     gobject_class->get_property = moo_edit_window_get_property;
     gtkobject_class->destroy = moo_edit_window_destroy;
-    window_class->close = moo_edit_window_close;
+    window_class->close = moo_edit_window_close_handler;
+
+    klass->before_close = moo_edit_window_before_close;
 
     g_type_class_add_private (klass, sizeof (MooEditWindowPrivate));
 
@@ -352,6 +357,25 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     g_object_class_install_property (gobject_class, PROP_ACTIVE_DOC,
         g_param_spec_object ("active-doc", "active-doc", "active-doc",
                              MOO_TYPE_EDIT, (GParamFlags) G_PARAM_READWRITE));
+
+    signals[BEFORE_CLOSE] =
+            g_signal_new ("before-close",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditWindowClass, before_close),
+                          moo_signal_accumulator_continue_cancel,
+                          GINT_TO_POINTER (MOO_CLOSE_RESPONSE_CONTINUE),
+                          _moo_marshal_ENUM__VOID,
+                          MOO_TYPE_CLOSE_RESPONSE, 0);
+
+    signals[WILL_CLOSE] =
+            g_signal_new ("will-close",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooEditWindowClass, will_close),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[NEW_DOC] =
             g_signal_new ("new-doc",
@@ -1024,17 +1048,17 @@ get_doc_status_string (MooEdit *doc)
     gboolean modified;
 
     status = moo_edit_get_status (doc);
-    modified = (status & MOO_EDIT_MODIFIED) && !(status & MOO_EDIT_CLEAN);
+    modified = (status & MOO_EDIT_STATUS_MODIFIED) && !(status & MOO_EDIT_STATUS_CLEAN);
 
     if (!modified)
     {
-        if (status & MOO_EDIT_NEW)
+        if (status & MOO_EDIT_STATUS_NEW)
             /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file]" */
             return g_strdup_printf (_("%s [new file]"), "");
-        else if (status & MOO_EDIT_MODIFIED_ON_DISK)
+        else if (status & MOO_EDIT_STATUS_MODIFIED_ON_DISK)
             /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk]" */
             return g_strdup_printf (_("%s [modified on disk]"), "");
-        else if (status & MOO_EDIT_DELETED)
+        else if (status & MOO_EDIT_STATUS_DELETED)
             /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted]" */
             return g_strdup_printf (_("%s [deleted]"), "");
         else
@@ -1042,13 +1066,13 @@ get_doc_status_string (MooEdit *doc)
     }
     else
     {
-        if (status & MOO_EDIT_NEW)
+        if (status & MOO_EDIT_STATUS_NEW)
             /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [new file] [modified]" */
             return g_strdup_printf (_("%s [new file] [modified]"), "");
-        else if (status & MOO_EDIT_MODIFIED_ON_DISK)
+        else if (status & MOO_EDIT_STATUS_MODIFIED_ON_DISK)
             /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [modified on disk] [modified]" */
             return g_strdup_printf (_("%s [modified on disk] [modified]"), "");
-        else if (status & MOO_EDIT_DELETED)
+        else if (status & MOO_EDIT_STATUS_DELETED)
             /* Translators: this goes into window title, %s stands for filename, e.g. "/foo/bar.txt [deleted] [modified]" */
             return g_strdup_printf (_("%s [deleted] [modified]"), "");
         else
@@ -1216,19 +1240,25 @@ moo_edit_window_close_all (MooEditWindow *window)
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
 
     docs = moo_edit_window_get_docs (window);
-    result = moo_editor_close_docs (window->priv->editor, docs, TRUE);
+    result = moo_editor_close_docs (window->priv->editor, docs);
 
     moo_edit_array_free (docs);
     return result;
 }
 
 
-static gboolean
-moo_edit_window_close (MooWindow *window)
+static MooCloseResponse
+moo_edit_window_before_close (G_GNUC_UNUSED MooEditWindow *window)
+{
+    return MOO_CLOSE_RESPONSE_CONTINUE;
+}
+
+static MooCloseResponse
+moo_edit_window_close_handler (MooWindow *window)
 {
     MooEditWindow *edit_window = MOO_EDIT_WINDOW (window);
-    moo_editor_close_window (edit_window->priv->editor, edit_window, TRUE);
-    return TRUE;
+    moo_editor_close_window (edit_window->priv->editor, edit_window);
+    return MOO_CLOSE_RESPONSE_CANCEL;
 }
 
 
@@ -1446,7 +1476,7 @@ action_close_tab (MooEditWindow *window)
 {
     MooEdit *doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
-    moo_editor_close_doc (window->priv->editor, doc, TRUE);
+    moo_editor_close_doc (window->priv->editor, doc);
 }
 
 
@@ -1941,7 +1971,7 @@ close_activated (GtkWidget     *item,
     MooEdit *doc = g_object_get_data (G_OBJECT (item), "moo-edit");
     g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
     g_return_if_fail (MOO_IS_EDIT (doc));
-    moo_editor_close_doc (window->priv->editor, doc, TRUE);
+    moo_editor_close_doc (window->priv->editor, doc);
 }
 
 
@@ -1959,7 +1989,7 @@ close_others_activated (GtkWidget     *item,
     moo_edit_array_remove (others, doc);
 
     if (!moo_edit_array_is_empty (others))
-        moo_editor_close_docs (window->priv->editor, others, TRUE);
+        moo_editor_close_docs (window->priv->editor, others);
 
     moo_edit_array_free (others);
 }
@@ -2175,8 +2205,7 @@ notebook_button_press (MooNotebook    *notebook,
         return FALSE;
 
     moo_editor_close_doc (window->priv->editor,
-                          get_nth_doc (notebook, n),
-                          TRUE);
+                          get_nth_doc (notebook, n));
 
     return TRUE;
 }
@@ -2311,7 +2340,7 @@ notebook_close_button_clicked (GtkWidget     *button,
 {
     MooNotebook *notebook = g_object_get_data (G_OBJECT (button), "moo-notebook");
     g_return_if_fail (notebook != NULL);
-    moo_editor_close_doc (window->priv->editor, get_notebook_active_doc (notebook), TRUE);
+    moo_editor_close_doc (window->priv->editor, get_notebook_active_doc (notebook));
 }
 
 static void
@@ -3223,7 +3252,7 @@ tab_icon_drag_end (GtkWidget      *evbox,
 static void
 tab_close_button_clicked (MooEdit *doc)
 {
-    moo_edit_close (doc, TRUE);
+    moo_edit_close (doc);
 }
 
 static GtkWidget *
@@ -3367,8 +3396,8 @@ update_tab_label (MooEditTab    *tab,
 
     status = moo_edit_get_status (doc);
 
-    deleted = status & (MOO_EDIT_DELETED | MOO_EDIT_MODIFIED_ON_DISK);
-    modified = (status & MOO_EDIT_MODIFIED) && !(status & MOO_EDIT_CLEAN);
+    deleted = status & (MOO_EDIT_STATUS_DELETED | MOO_EDIT_STATUS_MODIFIED_ON_DISK);
+    modified = (status & MOO_EDIT_STATUS_MODIFIED) && !(status & MOO_EDIT_STATUS_CLEAN);
 
     label_text = g_strdup_printf ("%s%s%s",
                                   deleted ? "!" : "",

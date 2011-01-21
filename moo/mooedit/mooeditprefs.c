@@ -219,7 +219,7 @@ _moo_edit_view_apply_prefs (MooEditView *view)
 {
     MooLangMgr *mgr;
     MooTextStyleScheme *scheme;
-    MooDrawWhitespaceFlags ws_flags = 0;
+    MooDrawWsFlags ws_flags = 0;
 
     g_return_if_fail (MOO_IS_EDIT_VIEW (view));
 
@@ -229,11 +229,11 @@ _moo_edit_view_apply_prefs (MooEditView *view)
     scheme = moo_lang_mgr_get_active_scheme (mgr);
 
     if (get_bool (MOO_EDIT_PREFS_SHOW_TABS))
-        ws_flags |= MOO_DRAW_TABS;
+        ws_flags |= MOO_DRAW_WS_TABS;
     if (get_bool (MOO_EDIT_PREFS_SHOW_SPACES))
-        ws_flags |= MOO_DRAW_SPACES;
+        ws_flags |= MOO_DRAW_WS_SPACES;
     if (get_bool (MOO_EDIT_PREFS_SHOW_TRAILING_SPACES))
-        ws_flags |= MOO_DRAW_TRAILING_SPACES;
+        ws_flags |= MOO_DRAW_WS_TRAILING;
 
     g_object_set (view,
                   "smart-home-end", get_bool (MOO_EDIT_PREFS_SMART_HOME_END),

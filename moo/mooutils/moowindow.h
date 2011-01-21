@@ -31,6 +31,10 @@ G_BEGIN_DECLS
 #define MOO_IS_WINDOW_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_WINDOW))
 #define MOO_WINDOW_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_WINDOW, MooWindowClass))
 
+typedef enum {
+    MOO_CLOSE_RESPONSE_CONTINUE = 4,
+    MOO_CLOSE_RESPONSE_CANCEL
+} MooCloseResponse;
 
 typedef struct _MooWindow        MooWindow;
 typedef struct _MooWindowPrivate MooWindowPrivate;
@@ -54,20 +58,16 @@ struct _MooWindowClass
 {
     GtkWindowClass      parent_class;
 
-    /* signals */
-    gboolean (*close)       (MooWindow *window);
-
-    void     (*apply_prefs) (MooWindow *window);
+    /**signal:MooWindow**/
+    MooCloseResponse (*close) (MooWindow *window);
 };
 
 typedef GtkAction *(*MooWindowActionFunc) (MooWindow *window,
                                            gpointer   data);
 
-
 GType       moo_window_get_type             (void) G_GNUC_CONST;
 
 gboolean    moo_window_close                (MooWindow  *window);
-void        moo_window_apply_prefs          (MooWindow  *window);
 void        moo_window_message              (MooWindow  *window,
                                              const char *text);
 

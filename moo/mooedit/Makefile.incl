@@ -1,4 +1,11 @@
-mooedit_enum_headers =			\
+moo_edit_enum_headers =			\
+	mooedit/mooedit-enums.h
+
+moo_sources +=				\
+	$(moo_edit_enum_headers)	\
+	mooedit/mooeditor.h		\
+	mooedit/mootextview.h		\
+	mooedit/mootextprint.h		\
 	mooedit/mooeditview.h		\
 	mooedit/mooeditaction.h		\
 	mooedit/mooeditbookmark.h	\
@@ -15,14 +22,8 @@ mooedit_enum_headers =			\
 	mooedit/mootextbuffer.h		\
 	mooedit/mootextfind.h		\
 	mooedit/mootextiter.h		\
-	mooedit/mootextprint.h		\
 	mooedit/mootextsearch.h		\
 	mooedit/mootextstylescheme.h	\
-	mooedit/mootextview.h		\
-	mooedit/mooeditor.h
-
-moo_sources +=				\
-	$(mooedit_enum_headers)		\
 	mooedit/mooeditview.c		\
 	mooedit/mooeditview-priv.h	\
 	mooedit/mooeditview-impl.h	\
@@ -36,7 +37,8 @@ moo_sources +=				\
 	mooedit/mooedit.c		\
 	mooedit/mooeditconfig.c		\
 	mooedit/mooeditdialogs.c	\
-	mooedit/mooedit-enums.c		\
+	mooedit/mooedit-enum-types.c	\
+	mooedit/mooedit-enum-types.h	\
 	mooedit/mooedit-enums.h		\
 	mooedit/mooedit-fileops.c	\
 	mooedit/mooedit-fileops.h	\
@@ -130,20 +132,23 @@ EXTRA_DIST += mooedit/medit.xml mooedit/mooedit.xml
 built_moo_sources += mooedit/medit-ui.h mooedit/mooedit-ui.h
 
 if MOO_DEV_MODE
-
-if MOO_OS_WIN32
-win32_arg = win32=True
-else
-win32_arg = win32=False
-endif
-
-built_moo_sources += mooedit/mooedit-enums.stamp
-mooedit/mooedit-enums.stamp: mooedit/mooedit-enums-in.py $(top_srcdir)/tools/genenums.py
+built_moo_sources += mooedit/mooedit-enum-types.h.stamp mooedit/mooedit-enum-types.c.stamp
+mooedit/mooedit-enum-types.h.stamp: $(moo_edit_enum_headers) Makefile mooedit/mooedit-enum-types.h.tmpl
 	$(AM_V_at)$(MKDIR_P) mooedit
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/genenums.py MOO_EDIT \
-		$(srcdir)/mooedit/mooedit-enums-in.py $(srcdir)/mooedit/mooedit-enums mooedit/mooedit-enums.stamp \
-		$(win32_arg)
-
+	$(AM_V_GEN)( cd $(srcdir) && \
+		$(GLIB_MKENUMS) --template mooedit/mooedit-enum-types.h.tmpl $(moo_edit_enum_headers) ) > mooedit/mooedit-enum-types.h.tmp
+	$(AM_V_at)cmp -s mooedit/mooedit-enum-types.h.tmp $(srcdir)/mooedit/mooedit-enum-types.h || \
+		mv mooedit/mooedit-enum-types.h.tmp $(srcdir)/mooedit/mooedit-enum-types.h
+	$(AM_V_at)rm -f mooedit/mooedit-enum-types.h.tmp
+	$(AM_V_at)echo stamp > mooedit/mooedit-enum-types.h.stamp
+mooedit/mooedit-enum-types.c.stamp: $(moo_edit_enum_headers) Makefile mooedit/mooedit-enum-types.c.tmpl
+	$(AM_V_at)$(MKDIR_P) mooedit
+	$(AM_V_GEN)( cd $(srcdir) && \
+		$(GLIB_MKENUMS) --template mooedit/mooedit-enum-types.c.tmpl $(moo_edit_enum_headers) ) > mooedit/mooedit-enum-types.c.tmp
+	$(AM_V_at)cmp -s mooedit/mooedit-enum-types.c.tmp $(srcdir)/mooedit/mooedit-enum-types.c || \
+		mv mooedit/mooedit-enum-types.c.tmp $(srcdir)/mooedit/mooedit-enum-types.c
+	$(AM_V_at)rm -f mooedit/mooedit-enum-types.c.tmp
+	$(AM_V_at)echo stamp > mooedit/mooedit-enum-types.c.stamp
 endif
 
 include mooedit/langs/Makefile.incl

@@ -37,6 +37,11 @@ enums['MooEditSaveResponse'] = [
     [ 'MOO_EDIT_SAVE_RESPONSE_CANCEL',   '3', None, 'cancel' ],
 ]
 
+enums['MooEditCloseResponse'] = [
+    [ 'MOO_EDIT_CLOSE_RESPONSE_CONTINUE', '2', None, 'continue' ],
+    [ 'MOO_EDIT_CLOSE_RESPONSE_CANCEL',   '3', None, 'cancel' ],
+]
+
 # Keep in sync with line_end_menu_items in mooeditwindow.c
 enums['MooLineEndType'] = [
     [ 'MOO_LE_NONE', None, None, 'none' ],

@@ -24,7 +24,8 @@ source_files = \
     ../moo/mooedit/mooeditconfig.h\
     ../moo/mooedit/mooeditdialogs.c\
     ../moo/mooedit/mooeditdialogs.h\
-    ../moo/mooedit/mooedit-enums.c\
+    ../moo/mooedit/mooedit-enum-types.c\
+    ../moo/mooedit/mooedit-enum-types.h\
     ../moo/mooedit/mooedit-enums.h\
     ../moo/mooedit/mooeditfileinfo.c\
     ../moo/mooedit/mooeditfileinfo.c\

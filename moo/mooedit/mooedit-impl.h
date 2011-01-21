@@ -103,11 +103,6 @@ void        _moo_edit_closed                    (MooEdit        *edit);
 /* File operations
  */
 
-
-gboolean     _moo_signal_accumulator_save_response  (GSignalInvocationHint  *ihint,
-                                                     GValue                 *return_accu,
-                                                     const GValue           *handler_return);
-
 void         _moo_edit_set_file                 (MooEdit        *edit,
                                                  GFile          *file,
                                                  const char     *encoding);

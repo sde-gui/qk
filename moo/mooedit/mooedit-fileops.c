@@ -85,28 +85,6 @@ static gboolean moo_edit_save_copy_local    (MooEdit        *edit,
 static void     _moo_edit_start_file_watch  (MooEdit        *edit);
 
 
-gboolean
-_moo_signal_accumulator_save_response (G_GNUC_UNUSED GSignalInvocationHint  *ihint,
-                                       GValue *return_accu,
-                                       const GValue *handler_return)
-{
-    int ret = g_value_get_enum (handler_return);
-
-    if (ret == MOO_EDIT_SAVE_RESPONSE_CANCEL)
-    {
-        g_value_set_enum (return_accu, MOO_EDIT_SAVE_RESPONSE_CANCEL);
-        return FALSE;
-    }
-    else
-    {
-        g_value_set_enum (return_accu, MOO_EDIT_SAVE_RESPONSE_CONTINUE);
-        if (ret != MOO_EDIT_SAVE_RESPONSE_CONTINUE)
-            g_critical ("invalid save response value %d", ret);
-        return TRUE;
-    }
-}
-
-
 static const char *
 normalize_encoding (const char *encoding,
                     gboolean    for_save)
@@ -1041,7 +1019,7 @@ file_watch_callback (G_GNUC_UNUSED MooFileWatch *watch,
     g_return_if_fail (MOO_IS_EDIT (data));
     g_return_if_fail (event->monitor_id == edit->priv->file_monitor_id);
     g_return_if_fail (edit->priv->filename != NULL);
-    g_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
+    g_return_if_fail (!(edit->priv->status & MOO_EDIT_STATUS_CHANGED_ON_DISK));
 
     switch (event->code)
     {
@@ -1080,7 +1058,7 @@ _moo_edit_start_file_watch (MooEdit *edit)
         moo_file_watch_cancel_monitor (watch, edit->priv->file_monitor_id);
     edit->priv->file_monitor_id = 0;
 
-    g_return_if_fail ((edit->priv->status & MOO_EDIT_CHANGED_ON_DISK) == 0);
+    g_return_if_fail ((edit->priv->status & MOO_EDIT_STATUS_CHANGED_ON_DISK) == 0);
     g_return_if_fail (edit->priv->filename != NULL);
 
     edit->priv->file_monitor_id =
@@ -1116,7 +1094,7 @@ static void
 check_file_status (MooEdit *edit)
 {
     g_return_if_fail (edit->priv->filename != NULL);
-    g_return_if_fail (!(edit->priv->status & MOO_EDIT_CHANGED_ON_DISK));
+    g_return_if_fail (!(edit->priv->status & MOO_EDIT_STATUS_CHANGED_ON_DISK));
 
     if (edit->priv->deleted_from_disk)
         file_deleted (edit);
@@ -1132,7 +1110,7 @@ file_modified_on_disk (MooEdit *edit)
     edit->priv->modified_on_disk = FALSE;
     edit->priv->deleted_from_disk = FALSE;
     _moo_edit_stop_file_watch (edit);
-    add_status (edit, MOO_EDIT_MODIFIED_ON_DISK);
+    add_status (edit, MOO_EDIT_STATUS_MODIFIED_ON_DISK);
 }
 
 
@@ -1143,7 +1121,7 @@ file_deleted (MooEdit *edit)
     edit->priv->modified_on_disk = FALSE;
     edit->priv->deleted_from_disk = FALSE;
     _moo_edit_stop_file_watch (edit);
-    add_status (edit, MOO_EDIT_DELETED);
+    add_status (edit, MOO_EDIT_STATUS_DELETED);
 }
 
 

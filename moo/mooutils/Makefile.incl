@@ -1,4 +1,11 @@
+moo_utils_enum_headers =		\
+	mooutils/moodialogs.h		\
+	mooutils/moofiledialog.h	\
+	mooutils/moouixml.h		\
+	mooutils/moowindow.h
+
 moo_sources +=				\
+	$(moo_utils_enum_headers)	\
 	mooutils/mooarray.h		\
 	mooutils/mooutils-thread.c	\
 	mooutils/mooutils-thread.h	\
@@ -36,7 +43,6 @@ moo_sources +=				\
 	mooutils/moocombo.h		\
 	mooutils/moocompat.h		\
 	mooutils/moodialogs.c		\
-	mooutils/moodialogs.h		\
 	mooutils/mooeditops.c		\
 	mooutils/mooeditops.h		\
 	mooutils/mooencodings-data.h	\
@@ -45,7 +51,6 @@ moo_sources +=				\
 	mooutils/mooentry.c		\
 	mooutils/mooentry.h		\
 	mooutils/moofiledialog.c	\
-	mooutils/moofiledialog.h	\
 	mooutils/moofileicon.c		\
 	mooutils/moofileicon.h		\
 	mooutils/moofilewatch.c		\
@@ -100,7 +105,6 @@ moo_sources +=				\
 	mooutils/moostock.h		\
 	mooutils/mootype-macros.h	\
 	mooutils/moouixml.c		\
-	mooutils/moouixml.h		\
 	mooutils/mooundo.c		\
 	mooutils/mooundo.h		\
 	mooutils/mooutils.h		\
@@ -125,7 +129,6 @@ moo_sources +=				\
 	mooutils/mooutils-treeview.c	\
 	mooutils/mooutils-treeview.h	\
 	mooutils/moowindow.c		\
-	mooutils/moowindow.h		\
 	mooutils/stock-file-24.h	\
 	mooutils/stock-file-selector-24.h\
 	mooutils/stock-terminal-24.h
@@ -136,6 +139,24 @@ marshals.c: $(moo_srcdir)/marshals.list
 	$(AM_V_at)echo '#include "marshals.h"' > marshals.c.tmp
 	$(AM_V_GEN)$(GLIB_GENMARSHAL) --prefix=_moo_marshal --body $(moo_srcdir)/marshals.list >> marshals.c.tmp \
 		&& mv marshals.c.tmp marshals.c
+
+built_moo_sources += mooutils/mooutils-enums.h.stamp mooutils/mooutils-enums.c.stamp
+mooutils/mooutils-enums.h.stamp: $(moo_utils_enum_headers) Makefile mooutils/mooutils-enums.tmpl.h
+	$(AM_V_at)$(MKDIR_P) mooutils
+	$(AM_V_GEN)( cd $(srcdir) && \
+		$(GLIB_MKENUMS) --template mooutils/mooutils-enums.tmpl.h $(moo_utils_enum_headers) ) > mooutils/mooutils-enums.h.tmp
+	$(AM_V_at)cmp -s mooutils/mooutils-enums.h.tmp $(srcdir)/mooutils/mooutils-enums.h || \
+		mv mooutils/mooutils-enums.h.tmp $(srcdir)/mooutils/mooutils-enums.h
+	$(AM_V_at)rm -f mooutils/mooutils-enums.h.tmp
+	$(AM_V_at)echo stamp > mooutils/mooutils-enums.h.stamp
+mooutils/mooutils-enums.c.stamp: $(moo_utils_enum_headers) Makefile mooutils/mooutils-enums.tmpl.c
+	$(AM_V_at)$(MKDIR_P) mooutils
+	$(AM_V_GEN)( cd $(srcdir) && \
+		$(GLIB_MKENUMS) --template mooutils/mooutils-enums.tmpl.c $(moo_utils_enum_headers) ) > mooutils/mooutils-enums.c.tmp
+	$(AM_V_at)cmp -s mooutils/mooutils-enums.c.tmp $(srcdir)/mooutils/mooutils-enums.c || \
+		mv mooutils/mooutils-enums.c.tmp $(srcdir)/mooutils/mooutils-enums.c
+	$(AM_V_at)rm -f mooutils/mooutils-enums.c.tmp
+	$(AM_V_at)echo stamp > mooutils/mooutils-enums.c.stamp
 
 mooutils_win32_sources = mooutils/mooutils-win32.c
 mooutils_unittest_sources =		\

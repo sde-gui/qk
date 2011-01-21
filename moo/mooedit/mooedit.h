@@ -32,8 +32,8 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT))
 #define MOO_EDIT_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT, MooEditClass))
 
-#define MOO_EDIT_IS_MODIFIED(edit)  (moo_edit_get_status (edit) & MOO_EDIT_MODIFIED)
-#define MOO_EDIT_IS_CLEAN(edit)     (moo_edit_get_status (edit) & MOO_EDIT_CLEAN)
+#define MOO_EDIT_IS_MODIFIED(edit)  ((moo_edit_get_status (edit) & MOO_EDIT_STATUS_MODIFIED) != 0)
+#define MOO_EDIT_IS_CLEAN(edit)     ((moo_edit_get_status (edit) & MOO_EDIT_STATUS_CLEAN) != 0)
 
 typedef struct MooEditPrivate  MooEditPrivate;
 typedef struct MooEditClass    MooEditClass;
@@ -55,8 +55,16 @@ struct MooEditClass
 
     void (* filename_changed)   (MooEdit    *edit);
 
-    MooEditSaveResponse (* before_save) (MooEdit *doc,
+    /**signal:MooEdit**/
+    void                (* will_close)  (MooEdit *doc);
+
+    /**signal:MooEdit**/
+    MooSaveResponse     (* before_save) (MooEdit *doc,
                                          GFile   *file);
+    /**signal:MooEdit**/
+    void                (* will_save)   (MooEdit *doc,
+                                         GFile   *file);
+    /**signal:MooEdit**/
     void                (* after_save)  (MooEdit *doc);
 };
 
@@ -118,8 +126,7 @@ gboolean             moo_edit_save_as                   (MooEdit            *edi
 gboolean             moo_edit_save_copy                 (MooEdit            *edit,
                                                          MooSaveInfo        *info,
                                                          GError            **error);
-gboolean             moo_edit_close                     (MooEdit            *edit,
-                                                         gboolean            ask_confirm);
+gboolean             moo_edit_close                     (MooEdit            *edit);
 
 G_END_DECLS
 

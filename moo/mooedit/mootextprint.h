@@ -38,7 +38,7 @@ typedef struct MooPrintOperationClass    MooPrintOperationClass;
 
 struct MooPrintOperation
 {
-    GtkPrintOperation base;
+    GtkPrintOperation parent;
     MooPrintOperationPrivate *priv;
 };
 

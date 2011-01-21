@@ -197,6 +197,11 @@ gboolean    _moo_regex_escape               (const char *string,
 
 const char  *moo_error_message              (GError *error);
 
+gboolean    moo_signal_accumulator_continue_cancel (GSignalInvocationHint *ihint,
+                                                    GValue                *return_accu,
+                                                    const GValue          *handler_return,
+                                                    gpointer               val_continue);
+
 G_END_DECLS
 
 
