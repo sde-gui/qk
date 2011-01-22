@@ -66,7 +66,7 @@ moo_test_run_lua_file (const char *basename)
 
     if ((contents = moo_test_load_data_file (filename)))
     {
-        lua_State *L = medit_lua_new (true);
+        lua_State *L = medit_lua_new ();
         g_return_if_fail (L != NULL);
 
         g_assert (lua_gettop (L) == 0);

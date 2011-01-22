@@ -30,7 +30,7 @@ moo_lua_state_init (MooLuaState *lua)
 {
     try
     {
-        lua->L = medit_lua_new (true);
+        lua->L = medit_lua_new ();
     }
     catch (...)
     {
@@ -141,9 +141,8 @@ add_raw_api (lua_State *L)
     return true;
 }
 
-bool
-medit_lua_setup (lua_State *L,
-                 bool       default_init)
+static bool
+medit_lua_setup (lua_State *L)
 {
     try
     {
@@ -154,8 +153,11 @@ medit_lua_setup (lua_State *L,
 
         g_assert (lua_gettop (L) == 0);
 
-        if (default_init)
-            medit_lua_do_string (L, LUA_DEFAULT_INIT);
+        if (!medit_lua_do_string (L, LUA_DEFAULT_INIT))
+        {
+            g_critical ("oops");
+            return false;
+        }
 
         return true;
     }
@@ -195,7 +197,7 @@ lua_panic (lua_State *L)
 }
 
 lua_State *
-medit_lua_new (bool default_init)
+medit_lua_new ()
 {
     lua_State *L = luaL_newstate ();
     g_return_val_if_fail (L != NULL, NULL);
@@ -211,7 +213,7 @@ medit_lua_new (bool default_init)
 
     moo_assert (lua_gettop (L) == 0);
 
-    if (!medit_lua_setup (L, default_init))
+    if (!medit_lua_setup (L))
     {
         medit_lua_data_free (data);
         lua_close (L);
@@ -341,7 +343,7 @@ extern "C" void
 medit_lua_run_string (const char *string)
 {
     g_return_if_fail (string != NULL);
-    lua_State *L = medit_lua_new (TRUE);
+    lua_State *L = medit_lua_new ();
     if (L)
         medit_lua_do_string (L, string);
     medit_lua_free (L);
@@ -351,7 +353,7 @@ extern "C" void
 medit_lua_run_file (const char *filename)
 {
     g_return_if_fail (filename != NULL);
-    lua_State *L = medit_lua_new (TRUE);
+    lua_State *L = medit_lua_new ();
     if (L)
         medit_lua_do_file (L, filename);
     medit_lua_free (L);

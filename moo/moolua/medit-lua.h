@@ -7,10 +7,7 @@
 
 #include "moolua/lua/moolua.h"
 
-bool         medit_lua_setup            (lua_State      *L,
-                                         bool            default_init);
-
-lua_State   *medit_lua_new              (bool            default_init);
+lua_State   *medit_lua_new              (void);
 void         medit_lua_ref              (lua_State      *L);
 void         medit_lua_unref            (lua_State      *L);
 void         medit_lua_free             (lua_State      *L);

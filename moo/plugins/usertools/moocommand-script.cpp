@@ -58,7 +58,7 @@ moo_command_script_run_lua (MooCommandScript  *cmd,
 
     g_return_if_fail (cmd->code != NULL);
 
-    L = medit_lua_new (TRUE);
+    L = medit_lua_new ();
     g_return_if_fail (L != NULL);
 
     if (!medit_lua_do_string (L, LUA_TOOL_SETUP_LUA))

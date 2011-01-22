@@ -40,7 +40,8 @@ struct MooLuaPlugin {
 static MooLuaModule *
 moo_lua_module_load (const char *filename)
 {
-    lua_State *L = medit_lua_new (true);
+    lua_State *L = medit_lua_new ();
+
     if (!L)
         return NULL;
 
