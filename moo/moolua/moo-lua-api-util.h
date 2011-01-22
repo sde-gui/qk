@@ -70,6 +70,7 @@ gboolean        moo_lua_get_arg_bool_opt        (lua_State          *L,
 gboolean        moo_lua_get_arg_bool            (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name);
+
 int             moo_lua_get_arg_int_opt         (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,
@@ -77,11 +78,29 @@ int             moo_lua_get_arg_int_opt         (lua_State          *L,
 int             moo_lua_get_arg_int             (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name);
+guint           moo_lua_get_arg_uint            (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name);
+long            moo_lua_get_arg_long            (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name);
+gulong          moo_lua_get_arg_ulong           (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name);
+gint64          moo_lua_get_arg_int64           (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name);
+guint64         moo_lua_get_arg_uint64          (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name);
 double          moo_lua_get_arg_double_opt      (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,
                                                  double              default_value);
 double          moo_lua_get_arg_double          (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name);
+float           moo_lua_get_arg_float           (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name);
 int             moo_lua_get_arg_index_opt       (lua_State          *L,

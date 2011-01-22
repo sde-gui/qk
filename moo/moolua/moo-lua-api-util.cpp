@@ -603,42 +603,43 @@ push_param_gvalue (lua_State *L, const GValue *value)
     }
 }
 
-static void get_ret_gvalue (lua_State *L, GValue *value)
+static int
+cfunc_get_ret_gvalue (lua_State *L)
 {
+    GValue *value = (GValue *) lua_touserdata (L, 1);
+    lua_getfield(L, LUA_REGISTRYINDEX, "moo-signal-ret-value");
+
     GType type = G_VALUE_TYPE (value);
     GType type_fundamental = G_TYPE_FUNDAMENTAL (type);
 
     switch (type_fundamental)
     {
         case G_TYPE_BOOLEAN:
-            g_value_set_boolean (value, lua_toboolean (L, -1));
+            g_value_set_boolean (value, moo_lua_get_arg_bool (L, -1, "<retval>"));
             break;
-
-        // XXX overflows
-
         case G_TYPE_INT:
-            g_value_set_int (value, lua_tointeger (L, -1));
+            g_value_set_int (value, moo_lua_get_arg_int (L, -1, "<retval>"));
             break;
         case G_TYPE_UINT:
-            g_value_set_uint (value, lua_tointeger (L, -1));
+            g_value_set_uint (value, moo_lua_get_arg_uint (L, -1, "<retval>"));
             break;
         case G_TYPE_LONG:
-            g_value_set_long (value, lua_tointeger (L, -1));
+            g_value_set_long (value, moo_lua_get_arg_long (L, -1, "<retval>"));
             break;
         case G_TYPE_ULONG:
-            g_value_set_ulong (value, lua_tointeger (L, -1));
+            g_value_set_ulong (value, moo_lua_get_arg_ulong (L, -1, "<retval>"));
             break;
         case G_TYPE_INT64:
-            g_value_set_int64 (value, lua_tointeger (L, -1));
+            g_value_set_int64 (value, moo_lua_get_arg_int64 (L, -1, "<retval>"));
             break;
         case G_TYPE_UINT64:
-            g_value_set_uint64 (value, lua_tointeger (L, -1));
+            g_value_set_uint64 (value, moo_lua_get_arg_uint64 (L, -1, "<retval>"));
             break;
         case G_TYPE_FLOAT:
-            g_value_set_float (value, lua_tonumber (L, -1));
+            g_value_set_float (value, moo_lua_get_arg_float (L, -1, "<retval>"));
             break;
         case G_TYPE_DOUBLE:
-            g_value_set_double (value, lua_tonumber (L, -1));
+            g_value_set_double (value, moo_lua_get_arg_double (L, -1, "<retval>"));
             break;
 
         case G_TYPE_ENUM:
@@ -666,6 +667,24 @@ static void get_ret_gvalue (lua_State *L, GValue *value)
             g_critical ("don't know how to handle return value of type %s", g_type_name (type));
             break;
     }
+
+    return 0;
+}
+
+static void
+get_ret_gvalue (lua_State *L, GValue *value)
+{
+    lua_setfield(L, LUA_REGISTRYINDEX, "moo-signal-ret-value");
+
+    if (lua_cpcall (L, cfunc_get_ret_gvalue, value) != 0)
+    {
+        const char *msg = lua_tostring (L, -1);
+        g_critical ("%s", msg ? msg : "ERROR");
+        lua_pop (L, 1);
+    }
+
+    lua_pushnil(L);
+    lua_setfield(L, LUA_REGISTRYINDEX, "moo-signal-ret-value");
 }
 
 static void
@@ -702,6 +721,7 @@ signal_closure_marshal (SignalClosure *closure,
         {
             if (return_value != NULL)
                 get_ret_gvalue (L, return_value);
+
             lua_pop (L, 1);
 
 #ifdef MOO_ENABLE_COVERAGE
@@ -1201,13 +1221,68 @@ moo_lua_get_arg_int_opt (lua_State  *L,
         return lua_tointeger (L, narg);
 }
 
+static void
+check_not_none_or_nil (lua_State *L,
+                       int        narg)
+{
+    if (lua_type (L, narg) == LUA_TNONE)
+        luaL_argerror (L, narg, "value expected");
+    if (lua_type (L, narg) == LUA_TNIL)
+        luaL_argerror (L, narg, "non-nil value expected");
+}
+
 int
 moo_lua_get_arg_int (lua_State  *L,
                      int         narg,
                      const char *param_name)
 {
-    luaL_checkany (L, narg);
+    check_not_none_or_nil (L, narg);
     return moo_lua_get_arg_int_opt (L, narg, param_name, 0);
+}
+
+guint
+moo_lua_get_arg_uint (lua_State  *L,
+                      int         narg,
+                      G_GNUC_UNUSED const char *param_name)
+{
+    check_not_none_or_nil (L, narg);
+    return lua_tointeger (L, narg);
+}
+
+long
+moo_lua_get_arg_long (lua_State  *L,
+                      int         narg,
+                      G_GNUC_UNUSED const char *param_name)
+{
+    check_not_none_or_nil (L, narg);
+    return lua_tointeger (L, narg);
+}
+
+gulong
+moo_lua_get_arg_ulong (lua_State  *L,
+                       int         narg,
+                       G_GNUC_UNUSED const char *param_name)
+{
+    check_not_none_or_nil (L, narg);
+    return lua_tointeger (L, narg);
+}
+
+gint64
+moo_lua_get_arg_int64 (lua_State  *L,
+                       int         narg,
+                       G_GNUC_UNUSED const char *param_name)
+{
+    check_not_none_or_nil (L, narg);
+    return lua_tointeger (L, narg);
+}
+
+guint64
+moo_lua_get_arg_uint64 (lua_State  *L,
+                        int         narg,
+                        G_GNUC_UNUSED const char *param_name)
+{
+    check_not_none_or_nil (L, narg);
+    return lua_tointeger (L, narg);
 }
 
 double
@@ -1227,8 +1302,17 @@ moo_lua_get_arg_double (lua_State  *L,
                         int         narg,
                         const char *param_name)
 {
-    luaL_checkany (L, narg);
+    check_not_none_or_nil (L, narg);
     return moo_lua_get_arg_double_opt (L, narg, param_name, 0);
+}
+
+float
+moo_lua_get_arg_float (lua_State  *L,
+                       int         narg,
+                       G_GNUC_UNUSED const char *param_name)
+{
+    check_not_none_or_nil (L, narg);
+    return lua_tonumber (L, narg);
 }
 
 int
@@ -1248,7 +1332,7 @@ moo_lua_get_arg_index (lua_State  *L,
                        int         narg,
                        G_GNUC_UNUSED const char *param_name)
 {
-    luaL_checkany (L, narg);
+    check_not_none_or_nil (L, narg);
     return lua_tointeger (L, narg) - 1;
 }
 
@@ -1259,7 +1343,7 @@ moo_lua_get_arg_iter (lua_State     *L,
                       GtkTextBuffer *buffer,
                       GtkTextIter   *iter)
 {
-    luaL_checkany (L, narg);
+    check_not_none_or_nil (L, narg);
     moo_lua_get_arg_iter_opt (L, narg, param_name, buffer, iter);
 }
 
@@ -1306,7 +1390,7 @@ moo_lua_get_arg_rect (lua_State    *L,
                       const char   *param_name,
                       GdkRectangle *rect)
 {
-    luaL_checkany (L, narg);
+    check_not_none_or_nil (L, narg);
     moo_lua_get_arg_rect_opt (L, narg, param_name, rect);
 }
 
@@ -1435,7 +1519,7 @@ moo_lua_get_arg_enum (lua_State  *L,
                       const char *param_name,
                       GType       type)
 {
-    luaL_checkany (L, narg);
+    check_not_none_or_nil (L, narg);
     return moo_lua_get_arg_enum_opt (L, narg, param_name, type, 0);
 }
 
