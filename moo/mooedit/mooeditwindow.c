@@ -1229,6 +1229,16 @@ _moo_edit_window_update_title (void)
 
 
 /**
+ * moo_edit_window_close:
+ */
+gboolean
+moo_edit_window_close (MooEditWindow *window)
+{
+    g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
+    return moo_editor_close_window (moo_edit_window_get_editor (window), window);
+}
+
+/**
  * moo_edit_window_close_all:
  */
 gboolean

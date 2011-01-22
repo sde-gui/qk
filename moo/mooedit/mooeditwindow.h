@@ -75,6 +75,7 @@ MOO_DECLARE_ATOM_GLOBAL (MOO_EDIT_TAB, moo_edit_tab)
 GType                moo_edit_tab_get_type                  (void) G_GNUC_CONST;
 GType                moo_edit_window_get_type               (void) G_GNUC_CONST;
 
+gboolean             moo_edit_window_close                  (MooEditWindow  *window);
 gboolean             moo_edit_window_close_all              (MooEditWindow  *window);
 
 typedef gboolean (*MooActionCheckFunc) (GtkAction      *action,
