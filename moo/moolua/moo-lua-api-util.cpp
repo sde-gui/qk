@@ -1,7 +1,9 @@
+#include <config.h>
 #include "moo-lua-api-util.h"
 #include "medit-lua.h"
 #include "moolua/lua/lauxlib.h"
 #include "mooutils/mooutils.h"
+#include "mooutils/moo-test-utils.h"
 #include <vector>
 #include <string>
 #include <string.h>
@@ -773,7 +775,7 @@ signal_closure_marshal (SignalClosure *closure,
                 get_ret_gvalue (L, return_value);
 
 #ifdef MOO_ENABLE_COVERAGE
-            moo_test_coverage_record ("lua", closure->full_signal_name);
+            moo_test_coverage_record ("lua", closure->signal_full_name);
 #endif
         }
         else
@@ -854,7 +856,7 @@ cfunc_GObject_connect_impl (gpointer pself, lua_State *L, int first_arg, gboolea
         ((SignalClosure*) closure)->signal_full_name =
             g_strdup_printf ("%s::%s",
                              g_type_name (query.itype),
-                             query.signal_name));
+                             query.signal_name);
     }
 #endif
 
