@@ -27,10 +27,15 @@ MooLuaMethod    moo_lua_lookup_method           (lua_State          *L,
                                                  const char         *meth);
 void            moo_lua_register_methods        (GType               type,
                                                  MooLuaMethodEntry  *entries);
+
 void            moo_lua_register_static_methods (lua_State          *L,
                                                  const char         *package_name,
                                                  const char         *class_name,
                                                  const luaL_Reg     *methods);
+void            moo_lua_register_enum           (lua_State          *L,
+                                                 const char         *package_name,
+                                                 GType               type,
+                                                 const char         *prefix);
 
 void            moo_lua_register_gobject        (void);
 

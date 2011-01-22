@@ -438,9 +438,6 @@ static void *%(func)s (void)
             all_method_cfuncs[cls.name] = method_cfuncs
             all_static_method_cfuncs[cls.short_name] = static_method_cfuncs
 
-#         for enum in module.get_enums():
-#             self.__write_enum_decl(enum)
-
         dic = dict(module=module.name.lower())
 
         all_func_cfuncs = []
@@ -484,6 +481,10 @@ void %(module)s_lua_api_add_to_lua (lua_State *L, const char *package_name)
             if not cfuncs:
                 continue
             self.out.write('    moo_lua_register_static_methods (L, package_name, "%s", %s_lua_functions);\n' % (cls_name, cls_name))
+
+        self.out.write('\n')
+        for enum in module.get_enums():
+            self.out.write('    moo_lua_register_enum (L, package_name, %s, "%s");\n' % (enum.gtype_id, module.name.upper() + '_'))
 
         self.out.write("}\n")
 

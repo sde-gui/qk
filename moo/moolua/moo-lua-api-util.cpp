@@ -4,6 +4,7 @@
 #include "mooutils/mooutils.h"
 #include <vector>
 #include <string>
+#include <string.h>
 
 MOO_DEFINE_QUARK_STATIC ("moo-lua-methods", moo_lua_methods_quark)
 
@@ -257,6 +258,57 @@ moo_lua_register_static_methods (lua_State      *L,
         lua_pushcclosure(L, methods->func, 0);
         lua_setfield(L, -2, methods->name);
         methods++;
+    }
+
+    lua_pop (L, 1);
+}
+
+
+static void
+moo_lua_add_enum_value (lua_State  *L,
+                        const char *name,
+                        int         value,
+                        const char *prefix)
+{
+    if (g_str_has_prefix (name, prefix))
+        name += strlen (prefix);
+    lua_pushinteger (L, value);
+    lua_setfield (L, -2, name);
+}
+
+void
+moo_lua_register_enum (lua_State  *L,
+                       const char *package_name,
+                       GType       type,
+                       const char *prefix)
+{
+    lua_getfield (L, LUA_GLOBALSINDEX, package_name);
+
+    g_return_if_fail (!lua_isnil (L, -1));
+
+    if (g_type_is_a (type, G_TYPE_ENUM))
+    {
+        GEnumClass *klass = (GEnumClass*) g_type_class_peek_static (type);
+        g_return_if_fail (klass != NULL);
+        for (guint i = 0; i < klass->n_values; ++i)
+            moo_lua_add_enum_value (L,
+                                    klass->values[i].value_name,
+                                    klass->values[i].value,
+                                    prefix);
+    }
+    else if (g_type_is_a (type, G_TYPE_FLAGS))
+    {
+        GFlagsClass *klass = (GFlagsClass*) g_type_class_peek_static (type);
+        g_return_if_fail (klass != NULL);
+        for (guint i = 0; i < klass->n_values; ++i)
+            moo_lua_add_enum_value (L,
+                                    klass->values[i].value_name,
+                                    klass->values[i].value,
+                                    prefix);
+    }
+    else
+    {
+        g_return_if_reached ();
     }
 
     lua_pop (L, 1);
@@ -697,32 +749,28 @@ signal_closure_marshal (SignalClosure *closure,
 
     g_return_if_fail (L != NULL);
 
-    int n_pushed = 0;
+    int old_top = lua_gettop (L);
 
     try
     {
         lua_rawgeti (L, LUA_REGISTRYINDEX, closure->cb_ref);
-        n_pushed++;
+
+        int n_args = 0;
 
         for (guint i = 0; i < n_param_values; ++i)
         {
             int pushed_here = push_param_gvalue (L, &param_values[i]);
             if (!pushed_here)
                 goto out;
-            n_pushed += pushed_here;
+            n_args += pushed_here;
         }
 
         // ok, pushed the arguments successfully
-
-        int n_args = n_pushed - 1;
-        n_pushed = 0;
 
         if (lua_pcall (L, n_args, 1, 0) == 0)
         {
             if (return_value != NULL)
                 get_ret_gvalue (L, return_value);
-
-            lua_pop (L, 1);
 
 #ifdef MOO_ENABLE_COVERAGE
             moo_test_coverage_record ("lua", closure->full_signal_name);
@@ -732,7 +780,6 @@ signal_closure_marshal (SignalClosure *closure,
         {
             const char *msg = lua_tostring (L, -1);
             g_critical ("%s", msg ? msg : "ERROR");
-            lua_pop (L, 1);
         }
     }
     catch (...)
@@ -740,9 +787,9 @@ signal_closure_marshal (SignalClosure *closure,
         g_critical ("oops");
     }
 
+
 out:
-    if (n_pushed > 0)
-        lua_pop (L, n_pushed);
+    lua_settop (L, old_top);
 }
 
 static GClosure *signal_closure_new (lua_State *L, GObject *instance, int cb_ref)
