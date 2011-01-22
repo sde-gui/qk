@@ -20,7 +20,7 @@
 
 
 /**
- * moo_dgettext:
+ * moo_dgettext: (moo.lua 0)
  *
  * @domain: (type const-utf8):
  * @string: (type const-utf8):
@@ -51,7 +51,7 @@ init_gettext (void)
 #endif /* ENABLE_NLS */
 
 /**
- * moo_gettext:
+ * moo_gettext: (moo.lua 0)
  *
  * @string: (type const-utf8)
  *

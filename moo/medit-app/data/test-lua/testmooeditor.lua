@@ -340,8 +340,13 @@ function test_before_save()
 end
 
 test_will_close_window()
+-- medit.spin_main_loop(0.1)
 test_before_close_window()
+-- medit.spin_main_loop(0.1)
 test_bad_callback()
+-- medit.spin_main_loop(0.1)
 test_will_save()
+-- medit.spin_main_loop(0.1)
 test_will_close_doc()
+-- medit.spin_main_loop(0.1)
 test_before_save()
