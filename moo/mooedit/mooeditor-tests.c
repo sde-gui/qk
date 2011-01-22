@@ -207,6 +207,23 @@ test_encodings (void)
     g_dir_close (dir);
 }
 
+static void
+test_types (void)
+{
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_EDIT_CONFIG_SOURCE, G_TYPE_ENUM));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_EDIT_CONFIG_SOURCE, G_TYPE_ENUM));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_SAVE_RESPONSE, G_TYPE_ENUM));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_EDIT_STATE, G_TYPE_ENUM));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_EDIT_STATUS, G_TYPE_FLAGS));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_LINE_END_TYPE, G_TYPE_ENUM));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_TEXT_SELECTION_TYPE, G_TYPE_ENUM));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_TEXT_SEARCH_FLAGS, G_TYPE_FLAGS));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_FIND_FLAGS, G_TYPE_FLAGS));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_DRAW_WS_FLAGS, G_TYPE_FLAGS));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_ACTION_CHECK_TYPE, G_TYPE_ENUM));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_TEXT_CURSOR, G_TYPE_ENUM));
+}
+
 static gboolean
 test_suite_init (G_GNUC_UNUSED gpointer data)
 {
@@ -276,4 +293,5 @@ moo_test_editor (void)
                                               NULL);
     moo_test_suite_add_test (suite, "basic", "basic editor functionality", (MooTestFunc) test_basic, NULL);
     moo_test_suite_add_test (suite, "encodings", "character encoding handling", (MooTestFunc) test_encodings, NULL);
+    moo_test_suite_add_test (suite, "types", "sanity checks for GObject types", (MooTestFunc) test_types, NULL);
 }

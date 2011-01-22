@@ -22,6 +22,7 @@
 #include "mooutils/mooatom.h"
 #include "mooutils/mooonce.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/mooutils-enums.h"
 #include <mooutils/mooutils-tests.h>
 #include "mooutils/moocompat.h"
 #include "mooutils/mootype-macros.h"
@@ -2376,6 +2377,18 @@ test_moo_splitlines (void)
 }
 
 
+static void
+test_types (void)
+{
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_SAVE_CHANGES_RESPONSE, G_TYPE_ENUM));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_FILE_DIALOG_TYPE, G_TYPE_ENUM));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_UI_NODE_TYPE, G_TYPE_ENUM));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_UI_NODE_FLAGS, G_TYPE_FLAGS));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_UI_WIDGET_TYPE, G_TYPE_ENUM));
+    TEST_ASSERT (g_type_is_a (MOO_TYPE_CLOSE_RESPONSE, G_TYPE_ENUM));
+}
+
+
 void
 moo_test_mooutils_misc (void)
 {
@@ -2385,4 +2398,6 @@ moo_test_mooutils_misc (void)
 
     moo_test_suite_add_test (suite, "moo_splitlines", "test of moo_splitlines()",
                              (MooTestFunc) test_moo_splitlines, NULL);
+    moo_test_suite_add_test (suite, "types", "sanity checks for Glib types",
+                             (MooTestFunc) test_types, NULL);
 }

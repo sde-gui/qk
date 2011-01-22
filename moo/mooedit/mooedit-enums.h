@@ -1,6 +1,10 @@
 #ifndef MOO_EDIT_ENUMS_H
 #define MOO_EDIT_ENUMS_H
 
+#include <mooedit/mooedit-enum-types.h>
+
+G_BEGIN_DECLS
+
 typedef enum {
     MOO_EDIT_CONFIG_SOURCE_USER = 0,
     MOO_EDIT_CONFIG_SOURCE_FILE = 10,
@@ -82,5 +86,7 @@ typedef enum {
     MOO_TEXT_CURSOR_ARROW,
     MOO_TEXT_CURSOR_LINK
 } MooTextCursor;
+
+G_END_DECLS
 
 #endif /* MOO_EDIT_ENUMS_H */

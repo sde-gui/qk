@@ -140,6 +140,7 @@ marshals.c: $(moo_srcdir)/marshals.list
 	$(AM_V_GEN)$(GLIB_GENMARSHAL) --prefix=_moo_marshal --body $(moo_srcdir)/marshals.list >> marshals.c.tmp \
 		&& mv marshals.c.tmp marshals.c
 
+if MOO_DEV_MODE
 built_moo_sources += mooutils/mooutils-enums.h.stamp mooutils/mooutils-enums.c.stamp
 mooutils/mooutils-enums.h.stamp: $(moo_utils_enum_headers) Makefile mooutils/mooutils-enums.tmpl.h
 	$(AM_V_at)$(MKDIR_P) mooutils
@@ -157,6 +158,7 @@ mooutils/mooutils-enums.c.stamp: $(moo_utils_enum_headers) Makefile mooutils/moo
 		mv mooutils/mooutils-enums.c.tmp $(srcdir)/mooutils/mooutils-enums.c
 	$(AM_V_at)rm -f mooutils/mooutils-enums.c.tmp
 	$(AM_V_at)echo stamp > mooutils/mooutils-enums.c.stamp
+endif
 
 mooutils_win32_sources = mooutils/mooutils-win32.c
 mooutils_unittest_sources =		\
