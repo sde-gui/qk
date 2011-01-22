@@ -58,7 +58,6 @@ struct _MooWindowClass
 {
     GtkWindowClass      parent_class;
 
-    /**signal:MooWindow**/
     MooCloseResponse (*close) (MooWindow *window);
 };
 
