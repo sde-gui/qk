@@ -522,8 +522,6 @@ struct SignalClosure
 
 static void signal_closure_finalize (G_GNUC_UNUSED gpointer dummy, GClosure *gclosure)
 {
-    g_message ("signal_closure_finalize");
-
     SignalClosure *closure = (SignalClosure*) gclosure;
 
     if (closure->L)
@@ -702,7 +700,8 @@ signal_closure_marshal (SignalClosure *closure,
 
         if (lua_pcall (L, n_args, 1, 0) == 0)
         {
-            get_ret_gvalue (L, return_value);
+            if (return_value != NULL)
+                get_ret_gvalue (L, return_value);
             lua_pop (L, 1);
 
 #ifdef MOO_ENABLE_COVERAGE
