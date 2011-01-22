@@ -186,11 +186,21 @@ static void medit_lua_data_free (MeditLuaData *data)
     }
 }
 
+static int
+lua_panic (lua_State *L)
+{
+    g_error ("PANIC: unprotected error in call to Lua API (%s)\n",
+             lua_tostring(L, -1));
+    return 0;
+}
+
 lua_State *
 medit_lua_new (bool default_init)
 {
     lua_State *L = luaL_newstate ();
     g_return_val_if_fail (L != NULL, NULL);
+
+    lua_atpanic (L, lua_panic);
 
     luaL_openlibs (L);
     moo_lua_add_user_path (L);
