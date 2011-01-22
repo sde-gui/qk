@@ -193,12 +193,13 @@ class WinPlugin(moo.WinPlugin):
         self.terminal.set_size_request(10, 10)
 
         self.pane = self.get_window().add_pane(TERMINAL_PLUGIN_ID, frame, label, moo.PANE_POS_BOTTOM)
-        self.terminal.connect('icon-title-changed', self.terminal_icon_title_changed)
+        self.icon_title_changed_cb_id = self.terminal.connect('icon-title-changed', self.terminal_icon_title_changed)
         self.terminal_icon_title_changed()
 
         return True
 
     def do_destroy(self):
+        self.terminal.disconnect(self.icon_title_changed_cb_id)
         self.get_window().remove_pane(TERMINAL_PLUGIN_ID)
 
     def terminal_icon_title_changed(self, *whatever):
