@@ -847,17 +847,18 @@ cfunc_GObject_connect_impl (gpointer pself, lua_State *L, int first_arg, gboolea
     gulong cb_id = g_signal_connect_closure (self, signal, closure, after);
     g_closure_unref (closure);
 
+    if (!cb_id)
+        luaL_error (L, "signal %s is invalid for object of type %s",
+                    signal, g_type_name (G_OBJECT_TYPE (self)));
+
 #ifdef MOO_ENABLE_COVERAGE
-    if (cb_id != 0)
-    {
-        GSignalQuery query;
-        g_signal_query (g_signal_lookup (signal, G_OBJECT_TYPE (self)), &query);
-        g_assert (query.signal_id != 0);
-        ((SignalClosure*) closure)->signal_full_name =
-            g_strdup_printf ("%s::%s",
-                             g_type_name (query.itype),
-                             query.signal_name);
-    }
+    GSignalQuery query;
+    g_signal_query (g_signal_lookup (signal, G_OBJECT_TYPE (self)), &query);
+    g_assert (query.signal_id != 0);
+    ((SignalClosure*) closure)->signal_full_name =
+        g_strdup_printf ("%s::%s",
+                         g_type_name (query.itype),
+                         query.signal_name);
 #endif
 
     moo_lua_push_int (L, cb_id);
