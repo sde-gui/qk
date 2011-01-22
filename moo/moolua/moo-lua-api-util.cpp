@@ -515,6 +515,9 @@ struct SignalClosure
     lua_State *L;
     GObject *instance;
     int cb_ref;
+#ifdef MOO_ENABLE_COVERAGE
+    char *signal_full_name;
+#endif
 };
 
 static void signal_closure_finalize (G_GNUC_UNUSED gpointer dummy, GClosure *gclosure)
@@ -701,6 +704,10 @@ signal_closure_marshal (SignalClosure *closure,
         {
             get_ret_gvalue (L, return_value);
             lua_pop (L, 1);
+
+#ifdef MOO_ENABLE_COVERAGE
+            moo_test_coverage_record ("lua", closure->full_signal_name);
+#endif
         }
         else
         {
@@ -771,6 +778,19 @@ cfunc_GObject_connect_impl (gpointer pself, lua_State *L, int first_arg, gboolea
     g_closure_sink (closure);
     gulong cb_id = g_signal_connect_closure (self, signal, closure, after);
     g_closure_unref (closure);
+
+#ifdef MOO_ENABLE_COVERAGE
+    if (cb_id != 0)
+    {
+        GSignalQuery query;
+        g_signal_query (g_signal_lookup (signal, G_OBJECT_TYPE (self)), &query);
+        g_assert (query.signal_id != 0);
+        ((SignalClosure*) closure)->signal_full_name =
+            g_strdup_printf ("%s::%s",
+                             g_type_name (query.itype),
+                             query.signal_name));
+    }
+#endif
 
     moo_lua_push_int (L, cb_id);
     return 1;
