@@ -150,6 +150,15 @@ class Writer(object):
         for k in enum.annotations:
             dic[k] = enum.annotations[k]
         self.__start_tag(tag, dic)
+
+        for v in enum.values:
+            dic = dict(name=v.name)
+            if v.attributes:
+                dic.update(v.attributes)
+            elm = self.__start_tag('value', dic)
+            self.__write_docs(v.docs)
+            self.__end_tag('value')
+
         self.__write_summary(enum.summary)
         self.__write_docs(enum.docs)
         self.__end_tag(tag)

@@ -221,13 +221,45 @@ class GTypedType(Type):
         if self.gtype_id is None:
             raise RuntimeError('class gtype missing')
 
-class Enum(GTypedType):
+class EnumValue(_XmlObject):
     def __init__(self):
-        GTypedType.__init__(self)
+        super(EnumValue, self).__init__()
+        self.name = None
 
-class Flags(GTypedType):
+    def _parse_attribute(self, attr, value):
+        if attr in ('name'):
+            _set_unique_attribute(self, attr, value)
+        else:
+            return super(EnumValue, self)._parse_attribute(attr, value)
+        return True
+
+    def _parse_xml(self, elm, *args):
+        super(EnumValue, self)._parse_xml(elm, *args)
+        if self.name is None:
+            raise RuntimeError('enum value name missing')
+
+class EnumBase(GTypedType):
     def __init__(self):
-        GTypedType.__init__(self)
+        super(EnumBase, self).__init__()
+        self.values = []
+        self.__value_hash = {}
+
+    def _parse_xml_element(self, elm):
+        if elm.tag == 'value':
+            value = EnumValue.from_xml(elm)
+            assert not value.name in self.__value_hash
+            self.__value_hash[value.name] = value
+            self.values.append(value)
+        else:
+            super(EnumBase, self)._parse_xml_element(elm)
+
+class Enum(EnumBase):
+    def __init__(self):
+        super(Enum, self).__init__()
+
+class Flags(EnumBase):
+    def __init__(self):
+        super(Flags, self).__init__()
 
 class InstanceType(GTypedType):
     def __init__(self):

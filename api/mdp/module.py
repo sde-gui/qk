@@ -68,13 +68,25 @@ class _GTypedType(Type):
         self.short_name = short_name
         self.annotations = {}
 
-class Enum(_GTypedType):
+class EnumBase(_GTypedType):
     def __init__(self, name, short_name, gtype_id, docs):
-        _GTypedType.__init__(self, name, short_name, gtype_id, docs)
+        super(EnumBase, self).__init__(name, short_name, gtype_id, docs)
+        self.values = []
 
-class Flags(_GTypedType):
+class EnumValue(object):
+    def __init__(self, name, attributes, docs):
+        super(EnumValue, self).__init__()
+        self.name = name
+        self.attributes = attributes
+        self.docs = docs
+
+class Enum(EnumBase):
     def __init__(self, name, short_name, gtype_id, docs):
-        _GTypedType.__init__(self, name, short_name, gtype_id, docs)
+        super(Enum, self).__init__(name, short_name, gtype_id, docs)
+
+class Flags(EnumBase):
+    def __init__(self, name, short_name, gtype_id, docs):
+        super(Flags, self).__init__(name, short_name, gtype_id, docs)
 
 class _InstanceType(_GTypedType):
     def __init__(self, name, short_name, gtype_id, docs):
@@ -257,9 +269,24 @@ class Module(object):
             enum = Enum(name, short_name, gtype_id, docs)
         else:
             enum = Flags(name, short_name, gtype_id, docs)
+        for value in ptyp.values:
+            attributes = self.__parse_enum_value_annotations(value.annotations)
+            enum.values.append(EnumValue(value.name, attributes, value.docs))
         enum.summary = ptyp.summary
         enum.annotations = annotations
         self.enums.append(enum)
+
+    def __parse_enum_value_annotations(self, annotations):
+        attributes = {}
+        for a in annotations:
+            pieces = a.split()
+            prefix = pieces[0]
+            if '.' in prefix[1:-1] and len(pieces) == 2:
+                attributes[prefix] = pieces[1]
+        if attributes:
+            return attributes
+        else:
+            return None
 
     def __parse_param_or_retval_annotation(self, annotation, param):
         pieces = annotation.split()

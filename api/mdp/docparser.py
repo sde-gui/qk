@@ -137,13 +137,25 @@ class Pointer(Symbol):
     def __init__(self, name, annotations, docs, block):
         Symbol.__init__(self, name, annotations, docs, block)
 
-class Enum(Symbol):
-    def __init__(self, name, annotations, docs, block):
-        Symbol.__init__(self, name, annotations, docs, block)
+class EnumBase(Symbol):
+    def __init__(self, name, annotations, docs, values, block):
+        super(EnumBase, self).__init__(name, annotations, docs, block)
+        self.values = values
 
-class Flags(Symbol):
-    def __init__(self, name, annotations, docs, block):
-        Symbol.__init__(self, name, annotations, docs, block)
+class Enum(EnumBase):
+    def __init__(self, name, annotations, docs, values, block):
+        super(Enum, self).__init__(name, annotations, docs, values, block)
+
+class Flags(EnumBase):
+    def __init__(self, name, annotations, docs, values, block):
+        super(Flags, self).__init__(name, annotations, docs, values, block)
+
+class EnumValue(object):
+    def __init__(self, name, annotations=None, docs=None):
+        object.__init__(self)
+        self.docs = docs
+        self.annotations = annotations or []
+        self.name = name
 
 class FunctionBase(Symbol):
     def __init__(self, name, annotations, params, retval, docs, block):
@@ -347,37 +359,31 @@ class Parser(object):
         cls.summary = db.summary
         self.classes.append(cls)
 
-    def __parse_enum(self, block):
+    def __parse_enum_or_flags(self, block, What):
         db = DoxBlock(block)
 
         name = db.symbol
-        if name.startswith('enum:'):
-            name = name[len('enum:'):]
+        prefix = 'enum:' if What is Enum else 'flags:'
+        if name.startswith(prefix):
+            name = name[len(prefix):]
 
-        if db.params:
-            raise ParseError('enum params', block)
         if db.attributes:
             raise ParseError('enum attributes', block)
 
-        enum = Enum(name, db.annotations, db.docs, block)
+        values = []
+        if db.params:
+            for p in db.params:
+                values.append(EnumValue(p[0][1:], p[1], p[2]))
+
+        enum = What(name, db.annotations, db.docs, values, block)
         enum.summary = db.summary
         self.enums.append(enum)
 
+    def __parse_enum(self, block):
+        return self.__parse_enum_or_flags(block, Enum)
+
     def __parse_flags(self, block):
-        db = DoxBlock(block)
-
-        name = db.symbol
-        if name.startswith('flags:'):
-            name = name[len('flags:'):]
-
-        if db.params:
-            raise ParseError('flags params', block)
-        if db.attributes:
-            raise ParseError('flags attributes', block)
-
-        flags = Flags(name, db.annotations, db.docs, block)
-        flags.summary = db.summary
-        self.enums.append(flags)
+        return self.__parse_enum_or_flags(block, Flags)
 
     def __parse_block(self, block):
         line = block.lines[0]
