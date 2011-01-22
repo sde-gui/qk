@@ -595,3 +595,38 @@ moo_test_coverage_record (const char *lang,
                              g_strdup_printf ("%s.%s", lang, function),
                              GINT_TO_POINTER (TRUE));
 }
+
+
+/************************************************************************************
+ * log handlers
+ */
+
+static gboolean silent_messages;
+
+static void
+silent_log_handler (const gchar    *log_domain,
+                    GLogLevelFlags  log_level,
+                    const gchar    *message,
+                    gpointer        data)
+{
+    if (log_level & G_LOG_LEVEL_ERROR)
+        g_log_default_handler (log_domain, log_level, message, data);
+}
+
+/**
+ * moo_test_set_silent_messages:
+ **/
+gboolean
+moo_test_set_silent_messages (gboolean silent)
+{
+    if (silent == silent_messages)
+        return silent_messages;
+
+    if (silent)
+        g_log_set_default_handler (silent_log_handler, NULL);
+    else
+        g_log_set_default_handler (g_log_default_handler, NULL);
+
+    silent_messages = silent;
+    return !silent;
+}

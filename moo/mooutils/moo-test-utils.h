@@ -85,6 +85,8 @@ void             moo_test_coverage_write    (const char         *filename);
 void             moo_test_coverage_record   (const char         *lang,
                                              const char         *function);
 
+gboolean         moo_test_set_silent_messages   (gboolean        silent);
+
 
 G_END_DECLS
 
