@@ -1525,10 +1525,10 @@ moo_editor_close_window (MooEditor      *editor,
 
     g_object_ref (window);
 
-    g_signal_emit (editor, signals[BEFORE_CLOSE_WINDOW], 0, window, &response);
+    g_signal_emit_by_name (window, "before-close", &response);
 
     if (response != MOO_CLOSE_RESPONSE_CANCEL && moo_edit_window_array_find (editor->priv->windows, window) >= 0)
-        g_signal_emit_by_name (window, "before-close", &response);
+        g_signal_emit (editor, signals[BEFORE_CLOSE_WINDOW], 0, window, &response);
 
     if (response != MOO_CLOSE_RESPONSE_CANCEL && moo_edit_window_array_find (editor->priv->windows, window) >= 0)
         do_close_window (editor, window);
