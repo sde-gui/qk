@@ -41,27 +41,26 @@ typedef enum {
     MOO_EDIT_STATUS_CLEAN            = 1 << 4
 } MooEditStatus;
 
+#ifdef __WIN32__
+#define MOO_LE_NATIVE_VALUE MOO_LE_WIN32
+#else
+#define MOO_LE_NATIVE_VALUE MOO_LE_UNIX
+#endif
+
 /**
  * enum:MooLineEndType
  *
- * @MOO_LE_NONE:
  * @MOO_LE_UNIX:
  * @MOO_LE_WIN32:
  * @MOO_LE_MAC:
- * @MOO_LE_MIX:
- * @MOO_LE_DEFAULT:
+ * @MOO_LE_NATIVE:
  **/
 typedef enum {
     MOO_LE_NONE,
     MOO_LE_UNIX,
     MOO_LE_WIN32,
     MOO_LE_MAC,
-    MOO_LE_MIX,
-#ifdef __WIN32__
-    MOO_LE_DEFAULT = MOO_LE_WIN32
-#else
-    MOO_LE_DEFAULT = MOO_LE_UNIX
-#endif
+    MOO_LE_NATIVE = MOO_LE_NATIVE_VALUE
 } MooLineEndType;
 
 typedef enum {

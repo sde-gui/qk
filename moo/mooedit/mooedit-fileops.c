@@ -222,9 +222,9 @@ set_encoding_error (GError **error)
 MooLineEndType
 moo_edit_get_line_end_type (MooEdit *edit)
 {
-    g_return_val_if_fail (MOO_IS_EDIT (edit), MOO_LE_DEFAULT);
+    g_return_val_if_fail (MOO_IS_EDIT (edit), MOO_LE_NATIVE);
     if (edit->priv->line_end_type == MOO_LE_NONE)
-        return MOO_LE_DEFAULT;
+        return MOO_LE_NATIVE;
     else
         return edit->priv->line_end_type;
 }
@@ -503,6 +503,7 @@ do_load (MooEdit      *edit,
     GIOStatus status;
     GtkTextBuffer *buffer;
     MooLineEndType le = MOO_LE_NONE;
+    gboolean mixed_le = FALSE;
     GString *text = NULL;
     char *line = NULL;
     LoadResult result = ERROR_FILE;
@@ -589,8 +590,8 @@ do_load (MooEdit      *edit,
 
                 if (le_here)
                 {
-                    if (le && le != le_here)
-                        le = MOO_LE_MIX;
+                    if (mixed_le || (le && le != le_here))
+                        mixed_le = TRUE;
                     else
                         le = le_here;
                 }
@@ -623,15 +624,11 @@ do_load (MooEdit      *edit,
     if (text->len)
         gtk_text_buffer_insert_at_cursor (buffer, text->str, text->len);
 
-    switch (edit->priv->line_end_type)
-    {
-        case MOO_LE_MIX:
-            break;
-        default:
-            if (le != MOO_LE_NONE)
-                moo_edit_set_line_end_type_full (edit, le, TRUE);
-            break;
-    }
+    if (mixed_le)
+        le = MOO_LE_NATIVE;
+
+    if (le != MOO_LE_NONE)
+        moo_edit_set_line_end_type_full (edit, le, TRUE);
 
     g_string_free (text, TRUE);
     g_clear_error (error);
@@ -823,56 +820,30 @@ get_contents_with_fixed_line_end (GtkTextBuffer *buffer, const char *le, guint l
 static char *
 get_contents (MooEdit *edit)
 {
-    gboolean normalize_le = FALSE;
     const char *le = "\n";
     gsize le_len = 1;
-    MooLineEndType line_end_type;
     GtkTextBuffer *buffer;
-    char *contents;
 
-    line_end_type = edit->priv->line_end_type;
-    if (!line_end_type)
-        line_end_type = MOO_LE_DEFAULT;
-
-    switch (line_end_type)
+    switch (moo_edit_get_line_end_type (edit))
     {
         case MOO_LE_UNIX:
-            normalize_le = TRUE;
             le = "\n";
             le_len = 1;
             break;
         case MOO_LE_WIN32:
-            normalize_le = TRUE;
             le = "\r\n";
             le_len = 2;
             break;
         case MOO_LE_MAC:
-            normalize_le = TRUE;
             le = "\r";
             le_len = 1;
             break;
-
-        case MOO_LE_MIX:
-            break;
-
         default:
             moo_assert_not_reached ();
     }
 
     buffer = moo_edit_get_buffer (edit);
-
-    if (normalize_le)
-    {
-        contents = get_contents_with_fixed_line_end (buffer, le, le_len);
-    }
-    else
-    {
-        GtkTextIter start, end;
-        gtk_text_buffer_get_bounds (buffer, &start, &end);
-        contents = gtk_text_buffer_get_text (buffer, &start, &end, TRUE);
-    }
-
-    return contents;
+    return get_contents_with_fixed_line_end (buffer, le, le_len);
 }
 
 static gboolean

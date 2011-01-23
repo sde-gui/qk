@@ -1389,7 +1389,6 @@ static const char *line_end_menu_items[] = {
     "LineEndUnix", /* MOO_LE_UNIX */
     "LineEndWin32", /* MOO_LE_WIN32 */
     "LineEndMac", /* MOO_LE_MAC */
-    "LineEndMix" /* MOO_LE_MIX */
 };
 
 static void
@@ -1451,10 +1450,6 @@ create_doc_line_end_action (MooEditWindow *window)
                          line_end_menu_items[MOO_LE_MAC],
                          _("_Mac (CR)"), NULL, MOO_MENU_ITEM_RADIO,
                          GINT_TO_POINTER (MOO_LE_MAC), NULL);
-    moo_menu_mgr_append (mgr, NULL,
-                         line_end_menu_items[MOO_LE_MIX],
-                         _("Mi_xed"), NULL, MOO_MENU_ITEM_RADIO,
-                         GINT_TO_POINTER (MOO_LE_MIX), NULL);
 
     moo_bind_bool_property (action, "sensitive",
                             window, "has-open-document", FALSE);
