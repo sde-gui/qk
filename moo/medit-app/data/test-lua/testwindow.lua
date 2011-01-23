@@ -51,4 +51,33 @@ tassert(window.get_active_tab() == tab2)
 tassert(window.get_active_doc() == doc2)
 tassert(window.get_active_view() == view2)
 
+window.set_active_view(view1)
+tassert(window.get_active_tab() == tab1)
+tassert(window.get_active_doc() == doc1)
+tassert(window.get_active_view() == view1)
+
+tassert(view4.get_editor() == editor)
+tassert(view4.get_window() == window)
+
+tassert_eq(tab3.get_views(), {view3})
+tassert_eq(tab3.get_window(), window)
+
+editor.set_active_doc(doc2)
+tassert(window.get_active_tab() == tab2)
+tassert(window.get_active_doc() == doc2)
+tassert(window.get_active_view() == view2)
+tassert(editor.get_active_doc() == doc2)
+tassert(editor.get_active_view() == view2)
+
+editor.set_active_view(view4)
+tassert(window.get_active_tab() == tab4)
+tassert(window.get_active_doc() == doc4)
+tassert(window.get_active_view() == view4)
+tassert(editor.get_active_doc() == doc4)
+tassert(editor.get_active_view() == view4)
+
+tassert_eq(doc1.get_views(), {view1})
+tassert_eq(doc1.get_window(), window)
+tassert_eq(doc1.get_n_views(), 1)
+
 window.close()
