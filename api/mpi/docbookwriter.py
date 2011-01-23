@@ -112,8 +112,8 @@ class Writer(object):
                 return '<constant><link linkend="%(mode)s.%(parent)s" endterm="%(mode)s.%(symbol)s.title"></link></constant>' % \
                     dict(symbol=name, mode=self.mode, parent=sym.enum.symbol_id())
             elif isinstance(sym, Type):
-                return '<constant><link linkend="%(mode)s.%(symbol)s" endterm="%(mode)s.%(symbol)s.title"></link></constant>' % \
-                    dict(symbol=name, mode=self.mode)
+                return '<constant><link linkend="%(mode)s.%(symbol)s">%(name)s</link></constant>' % \
+                    dict(symbol=name, mode=self.mode, name=self.__make_class_name(sym))
             else:
                 oops(name)
         if self.mode == 'python':
@@ -181,7 +181,7 @@ class Writer(object):
         return text
 
     def __make_class_name(self, cls):
-        return '%s.%s' % (self.module.name.lower(), cls.short_name)
+        return '%s.%s' % (cls.module.name.lower(), cls.short_name)
 
     def __get_obj_name(self, cls):
         name = cls.annotations.get('moo.doc-object-name')
