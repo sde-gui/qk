@@ -2430,6 +2430,11 @@ moo_editor_open_path (MooEditor     *editor,
 
 /**
  * moo_editor_reload:
+ *
+ * @editor:
+ * @doc:
+ * @info: (allow-none) (default NULL)
+ * @error:
  **/
 gboolean
 moo_editor_reload (MooEditor     *editor,

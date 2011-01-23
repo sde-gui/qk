@@ -41,21 +41,26 @@ end
 
 function test_edit()
   doc = editor.new_doc()
+  tassert(doc.is_empty())
   tassert_eq(doc.get_text(), '')
   doc.set_text('foo')
+  tassert(not doc.is_empty())
   tassert_eq(doc.get_text(), 'foo')
   doc.clear()
   tassert_eq(doc.get_text(), '')
+  tassert(not doc.is_empty())
   doc.set_text('foo')
   doc.select_all()
   doc.copy()
   doc.paste()
   tassert_eq(doc.get_text(), 'foo')
+  tassert(not doc.is_empty())
   doc.paste()
   tassert_eq(doc.get_text(), 'foofoo')
   doc.select_all()
   doc.cut()
   tassert_eq(doc.get_text(), '')
+  tassert(not doc.is_empty())
   doc.paste()
   tassert_eq(doc.get_text(), 'foofoo')
 
@@ -63,5 +68,55 @@ function test_edit()
   doc.close()
 end
 
+function read_file(filename)
+  local f = assert(io.open(filename, 'rb'))
+  local t = f:read("*all")
+  f:close()
+  return t
+end
+
+function save_file(filename, content)
+  local f = assert(io.open(filename, 'wb'))
+  f:write(content)
+  f:close()
+end
+
+function test_file()
+  doc = editor.new_doc()
+  filename1 = moo.tempnam()
+  filename2 = moo.tempnam()
+
+  tassert(not _moo.path.exists(filename1))
+  tassert(not _moo.path.exists(filename2))
+
+  tassert(doc.is_untitled())
+  doc.set_text('foobar')
+  tassert(doc.save_as(moo.SaveInfo.new_path(filename1)))
+  tassert(not doc.is_untitled())
+
+  tassert(doc.get_filename() == filename1)
+  tassert(read_file(filename1) == 'foobar')
+
+  doc.set_text('blahfoo')
+  tassert(doc.save_copy(moo.SaveInfo.new_path(filename2)))
+  tassert(doc.get_filename() == filename1)
+  tassert(read_file(filename1) == 'foobar')
+  tassert(read_file(filename2) == 'blahfoo')
+
+  tassert(doc.save())
+  tassert(read_file(filename1) == 'blahfoo')
+
+  tassert(editor.reload(doc))
+  save_file(filename1, 'boomboom')
+  tassert(editor.reload(doc))
+  tassert(doc.get_text() == 'boomboom')
+
+  tassert(editor.save_copy(doc, moo.SaveInfo.new_path(filename2)))
+  tassert(read_file(filename2) == 'boomboom')
+
+  tassert(doc.close())
+end
+
 test_undo()
 test_edit()
+test_file()

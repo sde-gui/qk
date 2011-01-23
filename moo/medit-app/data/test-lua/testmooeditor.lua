@@ -90,6 +90,9 @@ function test_before_close_window()
   tassert(not window.close())
   tassert(seen_editor_before_close_window == 2)
 
+  tassert(not moo.App.instance().quit())
+  tassert(seen_editor_before_close_window == 3)
+
   editor.disconnect(cb_id)
 
   cb_id = window.connect('before-close',
@@ -100,10 +103,10 @@ function test_before_close_window()
     end)
 
   tassert(not editor.close_window(window))
-  tassert(seen_editor_before_close_window == 2)
+  tassert(seen_editor_before_close_window == 3)
   tassert(seen_window_before_close == 1)
   tassert(not window.close())
-  tassert(seen_editor_before_close_window == 2)
+  tassert(seen_editor_before_close_window == 3)
   tassert(seen_window_before_close == 2)
 
   window.disconnect(cb_id)
@@ -123,7 +126,7 @@ function test_before_close_window()
     end)
 
   tassert(window.close())
-  tassert(seen_editor_before_close_window == 3)
+  tassert(seen_editor_before_close_window == 4)
   tassert(seen_window_before_close == 3)
 
   editor.disconnect(cb_id)

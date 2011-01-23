@@ -80,4 +80,8 @@ tassert_eq(doc1.get_views(), {view1})
 tassert_eq(doc1.get_window(), window)
 tassert_eq(doc1.get_n_views(), 1)
 
+tassert(editor.close_docs({doc1, doc2, doc3}))
+tassert_eq(window.get_docs(), {doc4})
+tassert_eq(editor.get_active_doc(), doc4)
+
 window.close()
