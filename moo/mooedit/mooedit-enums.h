@@ -31,17 +31,6 @@ typedef enum {
     MOO_EDIT_STATE_PRINTING
 } MooEditState;
 
-/**
- * enum:MooEditStatus
- *
- * @MOO_EDIT_STATUS_NORMAL:
- * @MOO_EDIT_STATUS_MODIFIED_ON_DISK:
- * @MOO_EDIT_STATUS_DELETED:
- * @MOO_EDIT_STATUS_CHANGED_ON_DISK:
- * @MOO_EDIT_STATUS_MODIFIED:
- * @MOO_EDIT_STATUS_NEW:
- * @MOO_EDIT_STATUS_CLEAN:
- **/
 typedef enum {
     MOO_EDIT_STATUS_NORMAL           = 0,
     MOO_EDIT_STATUS_MODIFIED_ON_DISK = 1 << 0,
@@ -49,7 +38,7 @@ typedef enum {
     MOO_EDIT_STATUS_CHANGED_ON_DISK  = MOO_EDIT_STATUS_MODIFIED_ON_DISK | MOO_EDIT_STATUS_DELETED,
     MOO_EDIT_STATUS_MODIFIED         = 1 << 2,
     MOO_EDIT_STATUS_NEW              = 1 << 3,
-    MOO_EDIT_STATUS_CLEAN            = 1 << 4 /* doesn't prompt when it's being closed, even if it's modified */
+    MOO_EDIT_STATUS_CLEAN            = 1 << 4
 } MooEditStatus;
 
 /**

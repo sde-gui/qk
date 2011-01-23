@@ -20,6 +20,20 @@
  * and manipulating document text.
  **/
 
+/**
+ * flags:MooEditStatus
+ *
+ * @MOO_EDIT_STATUS_NORMAL: none of the below flags, it is equal to <code>0</code>.
+ * @MOO_EDIT_STATUS_MODIFIED_ON_DISK: file has been modified on disk outside the program.
+ * @MOO_EDIT_STATUS_DELETED: file has been deleted from disk.
+ * @MOO_EDIT_STATUS_CHANGED_ON_DISK: file has been modified on disk outside the program or deleted from disk,
+ * it is equal to <code>#MOO_EDIT_STATUS_MODIFIED_ON_DISK | #MOO_EDIT_STATUS_DELETED</code>.
+ * @MOO_EDIT_STATUS_MODIFIED: document content is modifed and not saved yet.
+ * @MOO_EDIT_STATUS_NEW: file doesn't exist on disk yet. This is the state of documents
+ * opened from command line when requested file doesn't exist.
+ * @MOO_EDIT_STATUS_CLEAN: doesn't prompt on close, even if it's modified.
+ **/
+
 #define MOOEDIT_COMPILATION
 #include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mooedit-private.h"
