@@ -108,6 +108,15 @@ L_GNUC_NORETURN void luaD_throw (lua_State *L, int errcode) {
 }
 
 
+int luaD_inerror (lua_State *L)
+{
+  if (L->errorJmp)
+    return L->errorJmp->status != 0;
+  else
+    return 0;
+}
+
+
 int luaD_rawrunprotected (lua_State *L, Pfunc f, void *ud) {
   struct lua_longjmp lj;
   lj.status = 0;
