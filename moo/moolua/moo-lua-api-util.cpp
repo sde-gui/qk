@@ -2,6 +2,7 @@
 #include "moo-lua-api-util.h"
 #include "medit-lua.h"
 #include "moolua/lua/lauxlib.h"
+#include "moolua/lua/ldo.h"
 #include "mooutils/mooutils.h"
 #include "mooutils/moo-test-utils.h"
 #include <vector>
@@ -31,6 +32,7 @@ MooLuaCurrentFunc::~MooLuaCurrentFunc ()
 }
 
 namespace {
+
 class StringHolder
 {
 public:
@@ -47,7 +49,44 @@ public:
 private:
     char *m_s;
 };
-}
+
+#ifdef DEBUG
+
+class CheckStack
+{
+public:
+    CheckStack(lua_State *L, int n_add = 0)
+        : m_L(L)
+        , m_top_old(lua_gettop(L))
+        , m_n_add(n_add)
+    {
+    }
+
+    ~CheckStack()
+    {
+        if (!luaD_inerror(m_L))
+            g_assert(lua_gettop(m_L) == m_top_old + m_n_add);
+        else
+            g_assert(lua_gettop(m_L) >= m_top_old + m_n_add);
+    }
+
+private:
+    lua_State *m_L;
+    int m_top_old;
+    int m_n_add;
+};
+
+#define CHECK_STACK(L) CheckStack check__(L)
+#define CHECK_STACKN(L) CheckStack check__(L, n)
+
+#else // !DEBUG
+
+#define CHECK_STACK(L) G_STMT_BEGIN {} G_STMT_END
+#define CHECK_STACKN(L) G_STMT_BEGIN {} G_STMT_END
+
+#endif // !DEBUG
+
+} // namespace
 
 const char *
 moo_lua_current_function (void)
@@ -417,6 +456,25 @@ cfunc_ginstance__le (lua_State *L)
     return luaL_error (L, "unsupported operation");
 }
 
+static int
+cfunc_ginstance__tostring (lua_State *L)
+{
+    LGInstance *lg = get_arg_instance (L, 1, "arg");
+
+    if (!lg->instance)
+    {
+        lua_pushstring (L, "<null>");
+        return 1;
+    }
+
+    GType type = g_type_is_a (lg->type, G_TYPE_OBJECT) ? G_OBJECT_TYPE (lg->instance) : lg->type;
+    char *s = g_strdup_printf ("<%s %p>", g_type_name (type), lg->instance);
+    StringHolder sh(s);
+
+    lua_pushstring (L, s);
+    return 1;
+}
+
 int
 cfunc_call_named_method (lua_State *L)
 {
@@ -510,6 +568,8 @@ moo_lua_push_ginstance (lua_State *L,
         lua_setfield (L, -2, "__lt");
         lua_pushcfunction (L, cfunc_ginstance__le);
         lua_setfield (L, -2, "__le");
+        lua_pushcfunction (L, cfunc_ginstance__tostring);
+        lua_setfield (L, -2, "__tostring");
     }
 
     lua_setmetatable (L, -2);
@@ -542,6 +602,24 @@ moo_lua_push_object (lua_State *L,
         lua_pushnil (L);
         return 1;
     }
+}
+
+int
+moo_lua_push_boxed (lua_State *L,
+                    gpointer   boxed,
+                    GType      type,
+                    gboolean   make_copy)
+{
+    return moo_lua_push_ginstance (L, boxed, type, G_TYPE_BOXED, make_copy);
+}
+
+int
+moo_lua_push_pointer (lua_State *L,
+                      gpointer   ptr,
+                      GType      type,
+                      gboolean   make_copy)
+{
+    return moo_lua_push_ginstance (L, ptr, type, G_TYPE_POINTER, make_copy);
 }
 
 
@@ -637,16 +715,16 @@ push_param_gvalue (lua_State *L, const GValue *value)
             return moo_lua_push_string_copy (L, g_value_get_string (value));
 
         case G_TYPE_POINTER:
-            return moo_lua_push_instance (L, g_value_get_pointer (value), type, TRUE);
+            return moo_lua_push_pointer (L, g_value_get_pointer (value), type, TRUE);
         case G_TYPE_BOXED:
-            return moo_lua_push_instance (L, g_value_get_boxed (value), type, TRUE);
+            return moo_lua_push_boxed (L, g_value_get_boxed (value), type, TRUE);
         case G_TYPE_OBJECT:
-            return moo_lua_push_instance (L, g_value_get_object (value), type, TRUE);
+            return moo_lua_push_object (L, (GObject*) g_value_get_object (value), TRUE);
 
         case G_TYPE_INTERFACE:
             {
                 if (GObject *obj = (GObject*) g_value_get_object (value))
-                    return moo_lua_push_instance (L, obj, G_OBJECT_TYPE (obj), TRUE);
+                    return moo_lua_push_object (L, obj, TRUE);
                 lua_pushnil (L);
                 return 1;
             }
@@ -936,15 +1014,6 @@ moo_lua_register_gobject (void)
 
 
 int
-moo_lua_push_instance (lua_State *L,
-                       gpointer   instance,
-                       GType      type,
-                       gboolean   make_copy)
-{
-    return moo_lua_push_ginstance (L, instance, type, G_TYPE_FUNDAMENTAL (type), make_copy);
-}
-
-int
 moo_lua_push_bool (lua_State *L,
                    gboolean   value)
 {
@@ -1051,7 +1120,7 @@ moo_lua_push_object_array (lua_State      *L,
     for (guint i = 0; i < value->n_elms; ++i)
     {
         // table[i+1] = ar[i]
-        moo_lua_push_instance (L, value->elms[i], G_TYPE_OBJECT, TRUE);
+        moo_lua_push_object (L, value->elms[i], TRUE);
         lua_rawseti(L, -2, i + 1);
     }
 
@@ -1110,6 +1179,8 @@ moo_lua_get_arg_instance_opt (lua_State  *L,
                               const char *param_name,
                               GType       type)
 {
+    CHECK_STACK (L);
+
     if (lua_isnoneornil (L, narg))
         return NULL;
 
@@ -1133,6 +1204,7 @@ moo_lua_get_arg_instance (lua_State  *L,
                           const char *param_name,
                           GType       type)
 {
+    CHECK_STACK (L);
     luaL_checkany (L, narg);
     return moo_lua_get_arg_instance_opt (L, narg, param_name, type);
 }
@@ -1143,6 +1215,8 @@ moo_lua_get_arg_object_array (lua_State  *L,
                               const char *param_name,
                               GType       type)
 {
+    CHECK_STACK (L);
+
     if (!lua_istable (L, narg))
         moo_lua_arg_error (L, narg, param_name,
                            "table expected, got %s",
@@ -1177,8 +1251,6 @@ moo_lua_get_arg_object_array (lua_State  *L,
     for (int i = 0, c = vec.size(); i < c; ++i)
         moo_object_array_append (array, G_OBJECT (vec[i]));
 
-    lua_pop (L, 1);
-
     return array;
 }
 
@@ -1187,6 +1259,8 @@ moo_lua_get_arg_strv_opt (lua_State  *L,
                           int         narg,
                           const char *param_name)
 {
+    CHECK_STACK (L);
+
     if (lua_isnoneornil (L, narg))
         return NULL;
     else
@@ -1198,6 +1272,8 @@ moo_lua_get_arg_strv (lua_State  *L,
                       int         narg,
                       G_GNUC_UNUSED const char *param_name)
 {
+    CHECK_STACK (L);
+
     if (!lua_istable (L, narg))
         moo_lua_arg_error (L, narg, param_name,
                            "table expected, got %s",
@@ -1233,8 +1309,6 @@ moo_lua_get_arg_strv (lua_State  *L,
         strv[i] = g_strdup (vec[i].c_str());
     strv[vec.size()] = NULL;
 
-    lua_pop (L, 1);
-
     return strv;
 }
 
@@ -1244,6 +1318,8 @@ moo_lua_get_arg_bool_opt (lua_State   *L,
                           G_GNUC_UNUSED const char  *param_name,
                           gboolean     default_value)
 {
+    CHECK_STACK (L);
+
     if (lua_isnoneornil (L, narg))
         return default_value;
     else
@@ -1255,6 +1331,7 @@ moo_lua_get_arg_bool (lua_State   *L,
                       int          narg,
                       const char  *param_name)
 {
+    CHECK_STACK (L);
     luaL_checkany (L, narg);
     return moo_lua_get_arg_bool_opt (L, narg, param_name, FALSE);
 }
@@ -1265,6 +1342,8 @@ moo_lua_get_arg_int_opt (lua_State  *L,
                          G_GNUC_UNUSED const char *param_name,
                          int         default_value)
 {
+    CHECK_STACK (L);
+
     if (lua_isnoneornil (L, narg))
         return default_value;
     else
@@ -1286,6 +1365,7 @@ moo_lua_get_arg_int (lua_State  *L,
                      int         narg,
                      const char *param_name)
 {
+    CHECK_STACK (L);
     check_not_none_or_nil (L, narg);
     return moo_lua_get_arg_int_opt (L, narg, param_name, 0);
 }
@@ -1295,6 +1375,7 @@ moo_lua_get_arg_uint (lua_State  *L,
                       int         narg,
                       G_GNUC_UNUSED const char *param_name)
 {
+    CHECK_STACK (L);
     check_not_none_or_nil (L, narg);
     return lua_tointeger (L, narg);
 }
@@ -1304,6 +1385,7 @@ moo_lua_get_arg_long (lua_State  *L,
                       int         narg,
                       G_GNUC_UNUSED const char *param_name)
 {
+    CHECK_STACK (L);
     check_not_none_or_nil (L, narg);
     return lua_tointeger (L, narg);
 }
@@ -1313,6 +1395,7 @@ moo_lua_get_arg_ulong (lua_State  *L,
                        int         narg,
                        G_GNUC_UNUSED const char *param_name)
 {
+    CHECK_STACK (L);
     check_not_none_or_nil (L, narg);
     return lua_tointeger (L, narg);
 }
@@ -1322,6 +1405,7 @@ moo_lua_get_arg_int64 (lua_State  *L,
                        int         narg,
                        G_GNUC_UNUSED const char *param_name)
 {
+    CHECK_STACK (L);
     check_not_none_or_nil (L, narg);
     return lua_tointeger (L, narg);
 }
@@ -1331,6 +1415,7 @@ moo_lua_get_arg_uint64 (lua_State  *L,
                         int         narg,
                         G_GNUC_UNUSED const char *param_name)
 {
+    CHECK_STACK (L);
     check_not_none_or_nil (L, narg);
     return lua_tointeger (L, narg);
 }
@@ -1341,6 +1426,8 @@ moo_lua_get_arg_double_opt (lua_State  *L,
                             G_GNUC_UNUSED const char *param_name,
                             double      default_value)
 {
+    CHECK_STACK (L);
+
     if (lua_isnoneornil (L, narg))
         return default_value;
     else
@@ -1352,6 +1439,7 @@ moo_lua_get_arg_double (lua_State  *L,
                         int         narg,
                         const char *param_name)
 {
+    CHECK_STACK (L);
     check_not_none_or_nil (L, narg);
     return moo_lua_get_arg_double_opt (L, narg, param_name, 0);
 }
@@ -1361,6 +1449,7 @@ moo_lua_get_arg_float (lua_State  *L,
                        int         narg,
                        G_GNUC_UNUSED const char *param_name)
 {
+    CHECK_STACK (L);
     check_not_none_or_nil (L, narg);
     return lua_tonumber (L, narg);
 }
@@ -1371,6 +1460,8 @@ moo_lua_get_arg_index_opt (lua_State  *L,
                            const char *param_name,
                            int         default_value)
 {
+    CHECK_STACK (L);
+
     if (lua_isnoneornil (L, narg))
         return default_value;
     else
@@ -1382,6 +1473,7 @@ moo_lua_get_arg_index (lua_State  *L,
                        int         narg,
                        G_GNUC_UNUSED const char *param_name)
 {
+    CHECK_STACK (L);
     check_not_none_or_nil (L, narg);
     return lua_tointeger (L, narg) - 1;
 }
@@ -1393,6 +1485,7 @@ moo_lua_get_arg_iter (lua_State     *L,
                       GtkTextBuffer *buffer,
                       GtkTextIter   *iter)
 {
+    CHECK_STACK (L);
     check_not_none_or_nil (L, narg);
     moo_lua_get_arg_iter_opt (L, narg, param_name, buffer, iter);
 }
@@ -1404,6 +1497,8 @@ moo_lua_get_arg_iter_opt (lua_State     *L,
                           GtkTextBuffer *buffer,
                           GtkTextIter   *iter)
 {
+    CHECK_STACK (L);
+
     GtkTextIter *iter_here;
 
     if (lua_isnoneornil (L, narg))
@@ -1440,6 +1535,7 @@ moo_lua_get_arg_rect (lua_State    *L,
                       const char   *param_name,
                       GdkRectangle *rect)
 {
+    CHECK_STACK (L);
     check_not_none_or_nil (L, narg);
     moo_lua_get_arg_rect_opt (L, narg, param_name, rect);
 }
@@ -1450,14 +1546,14 @@ moo_lua_get_arg_rect_opt (lua_State    *L,
                           const char   *param_name,
                           GdkRectangle *prect)
 {
-    GdkRectangle *rect;
+    CHECK_STACK (L);
 
     if (lua_isnoneornil (L, narg))
         return FALSE;
 
     // XXX
 
-    rect = (GdkRectangle*) moo_lua_get_arg_instance (L, narg, param_name, GDK_TYPE_RECTANGLE);
+    GdkRectangle *rect = (GdkRectangle*) moo_lua_get_arg_instance (L, narg, param_name, GDK_TYPE_RECTANGLE);
 
     if (!rect)
         moo_lua_arg_error (L, narg, param_name,
@@ -1530,6 +1626,8 @@ moo_lua_get_arg_enum_from_string (lua_State  *L,
                                   const char *param_name,
                                   GType       type)
 {
+    CHECK_STACK (L);
+
     const char *s = lua_tostring (L, narg);
 
     if (!s)
@@ -1548,6 +1646,8 @@ moo_lua_get_arg_enum_opt (lua_State  *L,
                           GType       type,
                           int         default_value)
 {
+    CHECK_STACK (L);
+
     if (lua_isnoneornil (L, narg))
         return default_value;
 
@@ -1569,6 +1669,7 @@ moo_lua_get_arg_enum (lua_State  *L,
                       const char *param_name,
                       GType       type)
 {
+    CHECK_STACK (L);
     check_not_none_or_nil (L, narg);
     return moo_lua_get_arg_enum_opt (L, narg, param_name, type, 0);
 }
@@ -1579,6 +1680,8 @@ moo_lua_get_arg_string_opt (lua_State   *L,
                             G_GNUC_UNUSED const char *param_name,
                             const char  *default_value)
 {
+    CHECK_STACK (L);
+
     if (lua_isnoneornil (L, narg))
         return default_value;
     else
@@ -1590,6 +1693,7 @@ moo_lua_get_arg_string (lua_State  *L,
                         int         narg,
                         const char *param_name)
 {
+    CHECK_STACK (L);
     luaL_checkany (L, narg);
     return moo_lua_get_arg_string_opt (L, narg, param_name, NULL);
 }
@@ -1600,6 +1704,7 @@ moo_lua_get_arg_utf8_opt (lua_State  *L,
                           const char *param_name,
                           const char *default_value)
 {
+    CHECK_STACK (L);
     return moo_lua_get_arg_string_opt (L, narg, param_name, default_value);
 }
 
@@ -1608,6 +1713,7 @@ moo_lua_get_arg_utf8 (lua_State  *L,
                       int         narg,
                       const char *param_name)
 {
+    CHECK_STACK (L);
     return moo_lua_get_arg_string (L, narg, param_name);
 }
 
@@ -1617,6 +1723,7 @@ moo_lua_get_arg_filename_opt (lua_State  *L,
                               const char *param_name,
                               const char *default_value)
 {
+    CHECK_STACK (L);
     return moo_lua_get_arg_string_opt (L, narg, param_name, default_value);
 }
 
@@ -1625,5 +1732,6 @@ moo_lua_get_arg_filename (lua_State  *L,
                           int         narg,
                           const char *param_name)
 {
+    CHECK_STACK (L);
     return moo_lua_get_arg_string (L, narg, param_name);
 }

@@ -170,13 +170,18 @@ char          **moo_lua_get_arg_strv            (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name);
 
-int             moo_lua_push_instance           (lua_State          *L,
-                                                 gpointer            instance,
-                                                 GType               type,
-                                                 gboolean            make_copy);
 int             moo_lua_push_object             (lua_State          *L,
                                                  GObject            *obj,
                                                  gboolean            make_copy);
+int             moo_lua_push_boxed              (lua_State          *L,
+                                                 gpointer            boxed,
+                                                 GType               type,
+                                                 gboolean            make_copy);
+int             moo_lua_push_pointer            (lua_State          *L,
+                                                 gpointer            ptr,
+                                                 GType               type,
+                                                 gboolean            make_copy);
+
 int             moo_lua_push_bool               (lua_State          *L,
                                                  gboolean            value);
 int             moo_lua_push_int                (lua_State          *L,

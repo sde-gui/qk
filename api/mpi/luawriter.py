@@ -265,9 +265,12 @@ class Writer(object):
             if isinstance(meth.retval.type, Class):
                 func_call = 'gpointer ret = '
                 push_ret = 'moo_lua_push_object (L, (GObject*) ret, %(make_copy)s);' % dic
-            elif isinstance(meth.retval.type, Boxed) or isinstance(meth.retval.type, Pointer):
+            elif isinstance(meth.retval.type, Boxed):
                 func_call = 'gpointer ret = '
-                push_ret = 'moo_lua_push_instance (L, ret, %(gtype_id)s, %(make_copy)s);' % dic
+                push_ret = 'moo_lua_push_boxed (L, ret, %(gtype_id)s, %(make_copy)s);' % dic
+            elif isinstance(meth.retval.type, Pointer):
+                func_call = 'gpointer ret = '
+                push_ret = 'moo_lua_push_pointer (L, ret, %(gtype_id)s, %(make_copy)s);' % dic
             elif isinstance(meth.retval.type, Enum) or isinstance(meth.retval.type, Flags):
                 func_call = '%s ret = ' % meth.retval.type.name
                 push_ret = 'moo_lua_push_int (L, ret);' % dic
