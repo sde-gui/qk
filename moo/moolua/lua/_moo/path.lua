@@ -4,10 +4,10 @@ local _G = _G
 local math, table = math, table
 local pairs, ipairs, select, unpack, require =
       pairs, ipairs, select, unpack, require
-local os = require('moo.os')
+local os = require('_moo.os')
 local lfs = require('lfs')
 
-module('moo.path')
+module('_moo.path')
 
 function exists(path)
   return lfs.attributes(path) ~= nil

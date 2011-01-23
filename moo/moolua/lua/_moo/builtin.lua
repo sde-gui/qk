@@ -6,15 +6,15 @@ local math, table, string =
 local pairs, ipairs, select, unpack, require, type, error =
       pairs, ipairs, select, unpack, require, type, error
 
-module('moo.builtin')
+module('_moo.builtin')
 
 function _inject(dest)
-  local util = require('moo._util')
-  util.inject_symbols('moo._table', table)
-  util.inject_symbols('moo._string', string)
-  util.inject_symbols('moo.builtin', dest)
-  dest.os = require('moo.os')
-  dest.os.path = require('moo.path')
+  local util = require('_moo._util')
+  util.inject_symbols('_moo._table', table)
+  util.inject_symbols('_moo._string', string)
+  util.inject_symbols('_moo.builtin', dest)
+  dest.os = require('_moo.os')
+  dest.os.path = require('_moo.path')
 end
 
 abs = math.abs

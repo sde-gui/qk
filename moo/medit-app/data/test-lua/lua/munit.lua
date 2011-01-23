@@ -1,4 +1,4 @@
-local medit = require("medit")
+local moo = require("moo")
 
 local function _tassert(cond, msg, ...)
   local info = debug.getinfo(3, "Slf")
@@ -8,9 +8,9 @@ local function _tassert(cond, msg, ...)
     if name then
       message = string.format('in function %s: %s', name, message)
     end
-    medit.test_assert_impl(false, message, info.short_src, info.currentline)
+    moo.test_assert_impl(false, message, info.short_src, info.currentline)
   else
-    medit.test_assert_impl(true, '', info.short_src, info.currentline)
+    moo.test_assert_impl(true, '', info.short_src, info.currentline)
   end
 end
 

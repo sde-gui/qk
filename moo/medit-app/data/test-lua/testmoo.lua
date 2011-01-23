@@ -1,8 +1,4 @@
--- -%- indent-width:2 -%- --
-
 require("munit")
-
-require("moo.builtin")._inject(_G)
 
 function to_list(t)
   local l = {}

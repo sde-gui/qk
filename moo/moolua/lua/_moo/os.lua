@@ -7,7 +7,7 @@ local _os = os
 local lfs = require('lfs')
 local _moo_utils = require("_moo_utils")
 
-module('moo.os')
+module('_moo.os')
 
 if package.config:sub(1,1) == '/' then
   name = 'posix'

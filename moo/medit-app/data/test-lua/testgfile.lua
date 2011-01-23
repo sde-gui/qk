@@ -1,8 +1,5 @@
--- -%- indent-width:2 -%- --
-
 require("munit")
-require("gtk")
-os = require("moo.os")
+os = require("_moo.os")
 
 if os.name == 'nt' then
   name1 = 'c:\\tmp\\foo'

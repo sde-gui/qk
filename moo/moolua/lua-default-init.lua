@@ -1,5 +1,5 @@
 local _g = getfenv(0)
-require("moo.builtin")._inject(_g)
-local medit = require("medit")
-_g.app = medit.App.instance()
+require("_moo.builtin")._inject(_g)
+local moo = require("moo")
+_g.app = moo.App.instance()
 _g.editor = _g.app.get_editor()

@@ -1,35 +1,33 @@
 require("munit")
-require("medit")
-require("gtk")
 
-editor = medit.Editor.instance()
+editor = moo.Editor.instance()
 
-tassert(medit.CLOSE_RESPONSE_CANCEL ~= nil)
-tassert(medit.CLOSE_RESPONSE_CONTINUE ~= nil)
+tassert(moo.CLOSE_RESPONSE_CANCEL ~= nil)
+tassert(moo.CLOSE_RESPONSE_CONTINUE ~= nil)
 
 function check_args_ew(editor, window)
-  tassert(editor == medit.Editor.instance())
+  tassert(editor == moo.Editor.instance())
   tassert(editor == window.get_editor())
   window.get_tabs()
 end
 
 function check_args_ed(editor, doc)
-  tassert(editor == medit.Editor.instance())
+  tassert(editor == moo.Editor.instance())
   tassert(editor == doc.get_editor())
   doc.get_display_basename()
 end
 
 function check_args_w(window)
-  tassert(medit.Editor.instance() == window.get_editor())
+  tassert(moo.Editor.instance() == window.get_editor())
   window.get_tabs()
 end
 
 function check_args_e(editor)
-  tassert(medit.Editor.instance() == editor)
+  tassert(moo.Editor.instance() == editor)
 end
 
 function check_args_d(doc)
-  tassert(medit.Editor.instance() == doc.get_editor())
+  tassert(moo.Editor.instance() == doc.get_editor())
   doc.get_display_basename()
 end
 
@@ -82,7 +80,7 @@ function test_before_close_window()
     function(editor, window)
       check_args_ew(editor, window)
       seen_editor_before_close_window = seen_editor_before_close_window + 1
-      return medit.CLOSE_RESPONSE_CANCEL
+      return moo.CLOSE_RESPONSE_CANCEL
     end)
 
   window = editor.new_window()
@@ -98,7 +96,7 @@ function test_before_close_window()
     function(window)
       check_args_w(window)
       seen_window_before_close = seen_window_before_close + 1
-      return medit.CLOSE_RESPONSE_CANCEL
+      return moo.CLOSE_RESPONSE_CANCEL
     end)
 
   tassert(not editor.close_window(window))
@@ -114,14 +112,14 @@ function test_before_close_window()
     function(editor, window)
       check_args_ew(editor, window)
       seen_editor_before_close_window = seen_editor_before_close_window + 1
-      return medit.CLOSE_RESPONSE_CONTINUE
+      return moo.CLOSE_RESPONSE_CONTINUE
     end)
 
   window.connect('before-close',
     function(window)
       check_args_w(window)
       seen_window_before_close = seen_window_before_close + 1
-      return medit.CLOSE_RESPONSE_CONTINUE
+      return moo.CLOSE_RESPONSE_CONTINUE
     end)
 
   tassert(window.close())
@@ -170,9 +168,9 @@ function test_bad_callback()
   tassert(cb_id1 ~= nil and cb_id1 ~= 0)
   tassert(cb_id2 ~= nil and cb_id2 ~= 0)
 
-  was_silent = medit.test_set_silent_messages(true)
+  was_silent = moo.test_set_silent_messages(true)
   tassert(editor.close_window(window))
-  medit.test_set_silent_messages(was_silent)
+  moo.test_set_silent_messages(was_silent)
 
   tassert(n_callbacks == 6)
 
@@ -181,8 +179,8 @@ function test_bad_callback()
 end
 
 function test_will_save()
-  path = medit.tempnam()
-  si = medit.SaveInfo.new_path(path)
+  path = moo.tempnam()
+  si = moo.SaveInfo.new_path(path)
   doc = editor.new_doc()
 
   doc.set_modified(true)
@@ -279,12 +277,12 @@ function test_before_save()
       check_args_ed(editor, doc)
       check_args_f(gfile)
       seen_editor_before_save = seen_editor_before_save + 1
-      return medit.SAVE_RESPONSE_CANCEL
+      return moo.SAVE_RESPONSE_CANCEL
     end)
 
   doc = editor.new_doc()
-  path = medit.tempnam()
-  si = medit.SaveInfo.new_path(path)
+  path = moo.tempnam()
+  si = moo.SaveInfo.new_path(path)
 
   tassert(not editor.save_as(doc, si))
   tassert(seen_editor_before_save == 1)
@@ -298,7 +296,7 @@ function test_before_save()
       check_args_d(doc)
       check_args_f(gfile)
       seen_doc_before_save = seen_doc_before_save + 1
-      return medit.SAVE_RESPONSE_CANCEL
+      return moo.SAVE_RESPONSE_CANCEL
     end)
 
   tassert(not editor.save_as(doc, si))
@@ -315,7 +313,7 @@ function test_before_save()
       check_args_ed(editor, doc)
       check_args_f(gfile)
       seen_editor_before_save = seen_editor_before_save + 1
-      return medit.SAVE_RESPONSE_CONTINUE
+      return moo.SAVE_RESPONSE_CONTINUE
     end)
 
   doc.connect('before-save',
@@ -323,7 +321,7 @@ function test_before_save()
       check_args_d(doc)
       check_args_f(gfile)
       seen_doc_before_save = seen_doc_before_save + 1
-      return medit.SAVE_RESPONSE_CONTINUE
+      return moo.SAVE_RESPONSE_CONTINUE
     end)
 
   tassert(doc.save_as(si))
@@ -340,13 +338,13 @@ function test_before_save()
 end
 
 test_will_close_window()
--- medit.spin_main_loop(0.1)
+-- moo.spin_main_loop(0.1)
 test_before_close_window()
--- medit.spin_main_loop(0.1)
+-- moo.spin_main_loop(0.1)
 test_bad_callback()
--- medit.spin_main_loop(0.1)
+-- moo.spin_main_loop(0.1)
 test_will_save()
--- medit.spin_main_loop(0.1)
+-- moo.spin_main_loop(0.1)
 test_will_close_doc()
--- medit.spin_main_loop(0.1)
+-- moo.spin_main_loop(0.1)
 test_before_save()

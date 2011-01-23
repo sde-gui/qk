@@ -384,10 +384,10 @@ or scripts into <filename><envar>DATA_DIR</envar>/scripts/</filename> to be used
 <title>Lua scripts</title>
 
 <para>
-<ulink url="script-lua.html">Medit API for Lua scripts</ulink>.
+<ulink url="script/lua-moo.html">Medit API for Lua scripts</ulink>.
 </para>
 <para>
-<ulink url="script-lua-gtk.html">Gtk API for Lua scripts</ulink>.
+<ulink url="script/lua-gtk.html">Gtk API for Lua scripts</ulink>.
 </para>
 
 </sect1>
@@ -397,7 +397,7 @@ or scripts into <filename><envar>DATA_DIR</envar>/scripts/</filename> to be used
 <title>Python scripts</title>
 
 <para>
-<ulink url="script-python.html">Medit API for Python scripts</ulink>.
+<ulink url="script/python-moo.html">Medit API for Python scripts</ulink>.
 </para>
 
 </sect1>

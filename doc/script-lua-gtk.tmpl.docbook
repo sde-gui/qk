@@ -4,6 +4,7 @@
 %medit-defines;
 ]>
 <chapter id="chapter-script-lua-gtk">
+<?dbhtml filename="lua-gtk.html"?>
 <title>&medit; Gtk API for Lua scripts</title>
 <sect1>
 <title>Introduction</title>

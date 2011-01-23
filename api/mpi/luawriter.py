@@ -438,7 +438,8 @@ static void *%(func)s (void)
             all_method_cfuncs[cls.name] = method_cfuncs
             all_static_method_cfuncs[cls.short_name] = static_method_cfuncs
 
-        dic = dict(module=module.name.lower())
+        package_name=module.name.lower()
+        dic = dict(module=module.name.lower(), package_name=package_name)
 
         all_func_cfuncs = []
 
@@ -468,11 +469,11 @@ static void *%(func)s (void)
         self.__write_register_module(module, all_method_cfuncs)
 
         self.out.write("""\
-void %(module)s_lua_api_add_to_lua (lua_State *L, const char *package_name)
+void %(module)s_lua_api_add_to_lua (lua_State *L)
 {
     %(module)s_lua_api_register ();
 
-    luaL_register (L, package_name, %(module)s_lua_functions);
+    luaL_register (L, "%(package_name)s", %(module)s_lua_functions);
 
 """ % dic)
 
@@ -480,11 +481,11 @@ void %(module)s_lua_api_add_to_lua (lua_State *L, const char *package_name)
             cfuncs = all_static_method_cfuncs[cls_name]
             if not cfuncs:
                 continue
-            self.out.write('    moo_lua_register_static_methods (L, package_name, "%s", %s_lua_functions);\n' % (cls_name, cls_name))
+            self.out.write('    moo_lua_register_static_methods (L, "%s", "%s", %s_lua_functions);\n' % (package_name, cls_name, cls_name))
 
         self.out.write('\n')
         for enum in module.get_enums():
-            self.out.write('    moo_lua_register_enum (L, package_name, %s, "%s");\n' % (enum.gtype_id, module.name.upper() + '_'))
+            self.out.write('    moo_lua_register_enum (L, "%s", %s, "%s");\n' % (package_name, enum.gtype_id, module.name.upper() + '_'))
 
         self.out.write("}\n")
 

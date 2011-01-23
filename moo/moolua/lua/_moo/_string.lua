@@ -5,7 +5,7 @@ local table = table
 local pairs, ipairs, select, unpack, require =
       pairs, ipairs, select, unpack, require
 
-module('moo._string')
+module('_moo._string')
 
 function startswith(s, prfx)
   return s:sub(1, #prfx) == prfx

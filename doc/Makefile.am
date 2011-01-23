@@ -134,12 +134,16 @@ endif
 EXTRA_DIST = help built/moo-help-sections.h built/medit.1
 
 install-data-local:
-	$(MKDIR_P) $(DESTDIR)$(MOO_HELP_DIR)/img
+	$(MKDIR_P) $(DESTDIR)$(MOO_HELP_DIR)/img $(DESTDIR)$(MOO_HELP_DIR)/script
 	cd $(srcdir) && $(INSTALL_DATA) help/*.html help/*.css $(DESTDIR)$(MOO_HELP_DIR)
+	cd $(srcdir) && $(INSTALL_DATA) help/script/*.html $(DESTDIR)$(MOO_HELP_DIR)/script
 	cd $(srcdir) && $(INSTALL_DATA) help/img/*.png $(DESTDIR)$(MOO_HELP_DIR)/img
 
 uninstall-local:
-	rm -f $(DESTDIR)$(MOO_HELP_DIR)/*.html $(DESTDIR)$(MOO_HELP_DIR)/*.css $(DESTDIR)$(MOO_HELP_DIR)/img/*.png
+	rm -f $(DESTDIR)$(MOO_HELP_DIR)/*.html \
+		$(DESTDIR)$(MOO_HELP_DIR)/*.css \
+		$(DESTDIR)$(MOO_HELP_DIR)/script/*.html \
+		$(DESTDIR)$(MOO_HELP_DIR)/img/*.png
 
 if MOO_OS_UNIX
 dist_man_MANS = built/medit.1

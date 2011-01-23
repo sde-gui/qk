@@ -4,6 +4,7 @@
 %medit-defines;
 ]>
 <chapter id="chapter-script-lua">
+<?dbhtml filename="lua-moo.html"?>
 <title>&medit; Lua API</title>
 
 <sect1 id="section-script-lua-introduction">

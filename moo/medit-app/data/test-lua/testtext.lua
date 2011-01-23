@@ -1,7 +1,6 @@
 require("munit")
-require("medit")
 
-editor = medit.Editor.instance()
+editor = moo.Editor.instance()
 doc = editor.new_doc()
 
 tassert(doc.get_text() == '')

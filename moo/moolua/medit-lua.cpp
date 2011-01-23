@@ -116,8 +116,8 @@ moo_lua_state_run_string (MooLuaState *lua,
 
 } // extern "C"
 
-void gtk_lua_api_add_to_lua (lua_State *L, const char *package_name);
-void moo_lua_api_add_to_lua (lua_State *L, const char *package_name);
+void gtk_lua_api_add_to_lua (lua_State *L);
+void moo_lua_api_add_to_lua (lua_State *L);
 
 static bool
 add_raw_api (lua_State *L)
@@ -128,12 +128,12 @@ add_raw_api (lua_State *L)
 
     g_assert (lua_gettop (L) == 0);
 
-    gtk_lua_api_add_to_lua (L, "gtk");
+    gtk_lua_api_add_to_lua (L);
     lua_pop(L, 1);
 
     g_assert (lua_gettop (L) == 0);
 
-    moo_lua_api_add_to_lua (L, "medit");
+    moo_lua_api_add_to_lua (L);
     lua_pop(L, 1);
 
     g_assert (lua_gettop (L) == 0);

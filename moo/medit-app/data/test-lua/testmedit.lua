@@ -1,10 +1,7 @@
--- -%- indent-width:2 -%- --
-
 require("munit")
-require("medit")
-require("moo.os")
+require("_moo.os")
 
-app = medit.App.instance()
+app = moo.App.instance()
 editor = app.get_editor()
 
 local __docs_to_cleanup = {}
@@ -27,11 +24,11 @@ local function test_active_window()
   tassert(w1 ~= w2, 'old window != new window')
   tassert(#editor.get_windows() == 2, 'two window')
   editor.set_active_window(w2)
-  medit.spin_main_loop(0.1)
+  moo.spin_main_loop(0.1)
   tassert(w2 == editor.get_active_window(), 'w2 == editor.get_active_window()')
-  if moo.os.name == 'posix' then
+  if _moo.os.name == 'posix' then
     editor.set_active_window(w1)
-    medit.spin_main_loop(0.1)
+    moo.spin_main_loop(0.1)
     tassert(w1 == editor.get_active_window(), 'w1 == editor.get_active_window()')
   end
   editor.close_window(w1)

@@ -4,7 +4,7 @@ local _G = _G
 local type, require, pairs =
       type, require, pairs
 
-module('moo._util')
+module('_moo._util')
 
 function inject_symbols(src, dest)
   if type(src) == 'string' then

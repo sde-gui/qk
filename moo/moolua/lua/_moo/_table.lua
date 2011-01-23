@@ -5,7 +5,7 @@ local table, math = table, math
 local pairs, ipairs, select, unpack, require =
       pairs, ipairs, select, unpack, require
 
-module('moo._table')
+module('_moo._table')
 
 function count(t, x)
   local c = 0
