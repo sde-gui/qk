@@ -60,13 +60,19 @@ typedef enum {
  * @MOO_LE_WIN32:
  * @MOO_LE_MAC:
  * @MOO_LE_MIX:
+ * @MOO_LE_DEFAULT:
  **/
 typedef enum {
     MOO_LE_NONE,
     MOO_LE_UNIX,
     MOO_LE_WIN32,
     MOO_LE_MAC,
-    MOO_LE_MIX
+    MOO_LE_MIX,
+#ifdef __WIN32__
+    MOO_LE_DEFAULT = MOO_LE_WIN32
+#else
+    MOO_LE_DEFAULT = MOO_LE_UNIX
+#endif
 } MooLineEndType;
 
 typedef enum {
