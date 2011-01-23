@@ -3018,9 +3018,6 @@ moo_paned_is_open (MooPaned *paned)
 }
 
 
-/**
- * enum:MooPanePosition
- */
 GType
 moo_pane_position_get_type (void)
 {

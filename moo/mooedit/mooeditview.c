@@ -152,6 +152,9 @@ moo_edit_view_focus_in (GtkWidget     *widget,
 }
 
 
+/**
+ * moo_edit_view_get_doc:
+ **/
 MooEdit *
 moo_edit_view_get_doc (MooEditView *view)
 {
@@ -159,6 +162,9 @@ moo_edit_view_get_doc (MooEditView *view)
     return view->priv->doc;
 }
 
+/**
+ * moo_edit_view_get_editor:
+ **/
 MooEditor *
 moo_edit_view_get_editor (MooEditView *view)
 {
@@ -166,6 +172,9 @@ moo_edit_view_get_editor (MooEditView *view)
     return view->priv->editor;
 }
 
+/**
+ * moo_edit_view_get_tab:
+ **/
 MooEditTab *
 moo_edit_view_get_tab (MooEditView *view)
 {
@@ -183,6 +192,9 @@ _moo_edit_view_set_tab (MooEditView *view,
     view->priv->tab = tab;
 }
 
+/**
+ * moo_edit_view_get_window:
+ **/
 MooEditWindow *
 moo_edit_view_get_window (MooEditView *view)
 {

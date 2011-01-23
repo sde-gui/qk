@@ -13,7 +13,63 @@ python_constants = {
     'NULL': 'None',
     'TRUE': 'True',
     'FALSE': 'False',
+    'GTK_RESPONSE_OK': 'gtk.RESPONSE_OK',
 }
+
+common_types = {
+    'gboolean': '<constant>bool</constant>',
+    'strv': 'list of strings',
+}
+
+lua_types = dict(common_types)
+lua_types.update({
+    'index': '<constant>index</constant>',
+    'gunichar': '<constant>string</constant>',
+    'double': '<constant>number</constant>',
+    'int': '<constant>integer</constant>',
+    'gint': '<constant>integer</constant>',
+    'guint': '<constant>integer</constant>',
+    'const-utf8': '<constant>string</constant>',
+    'utf8': '<constant>string</constant>',
+    'const-filename': '<constant>string</constant>',
+    'filename': '<constant>string</constant>',
+    'const-cstring': '<constant>string</constant>',
+    'cstring': '<constant>string</constant>',
+})
+
+python_types = dict(common_types)
+python_types.update({
+    'index': '<constant>int</constant>',
+    'gunichar': '<constant>str</constant>',
+    'double': '<constant>float</constant>',
+    'int': '<constant>int</constant>',
+    'gint': '<constant>int</constant>',
+    'guint': '<constant>int</constant>',
+    'const-utf8': '<constant>str</constant>',
+    'utf8': '<constant>str</constant>',
+    'const-filename': '<constant>str</constant>',
+    'filename': '<constant>str</constant>',
+    'const-cstring': '<constant>str</constant>',
+    'cstring': '<constant>str</constant>',
+})
+
+def format_python_symbol_ref(symbol):
+    constants = {
+    }
+    classes = {
+        'GFile': 'gio.File',
+        'GObject': 'gobject.Object',
+        'GType': 'type',
+    }
+    if symbol in constants:
+        return '<constant>%s</constant>' % constants[symbol]
+    if symbol in classes:
+        return '<constant>%s</constant>' % classes[symbol]
+    if symbol.startswith('Gtk'):
+        return '<constant>gtk.%s</constant>' % symbol[3:]
+    if symbol.startswith('Gdk'):
+        return '<constant>gtk.gdk.%s</constant>' % symbol[3:]
+    raise NotImplementedError(symbol)
 
 def split_camel_case_name(name):
     comps = []
@@ -40,15 +96,30 @@ class Writer(object):
         self.template = template
         if mode == 'python':
             self.constants = python_constants
+            self.builtin_types = python_types
         elif mode == 'lua':
             self.constants = lua_constants
+            self.builtin_types = lua_types
         else:
             oops('unknown mode %s' % mode)
 
         self.section_suffix = ' (%s)' % self.mode.capitalize()
 
-    def __format_symbol_ref(self, symbol):
-        return symbol
+    def __format_symbol_ref(self, name):
+        sym = self.symbols.get(name)
+        if sym:
+            if isinstance(sym, EnumValue):
+                return '<constant><link linkend="%(mode)s.%(parent)s" endterm="%(mode)s.%(symbol)s.title"></link></constant>' % \
+                    dict(symbol=name, mode=self.mode, parent=sym.enum.symbol_id())
+            elif isinstance(sym, Type):
+                return '<constant><link linkend="%(mode)s.%(symbol)s" endterm="%(mode)s.%(symbol)s.title"></link></constant>' % \
+                    dict(symbol=name, mode=self.mode)
+            else:
+                oops(name)
+        if self.mode == 'python':
+            return format_python_symbol_ref(name)
+        else:
+            raise NotImplementedError(name)
 
     def __string_to_bool(self, s):
         if s == '0':
@@ -72,7 +143,10 @@ class Writer(object):
             return value
         except ValueError:
             pass
-        warning("unknown constant '%s'" % value)
+        formatted = self.__format_symbol_ref(value)
+        if formatted:
+            return formatted
+        error("unknown constant '%s'" % value)
         return value
 
     def __format_doc(self, doc):
@@ -87,20 +161,27 @@ class Writer(object):
                 dict(func_id=m.group(1), mode=self.mode)
         text = re.sub(r'([\w\d_.]+)\(\)', repl_func, text)
 
-        def repl_func(m):
-            return self.__format_symbol_ref(m.group(1))
-        text = re.sub(r'#([\w\d_]+)', repl_func, text)
+        def repl_signal(m):
+            cls = m.group(1)
+            signal = m.group(2).replace('_', '-')
+            symbol = 'signal:%s:%s' % (cls, signal)
+            return '<function><link linkend="%(mode)s.%(symbol)s">%(signal)s</link></function>' % \
+                dict(symbol=symbol, mode=self.mode, signal=signal)
+        text = re.sub(r'([\w\d_-]+)::([\w\d_-]+)', repl_signal, text)
+
+        def repl_symbol(m):
+            symbol = m.group(1)
+            formatted = self.__format_symbol_ref(symbol)
+            if not formatted:
+                raise RuntimeError('unknown symbol %s' % symbol)
+            return formatted
+        text = re.sub(r'#([\w\d_]+)', repl_symbol, text)
 
         assert not re.search(r'NULL|TRUE|FALSE', text)
         return text
 
     def __make_class_name(self, cls):
-        if self.mode == 'python':
-            return 'moo.%s' % cls.short_name
-        elif self.mode == 'lua':
-            return 'medit.%s' % cls.short_name
-        else:
-            oops()
+        return '%s.%s' % (self.module.name.lower(), cls.short_name)
 
     def __get_obj_name(self, cls):
         name = cls.annotations.get('moo.doc-object-name')
@@ -149,14 +230,8 @@ class Writer(object):
             else:
                 oops()
         else:
-            if self.mode == 'python':
-                func_title = func.name + '()'
-                func_name = 'moo.%s' % func.name
-            elif self.mode == 'lua':
-                func_title = func.name + '()'
-                func_name = 'medit.%s' % func.name
-            else:
-                oops()
+            func_title = func.name + '()'
+            func_name = '%s.%s' % (self.module.name.lower(), func.name)
 
         params_string = ', '.join(params)
 
@@ -175,13 +250,7 @@ class Writer(object):
         if func.doc:
             self.out.write('<para>%s</para>\n' % self.__format_doc(func.doc))
 
-        has_param_docs = False
-        for p in func_params:
-            if p.doc:
-                has_param_docs = True
-                break
-
-        if has_param_docs:
+        if func_params:
             self.out.write("""\
 <variablelist>
 <?dbhtml list-presentation="table"?>
@@ -189,16 +258,55 @@ class Writer(object):
 """)
 
             for p in func_params:
-                param_dic = dict(param=p.name, doc=self.__format_doc(p.doc))
+                if p.doc:
+                    docs = doc=self.__format_doc(p.doc)
+                else:
+                    ptype = p.type.symbol_id()
+                    if ptype.endswith('*'):
+                        ptype = ptype[:-1]
+                    if ptype.startswith('const-'):
+                        ptype = ptype[len('const-'):]
+                    if ptype in self.builtin_types:
+                        docs = self.builtin_types[ptype]
+                    elif ptype.endswith('Array'):
+                        elmtype = ptype[:-len('Array')]
+                        if elmtype in self.symbols and isinstance(self.symbols[elmtype], InstanceType):
+                            docs = 'list of %s objects' % self.__format_symbol_ref(self.symbols[elmtype].symbol_id())
+                        else:
+                            docs = self.__format_symbol_ref(ptype)
+                    else:
+                        docs = self.__format_symbol_ref(ptype)
+
+                param_dic = dict(param=p.name, doc=docs)
                 self.out.write("""\
 <varlistentry>
- <term><parameter>%(param)s</parameter></term>
- <listitem><para>%(doc)s</para></listitem>
+<term><parameter>%(param)s</parameter></term>
+<listitem><para>%(doc)s</para></listitem>
 </varlistentry>
 """ % param_dic)
 
             self.out.write('</variablelist>\n')
 
+        if func.retval:
+            retdoc = None
+            if func.retval.doc:
+                retdoc = self.__format_doc(func.retval.doc)
+            else:
+                rettype = func.retval.type.symbol_id()
+                if rettype.endswith('*'):
+                    rettype = rettype[:-1]
+                if rettype in self.builtin_types:
+                    retdoc = self.builtin_types[rettype]
+                elif rettype.endswith('Array'):
+                    elmtype = rettype[:-len('Array')]
+                    if elmtype in self.symbols and isinstance(self.symbols[elmtype], InstanceType):
+                        retdoc = 'list of %s objects' % self.__format_symbol_ref(self.symbols[elmtype].symbol_id())
+                    else:
+                        retdoc = self.__format_symbol_ref(rettype)
+                else:
+                    retdoc = self.__format_symbol_ref(rettype)
+            if retdoc:
+                self.out.write('<para><parameter>Returns:</parameter> %s</para>\n' % retdoc)
 
         self.out.write('</sect2>\n')
 
@@ -210,42 +318,13 @@ class Writer(object):
         if not self.__check_bind_ann(cls):
             return
 
-        do_write = False
-        if cls.constructor is not None and self.__check_bind_ann(cls.constructor):
-            do_write = True
-        elif self.mode != 'lua' and hasattr(cls, 'constructable') and cls.constructable:
-            do_write = True
-        else:
-            for meth in cls.methods:
-                if self.__check_bind_ann(meth):
-                    do_write = True
-                    break
-            if not do_write:
-                for meth in cls.static_methods:
-                    if self.__check_bind_ann(meth):
-                        do_write = True
-                        break
-            if not do_write and hasattr(cls, 'signals'):
-                for meth in cls.signals:
-                    if self.__check_bind_ann(meth):
-                        do_write = True
-                        break
-
-        if not do_write:
-            return
-
         title = self.__make_class_name(cls)
         if cls.summary:
             title += ' - ' + cls.summary.text
-        dic = dict(Class=self.__make_class_name(cls),
-                   HELPSECTION='SCRIPT_%s_%s' % (self.mode.upper(), name_all_caps(cls)),
-                   section_suffix=self.section_suffix,
-                   title=title,
-                   summary=cls.summary.text + '.' if cls.summary else '',
-                   subsection='class %s' % self.__make_class_name(cls))
+        dic = dict(class_id=cls.symbol_id(), title=title, mode=self.mode)
         self.out.write("""\
-<sect1 id="%(Class)s">
-<title>%(title)s</title>
+<sect1 id="%(mode)s.%(class_id)s">
+<title id="%(mode)s.%(class_id)s.title">%(title)s</title>
 """ % dic)
 
         if cls.doc:
@@ -270,19 +349,88 @@ class Writer(object):
 </sect1>
 """ % dic)
 
-    def write(self, module):
-        self.module = module
+    def __write_enum(self, enum):
+        if not self.__check_bind_ann(enum):
+            return
 
-        for cls in module.get_classes() + module.get_boxed() + module.get_pointers():
-            self.__write_class(cls)
+        do_write = False
+        for v in enum.values:
+            if self.__check_bind_ann(v):
+                do_write = True
+                break
+
+        if not do_write:
+            return
+
+        title = self.__make_class_name(enum)
+        if enum.summary:
+            title += ' - ' + enum.summary.text
+        dic = dict(title=title,
+                   mode=self.mode,
+                   enum_id=enum.symbol_id())
 
         self.out.write("""\
-<sect1 id="functions">
-<title>Functions</title>
+<sect2 id="%(mode)s.%(enum_id)s">
+<title id="%(mode)s.%(enum_id)s.title">%(title)s</title>
+""" % dic)
+
+        if enum.doc:
+            self.out.write('<para>%s</para>\n' % self.__format_doc(enum.doc))
+
+        self.out.write("""\
+<variablelist>
+<?dbhtml list-presentation="table"?>
 """)
 
-        for func in module.get_functions():
-            self.__write_function(func, None)
+        for v in enum.values:
+            if not self.__check_bind_ann(v):
+                continue
+            value_dic = dict(mode=self.mode, enum_id=v.name, value=v.short_name,
+                             doc=self.__format_doc(v.doc) if v.doc else '')
+            self.out.write("""\
+<varlistentry>
+ <term><constant id="%(mode)s.%(enum_id)s.title">%(value)s</constant></term>
+ <listitem><para>%(doc)s</para></listitem>
+</varlistentry>
+""" % value_dic)
+
+        self.out.write('</variablelist>\n')
+
+        self.out.write('</sect2>\n')
+
+    def write(self, module):
+        self.module = module
+        self.symbols = module.get_symbols()
+
+        classes = module.get_classes() + module.get_boxed() + module.get_pointers()
+        for cls in sorted(classes, lambda cls1, cls2: cmp(cls1.short_name, cls2.short_name)):
+            self.__write_class(cls)
+
+        funcs = []
+        for f in module.get_functions():
+            if self.__check_bind_ann(f):
+                funcs.append(f)
+
+        dic = dict(mode=self.mode)
+
+        if funcs:
+            self.out.write("""\
+<sect1 id="%(mode)s.functions">
+<title>Functions</title>
+""" % dic)
+
+            for func in funcs:
+                self.__write_function(func, None)
+
+            self.out.write('</sect1>\n')
+
+        self.out.write("""\
+<sect1 id="%(mode)s.enums">
+<title>Enumerations</title>
+""" % dic)
+
+        for func in module.get_enums():
+            self.__write_enum(func)
 
         self.out.write('</sect1>\n')
 

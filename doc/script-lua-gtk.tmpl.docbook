@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE article [
+<!DOCTYPE chapter [
 <!ENTITY % medit-defines SYSTEM "medit-defines.ent">
 %medit-defines;
 ]>
-<article>
+<chapter id="chapter-script-lua-gtk">
 <title>&medit; Gtk API for Lua scripts</title>
 <sect1>
 <title>Introduction</title>
 <para>Lua scripts running in &medit; have limited access to
 <ulink url="http://www.gtk.org/">Gtk</ulink> functionality
 exposed through <code>gtk</code> package in addition to functions in
-<ulink url="script-lua.html"><code>medit</code> package</ulink>.
+<link linkend="chapter-script-lua"><code>moo</code> package</link>.
 It is not a goal to provide complete Lua bindings for Gtk,
 and it is not a goal to enable creating UI in Lua scripts.
 If there is a demand, &medit; might bind more Gtk functionality,
@@ -19,8 +19,8 @@ scripting language which is always available. Use Python if
 you need more functionality.</para>
 <para>
 Notations used in this manual are described
-<ulink url="script-lua.html#section-notations">here</ulink>.
+<link linkend="section-script-lua-notations">here</link>.
 </para>
 </sect1>
 ###GENERATED###
-</article>
+</chapter>

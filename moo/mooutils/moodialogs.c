@@ -20,10 +20,6 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moocompat.h"
 
-/**
- * enum:MooSaveChangesResponse
- **/
-
 static GtkWidget *
 create_message_dialog (GtkWindow  *parent,
                        GtkMessageType type,

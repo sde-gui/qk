@@ -38,6 +38,7 @@
 #include "mooedit/moolangmgr.h"
 #include "mooedit/mooeditfileinfo.h"
 #include "mooedit/mooedit-script.h"
+#include "mooedit/mooedittab.h"
 
 #include "plugins/support/moocmdview.h"
 #include "plugins/support/mooeditwindowoutput.h"

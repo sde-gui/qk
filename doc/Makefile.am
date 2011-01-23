@@ -13,6 +13,11 @@ gendocbook_files =				\
 	$(top_srcdir)/api/mpi/module.py		\
 	$(top_srcdir)/api/mpi/docbookwriter.py
 
+script_docbook_sources =			\
+	built/script-python.docbook		\
+	built/script-lua.docbook		\
+	built/script-lua-gtk.docbook
+
 $(srcdir)/built/script-python.docbook: $(gendocbook_files) script-python.tmpl.docbook $(top_srcdir)/api/moo.xml
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
@@ -20,10 +25,11 @@ $(srcdir)/built/script-python.docbook: $(gendocbook_files) script-python.tmpl.do
 		$(top_srcdir)/api/moo.xml > script-python.docbook.tmp && \
 		mv script-python.docbook.tmp $(srcdir)/built/script-python.docbook
 
-$(srcdir)/built/script-lua.docbook: $(gendocbook_files) script-lua.tmpl.docbook $(top_srcdir)/api/moo.xml
+$(srcdir)/built/script-lua.docbook: $(gendocbook_files) script-lua.tmpl.docbook $(top_srcdir)/api/moo.xml $(top_srcdir)/api/gtk.xml
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
 		--lua --template $(srcdir)/script-lua.tmpl.docbook \
+		--import $(top_srcdir)/api/gtk.xml \
 		$(top_srcdir)/api/moo.xml > script-lua.docbook.tmp && \
 		mv script-lua.docbook.tmp $(srcdir)/built/script-lua.docbook
 
@@ -34,23 +40,26 @@ $(srcdir)/built/script-lua-gtk.docbook: $(gendocbook_files) script-lua-gtk.tmpl.
 		$(top_srcdir)/api/gtk.xml > script-lua-gtk.docbook.tmp && \
 		mv script-lua-gtk.docbook.tmp $(srcdir)/built/script-lua-gtk.docbook
 
-$(srcdir)/help/script-python.html: built/script-python.docbook built/medit-defines.ent script.xsl
-	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
-	$(AM_V_GEN)xsltproc --output script-python.html.tmp \
-		$(srcdir)/script.xsl $(srcdir)/built/script-python.docbook \
-		&& mv script-python.html.tmp $(srcdir)/help/script-python.html
+# $(srcdir)/help/script-python.html: built/script-python.docbook built/medit-defines.ent script.xsl
+# 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
+# 	$(AM_V_GEN)xsltproc --output script-python.html.tmp \
+# 		$(srcdir)/script.xsl $(srcdir)/built/script-python.docbook \
+# 		&& mv script-python.html.tmp $(srcdir)/help/script-python.html
+#
+# $(srcdir)/help/script-lua.html: built/script-lua.docbook built/medit-defines.ent script.xsl
+# 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
+# 	$(AM_V_GEN)xsltproc --output script-lua.html.tmp \
+# 		$(srcdir)/script.xsl $(srcdir)/built/script-lua.docbook \
+# 		&& mv script-lua.html.tmp $(srcdir)/help/script-lua.html
+#
+# $(srcdir)/help/script-lua-gtk.html: built/script-lua-gtk.docbook built/medit-defines.ent script.xsl
+# 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
+# 	$(AM_V_GEN)xsltproc --output script-lua-gtk.html.tmp \
+# 		$(srcdir)/script.xsl $(srcdir)/built/script-lua-gtk.docbook \
+# 		&& mv script-lua-gtk.html.tmp $(srcdir)/help/script-lua-gtk.html
 
-$(srcdir)/help/script-lua.html: built/script-lua.docbook built/medit-defines.ent script.xsl
-	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
-	$(AM_V_GEN)xsltproc --output script-lua.html.tmp \
-		$(srcdir)/script.xsl $(srcdir)/built/script-lua.docbook \
-		&& mv script-lua.html.tmp $(srcdir)/help/script-lua.html
-
-$(srcdir)/help/script-lua-gtk.html: built/script-lua-gtk.docbook built/medit-defines.ent script.xsl
-	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
-	$(AM_V_GEN)xsltproc --output script-lua-gtk.html.tmp \
-		$(srcdir)/script.xsl $(srcdir)/built/script-lua-gtk.docbook \
-		&& mv script-lua-gtk.html.tmp $(srcdir)/help/script-lua-gtk.html
+$(srcdir)/help/script/index.html: $(script_docbook_sources) script-book.xsl
+	$(AM_V_GEN)cd $(srcdir) && xsltproc --xinclude script-book.xsl script.docbook
 
 $(srcdir)/help/medit.css: medit.css
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
@@ -105,9 +114,7 @@ all-am: doc
 doc:						\
 	$(srcdir)/help/index.html		\
 	$(srcdir)/help/help.html		\
-	$(srcdir)/help/script-lua.html		\
-	$(srcdir)/help/script-lua-gtk.html	\
-	$(srcdir)/help/script-python.html	\
+	$(srcdir)/help/script/index.html	\
 	$(srcdir)/help/medit.css		\
 	$(srcdir)/built/medit.1			\
 	$(dest_png_files)			\

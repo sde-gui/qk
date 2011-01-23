@@ -118,6 +118,9 @@ _moo_edit_tab_new (MooEdit *doc)
     return tab;
 }
 
+/**
+ * moo_edit_tab_get_doc:
+ **/
 MooEdit *
 moo_edit_tab_get_doc (MooEditTab *tab)
 {
@@ -125,6 +128,9 @@ moo_edit_tab_get_doc (MooEditTab *tab)
     return tab->doc;
 }
 
+/**
+ * moo_edit_tab_get_views:
+ **/
 MooEditViewArray *
 moo_edit_tab_get_views (MooEditTab *tab)
 {
@@ -149,6 +155,9 @@ moo_edit_tab_get_views (MooEditTab *tab)
     return views;
 }
 
+/**
+ * moo_edit_tab_get_active_view:
+ **/
 MooEditView *
 moo_edit_tab_get_active_view (MooEditTab *tab)
 {
@@ -180,6 +189,9 @@ _moo_edit_tab_set_focused_view (MooEditTab  *tab,
     _moo_edit_window_set_active_tab (moo_edit_tab_get_window (tab), tab);
 }
 
+/**
+ * moo_edit_tab_get_window:
+ **/
 MooEditWindow *
 moo_edit_tab_get_window (MooEditTab *tab)
 {

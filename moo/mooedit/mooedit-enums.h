@@ -13,6 +13,12 @@ typedef enum {
     MOO_EDIT_CONFIG_SOURCE_AUTO = 40
 } MooEditConfigSource;
 
+/**
+ * enum:MooSaveResponse
+ *
+ * @MOO_SAVE_RESPONSE_CONTINUE:
+ * @MOO_SAVE_RESPONSE_CANCEL:
+ **/
 typedef enum {
     MOO_SAVE_RESPONSE_CONTINUE = 2,
     MOO_SAVE_RESPONSE_CANCEL = 3
@@ -25,6 +31,17 @@ typedef enum {
     MOO_EDIT_STATE_PRINTING
 } MooEditState;
 
+/**
+ * enum:MooEditStatus
+ *
+ * @MOO_EDIT_STATUS_NORMAL:
+ * @MOO_EDIT_STATUS_MODIFIED_ON_DISK:
+ * @MOO_EDIT_STATUS_DELETED:
+ * @MOO_EDIT_STATUS_CHANGED_ON_DISK:
+ * @MOO_EDIT_STATUS_MODIFIED:
+ * @MOO_EDIT_STATUS_NEW:
+ * @MOO_EDIT_STATUS_CLEAN:
+ **/
 typedef enum {
     MOO_EDIT_STATUS_NORMAL           = 0,
     MOO_EDIT_STATUS_MODIFIED_ON_DISK = 1 << 0,
@@ -35,6 +52,15 @@ typedef enum {
     MOO_EDIT_STATUS_CLEAN            = 1 << 4 /* doesn't prompt when it's being closed, even if it's modified */
 } MooEditStatus;
 
+/**
+ * enum:MooLineEndType
+ *
+ * @MOO_LE_NONE:
+ * @MOO_LE_UNIX:
+ * @MOO_LE_WIN32:
+ * @MOO_LE_MAC:
+ * @MOO_LE_MIX:
+ **/
 typedef enum {
     MOO_LE_NONE,
     MOO_LE_UNIX,
@@ -74,6 +100,13 @@ typedef enum {
     MOO_DRAW_WS_TRAILING = 1 << 2
 } MooDrawWsFlags;
 
+/**
+ * enum:MooActionCheckType: (moo.lua 0)
+ *
+ * @MOO_ACTION_CHECK_SENSITIVE:
+ * @MOO_ACTION_CHECK_VISIBLE:
+ * @MOO_ACTION_CHECK_ACTIVE:
+ **/
 typedef enum {
     MOO_ACTION_CHECK_SENSITIVE,
     MOO_ACTION_CHECK_VISIBLE,

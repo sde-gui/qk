@@ -111,11 +111,6 @@ int                  moo_edit_window_get_n_tabs             (MooEditWindow  *win
 MooEditTab          *moo_edit_window_get_nth_tab            (MooEditWindow  *window,
                                                              guint           n);
 
-MooEdit             *moo_edit_tab_get_doc                   (MooEditTab     *tab);
-MooEditViewArray    *moo_edit_tab_get_views                 (MooEditTab     *tab);
-MooEditView         *moo_edit_tab_get_active_view           (MooEditTab     *tab);
-MooEditWindow       *moo_edit_tab_get_window                (MooEditTab     *tab);
-
 /* sinks widget */
 MooPane             *moo_edit_window_add_pane               (MooEditWindow  *window,
                                                              const char     *user_id,

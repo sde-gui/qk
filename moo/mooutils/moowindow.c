@@ -17,10 +17,6 @@
  * class:MooWindow: (parent GtkWindow)
  **/
 
-/**
- * enum:MooCloseResponse
- **/
-
 #include "mooutils/moowindow.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooactionbase-private.h"

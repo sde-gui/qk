@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE article [
+<!DOCTYPE chapter [
 <!ENTITY % medit-defines SYSTEM "medit-defines.ent">
 %medit-defines;
 ]>
-<article>
+<chapter id="chapter-script-python">
 <title>&medit; Python API</title>
 <sect1>
 <title>Introduction</title>
@@ -24,4 +24,4 @@ need functions which are not present here.
 </warning>
 </sect1>
 ###GENERATED###
-</article>
+</chapter>

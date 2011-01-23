@@ -20,6 +20,7 @@
 #include "moofileselector.h"
 #include "mooedit/mooplugin-macro.h"
 #include "mooedit/mooeditwindow.h"
+#include "mooedit/mooedittab.h"
 #include "moofileview/moobookmarkmgr.h"
 #include "moofileview/moofileview-tools.h"
 #include "plugins/mooplugin-builtin.h"

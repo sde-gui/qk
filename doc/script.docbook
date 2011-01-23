@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?><!-- -%- indent-width:1 -%- -->
+<!DOCTYPE book [
+<!ENTITY % medit-defines SYSTEM "built/medit-defines.ent">
+%medit-defines;
+]>
+<book id="medit-scripting-manual">
+
+<bookinfo>
+<title>&medit; scripting manual</title>
+<date>1/22/2011</date>
+<releaseinfo>&medit-version;</releaseinfo>
+</bookinfo>
+
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="built/script-lua.docbook"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="built/script-lua-gtk.docbook"/>
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="built/script-python.docbook"/>
+
+</book>
