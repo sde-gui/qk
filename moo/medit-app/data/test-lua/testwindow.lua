@@ -28,7 +28,18 @@ view2 = doc2.get_view()
 view3 = doc3.get_view()
 view4 = doc4.get_view()
 
+tassert(tab1.get_doc() == doc1)
+tassert(tab1.get_active_view() == view1)
+tassert(doc1.get_view() == view1)
+tassert(doc1.get_tab() == tab1)
+tassert(view1.get_tab() == tab1)
+tassert(view1.get_doc() == doc1)
+
 tassert(window.get_n_tabs() == 4)
+
+tassert_eq(window.get_views(), {view1, view2, view3, view4})
+tassert_eq(window.get_docs(), {doc1, doc2, doc3, doc4})
+tassert_eq(window.get_tabs(), {tab1, tab2, tab3, tab4})
 
 window.set_active_tab(tab3)
 tassert(window.get_active_tab() == tab3)
