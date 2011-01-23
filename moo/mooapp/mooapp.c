@@ -204,6 +204,7 @@ enum {
     INIT,
     RUN,
     QUIT,
+    STARTED,
     TRY_QUIT,
     PREFS_DIALOG,
     LOAD_SESSION,
@@ -298,6 +299,15 @@ moo_app_class_init (MooAppClass *klass)
                           g_signal_accumulator_true_handled, NULL,
                           _moo_marshal_BOOLEAN__VOID,
                           G_TYPE_BOOLEAN, 0);
+
+    signals[STARTED] =
+            g_signal_new ("started",
+                          G_OBJECT_CLASS_TYPE (klass),
+                          G_SIGNAL_RUN_LAST,
+                          G_STRUCT_OFFSET (MooAppClass, started),
+                          NULL, NULL,
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
     signals[PREFS_DIALOG] =
             g_signal_new ("prefs-dialog",
@@ -788,6 +798,13 @@ moo_app_try_quit (MooApp *app)
 }
 
 
+static gboolean
+emit_started (MooApp *app)
+{
+    g_signal_emit_by_name (app, "started");
+    return FALSE;
+}
+
 static void
 sm_quit_requested (MooApp *app)
 {
@@ -828,6 +845,8 @@ moo_app_run_real (MooApp *app)
                               G_CALLBACK (sm_quit), app);
     if (EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup)
         EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup (app->priv->sm_client, NULL);
+
+    gdk_threads_add_idle_full (G_PRIORITY_DEFAULT_IDLE + 1, (GSourceFunc) emit_started, app, NULL);
 
     gtk_main ();
 

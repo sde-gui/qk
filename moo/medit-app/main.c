@@ -514,7 +514,7 @@ hookup_synaptics_touchpad (void)
 
 #endif // GDK_WINDOWING_WIN32
 
-static gboolean
+static void
 unit_test_func (void)
 {
     MooTestOptions opts = 0;
@@ -526,16 +526,14 @@ unit_test_func (void)
     status = unit_tests_main (opts, medit_opts.ut_tests, medit_opts.ut_dir, medit_opts.ut_coverage_file);
     moo_app_set_exit_status (moo_app_instance (), status);
     moo_app_quit (moo_app_instance ());
-    return FALSE;
 }
 
-static gboolean
+static void
 run_script_func (void)
 {
     char **p;
     for (p = medit_opts.run_script; p && *p; ++p)
         moo_app_run_script (moo_app_instance(), *p);
-    return FALSE;
 }
 
 static int
@@ -685,9 +683,9 @@ medit_main (int argc, char *argv[])
     g_option_context_free (ctx);
 
     if (medit_opts.ut)
-        gdk_threads_add_timeout (10, (GSourceFunc) unit_test_func, NULL);
+        g_signal_connect (app, "started", G_CALLBACK (unit_test_func), NULL);
     if (medit_opts.run_script)
-        gdk_threads_add_timeout (10, (GSourceFunc) run_script_func, NULL);
+        g_signal_connect (app, "started", G_CALLBACK (run_script_func), NULL);
 
     retval = moo_app_run (app);
     gdk_threads_leave ();

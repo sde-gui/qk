@@ -47,6 +47,8 @@ struct _MooAppClass
     int         (*run)          (MooApp         *app);
     void        (*quit)         (MooApp         *app);
 
+    void        (*started)      (MooApp         *app);
+
     gboolean    (*try_quit)     (MooApp         *app);
 
     GtkWidget*  (*prefs_dialog) (MooApp         *app);
