@@ -112,7 +112,7 @@ function test_mix()
   doc.close()
 end
 
--- test_default()
--- test_set()
--- test_load()
+test_default()
+test_set()
+test_load()
 test_mix()

@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooPane: (parent GtkObject)
+ * class:MooPane: (parent GtkObject) (moo.lua 0)
  **/
 
 #ifdef HAVE_CONFIG_H
