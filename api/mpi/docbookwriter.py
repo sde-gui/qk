@@ -57,8 +57,8 @@ def format_python_symbol_ref(symbol):
     constants = {
     }
     classes = {
-        'GFile': 'gio.File',
-        'GObject': 'gobject.Object',
+        'GFile': '<ulink url="http://library.gnome.org/devel/pygobject/stable/class-giofile.html">gio.File</ulink>',
+        'GObject': '<ulink url="http://library.gnome.org/devel/pygobject/stable/class-gobject.html">gobject.Object</ulink>',
         'GType': 'type',
     }
     if symbol in constants:
@@ -66,9 +66,11 @@ def format_python_symbol_ref(symbol):
     if symbol in classes:
         return '<constant>%s</constant>' % classes[symbol]
     if symbol.startswith('Gtk'):
-        return '<constant>gtk.%s</constant>' % symbol[3:]
+        return ('<constant><ulink url="http://library.gnome.org/devel/pygtk/stable/class-' + \
+                'gtk%s.html">gtk.%s</ulink></constant>') % (symbol[3:].lower(), symbol[3:])
     if symbol.startswith('Gdk'):
-        return '<constant>gtk.gdk.%s</constant>' % symbol[3:]
+        return '<constant><ulink url="http://library.gnome.org/devel/pygtk/stable/class-' + \
+                'gdk%s.html">gtk.gdk.%s</ulink></constant>' % (symbol[3:].lower(), symbol[3:])
     raise NotImplementedError(symbol)
 
 def split_camel_case_name(name):
@@ -204,6 +206,8 @@ class Writer(object):
             func_params = func_params[:-1]
         params = []
         for p in func_params:
+            if not self.__check_bind_ann(p.type):
+                return
             if p.default_value is not None:
                 params.append('%s=%s' % (p.name, self.__format_constant(p.default_value)))
             else:
