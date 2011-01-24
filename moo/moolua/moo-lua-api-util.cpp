@@ -81,8 +81,8 @@ private:
 
 #else // !DEBUG
 
-#define CHECK_STACK(L) G_STMT_BEGIN {} G_STMT_END
-#define CHECK_STACKN(L) G_STMT_BEGIN {} G_STMT_END
+#define CHECK_STACK(L) G_STMT_START {} G_STMT_END
+#define CHECK_STACKN(L) G_STMT_START {} G_STMT_END
 
 #endif // !DEBUG
 
