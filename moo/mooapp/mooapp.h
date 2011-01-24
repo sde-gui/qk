@@ -43,20 +43,15 @@ struct _MooAppClass
 {
     GObjectClass parent_class;
 
-    gboolean    (*init)         (MooApp         *app);
-    int         (*run)          (MooApp         *app);
+    /**signal:MooApp**/
+    void        (*started)      (MooApp         *app);
+    /**signal:MooApp**/
     void        (*quit)         (MooApp         *app);
 
-    void        (*started)      (MooApp         *app);
-
-    gboolean    (*try_quit)     (MooApp         *app);
-
-    GtkWidget*  (*prefs_dialog) (MooApp         *app);
-
-    void        (*load_session) (MooApp         *app,
-                                 MooMarkupNode  *xml);
-    void        (*save_session) (MooApp         *app,
-                                 MooMarkupNode  *xml);
+    /**signal:MooApp**/
+    void        (*load_session) (MooApp         *app);
+    /**signal:MooApp**/
+    void        (*save_session) (MooApp         *app);
 
     void        (*init_plugins) (MooApp         *app);
 };

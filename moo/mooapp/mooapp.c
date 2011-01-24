@@ -135,17 +135,12 @@ static void     moo_app_get_property    (GObject            *object,
                                          GValue             *value,
                                          GParamSpec         *pspec);
 
-static gboolean moo_app_init_real       (MooApp             *app);
-static int      moo_app_run_real        (MooApp             *app);
-static void     moo_app_quit_real       (MooApp             *app);
-static gboolean moo_app_try_quit_real   (MooApp             *app);
+static void     moo_app_do_quit         (MooApp             *app);
 static void     moo_app_exec_cmd        (MooApp             *app,
                                          char                cmd,
                                          const char         *data,
                                          guint               len);
-static void     moo_app_load_session_real (MooApp           *app,
-                                         MooMarkupNode      *xml);
-static void     moo_app_save_session_real (MooApp           *app,
+static void     moo_app_do_load_session (MooApp             *app,
                                          MooMarkupNode      *xml);
 static GtkWidget *moo_app_create_prefs_dialog (MooApp       *app);
 
@@ -203,12 +198,8 @@ enum {
 };
 
 enum {
-    INIT,
-    RUN,
-    QUIT,
     STARTED,
-    TRY_QUIT,
-    PREFS_DIALOG,
+    QUIT,
     LOAD_SESSION,
     SAVE_SESSION,
     LAST_SIGNAL
@@ -229,14 +220,6 @@ moo_app_class_init (MooAppClass *klass)
     gobject_class->finalize = moo_app_finalize;
     gobject_class->set_property = moo_app_set_property;
     gobject_class->get_property = moo_app_get_property;
-
-    klass->init = moo_app_init_real;
-    klass->run = moo_app_run_real;
-    klass->quit = moo_app_quit_real;
-    klass->try_quit = moo_app_try_quit_real;
-    klass->prefs_dialog = moo_app_create_prefs_dialog;
-    klass->load_session = moo_app_load_session_real;
-    klass->save_session = moo_app_save_session_real;
 
     g_object_class_install_property (gobject_class,
                                      PROP_RUN_INPUT,
@@ -266,42 +249,14 @@ moo_app_class_init (MooAppClass *klass)
         g_param_spec_pointer ("default-ui", "default-ui", "default-ui",
                               (GParamFlags) (G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY)));
 
-    signals[INIT] =
-            g_signal_new ("init",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooAppClass, init),
-                          NULL, NULL,
-                          _moo_marshal_BOOLEAN__VOID,
-                          G_TYPE_BOOLEAN, 0);
-
-    signals[RUN] =
-            g_signal_new ("run",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooAppClass, run),
-                          NULL, NULL,
-                          _moo_marshal_INT__VOID,
-                          G_TYPE_INT, 0);
-
-    signals[QUIT] =
-            g_signal_new ("quit",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          G_SIGNAL_RUN_LAST,
-                          G_STRUCT_OFFSET (MooAppClass, quit),
-                          NULL, NULL,
-                          _moo_marshal_VOID__VOID,
-                          G_TYPE_NONE, 0);
-
-    signals[TRY_QUIT] =
-            g_signal_new ("try-quit",
-                          G_OBJECT_CLASS_TYPE (klass),
-                          (GSignalFlags) (G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST),
-                          G_STRUCT_OFFSET (MooAppClass, try_quit),
-                          g_signal_accumulator_true_handled, NULL,
-                          _moo_marshal_BOOLEAN__VOID,
-                          G_TYPE_BOOLEAN, 0);
-
+    /**
+     * MooApp::started:
+     *
+     * @app: the object which received the signal
+     *
+     * This signal is emitted after application loaded session,
+     * started main loop, and hit idle for the first time.
+     **/
     signals[STARTED] =
             g_signal_new ("started",
                           G_OBJECT_CLASS_TYPE (klass),
@@ -311,34 +266,56 @@ moo_app_class_init (MooAppClass *klass)
                           _moo_marshal_VOID__VOID,
                           G_TYPE_NONE, 0);
 
-    signals[PREFS_DIALOG] =
-            g_signal_new ("prefs-dialog",
+    /**
+     * MooApp::quit:
+     *
+     * @app: the object which received the signal
+     *
+     * This signal is emitted when application quits,
+     * after session has been saved.
+     **/
+    signals[QUIT] =
+            g_signal_new ("quit",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooAppClass, quit),
                           NULL, NULL,
-                          _moo_marshal_OBJECT__VOID,
-                          MOO_TYPE_PREFS_DIALOG, 0);
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
+    /**
+     * MooApp::load-session:
+     *
+     * @app: the object which received the signal
+     *
+     * This signal is emitted when application is loading session,
+     * after editor session has been loaded.
+     **/
     signals[LOAD_SESSION] =
             g_signal_new ("load-session",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooAppClass, load_session),
                           NULL, NULL,
-                          _moo_marshal_VOID__POINTER,
-                          G_TYPE_NONE, 1,
-                          G_TYPE_POINTER);
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 
+    /**
+     * MooApp::save-session:
+     *
+     * @app: the object which received the signal
+     *
+     * This signal is emitted when application is saving session,
+     * before saving editor session.
+     **/
     signals[SAVE_SESSION] =
             g_signal_new ("save-session",
                           G_OBJECT_CLASS_TYPE (klass),
                           G_SIGNAL_RUN_LAST,
                           G_STRUCT_OFFSET (MooAppClass, save_session),
                           NULL, NULL,
-                          _moo_marshal_VOID__POINTER,
-                          G_TYPE_NONE, 1,
-                          G_TYPE_POINTER);
+                          _moo_marshal_VOID__VOID,
+                          G_TYPE_NONE, 0);
 }
 
 
@@ -410,7 +387,7 @@ moo_app_finalize (GObject *object)
 {
     MooApp *app = MOO_APP(object);
 
-    moo_app_quit_real (app);
+    moo_app_do_quit (app);
 
     moo_app_data.instance = NULL;
 
@@ -719,31 +696,6 @@ moo_app_init_mac (G_GNUC_UNUSED MooApp *app)
 }
 #endif /* !MOO_USE_QUARTZ */
 
-static gboolean
-moo_app_init_real (MooApp *app)
-{
-    gdk_set_program_class (MOO_APP_FULL_NAME);
-    gtk_window_set_default_icon_name (MOO_APP_SHORT_NAME);
-
-    moo_set_display_app_name (MOO_APP_SHORT_NAME);
-    _moo_set_app_instance_name (app->priv->instance_name);
-
-    moo_app_load_prefs (app);
-    moo_app_init_ui (app);
-    moo_app_init_mac (app);
-
-    moo_app_init_editor (app);
-
-    if (app->priv->use_session == -1)
-        app->priv->use_session = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SAVE_SESSION));
-
-    if (app->priv->use_session)
-        app->priv->run_input = TRUE;
-    start_input (app);
-
-    return TRUE;
-}
-
 
 static void
 input_callback (char        cmd,
@@ -783,7 +735,7 @@ on_gtk_main_quit (MooApp *app)
     app->priv->quit_handler_id = 0;
 
     if (!moo_app_quit (app))
-        MOO_APP_GET_CLASS(app)->quit (app);
+        moo_app_do_quit (app);
 
     return FALSE;
 }
@@ -796,29 +748,11 @@ check_signal (void)
     {
         g_print ("%s\n", g_strsignal (signal_received));
         if (moo_app_data.instance)
-            MOO_APP_GET_CLASS(moo_app_data.instance)->quit (moo_app_data.instance);
+            moo_app_do_quit (moo_app_data.instance);
         exit (EXIT_FAILURE);
     }
 
     return TRUE;
-}
-
-
-static gboolean
-moo_app_try_quit (MooApp *app)
-{
-    gboolean stopped = FALSE;
-
-    g_return_val_if_fail (MOO_IS_APP (app), FALSE);
-
-    if (!app->priv->running)
-        return TRUE;
-
-    app->priv->in_try_quit = TRUE;
-    g_signal_emit (app, signals[TRY_QUIT], 0, &stopped);
-    app->priv->in_try_quit = FALSE;
-
-    return !stopped;
 }
 
 
@@ -846,35 +780,7 @@ static void
 sm_quit (MooApp *app)
 {
     if (!moo_app_quit (app))
-        MOO_APP_GET_CLASS(app)->quit (app);
-}
-
-static int
-moo_app_run_real (MooApp *app)
-{
-    g_return_val_if_fail (!app->priv->running, 0);
-    app->priv->running = TRUE;
-
-    app->priv->quit_handler_id =
-            gtk_quit_add (1, (GtkFunction) on_gtk_main_quit, app);
-
-    gdk_threads_add_timeout (100, (GSourceFunc) check_signal, NULL);
-
-    app->priv->sm_client = egg_sm_client_get ();
-    /* make it install log handler */
-    g_option_group_free (egg_sm_client_get_option_group ());
-    g_signal_connect_swapped (app->priv->sm_client, "quit-requested",
-                              G_CALLBACK (sm_quit_requested), app);
-    g_signal_connect_swapped (app->priv->sm_client, "quit",
-                              G_CALLBACK (sm_quit), app);
-    if (EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup)
-        EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup (app->priv->sm_client, NULL);
-
-    gdk_threads_add_idle_full (G_PRIORITY_DEFAULT_IDLE + 1, (GSourceFunc) emit_started, app, NULL);
-
-    gtk_main ();
-
-    return app->priv->exit_status;
+        moo_app_do_quit (app);
 }
 
 
@@ -884,28 +790,6 @@ moo_app_set_exit_status (MooApp *app,
 {
     g_return_if_fail (MOO_IS_APP (app));
     app->priv->exit_status = value;
-}
-
-
-static gboolean
-moo_app_try_quit_real (MooApp *app)
-{
-    gboolean closed;
-
-    if (!app->priv->running)
-        return FALSE;
-
-    if (!app->priv->in_after_close_window)
-    {
-        app->priv->saved_session_in_try_quit = TRUE;
-        moo_app_save_session (app);
-    }
-
-    closed = _moo_editor_close_all (app->priv->editor);
-
-    app->priv->saved_session_in_try_quit = FALSE;
-
-    return !closed;
 }
 
 
@@ -929,7 +813,7 @@ moo_app_cleanup (void)
 
 
 static void
-moo_app_quit_real (MooApp *app)
+moo_app_do_quit (MooApp *app)
 {
     guint i;
 
@@ -937,6 +821,8 @@ moo_app_quit_real (MooApp *app)
         return;
     else
         app->priv->running = FALSE;
+
+    g_signal_emit (app, signals[QUIT], 0);
 
     g_object_unref (app->priv->sm_client);
     app->priv->sm_client = NULL;
@@ -968,22 +854,88 @@ moo_app_quit_real (MooApp *app)
 gboolean
 moo_app_init (MooApp *app)
 {
-    gboolean retval;
     g_return_val_if_fail (MOO_IS_APP (app), FALSE);
-    g_signal_emit (app, signals[INIT], 0, &retval);
-    return retval;
+
+    gdk_set_program_class (MOO_APP_FULL_NAME);
+    gtk_window_set_default_icon_name (MOO_APP_SHORT_NAME);
+
+    moo_set_display_app_name (MOO_APP_SHORT_NAME);
+    _moo_set_app_instance_name (app->priv->instance_name);
+
+    moo_app_load_prefs (app);
+    moo_app_init_ui (app);
+    moo_app_init_mac (app);
+
+    moo_app_init_editor (app);
+
+    if (app->priv->use_session == -1)
+        app->priv->use_session = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SAVE_SESSION));
+
+    if (app->priv->use_session)
+        app->priv->run_input = TRUE;
+
+    start_input (app);
+
+    return TRUE;
 }
 
 
 int
 moo_app_run (MooApp *app)
 {
-    int retval;
     g_return_val_if_fail (MOO_IS_APP (app), -1);
-    g_signal_emit (app, signals[RUN], 0, &retval);
-    return retval;
+    g_return_val_if_fail (!app->priv->running, 0);
+
+    app->priv->running = TRUE;
+
+    app->priv->quit_handler_id =
+            gtk_quit_add (1, (GtkFunction) on_gtk_main_quit, app);
+
+    gdk_threads_add_timeout (100, (GSourceFunc) check_signal, NULL);
+
+    app->priv->sm_client = egg_sm_client_get ();
+    /* make it install log handler */
+    g_option_group_free (egg_sm_client_get_option_group ());
+    g_signal_connect_swapped (app->priv->sm_client, "quit-requested",
+                              G_CALLBACK (sm_quit_requested), app);
+    g_signal_connect_swapped (app->priv->sm_client, "quit",
+                              G_CALLBACK (sm_quit), app);
+    if (EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup)
+        EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup (app->priv->sm_client, NULL);
+
+    gdk_threads_add_idle_full (G_PRIORITY_DEFAULT_IDLE + 1, (GSourceFunc) emit_started, app, NULL);
+
+    gtk_main ();
+
+    return app->priv->exit_status;
 }
 
+
+static gboolean
+moo_app_try_quit (MooApp *app)
+{
+    gboolean closed;
+
+    g_return_val_if_fail (MOO_IS_APP (app), FALSE);
+
+    if (!app->priv->running)
+        return TRUE;
+
+    app->priv->in_try_quit = TRUE;
+
+    if (!app->priv->in_after_close_window)
+    {
+        app->priv->saved_session_in_try_quit = TRUE;
+        moo_app_save_session (app);
+    }
+
+    closed = _moo_editor_close_all (app->priv->editor);
+
+    app->priv->saved_session_in_try_quit = FALSE;
+    app->priv->in_try_quit = FALSE;
+
+    return closed;
+}
 
 /**
  * moo_app_quit:
@@ -998,7 +950,7 @@ moo_app_quit (MooApp *app)
 
     if (moo_app_try_quit (app))
     {
-        MOO_APP_GET_CLASS(app)->quit (app);
+        moo_app_do_quit (app);
         return TRUE;
     }
     else
@@ -1110,23 +1062,14 @@ moo_app_set_ui_xml (MooApp     *app,
 
 
 static void
-moo_app_load_session_real (MooApp        *app,
-                           MooMarkupNode *xml)
+moo_app_do_load_session (MooApp        *app,
+                         MooMarkupNode *xml)
 {
     MooEditor *editor;
     editor = moo_app_get_editor (app);
     g_return_if_fail (editor != NULL);
     _moo_editor_load_session (editor, xml);
-}
-
-static void
-moo_app_save_session_real (MooApp        *app,
-                           MooMarkupNode *xml)
-{
-    MooEditor *editor;
-    editor = moo_app_get_editor (app);
-    g_return_if_fail (editor != NULL);
-    _moo_editor_save_session (editor, xml);
+    g_signal_emit (app, signals[LOAD_SESSION], 0);
 }
 
 static void
@@ -1144,7 +1087,8 @@ moo_app_save_session (MooApp *app)
     root = moo_markup_create_root_element (app->priv->session, "session");
     moo_markup_set_prop (root, "version", SESSION_VERSION);
 
-    g_signal_emit (app, signals[SAVE_SESSION], 0, root);
+    g_signal_emit (app, signals[SAVE_SESSION], 0);
+    _moo_editor_save_session (moo_app_get_editor (app), root);
 }
 
 static void
@@ -1227,7 +1171,11 @@ moo_app_load_session (MooApp *app)
         g_warning ("invalid session file version %s in %s, ignoring",
                    version, session_file);
     else
-        g_signal_emit (app, signals[LOAD_SESSION], 0, root);
+    {
+        app->priv->session = doc;
+        moo_app_do_load_session (app, root);
+        app->priv->session = NULL;
+    }
 
     moo_markup_doc_unref (doc);
     g_free (session_file);
@@ -1424,13 +1372,8 @@ moo_app_report_bug (GtkWidget *window)
 void
 moo_app_prefs_dialog (GtkWidget *parent)
 {
-    MooApp *app;
-    GtkWidget *dialog;
-
-    app = moo_app_instance ();
-    dialog = MOO_APP_GET_CLASS(app)->prefs_dialog (app);
+    GtkWidget *dialog = moo_app_create_prefs_dialog (moo_app_instance ());
     g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
-
     moo_prefs_dialog_run (MOO_PREFS_DIALOG (dialog), parent);
 }
 
