@@ -94,6 +94,8 @@ struct _MooAppPrivate {
 
     gboolean    running;
     gboolean    in_try_quit;
+    gboolean    saved_session_in_try_quit;
+    gboolean    in_after_close_window;
     int         exit_status;
 
     int         use_session;
@@ -576,6 +578,22 @@ moo_app_get_editor (MooApp *app)
 
 
 static void
+editor_will_close_window (MooApp *app)
+{
+    MooEditWindowArray *windows;
+
+    if (!app->priv->running || app->priv->saved_session_in_try_quit)
+        return;
+
+    windows = moo_editor_get_windows (app->priv->editor);
+
+    if (moo_edit_window_array_get_size (windows) == 1)
+        moo_app_save_session (app);
+
+    moo_edit_window_array_free (windows);
+}
+
+static void
 editor_after_close_window (MooApp *app)
 {
     MooEditWindowArray *windows;
@@ -586,7 +604,11 @@ editor_after_close_window (MooApp *app)
     windows = moo_editor_get_windows (app->priv->editor);
 
     if (moo_edit_window_array_get_size (windows) == 0)
+    {
+        app->priv->in_after_close_window = TRUE;
         moo_app_quit (app);
+        app->priv->in_after_close_window = FALSE;
+    }
 
     moo_edit_window_array_free (windows);
 }
@@ -603,6 +625,8 @@ moo_app_init_editor (MooApp *app)
 {
     app->priv->editor = moo_editor_create (FALSE);
 
+    g_signal_connect_swapped (app->priv->editor, "will-close-window",
+                              G_CALLBACK (editor_will_close_window), app);
     g_signal_connect_swapped (app->priv->editor, "after-close-window",
                               G_CALLBACK (editor_after_close_window), app);
 
@@ -866,15 +890,22 @@ moo_app_set_exit_status (MooApp *app,
 static gboolean
 moo_app_try_quit_real (MooApp *app)
 {
+    gboolean closed;
+
     if (!app->priv->running)
         return FALSE;
 
-    moo_app_save_session (app);
+    if (!app->priv->in_after_close_window)
+    {
+        app->priv->saved_session_in_try_quit = TRUE;
+        moo_app_save_session (app);
+    }
 
-    if (!_moo_editor_close_all (app->priv->editor))
-        return TRUE;
+    closed = _moo_editor_close_all (app->priv->editor);
 
-    return FALSE;
+    app->priv->saved_session_in_try_quit = FALSE;
+
+    return !closed;
 }
 
 
