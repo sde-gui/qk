@@ -36,7 +36,7 @@ typedef struct _MooPanedPrivate  MooPanedPrivate;
 typedef struct _MooPanedClass    MooPanedClass;
 
 /**
- * enum:MooPanePosition
+ * enum:MooPanePosition: (moo.private 1)
  *
  * @MOO_PANE_POS_LEFT:
  * @MOO_PANE_POS_RIGHT:

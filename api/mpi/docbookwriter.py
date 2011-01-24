@@ -179,8 +179,12 @@ class Writer(object):
             cls = m.group(1)
             signal = m.group(2).replace('_', '-')
             symbol = 'signal:%s:%s' % (cls, signal)
-            return '<function><link linkend="%(mode)s.%(symbol)s">%(signal)s</link></function>' % \
-                dict(symbol=symbol, mode=self.mode, signal=signal)
+            if self.symbols[cls] != self.current_class:
+                return '<function><link linkend="%(mode)s.%(symbol)s">%(Class)s.%(signal)s</link></function>' % \
+                    dict(Class=cls, symbol=symbol, mode=self.mode, signal=signal)
+            else:
+                return '<function><link linkend="%(mode)s.%(symbol)s">%(signal)s</link></function>' % \
+                    dict(symbol=symbol, mode=self.mode, signal=signal)
         text = re.sub(r'([\w\d_-]+)::([\w\d_-]+)', repl_signal, text)
 
         def repl_symbol(m):

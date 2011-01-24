@@ -16,8 +16,11 @@ typedef enum {
 /**
  * enum:MooSaveResponse
  *
- * @MOO_SAVE_RESPONSE_CONTINUE:
- * @MOO_SAVE_RESPONSE_CANCEL:
+ * @MOO_SAVE_RESPONSE_CONTINUE: continue invoking before-save callbacks, save if there aren't any left
+ * @MOO_SAVE_RESPONSE_CANCEL: stop invoking before-save callbacks and do not save
+ *
+ * Values returned by MooEditor::before-save and MooEdit::before-save
+ * callbacks.
  **/
 typedef enum {
     MOO_SAVE_RESPONSE_CONTINUE = 2,
@@ -50,10 +53,10 @@ typedef enum {
 /**
  * enum:MooLineEndType
  *
- * @MOO_LE_UNIX:
- * @MOO_LE_WIN32:
- * @MOO_LE_MAC:
- * @MOO_LE_NATIVE:
+ * @MOO_LE_UNIX: UNIX line endings (<code>\n</code>)
+ * @MOO_LE_WIN32: Windows line endings (<code>\r\n</code>)
+ * @MOO_LE_MAC: classic Mac line endings (<code>\r</code>)
+ * @MOO_LE_NATIVE: equal to #MOO_LE_UNIX on UNIX systems (including Mac OS X) and #MOO_LE_WIN32 on Windows
  **/
 typedef enum {
     MOO_LE_NONE,
@@ -110,7 +113,7 @@ typedef enum {
 } MooDrawWsFlags;
 
 /**
- * enum:MooActionCheckType: (moo.lua 0)
+ * enum:MooActionCheckType: (moo.lua 0) (moo.private 1)
  *
  * @MOO_ACTION_CHECK_SENSITIVE:
  * @MOO_ACTION_CHECK_VISIBLE:

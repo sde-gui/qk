@@ -25,9 +25,11 @@ G_BEGIN_DECLS
 /**
  * enum:MooSaveChangesResponse
  *
- * @MOO_SAVE_CHANGES_RESPONSE_CANCEL:
- * @MOO_SAVE_CHANGES_RESPONSE_SAVE:
- * @MOO_SAVE_CHANGES_RESPONSE_DONT_SAVE:
+ * @MOO_SAVE_CHANGES_RESPONSE_CANCEL: cancel current operation, don't save
+ * @MOO_SAVE_CHANGES_RESPONSE_SAVE: do save the file
+ * @MOO_SAVE_CHANGES_RESPONSE_DONT_SAVE: do not save the file and continue
+ *
+ * Values returned by moo_save_changes_dialog().
  **/
 typedef enum {
     MOO_SAVE_CHANGES_RESPONSE_CANCEL,
