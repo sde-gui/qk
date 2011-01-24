@@ -43,3 +43,8 @@ tassert(oi.get_flags() == moo.OPEN_NEW_WINDOW + moo.OPEN_RELOAD)
 tassert(oi.get_line() == 0)
 oi.set_line(14)
 tassert(oi.get_line() == 14)
+
+ri = moo.ReloadInfo.new()
+tassert(ri.get_line() == 0)
+ri.set_line(5)
+tassert(ri.get_line() == 5)
