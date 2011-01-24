@@ -131,36 +131,36 @@ class Function(FunctionBase):
     def symbol_id(self):
         return self.c_name
 
-class _MethodBase(FunctionBase):
+class MethodBase(FunctionBase):
     def __init__(self):
-        super(_MethodBase, self).__init__()
+        super(MethodBase, self).__init__()
 
     def _parse_xml(self, module, elm, cls):
-        super(_MethodBase, self)._parse_xml(module, elm, cls)
+        super(MethodBase, self)._parse_xml(module, elm, cls)
         self.cls = cls
 
-class Constructor(_MethodBase):
+class Constructor(MethodBase):
     def __init__(self):
         super(Constructor, self).__init__()
 
     def symbol_id(self):
         return self.c_name
 
-class StaticMethod(_MethodBase):
+class StaticMethod(MethodBase):
     def __init__(self):
         super(StaticMethod, self).__init__()
 
     def symbol_id(self):
         return self.c_name
 
-class Method(_MethodBase):
+class Method(MethodBase):
     def __init__(self):
         super(Method, self).__init__()
 
     def symbol_id(self):
         return self.c_name
 
-class VMethod(_MethodBase):
+class VMethod(MethodBase):
     def __init__(self):
         super(VMethod, self).__init__()
         self.c_name = "fake"
@@ -168,7 +168,7 @@ class VMethod(_MethodBase):
     def symbol_id(self):
         return '%s::%s' % (self.cls.name, self.name)
 
-class Signal(_MethodBase):
+class Signal(MethodBase):
     def __init__(self):
         super(Signal, self).__init__()
         self.c_name = "fake"

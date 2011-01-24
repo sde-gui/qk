@@ -157,8 +157,14 @@ class Writer(object):
         text = re.sub(r'%FALSE\b', '<constant>%s</constant>' % self.constants['FALSE'], text)
 
         def repl_func(m):
-            return '<function><link linkend="%(mode)s.%(func_id)s" endterm="%(mode)s.%(func_id)s.title"></link></function>' % \
-                dict(func_id=m.group(1), mode=self.mode)
+            func_id = m.group(1)
+            symbol = self.symbols.get(func_id)
+            if not isinstance(symbol, MethodBase) or symbol.cls == self.current_class:
+                return '<function><link linkend="%(mode)s.%(func_id)s" endterm="%(mode)s.%(func_id)s.title"/></function>' % \
+                    dict(func_id=func_id, mode=self.mode)
+            else:
+                return '<function><link linkend="%(mode)s.%(func_id)s">%(Class)s.%(method)s()</link></function>' % \
+                    dict(func_id=func_id, mode=self.mode, Class=self.__make_class_name(symbol.cls), method=symbol.name)
         text = re.sub(r'([\w\d_.]+)\(\)', repl_func, text)
 
         def repl_signal(m):
@@ -318,6 +324,8 @@ class Writer(object):
         if not self.__check_bind_ann(cls):
             return
 
+        self.current_class = cls
+
         title = self.__make_class_name(cls)
         if cls.summary:
             title += ' - ' + cls.summary.text
@@ -348,6 +356,8 @@ class Writer(object):
         self.out.write("""\
 </sect1>
 """ % dic)
+
+        self.current_class = None
 
     def __write_enum(self, enum):
         if not self.__check_bind_ann(enum):
@@ -401,6 +411,7 @@ class Writer(object):
     def write(self, module):
         self.module = module
         self.symbols = module.get_symbols()
+        self.current_class = None
 
         classes = module.get_classes() + module.get_boxed() + module.get_pointers()
         for cls in sorted(classes, lambda cls1, cls2: cmp(cls1.short_name, cls2.short_name)):
