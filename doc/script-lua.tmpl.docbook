@@ -84,5 +84,65 @@ and <code>obj.method(args)</code>.
 </variablelist>
 
 </sect1>
+
+<!-- moo_edit_append_text -->
+<sect1 id="section-script-lua-signals">
+<title>Signals</title>
+
+<sect2 id="lua.g_signal_connect">
+<title id="lua.g_signal_connect.title">connect()</title>
+<programlisting>obj.connect(signal, callback)</programlisting>
+<para>Connect a signal handler.</para>
+<variablelist>
+  <?dbhtml list-presentation="table"?>
+  <?dbhtml term-separator=" : "?>
+  <varlistentry>
+    <term><parameter>signal</parameter></term>
+    <listitem><para>signal name</para></listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><parameter>callback</parameter></term>
+    <listitem><para>a function to call when signal is emitted</para></listitem>
+  </varlistentry>
+</variablelist>
+<para><parameter>Returns:</parameter> id of connected signal handler. Use
+<function><link linkend="lua.g_signal_disconnect">disconnect()</link></function>
+to remove it.</para>
+<example>
+<programlisting>
+editor.connect("before-save", function(editor, doc, file)
+  if #doc.get_text() % 2 ~= 0 then
+    moo.error_dialog("Won't save",
+                     "Odd number of characters in a file " ..
+                     "is bad for your hard drive, I am not " ..
+                     "going to save this.",
+                     doc.get_window())
+    return moo.SAVE_RESPONSE_CANCEL
+  else
+    return moo.SAVE_RESPONSE_CONTINUE
+  end
+end)
+</programlisting>
+</example>
+</sect2>
+
+<sect2 id="lua.g_signal_disconnect">
+<title id="lua.g_signal_disconnect.title">disconnect()</title>
+<programlisting>obj.disconnect(handler_id)</programlisting>
+<para>Disconnect a signal handler.</para>
+<variablelist>
+  <?dbhtml list-presentation="table"?>
+  <?dbhtml term-separator=" : "?>
+  <varlistentry>
+    <term><parameter>handler_id</parameter></term>
+    <listitem><para>signal handler id returned from
+    <function><link linkend="lua.g_signal_connect">connect()</link></function>
+    </para></listitem>
+  </varlistentry>
+</variablelist>
+</sect2>
+
+</sect1>
+
 ###GENERATED###
 </chapter>

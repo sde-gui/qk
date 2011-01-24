@@ -262,6 +262,7 @@ class Writer(object):
         mode = self.mode
 
         self.out.write("""\
+<!-- %(func_id)s -->
 <sect2 id="%(mode)s.%(func_id)s">
 <title id="%(mode)s.%(func_id)s.title">%(func_title)s</title>
 <programlisting>%(func_name)s(%(params_string)s)</programlisting>
@@ -345,6 +346,7 @@ class Writer(object):
             title += ' - ' + cls.summary.text
         dic = dict(class_id=cls.symbol_id(), title=title, mode=self.mode)
         self.out.write("""\
+<!-- %(class_id)s -->
 <sect1 id="%(mode)s.%(class_id)s">
 <title id="%(mode)s.%(class_id)s.title">%(title)s</title>
 """ % dic)
@@ -394,6 +396,7 @@ class Writer(object):
                    enum_id=enum.symbol_id())
 
         self.out.write("""\
+<!-- %(enum_id)s -->
 <sect2 id="%(mode)s.%(enum_id)s">
 <title id="%(mode)s.%(enum_id)s.title">%(title)s</title>
 """ % dic)
@@ -440,6 +443,7 @@ class Writer(object):
 
         if funcs:
             self.out.write("""\
+<!-- functions -->
 <sect1 id="%(mode)s.functions">
 <title>Functions</title>
 """ % dic)
@@ -450,6 +454,7 @@ class Writer(object):
             self.out.write('</sect1>\n')
 
         self.out.write("""\
+<!-- enums -->
 <sect1 id="%(mode)s.enums">
 <title>Enumerations</title>
 """ % dic)
