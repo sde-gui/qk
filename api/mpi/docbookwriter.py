@@ -151,6 +151,12 @@ class Writer(object):
         error("unknown constant '%s'" % value)
         return value
 
+    def __format_default_value(self, p):
+        if p.type.name == 'index' and self.mode == 'lua':
+            return str(int(p.default_value) + 1)
+        else:
+            return self.__format_constant(p.default_value)
+
     def __format_doc(self, doc):
         text = doc.text
         text = re.sub(r'@([\w\d_]+)(?!\{)', r'<parameter>\1</parameter>', text)
@@ -209,7 +215,7 @@ class Writer(object):
             if not self.__check_bind_ann(p.type):
                 return
             if p.default_value is not None:
-                params.append('%s=%s' % (p.name, self.__format_constant(p.default_value)))
+                params.append('%s=%s' % (p.name, self.__format_default_value(p)))
             else:
                 params.append(p.name)
 
