@@ -1,4 +1,5 @@
 require("munit")
+require("_moo.path")
 
 window = nil
 
@@ -79,6 +80,45 @@ function test2()
   tassert(window.close())
 end
 
+function test3()
+  window = editor.new_window()
+  filename1 = moo.tempnam()
+  filename2 = moo.tempnam()
+  filename3 = moo.tempnam()
+  save_file(filename1, "file1")
+  save_file(filename2, "file2")
+
+  editor.open_path(filename1, nil, 0, window)
+  editor.open_uri(gtk.GFile.new_for_path(filename2).get_uri(), nil, 0, window)
+  editor.new_file(moo.OpenInfo.new(filename3), window)
+
+  tassert(window.get_n_tabs() == 3)
+  tassert(#window.get_docs() == 3)
+  docs = window.get_docs()
+  doc1 = docs[1]
+  doc2 = docs[2]
+  doc3 = docs[3]
+
+  tassert(doc1.get_filename() == filename1)
+  tassert(doc2.get_filename() == filename2)
+  tassert(doc3.get_filename() == filename3)
+
+  tassert(doc1.get_text() == "file1")
+  tassert(doc2.get_text() == "file2")
+  tassert(doc3.get_text() == "")
+
+  tassert(not _moo.path.exists(filename3))
+  tassert(doc3.save())
+  tassert(_moo.path.exists(filename3))
+
+  tassert(editor.get_doc(gtk.GFile.new_for_path(filename1)) == doc1)
+  tassert(editor.get_doc_for_path(filename2) == doc2)
+  tassert(editor.get_doc_for_uri(gtk.GFile.new_for_path(filename3).get_uri()) == doc3)
+
+  tassert(window.close())
+end
+
 prepare()
 test1()
 test2()
+test3()

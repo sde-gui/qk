@@ -1,5 +1,4 @@
 require("munit")
-require("_moo.os")
 
 editor = moo.Editor.instance()
 
