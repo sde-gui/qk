@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooActionCollection: (parent GObject)
+ * class:MooActionCollection: (parent GObject) (moo.private 1)
  */
 
 #include "mooutils/mooactiongroup.h"

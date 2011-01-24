@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooPrefsPage: (parent GtkVBox) (constructable)
+ * class:MooPrefsPage: (parent GtkVBox) (constructable) (moo.private 1)
  **/
 
 #include "mooutils/mooprefspage.h"

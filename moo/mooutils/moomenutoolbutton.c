@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooMenuToolButton: (parent GtkToggleToolButton)
+ * class:MooMenuToolButton: (parent GtkToggleToolButton) (moo.private 1)
  **/
 
 #include "mooutils/moomenutoolbutton.h"

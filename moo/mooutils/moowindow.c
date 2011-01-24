@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooWindow: (parent GtkWindow)
+ * class:MooWindow: (parent GtkWindow) (moo.private 1)
  **/
 
 #include "mooutils/moowindow.h"

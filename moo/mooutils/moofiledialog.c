@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooFileDialog: (parent GObject) (constructable)
+ * class:MooFileDialog: (parent GObject) (constructable) (moo.private 1)
  **/
 
 #include "config.h"

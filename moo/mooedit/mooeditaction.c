@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooEditAction: (parent MooAction)
+ * class:MooEditAction: (parent MooAction) (moo.private 1)
  **/
 
 #define MOOEDIT_COMPILATION

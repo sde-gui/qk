@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooCombo: (parent GtkTable) (constructable)
+ * class:MooCombo: (parent GtkTable) (constructable) (moo.private 1)
  **/
 
 #include "marshals.h"

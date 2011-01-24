@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooPrefsDialog: (parent GtkDialog) (constructable)
+ * class:MooPrefsDialog: (parent GtkDialog) (constructable) (moo.private 1)
  **/
 
 #include "config.h"

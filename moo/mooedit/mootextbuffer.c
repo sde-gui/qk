@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooTextBuffer: (parent GtkTextBuffer)
+ * class:MooTextBuffer: (parent GtkTextBuffer) (moo.private 1)
  **/
 
 #define MOOEDIT_COMPILATION

@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooEditBookmark: (parent MooLineMark)
+ * class:MooEditBookmark: (parent MooLineMark) (moo.private 1)
  **/
 
 #define MOOEDIT_COMPILATION

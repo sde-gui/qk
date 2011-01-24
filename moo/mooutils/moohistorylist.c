@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooHistoryList: (parent GObject) (constructable)
+ * class:MooHistoryList: (parent GObject) (constructable) (moo.private 1)
  **/
 
 #include "marshals.h"

@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooBigPaned: (parent GtkFrame) (constructable)
+ * class:MooBigPaned: (parent GtkFrame) (constructable) (moo.private 1)
  **/
 
 #ifdef HAVE_CONFIG_H

@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooHistoryMgr: (parent GObject)
+ * class:MooHistoryMgr: (parent GObject) (moo.private 1)
  **/
 
 #include "mooutils/moohistorymgr.h"

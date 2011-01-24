@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooLineView: (parent MooTextView) (constructable)
+ * class:MooLineView: (parent MooTextView) (constructable) (moo.private 1)
  **/
 
 #include "moolineview.h"

@@ -7,15 +7,15 @@
  **/
 
 /**
- * class:GdkPixbuf: (parent GObject) (moo.python 0)
+ * class:GdkPixbuf: (parent GObject) (moo.python 0) (moo.private 1)
  **/
 
 /**
- * class:GtkObject: (parent GObject) (moo.python 0)
+ * class:GtkObject: (parent GObject) (moo.python 0) (moo.private 1)
  **/
 
 /**
- * class:GtkAccelGroup: (parent GObject) (moo.python 0)
+ * class:GtkAccelGroup: (parent GObject) (moo.python 0) (moo.private 1)
  **/
 
 /**
@@ -23,7 +23,7 @@
  **/
 
 /**
- * class:GtkContainer: (parent GtkWidget) (moo.python 0)
+ * class:GtkContainer: (parent GtkWidget) (moo.python 0) (moo.private 1)
  **/
 
 /**

@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooCmdView: (parent MooLineView) (constructable)
+ * class:MooCmdView: (parent MooLineView) (constructable) (moo.private 1)
  **/
 
 #include "moocmdview.h"

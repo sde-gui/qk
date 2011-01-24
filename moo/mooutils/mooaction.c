@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooAction: (parent GtkAction)
+ * class:MooAction: (parent GtkAction) (moo.private 1)
  **/
 
 #include "mooutils/mooaction-private.h"

@@ -614,7 +614,7 @@ silent_log_handler (const gchar    *log_domain,
 }
 
 /**
- * moo_test_set_silent_messages:
+ * moo_test_set_silent_messages: (moo.private 1)
  **/
 gboolean
 moo_test_set_silent_messages (gboolean silent)

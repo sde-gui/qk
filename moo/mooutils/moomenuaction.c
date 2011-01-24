@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooMenuAction: (parent MooAction)
+ * class:MooMenuAction: (parent MooAction) (moo.private 1)
  **/
 
 #include "mooutils/moomenuaction.h"

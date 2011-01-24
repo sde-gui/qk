@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooGladeXml: (parent GObject)
+ * class:MooGladeXml: (parent GObject) (moo.private 1)
  **/
 
 #ifdef GTK_DISABLE_DEPRECATED
