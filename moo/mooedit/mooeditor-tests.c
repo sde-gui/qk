@@ -82,7 +82,7 @@ test_basic (void)
     TEST_ASSERT (doc2 == doc);
 
     TEST_ASSERT (moo_edit_close (doc));
-    TEST_ASSERT (moo_editor_get_doc_for_path (editor, filename) == NULL);
+    TEST_ASSERT (moo_editor_get_doc (editor, filename) == NULL);
 
     g_file_set_contents (filename, TT4, -1, NULL);
     doc = moo_editor_open_path (editor, filename, NULL, -1, NULL);

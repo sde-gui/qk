@@ -1033,7 +1033,7 @@ moo_editor_load_file (MooEditor       *editor,
     moo_return_error_if_fail_p (info != NULL && G_IS_FILE (info->file));
 
     uri = g_file_get_uri (info->file);
-    doc = moo_editor_get_doc (editor, info->file);
+    doc = moo_editor_get_doc_for_file (editor, info->file);
 
     if (!doc)
     {
@@ -2247,7 +2247,7 @@ moo_editor_open_path (MooEditor     *editor,
 //     if (!result)
 //         return NULL;
 //
-//     return moo_editor_get_doc_for_path (editor, filename);
+//     return moo_editor_get_doc (editor, filename);
 // }
 
 
@@ -2264,7 +2264,7 @@ moo_editor_open_path (MooEditor     *editor,
 //     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 //     g_return_val_if_fail (filename != NULL, NULL);
 //
-//     doc = moo_editor_get_doc_for_path (editor, filename);
+//     doc = moo_editor_get_doc (editor, filename);
 //
 //     if (doc)
 //     {
@@ -2796,11 +2796,13 @@ doc_array_find_norm_name (MooEditArray *docs,
 }
 
 /**
- * moo_editor_get_doc:
+ * moo_editor_get_doc_for_file:
+ *
+ * Finds open document by #GFile.
  */
 MooEdit *
-moo_editor_get_doc (MooEditor *editor,
-                    GFile     *file)
+moo_editor_get_doc_for_file (MooEditor *editor,
+                             GFile     *file)
 {
     char *norm_name = NULL;
     MooEdit *doc = NULL;
@@ -2826,23 +2828,25 @@ moo_editor_get_doc (MooEditor *editor,
 }
 
 /**
- * moo_editor_get_doc_for_path:
+ * moo_editor_get_doc:
  *
  * @editor:
- * @path: (type const-filename)
+ * @filename: (type const-filename)
+ *
+ * Finds open document by filename.
  */
 MooEdit *
-moo_editor_get_doc_for_path (MooEditor  *editor,
-                             const char *path)
+moo_editor_get_doc (MooEditor  *editor,
+                    const char *filename)
 {
     GFile *file;
     MooEdit *doc;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
-    g_return_val_if_fail (path != NULL, NULL);
+    g_return_val_if_fail (filename != NULL, NULL);
 
-    file = g_file_new_for_path (path);
-    doc = moo_editor_get_doc (editor, file);
+    file = g_file_new_for_path (filename);
+    doc = moo_editor_get_doc_for_file (editor, file);
 
     g_object_unref (file);
     return doc;
@@ -2853,6 +2857,8 @@ moo_editor_get_doc_for_path (MooEditor  *editor,
  *
  * @editor:
  * @uri: (type const-utf8)
+ *
+ * Finds open document by URI.
  */
 MooEdit *
 moo_editor_get_doc_for_uri (MooEditor  *editor,
@@ -2865,7 +2871,7 @@ moo_editor_get_doc_for_uri (MooEditor  *editor,
     g_return_val_if_fail (uri != NULL, NULL);
 
     file = g_file_new_for_uri (uri);
-    doc = moo_editor_get_doc (editor, file);
+    doc = moo_editor_get_doc_for_file (editor, file);
 
     g_object_unref (file);
     return doc;

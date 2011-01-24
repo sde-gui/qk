@@ -111,8 +111,8 @@ function test3()
   tassert(doc3.save())
   tassert(_moo.path.exists(filename3))
 
-  tassert(editor.get_doc(gtk.GFile.new_for_path(filename1)) == doc1)
-  tassert(editor.get_doc_for_path(filename2) == doc2)
+  tassert(editor.get_doc_for_file(gtk.GFile.new_for_path(filename1)) == doc1)
+  tassert(editor.get_doc(filename2) == doc2)
   tassert(editor.get_doc_for_uri(gtk.GFile.new_for_path(filename3).get_uri()) == doc3)
 
   tassert(window.close())

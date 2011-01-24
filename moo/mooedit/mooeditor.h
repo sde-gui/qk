@@ -131,9 +131,9 @@ gboolean             moo_editor_save_copy           (MooEditor              *edi
                                                      GError                **error);
 
 MooEdit             *moo_editor_get_doc             (MooEditor              *editor,
+                                                     const char             *filename);
+MooEdit             *moo_editor_get_doc_for_file    (MooEditor              *editor,
                                                      GFile                  *file);
-MooEdit             *moo_editor_get_doc_for_path    (MooEditor              *editor,
-                                                     const char             *path);
 MooEdit             *moo_editor_get_doc_for_uri     (MooEditor              *editor,
                                                      const char             *uri);
 
