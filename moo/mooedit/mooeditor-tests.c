@@ -53,7 +53,7 @@ test_basic (void)
 
     editor = moo_editor_instance ();
     filename = g_build_filename (test_data.working_dir, "test.txt", NULL);
-    info = moo_open_info_new_path (filename, NULL);
+    info = moo_open_info_new (filename, NULL);
     doc = moo_editor_new_file (editor, info, NULL, NULL);
 
     TEST_ASSERT (doc != NULL);
@@ -166,7 +166,7 @@ test_encodings_1 (const char *name,
 
     if (doc)
     {
-        MooSaveInfo *info = moo_save_info_new_path (filename2, NULL);
+        MooSaveInfo *info = moo_save_info_new (filename2, NULL);
         TEST_ASSERT (moo_edit_save_as (doc, info, NULL));
         TEST_ASSERT_SAME_FILE_CONTENT (filename2, filename);
         TEST_ASSERT (moo_edit_close (doc));

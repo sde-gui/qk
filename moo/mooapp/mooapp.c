@@ -1529,18 +1529,18 @@ moo_app_parse_files (const char      *data,
 
         info = moo_open_info_new_uri (uri, encoding);
 
-        info->flags |= MOO_EDIT_OPEN_CREATE_NEW;
+        moo_open_info_add_flags (info, MOO_OPEN_CREATE_NEW);
 
         line = moo_markup_int_prop (node, "line", 0);
         if (line > 0)
-            info->line = line - 1;
+            moo_open_info_set_line (info, line - 1);
 
         if (moo_markup_bool_prop (node, "new-window", FALSE))
-            info->flags |= MOO_EDIT_OPEN_NEW_WINDOW;
+            moo_open_info_add_flags (info, MOO_OPEN_NEW_WINDOW);
         if (moo_markup_bool_prop (node, "new-tab", FALSE))
-            info->flags |= MOO_EDIT_OPEN_NEW_TAB;
+            moo_open_info_add_flags (info, MOO_OPEN_NEW_TAB);
         if (moo_markup_bool_prop (node, "reload", FALSE))
-            info->flags |= MOO_EDIT_OPEN_RELOAD;
+            moo_open_info_add_flags (info, MOO_OPEN_RELOAD);
 
         moo_open_info_array_take (files, info);
     }
@@ -1596,22 +1596,25 @@ moo_app_send_files (MooOpenInfoArray *files,
     for (i = 0, c = moo_open_info_array_get_size (files); i < c; ++i)
     {
         MooOpenInfo *info = files->elms[i];
+        const char *encoding = moo_open_info_get_encoding (info);
+        int line = moo_open_info_get_line (info);
+        MooOpenFlags flags = moo_open_info_get_flags (info);
         char *uri;
 
         g_string_append (msg, "<file");
 
-        if (info->encoding)
-            g_string_append_printf (msg, " encoding=\"%s\"", info->encoding);
-        if (info->line >= 0)
-            g_string_append_printf (msg, " line=\"%u\"", (guint) info->line + 1);
-        if (info->flags & MOO_EDIT_OPEN_NEW_WINDOW)
+        if (encoding)
+            g_string_append_printf (msg, " encoding=\"%s\"", encoding);
+        if (line >= 0)
+            g_string_append_printf (msg, " line=\"%u\"", (guint) line + 1);
+        if (flags & MOO_OPEN_NEW_WINDOW)
             g_string_append_printf (msg, " new-window=\"true\"");
-        if (info->flags & MOO_EDIT_OPEN_NEW_TAB)
+        if (flags & MOO_OPEN_NEW_TAB)
             g_string_append_printf (msg, " new-tab=\"true\"");
-        if (info->flags & MOO_EDIT_OPEN_RELOAD)
+        if (flags & MOO_OPEN_RELOAD)
             g_string_append_printf (msg, " reload=\"true\"");
 
-        uri = g_file_get_uri (info->file);
+        uri = moo_open_info_get_uri (info);
         append_escaped (msg, ">%s</file>", uri);
         g_free (uri);
     }

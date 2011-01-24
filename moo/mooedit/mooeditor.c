@@ -28,7 +28,7 @@
 #include "mooedit/mooeditview-impl.h"
 #include "mooedit/mooedit-accels.h"
 #include "mooedit/mooeditfiltersettings.h"
-#include "mooedit/mooeditfileinfo.h"
+#include "mooedit/mooeditfileinfo-impl.h"
 #include "mooedit/mooedithistoryitem.h"
 #include "mooedit/mooedit-ui.h"
 #include "mooedit/medit-ui.h"
@@ -1068,7 +1068,7 @@ moo_editor_load_file (MooEditor       *editor,
 
     if (new_doc)
     {
-        if ((info->flags & MOO_EDIT_OPEN_CREATE_NEW) && _moo_edit_file_is_new (info->file))
+        if ((info->flags & MOO_OPEN_CREATE_NEW) && _moo_edit_file_is_new (info->file))
         {
             _moo_edit_set_status (doc, MOO_EDIT_STATUS_NEW);
             _moo_edit_set_file (doc, info->file, info->encoding);
@@ -1093,7 +1093,7 @@ moo_editor_load_file (MooEditor       *editor,
         g_propagate_error (error, error_here);
         error_here = NULL;
     }
-    else if (!new_doc && (info->flags & MOO_EDIT_OPEN_RELOAD))
+    else if (!new_doc && (info->flags & MOO_OPEN_RELOAD))
     {
         success = _moo_edit_reload_file (doc, info->encoding, &error_here);
 
@@ -1108,7 +1108,7 @@ moo_editor_load_file (MooEditor       *editor,
 
     if (success && new_object)
     {
-        if (!window || (info->flags & MOO_EDIT_OPEN_NEW_WINDOW))
+        if (!window || (info->flags & MOO_OPEN_NEW_WINDOW))
             window = create_window (editor);
 
         _moo_edit_window_insert_doc (window, doc, NULL);
@@ -2112,7 +2112,7 @@ moo_editor_new_file (MooEditor    *editor,
     info_copy = moo_open_info_dup (info);
     moo_return_error_if_fail_p (info_copy != NULL);
 
-    info_copy->flags |= MOO_EDIT_OPEN_CREATE_NEW;
+    info_copy->flags |= MOO_OPEN_CREATE_NEW;
 
     doc = moo_editor_open_file (editor, info_copy, parent, error);
 
@@ -2205,7 +2205,7 @@ moo_editor_open_path (MooEditor     *editor,
     MooEdit *ret;
     MooOpenInfo *info;
 
-    info = moo_open_info_new_path (path, encoding);
+    info = moo_open_info_new (path, encoding);
     g_return_val_if_fail (info != NULL, NULL);
     info->line = line;
 
@@ -2686,6 +2686,14 @@ out:
 
 /**
  * moo_editor_save_as:
+ *
+ * @editor:
+ * @doc:
+ * @info: (allow-none) (default NULL)
+ * @error:
+ *
+ * Save document with new filename and/or encoding. If @info is
+ * missing or %NULL then user is asked for new filename first.
  **/
 gboolean
 moo_editor_save_as (MooEditor   *editor,
@@ -2726,7 +2734,7 @@ moo_editor_save_as (MooEditor   *editor,
     }
     else if (!info->encoding)
     {
-        freeme = moo_save_info_new (info->file, moo_edit_get_encoding (doc));
+        freeme = moo_save_info_new_file (info->file, moo_edit_get_encoding (doc));
         info = freeme;
     }
 
@@ -2937,7 +2945,7 @@ _moo_editor_apply_prefs (MooEditor *editor)
 //         moo_editor_set_active_doc (editor, doc);
 //         gtk_widget_grab_focus (GTK_WIDGET (doc));
 //
-//         if (options & MOO_EDIT_OPEN_RELOAD)
+//         if (options & MOO_OPEN_RELOAD)
 //             _moo_editor_reload (editor, doc, NULL, NULL);
 //
 //         return;
@@ -2950,9 +2958,9 @@ _moo_editor_apply_prefs (MooEditor *editor)
 //     {
 //         gboolean new_window = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_OPEN_NEW_WINDOW));
 //
-//         if (options & MOO_EDIT_OPEN_NEW_TAB)
+//         if (options & MOO_OPEN_NEW_TAB)
 //             new_window = FALSE;
-//         else if (options & MOO_EDIT_OPEN_NEW_WINDOW)
+//         else if (options & MOO_OPEN_NEW_WINDOW)
 //             new_window = TRUE;
 //
 //         if (new_window)
@@ -2967,6 +2975,6 @@ _moo_editor_apply_prefs (MooEditor *editor)
 //         moo_text_view_move_cursor (MOO_TEXT_VIEW (doc), line - 1, 0, FALSE, TRUE);
 //     gtk_widget_grab_focus (GTK_WIDGET (doc));
 //
-//     if (options & MOO_EDIT_OPEN_RELOAD)
+//     if (options & MOO_OPEN_RELOAD)
 //         _moo_editor_reload (editor, doc, NULL, NULL);
 // }

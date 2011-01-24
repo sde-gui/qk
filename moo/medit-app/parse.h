@@ -74,7 +74,7 @@ parse_filename (const char *filename)
 
     info = moo_open_info_new_uri (uri, NULL);
 
-    info->line = line - 1;
+    moo_open_info_set_line (info, line - 1);
 
     g_free (uri);
     g_free (freeme1);
@@ -95,7 +95,7 @@ parse_options_from_uri (const char  *optstring,
         if (!strncmp (*p, "line=", strlen ("line=")))
         {
             /* doesn't matter if there is an error */
-            info->line = strtoul (*p + strlen ("line="), NULL, 10) - 1;
+            moo_open_info_set_line (info, strtoul (*p + strlen ("line="), NULL, 10) - 1);
         }
         else if (!strncmp (*p, "options=", strlen ("options=")))
         {
@@ -104,9 +104,9 @@ parse_options_from_uri (const char  *optstring,
             for (op = opts; op && *op; ++op)
             {
                 if (!strcmp (*op, "new-window"))
-                    info->flags |= MOO_EDIT_OPEN_NEW_WINDOW;
+                    moo_open_info_add_flags (info, MOO_OPEN_NEW_WINDOW);
                 else if (!strcmp (*op, "new-tab"))
-                    info->flags |= MOO_EDIT_OPEN_NEW_TAB;
+                    moo_open_info_add_flags (info, MOO_OPEN_NEW_TAB);
             }
             g_strfreev (opts);
         }
@@ -222,17 +222,17 @@ parse_files (void)
             continue;
 
         if (medit_opts.new_window)
-            info->flags |= MOO_EDIT_OPEN_NEW_WINDOW;
+            moo_open_info_add_flags (info, MOO_OPEN_NEW_WINDOW);
         if (medit_opts.new_tab)
-            info->flags |= MOO_EDIT_OPEN_NEW_TAB;
+            moo_open_info_add_flags (info, MOO_OPEN_NEW_TAB);
         if (medit_opts.reload)
-            info->flags |= MOO_EDIT_OPEN_RELOAD;
+            moo_open_info_add_flags (info, MOO_OPEN_RELOAD);
 
-        if (info->line < 0)
-            info->line = medit_opts.line - 1;
+        if (moo_open_info_get_line (info) < 0)
+            moo_open_info_set_line (info, medit_opts.line - 1);
 
-        if (!info->encoding && medit_opts.encoding && medit_opts.encoding[0])
-            info->encoding = g_strdup (medit_opts.encoding);
+        if (!moo_open_info_get_encoding (info) && medit_opts.encoding && medit_opts.encoding[0])
+            moo_open_info_set_encoding (info, medit_opts.encoding);
 
         moo_open_info_array_take (files, info);
     }

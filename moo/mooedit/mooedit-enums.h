@@ -63,6 +63,21 @@ typedef enum {
     MOO_LE_NATIVE = MOO_LE_NATIVE_VALUE
 } MooLineEndType;
 
+/**
+ * flags:MooOpenFlags
+ *
+ * @MOO_OPEN_NEW_WINDOW: open document in a new window
+ * @MOO_OPEN_NEW_TAB: open document in existing window (default)
+ * @MOO_OPEN_RELOAD: reload document if it's already open
+ * @MOO_OPEN_CREATE_NEW: if file doesn't exist on disk, create a new document
+ **/
+typedef enum {
+    MOO_OPEN_NEW_WINDOW = 1 << 0,
+    MOO_OPEN_NEW_TAB    = 1 << 1,
+    MOO_OPEN_RELOAD     = 1 << 2,
+    MOO_OPEN_CREATE_NEW = 1 << 3
+} MooOpenFlags;
+
 typedef enum {
     MOO_TEXT_SELECT_CHARS,
     MOO_TEXT_SELECT_WORDS,

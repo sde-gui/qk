@@ -512,7 +512,7 @@ file_selector_create_file (MooFileSelector *filesel)
     if (!path)
         goto out;
 
-    info = moo_open_info_new_path (path, NULL);
+    info = moo_open_info_new (path, NULL);
     doc = moo_editor_new_file (moo_edit_window_get_editor (filesel->window),
                                info, GTK_WIDGET (filesel), NULL);
     g_object_unref (info);
@@ -871,7 +871,7 @@ save_as_path (MooEdit    *doc,
 {
     MooSaveInfo *info;
     gboolean result;
-    info = moo_save_info_new_path (path, NULL);
+    info = moo_save_info_new (path, NULL);
     result = moo_edit_save_as (doc, info, NULL);
     g_object_unref (info);
     return result;
@@ -942,7 +942,7 @@ doc_save_copy (MooFileSelector *filesel,
 
     if (filename)
     {
-        MooSaveInfo *info = moo_save_info_new_path (filename, NULL);
+        MooSaveInfo *info = moo_save_info_new (filename, NULL);
         if (moo_edit_save_copy (doc, info, NULL))
             moo_file_selector_select_path (filesel, filename);
         g_object_unref (info);

@@ -46,72 +46,46 @@ typedef struct MooOpenInfoClass MooOpenInfoClass;
 typedef struct MooSaveInfoClass MooSaveInfoClass;
 typedef struct MooReloadInfoClass MooReloadInfoClass;
 
-typedef enum {
-    MOO_EDIT_OPEN_NEW_WINDOW = 1 << 0,
-    MOO_EDIT_OPEN_NEW_TAB    = 1 << 1,
-    MOO_EDIT_OPEN_RELOAD     = 1 << 2,
-    MOO_EDIT_OPEN_CREATE_NEW = 1 << 3
-} MooEditOpenFlags;
-
-struct MooOpenInfo
-{
-    GObject parent;
-
-    GFile *file;
-    char *encoding;
-    int line;
-    MooEditOpenFlags flags;
-};
-
-struct MooOpenInfoClass
-{
-    GObjectClass parent_class;
-};
-
-struct MooReloadInfo {
-    GObject parent;
-
-    char *encoding;
-    int line;
-};
-
-struct MooReloadInfoClass
-{
-    GObjectClass parent_class;
-};
-
-struct MooSaveInfo {
-    GObject parent;
-
-    GFile *file;
-    char *encoding;
-};
-
-struct MooSaveInfoClass
-{
-    GObjectClass parent_class;
-};
-
 GType                moo_open_info_get_type     (void) G_GNUC_CONST;
 GType                moo_reload_info_get_type   (void) G_GNUC_CONST;
 GType                moo_save_info_get_type     (void) G_GNUC_CONST;
 
-MooOpenInfo         *moo_open_info_new          (GFile              *file,
+MooOpenInfo         *moo_open_info_new          (const char         *path,
                                                  const char         *encoding);
-MooOpenInfo         *moo_open_info_new_path     (const char         *path,
+MooOpenInfo         *moo_open_info_new_file     (GFile              *file,
                                                  const char         *encoding);
 MooOpenInfo         *moo_open_info_new_uri      (const char         *uri,
                                                  const char         *encoding);
 MooOpenInfo         *moo_open_info_dup          (MooOpenInfo        *info);
 void                 moo_open_info_free         (MooOpenInfo        *info);
 
+char                *moo_open_info_get_filename (MooOpenInfo        *info);
+char                *moo_open_info_get_uri      (MooOpenInfo        *info);
+GFile               *moo_open_info_get_file     (MooOpenInfo        *info);
+char                *moo_open_info_get_uri      (MooOpenInfo        *info);
+const char          *moo_open_info_get_encoding (MooOpenInfo        *info);
+void                 moo_open_info_set_encoding (MooOpenInfo        *info,
+                                                 const char         *encoding);
+int                  moo_open_info_get_line     (MooOpenInfo        *info);
+void                 moo_open_info_set_line     (MooOpenInfo        *info,
+                                                 int                 line);
+MooOpenFlags         moo_open_info_get_flags    (MooOpenInfo        *info);
+void                 moo_open_info_set_flags    (MooOpenInfo        *info,
+                                                 MooOpenFlags        flags);
+void                 moo_open_info_add_flags    (MooOpenInfo        *info,
+                                                 MooOpenFlags        flags);
+
 MooReloadInfo       *moo_reload_info_new        (const char         *encoding);
 MooReloadInfo       *moo_reload_info_dup        (MooReloadInfo      *info);
 void                 moo_reload_info_free       (MooReloadInfo      *info);
 
-MooSaveInfo         *moo_save_info_new          (GFile              *file,
+int                  moo_reload_info_get_line   (MooReloadInfo      *info);
+void                 moo_reload_info_set_line   (MooReloadInfo      *info,
+                                                 int                 line);
+
+MooSaveInfo         *moo_save_info_new          (const char         *path,
                                                  const char         *encoding);
-MooSaveInfo         *moo_save_info_new_path     (const char         *path,
+MooSaveInfo         *moo_save_info_new_file     (GFile              *file,
                                                  const char         *encoding);
 MooSaveInfo         *moo_save_info_new_uri      (const char         *uri,
                                                  const char         *encoding);

@@ -1,16 +1,26 @@
 /**
  * class:MooOpenInfo: (parent GObject)
+ *
+ * Object which contains filename, character encoding, line
+ * number, and options to use in moo_editor_open_file().
  **/
 
 /**
  * class:MooSaveInfo: (parent GObject)
+ *
+ * Object which contains a filename and character encoding to
+ * use in moo_editor_save() and moo_editor_save_as().
  **/
 
 /**
  * class:MooReloadInfo: (parent GObject)
+ *
+ * Object which contains character encoding and line number to
+ * use in moo_editor_reload().
  **/
 
-#include "mooeditfileinfo.h"
+#include "mooeditfileinfo-impl.h"
+#include <mooutils/mooutils-misc.h>
 
 static void moo_open_info_class_init   (MooOpenInfoClass *klass);
 static void moo_save_info_class_init   (MooSaveInfoClass *klass);
@@ -23,14 +33,14 @@ G_DEFINE_TYPE (MooSaveInfo, moo_save_info, G_TYPE_OBJECT)
 G_DEFINE_TYPE (MooReloadInfo, moo_reload_info, G_TYPE_OBJECT)
 
 /**
- * moo_open_info_new: (constructor-of MooOpenInfo)
+ * moo_open_info_new_file: (static-method-of MooOpenInfo)
  *
  * @file:
  * @encoding: (type const-utf8) (allow-none) (default NULL)
  **/
 MooOpenInfo *
-moo_open_info_new (GFile      *file,
-                   const char *encoding)
+moo_open_info_new_file (GFile      *file,
+                        const char *encoding)
 {
     MooOpenInfo *info;
 
@@ -46,7 +56,7 @@ moo_open_info_new (GFile      *file,
 }
 
 /**
- * moo_open_info_new_path: (static-method-of MooOpenInfo)
+ * moo_open_info_new: (constructor-of MooOpenInfo)
  *
  * @path: (type const-filename)
  * @encoding: (type const-utf8) (allow-none) (default NULL)
@@ -54,11 +64,11 @@ moo_open_info_new (GFile      *file,
  * Returns: (transfer full)
  **/
 MooOpenInfo *
-moo_open_info_new_path (const char *path,
-                        const char *encoding)
+moo_open_info_new (const char *path,
+                   const char *encoding)
 {
     GFile *file = g_file_new_for_path (path);
-    MooOpenInfo *info = moo_open_info_new (file, encoding);
+    MooOpenInfo *info = moo_open_info_new_file (file, encoding);
     g_object_unref (file);
     return info;
 }
@@ -76,7 +86,7 @@ moo_open_info_new_uri (const char *uri,
                        const char *encoding)
 {
     GFile *file = g_file_new_for_uri (uri);
-    MooOpenInfo *info = moo_open_info_new (file, encoding);
+    MooOpenInfo *info = moo_open_info_new_file (file, encoding);
     g_object_unref (file);
     return info;
 }
@@ -93,7 +103,7 @@ moo_open_info_dup (MooOpenInfo *info)
 
     g_return_val_if_fail (info != NULL, NULL);
 
-    copy = moo_open_info_new (info->file, info->encoding);
+    copy = moo_open_info_new_file (info->file, info->encoding);
     g_return_val_if_fail (copy != NULL, NULL);
 
     copy->flags = info->flags;
@@ -108,6 +118,128 @@ moo_open_info_free (MooOpenInfo *info)
     if (info)
         g_object_unref (info);
 }
+
+
+/**
+ * moo_open_info_get_filename: (moo.private 1)
+ *
+ * Returns: (type filename)
+ **/
+char *
+moo_open_info_get_filename (MooOpenInfo *info)
+{
+    g_return_val_if_fail (MOO_IS_OPEN_INFO (info), NULL);
+    return g_file_get_path (info->file);
+}
+
+/**
+ * moo_open_info_get_uri: (moo.private 1)
+ *
+ * Returns: (type utf8)
+ **/
+char *
+moo_open_info_get_uri (MooOpenInfo *info)
+{
+    g_return_val_if_fail (MOO_IS_OPEN_INFO (info), NULL);
+    return g_file_get_uri (info->file);
+}
+
+/**
+ * moo_open_info_get_file: (moo.private 1)
+ *
+ * Returns: (transfer full)
+ **/
+GFile *
+moo_open_info_get_file (MooOpenInfo *info)
+{
+    g_return_val_if_fail (MOO_IS_OPEN_INFO (info), NULL);
+    return g_file_dup (info->file);
+}
+
+/**
+ * moo_open_info_get_encoding: (moo.private 1)
+ *
+ * Returns: (type const-utf8)
+ **/
+const char *
+moo_open_info_get_encoding (MooOpenInfo *info)
+{
+    g_return_val_if_fail (MOO_IS_OPEN_INFO (info), NULL);
+    return info->encoding;
+}
+
+/**
+ * moo_open_info_set_encoding: (moo.private 1)
+ *
+ * @info:
+ * @encoding: (type const-utf8) (allow-none)
+ **/
+void
+moo_open_info_set_encoding (MooOpenInfo *info,
+                            const char  *encoding)
+{
+    g_return_if_fail (MOO_IS_OPEN_INFO (info));
+    MOO_ASSIGN_STRING (info->encoding, encoding);
+}
+
+/**
+ * moo_open_info_get_line:
+ *
+ * Returns: (type index)
+ **/
+int
+moo_open_info_get_line (MooOpenInfo *info)
+{
+    g_return_val_if_fail (MOO_IS_OPEN_INFO (info), -1);
+    return info->line;
+}
+
+/**
+ * moo_open_info_set_line:
+ *
+ * @info:
+ * @line: (type index)
+ **/
+void
+moo_open_info_set_line (MooOpenInfo *info,
+                        int          line)
+{
+    g_return_if_fail (MOO_IS_OPEN_INFO (info));
+    info->line = line;
+}
+
+/**
+ * moo_open_info_get_flags:
+ **/
+MooOpenFlags
+moo_open_info_get_flags (MooOpenInfo *info)
+{
+    g_return_val_if_fail (MOO_IS_OPEN_INFO (info), 0);
+    return info->flags;
+}
+
+/**
+ * moo_open_info_set_flags:
+ **/
+void
+moo_open_info_set_flags (MooOpenInfo  *info,
+                         MooOpenFlags  flags)
+{
+    g_return_if_fail (MOO_IS_OPEN_INFO (info));
+    info->flags = flags;
+}
+
+/**
+ * moo_open_info_add_flags:
+ **/
+void
+moo_open_info_add_flags (MooOpenInfo  *info,
+                         MooOpenFlags  flags)
+{
+    g_return_if_fail (MOO_IS_OPEN_INFO (info));
+    info->flags |= flags;
+}
+
 
 static void
 moo_open_info_finalize (GObject *object)
@@ -134,14 +266,14 @@ moo_open_info_init (MooOpenInfo *info)
 
 
 /**
- * moo_save_info_new: (constructor-of MooSaveInfo)
+ * moo_save_info_new_file: (static-method-of MooSaveInfo)
  *
  * @file:
  * @encoding: (type const-utf8) (allow-none) (default NULL)
  **/
 MooSaveInfo *
-moo_save_info_new (GFile      *file,
-                   const char *encoding)
+moo_save_info_new_file (GFile      *file,
+                        const char *encoding)
 {
     MooSaveInfo *info;
 
@@ -156,7 +288,7 @@ moo_save_info_new (GFile      *file,
 }
 
 /**
- * moo_save_info_new_path: (static-method-of MooSaveInfo)
+ * moo_save_info_new: (constructor-of MooSaveInfo)
  *
  * @path: (type const-filename)
  * @encoding: (type const-utf8) (allow-none) (default NULL)
@@ -164,11 +296,11 @@ moo_save_info_new (GFile      *file,
  * Returns: (transfer full)
  **/
 MooSaveInfo *
-moo_save_info_new_path (const char *path,
-                        const char *encoding)
+moo_save_info_new (const char *path,
+                   const char *encoding)
 {
     GFile *file = g_file_new_for_path (path);
-    MooSaveInfo *info = moo_save_info_new (file, encoding);
+    MooSaveInfo *info = moo_save_info_new_file (file, encoding);
     g_object_unref (file);
     return info;
 }
@@ -186,7 +318,7 @@ moo_save_info_new_uri (const char *uri,
                        const char *encoding)
 {
     GFile *file = g_file_new_for_uri (uri);
-    MooSaveInfo *info = moo_save_info_new (file, encoding);
+    MooSaveInfo *info = moo_save_info_new_file (file, encoding);
     g_object_unref (file);
     return info;
 }
@@ -203,7 +335,7 @@ moo_save_info_dup (MooSaveInfo *info)
 
     g_return_val_if_fail (info != NULL, NULL);
 
-    copy = moo_save_info_new (info->file, info->encoding);
+    copy = moo_save_info_new_file (info->file, info->encoding);
     g_return_val_if_fail (copy != NULL, NULL);
 
     return copy;
@@ -283,6 +415,34 @@ moo_reload_info_free (MooReloadInfo *info)
     if (info)
         g_object_unref (info);
 }
+
+
+/**
+ * moo_reload_info_get_line:
+ *
+ * Returns: (type index)
+ **/
+int
+moo_reload_info_get_line (MooReloadInfo *info)
+{
+    g_return_val_if_fail (MOO_IS_RELOAD_INFO (info), -1);
+    return info->line;
+}
+
+/**
+ * moo_reload_info_set_line:
+ *
+ * @info:
+ * @line: (type index)
+ **/
+void
+moo_reload_info_set_line (MooReloadInfo *info,
+                          int            line)
+{
+    g_return_if_fail (MOO_IS_RELOAD_INFO (info));
+    info->line = line;
+}
+
 
 static void
 moo_reload_info_finalize (GObject *object)

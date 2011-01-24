@@ -91,14 +91,14 @@ function test_file()
 
   tassert(doc.is_untitled())
   doc.set_text('foobar')
-  tassert(doc.save_as(moo.SaveInfo.new_path(filename1)))
+  tassert(doc.save_as(moo.SaveInfo.new(filename1)))
   tassert(not doc.is_untitled())
 
   tassert(doc.get_filename() == filename1)
   tassert(read_file(filename1) == 'foobar')
 
   doc.set_text('blahfoo')
-  tassert(doc.save_copy(moo.SaveInfo.new_path(filename2)))
+  tassert(doc.save_copy(moo.SaveInfo.new(filename2)))
   tassert(doc.get_filename() == filename1)
   tassert(read_file(filename1) == 'foobar')
   tassert(read_file(filename2) == 'blahfoo')
@@ -111,7 +111,7 @@ function test_file()
   tassert(editor.reload(doc))
   tassert(doc.get_text() == 'boomboom')
 
-  tassert(editor.save_copy(doc, moo.SaveInfo.new_path(filename2)))
+  tassert(editor.save_copy(doc, moo.SaveInfo.new(filename2)))
   tassert(read_file(filename2) == 'boomboom')
 
   tassert(doc.close())

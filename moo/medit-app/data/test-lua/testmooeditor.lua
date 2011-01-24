@@ -183,7 +183,7 @@ end
 
 function test_will_save()
   path = moo.tempnam()
-  si = moo.SaveInfo.new_path(path)
+  si = moo.SaveInfo.new(path)
   doc = editor.new_doc()
 
   doc.set_modified(true)
@@ -285,7 +285,7 @@ function test_before_save()
 
   doc = editor.new_doc()
   path = moo.tempnam()
-  si = moo.SaveInfo.new_path(path)
+  si = moo.SaveInfo.new(path)
 
   tassert(not editor.save_as(doc, si))
   tassert(seen_editor_before_save == 1)

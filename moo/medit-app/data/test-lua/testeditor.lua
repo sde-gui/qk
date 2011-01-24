@@ -67,7 +67,7 @@ function test2()
   save_file(filename2, "file2")
   save_file(filename3, "file3")
 
-  t = {moo.OpenInfo.new_path(filename1), moo.OpenInfo.new_path(filename2), moo.OpenInfo.new_path(filename3)}
+  t = {moo.OpenInfo.new(filename1), moo.OpenInfo.new(filename2), moo.OpenInfo.new(filename3)}
   editor.open_files(t, window)
 
   tassert(window.get_n_tabs() == 3)

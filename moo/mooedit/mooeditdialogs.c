@@ -77,7 +77,7 @@ _moo_edit_open_dialog (GtkWidget *widget,
 
         info_array = moo_open_info_array_new ();
         for (i = 0; i < files->n_elms; ++i)
-            moo_open_info_array_take (info_array, moo_open_info_new (files->elms[i], encoding));
+            moo_open_info_array_take (info_array, moo_open_info_new_file (files->elms[i], encoding));
 
         g_object_unref (start);
         start = g_file_get_parent (files->elms[0]);
@@ -138,7 +138,7 @@ _moo_edit_save_as_dialog (MooEdit    *doc,
     encoding = moo_file_dialog_get_encoding (dialog);
     file = moo_file_dialog_get_file (dialog);
     g_return_val_if_fail (file != NULL, NULL);
-    info = moo_save_info_new (file, encoding);
+    info = moo_save_info_new_file (file, encoding);
 
     g_object_unref (start);
     start = g_file_get_parent (file);

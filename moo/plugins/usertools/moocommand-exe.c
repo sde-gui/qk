@@ -176,7 +176,7 @@ save_input_file (MooEdit *doc)
     char *file;
 
     file = moo_tempnam (NULL);
-    info = moo_save_info_new_path (file, moo_edit_get_encoding (doc));
+    info = moo_save_info_new (file, moo_edit_get_encoding (doc));
 
     if (!moo_edit_save_copy (doc, info, &error))
     {
