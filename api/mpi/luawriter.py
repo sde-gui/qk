@@ -61,19 +61,35 @@ class ArgHelper(object):
     def format_arg(self, allow_none, default_value, arg_name, arg_idx, param_name):
         return ''
 
+def c_allow_none(attr):
+    if attr is True:
+        return 'TRUE'
+    elif attr in (False, None):
+        return 'FALSE'
+    else:
+        oops()
+
 class SimpleArgHelper(ArgHelper):
-    def __init__(self, name, suffix):
+    def __init__(self, name, suffix, can_be_null=False):
         super(SimpleArgHelper, self).__init__()
         self.name = name
         self.suffix = suffix
+        self.can_be_null = can_be_null
 
     def format_arg(self, allow_none, default_value, arg_name, arg_idx, param_name):
         dic = dict(type=self.name, arg_name=arg_name, default_value=default_value,
-                   arg_idx=arg_idx, param_name=param_name, suffix=self.suffix)
-        if default_value is not None:
-            return '%(type)s %(arg_name)s = moo_lua_get_arg_%(suffix)s_opt (L, %(arg_idx)s, "%(param_name)s", %(default_value)s);' % dic
+                   arg_idx=arg_idx, param_name=param_name, suffix=self.suffix,
+                   allow_none=c_allow_none(allow_none))
+        if self.can_be_null:
+            if default_value is not None:
+                return '%(type)s %(arg_name)s = moo_lua_get_arg_%(suffix)s_opt (L, %(arg_idx)s, "%(param_name)s", %(default_value)s, %(allow_none)s);' % dic
+            else:
+                return '%(type)s %(arg_name)s = moo_lua_get_arg_%(suffix)s (L, %(arg_idx)s, "%(param_name)s", %(allow_none)s);' % dic
         else:
-            return '%(type)s %(arg_name)s = moo_lua_get_arg_%(suffix)s (L, %(arg_idx)s, "%(param_name)s");' % dic
+            if default_value is not None:
+                return '%(type)s %(arg_name)s = moo_lua_get_arg_%(suffix)s_opt (L, %(arg_idx)s, "%(param_name)s", %(default_value)s);' % dic
+            else:
+                return '%(type)s %(arg_name)s = moo_lua_get_arg_%(suffix)s (L, %(arg_idx)s, "%(param_name)s");' % dic
 
 _arg_helpers = {}
 _arg_helpers['int'] = SimpleArgHelper('int', 'int')
@@ -84,15 +100,14 @@ _arg_helpers['gulong'] = SimpleArgHelper('gulong', 'ulong')
 _arg_helpers['gboolean'] = SimpleArgHelper('gboolean', 'bool')
 _arg_helpers['index'] = SimpleArgHelper('int', 'index')
 _arg_helpers['double'] = SimpleArgHelper('double', 'double')
-_arg_helpers['const-char*'] = SimpleArgHelper('const char*', 'string')
-_arg_helpers['char*'] = SimpleArgHelper('char*', 'string')
-_arg_helpers['const-utf8'] = SimpleArgHelper('const char*', 'utf8')
-_arg_helpers['utf8'] = SimpleArgHelper('char*', 'utf8')
-_arg_helpers['const-filename'] = SimpleArgHelper('const char*', 'filename')
-_arg_helpers['filename'] = SimpleArgHelper('char*', 'filename')
-_arg_helpers['const-cstring'] = SimpleArgHelper('const char*', 'string')
-_arg_helpers['cstring'] = SimpleArgHelper('char*', 'string')
-_arg_helpers['strv'] = SimpleArgHelper('char**', 'strv')
+_arg_helpers['const-char*'] = SimpleArgHelper('const char*', 'string', True)
+_arg_helpers['char*'] = SimpleArgHelper('char*', 'string', True)
+_arg_helpers['const-utf8'] = SimpleArgHelper('const char*', 'utf8', True)
+_arg_helpers['utf8'] = SimpleArgHelper('char*', 'utf8', True)
+_arg_helpers['const-filename'] = SimpleArgHelper('const char*', 'filename', True)
+_arg_helpers['filename'] = SimpleArgHelper('char*', 'filename', True)
+_arg_helpers['const-cstring'] = SimpleArgHelper('const char*', 'string', True)
+_arg_helpers['cstring'] = SimpleArgHelper('char*', 'string', True)
 def find_arg_helper(param):
     return _arg_helpers[param.type.name]
 
@@ -115,7 +130,7 @@ class Writer(object):
 
     def __write_function_param(self, func_body, param, i, meth, cls):
         dic = dict(narg=i, gtype_id=param.type.gtype_id, param_name=param.name,
-                   allow_none=('TRUE' if param.allow_none else 'FALSE'),
+                   allow_none=c_allow_none(param.allow_none),
                    default_value=param.default_value,
                    arg_idx=('first_arg + %d' % (i,)) if cls else ('1 + %d' % (i,)),
                    TypeName=param.type.name,
@@ -161,11 +176,11 @@ class Writer(object):
             if param.default_value is not None:
                 func_body.start.append(('%(TypeName)s *arg%(narg)d = (%(TypeName)s*) ' + \
                                         'moo_lua_get_arg_instance_opt (L, %(arg_idx)s, "%(param_name)s", ' + \
-                                        '%(gtype_id)s);') % dic)
+                                        '%(gtype_id)s, %(allow_none)s);') % dic)
             else:
                 func_body.start.append(('%(TypeName)s *arg%(narg)d = (%(TypeName)s*) ' + \
                                         'moo_lua_get_arg_instance (L, %(arg_idx)s, "%(param_name)s", ' + \
-                                        '%(gtype_id)s);') % dic)
+                                        '%(gtype_id)s, %(allow_none)s);') % dic)
         elif isinstance(param.type, Enum) or isinstance(param.type, Flags):
             if param.default_value is not None:
                 func_body.start.append(('%(TypeName)s arg%(narg)d = (%(TypeName)s) ' + \
@@ -190,9 +205,9 @@ class Writer(object):
         elif param.type.name == 'strv':
             assert param.default_value is None or param.default_value == 'NULL'
             if param.default_value is not None:
-                func_body.start.append(('char **arg%(narg)d = moo_lua_get_arg_strv_opt (L, %(arg_idx)s, "%(param_name)s");') % dic)
+                func_body.start.append(('char **arg%(narg)d = moo_lua_get_arg_strv_opt (L, %(arg_idx)s, "%(param_name)s", %(allow_none)s);') % dic)
             else:
-                func_body.start.append(('char **arg%(narg)d = moo_lua_get_arg_strv (L, %(arg_idx)s, "%(param_name)s");') % dic)
+                func_body.start.append(('char **arg%(narg)d = moo_lua_get_arg_strv (L, %(arg_idx)s, "%(param_name)s", %(allow_none)s);') % dic)
             func_body.end.append('g_strfreev (arg%(narg)d);' % dic)
         else:
             assert param.transfer_mode is None
@@ -218,8 +233,8 @@ class Writer(object):
             p = meth.params[i]
 
             if not p.type.name in _arg_helpers and not isinstance(p.type, ArrayType) and \
-               not isinstance(p.type, GTypedType) and not isinstance(p.type, GErrorReturnType) and\
-               p.type.name != 'SignalClosure*':
+               not isinstance(p.type, GTypedType) and not isinstance(p.type, GErrorReturnType) and \
+               not p.type.name in ('SignalClosure*', 'strv'):
                 raise RuntimeError("cannot write function %s because of '%s' parameter" % (meth.c_name, p.type.name))
 
             if isinstance(p.type, GErrorReturnType):

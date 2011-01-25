@@ -42,21 +42,13 @@ and <code>obj.method(args)</code>.
 <para>This manual uses the following conventions:</para>
 <variablelist>
   <varlistentry>
-    <term><code>func()</code> and <code>func(nil)</code> are equivalent.</term>
-    <listitem>There is no distinction between <constant>nil</constant> value
-    of a parameter and missing parameter, unless documentation for given function
-    says otehrwise.
-    </listitem>
-  </varlistentry>
-  <varlistentry>
     <term>Optional parameters</term>
     <listitem>
     <programlisting>func(arg1=val1, arg2=val, arg3=val3, ...)</programlisting>
     <code><parameter>arg</parameter>=val</code> means that
     parameter <parameter>arg</parameter> is optional, and function receives
-    value <code>val</code> if it's missing or <constant>nil</constant>.
-    Not all parameters are necessarily optional. For example,
-    <programlisting>insert_text(text, where=nil)</programlisting>
+    value <code>val</code> if it's missing. Not all parameters are necessarily
+    optional. For example, <programlisting>insert_text(text, where=nil)</programlisting>
     means that <parameter>text</parameter> may not be missing or <constant>nil</constant>
     (unless documentation says otherwise), and <parameter>where</parameter> is optional.
     </listitem>

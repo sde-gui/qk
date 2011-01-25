@@ -4,16 +4,17 @@ from mpi.util import *
 from mpi.module import *
 
 lua_constants = {
-    'NULL': 'nil',
-    'TRUE': 'true',
-    'FALSE': 'false',
+    'NULL': '<constant>nil</constant>',
+    'TRUE': '<constant>true</constant>',
+    'FALSE': '<constant>false</constant>',
 }
 
 python_constants = {
-    'NULL': 'None',
-    'TRUE': 'True',
-    'FALSE': 'False',
-    'GTK_RESPONSE_OK': 'gtk.RESPONSE_OK',
+    'NULL': '<constant>None</constant>',
+    'TRUE': '<constant>True</constant>',
+    'FALSE': '<constant>False</constant>',
+    'GTK_RESPONSE_OK': '<constant><ulink url="http://library.gnome.org/devel/pygtk/stable/' +
+                       'gtk-constants.html#gtk-response-type-constants">gtk.RESPONSE_OK</ulink></constant>',
 }
 
 common_types = {
@@ -293,6 +294,8 @@ class Writer(object):
                         ptype = ptype[len('const-'):]
                     if ptype in self.builtin_types:
                         docs = self.builtin_types[ptype]
+                        if p.allow_none:
+                            docs = docs + ' or ' + self.__format_constant('NULL')
                     elif ptype.endswith('Array'):
                         elmtype = ptype[:-len('Array')]
                         if elmtype in self.symbols and isinstance(self.symbols[elmtype], InstanceType):
@@ -301,6 +304,8 @@ class Writer(object):
                             docs = self.__format_symbol_ref(ptype)
                     else:
                         docs = self.__format_symbol_ref(ptype)
+                        if p.allow_none:
+                            docs = docs + ' or ' + self.__format_constant('NULL')
 
                 param_dic = dict(param=p.name, doc=docs)
                 self.out.write("""\

@@ -59,11 +59,13 @@ int             moo_lua_arg_errorv              (lua_State          *L,
 gpointer        moo_lua_get_arg_instance_opt    (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,
-                                                 GType               type);
+                                                 GType               type,
+                                                 gboolean            null_ok);
 gpointer        moo_lua_get_arg_instance        (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,
-                                                 GType               type);
+                                                 GType               type,
+                                                 gboolean            null_ok);
 MooObjectArray *moo_lua_get_arg_object_array    (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,
@@ -145,30 +147,38 @@ int             moo_lua_get_arg_enum            (lua_State          *L,
 const char     *moo_lua_get_arg_string_opt      (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,
-                                                 const char         *default_value);
+                                                 const char         *default_value,
+                                                 gboolean            null_ok);
 const char     *moo_lua_get_arg_string          (lua_State          *L,
                                                  int                 narg,
-                                                 const char         *param_name);
+                                                 const char         *param_name,
+                                                 gboolean            null_ok);
 const char     *moo_lua_get_arg_utf8_opt        (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,
-                                                 const char         *default_value);
+                                                 const char         *default_value,
+                                                 gboolean            null_ok);
 const char     *moo_lua_get_arg_utf8            (lua_State          *L,
                                                  int                 narg,
-                                                 const char         *param_name);
+                                                 const char         *param_name,
+                                                 gboolean            null_ok);
 const char     *moo_lua_get_arg_filename_opt    (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,
-                                                 const char         *default_value);
+                                                 const char         *default_value,
+                                                 gboolean            null_ok);
 const char     *moo_lua_get_arg_filename        (lua_State          *L,
                                                  int                 narg,
-                                                 const char         *param_name);
+                                                 const char         *param_name,
+                                                 gboolean            null_ok);
 char          **moo_lua_get_arg_strv_opt        (lua_State          *L,
                                                  int                 narg,
-                                                 const char         *param_name);
+                                                 const char         *param_name,
+                                                 gboolean            null_ok);
 char          **moo_lua_get_arg_strv            (lua_State          *L,
                                                  int                 narg,
-                                                 const char         *param_name);
+                                                 const char         *param_name,
+                                                 gboolean            null_ok);
 
 typedef struct MooLuaSignalClosure MooLuaSignalClosure;
 MooLuaSignalClosure *moo_lua_get_arg_signal_closure (lua_State      *L,
