@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooTextView: (parent GtkTextView) (constructable) (moo.private 1)
+ * class:MooTextView: (parent GtkTextView) (constructable)
  **/
 
 #define MOOEDIT_COMPILATION

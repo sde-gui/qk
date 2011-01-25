@@ -11,7 +11,7 @@
  **/
 
 /**
- * class:GtkObject: (parent GObject) (moo.python 0) (moo.private 1)
+ * class:GtkObject: (parent GObject) (moo.python 0)
  **/
 
 /**
@@ -23,7 +23,23 @@
  **/
 
 /**
- * class:GtkContainer: (parent GtkWidget) (moo.python 0) (moo.private 1)
+ * class:GtkContainer: (parent GtkWidget) (moo.python 0)
+ **/
+
+/**
+ * class:GtkBin: (parent GtkContainer) (moo.python 0)
+ **/
+
+/**
+ * class:GtkWindow: (parent GtkBin) (moo.python 0)
+ **/
+
+/**
+ * class:GtkBox: (parent GtkContainer) (moo.python 0)
+ **/
+
+/**
+ * class:GtkVBox: (parent GtkBox) (moo.python 0)
  **/
 
 /**

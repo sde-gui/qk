@@ -365,6 +365,15 @@ class Writer(object):
         if cls.doc:
             self.out.write('<para>%s</para>\n' % self.__format_doc(cls.doc))
 
+        if getattr(cls, 'parent', 'none') != 'none':
+            self.out.write("""\
+<programlisting>
+%(ParentClass)s
+  |
+  +-- %(Class)s
+</programlisting>
+""" % dict(ParentClass=self.__format_symbol_ref(cls.parent), Class=self.__make_class_name(cls)))
+
         if hasattr(cls, 'signals') and cls.signals:
             for signal in cls.signals:
                 self.__write_function(signal, cls)
