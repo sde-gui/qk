@@ -1,3 +1,18 @@
+/* fake */
+gulong      g_object_connect                (GObject        *gobj,
+                                             const char     *signal,
+                                             SignalClosure  *callback);
+gulong      g_object_connect_after          (GObject        *gobj,
+                                             const char     *signal,
+                                             SignalClosure  *callback);
+void        g_object_disconnect             (GObject        *gobj,
+                                             gulong          handler_id);
+void        g_object_signal_handler_block   (GObject        *gobj,
+                                             gulong          handler_id);
+void        g_object_signal_handler_unblock (GObject        *gobj,
+                                             gulong          handler_id);
+
+/* real */
 GFile *                  g_file_new_for_path            (const char *path);
 GFile *                  g_file_new_for_uri             (const char *uri);
 GFile *                  g_file_new_for_commandline_arg (const char *arg);

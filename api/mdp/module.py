@@ -393,7 +393,7 @@ class Module(object):
             raise RuntimeError('return type missing')
         return retval
 
-    def __parse_param(self, pp):
+    def __parse_param(self, pp, pfunc):
         if DEBUG:
             print pp.name, pp.type, pp.docs
         param = Param(pp.name, pp.type, pp.docs)
@@ -404,9 +404,9 @@ class Module(object):
                 elif self.__parse_param_annotation(a, param):
                     pass
                 else:
-                    raise RuntimeError("invalid annotation '%s'" % (a,))
+                    raise RuntimeError("in %s: invalid annotation '%s'" % (pfunc.name, a,))
         if param.type is None:
-            raise RuntimeError('param type missing')
+            raise RuntimeError('in %s: param type missing' % pfunc.name)
         return param
 
     def __add_vmethod(self, pfunc):
@@ -421,7 +421,7 @@ class Module(object):
 
         if pfunc.params:
             for p in pfunc.params:
-                params.append(self.__parse_param(p))
+                params.append(self.__parse_param(p, pfunc))
 
         if pfunc.retval:
             retval = self.__parse_retval(pfunc.retval)
@@ -445,7 +445,7 @@ class Module(object):
 
         if pfunc.params:
             for p in pfunc.params:
-                params.append(self.__parse_param(p))
+                params.append(self.__parse_param(p, pfunc))
 
         if pfunc.retval:
             retval = self.__parse_retval(pfunc.retval)
@@ -485,7 +485,7 @@ class Module(object):
 
         if pfunc.params:
             for p in pfunc.params:
-                params.append(self.__parse_param(p))
+                params.append(self.__parse_param(p, pfunc))
 
         if pfunc.retval:
             retval = self.__parse_retval(pfunc.retval)

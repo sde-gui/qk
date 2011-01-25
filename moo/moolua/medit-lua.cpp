@@ -124,10 +124,6 @@ add_raw_api (lua_State *L)
 {
     g_assert (lua_gettop (L) == 0);
 
-    moo_lua_register_gobject ();
-
-    g_assert (lua_gettop (L) == 0);
-
     gtk_lua_api_add_to_lua (L);
     lua_pop(L, 1);
 

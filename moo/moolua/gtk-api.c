@@ -61,6 +61,78 @@
 
 /****************************************************************************
  *
+ * GObject
+ *
+ */
+
+/**
+ * g_object_connect: (moo.python 0)
+ *
+ * @gobj:
+ * @signal: (type const-utf8): signal name
+ * @callback: function to call when the signal is emitted
+ *
+ * Connect a signal handler.
+ *
+ * <example>
+ * <programlisting>
+ * <n/>editor.connect("before-save", function(editor, doc, file)<nl/>
+ * <n/>  if #<!-- -->doc.get_text<!-- -->() % 2 ~= 0 then<nl/>
+ * <n/>    moo.error_dialog("Won't save",<nl/>
+ * <n/>                     "Odd number of characters in a file " ..<nl/>
+ * <n/>                     "is bad for your hard drive, I am not " ..<nl/>
+ * <n/>                     "going to save this.",<nl/>
+ * <n/>                     doc.get_window<!-- -->())<nl/>
+ * <n/>    return moo.SAVE_RESPONSE_CANCEL<nl/>
+ * <n/>  else<nl/>
+ * <n/>    return moo.SAVE_RESPONSE_CONTINUE<nl/>
+ * <n/>  end<nl/>
+ * <n/>end)
+ * </programlisting>
+ * </example>
+ *
+ * Returns: id of connected signal handler. Use g_object_disconnect() to remove it.
+ **/
+
+/**
+ * g_object_connect_after: (moo.python 0)
+ *
+ * @gobj:
+ * @signal: (type const-utf8): signal name
+ * @callback: function to call when the signal is emitted
+ **/
+
+/**
+ * g_object_disconnect: (moo.python 0)
+ *
+ * @gobj:
+ * @handler_id: signal handler id returned from g_object_connect()
+ *
+ * Disconnect a signal handler.
+ **/
+
+/**
+ * g_object_signal_handler_block: (moo.python 0)
+ *
+ * @gobj:
+ * @handler_id: signal handler id returned from g_object_connect()
+ *
+ * Temporarily blocks signal handler so it will not be called when
+ * the signal it's connected to is emitted. Call g_object_signal_handler_unblock()
+ * to re-enable the signal handler.
+ **/
+
+/**
+ * g_object_signal_handler_unblock: (moo.python 0)
+ *
+ * @gobj:
+ * @handler_id: signal handler id returned from g_object_connect()
+ *
+ * Re-enables signal handler disabled by g_object_signal_handler_block().
+ **/
+
+/****************************************************************************
+ *
  * GFile
  *
  */

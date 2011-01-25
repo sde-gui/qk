@@ -170,6 +170,15 @@ char          **moo_lua_get_arg_strv            (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name);
 
+typedef struct MooLuaSignalClosure MooLuaSignalClosure;
+MooLuaSignalClosure *moo_lua_get_arg_signal_closure (lua_State      *L,
+                                                 int                 narg,
+                                                 const char         *param_name);
+gulong          moo_signal_connect_closure      (gpointer            instance,
+                                                 const char         *detailed_signal,
+                                                 MooLuaSignalClosure *closure,
+                                                 gboolean             after);
+
 int             moo_lua_push_object             (lua_State          *L,
                                                  GObject            *obj,
                                                  gboolean            make_copy);

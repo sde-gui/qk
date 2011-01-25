@@ -6,7 +6,7 @@ tmpl_file_start = """\
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-
+%(headers)s
 #include "moo-lua-api-util.h"
 
 extern "C" void moo_test_coverage_record (const char *lang, const char *function);
@@ -80,6 +80,8 @@ _arg_helpers['int'] = SimpleArgHelper('int', 'int')
 _arg_helpers['uint'] = SimpleArgHelper('guint', 'int')
 _arg_helpers['gint'] = SimpleArgHelper('int', 'int')
 _arg_helpers['guint'] = SimpleArgHelper('guint', 'int')
+_arg_helpers['glong'] = SimpleArgHelper('long', 'int')
+_arg_helpers['gulong'] = SimpleArgHelper('gulong', 'int')
 _arg_helpers['gboolean'] = SimpleArgHelper('gboolean', 'bool')
 _arg_helpers['index'] = SimpleArgHelper('int', 'index')
 _arg_helpers['double'] = SimpleArgHelper('double', 'double')
@@ -100,6 +102,8 @@ _pod_ret_helpers['int'] = ('int', 'int')
 _pod_ret_helpers['uint'] = ('guint', 'int')
 _pod_ret_helpers['gint'] = ('int', 'int')
 _pod_ret_helpers['guint'] = ('guint', 'int')
+_pod_ret_helpers['glong'] = ('long', 'int')
+_pod_ret_helpers['gulong'] = ('gulong', 'int')
 _pod_ret_helpers['gboolean'] = ('gboolean', 'bool')
 _pod_ret_helpers['index'] = ('int', 'index')
 def find_pod_ret_helper(name):
@@ -149,6 +153,11 @@ class Writer(object):
                 func_body.start.append('GdkRectangle arg%(narg)d_rect;' % dic)
                 func_body.start.append('GdkRectangle *arg%(narg)d = &arg%(narg)d_rect;' % dic)
                 func_body.start.append('%(get_arg)s (L, %(arg_idx)s, "%(param_name)s", &arg%(narg)d_rect);' % dic)
+        elif param.type.name == 'SignalClosure*':
+            assert param.default_value is None
+            func_body.start.append(('MooLuaSignalClosure *arg%(narg)d = moo_lua_get_arg_signal_closure ' + \
+                                    '(L, %(arg_idx)s, "%(param_name)s");') % dic)
+            func_body.end.append('g_closure_unref ((GClosure*) arg%(narg)d);' % dic)
         elif isinstance(param.type, Class) or isinstance(param.type, Boxed) or isinstance(param.type, Pointer):
             if param.default_value is not None:
                 func_body.start.append(('%(TypeName)s *arg%(narg)d = (%(TypeName)s*) ' + \
@@ -210,7 +219,8 @@ class Writer(object):
             p = meth.params[i]
 
             if not p.type.name in _arg_helpers and not isinstance(p.type, ArrayType) and \
-               not isinstance(p.type, GTypedType) and not isinstance(p.type, GErrorReturnType):
+               not isinstance(p.type, GTypedType) and not isinstance(p.type, GErrorReturnType) and\
+               p.type.name != 'SignalClosure*':
                 raise RuntimeError("cannot write function %s because of '%s' parameter" % (meth.c_name, p.type.name))
 
             if isinstance(p.type, GErrorReturnType):
@@ -426,12 +436,12 @@ static void *%(func)s (void)
     def write(self, module, include_headers):
         self.module = module
 
-        self.out.write(tmpl_file_start)
+        start_dic = dict(headers='')
 
         if include_headers:
-            for h in include_headers:
-                self.out.write('#include "%s"\n' % h)
-            self.out.write('\n')
+            start_dic['headers'] = '\n' + '\n'.join(['#include "%s"' % h for h in include_headers]) + '\n'
+
+        self.out.write(tmpl_file_start % start_dic)
 
         all_method_cfuncs = {}
         all_static_method_cfuncs = {}

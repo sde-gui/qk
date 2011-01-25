@@ -29,6 +29,7 @@ lua_types.update({
     'int': '<constant>integer</constant>',
     'gint': '<constant>integer</constant>',
     'guint': '<constant>integer</constant>',
+    'gulong': '<constant>integer</constant>',
     'const-utf8': '<constant>string</constant>',
     'utf8': '<constant>string</constant>',
     'const-filename': '<constant>string</constant>',
@@ -45,6 +46,7 @@ python_types.update({
     'int': '<constant>int</constant>',
     'gint': '<constant>int</constant>',
     'guint': '<constant>int</constant>',
+    'gulong': '<constant>int</constant>',
     'const-utf8': '<constant>str</constant>',
     'utf8': '<constant>str</constant>',
     'const-filename': '<constant>str</constant>',
@@ -163,6 +165,8 @@ class Writer(object):
         text = re.sub(r'%NULL\b', '<constant>%s</constant>' % self.constants['NULL'], text)
         text = re.sub(r'%TRUE\b', '<constant>%s</constant>' % self.constants['TRUE'], text)
         text = re.sub(r'%FALSE\b', '<constant>%s</constant>' % self.constants['FALSE'], text)
+        text = text.replace(r'<n/>', '')
+        text = text.replace(r'<nl/>', '\n')
 
         def repl_func(m):
             func_id = m.group(1)

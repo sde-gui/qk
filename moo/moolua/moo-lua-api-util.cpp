@@ -625,7 +625,7 @@ moo_lua_push_pointer (lua_State *L,
 
 struct CallbacksData
 {
-    GSList *closures; // SignalClosure*
+    GSList *closures; // MooLuaSignalClosure*
 };
 
 static CallbacksData *get_callbacks_data (lua_State *L)
@@ -641,20 +641,21 @@ static CallbacksData *get_callbacks_data (lua_State *L)
     return data;
 }
 
-struct SignalClosure
+extern "C" {
+struct MooLuaSignalClosure
 {
     GClosure base;
     lua_State *L;
-    GObject *instance;
     int cb_ref;
 #ifdef MOO_ENABLE_COVERAGE
     char *signal_full_name;
 #endif
 };
+} // extern "C"
 
 static void signal_closure_finalize (G_GNUC_UNUSED gpointer dummy, GClosure *gclosure)
 {
-    SignalClosure *closure = (SignalClosure*) gclosure;
+    MooLuaSignalClosure *closure = (MooLuaSignalClosure*) gclosure;
 
     if (closure->L)
     {
@@ -820,10 +821,10 @@ get_ret_gvalue (lua_State *L, GValue *value)
 }
 
 static void
-signal_closure_marshal (SignalClosure *closure,
-                        GValue        *return_value,
-                        guint          n_param_values,
-                        const GValue  *param_values)
+signal_closure_marshal (MooLuaSignalClosure *closure,
+                        GValue              *return_value,
+                        guint                n_param_values,
+                        const GValue        *param_values)
 {
     lua_State *L = closure->L;
 
@@ -872,13 +873,12 @@ out:
     lua_settop (L, old_top);
 }
 
-static GClosure *signal_closure_new (lua_State *L, GObject *instance, int cb_ref)
+static GClosure *signal_closure_new (lua_State *L, int cb_ref)
 {
-    GClosure *gclosure = g_closure_new_simple (sizeof (SignalClosure), NULL);
-    SignalClosure *closure = (SignalClosure*) gclosure;
+    GClosure *gclosure = g_closure_new_simple (sizeof (MooLuaSignalClosure), NULL);
+    MooLuaSignalClosure *closure = (MooLuaSignalClosure*) gclosure;
 
     closure->L = L;
-    closure->instance = instance;
     closure->cb_ref = cb_ref;
 
     CallbacksData *data = get_callbacks_data (L);
@@ -891,18 +891,14 @@ static GClosure *signal_closure_new (lua_State *L, GObject *instance, int cb_ref
     return gclosure;
 }
 
-static int
-cfunc_GObject_connect_impl (gpointer pself, lua_State *L, int first_arg, gboolean after)
+MooLuaSignalClosure *
+moo_lua_get_arg_signal_closure (lua_State  *L,
+                                int         narg,
+                                const char *param_name)
 {
-    GObject *self = G_OBJECT (pself);
-
-    const char *signal = moo_lua_get_arg_utf8 (L, first_arg, "signal");
-
     // first check it's something we can call
 
-    int cb_arg = first_arg + 1;
-
-    switch (lua_type (L, cb_arg))
+    switch (lua_type (L, narg))
     {
         case LUA_TLIGHTUSERDATA:
         case LUA_TTABLE:
@@ -910,106 +906,44 @@ cfunc_GObject_connect_impl (gpointer pself, lua_State *L, int first_arg, gboolea
         case LUA_TUSERDATA:
             break;
         default:
-            moo_lua_arg_error (L, cb_arg, "callback",
+            moo_lua_arg_error (L, narg, param_name,
                                "expected a callable object, got %s",
-                               lua_typename (L, cb_arg));
+                               lua_typename (L, narg));
     }
 
     // ref the callback
-    lua_pushvalue (L, cb_arg);
+    lua_pushvalue (L, narg);
     int cb_ref = luaL_ref (L, LUA_REGISTRYINDEX);
 
-    GClosure *closure = signal_closure_new (L, self, cb_ref);
+    GClosure *closure = signal_closure_new (L, cb_ref);
     g_closure_ref (closure);
     g_closure_sink (closure);
-    gulong cb_id = g_signal_connect_closure (self, signal, closure, after);
-    g_closure_unref (closure);
 
-    if (!cb_id)
-        luaL_error (L, "signal %s is invalid for object of type %s",
-                    signal, g_type_name (G_OBJECT_TYPE (self)));
+    return (MooLuaSignalClosure*) closure;
+}
+
+gulong
+moo_signal_connect_closure (gpointer             instance,
+                            const char          *signal,
+                            MooLuaSignalClosure *closure,
+                            gboolean             after)
+{
+    gulong handler_id = g_signal_connect_closure (instance, signal, (GClosure*) closure, after);
+
+    if (handler_id == 0)
+        return 0;
 
 #ifdef MOO_ENABLE_COVERAGE
     GSignalQuery query;
-    g_signal_query (g_signal_lookup (signal, G_OBJECT_TYPE (self)), &query);
+    g_signal_query (g_signal_lookup (signal, G_OBJECT_TYPE (instance)), &query);
     g_assert (query.signal_id != 0);
-    ((SignalClosure*) closure)->signal_full_name =
+    ((MooLuaSignalClosure*) closure)->signal_full_name =
         g_strdup_printf ("%s::%s",
                          g_type_name (query.itype),
                          query.signal_name);
 #endif
 
-    moo_lua_push_int (L, cb_id);
-    return 1;
-}
-
-static int
-cfunc_GObject_connect (gpointer pself, lua_State *L, int first_arg)
-{
-    MooLuaCurrentFunc cur_func ("GObject.connect");
-    return cfunc_GObject_connect_impl (pself, L, first_arg, FALSE);
-}
-
-static int
-cfunc_GObject_connect_after (gpointer pself, lua_State *L, int first_arg)
-{
-    MooLuaCurrentFunc cur_func ("GObject.connect_after");
-    return cfunc_GObject_connect_impl (pself, L, first_arg, TRUE);
-}
-
-static int cfunc_GObject_disconnect (gpointer pself, lua_State *L, int first_arg)
-{
-    MooLuaCurrentFunc cur_func ("GObject.disconnect");
-
-    GObject *self = G_OBJECT (pself);
-    gulong cb_id = lua_tointeger (L, first_arg);
-
-    g_signal_handler_disconnect (self, cb_id);
-
-    return 0;
-}
-
-static int cfunc_GObject_signal_handler_block (gpointer pself, lua_State *L, int first_arg)
-{
-    MooLuaCurrentFunc cur_func ("GObject.signal_handler_block");
-
-    GObject *self = G_OBJECT (pself);
-    gulong cb_id = lua_tointeger (L, first_arg);
-
-    g_signal_handler_block (self, cb_id);
-
-    return 0;
-}
-
-static int cfunc_GObject_signal_handler_unblock (gpointer pself, lua_State *L, int first_arg)
-{
-    MooLuaCurrentFunc cur_func ("GObject.signal_handler_unblock");
-
-    GObject *self = G_OBJECT (pself);
-    gulong cb_id = lua_tointeger (L, first_arg);
-
-    g_signal_handler_unblock (self, cb_id);
-
-    return 0;
-}
-
-void
-moo_lua_register_gobject (void)
-{
-    MOO_DO_ONCE_BEGIN
-    {
-        MooLuaMethodEntry methods[] = {
-            { "connect", cfunc_GObject_connect },
-            { "connect_after", cfunc_GObject_connect_after },
-            { "disconnect", cfunc_GObject_disconnect },
-            { "signal_handler_block", cfunc_GObject_signal_handler_block },
-            { "signal_handler_unblock", cfunc_GObject_signal_handler_unblock },
-            { NULL, NULL }
-        };
-
-        moo_lua_register_methods (G_TYPE_OBJECT, methods);
-    }
-    MOO_DO_ONCE_END
+    return handler_id;
 }
 
 

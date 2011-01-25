@@ -8,7 +8,8 @@ moo_sources +=				\
 	moolua/moo-lua-api-util.cpp	\
 	moolua/moo-lua-api.cpp		\
 	moolua/moo-lua-api.h		\
-	moolua/gtk-lua-api.cpp
+	moolua/gtk-lua-api.cpp		\
+	moolua/gtk-lua-api.h
 
 genlua_files =					\
 	$(top_srcdir)/api/genlua.py		\
@@ -58,7 +59,9 @@ moolua/moo-lua-api.cpp: $(genlua_files) $(top_srcdir)/api/moo.xml $(top_srcdir)/
 BUILT_SOURCES += moolua/gtk-lua-api.cpp
 moolua/gtk-lua-api.cpp: $(genlua_files) $(top_srcdir)/api/gtk.xml
 	$(AM_V_at)$(MKDIR_P) moolua
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/genlua.py $(top_srcdir)/api/gtk.xml > moolua/gtk-lua-api.cpp.tmp && \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/genlua.py \
+                --include-header gtk-lua-api.h \
+		$(top_srcdir)/api/gtk.xml > moolua/gtk-lua-api.cpp.tmp && \
 	mv moolua/gtk-lua-api.cpp.tmp $(srcdir)/moolua/gtk-lua-api.cpp
 	$(AM_V_at)rm -f moolua/gtk-lua-api.cpp.tmp
 
