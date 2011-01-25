@@ -1160,6 +1160,7 @@ moo_editor_load_file (MooEditor       *editor,
     if (new_object)
         g_object_unref (doc);
 
+    g_free (filename);
     g_free (uri);
     return success ? doc : NULL;
 }
@@ -2460,7 +2461,8 @@ moo_editor_reload (MooEditor     *editor,
     guint i;
     GError *error_here = NULL;
     MooEditView *active_view;
-    MooEditViewArray *views;
+    MooEditViewArray *views = NULL;
+    gboolean ret = FALSE;
 
     moo_return_error_if_fail (MOO_IS_EDITOR (editor));
 
@@ -2470,7 +2472,7 @@ moo_editor_reload (MooEditor     *editor,
                      MOO_EDIT_RELOAD_ERROR,
                      MOO_EDIT_RELOAD_ERROR_BUSY,
                      "document is busy");
-        return FALSE;
+        goto out;
     }
 
     if (moo_edit_is_untitled (doc))
@@ -2479,7 +2481,7 @@ moo_editor_reload (MooEditor     *editor,
                      MOO_EDIT_RELOAD_ERROR,
                      MOO_EDIT_RELOAD_ERROR_UNTITLED,
                      "document is untitled");
-        return FALSE;
+        goto out;
     }
 
     if (!is_embedded (editor) &&
@@ -2491,7 +2493,7 @@ moo_editor_reload (MooEditor     *editor,
                      MOO_EDIT_RELOAD_ERROR,
                      MOO_EDIT_RELOAD_ERROR_CANCELLED,
                      "cancelled by user");
-        return FALSE;
+        goto out;
     }
 
     views = moo_edit_get_views (doc);
@@ -2531,7 +2533,7 @@ moo_editor_reload (MooEditor     *editor,
 
         moo_text_view_undo (MOO_TEXT_VIEW (active_view));
         g_object_set_data (G_OBJECT (doc), "moo-scroll-to", NULL);
-        return FALSE;
+        goto out;
     }
 
     for (i = 0; i < moo_edit_view_array_get_size (views); ++i)
@@ -2546,7 +2548,11 @@ moo_editor_reload (MooEditor     *editor,
                                    cursor_offset, TRUE, TRUE);
     }
 
-    return TRUE;
+    ret = TRUE;
+
+out:
+    moo_edit_view_array_free (views);
+    return ret;
 }
 
 

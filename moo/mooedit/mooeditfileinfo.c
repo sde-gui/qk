@@ -39,6 +39,8 @@ G_DEFINE_TYPE (MooReloadInfo, moo_reload_info, G_TYPE_OBJECT)
  * @encoding: (type const-utf8) (allow-none) (default NULL)
  * @line: (type index) (default -1)
  * @flags: (default 0)
+ *
+ * Returns: (transfer full)
  **/
 MooOpenInfo *
 moo_open_info_new_file (GFile       *file,

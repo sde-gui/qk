@@ -137,5 +137,6 @@ moo_test_lua (MooTestOptions opts)
             continue;
         test_name = g_strndup (basename + strlen ("test"), strlen (basename) - strlen ("test") - strlen (".lua"));
         moo_test_suite_add_test (suite, test_name, basename, test_func, (char*) basename);
+        g_free (test_name);
     }
 }
