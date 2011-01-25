@@ -18,6 +18,13 @@ function tassert(cond, msg, ...)
   _tassert(cond, msg, ...)
 end
 
+function trunchecked(func, ...)
+  result, errmsg = pcall(func, ...)
+  if not result then
+    _tassert(false, errmsg)
+  end
+end
+
 local function cmp(a,b)
   if type(a) == 'table' and type(b) == 'table' then
     local function contains(a, b)
