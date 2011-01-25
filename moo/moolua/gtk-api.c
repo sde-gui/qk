@@ -91,6 +91,7 @@
  * Connect a signal handler.
  *
  * <example>
+ * <title>GObject.connect<!-- -->()</title>
  * <programlisting>
  * <n/>editor.connect("before-save", function(editor, doc, file)<nl/>
  * <n/>  if #<!-- -->doc.get_text<!-- -->() % 2 ~= 0 then<nl/>
