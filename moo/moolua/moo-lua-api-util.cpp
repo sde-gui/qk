@@ -373,23 +373,25 @@ moo_lua_register_enum (lua_State  *L,
 
     if (g_type_is_a (type, G_TYPE_ENUM))
     {
-        GEnumClass *klass = (GEnumClass*) g_type_class_peek_static (type);
+        GEnumClass *klass = (GEnumClass*) g_type_class_ref (type);
         g_return_if_fail (klass != NULL);
         for (guint i = 0; i < klass->n_values; ++i)
             moo_lua_add_enum_value (L,
                                     klass->values[i].value_name,
                                     klass->values[i].value,
                                     prefix);
+        g_type_class_unref (klass);
     }
     else if (g_type_is_a (type, G_TYPE_FLAGS))
     {
-        GFlagsClass *klass = (GFlagsClass*) g_type_class_peek_static (type);
+        GFlagsClass *klass = (GFlagsClass*) g_type_class_ref (type);
         g_return_if_fail (klass != NULL);
         for (guint i = 0; i < klass->n_values; ++i)
             moo_lua_add_enum_value (L,
                                     klass->values[i].value_name,
                                     klass->values[i].value,
                                     prefix);
+        g_type_class_unref (klass);
     }
     else
     {
@@ -708,6 +710,10 @@ static void signal_closure_finalize (G_GNUC_UNUSED gpointer dummy, GClosure *gcl
         luaL_unref (closure->L, LUA_REGISTRYINDEX, closure->cb_ref);
         medit_lua_unref (closure->L);
     }
+
+#ifdef MOO_ENABLE_COVERAGE
+    g_free (closure->signal_full_name);
+#endif
 }
 
 static int
