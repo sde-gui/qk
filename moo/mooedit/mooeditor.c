@@ -2175,7 +2175,7 @@ moo_editor_open_file (MooEditor   *editor,
 }
 
 /**
- * moo_editor_open_uri:
+ * moo_editor_open_uri: (moo-kwargs)
  *
  * @editor:
  * @uri: (type const-utf8)
@@ -2204,7 +2204,7 @@ moo_editor_open_uri (MooEditor     *editor,
 }
 
 /**
- * moo_editor_open_path:
+ * moo_editor_open_path: (moo-kwargs)
  *
  * @editor:
  * @path: (type const-filename)

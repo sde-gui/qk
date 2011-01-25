@@ -466,6 +466,7 @@ class Module(object):
         cls = None
         constructor_of = None
         static_method_of = None
+        kwargs = False
         annotations = {}
 
         if pfunc.annotations:
@@ -478,6 +479,9 @@ class Module(object):
                 elif prefix == 'static-method-of':
                     assert len(pieces) == 2
                     static_method_of = pieces[1]
+                elif prefix == 'moo-kwargs':
+                    assert len(pieces) == 1
+                    kwargs = True
                 elif prefix.find('.') >= 0:
                     annotations[prefix] = ' '.join(pieces[1:])
                 else:
@@ -510,28 +514,26 @@ class Module(object):
 
         if constructor_of:
             func = Constructor(name, c_name, cls, params, retval, docs)
-            func.summary = pfunc.summary
-            func.annotations = annotations
             if constructor_of in self.__constructors:
                 raise RuntimeError('duplicated constructor of class %s' % constructor_of)
             self.__constructors[constructor_of] = func
         elif cls:
             if static_method_of:
-                meth = StaticMethod(name, c_name, cls, params, retval, docs)
+                func = StaticMethod(name, c_name, cls, params, retval, docs)
             else:
-                meth = Method(name, c_name, cls, params[1:], retval, docs)
-            meth.summary = pfunc.summary
-            meth.annotations = annotations
+                func = Method(name, c_name, cls, params[1:], retval, docs)
             this_class_methods = self.__methods.get(cls)
             if not this_class_methods:
                 this_class_methods = []
                 self.__methods[cls] = this_class_methods
-            this_class_methods.append(meth)
+            this_class_methods.append(func)
         else:
             func = Function(name, c_name, params, retval, docs)
-            func.summary = pfunc.summary
-            func.annotations = annotations
             self.functions.append(func)
+
+        func.summary = pfunc.summary
+        func.annotations = annotations
+        func.kwargs = kwargs
 
     def init_from_dox(self, blocks):
         for b in blocks:

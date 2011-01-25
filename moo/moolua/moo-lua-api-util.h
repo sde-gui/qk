@@ -56,6 +56,14 @@ int             moo_lua_arg_errorv              (lua_State          *L,
                                                  const char         *fmt,
                                                  va_list             args);
 
+const int MOO_NONEXISTING_INDEX = G_MININT;
+bool            moo_lua_check_kwargs            (lua_State          *L,
+                                                 int                 narg);
+int             moo_lua_get_kwarg               (lua_State          *L,
+                                                 int                 narg_dict,
+                                                 int                 pos,
+                                                 const char         *kw);
+
 gpointer        moo_lua_get_arg_instance_opt    (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,

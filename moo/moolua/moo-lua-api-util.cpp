@@ -171,6 +171,50 @@ moo_lua_arg_errorv (lua_State  *L,
     return moo_lua_arg_error_impl (L, narg, param_name, message);
 }
 
+
+bool
+moo_lua_check_kwargs (lua_State *L,
+                      int        narg)
+{
+    return lua_istable (L, narg);
+}
+
+int
+moo_lua_get_kwarg (lua_State  *L,
+                   int         narg_dict,
+                   int         pos,
+                   const char *kw)
+{
+    if (!lua_istable (L, narg_dict))
+    {
+        g_critical ("oops");
+        luaL_error (L, "oops");
+    }
+
+    int narg_pos = MOO_NONEXISTING_INDEX;
+    int narg_kw = MOO_NONEXISTING_INDEX;
+
+    lua_pushinteger (L, pos);
+    lua_gettable (L, narg_dict);
+    if (!lua_isnil (L, -1))
+        narg_pos = lua_gettop (L);
+    else
+        lua_pop (L, 1);
+
+    lua_pushstring (L, kw);
+    lua_gettable (L, narg_dict);
+    if (!lua_isnil (L, -1))
+        narg_kw = lua_gettop (L);
+    else
+        lua_pop (L, 1);
+
+    if (narg_pos != MOO_NONEXISTING_INDEX && narg_kw != MOO_NONEXISTING_INDEX)
+        luaL_error (L, "parameter %s is given twice, as positional and as keyword argument", kw);
+
+    return narg_pos != MOO_NONEXISTING_INDEX ? narg_pos : narg_kw;
+}
+
+
 void
 moo_lua_register_methods (GType              type,
                           MooLuaMethodEntry *entries)

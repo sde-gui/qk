@@ -3,7 +3,7 @@ require("_moo.path")
 
 window = nil
 
-function prepare()
+do
   while #editor.get_windows() > 1 do
     tassert(editor.close_window(editor.get_active_window()))
   end
@@ -20,7 +20,7 @@ function prepare()
   end
 end
 
-function test1()
+trunchecked(function()
   doc = window.get_active_doc()
 
   tassert_eq(editor.get_windows(), {window})
@@ -33,7 +33,7 @@ function test1()
   tassert_eq(editor.get_docs(), {doc, doc2})
   tassert_eq(window.get_docs(), {doc})
   tassert_eq(window2.get_docs(), {doc2})
-end
+end)
 
 function save_file(filename, content)
   local f = assert(io.open(filename, 'wb'))
@@ -59,7 +59,7 @@ local function pr(obj)
   end
 end
 
-function test2()
+trunchecked(function()
   window = editor.new_window()
   filename1 = moo.tempnam()
   filename2 = moo.tempnam()
@@ -78,9 +78,9 @@ function test2()
   tassert(docs[2].get_filename() == filename2)
   tassert(docs[3].get_filename() == filename3)
   tassert(window.close())
-end
+end)
 
-function test3()
+trunchecked(function()
   window = editor.new_window()
   filename1 = moo.tempnam()
   filename2 = moo.tempnam()
@@ -88,9 +88,9 @@ function test3()
   save_file(filename1, "file1")
   save_file(filename2, "file2")
 
-  editor.open_path(filename1, nil, 0, window)
-  editor.open_uri(gtk.GFile.new_for_path(filename2).get_uri(), nil, 0, window)
-  editor.new_file(moo.OpenInfo.new(filename3), window)
+  tassert(editor.open_path{filename1, window=window} ~= nil)
+  tassert(editor.open_uri{gtk.GFile.new_for_path(filename2).get_uri(), window=window} ~= nil)
+  tassert(editor.new_file(moo.OpenInfo.new(filename3), window) ~= nil)
 
   tassert(window.get_n_tabs() == 3)
   tassert(#window.get_docs() == 3)
@@ -116,9 +116,4 @@ function test3()
   tassert(editor.get_doc_for_uri(gtk.GFile.new_for_path(filename3).get_uri()) == doc3)
 
   tassert(window.close())
-end
-
-prepare()
-test1()
-test2()
-test3()
+end)

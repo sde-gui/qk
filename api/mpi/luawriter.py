@@ -21,7 +21,7 @@ static int
     moo_test_coverage_record ("lua", "%(c_name)s");
 #endif
     MooLuaCurrentFunc cur_func ("%(current_function)s");
-    %(Class)s *self = (%(Class)s*) pself;
+%(check_kwargs)s    %(Class)s *self = (%(Class)s*) pself;
 """
 
 tmpl_cfunc_func_start = """\
@@ -32,7 +32,7 @@ static int
     moo_test_coverage_record ("lua", "%(c_name)s");
 #endif
     MooLuaCurrentFunc cur_func ("%(current_function)s");
-"""
+%(check_kwargs)s"""
 
 tmpl_register_module_start = """\
 static void
@@ -132,9 +132,22 @@ class Writer(object):
         dic = dict(narg=i, gtype_id=param.type.gtype_id, param_name=param.name,
                    allow_none=c_allow_none(param.allow_none),
                    default_value=param.default_value,
+                   first_arg='first_arg' if cls else '1',
                    arg_idx=('first_arg + %d' % (i,)) if cls else ('1 + %d' % (i,)),
                    TypeName=param.type.name,
                    )
+
+        if meth.kwargs:
+            func_body.start.append('int arg_idx%(narg)d = %(arg_idx)s;' % dic)
+            func_body.start.append('if (kwargs)')
+            func_body.start.append('    arg_idx%(narg)d = moo_lua_get_kwarg (L, %(first_arg)s, %(narg)d + 1, "%(param_name)s");' % dic)
+
+            if param.default_value is None:
+                func_body.start.append('if (arg_idx%(narg)d == MOO_NONEXISTING_INDEX)' % dic)
+                func_body.start.append('    moo_lua_arg_error (L, 0, "%(param_name)s", "parameter \'%(param_name)s\' missing");' % dic)
+
+            dic['arg_idx'] = 'arg_idx%(narg)d' % dic
+
         if param.type.name == 'GtkTextIter':
             assert param.default_value is None or param.default_value == 'NULL'
             if param.default_value is not None:
@@ -243,8 +256,18 @@ class Writer(object):
             else:
                 params.append(p)
 
-        dic = dict(name=meth.name, c_name=meth.c_name)
-        if cls and not is_constructor and not static_method:
+        check_kwargs = ''
+        has_self = cls and not is_constructor and not static_method
+        if has_self:
+            first_arg = 'first_arg'
+        else:
+            first_arg = '1'
+
+        if meth.kwargs:
+            check_kwargs = '    bool kwargs = moo_lua_check_kwargs (L, %s);\n' % first_arg
+
+        dic = dict(name=meth.name, c_name=meth.c_name, check_kwargs=check_kwargs, first_arg=first_arg)
+        if has_self:
             dic['cfunc'] = 'cfunc_%s_%s' % (cls.name, meth.name)
             dic['Class'] = cls.name
             dic['current_function'] = '%s.%s' % (cls.name, meth.name)

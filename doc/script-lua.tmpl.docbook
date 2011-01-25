@@ -44,7 +44,7 @@ and <code>obj.method(args)</code>.
   <varlistentry>
     <term>Optional parameters</term>
     <listitem>
-    <programlisting>func(arg1=val1, arg2=val, arg3=val3, ...)</programlisting>
+    <programlisting>func(arg1=val1, arg2=val, arg3=val3)</programlisting>
     <code><parameter>arg</parameter>=val</code> means that
     parameter <parameter>arg</parameter> is optional, and function receives
     value <code>val</code> if it's missing. Not all parameters are necessarily
@@ -56,21 +56,20 @@ and <code>obj.method(args)</code>.
   <varlistentry>
     <term>Keyword parameters</term>
     <listitem>
-    <programlisting>func{arg1, arg2=val2}</programlisting>
-    This means that function takes a single table parameter, and
-    table must be a dictionary with keys <parameter>arg1</parameter>,
-    <parameter>arg2</parameter>, etc. Similarly to regular parameters,
-    <code><parameter>arg</parameter>=val</code> means that
-    <parameter>arg</parameter> is optional.
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term>Dictionary parameters</term>
-    <listitem>
-      <programlisting>func(arg1, arg2, {arg3, arg4=val})</programlisting>
-      <code>{}</code> denote a parameter which must be a table with given keys,
-      similar to keyword parameters (the difference is that with keyword parameters
-      function takes a single table argument).
+    <programlisting>func{arg1, arg2, kwarg1=kwval1, kwarg2=kwval2}</programlisting>
+    This means that function can be called in an alternative way: actual parameters are
+    taken from the single table parameter, which must be a dictionary with keys
+    <parameter>kwarg1</parameter>, <parameter>kwarg2</parameter>, etc., and whose array part
+    must contain exactly as many values as there are non-optional arguments. Similarly
+    to regular parameters, <code><parameter>kwarg</parameter>=kwval</code> means that
+    <parameter>kwarg</parameter> is optional. For example, above function can be called
+    as follows.
+    <programlisting>
+<!-- -->func{1, 2, kwarg1='foo'} -- equivalent to func(1, 2, 'foo')
+<!-- -->func{3, 4, kwarg2='bar'} -- equivalent to func(3, 4, kwval1, 'bar')
+<!-- -->func{5, 6, kwarg2='baz', kwarg1='bud', } -- equivalent to func(5, 6, 'bud', 'baz')</programlisting>
+    This is similar to Python keyword arguments (with the difference that keyword arguments
+    may be used only if function is documented to support them).
     </listitem>
   </varlistentry>
 </variablelist>

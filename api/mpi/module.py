@@ -83,7 +83,7 @@ class Param(_ParamBase):
     def _parse_attribute(self, attr, value):
         if attr in ('default_value', 'name'):
             _set_unique_attribute(self, attr, value)
-        elif attr == 'allow_none':
+        elif attr in ('allow_none',):
             _set_unique_attribute_bool(self, attr, value)
         else:
             return _ParamBase._parse_attribute(self, attr, value)
@@ -101,10 +101,13 @@ class FunctionBase(_XmlObject):
         self.retval = None
         self.params = []
         self.has_gerror_return = False
+        self.kwargs = None
 
     def _parse_attribute(self, attr, value):
         if attr in ('c_name', 'name'):
             _set_unique_attribute(self, attr, value)
+        elif attr in ('kwargs',):
+            _set_unique_attribute_bool(self, attr, value)
         else:
             return _XmlObject._parse_attribute(self, attr, value)
         return True
@@ -407,6 +410,23 @@ class Module(object):
         meth.has_gerror_return = False
         if meth.params and isinstance(meth.params[-1].type, GErrorReturnType):
             meth.has_gerror_return = True
+
+        if meth.kwargs:
+            params = list(meth.params)
+            pos_args = []
+            kw_args = []
+            if meth.has_gerror_return:
+                params = params[:-1]
+            seen_kwarg = False
+            for p in params:
+                if p.default_value is not None:
+                    seen_kwarg = True
+                elif seen_kwarg:
+                    raise RuntimeError('in %s: parameter without a default value follows a kwarg one' % sym_id)
+                if p.default_value is not None:
+                    kw_args.append(p)
+                else:
+                    pos_args.append(p)
 
     def __finish_parsing_type(self, typ):
         if hasattr(typ, 'constructor') and typ.constructor is not None:

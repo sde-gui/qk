@@ -265,12 +265,14 @@ class Writer(object):
 
         func_id = func.symbol_id()
         mode = self.mode
+        left_paren = '{' if func.kwargs else '('
+        right_paren = '}' if func.kwargs else ')'
 
         self.out.write("""\
 <!-- %(func_id)s -->
 <sect2 id="%(mode)s.%(func_id)s">
 <title id="%(mode)s.%(func_id)s.title">%(func_title)s</title>
-<programlisting>%(func_name)s(%(params_string)s)</programlisting>
+<programlisting>%(func_name)s%(left_paren)s%(params_string)s%(right_paren)s</programlisting>
 """ % locals())
 
         if func.doc:

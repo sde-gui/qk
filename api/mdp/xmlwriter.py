@@ -170,6 +170,8 @@ class Writer(object):
         dic = dict(name=name)
         if tag != 'virtual' and tag != 'signal':
             dic['c_name'] = func.c_name
+        if getattr(func, 'kwargs', False):
+            dic['kwargs'] = '1'
         for k in func.annotations:
             dic[k] = func.annotations[k]
         self.__start_tag(tag, dic)
