@@ -41,9 +41,12 @@ add_test (MooTestSuite *suite, const char *name, const char *description, const 
 void
 moo_test_python (void)
 {
-    MooTestSuite *suite;
+    if (moo_python_enabled ())
+    {
+        MooTestSuite *suite;
 
-    suite = moo_test_suite_new ("MooPython", "Python scripting tests", NULL, NULL, NULL);
+        suite = moo_test_suite_new ("MooPython", "Python scripting tests", NULL, NULL, NULL);
 
-    add_test (suite, "moo", "test of moo module", "test-python/testmoo.py");
+        add_test (suite, "moo", "test of moo module", "test-python/testmoo.py");
+    }
 }

@@ -8,6 +8,12 @@
 
 #ifdef MOO_ENABLE_PYTHON
 
+gboolean
+moo_python_enabled (void)
+{
+    return Py_IsInitialized ();
+}
+
 struct MooPythonState
 {
     PyObject *locals;
@@ -106,6 +112,8 @@ MooPythonState *
 moo_python_state_new (gboolean default_init)
 {
     MooPythonState *state;
+
+    g_return_val_if_fail (moo_python_enabled (), NULL);
 
     state = g_slice_new0 (MooPythonState);
     state->locals = create_script_dict ("__script__");
@@ -248,4 +256,11 @@ medit_python_run_file (const char *filename,
 }
 
 #else /* !MOO_ENABLE_PYTHON */
+
+gboolean
+moo_python_enabled (void)
+{
+    return FALSE;
+}
+
 #endif /* !MOO_ENABLE_PYTHON */
