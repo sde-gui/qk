@@ -711,7 +711,7 @@ static void signal_closure_finalize (G_GNUC_UNUSED gpointer dummy, GClosure *gcl
 }
 
 static int
-push_param_gvalue (lua_State *L, const GValue *value)
+push_gvalue (lua_State *L, const GValue *value)
 {
     GType type = G_VALUE_TYPE (value);
     GType type_fundamental = G_TYPE_FUNDAMENTAL (type);
@@ -780,71 +780,78 @@ push_param_gvalue (lua_State *L, const GValue *value)
     }
 }
 
-static int
-cfunc_get_ret_gvalue (lua_State *L)
+static void
+get_arg_gvalue (lua_State  *L,
+                int         narg,
+                const char *argname,
+                GValue     *value)
 {
-    GValue *value = (GValue *) lua_touserdata (L, 1);
-    lua_getfield(L, LUA_REGISTRYINDEX, "moo-signal-ret-value");
-
     GType type = G_VALUE_TYPE (value);
     GType type_fundamental = G_TYPE_FUNDAMENTAL (type);
 
     switch (type_fundamental)
     {
         case G_TYPE_BOOLEAN:
-            g_value_set_boolean (value, moo_lua_get_arg_bool (L, -1, "<retval>"));
+            g_value_set_boolean (value, moo_lua_get_arg_bool (L, narg, argname));
             break;
         case G_TYPE_INT:
-            g_value_set_int (value, moo_lua_get_arg_int (L, -1, "<retval>"));
+            g_value_set_int (value, moo_lua_get_arg_int (L, narg, argname));
             break;
         case G_TYPE_UINT:
-            g_value_set_uint (value, moo_lua_get_arg_uint (L, -1, "<retval>"));
+            g_value_set_uint (value, moo_lua_get_arg_uint (L, narg, argname));
             break;
         case G_TYPE_LONG:
-            g_value_set_long (value, moo_lua_get_arg_long (L, -1, "<retval>"));
+            g_value_set_long (value, moo_lua_get_arg_long (L, narg, argname));
             break;
         case G_TYPE_ULONG:
-            g_value_set_ulong (value, moo_lua_get_arg_ulong (L, -1, "<retval>"));
+            g_value_set_ulong (value, moo_lua_get_arg_ulong (L, narg, argname));
             break;
         case G_TYPE_INT64:
-            g_value_set_int64 (value, moo_lua_get_arg_int64 (L, -1, "<retval>"));
+            g_value_set_int64 (value, moo_lua_get_arg_int64 (L, narg, argname));
             break;
         case G_TYPE_UINT64:
-            g_value_set_uint64 (value, moo_lua_get_arg_uint64 (L, -1, "<retval>"));
+            g_value_set_uint64 (value, moo_lua_get_arg_uint64 (L, narg, argname));
             break;
         case G_TYPE_FLOAT:
-            g_value_set_float (value, moo_lua_get_arg_float (L, -1, "<retval>"));
+            g_value_set_float (value, moo_lua_get_arg_float (L, narg, argname));
             break;
         case G_TYPE_DOUBLE:
-            g_value_set_double (value, moo_lua_get_arg_double (L, -1, "<retval>"));
+            g_value_set_double (value, moo_lua_get_arg_double (L, narg, argname));
             break;
 
         case G_TYPE_ENUM:
-            g_value_set_enum (value, moo_lua_get_arg_enum (L, -1, "<retval>", type));
+            g_value_set_enum (value, moo_lua_get_arg_enum (L, narg, argname, type));
             break;
         case G_TYPE_FLAGS:
-            g_value_set_flags (value, moo_lua_get_arg_enum (L, -1, "<retval>", type));
+            g_value_set_flags (value, moo_lua_get_arg_enum (L, narg, argname, type));
             break;
 
         case G_TYPE_STRING:
-            g_value_set_string (value, moo_lua_get_arg_string (L, -1, "<retval>", TRUE));
+            g_value_set_string (value, moo_lua_get_arg_string (L, narg, argname, TRUE));
             break;
 
         case G_TYPE_POINTER:
-            g_value_set_pointer (value, moo_lua_get_arg_instance (L, -1, "<retval>", type, TRUE));
+            g_value_set_pointer (value, moo_lua_get_arg_instance (L, narg, argname, type, TRUE));
             break;
         case G_TYPE_BOXED:
-            g_value_set_boxed (value, moo_lua_get_arg_instance (L, -1, "<retval>", type, TRUE));
+            g_value_set_boxed (value, moo_lua_get_arg_instance (L, narg, argname, type, TRUE));
             break;
         case G_TYPE_OBJECT:
-            g_value_set_object (value, moo_lua_get_arg_instance (L, -1, "<retval>", type, TRUE));
+            g_value_set_object (value, moo_lua_get_arg_instance (L, narg, argname, type, TRUE));
             break;
 
         default:
-            g_critical ("don't know how to handle return value of type %s", g_type_name (type));
+            luaL_error (L, "don't know how to handle value of type %s", g_type_name (type));
             break;
     }
+}
 
+static int
+cfunc_get_ret_gvalue (lua_State *L)
+{
+    GValue *value = (GValue *) lua_touserdata (L, 1);
+    lua_getfield(L, LUA_REGISTRYINDEX, "moo-signal-ret-value");
+    get_arg_gvalue (L, -1, "<retval>", value);
     return 0;
 }
 
@@ -884,7 +891,7 @@ signal_closure_marshal (MooLuaSignalClosure *closure,
 
         for (guint i = 0; i < n_param_values; ++i)
         {
-            int pushed_here = push_param_gvalue (L, &param_values[i]);
+            int pushed_here = push_gvalue (L, &param_values[i]);
             if (!pushed_here)
                 goto out;
             n_args += pushed_here;
@@ -988,6 +995,78 @@ moo_signal_connect_closure (gpointer             instance,
 #endif
 
     return handler_id;
+}
+
+
+int
+moo_lua_cfunc_set_property (gpointer   pself,
+                            lua_State *L,
+                            int        first_arg)
+{
+    g_return_val_if_fail (G_IS_OBJECT (pself), 0);
+
+    const char *property = moo_lua_get_arg_string (L, first_arg, "property_name", FALSE);
+    GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (pself), property);
+
+    if (!pspec)
+        luaL_error (L, "no property '%s' in object class %s",
+                    property, G_OBJECT_TYPE_NAME (pself));
+
+    if (!(pspec->flags & G_PARAM_WRITABLE))
+        luaL_error (L, "property '%s' of object class '%s' is not writable",
+                    property, G_OBJECT_TYPE_NAME (pself));
+
+    GValue value = { 0 };
+    g_value_init (&value, pspec->value_type);
+    get_arg_gvalue (L, first_arg + 1, "value", &value);
+    g_object_set_property (G_OBJECT (pself), property, &value);
+    g_value_unset (&value);
+
+    return 0;
+}
+
+namespace {
+class ValueHolder
+{
+public:
+    ValueHolder(GValue &gval)
+        : m_gval(gval)
+    {
+    }
+
+    ~ValueHolder()
+    {
+        g_value_unset (&m_gval);
+    }
+
+private:
+    GValue &m_gval;
+};
+}
+
+int
+moo_lua_cfunc_get_property (gpointer   pself,
+                            lua_State *L,
+                            int        first_arg)
+{
+    g_return_val_if_fail (G_IS_OBJECT (pself), 0);
+
+    const char *property = moo_lua_get_arg_string (L, first_arg, "property_name", FALSE);
+    GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (pself), property);
+
+    if (!pspec)
+        luaL_error (L, "no property '%s' in object class %s",
+                    property, G_OBJECT_TYPE_NAME (pself));
+
+    if (!(pspec->flags & G_PARAM_READABLE))
+        luaL_error (L, "property '%s' of object class '%s' is not readable",
+                    property, G_OBJECT_TYPE_NAME (pself));
+
+    GValue value = { 0 };
+    g_value_init (&value, pspec->value_type);
+    ValueHolder vh(value);
+    g_object_get_property (G_OBJECT (pself), property, &value);
+    return push_gvalue (L, &value);
 }
 
 

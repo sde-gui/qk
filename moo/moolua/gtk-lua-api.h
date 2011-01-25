@@ -1,4 +1,5 @@
 #include <glib-object.h>
+#include "moo-lua-api-util.h"
 
 #undef g_object_connect
 #undef g_object_connect_after

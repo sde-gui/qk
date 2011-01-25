@@ -147,6 +147,23 @@
  * Re-enables signal handler disabled by g_object_signal_handler_block().
  **/
 
+/**
+ * g_object_set_property: (moo.python 0) (moo.lua.cfunc moo_lua_cfunc_set_property)
+ *
+ * @gobj: (type GObject*)
+ * @property_name: (type const-utf8):
+ * @value: (type value)
+ **/
+
+/**
+ * g_object_get_property: (moo.python 0) (moo.lua.cfunc moo_lua_cfunc_get_property)
+ *
+ * @gobj: (type GObject*)
+ * @property_name: (type const-utf8):
+ *
+ * Returns: (type value)
+ **/
+
 /****************************************************************************
  *
  * GFile

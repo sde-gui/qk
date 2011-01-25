@@ -196,6 +196,12 @@ gulong          moo_signal_connect_closure      (gpointer            instance,
                                                  const char         *detailed_signal,
                                                  MooLuaSignalClosure *closure,
                                                  gboolean             after);
+int             moo_lua_cfunc_get_property      (gpointer             pself,
+                                                 lua_State           *L,
+                                                 int                  first_arg);
+int             moo_lua_cfunc_set_property      (gpointer             pself,
+                                                 lua_State           *L,
+                                                 int                  first_arg);
 
 int             moo_lua_push_object             (lua_State          *L,
                                                  GObject            *obj,

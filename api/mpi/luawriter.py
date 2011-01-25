@@ -237,6 +237,11 @@ class Writer(object):
         elif bind != '1':
             raise RuntimeError('invalid value %s for moo.lua annotation' % (bind,))
 
+        cfunc = meth.annotations.get('moo.lua.cfunc')
+        if cfunc:
+            method_cfuncs.append([meth.name, cfunc])
+            return
+
         is_constructor = isinstance(meth, Constructor)
         static_method = isinstance(meth, StaticMethod)
         own_return = is_constructor or (meth.retval and meth.retval.transfer_mode == 'full')
