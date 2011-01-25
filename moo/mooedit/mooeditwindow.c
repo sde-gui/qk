@@ -1314,7 +1314,7 @@ reopen_encoding_item_activated (const char *encoding,
     doc = ACTIVE_DOC (window);
     g_return_if_fail (doc != NULL);
 
-    info = moo_reload_info_new (encoding);
+    info = moo_reload_info_new (encoding, -1);
     moo_edit_reload (doc, info, NULL);
 }
 

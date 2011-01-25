@@ -51,11 +51,17 @@ GType                moo_reload_info_get_type   (void) G_GNUC_CONST;
 GType                moo_save_info_get_type     (void) G_GNUC_CONST;
 
 MooOpenInfo         *moo_open_info_new          (const char         *path,
-                                                 const char         *encoding);
+                                                 const char         *encoding,
+                                                 int                 line,
+                                                 MooOpenFlags        flags);
 MooOpenInfo         *moo_open_info_new_file     (GFile              *file,
-                                                 const char         *encoding);
+                                                 const char         *encoding,
+                                                 int                 line,
+                                                 MooOpenFlags        flags);
 MooOpenInfo         *moo_open_info_new_uri      (const char         *uri,
-                                                 const char         *encoding);
+                                                 const char         *encoding,
+                                                 int                 line,
+                                                 MooOpenFlags        flags);
 MooOpenInfo         *moo_open_info_dup          (MooOpenInfo        *info);
 void                 moo_open_info_free         (MooOpenInfo        *info);
 
@@ -75,7 +81,8 @@ void                 moo_open_info_set_flags    (MooOpenInfo        *info,
 void                 moo_open_info_add_flags    (MooOpenInfo        *info,
                                                  MooOpenFlags        flags);
 
-MooReloadInfo       *moo_reload_info_new        (const char         *encoding);
+MooReloadInfo       *moo_reload_info_new        (const char         *encoding,
+                                                 int                 line);
 MooReloadInfo       *moo_reload_info_dup        (MooReloadInfo      *info);
 void                 moo_reload_info_free       (MooReloadInfo      *info);
 

@@ -512,7 +512,7 @@ file_selector_create_file (MooFileSelector *filesel)
     if (!path)
         goto out;
 
-    info = moo_open_info_new (path, NULL);
+    info = moo_open_info_new (path, NULL, -1, 0);
     doc = moo_editor_new_file (moo_edit_window_get_editor (filesel->window),
                                info, GTK_WIDGET (filesel), NULL);
     g_object_unref (info);

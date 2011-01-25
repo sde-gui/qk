@@ -44,6 +44,12 @@ tassert(oi.get_line() == 0)
 oi.set_line(14)
 tassert(oi.get_line() == 14)
 
+oi = moo.OpenInfo.new{filenames[1], flags=moo.OPEN_NEW_WINDOW, line=23, encoding='UTF-8'}
+tassert(oi.get_flags() == moo.OPEN_NEW_WINDOW)
+tassert(oi.get_line() == 23)
+tassert(oi.get_encoding() == 'UTF-8')
+tassert(oi.get_filename() == filenames[1])
+
 ri = moo.ReloadInfo.new()
 tassert(ri.get_line() == 0)
 ri.set_line(5)

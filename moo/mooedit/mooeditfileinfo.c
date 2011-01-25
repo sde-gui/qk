@@ -33,14 +33,18 @@ G_DEFINE_TYPE (MooSaveInfo, moo_save_info, G_TYPE_OBJECT)
 G_DEFINE_TYPE (MooReloadInfo, moo_reload_info, G_TYPE_OBJECT)
 
 /**
- * moo_open_info_new_file: (static-method-of MooOpenInfo)
+ * moo_open_info_new_file: (static-method-of MooOpenInfo) (moo-kwargs)
  *
  * @file:
  * @encoding: (type const-utf8) (allow-none) (default NULL)
+ * @line: (type index) (default -1)
+ * @flags: (default 0)
  **/
 MooOpenInfo *
-moo_open_info_new_file (GFile      *file,
-                        const char *encoding)
+moo_open_info_new_file (GFile       *file,
+                        const char  *encoding,
+                        int          line,
+                        MooOpenFlags flags)
 {
     MooOpenInfo *info;
 
@@ -50,43 +54,52 @@ moo_open_info_new_file (GFile      *file,
 
     info->file = g_file_dup (file);
     info->encoding = g_strdup (encoding);
-    info->line = -1;
+    info->line = line;
+    info->flags = flags;
 
     return info;
 }
 
 /**
- * moo_open_info_new: (constructor-of MooOpenInfo)
+ * moo_open_info_new: (constructor-of MooOpenInfo) (moo-kwargs)
  *
  * @path: (type const-filename)
  * @encoding: (type const-utf8) (allow-none) (default NULL)
+ * @line: (type index) (default -1)
+ * @flags: (default 0)
  *
  * Returns: (transfer full)
  **/
 MooOpenInfo *
-moo_open_info_new (const char *path,
-                   const char *encoding)
+moo_open_info_new (const char  *path,
+                   const char  *encoding,
+                   int          line,
+                   MooOpenFlags flags)
 {
     GFile *file = g_file_new_for_path (path);
-    MooOpenInfo *info = moo_open_info_new_file (file, encoding);
+    MooOpenInfo *info = moo_open_info_new_file (file, encoding, line, flags);
     g_object_unref (file);
     return info;
 }
 
 /**
- * moo_open_info_new_uri: (static-method-of MooOpenInfo)
+ * moo_open_info_new_uri: (static-method-of MooOpenInfo) (moo-kwargs)
  *
  * @uri: (type const-utf8)
  * @encoding: (type const-utf8) (allow-none) (default NULL)
+ * @line: (type index) (default -1)
+ * @flags: (default 0)
  *
  * Returns: (transfer full)
  **/
 MooOpenInfo *
-moo_open_info_new_uri (const char *uri,
-                       const char *encoding)
+moo_open_info_new_uri (const char  *uri,
+                       const char  *encoding,
+                       int          line,
+                       MooOpenFlags flags)
 {
     GFile *file = g_file_new_for_uri (uri);
-    MooOpenInfo *info = moo_open_info_new_file (file, encoding);
+    MooOpenInfo *info = moo_open_info_new_file (file, encoding, line, flags);
     g_object_unref (file);
     return info;
 }
@@ -103,11 +116,8 @@ moo_open_info_dup (MooOpenInfo *info)
 
     g_return_val_if_fail (info != NULL, NULL);
 
-    copy = moo_open_info_new_file (info->file, info->encoding);
+    copy = moo_open_info_new_file (info->file, info->encoding, info->line, info->flags);
     g_return_val_if_fail (copy != NULL, NULL);
-
-    copy->flags = info->flags;
-    copy->line = info->line;
 
     return copy;
 }
@@ -375,16 +385,18 @@ moo_save_info_init (G_GNUC_UNUSED MooSaveInfo *info)
  * moo_reload_info_new: (constructor-of MooReloadInfo)
  *
  * @encoding: (type const-utf8) (allow-none) (default NULL)
+ * @line: (type index) (default -1)
  **/
 MooReloadInfo *
-moo_reload_info_new (const char *encoding)
+moo_reload_info_new (const char *encoding,
+                     int         line)
 {
     MooReloadInfo *info;
 
     info = g_object_new (MOO_TYPE_RELOAD_INFO, NULL);
 
     info->encoding = g_strdup (encoding);
-    info->line = -1;
+    info->line = line;
 
     return info;
 }
@@ -401,10 +413,8 @@ moo_reload_info_dup (MooReloadInfo *info)
 
     g_return_val_if_fail (info != NULL, NULL);
 
-    copy = moo_reload_info_new (info->encoding);
+    copy = moo_reload_info_new (info->encoding, info->line);
     g_return_val_if_fail (copy != NULL, NULL);
-
-    copy->line = info->line;
 
     return copy;
 }

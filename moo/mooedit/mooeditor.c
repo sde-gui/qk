@@ -1863,7 +1863,7 @@ load_doc_session (MooEditor     *editor,
     }
 
     encoding = moo_markup_get_prop (elm, "encoding");
-    info = moo_open_info_new_uri (uri, encoding);
+    info = moo_open_info_new_uri (uri, encoding, -1, 0);
 
     doc = moo_editor_load_file (editor, info, window, GTK_WIDGET (window), TRUE, FALSE, NULL);
 
@@ -2193,9 +2193,8 @@ moo_editor_open_uri (MooEditor     *editor,
     MooEdit *ret;
     MooOpenInfo *info;
 
-    info = moo_open_info_new_uri (uri, encoding);
+    info = moo_open_info_new_uri (uri, encoding, line, 0);
     g_return_val_if_fail (info != NULL, NULL);
-    info->line = line;
 
     ret = moo_editor_open_file (editor, info, window ? GTK_WIDGET (window) : NULL, NULL);
 
@@ -2222,9 +2221,8 @@ moo_editor_open_path (MooEditor     *editor,
     MooEdit *ret;
     MooOpenInfo *info;
 
-    info = moo_open_info_new (path, encoding);
+    info = moo_open_info_new (path, encoding, line, 0);
     g_return_val_if_fail (info != NULL, NULL);
-    info->line = line;
 
     ret = moo_editor_open_file (editor, info, window ? GTK_WIDGET (window) : NULL, NULL);
 

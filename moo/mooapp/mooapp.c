@@ -1501,9 +1501,7 @@ moo_app_parse_files (const char      *data,
         if (!encoding || !encoding[0])
             encoding = NULL;
 
-        info = moo_open_info_new_uri (uri, encoding);
-
-        moo_open_info_add_flags (info, MOO_OPEN_CREATE_NEW);
+        info = moo_open_info_new_uri (uri, encoding, -1, MOO_OPEN_CREATE_NEW);
 
         line = moo_markup_int_prop (node, "line", 0);
         if (line > 0)

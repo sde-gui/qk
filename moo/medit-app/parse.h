@@ -72,9 +72,7 @@ parse_filename (const char *filename)
         return NULL;
     }
 
-    info = moo_open_info_new_uri (uri, NULL);
-
-    moo_open_info_set_line (info, line - 1);
+    info = moo_open_info_new_uri (uri, NULL, line - 1, 0);
 
     g_free (uri);
     g_free (freeme1);
@@ -125,7 +123,7 @@ parse_uri (const char *scheme,
     char *real_uri;
 
     if (strcmp (scheme, "file") != 0)
-        return moo_open_info_new_uri (uri, NULL);
+        return moo_open_info_new_uri (uri, NULL, -1, 0);
 
     question_mark = strchr (uri, '?');
 
@@ -139,7 +137,7 @@ parse_uri (const char *scheme,
         real_uri = g_strdup (uri);
     }
 
-    info = moo_open_info_new_uri (real_uri, NULL);
+    info = moo_open_info_new_uri (real_uri, NULL, -1, 0);
 
     if (optstring)
         parse_options_from_uri (optstring, info);

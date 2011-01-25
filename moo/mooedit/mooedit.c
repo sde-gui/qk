@@ -1375,8 +1375,6 @@ moo_edit_reload (MooEdit       *doc,
 /**
  * moo_edit_close:
  *
- * @edit:
- *
  * Returns: whether document was closed
  **/
 gboolean
