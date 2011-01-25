@@ -959,6 +959,21 @@ int
 moo_lua_push_int (lua_State *L,
                   int        value)
 {
+    return moo_lua_push_int64 (L, value);
+}
+
+int
+moo_lua_push_int64 (lua_State *L,
+                    gint64     value)
+{
+    lua_pushinteger (L, value);
+    return 1;
+}
+
+int
+moo_lua_push_uint64 (lua_State *L,
+                     guint64    value)
+{
     lua_pushinteger (L, value);
     return 1;
 }

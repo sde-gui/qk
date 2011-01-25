@@ -77,11 +77,10 @@ class SimpleArgHelper(ArgHelper):
 
 _arg_helpers = {}
 _arg_helpers['int'] = SimpleArgHelper('int', 'int')
-_arg_helpers['uint'] = SimpleArgHelper('guint', 'int')
 _arg_helpers['gint'] = SimpleArgHelper('int', 'int')
-_arg_helpers['guint'] = SimpleArgHelper('guint', 'int')
-_arg_helpers['glong'] = SimpleArgHelper('long', 'int')
-_arg_helpers['gulong'] = SimpleArgHelper('gulong', 'int')
+_arg_helpers['guint'] = SimpleArgHelper('guint', 'uint')
+_arg_helpers['glong'] = SimpleArgHelper('long', 'long')
+_arg_helpers['gulong'] = SimpleArgHelper('gulong', 'ulong')
 _arg_helpers['gboolean'] = SimpleArgHelper('gboolean', 'bool')
 _arg_helpers['index'] = SimpleArgHelper('int', 'index')
 _arg_helpers['double'] = SimpleArgHelper('double', 'double')
@@ -98,12 +97,12 @@ def find_arg_helper(param):
     return _arg_helpers[param.type.name]
 
 _pod_ret_helpers = {}
-_pod_ret_helpers['int'] = ('int', 'int')
-_pod_ret_helpers['uint'] = ('guint', 'int')
-_pod_ret_helpers['gint'] = ('int', 'int')
-_pod_ret_helpers['guint'] = ('guint', 'int')
-_pod_ret_helpers['glong'] = ('long', 'int')
-_pod_ret_helpers['gulong'] = ('gulong', 'int')
+_pod_ret_helpers['int'] = ('int', 'int64')
+_pod_ret_helpers['uint'] = ('guint', 'uint64')
+_pod_ret_helpers['gint'] = ('int', 'int64')
+_pod_ret_helpers['guint'] = ('guint', 'uint64')
+_pod_ret_helpers['glong'] = ('long', 'int64')
+_pod_ret_helpers['gulong'] = ('gulong', 'uint64')
 _pod_ret_helpers['gboolean'] = ('gboolean', 'bool')
 _pod_ret_helpers['index'] = ('int', 'index')
 def find_pod_ret_helper(name):

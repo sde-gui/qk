@@ -195,6 +195,10 @@ int             moo_lua_push_bool               (lua_State          *L,
                                                  gboolean            value);
 int             moo_lua_push_int                (lua_State          *L,
                                                  int                 value);
+int             moo_lua_push_int64              (lua_State          *L,
+                                                 gint64              value);
+int             moo_lua_push_uint64             (lua_State          *L,
+                                                 guint64             value);
 int             moo_lua_push_index              (lua_State          *L,
                                                  int                 value);
 int             moo_lua_push_strv               (lua_State          *L,
