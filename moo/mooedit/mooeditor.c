@@ -1021,21 +1021,33 @@ moo_editor_load_file (MooEditor       *editor,
                       GError         **error)
 {
     MooEdit *doc;
-    MooEditView *view;
+    MooEditView *view = NULL;
     gboolean new_doc = FALSE;
     gboolean new_object = FALSE;
     const char *recent_encoding = NULL;
     GError *error_here = NULL;
     gboolean success = TRUE;
     char *uri;
+    char *filename;
+    int line;
 
     moo_return_error_if_fail_p (MOO_IS_EDITOR (editor));
     moo_return_error_if_fail_p (info != NULL && G_IS_FILE (info->file));
 
     uri = g_file_get_uri (info->file);
+    filename = g_file_get_path (info->file);
+    line = info->line;
     doc = moo_editor_get_doc_for_file (editor, info->file);
 
-    if (!doc)
+    if (!filename)
+    {
+        g_set_error (&error_here, MOO_EDIT_FILE_ERROR,
+                     MOO_EDIT_FILE_ERROR_NOT_IMPLEMENTED,
+                     "Loading remote files is not implemented");
+        success = FALSE;
+    }
+
+    if (success && !doc)
     {
         new_doc = TRUE;
 
@@ -1051,22 +1063,28 @@ moo_editor_load_file (MooEditor       *editor,
         }
     }
 
-    if (!doc)
+    if (success && !doc)
     {
         new_object = TRUE;
         doc = g_object_new (get_doc_type (editor), "editor", editor, (const char*) NULL);
     }
 
-    view = moo_edit_get_view (doc);
-
-    if (!info->encoding)
+    if (success)
     {
-        MooHistoryItem *hist_item = moo_history_mgr_find_uri (editor->priv->history, uri);
-        if (hist_item)
-            recent_encoding = _moo_edit_history_item_get_encoding (hist_item);
+        view = moo_edit_get_view (doc);
+
+        if (!new_doc && line < 0 && (info->flags & MOO_OPEN_RELOAD) != 0)
+            line = moo_text_view_get_cursor_line (GTK_TEXT_VIEW (view));
+
+        if (!info->encoding)
+        {
+            MooHistoryItem *hist_item = moo_history_mgr_find_uri (editor->priv->history, uri);
+            if (hist_item)
+                recent_encoding = _moo_edit_history_item_get_encoding (hist_item);
+        }
     }
 
-    if (new_doc)
+    if (success && new_doc)
     {
         if ((info->flags & MOO_OPEN_CREATE_NEW) && _moo_edit_file_is_new (info->file))
         {
@@ -1118,9 +1136,8 @@ moo_editor_load_file (MooEditor       *editor,
     if (success)
     {
         MooHistoryItem *hist_item;
-        int line = info->line;
 
-        if (line < 0)
+        if (line < 0 && new_doc)
         {
             hist_item = moo_history_mgr_find_uri (editor->priv->history, uri);
             if (hist_item)
@@ -2528,7 +2545,7 @@ moo_editor_reload (MooEditor     *editor,
         cursor_offset = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (view), "moo-reload-cursor-offset"));
 
         moo_text_view_move_cursor (MOO_TEXT_VIEW (view), cursor_line,
-                                   cursor_offset, TRUE, FALSE);
+                                   cursor_offset, TRUE, TRUE);
     }
 
     return TRUE;
