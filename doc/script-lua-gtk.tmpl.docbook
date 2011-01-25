@@ -5,7 +5,7 @@
 ]>
 <chapter id="chapter-script-lua-gtk">
 <?dbhtml filename="lua-gtk.html"?>
-<title>&medit; Gtk API for Lua scripts</title>
+<title>Gtk API for Lua scripts</title>
 <sect1>
 <title>Introduction</title>
 <para>Lua scripts running in &medit; have limited access to
