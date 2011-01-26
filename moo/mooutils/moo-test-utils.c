@@ -331,14 +331,14 @@ moo_test_run_tests (char          **tests,
 
     if (!(opts & MOO_TEST_LIST_ONLY))
     {
-        fprintf (stdout, "Run Summary: Type      Total     Ran  Passed  Failed\n");
-        fprintf (stdout, "             suites    %5d     %3d  %6d  %6d\n",
+        fprintf (stdout, "Run Summary: Type      Total      Ran  Passed  Failed\n");
+        fprintf (stdout, "             suites    %5d     %4d  %6d  %6d\n",
                  registry.tr.suites, registry.tr.suites, registry.tr.suites_passed,
                  registry.tr.suites - registry.tr.suites_passed);
-        fprintf (stdout, "             tests     %5d     %3d  %6d  %6d\n",
+        fprintf (stdout, "             tests     %5d     %4d  %6d  %6d\n",
                  registry.tr.tests, registry.tr.tests, registry.tr.tests_passed,
                  registry.tr.tests - registry.tr.tests_passed);
-        fprintf (stdout, "             asserts   %5d     %3d  %6d  %6d\n",
+        fprintf (stdout, "             asserts   %5d     %4d  %6d  %6d\n",
                  registry.tr.asserts, registry.tr.asserts, registry.tr.asserts_passed,
                  registry.tr.asserts - registry.tr.asserts_passed);
         fprintf (stdout, "\n");
