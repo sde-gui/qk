@@ -102,9 +102,9 @@ parse_options_from_uri (const char  *optstring,
             for (op = opts; op && *op; ++op)
             {
                 if (!strcmp (*op, "new-window"))
-                    moo_open_info_add_flags (info, MOO_OPEN_NEW_WINDOW);
+                    moo_open_info_add_flags (info, MOO_OPEN_FLAG_NEW_WINDOW);
                 else if (!strcmp (*op, "new-tab"))
-                    moo_open_info_add_flags (info, MOO_OPEN_NEW_TAB);
+                    moo_open_info_add_flags (info, MOO_OPEN_FLAG_NEW_TAB);
             }
             g_strfreev (opts);
         }
@@ -220,11 +220,11 @@ parse_files (void)
             continue;
 
         if (medit_opts.new_window)
-            moo_open_info_add_flags (info, MOO_OPEN_NEW_WINDOW);
+            moo_open_info_add_flags (info, MOO_OPEN_FLAG_NEW_WINDOW);
         if (medit_opts.new_tab)
-            moo_open_info_add_flags (info, MOO_OPEN_NEW_TAB);
+            moo_open_info_add_flags (info, MOO_OPEN_FLAG_NEW_TAB);
         if (medit_opts.reload)
-            moo_open_info_add_flags (info, MOO_OPEN_RELOAD);
+            moo_open_info_add_flags (info, MOO_OPEN_FLAG_RELOAD);
 
         if (moo_open_info_get_line (info) < 0)
             moo_open_info_set_line (info, medit_opts.line - 1);

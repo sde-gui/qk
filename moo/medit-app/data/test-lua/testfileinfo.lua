@@ -36,16 +36,16 @@ end
 
 oi = moo.OpenInfo.new(filenames[1])
 tassert(oi.get_flags() == 0)
-oi.set_flags(moo.OPEN_NEW_WINDOW)
-tassert(oi.get_flags() == moo.OPEN_NEW_WINDOW)
-oi.add_flags(moo.OPEN_RELOAD)
-tassert(oi.get_flags() == moo.OPEN_NEW_WINDOW + moo.OPEN_RELOAD)
+oi.set_flags(moo.OPEN_FLAG_NEW_WINDOW)
+tassert(oi.get_flags() == moo.OPEN_FLAG_NEW_WINDOW)
+oi.add_flags(moo.OPEN_FLAG_RELOAD)
+tassert(oi.get_flags() == moo.OPEN_FLAG_NEW_WINDOW + moo.OPEN_FLAG_RELOAD)
 tassert(oi.get_line() == 0)
 oi.set_line(14)
 tassert(oi.get_line() == 14)
 
-oi = moo.OpenInfo.new{filenames[1], flags=moo.OPEN_NEW_WINDOW, line=23, encoding='UTF-8'}
-tassert(oi.get_flags() == moo.OPEN_NEW_WINDOW)
+oi = moo.OpenInfo.new{filenames[1], flags=moo.OPEN_FLAG_NEW_WINDOW, line=23, encoding='UTF-8'}
+tassert(oi.get_flags() == moo.OPEN_FLAG_NEW_WINDOW)
 tassert(oi.get_line() == 23)
 tassert(oi.get_encoding() == 'UTF-8')
 tassert(oi.get_filename() == filenames[1])

@@ -1073,7 +1073,7 @@ moo_editor_load_file (MooEditor       *editor,
     {
         view = moo_edit_get_view (doc);
 
-        if (!new_doc && line < 0 && (info->flags & MOO_OPEN_RELOAD) != 0)
+        if (!new_doc && line < 0 && (info->flags & MOO_OPEN_FLAG_RELOAD) != 0)
             line = moo_text_view_get_cursor_line (GTK_TEXT_VIEW (view));
 
         if (!info->encoding)
@@ -1086,7 +1086,7 @@ moo_editor_load_file (MooEditor       *editor,
 
     if (success && new_doc)
     {
-        if ((info->flags & MOO_OPEN_CREATE_NEW) && _moo_edit_file_is_new (info->file))
+        if ((info->flags & MOO_OPEN_FLAG_CREATE_NEW) && _moo_edit_file_is_new (info->file))
         {
             _moo_edit_set_status (doc, MOO_EDIT_STATUS_NEW);
             _moo_edit_set_file (doc, info->file, info->encoding);
@@ -1111,7 +1111,7 @@ moo_editor_load_file (MooEditor       *editor,
         g_propagate_error (error, error_here);
         error_here = NULL;
     }
-    else if (!new_doc && (info->flags & MOO_OPEN_RELOAD))
+    else if (!new_doc && (info->flags & MOO_OPEN_FLAG_RELOAD))
     {
         success = _moo_edit_reload_file (doc, info->encoding, &error_here);
 
@@ -1126,7 +1126,7 @@ moo_editor_load_file (MooEditor       *editor,
 
     if (success && new_object)
     {
-        if (!window || (info->flags & MOO_OPEN_NEW_WINDOW))
+        if (!window || (info->flags & MOO_OPEN_FLAG_NEW_WINDOW))
             window = create_window (editor);
 
         _moo_edit_window_insert_doc (window, doc, NULL);
@@ -2130,7 +2130,7 @@ moo_editor_new_file (MooEditor    *editor,
     info_copy = moo_open_info_dup (info);
     moo_return_error_if_fail_p (info_copy != NULL);
 
-    info_copy->flags |= MOO_OPEN_CREATE_NEW;
+    info_copy->flags |= MOO_OPEN_FLAG_CREATE_NEW;
 
     doc = moo_editor_open_file (editor, info_copy, parent, error);
 
