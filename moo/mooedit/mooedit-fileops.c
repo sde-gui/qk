@@ -604,7 +604,17 @@ do_load (MooEdit      *edit,
 
         if (line)
         {
-            if (!g_utf8_validate (line, len, NULL))
+            const char *invalid;
+            gboolean valid_utf8 = g_utf8_validate (line, len, &invalid);
+
+            // allow trailing zero byte
+            if (!valid_utf8 && invalid + 1 == line + len && *invalid == 0)
+            {
+                valid_utf8 = TRUE;
+                len -= 1;
+            }
+
+            if (!valid_utf8)
             {
                 result = ERROR_ENCODING;
                 g_set_error (error, G_CONVERT_ERROR,
