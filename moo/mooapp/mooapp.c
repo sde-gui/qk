@@ -1274,7 +1274,14 @@ moo_app_open_files (MooApp           *app,
     g_return_if_fail (MOO_IS_APP (app));
 
     if (!moo_open_info_array_is_empty (files))
-        moo_editor_open_files (app->priv->editor, files, NULL, NULL);
+    {
+        guint i;
+        MooOpenInfoArray *tmp = moo_open_info_array_copy (files);
+        for (i = 0; i < tmp->n_elms; ++i)
+            moo_open_info_add_flags (tmp->elms[i], MOO_OPEN_CREATE_NEW);
+        moo_editor_open_files (app->priv->editor, tmp, NULL, NULL);
+        moo_open_info_array_free (tmp);
+    }
 
     moo_editor_present (app->priv->editor, stamp);
 }
