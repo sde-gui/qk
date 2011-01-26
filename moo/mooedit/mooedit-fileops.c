@@ -85,6 +85,14 @@ static gboolean moo_edit_save_copy_local    (MooEdit        *edit,
 static void     _moo_edit_start_file_watch  (MooEdit        *edit);
 
 
+gboolean
+_moo_is_file_error_cancelled (GError *error)
+{
+    return error && error->domain == MOO_EDIT_FILE_ERROR &&
+           error->code == MOO_EDIT_FILE_ERROR_CANCELLED;
+}
+
+
 static const char *
 normalize_encoding (const char *encoding,
                     gboolean    for_save)
@@ -116,23 +124,65 @@ _moo_edit_load_file (MooEdit      *edit,
                      const char   *cached_encoding,
                      GError      **error)
 {
-    char *encoding_copy;
-    char *cached_encoding_copy;
+    char *freeme1 = NULL;
+    char *freeme2 = NULL;
     gboolean result;
     GError *error_here = NULL;
 
     moo_return_error_if_fail (MOO_IS_EDIT (edit));
     moo_return_error_if_fail (G_IS_FILE (file));
+    moo_return_error_if_fail (!MOO_EDIT_IS_BUSY (edit));
 
-    encoding_copy = g_strdup (normalize_encoding (encoding, FALSE));
-    cached_encoding_copy = cached_encoding ? g_strdup (normalize_encoding (cached_encoding, FALSE)) : NULL;
+    encoding = freeme1 = g_strdup (normalize_encoding (encoding, FALSE));
+    cached_encoding = freeme2 = cached_encoding ? g_strdup (normalize_encoding (cached_encoding, FALSE)) : NULL;
 
-    result = moo_edit_load_local (edit, file, encoding_copy, cached_encoding_copy, &error_here);
+    while (TRUE)
+    {
+        char *new_encoding = NULL;
+        MooEditTryEncodingResponse response;
+
+        result = moo_edit_load_local (edit, file, encoding, cached_encoding, &error_here);
+
+        if (result)
+            break;
+
+        if (!error_here || error_here->domain != MOO_EDIT_FILE_ERROR ||
+            error_here->code != MOO_EDIT_FILE_ERROR_ENCODING)
+                break;
+
+        response = _moo_edit_try_encoding_dialog (file, encoding, &new_encoding);
+
+        switch (response)
+        {
+            case MOO_EDIT_TRY_ENCODING_RESPONSE_CANCEL:
+                g_error_free (error_here);
+                error_here = g_error_new (MOO_EDIT_FILE_ERROR,
+                                          MOO_EDIT_FILE_ERROR_CANCELLED,
+                                          "Cancelled");
+                g_free (new_encoding);
+                new_encoding = NULL;
+                break;
+
+            case MOO_EDIT_TRY_ENCODING_RESPONSE_TRY_ANOTHER:
+                g_error_free (error_here);
+                error_here = NULL;
+                g_assert (new_encoding != NULL);
+                break;
+        }
+
+        if (!new_encoding)
+            break;
+
+        g_free (freeme1);
+        encoding = freeme1 = new_encoding;
+        cached_encoding = NULL;
+    }
 
     if (error_here)
         g_propagate_error (error, error_here);
 
-    g_free (encoding_copy);
+    g_free (freeme1);
+    g_free (freeme2);
     return result;
 }
 

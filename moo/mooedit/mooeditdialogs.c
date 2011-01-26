@@ -25,6 +25,7 @@
 #include "mooutils/mooutils.h"
 #include "mooedit/mootextfind-prompt-gxml.h"
 #include "mooedit/mooeditsavemult-gxml.h"
+#include "mooedit/mootryencoding-gxml.h"
 #include <gtk/gtk.h>
 #include <glib/gregex.h>
 #include <string.h>
@@ -500,10 +501,82 @@ _moo_edit_save_error_enc_dialog (MooEdit    *doc,
 }
 
 
+MooEditTryEncodingResponse
+_moo_edit_try_encoding_dialog (G_GNUC_UNUSED GFile *file,
+                               const char  *encoding,
+                               char       **new_encoding)
+{
+    MooEditWindow *window;
+    GtkWidget *dialog;
+    TryEncodingDialogXml *xml;
+    int dialog_response;
+    char *filename = NULL;
+    char *msg = NULL;
+    char *secondary = NULL;
+
+    filename = moo_file_get_display_name (file);
+
+    if (filename)
+    {
+        /* Could not open file foo.txt */
+        char *tmp = g_strdup_printf (_("Could not open file\n%s"), filename);
+        msg = g_markup_printf_escaped ("<b><big>%s</big></b>", tmp);
+        g_free (tmp);
+    }
+    else
+    {
+        const char *tmp = _("Could not open file");
+        msg = g_markup_printf_escaped ("<b><big>%s</big></b>", tmp);
+    }
+
+    if (encoding)
+        secondary = g_strdup_printf (_("Could not open file using character encoding %s. "
+                                       "Try to select another encoding below."), encoding);
+    else
+        secondary = g_strdup_printf (_("Could not detect file character encoding. "
+                                       "Try to select an encoding below."));
+
+    xml = try_encoding_dialog_xml_new ();
+    g_return_val_if_fail (xml && xml->TryEncodingDialog, MOO_EDIT_TRY_ENCODING_RESPONSE_CANCEL);
+
+    gtk_label_set_markup (xml->label_primary, msg);
+    gtk_label_set_text (xml->label_secondary, secondary);
+
+    dialog = GTK_WIDGET (xml->TryEncodingDialog);
+
+    _moo_encodings_combo_init (GTK_COMBO_BOX (xml->encoding_combo), MOO_ENCODING_COMBO_OPEN, FALSE);
+    _moo_encodings_combo_set_enc (GTK_COMBO_BOX (xml->encoding_combo), encoding, MOO_ENCODING_COMBO_OPEN);
+
+    if ((window = moo_editor_get_active_window (moo_editor_instance ())))
+        moo_window_set_parent (dialog, GTK_WIDGET (window));
+
+    gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+                            GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                            GTK_STOCK_OK, GTK_RESPONSE_OK,
+                            NULL);
+    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_OK);
+    gtk_dialog_set_alternative_button_order (GTK_DIALOG (dialog),
+                                             GTK_RESPONSE_OK,
+                                             GTK_RESPONSE_CANCEL,
+                                             -1);
+
+    dialog_response = gtk_dialog_run (GTK_DIALOG (dialog));
+
+    *new_encoding = g_strdup (_moo_encodings_combo_get_enc (GTK_COMBO_BOX (xml->encoding_combo), MOO_ENCODING_COMBO_OPEN));
+
+    gtk_widget_destroy (dialog);
+    g_free (secondary);
+    g_free (msg);
+
+    return dialog_response == GTK_RESPONSE_OK ?
+        MOO_EDIT_TRY_ENCODING_RESPONSE_TRY_ANOTHER :
+        MOO_EDIT_TRY_ENCODING_RESPONSE_CANCEL;
+}
+
+
 void
 _moo_edit_open_error_dialog (GtkWidget  *widget,
                              GFile      *file,
-                             const char *encoding,
                              GError     *error)
 {
     char *filename, *msg = NULL;
@@ -517,22 +590,7 @@ _moo_edit_open_error_dialog (GtkWidget  *widget,
     else
         msg = g_strdup (_("Could not open file"));
 
-    if (error && error->domain == MOO_EDIT_FILE_ERROR &&
-        error->code == MOO_EDIT_FILE_ERROR_ENCODING)
-    {
-        if (encoding)
-            secondary = g_strdup_printf (_("Could not open file using character encoding %s. "
-                                           "The file may be binary or encoding may be specified "
-                                           "incorrectly."), encoding);
-        else
-            secondary = g_strdup_printf (_("Could not detect file character encoding. "
-                                           "Please make sure the file is not binary and try to select "
-                                           "encoding in the Open dialog."));
-    }
-    else
-    {
-        secondary = error ? g_strdup (error->message) : NULL;
-    }
+    secondary = error ? g_strdup (error->message) : NULL;
 
     moo_error_dialog (msg, secondary, widget);
 

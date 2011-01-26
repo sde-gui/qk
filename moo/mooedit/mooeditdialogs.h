@@ -22,6 +22,11 @@
 
 G_BEGIN_DECLS
 
+typedef enum {
+    MOO_EDIT_TRY_ENCODING_RESPONSE_TRY_ANOTHER,
+    MOO_EDIT_TRY_ENCODING_RESPONSE_CANCEL
+} MooEditTryEncodingResponse;
+
 MooSaveInfo                    *_moo_edit_save_as_dialog                (MooEdit        *doc,
                                                                          const char     *display_basename);
 MooOpenInfoArray               *_moo_edit_open_dialog                   (GtkWidget      *widget,
@@ -42,10 +47,12 @@ gboolean                        _moo_edit_save_error_enc_dialog         (MooEdit
                                                                          const char     *encoding);
 void                            _moo_edit_open_error_dialog             (GtkWidget      *widget,
                                                                          GFile          *file,
-                                                                         const char     *encoding,
                                                                          GError         *error);
 void                            _moo_edit_reload_error_dialog           (MooEdit        *doc,
                                                                          GError         *error);
+MooEditTryEncodingResponse      _moo_edit_try_encoding_dialog           (GFile          *file,
+                                                                         const char     *encoding,
+                                                                         char          **new_encoding);
 
 gboolean                        _moo_text_search_from_start_dialog      (GtkWidget      *parent,
                                                                          gboolean        backwards);

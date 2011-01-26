@@ -1099,13 +1099,13 @@ moo_editor_load_file (MooEditor       *editor,
 
     if (!success)
     {
-        if (!silent)
+        if (!silent && !_moo_is_file_error_cancelled (error_here))
         {
             if (!parent && !window)
                 window = moo_editor_get_active_window (editor);
             if (!parent && window)
                 parent = GTK_WIDGET (window);
-            _moo_edit_open_error_dialog (parent, info->file, info->encoding, error_here);
+            _moo_edit_open_error_dialog (parent, info->file, error_here);
         }
 
         g_propagate_error (error, error_here);
@@ -1117,7 +1117,7 @@ moo_editor_load_file (MooEditor       *editor,
 
         if (!success)
         {
-            if (!is_embedded (editor))
+            if (!silent && !_moo_is_file_error_cancelled (error_here))
                 _moo_edit_reload_error_dialog (doc, error_here);
             g_propagate_error (error, error_here);
             error_here = NULL;
@@ -2521,15 +2521,10 @@ moo_editor_reload (MooEditor     *editor,
 
     if (!_moo_edit_reload_file (doc, info ? info->encoding : NULL, &error_here))
     {
-        if (!is_embedded (editor))
-        {
+        if (!is_embedded (editor) && !_moo_is_file_error_cancelled (error_here))
             _moo_edit_reload_error_dialog (doc, error_here);
-            g_error_free (error_here);
-        }
-        else
-        {
-            g_propagate_error (error, error_here);
-        }
+
+        g_propagate_error (error, error_here);
 
         moo_text_view_undo (MOO_TEXT_VIEW (active_view));
         g_object_set_data (G_OBJECT (doc), "moo-scroll-to", NULL);

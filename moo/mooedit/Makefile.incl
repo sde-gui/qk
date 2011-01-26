@@ -106,6 +106,7 @@ EXTRA_DIST +=						\
 	mooedit/glade/mooeditprefs-langs.glade		\
 	mooedit/glade/mooeditprogress.glade		\
 	mooedit/glade/mooeditsavemult.glade		\
+	mooedit/glade/mootryencoding.glade		\
 	mooedit/glade/mooprint.glade			\
 	mooedit/glade/mootextfind.glade			\
 	mooedit/glade/mootextfind-prompt.glade		\
@@ -122,6 +123,7 @@ built_moo_sources +=					\
 	mooedit/mooeditprefs-langs-gxml.h		\
 	mooedit/mooeditprogress-gxml.h			\
 	mooedit/mooeditsavemult-gxml.h			\
+	mooedit/mootryencoding-gxml.h			\
 	mooedit/mooprint-gxml.h				\
 	mooedit/mootextfind-gxml.h			\
 	mooedit/mootextfind-prompt-gxml.h		\
