@@ -1,3 +1,34 @@
+2011-01-29  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
+
+    * === Released 1.0.0 ===
+
+    New release which breaks backwards compatibility (which won't be
+    broken again for long time, not until medit-2.0). Bugs have been
+    fixed, features have been implemented, new bugs have been introduced.
+
+    Highlights:
+
+    - Consistent API for Python and Lua scripts, generated from
+      source code, together with documentation. This allows for
+      much more powerful Lua scripts.
+    - Added option to show all spaces, not just Tab characters.
+    - Allow searching in a list of directories instead of just a single one.
+    - Added --geometry command line option.
+    - Added split views - multiple views of the same document in one
+      notebook tab.
+    - Windows can display two notebooks to allow viewing two different
+      documents at the same as well.
+    - Build system uses autotools again. Cmake is nice but not nice enough.
+
+2010-10-05  Yevgen Muntyan  <emuntyan@sourceforge.net>
+
+    * === Released 0.10.5 ===
+
+    Added an option to show spaces, not just tabs.
+    Added linker flags to fix build on some Linux distributions.
+    Fixed bug where Select All menu item wouldn't select text on
+    some builds (found by Andrey Frantsuzov).
+
 2010-04-29  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
 
     * === Released 0.10.4 ===
