@@ -168,7 +168,7 @@ static void          show_notebook                      (MooEditWindow      *win
                                                          MooNotebook        *notebook);
 static void          move_tab_to_split_view             (MooEditWindow      *window,
                                                          MooEditTab         *tab);
-static gboolean      can_move_to_split_view             (MooEditWindow      *window);
+static gboolean      can_move_to_split_notebook         (MooEditWindow      *window);
 static gboolean      both_notebooks_visible             (MooEditWindow      *window);
 
 static void          update_window_title                (MooEditWindow      *window);
@@ -275,7 +275,7 @@ static GtkAction *create_goto_bookmark_action   (MooWindow          *window,
 static void action_find_now_f                   (MooEditWindow      *window);
 static void action_find_now_b                   (MooEditWindow      *window);
 static void action_focus_doc                    (MooEditWindow      *window);
-static void action_move_to_split_view           (MooEditWindow      *window);
+static void action_move_to_split_notebook       (MooEditWindow      *window);
 static void action_abort_jobs                   (MooEditWindow      *window);
 
 static void wrap_text_toggled                   (MooEditWindow      *window,
@@ -311,7 +311,7 @@ enum {
     PROP_HAS_COMMENTS,
     PROP_HAS_JOBS_RUNNING,
     PROP_HAS_STOP_CLIENTS,
-    PROP_CAN_MOVE_TO_SPLIT_VIEW
+    PROP_CAN_MOVE_TO_SPLIT_NOTEBOOK
 };
 
 enum {
@@ -411,7 +411,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
     INSTALL_PROP (PROP_HAS_COMMENTS, "has-comments");
     INSTALL_PROP (PROP_HAS_JOBS_RUNNING, "has-jobs-running");
     INSTALL_PROP (PROP_HAS_STOP_CLIENTS, "has-stop-clients");
-    INSTALL_PROP (PROP_CAN_MOVE_TO_SPLIT_VIEW, "can-move-to-split-view");
+    INSTALL_PROP (PROP_CAN_MOVE_TO_SPLIT_NOTEBOOK, "can-move-to-split-notebook");
 
     moo_window_class_set_id (window_class, "Editor", "Editor");
 
@@ -611,11 +611,11 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  NULL);
 
     moo_window_class_new_action (window_class, "MoveToSplitView", NULL,
-                                 "display-name", _("Move to Split View"),
-                                 "label", _("_Move to Split View"),
-                                 "default-accel", MOO_EDIT_ACCEL_MOVE_TO_SPLIT_VIEW,
-                                 "closure-callback", action_move_to_split_view,
-                                 "condition::sensitive", "can-move-to-split-view",
+                                 "display-name", _("Move to Split Notebook"),
+                                 "label", _("_Move to Split Notebook"),
+                                 "default-accel", MOO_EDIT_ACCEL_MOVE_TO_SPLIT_NOTEBOOK,
+                                 "closure-callback", action_move_to_split_notebook,
+                                 "condition::sensitive", "can-move-to-split-notebook",
                                  NULL);
 
     moo_window_class_new_action (window_class, "SplitViewHorizontal", NULL,
@@ -940,8 +940,8 @@ static void     moo_edit_window_get_property(GObject        *object,
         case PROP_HAS_OPEN_DOCUMENT:
             g_value_set_boolean (value, moo_edit_window_get_n_tabs (window) != 0);
             break;
-        case PROP_CAN_MOVE_TO_SPLIT_VIEW:
-            g_value_set_boolean (value, can_move_to_split_view (window));
+        case PROP_CAN_MOVE_TO_SPLIT_NOTEBOOK:
+            g_value_set_boolean (value, can_move_to_split_notebook (window));
             break;
         case PROP_HAS_COMMENTS:
             doc = ACTIVE_DOC (window);
@@ -1613,7 +1613,7 @@ action_focus_doc (MooEditWindow *window)
 }
 
 static void
-action_move_to_split_view (MooEditWindow *window)
+action_move_to_split_notebook (MooEditWindow *window)
 {
     move_tab_to_split_view (window, ACTIVE_TAB (window));
 }
@@ -2014,8 +2014,8 @@ detach_activated (GtkWidget     *item,
 
 
 static void
-move_to_split_view_activated (GtkWidget     *item,
-                              MooEditWindow *window)
+move_to_split_notebook_activated (GtkWidget     *item,
+                                  MooEditWindow *window)
 {
     MooEditView *view = g_object_get_data (G_OBJECT (item), "moo-edit-view");
     move_tab_to_split_view (window, moo_edit_view_get_tab (view));
@@ -2027,7 +2027,7 @@ move_to_split_view_activated (GtkWidget     *item,
  */
 
 static gboolean
-can_move_to_split_view (MooEditWindow *window)
+can_move_to_split_notebook (MooEditWindow *window)
 {
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), FALSE);
     return moo_edit_window_get_n_tabs (window) > 1;
@@ -2180,13 +2180,13 @@ notebook_populate_popup (MooEditWindow      *window,
                           window);
 
         /* Item in document tab context menu */
-        item = gtk_menu_item_new_with_label (C_("tab-context-menu", "Move to Split View"));
+        item = gtk_menu_item_new_with_label (C_("tab-context-menu", "Move to Split Notebook"));
         gtk_widget_show (item);
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), item);
         g_object_set_data (G_OBJECT (item), "moo-edit", doc);
         g_object_set_data (G_OBJECT (item), "moo-edit-tab", child);
         g_signal_connect (item, "activate",
-                          G_CALLBACK (move_to_split_view_activated),
+                          G_CALLBACK (move_to_split_notebook_activated),
                           window);
     }
 
@@ -2981,7 +2981,7 @@ _moo_edit_window_insert_tab (MooEditWindow *window,
     edit_changed (window, doc);
     gtk_widget_grab_focus (GTK_WIDGET (moo_edit_get_view (doc)));
 
-    g_object_notify (G_OBJECT (window), "can-move-to-split-view");
+    g_object_notify (G_OBJECT (window), "can-move-to-split-notebook");
 
     moo_edit_view_array_free (views);
 }
@@ -3068,7 +3068,7 @@ _moo_edit_window_remove_doc (MooEditWindow *window,
 
     g_object_freeze_notify (G_OBJECT (window));
     g_object_notify (G_OBJECT (window), "active-doc");
-    g_object_notify (G_OBJECT (window), "can-move-to-split-view");
+    g_object_notify (G_OBJECT (window), "can-move-to-split-notebook");
     g_object_thaw_notify (G_OBJECT (window));
 
     moo_edit_view_array_free (views);
