@@ -219,7 +219,10 @@ moo_cmd_view_abort_and_disconnect (MooCmdView *view)
 GtkWidget*
 moo_cmd_view_new (void)
 {
-    return GTK_WIDGET (g_object_new (MOO_TYPE_CMD_VIEW, "highlight-current-line", TRUE, (const char*) NULL));
+    return GTK_WIDGET (g_object_new (MOO_TYPE_CMD_VIEW,
+                                     "highlight-current-line", TRUE,
+                                     "highlight-current-line-unfocused", TRUE,
+                                     (const char*) NULL));
 }
 
 
