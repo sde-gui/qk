@@ -1395,13 +1395,10 @@ prefs_dialog_apply (void)
 static GtkWidget *
 moo_app_create_prefs_dialog (MooApp *app)
 {
-    char *title;
     MooPrefsDialog *dialog;
 
-    /* Prefs dialog title, like "medit Preferences" */
-    title = g_strdup_printf (_("%s Preferences"), MOO_APP_FULL_NAME);
-    dialog = MOO_PREFS_DIALOG (moo_prefs_dialog_new (title));
-    g_free (title);
+    /* Prefs dialog title */
+    dialog = MOO_PREFS_DIALOG (moo_prefs_dialog_new (_("Preferences")));
 
     moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_1 (moo_app_get_editor (app)));
     moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_2 (moo_app_get_editor (app)));

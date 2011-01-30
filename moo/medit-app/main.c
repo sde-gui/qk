@@ -134,7 +134,7 @@ static GOptionEntry medit_options[] = {
             /* help message for command line option --line=LINE */ N_("Open file and position cursor on line LINE"),
             /* "LINE" part in --line=LINE */ N_("LINE") },
     { "encoding", 'e', 0, G_OPTION_ARG_STRING, (gpointer) &medit_opts.encoding,
-            /* help message for command line option --encoding=ENCODING */ N_("Use provided character encoding"),
+            /* help message for command line option --encoding=ENCODING */ N_("Use character encoding ENCODING"),
             /* "ENCODING" part in --encoding=ENCODING */ N_("ENCODING") },
     { "reload", 'r', 0, G_OPTION_ARG_NONE, &medit_opts.reload,
             /* help message for command line option --reload */ N_("Automatically reload file if it was modified on disk"), NULL },

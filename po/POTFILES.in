@@ -11,10 +11,10 @@ moo/mooedit/glade/mooeditprefs-filters.glade
 moo/mooedit/glade/mooeditprefs-general.glade
 moo/mooedit/glade/mooeditprefs-langs.glade
 moo/mooedit/glade/mooeditprefs-view.glade
+moo/mooedit/glade/mooeditprogress.glade
 moo/mooedit/glade/mooeditsavemult.glade
 moo/mooedit/glade/moopluginprefs.glade
 moo/mooedit/glade/mooprint.glade
-moo/mooedit/glade/mooprintpreview.glade
 moo/mooedit/glade/mooquicksearch.glade
 moo/mooedit/glade/mootextfind.glade
 moo/mooedit/glade/mootextfind-prompt.glade
@@ -38,6 +38,7 @@ moo/moofileview/moobookmarkmgr.c
 moo/moofileview/moofileview.c
 moo/moofileview/moofileview-tools.c
 moo/moofileview/moofileview.xml
+moo/moolua/mooluaplugin.cpp
 moo/moopython/plugins/medit/runpython.py
 moo/moopython/plugins/python.py
 moo/moopython/plugins/terminal.py
@@ -66,7 +67,6 @@ moo/plugins/moofilelist.c
 moo/plugins/moofileselector.c
 moo/plugins/moofileselector-prefs.c
 moo/plugins/moofind.c
-moo/plugins/mooluaplugin.cpp
 moo/plugins/support/mooeditwindowoutput.c
 moo/plugins/usertools/filters.xml
 moo/plugins/usertools/glade/mooedittools-exe.glade
