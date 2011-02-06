@@ -623,16 +623,6 @@ moo_edit_is_modified (MooEdit *edit)
 }
 
 /**
- * moo_edit_is_clean:
- **/
-gboolean
-moo_edit_is_clean (MooEdit *edit)
-{
-    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return (moo_edit_get_status (edit) & MOO_EDIT_STATUS_CLEAN) != 0;
-}
-
-/**
  * moo_edit_get_status:
  **/
 MooEditStatus

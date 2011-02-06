@@ -98,7 +98,6 @@ void                 moo_edit_set_line_end_type         (MooEdit            *edi
 gboolean             moo_edit_is_empty                  (MooEdit            *edit);
 gboolean             moo_edit_is_untitled               (MooEdit            *edit);
 gboolean             moo_edit_is_modified               (MooEdit            *edit);
-gboolean             moo_edit_is_clean                  (MooEdit            *edit);
 void                 moo_edit_set_modified              (MooEdit            *edit,
                                                          gboolean            modified);
 gboolean             moo_edit_get_clean                 (MooEdit            *edit);
