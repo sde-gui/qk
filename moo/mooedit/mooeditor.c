@@ -1774,7 +1774,7 @@ find_modified (MooEditArray *docs)
     guint i;
     MooEditArray *modified = moo_edit_array_new ();
     for (i = 0; i < docs->n_elms; ++i)
-        if (MOO_EDIT_IS_MODIFIED (docs->elms[i]) && !MOO_EDIT_IS_CLEAN (docs->elms[i]))
+        if (moo_edit_is_modified (docs->elms[i]) && !moo_edit_is_clean (docs->elms[i]))
             moo_edit_array_append (modified, docs->elms[i]);
     return modified;
 }
@@ -2485,8 +2485,8 @@ moo_editor_reload (MooEditor     *editor,
     }
 
     if (!is_embedded (editor) &&
-        !MOO_EDIT_IS_CLEAN (doc) &&
-        MOO_EDIT_IS_MODIFIED (doc) &&
+        !moo_edit_is_clean (doc) &&
+        moo_edit_is_modified (doc) &&
         !_moo_edit_reload_modified_dialog (doc))
     {
         g_set_error (error,

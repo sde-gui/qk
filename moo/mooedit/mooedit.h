@@ -32,9 +32,6 @@ G_BEGIN_DECLS
 #define MOO_IS_EDIT_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT))
 #define MOO_EDIT_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT, MooEditClass))
 
-#define MOO_EDIT_IS_MODIFIED(edit)  ((moo_edit_get_status (edit) & MOO_EDIT_STATUS_MODIFIED) != 0)
-#define MOO_EDIT_IS_CLEAN(edit)     ((moo_edit_get_status (edit) & MOO_EDIT_STATUS_CLEAN) != 0)
-
 typedef struct MooEditPrivate  MooEditPrivate;
 typedef struct MooEditClass    MooEditClass;
 
@@ -101,6 +98,7 @@ void                 moo_edit_set_line_end_type         (MooEdit            *edi
 gboolean             moo_edit_is_empty                  (MooEdit            *edit);
 gboolean             moo_edit_is_untitled               (MooEdit            *edit);
 gboolean             moo_edit_is_modified               (MooEdit            *edit);
+gboolean             moo_edit_is_clean                  (MooEdit            *edit);
 void                 moo_edit_set_modified              (MooEdit            *edit,
                                                          gboolean            modified);
 gboolean             moo_edit_get_clean                 (MooEdit            *edit);

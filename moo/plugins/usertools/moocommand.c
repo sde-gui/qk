@@ -412,7 +412,7 @@ save_one (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
 
-    if (MOO_EDIT_IS_MODIFIED (doc) && !moo_edit_save (doc, NULL))
+    if (moo_edit_is_modified (doc) && !moo_edit_save (doc, NULL))
         return FALSE;
 
     return TRUE;

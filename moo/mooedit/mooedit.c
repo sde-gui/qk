@@ -594,7 +594,7 @@ moo_edit_is_empty (MooEdit *edit)
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
-    if (MOO_EDIT_IS_BUSY (edit) || MOO_EDIT_IS_MODIFIED (edit) || !MOO_EDIT_IS_UNTITLED (edit))
+    if (MOO_EDIT_IS_BUSY (edit) || moo_edit_is_modified (edit) || !MOO_EDIT_IS_UNTITLED (edit))
         return FALSE;
 
     gtk_text_buffer_get_bounds (moo_edit_get_buffer (edit), &start, &end);
@@ -619,7 +619,17 @@ gboolean
 moo_edit_is_modified (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return MOO_EDIT_IS_MODIFIED (edit);
+    return (moo_edit_get_status (edit) & MOO_EDIT_STATUS_MODIFIED) != 0;
+}
+
+/**
+ * moo_edit_is_clean:
+ **/
+gboolean
+moo_edit_is_clean (MooEdit *edit)
+{
+    g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
+    return (moo_edit_get_status (edit) & MOO_EDIT_STATUS_CLEAN) != 0;
 }
 
 /**
