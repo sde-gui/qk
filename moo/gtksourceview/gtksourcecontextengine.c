@@ -1676,6 +1676,9 @@ gtk_source_context_engine_text_inserted (GtkSourceEngine *engine,
 
 	g_return_if_fail (start_offset < end_offset);
 
+	if (ce->priv->disabled)
+		return;
+
 	invalidate_region (ce, start_offset, end_offset - start_offset);
 
 	/* If end_offset is at the start of a line (enter key pressed) then
@@ -1812,7 +1815,13 @@ gtk_source_context_engine_text_deleted (GtkSourceEngine *engine,
 					gint             offset,
 					gint             length)
 {
+	GtkSourceContextEngine *ce = GTK_SOURCE_CONTEXT_ENGINE (engine);
+
 	g_return_if_fail (length > 0);
+
+	if (ce->priv->disabled)
+		return;
+
 	invalidate_region (GTK_SOURCE_CONTEXT_ENGINE (engine),
 			   offset,
 			   - length);
