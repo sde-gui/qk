@@ -1,3 +1,12 @@
+2011-02-26  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
+
+    * === Released 1.0.1 ===
+
+    Updated Russian translation.
+    Fixed a crash on windows when syntax highlighting gets disabled
+    because of very long lines.
+    Updated ini.lang.
+
 2011-01-29  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
 
     * === Released 1.0.0 ===
