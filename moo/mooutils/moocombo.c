@@ -104,7 +104,9 @@ static gboolean moo_combo_popup_key_press   (MooCombo       *combo,
 static void     create_arrow_button         (MooCombo       *combo);
 static void     button_clicked              (MooCombo       *combo);
 
-static void     create_popup                (MooCombo       *combo);
+static void     create_popup_tree_view      (MooCombo       *combo);
+static void     create_popup_window         (MooCombo       *combo);
+static void     destroy_popup_window        (MooCombo       *combo);
 static gboolean resize_popup                (MooCombo       *combo);
 static gboolean entry_focus_out             (MooCombo       *combo);
 static gboolean popup_button_press          (MooCombo       *combo,
@@ -297,7 +299,7 @@ moo_combo_init (MooCombo *combo)
                               G_CALLBACK (entry_changed), combo);
 
     create_arrow_button (combo);
-    create_popup (combo);
+    create_popup_tree_view (combo);
 }
 
 
@@ -341,6 +343,12 @@ moo_combo_destroy (GtkObject *object)
     {
         g_object_unref (combo->priv->model);
         combo->priv->model = NULL;
+    }
+
+    if (combo->priv->treeview)
+    {
+        g_object_unref (combo->priv->treeview);
+        combo->priv->treeview = NULL;
     }
 
     if (combo->priv->popup)
@@ -429,27 +437,18 @@ moo_combo_new (void)
 
 
 static void
-create_popup (MooCombo *combo)
+create_popup_window (MooCombo *combo)
 {
     GtkWidget *scrolled_window, *frame;
-    GtkTreeSelection *selection;
+
+    if (combo->priv->popup)
+        return;
 
     combo->priv->popup = gtk_window_new (GTK_WINDOW_POPUP);
     gtk_widget_set_size_request (combo->priv->popup, -1, -1);
     gtk_window_set_default_size (GTK_WINDOW (combo->priv->popup), 1, 1);
     gtk_window_set_resizable (GTK_WINDOW (combo->priv->popup), FALSE);
     gtk_widget_add_events (combo->priv->popup, GDK_KEY_PRESS_MASK | GDK_BUTTON_PRESS_MASK);
-
-    combo->priv->column = gtk_tree_view_column_new ();
-
-    combo->priv->treeview = GTK_TREE_VIEW (gtk_tree_view_new ());
-    gtk_widget_set_size_request (GTK_WIDGET (combo->priv->treeview), -1, -1);
-    gtk_tree_view_append_column (combo->priv->treeview, combo->priv->column);
-    gtk_tree_view_set_headers_visible (combo->priv->treeview, FALSE);
-    gtk_tree_view_set_hover_selection (combo->priv->treeview, TRUE);
-
-    selection = gtk_tree_view_get_selection (combo->priv->treeview);
-    gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
 
     scrolled_window = gtk_scrolled_window_new (NULL, NULL);
     gtk_widget_set_size_request (scrolled_window, -1, -1);
@@ -468,6 +467,37 @@ create_popup (MooCombo *combo)
 
     gtk_widget_show_all (frame);
     gtk_container_add (GTK_CONTAINER (combo->priv->popup), frame);
+}
+
+static void
+destroy_popup_window (MooCombo *combo)
+{
+    if (combo->priv->popup)
+    {
+        GtkWidget *tree_view = GTK_WIDGET (combo->priv->treeview);
+        gtk_container_remove (GTK_CONTAINER (gtk_widget_get_parent (tree_view)), tree_view);
+        gtk_widget_destroy (combo->priv->popup);
+        combo->priv->popup = NULL;
+    }
+}
+
+static void
+create_popup_tree_view (MooCombo *combo)
+{
+    GtkTreeSelection *selection;
+
+    combo->priv->column = gtk_tree_view_column_new ();
+
+    combo->priv->treeview = GTK_TREE_VIEW (gtk_tree_view_new ());
+    g_object_ref_sink (combo->priv->treeview);
+
+    gtk_widget_set_size_request (GTK_WIDGET (combo->priv->treeview), -1, -1);
+    gtk_tree_view_append_column (combo->priv->treeview, combo->priv->column);
+    gtk_tree_view_set_headers_visible (combo->priv->treeview, FALSE);
+    gtk_tree_view_set_hover_selection (combo->priv->treeview, TRUE);
+
+    selection = gtk_tree_view_get_selection (combo->priv->treeview);
+    gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);
 }
 
 
@@ -551,6 +581,8 @@ moo_combo_popup_real (MooCombo *combo)
 
     window = gtk_widget_get_toplevel (GTK_WIDGET (combo->entry));
     g_return_if_fail (GTK_IS_WINDOW (window));
+
+    create_popup_window (combo);
 
     gtk_widget_realize (combo->priv->popup);
 
@@ -1187,6 +1219,7 @@ static void
 moo_combo_unmap (GtkWidget      *widget)
 {
     moo_combo_popdown (MOO_COMBO (widget));
+    destroy_popup_window (MOO_COMBO (widget));
     GTK_WIDGET_CLASS(moo_combo_parent_class)->unmap (widget);
 }
 
@@ -1195,7 +1228,7 @@ static void
 moo_combo_unrealize (GtkWidget      *widget)
 {
     moo_combo_popdown (MOO_COMBO (widget));
-    gtk_widget_unrealize (MOO_COMBO (widget)->priv->popup);
+    destroy_popup_window (MOO_COMBO (widget));
     GTK_WIDGET_CLASS(moo_combo_parent_class)->unrealize (widget);
 }
 
