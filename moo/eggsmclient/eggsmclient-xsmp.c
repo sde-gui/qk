@@ -33,10 +33,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <time.h>
 #include <X11/SM/SMlib.h>
 
 #include <gdk/gdk.h>
+#include <gdk/gdkx.h>
 
 #define EGG_TYPE_SM_CLIENT_XSMP            (egg_sm_client_xsmp_get_type ())
 #define EGG_SM_CLIENT_XSMP(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), EGG_TYPE_SM_CLIENT_XSMP, EggSMClientXSMP))
@@ -57,7 +57,6 @@ typedef struct _EggSMClientXSMPClass   EggSMClientXSMPClass;
  */
 typedef enum
 {
-  XSMP_STATE_START,
   XSMP_STATE_IDLE,
   XSMP_STATE_SAVE_YOURSELF,
   XSMP_STATE_INTERACT_REQUEST,
@@ -68,7 +67,6 @@ typedef enum
 } EggSMClientXSMPState;
 
 static const char *state_names[] = {
-  "start",
   "idle",
   "save-yourself",
   "interact-request",
@@ -102,6 +100,7 @@ struct _EggSMClientXSMP
   guint shutting_down : 1;
 
   /* Todo list */
+  guint waiting_to_set_initial_properties : 1;
   guint waiting_to_emit_quit : 1;
   guint waiting_to_emit_quit_cancelled : 1;
   guint waiting_to_save_myself : 1;
@@ -181,20 +180,9 @@ egg_sm_client_xsmp_init (EggSMClientXSMP *xsmp)
 }
 
 static void
-sm_client_xsmp_finalize (GObject *object)
-{
-  EggSMClientXSMP *xsmp = EGG_SM_CLIENT_XSMP (object);
-  g_free (xsmp->client_id);
-  g_strfreev (xsmp->restart_command);
-  G_OBJECT_CLASS (egg_sm_client_xsmp_parent_class)->finalize (object);
-}
-
-static void
 egg_sm_client_xsmp_class_init (EggSMClientXSMPClass *klass)
 {
   EggSMClientClass *sm_client_class = EGG_SM_CLIENT_CLASS (klass);
-
-  G_OBJECT_CLASS (sm_client_class)->finalize = sm_client_xsmp_finalize;
 
   sm_client_class->startup             = sm_client_xsmp_startup;
   sm_client_class->set_restart_command = sm_client_xsmp_set_restart_command;
@@ -212,74 +200,19 @@ egg_sm_client_xsmp_new (void)
 }
 
 static gboolean
-sm_client_xsmp_connect (gpointer user_data)
+sm_client_xsmp_set_initial_properties (gpointer user_data)
 {
   EggSMClientXSMP *xsmp = user_data;
-  SmcCallbacks callbacks;
-  char *client_id;
-  char error_string_ret[256];
-  char pid_str[64];
   EggDesktopFile *desktop_file;
   GPtrArray *clone, *restart;
+  char pid_str[64];
 
-  g_source_remove (xsmp->idle);
-  xsmp->idle = 0;
-
-  ice_init ();
-  SmcSetErrorHandler (smc_error_handler);
-
-  callbacks.save_yourself.callback      = xsmp_save_yourself;
-  callbacks.die.callback                = xsmp_die;
-  callbacks.save_complete.callback      = xsmp_save_complete;
-  callbacks.shutdown_cancelled.callback = xsmp_shutdown_cancelled;
-
-  callbacks.save_yourself.client_data      = xsmp;
-  callbacks.die.client_data                = xsmp;
-  callbacks.save_complete.client_data      = xsmp;
-  callbacks.shutdown_cancelled.client_data = xsmp;
-
-  client_id = NULL;
-  error_string_ret[0] = '\0';
-  xsmp->connection =
-    SmcOpenConnection (NULL, xsmp, SmProtoMajor, SmProtoMinor,
-		       SmcSaveYourselfProcMask | SmcDieProcMask |
-		       SmcSaveCompleteProcMask |
-		       SmcShutdownCancelledProcMask,
-		       &callbacks,
-		       xsmp->client_id, &client_id,
-		       sizeof (error_string_ret), error_string_ret);
-
-  if (!xsmp->connection)
+  if (xsmp->idle)
     {
-      g_warning ("Failed to connect to the session manager: %s\n",
-		 error_string_ret[0] ?
-		 error_string_ret : "no error message given");
-      xsmp->state = XSMP_STATE_CONNECTION_CLOSED;
-      return FALSE;
+      g_source_remove (xsmp->idle);
+      xsmp->idle = 0;
     }
-
-  /* We expect a pointless initial SaveYourself if either (a) we
-   * didn't have an initial client ID, or (b) we DID have an initial
-   * client ID, but the server rejected it and gave us a new one.
-   */
-  if (!xsmp->client_id ||
-      (client_id && strcmp (xsmp->client_id, client_id) != 0))
-    xsmp->expecting_initial_save_yourself = TRUE;
-
-  if (client_id)
-    {
-      g_free (xsmp->client_id);
-      xsmp->client_id = g_strdup (client_id);
-      free (client_id);
-
-      gdk_threads_enter ();
-      gdk_set_sm_client_id (xsmp->client_id);
-      gdk_threads_leave ();
-
-#if 0
-      g_debug ("Got client ID \"%s\"", xsmp->client_id);
-#endif
-    }
+  xsmp->waiting_to_set_initial_properties = FALSE;
 
   if (egg_sm_client_get_mode () == EGG_SM_CLIENT_MODE_NO_RESTART)
     xsmp->restart_style = SmRestartNever;
@@ -288,19 +221,14 @@ sm_client_xsmp_connect (gpointer user_data)
   desktop_file = egg_get_desktop_file ();
   if (desktop_file)
     {
-      GKeyFile *key_file;
       GError *err = NULL;
       char *cmdline, **argv;
       int argc;
 
-      key_file = egg_desktop_file_get_key_file (desktop_file);
-
       if (xsmp->restart_style == SmRestartIfRunning)
 	{
-	  if (g_key_file_has_key (key_file, EGG_DESKTOP_FILE_GROUP,
-				  "X-GNOME-AutoRestart", NULL) &&
-	      g_key_file_get_boolean (key_file, EGG_DESKTOP_FILE_GROUP,
-				      "X-GNOME-AutoRestart", NULL))
+	  if (egg_desktop_file_get_boolean (desktop_file,
+					    "X-GNOME-AutoRestart", NULL))
 	    xsmp->restart_style = SmRestartImmediately;
 	}
 
@@ -319,6 +247,7 @@ sm_client_xsmp_connect (gpointer user_data)
 			 err->message);
 	      g_error_free (err);
 	    }
+	  g_free (cmdline);
 	}
     }
 
@@ -328,9 +257,7 @@ sm_client_xsmp_connect (gpointer user_data)
   clone = generate_command (xsmp->restart_command, NULL, NULL);
   restart = generate_command (xsmp->restart_command, xsmp->client_id, NULL);
 
-#if 0
   g_debug ("Setting initial properties");
-#endif
 
   /* Program, CloneCommand, RestartCommand, and UserID are required.
    * ProcessID isn't required, but the SM may be able to do something
@@ -355,7 +282,7 @@ sm_client_xsmp_connect (gpointer user_data)
 		      NULL);
     }
 
-  xsmp->state = XSMP_STATE_IDLE;
+  update_pending_events (xsmp);
   return FALSE;
 }
 
@@ -371,9 +298,7 @@ sm_client_xsmp_disconnect (EggSMClientXSMP *xsmp)
   if (!xsmp->connection)
     return;
 
-#if 0
   g_debug ("Disconnecting");
-#endif
 
   connection = xsmp->connection;
   xsmp->connection = NULL;
@@ -389,19 +314,78 @@ sm_client_xsmp_startup (EggSMClient *client,
 			const char  *client_id)
 {
   EggSMClientXSMP *xsmp = (EggSMClientXSMP *)client;
+  SmcCallbacks callbacks;
+  char *ret_client_id;
+  char error_string_ret[256];
 
-  xsmp->state = XSMP_STATE_START;
-  if (xsmp->client_id)
-    g_free (xsmp->client_id);
   xsmp->client_id = g_strdup (client_id);
 
-  /* Don't connect to the session manager until we reach the main
-   * loop, since the session manager may assume we're fully up and
-   * running once we connect. (This also gives the application a
-   * chance to call egg_set_desktop_file() before we set the initial
-   * properties.)
+  ice_init ();
+  SmcSetErrorHandler (smc_error_handler);
+
+  callbacks.save_yourself.callback      = xsmp_save_yourself;
+  callbacks.die.callback                = xsmp_die;
+  callbacks.save_complete.callback      = xsmp_save_complete;
+  callbacks.shutdown_cancelled.callback = xsmp_shutdown_cancelled;
+
+  callbacks.save_yourself.client_data      = xsmp;
+  callbacks.die.client_data                = xsmp;
+  callbacks.save_complete.client_data      = xsmp;
+  callbacks.shutdown_cancelled.client_data = xsmp;
+
+  client_id = NULL;
+  error_string_ret[0] = '\0';
+  xsmp->connection =
+    SmcOpenConnection (NULL, xsmp, SmProtoMajor, SmProtoMinor,
+		       SmcSaveYourselfProcMask | SmcDieProcMask |
+		       SmcSaveCompleteProcMask |
+		       SmcShutdownCancelledProcMask,
+		       &callbacks,
+		       xsmp->client_id, &ret_client_id,
+		       sizeof (error_string_ret), error_string_ret);
+
+  if (!xsmp->connection)
+    {
+      g_warning ("Failed to connect to the session manager: %s\n",
+		 error_string_ret[0] ?
+		 error_string_ret : "no error message given");
+      xsmp->state = XSMP_STATE_CONNECTION_CLOSED;
+      return;
+    }
+
+  /* We expect a pointless initial SaveYourself if either (a) we
+   * didn't have an initial client ID, or (b) we DID have an initial
+   * client ID, but the server rejected it and gave us a new one.
    */
-  xsmp->idle = g_idle_add (sm_client_xsmp_connect, client);
+  if (!xsmp->client_id ||
+      (ret_client_id && strcmp (xsmp->client_id, ret_client_id) != 0))
+    xsmp->expecting_initial_save_yourself = TRUE;
+
+  if (ret_client_id)
+    {
+      g_free (xsmp->client_id);
+      xsmp->client_id = g_strdup (ret_client_id);
+      free (ret_client_id);
+
+#if !GTK_CHECK_VERSION(2,91,7) && !GTK_CHECK_VERSION(3,0,0)
+      gdk_set_sm_client_id (xsmp->client_id);
+#else
+      gdk_x11_set_sm_client_id (xsmp->client_id);
+#endif
+
+      g_debug ("Got client ID \"%s\"", xsmp->client_id);
+    }
+
+  xsmp->state = XSMP_STATE_IDLE;
+
+  /* Do not set the initial properties until we reach the main loop,
+   * so that the application has a chance to call
+   * egg_set_desktop_file(). (This may also help the session manager
+   * have a better idea of when the application is fully up and
+   * running.)
+   */
+  xsmp->waiting_to_set_initial_properties = TRUE;
+  xsmp->idle = g_idle_add (sm_client_xsmp_set_initial_properties, client);
 }
 
 static void
@@ -449,24 +433,20 @@ sm_client_xsmp_will_quit (EggSMClient *client,
 
   g_return_if_fail (xsmp->state == XSMP_STATE_INTERACT);
 
-#if 0
   g_debug ("Sending InteractDone(%s)", will_quit ? "False" : "True");
-#endif
   SmcInteractDone (xsmp->connection, !will_quit);
 
   if (will_quit && xsmp->need_save_state)
     save_state (xsmp);
 
-#if 0
   g_debug ("Sending SaveYourselfDone(%s)", will_quit ? "True" : "False");
-#endif
   SmcSaveYourselfDone (xsmp->connection, will_quit);
   xsmp->state = XSMP_STATE_SAVE_YOURSELF_DONE;
 }
 
 static gboolean
 sm_client_xsmp_end_session (EggSMClient         *client,
-			    EggSMClientEndStyle  style,
+			    G_GNUC_UNUSED EggSMClientEndStyle  style,
 			    gboolean             request_confirmation)
 {
   EggSMClientXSMP *xsmp = (EggSMClientXSMP *)client;
@@ -495,11 +475,6 @@ sm_client_xsmp_end_session (EggSMClient         *client,
 
       switch (xsmp->state)
 	{
-	case XSMP_STATE_START:
-	  /* Force the connection to complete (or fail) now. */
-	  sm_client_xsmp_connect (xsmp);
-	  break;
-
 	case XSMP_STATE_CONNECTION_CLOSED:
 	  return FALSE;
 
@@ -520,6 +495,9 @@ sm_client_xsmp_end_session (EggSMClient         *client,
 	  return TRUE;
 
 	case XSMP_STATE_IDLE:
+	  if (xsmp->waiting_to_set_initial_properties)
+	    sm_client_xsmp_set_initial_properties (xsmp);
+
 	  if (!xsmp->expecting_initial_save_yourself)
 	    break;
 	  /* else fall through */
@@ -545,9 +523,7 @@ sm_client_xsmp_end_session (EggSMClient         *client,
   else
     save_type = SmSaveGlobal;
 
-#if 0
   g_debug ("Sending SaveYourselfRequest(SmSaveGlobal, Shutdown, SmInteractStyleAny, %sFast)", request_confirmation ? "!" : "");
-#endif
   SmcRequestSaveYourself (xsmp->connection,
 			  save_type,
 			  True, /* shutdown */
@@ -636,7 +612,7 @@ fix_broken_state (EggSMClientXSMP *xsmp, const char *message,
 /* SM callbacks */
 
 static void
-xsmp_save_yourself (SmcConn   smc_conn,
+xsmp_save_yourself (G_GNUC_UNUSED SmcConn   smc_conn,
 		    SmPointer client_data,
 		    int       save_type,
 		    Bool      shutdown,
@@ -646,7 +622,6 @@ xsmp_save_yourself (SmcConn   smc_conn,
   EggSMClientXSMP *xsmp = client_data;
   gboolean wants_quit_requested;
 
-#if 0
   g_debug ("Received SaveYourself(%s, %s, %s, %s) in state %s",
 	   save_type == SmSaveLocal ? "SmSaveLocal" :
 	   save_type == SmSaveGlobal ? "SmSaveGlobal" : "SmSaveBoth",
@@ -655,7 +630,6 @@ xsmp_save_yourself (SmcConn   smc_conn,
 	   interact_style == SmInteractStyleErrors ? "SmInteractStyleErrors" :
 	   "SmInteractStyleNone", fast ? "Fast" : "!Fast",
 	   EGG_SM_CLIENT_XSMP_STATE (xsmp));
-#endif
 
   if (xsmp->state != XSMP_STATE_IDLE &&
       xsmp->state != XSMP_STATE_SHUTDOWN_CANCELLED)
@@ -663,6 +637,9 @@ xsmp_save_yourself (SmcConn   smc_conn,
       fix_broken_state (xsmp, "SaveYourself", FALSE, TRUE);
       return;
     }
+
+  if (xsmp->waiting_to_set_initial_properties)
+    sm_client_xsmp_set_initial_properties (xsmp);
 
   /* If this is the initial SaveYourself, ignore it; we've already set
    * properties and there's no reason to actually save state too.
@@ -675,9 +652,7 @@ xsmp_save_yourself (SmcConn   smc_conn,
 	  interact_style == SmInteractStyleNone &&
 	  !shutdown && !fast)
 	{
-#if 0
 	  g_debug ("Sending SaveYourselfDone(True) for initial SaveYourself");
-#endif
 	  SmcSaveYourselfDone (xsmp->connection, True);
 	  /* As explained in the comment at the end of
 	   * do_save_yourself(), SAVE_YOURSELF_DONE is the correct
@@ -762,10 +737,8 @@ do_save_yourself (EggSMClientXSMP *xsmp)
     {
       xsmp->state = XSMP_STATE_INTERACT_REQUEST;
 
-#if 0
       g_debug ("Sending InteractRequest(%s)",
 	       xsmp->interact_errors ? "Error" : "Normal");
-#endif
       SmcInteractRequest (xsmp->connection,
 			  xsmp->interact_errors ? SmDialogError : SmDialogNormal,
 			  xsmp_interact,
@@ -784,9 +757,7 @@ do_save_yourself (EggSMClientXSMP *xsmp)
 	 return;
     }
 
-#if 0
   g_debug ("Sending SaveYourselfDone(True)");
-#endif
   SmcSaveYourselfDone (xsmp->connection, True);
 
   /* The client state diagram in the XSMP spec says that after a
@@ -795,30 +766,6 @@ do_save_yourself (EggSMClientXSMP *xsmp)
    * disagrees.
    */
   xsmp->state = XSMP_STATE_SAVE_YOURSELF_DONE;
-}
-
-static void
-merge_keyfiles (GKeyFile *dest, GKeyFile *source)
-{
-  int g, k;
-  char **groups, **keys, *value;
-
-  groups = g_key_file_get_groups (source, NULL);
-  for (g = 0; groups[g]; g++)
-    {
-      keys = g_key_file_get_keys (source, groups[g], NULL, NULL);
-      for (k = 0; keys[k]; k++)
-	{
-	  value = g_key_file_get_value (source, groups[g], keys[k], NULL);
-	  if (value)
-	    {
-	      g_key_file_set_value (dest, groups[g], keys[k], value);
-	      g_free (value);
-	    }
-	}
-      g_strfreev (keys);
-    }
-  g_strfreev (groups);
 }
 
 static void
@@ -851,30 +798,61 @@ save_state (EggSMClientXSMP *xsmp)
   if (desktop_file)
     {
       GKeyFile *merged_file;
-      char *exec;
-      guint i;
+      char *desktop_file_path;
 
       merged_file = g_key_file_new ();
-      merge_keyfiles (merged_file, egg_desktop_file_get_key_file (desktop_file));
-      merge_keyfiles (merged_file, state_file);
+      desktop_file_path =
+	g_filename_from_uri (egg_desktop_file_get_source (desktop_file),
+			     NULL, NULL);
+      if (desktop_file_path &&
+	  g_key_file_load_from_file (merged_file, desktop_file_path,
+				     G_KEY_FILE_KEEP_COMMENTS |
+				     G_KEY_FILE_KEEP_TRANSLATIONS, NULL))
+	{
+	  guint g, k, i;
+	  char **groups, **keys, *value, *exec;
 
-      g_key_file_free (state_file);
-      state_file = merged_file;
+	  groups = g_key_file_get_groups (state_file, NULL);
+	  for (g = 0; groups[g]; g++)
+	    {
+	      keys = g_key_file_get_keys (state_file, groups[g], NULL, NULL);
+	      for (k = 0; keys[k]; k++)
+		{
+		  value = g_key_file_get_value (state_file, groups[g],
+						keys[k], NULL);
+		  if (value)
+		    {
+		      g_key_file_set_value (merged_file, groups[g],
+					    keys[k], value);
+		      g_free (value);
+		    }
+		}
+	      g_strfreev (keys);
+	    }
+	  g_strfreev (groups);
 
-      /* Update Exec key using "--sm-client-state-file %k" */
-      restart = generate_command (xsmp->restart_command,
-				  NULL, "%k");
-      for (i = 0; i < restart->len; i++)
-	restart->pdata[i] = g_shell_quote (restart->pdata[i]);
-      g_ptr_array_add (restart, NULL);
-      exec = g_strjoinv (" ", (char **)restart->pdata);
-      g_strfreev ((char **)restart->pdata);
-      g_ptr_array_free (restart, FALSE);
+	  g_key_file_free (state_file);
+	  state_file = merged_file;
 
-      g_key_file_set_string (state_file, EGG_DESKTOP_FILE_GROUP,
-			     EGG_DESKTOP_FILE_KEY_EXEC,
-			     exec);
-      g_free (exec);
+	  /* Update Exec key using "--sm-client-state-file %k" */
+	  restart = generate_command (xsmp->restart_command,
+				      NULL, "%k");
+	  for (i = 0; i < restart->len; i++)
+	    restart->pdata[i] = g_shell_quote (restart->pdata[i]);
+	  g_ptr_array_add (restart, NULL);
+	  exec = g_strjoinv (" ", (char **)restart->pdata);
+	  g_strfreev ((char **)restart->pdata);
+	  g_ptr_array_free (restart, FALSE);
+
+	  g_key_file_set_string (state_file, EGG_DESKTOP_FILE_GROUP,
+				 EGG_DESKTOP_FILE_KEY_EXEC,
+				 exec);
+	  g_free (exec);
+	}
+      else
+	desktop_file = NULL;
+
+      g_free (desktop_file_path);
     }
 
   /* Now write state_file to disk. (We can't use mktemp(), because
@@ -953,16 +931,14 @@ save_state (EggSMClientXSMP *xsmp)
 }
 
 static void
-xsmp_interact (SmcConn   smc_conn,
+xsmp_interact (G_GNUC_UNUSED SmcConn   smc_conn,
 	       SmPointer client_data)
 {
   EggSMClientXSMP *xsmp = client_data;
   EggSMClient *client = client_data;
 
-#if 0
   g_debug ("Received Interact message in state %s",
 	   EGG_SM_CLIENT_XSMP_STATE (xsmp));
-#endif
 
   if (xsmp->state != XSMP_STATE_INTERACT_REQUEST)
     {
@@ -975,31 +951,27 @@ xsmp_interact (SmcConn   smc_conn,
 }
 
 static void
-xsmp_die (SmcConn   smc_conn,
+xsmp_die (G_GNUC_UNUSED SmcConn   smc_conn,
 	  SmPointer client_data)
 {
   EggSMClientXSMP *xsmp = client_data;
   EggSMClient *client = client_data;
 
-#if 0
   g_debug ("Received Die message in state %s",
 	   EGG_SM_CLIENT_XSMP_STATE (xsmp));
-#endif
 
   sm_client_xsmp_disconnect (xsmp);
   egg_sm_client_quit (client);
 }
 
 static void
-xsmp_save_complete (SmcConn   smc_conn,
+xsmp_save_complete (G_GNUC_UNUSED SmcConn   smc_conn,
 		    SmPointer client_data)
 {
   EggSMClientXSMP *xsmp = client_data;
 
-#if 0
   g_debug ("Received SaveComplete message in state %s",
 	   EGG_SM_CLIENT_XSMP_STATE (xsmp));
-#endif
 
   if (xsmp->state == XSMP_STATE_SAVE_YOURSELF_DONE)
     xsmp->state = XSMP_STATE_IDLE;
@@ -1008,16 +980,14 @@ xsmp_save_complete (SmcConn   smc_conn,
 }
 
 static void
-xsmp_shutdown_cancelled (SmcConn   smc_conn,
+xsmp_shutdown_cancelled (G_GNUC_UNUSED SmcConn   smc_conn,
 			 SmPointer client_data)
 {
   EggSMClientXSMP *xsmp = client_data;
   EggSMClient *client = client_data;
 
-#if 0
   g_debug ("Received ShutdownCancelled message in state %s",
 	   EGG_SM_CLIENT_XSMP_STATE (xsmp));
-#endif
 
   xsmp->shutting_down = FALSE;
 
@@ -1042,9 +1012,7 @@ xsmp_shutdown_cancelled (SmcConn   smc_conn,
     }
   else
     {
-#if 0
       g_debug ("Sending SaveYourselfDone(False)");
-#endif
       SmcSaveYourselfDone (xsmp->connection, False);
 
       if (xsmp->state == XSMP_STATE_INTERACT)
@@ -1332,14 +1300,15 @@ process_ice_messages (IceConn ice_conn)
 
     case IceProcessMessagesConnectionClosed:
       return FALSE;
-    }
 
-  g_return_val_if_reached (FALSE);
+    default:
+      g_assert_not_reached ();
+    }
 }
 
 static gboolean
-ice_iochannel_watch (GIOChannel   *channel,
-		     GIOCondition  condition,
+ice_iochannel_watch (G_GNUC_UNUSED GIOChannel   *channel,
+		     G_GNUC_UNUSED GIOCondition  condition,
 		     gpointer      client_data)
 {
   return process_ice_messages (client_data);
@@ -1347,7 +1316,7 @@ ice_iochannel_watch (GIOChannel   *channel,
 
 static void
 ice_connection_watch (IceConn     ice_conn,
-		      IcePointer  client_data,
+		      G_GNUC_UNUSED IcePointer  client_data,
 		      Bool        opening,
 		      IcePointer *watch_data)
 {
@@ -1374,31 +1343,31 @@ ice_connection_watch (IceConn     ice_conn,
 }
 
 static void
-ice_error_handler (IceConn       ice_conn,
-		   Bool          swap,
-		   int           offending_minor_opcode,
-		   unsigned long offending_sequence,
-		   int           error_class,
-		   int           severity,
-		   IcePointer    values)
+ice_error_handler (G_GNUC_UNUSED IceConn       ice_conn,
+		   G_GNUC_UNUSED Bool          swap,
+		   G_GNUC_UNUSED int           offending_minor_opcode,
+		   G_GNUC_UNUSED unsigned long offending_sequence,
+		   G_GNUC_UNUSED int           error_class,
+		   G_GNUC_UNUSED int           severity,
+		   G_GNUC_UNUSED IcePointer    values)
 {
   /* Do nothing */
 }
 
 static void
-ice_io_error_handler (IceConn ice_conn)
+ice_io_error_handler (G_GNUC_UNUSED IceConn ice_conn)
 {
   /* Do nothing */
 }
 
 static void
-smc_error_handler (SmcConn       smc_conn,
-                   Bool          swap,
-                   int           offending_minor_opcode,
-                   unsigned long offending_sequence,
-                   int           error_class,
-                   int           severity,
-                   SmPointer     values)
+smc_error_handler (G_GNUC_UNUSED SmcConn       smc_conn,
+                   G_GNUC_UNUSED Bool          swap,
+                   G_GNUC_UNUSED int           offending_minor_opcode,
+                   G_GNUC_UNUSED unsigned long offending_sequence,
+                   G_GNUC_UNUSED int           error_class,
+                   G_GNUC_UNUSED int           severity,
+                   G_GNUC_UNUSED SmPointer     values)
 {
   /* Do nothing */
 }

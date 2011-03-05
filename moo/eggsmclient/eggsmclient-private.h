@@ -20,12 +20,17 @@
 #ifndef __EGG_SM_CLIENT_PRIVATE_H__
 #define __EGG_SM_CLIENT_PRIVATE_H__
 
-#ifdef __GNUC__
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+#include <gtk/gtk.h>
+
+#if !GTK_CHECK_VERSION(2,91,7) && !GTK_CHECK_VERSION(3,0,0)
+/* GTK+ 3 includes this automatically */
+#include <gdkconfig.h>
 #endif
 
-#include <gdkconfig.h>
 #include "eggsmclient.h"
+
+#undef G_LOG_DOMAIN
+#define G_LOG_DOMAIN "EggSMClient"
 
 G_BEGIN_DECLS
 
@@ -46,12 +51,9 @@ EggSMClient *egg_sm_client_dbus_new      (void);
 #elif defined (GDK_WINDOWING_WIN32)
 GType        egg_sm_client_win32_get_type (void);
 EggSMClient *egg_sm_client_win32_new      (void);
-#elif defined (GDK_WINDOWING_QUARTZ) && 0
+#elif defined (GDK_WINDOWING_QUARTZ)
 GType        egg_sm_client_osx_get_type (void);
 EggSMClient *egg_sm_client_osx_new      (void);
-#else
-GType        egg_sm_client_dummy_get_type (void);
-EggSMClient *egg_sm_client_dummy_new      (void);
 #endif
 
 G_END_DECLS
