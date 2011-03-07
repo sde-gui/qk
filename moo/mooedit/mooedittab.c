@@ -130,6 +130,8 @@ moo_edit_tab_get_doc (MooEditTab *tab)
 
 /**
  * moo_edit_tab_get_views:
+ *
+ * Returns: (transfer full)
  **/
 MooEditViewArray *
 moo_edit_tab_get_views (MooEditTab *tab)

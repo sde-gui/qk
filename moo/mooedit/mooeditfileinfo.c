@@ -282,6 +282,8 @@ moo_open_info_init (MooOpenInfo *info)
  *
  * @file:
  * @encoding: (type const-utf8) (allow-none) (default NULL)
+ *
+ * Returns: (transfer full)
  **/
 MooSaveInfo *
 moo_save_info_new_file (GFile      *file,

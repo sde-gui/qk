@@ -2735,6 +2735,8 @@ moo_edit_window_get_views (MooEditWindow *window)
 
 /**
  * moo_edit_window_get_tabs:
+ *
+ * Returns: (transfer full)
  */
 MooEditTabArray *
 moo_edit_window_get_tabs (MooEditWindow *window)
