@@ -45,6 +45,7 @@ struct _MooHistoryComboPrivate {
 };
 
 
+static void     moo_history_combo_dispose       (GObject            *object);
 static void     moo_history_combo_finalize      (GObject            *object);
 static void     moo_history_combo_set_property  (GObject            *object,
                                                  guint               prop_id,
@@ -102,6 +103,9 @@ moo_history_combo_class_init (MooHistoryComboClass *klass)
 
     moo_history_combo_parent_class = g_type_class_peek_parent (klass);
 
+    g_type_class_add_private (klass, sizeof (MooHistoryComboPrivate));
+
+    gobject_class->dispose = moo_history_combo_dispose;
     gobject_class->finalize = moo_history_combo_finalize;
     gobject_class->set_property = moo_history_combo_set_property;
     gobject_class->get_property = moo_history_combo_get_property;
@@ -156,7 +160,7 @@ moo_history_combo_init (MooHistoryCombo *combo)
 {
     GtkCellRenderer *cell;
 
-    combo->priv = g_new0 (MooHistoryComboPrivate, 1);
+    combo->priv = G_TYPE_INSTANCE_GET_PRIVATE (combo, MOO_TYPE_HISTORY_COMBO, MooHistoryComboPrivate);
 
     combo->priv->filter_func = default_filter_func;
     combo->priv->filter_data = combo;
@@ -269,18 +273,35 @@ moo_history_combo_get_property (GObject        *object,
 
 
 static void
+moo_history_combo_dispose (GObject *object)
+{
+    MooHistoryCombo *combo = MOO_HISTORY_COMBO (object);
+
+    if (combo->priv->filter)
+    {
+        g_object_unref (combo->priv->filter);
+        g_object_unref (combo->priv->model);
+        combo->priv->filter = NULL;
+        combo->priv->model = NULL;
+    }
+
+    if (combo->priv->list)
+    {
+        g_object_unref (combo->priv->list);
+        combo->priv->list = NULL;
+    }
+
+    G_OBJECT_CLASS (moo_history_combo_parent_class)->dispose (object);
+}
+
+
+static void
 moo_history_combo_finalize (GObject *object)
 {
     MooHistoryCombo *combo = MOO_HISTORY_COMBO (object);
 
     g_free (combo->priv->completion_text);
 
-    if (combo->priv->filter)
-        g_object_unref (combo->priv->filter);
-
-    g_object_unref (combo->priv->list);
-
-    g_free (combo->priv);
     G_OBJECT_CLASS (moo_history_combo_parent_class)->finalize (object);
 }
 

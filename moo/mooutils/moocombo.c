@@ -79,7 +79,6 @@ static void moo_combo_cell_layout_reorder               (GtkCellLayout      *cel
 
 static void     moo_combo_class_init        (MooComboClass  *klass);
 static void     moo_combo_init              (MooCombo       *combo);
-static void     moo_combo_finalize          (GObject        *object);
 static void     moo_combo_destroy           (GtkObject      *object);
 static void     moo_combo_set_property      (GObject        *object,
                                              guint           prop_id,
@@ -185,9 +184,10 @@ moo_combo_class_init (MooComboClass *klass)
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     GtkBindingSet *binding_set;
 
+    g_type_class_add_private (klass, sizeof (MooComboPrivate));
+
     moo_combo_parent_class = g_type_class_peek_parent (klass);
 
-    gobject_class->finalize = moo_combo_finalize;
     gobject_class->set_property = moo_combo_set_property;
     gobject_class->get_property = moo_combo_get_property;
 
@@ -276,7 +276,7 @@ moo_combo_cell_layout_init (GtkCellLayoutIface *iface)
 static void
 moo_combo_init (MooCombo *combo)
 {
-    combo->priv = g_new0 (MooComboPrivate, 1);
+    combo->priv = G_TYPE_INSTANCE_GET_PRIVATE (combo, MOO_TYPE_COMBO, MooComboPrivate);
 
     combo->priv->use_button = TRUE;
 
@@ -336,8 +336,13 @@ moo_combo_destroy (GtkObject *object)
 {
     MooCombo *combo = MOO_COMBO (object);
 
+    moo_combo_set_model (combo, NULL);
+
     combo->priv->button = NULL;
     combo->entry = NULL;
+
+    gtk_tree_row_reference_free (combo->priv->active_row);
+    combo->priv->active_row = NULL;
 
     if (combo->priv->model)
     {
@@ -416,16 +421,6 @@ moo_combo_get_property (GObject        *object,
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
             break;
     }
-}
-
-
-static void
-moo_combo_finalize (GObject *object)
-{
-    MooCombo *combo = MOO_COMBO (object);
-    gtk_tree_row_reference_free (combo->priv->active_row);
-    g_free (combo->priv);
-    G_OBJECT_CLASS (moo_combo_parent_class)->finalize (object);
 }
 
 
