@@ -113,6 +113,8 @@ struct _EggSMClientXSMPClass
 
 };
 
+static void     sm_client_xsmp_finalize (GObject *object);
+
 static void     sm_client_xsmp_startup (EggSMClient *client,
 					const char  *client_id);
 static void     sm_client_xsmp_set_restart_command (EggSMClient  *client,
@@ -188,6 +190,19 @@ egg_sm_client_xsmp_class_init (EggSMClientXSMPClass *klass)
   sm_client_class->set_restart_command = sm_client_xsmp_set_restart_command;
   sm_client_class->will_quit           = sm_client_xsmp_will_quit;
   sm_client_class->end_session         = sm_client_xsmp_end_session;
+
+  G_OBJECT_CLASS (klass)->finalize     = sm_client_xsmp_finalize;
+}
+
+static void
+sm_client_xsmp_finalize (GObject *object)
+{
+  EggSMClientXSMP *xsmp = (EggSMClientXSMP *)object;
+
+  g_free (xsmp->client_id);
+  g_strfreev (xsmp->restart_command);
+
+  G_OBJECT_CLASS (egg_sm_client_xsmp_parent_class)->finalize (object);
 }
 
 EggSMClient *
