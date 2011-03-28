@@ -112,10 +112,8 @@ if test "x$MOO_DEV_MODE" = "xyes"; then
   else
     _MOO_AC_CHECK_COMPILER_OPTIONS([-Wuninitialized])
   fi
-  # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=7263 - -Wlong-long
-  # ignores __extension__ in C++
   _MOO_AC_CHECK_C_COMPILER_OPTIONS([dnl
--Wmissing-prototypes -Wnested-externs -Wlong-long dnl
+-Wmissing-prototypes -Wnested-externs -Wnolong-long dnl
 ])
   _MOO_AC_CHECK_CXX_COMPILER_OPTIONS([dnl
 -fno-nonansi-builtins -fno-gnu-keywords dnl
