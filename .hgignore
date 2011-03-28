@@ -39,8 +39,6 @@ plat/win32/gtk-win/bdist-debug/
 plat/win32/gtk-win/bdist-release/
 api/moo.xml
 api/gtk.xml
-moo/mooedit/mooedit-enum-types.c
-moo/mooedit/mooedit-enum-types.h
 moo/plugins/usertools/old/
 moo/moopython/pygtk/moo-generated.defs
 moo/moopython/plugins/old/
