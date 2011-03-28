@@ -17,42 +17,58 @@
 #include "mooutils/mooutils-misc.h"
 
 
+static void *
+get_object_pointer_because_python_folks_are_funny (const char *module,
+                                                   const char *key)
+{
+    PyObject *pymod;
+    PyObject *mdict;
+    PyObject *cobject;
+    gpointer ret = NULL;
+
+    if (!(pymod = PyImport_ImportModule (module)))
+        return NULL;
+
+    mdict = PyModule_GetDict (pymod);
+    cobject = PyDict_GetItemString (mdict, key);
+
+#if PY_VERSION_HEX >= 0x02070000
+    if (cobject && PyCapsule_CheckExact(cobject))
+    {
+        char *name = g_strdup_printf ("%s.%s", module, key);
+        ret = PyCapsule_GetPointer (cobject, name);
+        g_free (name);
+    }
+#else
+    if (cobject && PyCObject_Check(cobject))
+    {
+        ret = PyCObject_AsVoidPtr (cobject);
+    }
+#endif
+
+    if (!ret)
+    {
+        char *message = g_strdup_printf ("could not find %s object", key);
+        PyErr_SetString (PyExc_RuntimeError, message);
+        g_free (message);
+    }
+
+    Py_XDECREF (pymod);
+    return ret;
+}
+
+
 G_GNUC_UNUSED static void
 init_pygtk_mod (void)
 {
-    PyObject *gobject, *pygtk;
-    PyObject *mdict;
-    PyObject *cobject;
+    _PyGObject_API = (struct _PyGObject_Functions *)
+        get_object_pointer_because_python_folks_are_funny ("gobject", "_PyGObject_API");
 
-    if (!(gobject = PyImport_ImportModule ("gobject")))
+    if (!_PyGObject_API)
         return;
 
-    mdict = PyModule_GetDict (gobject);
-    cobject = PyDict_GetItemString (mdict, "_PyGObject_API");
-
-    if (!cobject || !PyCObject_Check (cobject))
-    {
-        PyErr_SetString (PyExc_RuntimeError,
-                         "could not find _PyGObject_API object");
-        return;
-    }
-
-    _PyGObject_API = (struct _PyGObject_Functions *) PyCObject_AsVoidPtr (cobject);
-
-    if (!(pygtk = PyImport_ImportModule("gtk._gtk")))
-        return;
-
-    mdict = PyModule_GetDict (pygtk);
-    cobject = PyDict_GetItemString (mdict, "_PyGtk_API");
-
-    if (!cobject || !PyCObject_Check (cobject))
-    {
-        PyErr_SetString (PyExc_RuntimeError,
-                         "could not find _PyGtk_API object");
-        return;
-    }
-
-    _PyGtk_API = (struct _PyGtk_FunctionStruct*) PyCObject_AsVoidPtr (cobject);
+    _PyGtk_API = (struct _PyGtk_FunctionStruct*)
+        get_object_pointer_because_python_folks_are_funny ("gtk._gtk", "_PyGtk_API");
 }
 
 
