@@ -121,7 +121,7 @@ if test "x$MOO_DEV_MODE" = "xyes"; then
 -Woverloaded-virtual -Wsign-promo -Wnon-virtual-dtor dnl
 -Wno-long-long dnl
 ])
-  MOO_CPPFLAGS="$MOO_CPPFLAGS -DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED"
+  MOO_CPPFLAGS="$MOO_CPPFLAGS -DG_DISABLE_DEPRECATED"
 fi
 
 # m4_foreach([wname],[unused, sign-compare, write-strings],[dnl
