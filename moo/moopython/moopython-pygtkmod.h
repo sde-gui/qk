@@ -39,12 +39,12 @@ get_object_pointer_because_python_folks_are_funny (const char *module,
         ret = PyCapsule_GetPointer (cobject, name);
         g_free (name);
     }
-#else
+    else
+#endif
     if (cobject && PyCObject_Check(cobject))
     {
         ret = PyCObject_AsVoidPtr (cobject);
     }
-#endif
 
     if (!ret)
     {
