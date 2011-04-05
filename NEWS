@@ -1,3 +1,10 @@
+2011-04-04  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
+
+    * === Released 1.0.2 ===
+
+    Fixed importing pygobject and pygtk with python-2.7 (at least on
+    openSUSE newer pygtk in medit was broken).
+
 2011-02-26  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
 
     * === Released 1.0.1 ===
