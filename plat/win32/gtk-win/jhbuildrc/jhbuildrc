@@ -147,7 +147,7 @@ module_autogenargs['gdk-pixbuf'] = autogenargs \
                                             + " --without-libtiff" \
 					    + " --disable-cups" \
 					    + " --without-libjasper" \
-					    + " --disable-gdiplus" \
+					    + " --without-gdiplus" \
 					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
                                             + " --with-included-immodules" \
                                             + " --disable-introspection"

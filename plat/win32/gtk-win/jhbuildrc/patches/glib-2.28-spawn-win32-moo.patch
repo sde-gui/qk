@@ -1,0 +1,12 @@
+diff -r c42e8e0c6f6f glib/gspawn.h
+--- a/glib/gspawn.h	Mon Apr 04 19:06:05 2011 -0700
++++ b/glib/gspawn.h	Mon Apr 04 19:06:35 2011 -0700
+@@ -60,6 +60,8 @@
+ 
+ typedef void (* GSpawnChildSetupFunc) (gpointer user_data);
+ 
++#define MOO_PATCHED_G_SPAWN_WIN32_HIDDEN_CONSOLE 1
++
+ typedef enum
+ {
+   G_SPAWN_LEAVE_DESCRIPTORS_OPEN = 1 << 0,
