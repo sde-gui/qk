@@ -78,7 +78,7 @@ AM_CONDITIONAL(MOO_DEV_MODE, test x$MOO_DEV_MODE = "xyes")
 MOO_COMPILER
 
 _MOO_AC_CHECK_COMPILER_OPTIONS([dnl
--Wall -Wextra -fexceptions -fno-strict-aliasing -fno-strict-overflow dnl
+-Wall -Wextra -fexceptions -fno-strict-aliasing dnl
 -Wno-missing-field-initializers -Wno-overlength-strings dnl
 -Wno-format-y2k -Wno-overlength-strings dnl
 ])
@@ -101,7 +101,7 @@ if test "x$MOO_DEV_MODE" = "xyes"; then
     MOO_CXXFLAGS="$MOO_CXXFLAGS -Werror"
   fi
   _MOO_AC_CHECK_COMPILER_OPTIONS([dnl
--Wpointer-arith -Wcast-align -Wsign-compare -Wreturn-type dnl
+-Wpointer-arith -Wsign-compare -Wreturn-type dnl
 -Wwrite-strings -Wmissing-format-attribute dnl
 -Wdisabled-optimization -Wendif-labels dnl
 -Wvla -Winit-self dnl
