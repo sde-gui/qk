@@ -1496,7 +1496,6 @@ static void
 switch_to_tab (MooEditWindow *window,
                int            n)
 {
-    MooEditTab *tab = NULL;
     int n_docs = moo_edit_window_get_n_tabs (window);
     int i;
 
@@ -1512,15 +1511,12 @@ switch_to_tab (MooEditWindow *window,
         int n_pages = moo_notebook_get_n_pages (notebook);
         if (n < n_pages)
         {
-            moo_notebook_set_current_page (notebook, n);
-            tab = get_nth_tab (notebook, n);
+            MooEditTab *tab = get_nth_tab (notebook, n);
+            moo_edit_window_set_active_tab (window, tab);
             break;
         }
         n -= n_pages;
     }
-
-    if (tab)
-        gtk_widget_grab_focus (GTK_WIDGET (moo_edit_tab_get_active_view (tab)));
 }
 
 static void
