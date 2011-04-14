@@ -2017,8 +2017,8 @@ static void
 move_to_split_notebook_activated (GtkWidget     *item,
                                   MooEditWindow *window)
 {
-    MooEditView *view = g_object_get_data (G_OBJECT (item), "moo-edit-view");
-    move_tab_to_split_view (window, moo_edit_view_get_tab (view));
+    MooEditTab *tab = g_object_get_data (G_OBJECT (item), "moo-edit-tab");
+    move_tab_to_split_view (window, tab);
 }
 
 
