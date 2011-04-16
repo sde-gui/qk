@@ -42,8 +42,6 @@ test:
 	$(MAKE) $(AM_MAKEFLAGS) installcheck
 fullcheck:
 	$(MAKE) $(AM_MAKEFLAGS) test
-	DISTCHECK_CONFIGURE_FLAGS='MAKEFLAGS=-j3 --without-python --enable-silent-rules CFLAGS="-Werror -Wall -O2" CXXFLAGS="-Werror -Wall -O2"' \
-		$(MAKE) $(AM_MAKEFLAGS) distcheck
 	$(MAKE) $(AM_MAKEFLAGS) distcheck
 
 @MOO_PO_SUBDIRS_RULE@

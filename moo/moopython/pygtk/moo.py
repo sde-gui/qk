@@ -19,20 +19,21 @@ import gtk as _gtk
 import gobject as _gobject
 from _moo import *
 
+# note, these aren't standard gettext functions
 _ = gettext
 D_ = dgettext
+
+def N_(string):
+    return string
 
 class _PluginWontLoad(Exception):
     def __repr__(self):
         return 'PluginWontLoad'
 
-def cancel_plugin_loading():
+def _cancel_plugin_loading():
     raise _PluginWontLoad()
 
-def N_(string):
-    return string
-
-class ActionFactory(object):
+class _ActionFactory(object):
     def __init__(self, action_id, **kwargs):
         object.__init__(self)
         self.id = action_id
@@ -70,4 +71,4 @@ def window_class_add_action(klass, action_id, group=None, **kwargs):
     if kwargs.has_key("factory"):
         _moo._window_class_add_action(klass, action_id, group, kwargs["factory"])
     else:
-        _moo._window_class_add_action(klass, action_id, group, ActionFactory(action_id, **kwargs))
+        _moo._window_class_add_action(klass, action_id, group, _ActionFactory(action_id, **kwargs))

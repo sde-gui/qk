@@ -38,11 +38,30 @@ check_unix() {
   set_title "medit-release unix build"
   do_or_die mkdir $tmpdir/build-unix
   do_or_die cd $tmpdir/build-unix
-  do_or_die $tmpdir/medit/configure --enable-dev-mode --enable-silent-rules
+  do_or_die $tmpdir/medit/configure --enable-dev-mode
   do_or_die make
   set_title "medit-release unix fullcheck"
   do_or_die make fullcheck
   do_or_die mv medit-*.tar.bz2 $tmpdir/files/
+}
+
+check_no_python() {
+  set_title "medit-release unix-no-python build"
+  do_or_die mkdir $tmpdir/build-unix-no-python
+  do_or_die cd $tmpdir/build-unix-no-python
+  do_or_die $tmpdir/medit/configure --enable-dev-mode --without-python
+  do_or_die make
+  set_title "medit-release unix-no-python fullcheck"
+  do_or_die make fullcheck
+  do_or_die mv medit-*.tar.bz2 $tmpdir/files/
+}
+
+check_python() {
+  set_title "medit-release unix-python build"
+  do_or_die mkdir $tmpdir/build-unix-python
+  do_or_die cd $tmpdir/build-unix-python
+  do_or_die $tmpdir/medit/configure --enable-dev-mode --enable-moo-module --disable-static
+  do_or_die make
 }
 
 check_windows() {
@@ -58,6 +77,8 @@ check_windows() {
 
 prepare
 check_unix
+check_no_python
+check_python
 check_windows
 
 echo "============================================================="

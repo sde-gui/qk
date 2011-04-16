@@ -21,7 +21,7 @@
 
 G_BEGIN_DECLS
 
-gboolean    _moo_pygtk_init             (void);
+gboolean    _moo_module_init            (void);
 
 extern const PyMethodDef _moo_functions[];
 

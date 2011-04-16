@@ -19,7 +19,6 @@
 #include "config.h"
 #endif
 
-#include "moopython/pygtk/moo-mod.h"
 #include "moopython/pygtk/moo-pygtk.h"
 #include "moopython/moopython-utils.h"
 #include <pygobject.h>  /* _PyGObjectAPI lives here */
@@ -75,11 +74,9 @@ py_object_to_moo_py_object (GValue *value, PyObject *obj)
 }
 
 gboolean
-_moo_pygtk_init (void)
+_moo_module_init (void)
 {
     PyObject *_moo_module = NULL;
-    PyObject *moo_module = NULL;
-    PyObject *code;
 
     init_pygtk_mod ();
 
@@ -101,21 +98,6 @@ _moo_pygtk_init (void)
 
     _moo_add_constants (_moo_module, "MOO_");
     _moo_register_classes (PyModule_GetDict (_moo_module));
-
-    if (PyErr_Occurred ())
-        return FALSE;
-
-    code = Py_CompileString (MOO_PY, "moo.py", Py_file_input);
-
-    if (!code)
-        return FALSE;
-
-    moo_module = PyImport_ExecCodeModule ((char*) "moo", code);
-
-    if (!moo_module)
-        PyErr_Print ();
-
-    Py_DECREF (code);
 
     return !PyErr_Occurred ();
 }

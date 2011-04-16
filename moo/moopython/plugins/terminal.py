@@ -24,7 +24,7 @@ from moo import D_
 try:
     import vte
 except ImportError:
-    moo.cancel_plugin_loading()
+    moo._cancel_plugin_loading()
 
 TERMINAL_PLUGIN_ID = "Terminal"
 COLOR_SCHEME_KEY = 'Plugins/Terminal/color_scheme'

@@ -21,8 +21,10 @@ AC_GNU_SOURCE
 AC_CONFIG_MACRO_DIR([m4])
 AC_SUBST(ACLOCAL_FLAGS)
 
-AM_INIT_AUTOMAKE([1.11 silent-rules foreign dist-bzip2 no-dist-gzip])
-# LT_INIT([disable-shared])
+AM_INIT_AUTOMAKE([1.11 foreign dist-bzip2 no-dist-gzip])
+AM_SILENT_RULES([yes])
+LT_INIT([disable-shared])
+# AC_PROG_RANLIB
 
 AC_SUBST(MOO_MAJOR_VERSION,_moo_major_version_)
 AC_SUBST(MOO_MINOR_VERSION,_moo_minor_version_)
@@ -54,12 +56,11 @@ AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MKDIR_P
 AM_PROG_CC_C_O
-AC_PROG_RANLIB
 
 AC_ARG_VAR([WINDRES], [windres])
 AC_CHECK_TOOL(WINDRES, windres, :)
 
-AC_ARG_VAR([PYTHON], [Python executable, used to run build scripts])
+AC_ARG_VAR([PYTHON], [Python executable, required to run build scripts])
 AC_CHECK_PROGS(PYTHON, python, [AC_MSG_ERROR([Python not found])])
 
 MOO_AC_FLAGS
@@ -88,6 +89,33 @@ AC_DEFINE_UNQUOTED(MOO_WEB_CONTACT,["$MOO_WEB_CONTACT"],MOO_WEB_CONTACT)
 
 MOO_AC_CHECK_OS
 MOO_AC_PYTHON
+
+MOO_BUILD_APP=true
+MOO_BUILD_MODULE=false
+AC_ARG_ENABLE(moo-module,
+  AC_HELP_STRING([--enable-moo-module],[build standalone python module instead of medit, default NO (you must also use --enable-shared with this option)]),[
+  if test "$enable_moo_module" = "yes"; then
+    MOO_BUILD_APP=false
+    MOO_BUILD_MODULE=true
+  fi
+])
+if $MOO_BUILD_MODULE; then
+  if ! $MOO_ENABLE_PYTHON; then
+    AC_MSG_ERROR([Python bindings are not enabled, can't build python module])
+  elif test "$enable_shared" != "yes"; then
+    AC_MSG_ERROR([Python module can't be built without --enable-shared option])
+  fi
+fi
+
+if $MOO_BUILD_APP; then
+  AC_DEFINE(MOO_BUILD_APP, 1, [build medit application])
+fi
+if $MOO_BUILD_MODULE; then
+  AC_DEFINE(MOO_BUILD_MODULE, 1, [build standalone python module])
+fi
+
+AM_CONDITIONAL(MOO_BUILD_APP, [$MOO_BUILD_APP])
+AM_CONDITIONAL(MOO_BUILD_MODULE, [$MOO_BUILD_MODULE])
 
 AC_SUBST(MOO_TOP_SRCDIR,`cd $srcdir && pwd`)
 if test x"$MOO_TOP_SRCDIR" = x"`pwd`"; then
@@ -130,7 +158,11 @@ AC_ARG_ENABLE(install-hooks,
   AC_HELP_STRING([--enable-install-hooks],[run gtk-update-icon-cache during 'make install']),[
   MOO_ENABLE_INSTALL_HOOKS="$enable_install_hooks"
   ],[
-  MOO_ENABLE_INSTALL_HOOKS="yes"
+  if $MOO_BUILD_APP; then
+    MOO_ENABLE_INSTALL_HOOKS="yes"
+  else
+    MOO_ENABLE_INSTALL_HOOKS="no"
+  fi
 ])
 AM_CONDITIONAL(MOO_ENABLE_INSTALL_HOOKS, test "x$MOO_ENABLE_INSTALL_HOOKS" = "xyes")
 

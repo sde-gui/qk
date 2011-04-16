@@ -28,6 +28,27 @@
 #include "moopython/pygtk/moo-pygtk.h"
 #include "moopython/moopython-pygtkmod.h"
 #include "mooutils/mooutils-misc.h"
+#include "moopython/pygtk/moo-mod.h"
+
+static gboolean create_moo_module (void)
+{
+    PyObject *moo_module;
+    PyObject *code;
+
+    code = Py_CompileString (MOO_PY, "moo.py", Py_file_input);
+
+    if (!code)
+        return FALSE;
+
+    moo_module = PyImport_ExecCodeModule ((char*) "moo", code);
+
+    if (!moo_module)
+        PyErr_Print ();
+
+    Py_DECREF (code);
+
+    return !PyErr_Occurred ();
+}
 
 gboolean
 _moo_python_builtin_init (void)
@@ -40,17 +61,23 @@ _moo_python_builtin_init (void)
             return FALSE;
         }
 
-        if (!_moo_pygtk_init ())
+        if (!_moo_module_init ())
+        {
+            g_warning ("could not initialize _moo module");
+            PyErr_Print ();
+            moo_python_api_deinit ();
+            return FALSE;
+        }
+
+        reset_log_func ();
+
+        if (!create_moo_module ())
         {
             g_warning ("could not initialize moo module");
             PyErr_Print ();
             moo_python_api_deinit ();
             return FALSE;
         }
-
-#ifndef MOO_BUILD_MOO_MODULE
-        reset_log_func ();
-#endif
     }
 
     if (!moo_plugin_loader_lookup (MOO_PYTHON_PLUGIN_LOADER_ID))

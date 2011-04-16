@@ -1,5 +1,3 @@
-bin_PROGRAMS += medit
-
 EXTRA_DIST += medit-app/data
 dist-hook: delete-junk-from-data
 delete-junk-from-data:
@@ -10,6 +8,13 @@ EXTRA_DIST +=					\
 	medit-app/print-functions.py		\
 	medit-app/run-tests-installed.sh	\
 	medit-app/run-tests-uninstalled.sh
+
+EXTRA_DIST += medit-app/medit.rc.in
+EXTRA_DIST += medit-app/medit.desktop.in
+
+if MOO_BUILD_APP
+
+bin_PROGRAMS += medit
 
 TESTS = medit-app/run-tests-uninstalled.sh
 TESTS_ENVIRONMENT = EXEEXT=$(EXEEXT) top_srcdir=$(top_srcdir) bindir=$(bindir) PYTHON=$(PYTHON) print_functions=$(srcdir)/medit-app/print-functions.py
@@ -47,20 +52,11 @@ nodist_medit_SOURCES =			\
 	$(built_moo_sources)		\
 	$(built_plugins_sources)
 
-BUILT_SOURCES +=			\
-	$(built_moo_sources)		\
-	$(built_plugins_sources)
-
-CLEANFILES +=				\
-	$(built_moo_sources)		\
-	$(built_plugins_sources)
-
 medit_LDFLAGS =
 if MOO_OS_WIN32
 medit_LDFLAGS += -mwindows
 endif
 
-EXTRA_DIST += medit-app/medit.rc.in
 if MOO_OS_WIN32
 CLEANFILES += medit-app/medit.rc medit-app/medit.res
 medit-app/medit.rc: medit-app/medit.rc.in $(top_builddir)/config.status
@@ -71,7 +67,6 @@ medit-app/medit.res: medit-app/medit.rc
 medit_LDADD += medit-app/medit.res
 endif
 
-EXTRA_DIST += medit-app/medit.desktop.in
 if MOO_OS_UNIX
 desktopdir = $(datadir)/applications
 desktop_DATA = medit-app/medit.desktop
@@ -80,7 +75,6 @@ medit-app/medit.desktop: medit-app/medit.desktop.in @MOO_INTLTOOL_INI_DEPS@
 	@MOO_INTLTOOL_INI_CMD@
 CLEANFILES += medit-app/medit.desktop
 endif MOO_OS_UNIX
-
 
 iconthemedir = $(datadir)/icons/hicolor/48x48/apps
 icontheme_DATA = mooutils/pixmaps/medit.png
@@ -98,3 +92,5 @@ uninstall-hook: uninstall-data-hook-gtk-icon-cache
 uninstall-data-hook-gtk-icon-cache:
 	@if echo "Updating icon cache" && $(update_icon_cache); then echo "Done."; else echo "Failed."; fi
 endif
+
+endif MOO_BUILD_APP

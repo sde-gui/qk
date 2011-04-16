@@ -72,6 +72,7 @@ export PKG_CONFIG_PATH="$mgwtargetdir/lib/pkgconfig"
 
 export PYTHON_INCLUDES="-I$mgwtargetdir/include/python"
 export PYTHON_LIBS="-lpython$mgwpythonver"
+export PYTHON_VERSION=$mgwpythondotver
 
 configure_args="--build=i686-pc-linux-gnu --host=i586-pc-mingw32msvc --target=i586-pc-mingw32msvc \
 AR=$AR RANLIB=$RANLIB STRIP=$STRIP AS=$AS DLLTOOL=$DLLTOOL OBJDUMP=$OBJDUMP NM=$NM WINDRES=$WINDRES RC=$RC \
@@ -88,6 +89,11 @@ if [ "$mgwconfig" = "debug" ]; then
   moo_configure_args='--enable-debug'
 else
   moo_configure_args='--enable-dev-mode'
+fi
+
+if [ "$1" = "--python" ]; then
+  shift
+  moo_configure_args="$moo_configure_args --enable-moo-module --enable-shared --disable-static"
 fi
 
 echo $srcdir/configure $configure_args $moo_configure_args $moo_nls_flags "$@"

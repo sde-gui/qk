@@ -1,5 +1,7 @@
 export mgwbuildroot=$HOME/projects/gtk-win-build
-export mgwpythonver=27
+export mgwpythondotver=2.7
+
+export mgwpythonver=`echo $mgwpythondotver | sed 's/[.]//'`
 
 export mgwdir_s=$mgwdir
 export mgwdir=`cd $mgwdir && pwd`

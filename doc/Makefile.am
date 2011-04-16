@@ -146,5 +146,7 @@ uninstall-local:
 		$(DESTDIR)$(MOO_HELP_DIR)/img/*.png
 
 if MOO_OS_UNIX
+if MOO_BUILD_APP
 dist_man_MANS = built/medit.1
+endif MOO_BUILD_APP
 endif MOO_OS_UNIX
