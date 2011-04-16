@@ -266,8 +266,11 @@ class Writer(object):
 
         func_id = func.symbol_id()
         mode = self.mode
-        left_paren = '{' if func.kwargs else '('
-        right_paren = '}' if func.kwargs else ')'
+
+        if mode == 'lua' and func.kwargs:
+            left_paren, right_paren = '{}'
+        else:
+            left_paren, right_paren = '()'
 
         self.out.write("""\
 <!-- %(func_id)s -->
