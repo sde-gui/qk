@@ -39,8 +39,8 @@ include plugins/Makefile.incl
 include medit-app/Makefile.incl
 include medit-module/Makefile.incl
 
-BUILT_SOURCES += $(built_moo_sources) $(built_plugin_sources)
-CLEANFILES += $(built_moo_sources) $(built_plugin_sources)
+BUILT_SOURCES += $(built_moo_sources) $(built_plugins_sources)
+CLEANFILES += $(built_moo_sources) $(built_plugins_sources)
 
 test:
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) test
