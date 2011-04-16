@@ -8,8 +8,7 @@ if [ ! -d $1 ]; then
   exit 1
 fi
 
-srcdir=`dirname $1`
-srcdir=`cd $srcdir && pwd`
+srcdir=`cd $1 && pwd`
 
 if [ "`cd $srcdir && hg st`" ]; then
   echo "uncommitted changes, aborting"
