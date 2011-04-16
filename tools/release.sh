@@ -52,8 +52,7 @@ check_no_python() {
   do_or_die $tmpdir/medit/configure --enable-dev-mode --without-python
   do_or_die make
   set_title "medit-release unix-no-python fullcheck"
-  do_or_die make fullcheck
-  do_or_die mv medit-*.tar.bz2 $tmpdir/files/
+  do_or_die make test
 }
 
 check_python() {
