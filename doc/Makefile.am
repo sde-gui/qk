@@ -14,6 +14,7 @@ gendocbook_files =				\
 	$(top_srcdir)/api/mpi/docbookwriter.py
 
 script_docbook_sources =			\
+	built/medit-defines.ent			\
 	built/script-python.docbook		\
 	built/script-lua.docbook		\
 	built/script-lua-gtk.docbook
