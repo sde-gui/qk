@@ -112,7 +112,7 @@ check_all() {
   if $fail; then
     echo "FAILED"
     for check in `echo $all_checks`; do
-      if [ `eval "status_$check"` = FAIL ]; then
+      if [ "status_$check" = FAIL ]; then
         echo "check_$check - FAIL"
       fi
     done
@@ -122,7 +122,7 @@ check_all() {
 }
 
 if [ -n "$1" ]; then
-  $1 $srcdir || exit 1
+  "check_$1" $srcdir || exit 1
 else
   check_all || exit 1
 fi
