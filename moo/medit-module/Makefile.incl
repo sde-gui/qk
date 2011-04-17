@@ -1,7 +1,7 @@
 if MOO_BUILD_MODULE
 
 pyexec_LTLIBRARIES = _moo.la
-_moo_la_LDFLAGS = -avoid-version -module
+_moo_la_LDFLAGS = -avoid-version -module -export-symbols-regex init_moo
 _moo_la_CFLAGS = $(AM_CFLAGS)
 _moo_la_CXXFLAGS = $(AM_CXXFLAGS)
 

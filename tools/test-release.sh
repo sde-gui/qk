@@ -44,9 +44,16 @@ check_unix() {
   do_or_die mkdir $tmpdir/build-unix
   do_or_die cd $tmpdir/build-unix
   do_or_die $tmpdir/medit/configure --enable-dev-mode
-  do_or_die make
+  do_or_die make -j 3
   set_title "medit-release unix fullcheck"
   do_or_die make fullcheck
+  set_title "medit-release unix user-build"
+  do_or_die tar xjf medit-*.tar.bz2
+  do_or_die cd medit-*
+  do_or_die ./configure
+  do_or_die make -j 3
+  do_or_die make test
+  do_or_die cd ..
   do_or_die mv medit-*.tar.bz2 $tmpdir/files/
 }
 
@@ -56,7 +63,7 @@ check_no_python() {
   do_or_die mkdir $tmpdir/build-unix-no-python
   do_or_die cd $tmpdir/build-unix-no-python
   do_or_die $tmpdir/medit/configure --enable-dev-mode --without-python
-  do_or_die make
+  do_or_die make -j 3
   set_title "medit-release unix-no-python fullcheck"
   do_or_die make test
 }
@@ -67,21 +74,7 @@ check_python() {
   do_or_die mkdir $tmpdir/build-unix-python
   do_or_die cd $tmpdir/build-unix-python
   do_or_die $tmpdir/medit/configure --enable-dev-mode --enable-moo-module --enable-shared --disable-static
-  do_or_die make
-}
-
-check_user_build() {
-  prepare
-  set_title "medit-release user build"
-  do_or_die mkdir $tmpdir/build-user
-  do_or_die cd $tmpdir/build-user
-  do_or_die $tmpdir/medit/configure --enable-dev-mode
-  do_or_die make dist
-  do_or_die tar xjf medit-*.tar.bz2
-  do_or_die cd medit-*
-  do_or_die ./configure
-  do_or_die make
-  do_or_die make test
+  do_or_die make -j 3
 }
 
 check_windows() {
@@ -90,31 +83,28 @@ check_windows() {
   do_or_die mkdir $tmpdir/build-windows
   do_or_die cd $tmpdir/build-windows
   do_or_die $tmpdir/medit/plat/win32/mingw-configure
-  do_or_die make
+  do_or_die make -j 3
   set_title "medit-release windows installer"
   do_or_die make installer
   do_or_die mv medit-*.exe $tmpdir/files/
 }
 
 check_all() {
-  all_checks="unix user_build no_python python windows"
+  all_checks="unix no_python python windows"
   fail=false
+  failed_checks=
 
   for check in `echo $all_checks`; do
-    if $0 $srcdir "$check"; then
-      eval "status_$check=ok"
-    else
-      eval "status_$check=FAIL"
+    if ! $0 $srcdir "$check"; then
+      failed_checks="$failed_checks $check"
       fail=true
     fi
   done
 
   if $fail; then
     echo "FAILED"
-    for check in `echo $all_checks`; do
-      if [ "status_$check" = FAIL ]; then
-        echo "check_$check - FAIL"
-      fi
+    for check in `echo $failed_checks`; do
+      echo "check_$check - FAIL"
     done
   else
     echo "SUCCESS, files are in $tmpdir/files/"
