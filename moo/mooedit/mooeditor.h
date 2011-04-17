@@ -83,7 +83,7 @@ struct MooEditorClass
 GType                moo_editor_get_type            (void) G_GNUC_CONST;
 
 MooEditor           *moo_editor_instance            (void);
-MooEditor           *moo_editor_create              (gboolean                embedded);
+MooEditor           *moo_editor_create_instance     (gboolean                embedded);
 
 MooEditWindow       *moo_editor_new_window          (MooEditor              *editor);
 MooEdit             *moo_editor_new_doc             (MooEditor              *editor,

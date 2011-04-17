@@ -516,12 +516,12 @@ _moo_editor_get_file_watch (MooEditor *editor)
 
 
 /**
- * moo_editor_create: (moo.lua 0)
+ * moo_editor_create_instance: (static-method-of MooEditor) (moo.lua 0)
  *
  * Returns: (transfer full)
  */
 MooEditor *
-moo_editor_create (gboolean embedded)
+moo_editor_create_instance (gboolean embedded)
 {
     if (!editor_instance)
     {
