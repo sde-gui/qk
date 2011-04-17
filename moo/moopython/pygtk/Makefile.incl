@@ -5,12 +5,6 @@ moo_python_sources +=				\
 built_moo_python_sources +=			\
 	moopython/pygtk/moo-mod.h
 
-moo_main_defs_file =					\
-	$(srcdir)/moopython/pygtk/moo.defs
-moo_defs_files =					\
-	$(srcdir)/moopython/pygtk/moo-generated.defs	\
-	$(moo_main_defs_file)
-
 gendefs_files =					\
 	$(top_srcdir)/api/gendefs.py		\
 	$(top_srcdir)/api/mpi/__init__.py	\
@@ -24,7 +18,6 @@ moo_override_files =				\
 	moopython/pygtk/moo.override
 
 EXTRA_DIST +=					\
-	$(moo_defs_files)			\
 	$(moo_override_files)			\
 	moopython/pygtk/codebefore.c		\
 	moopython/pygtk/codeafter.c		\
@@ -40,14 +33,11 @@ endif
 
 if MOO_DEV_MODE
 
-built_moo_sources += moopython/pygtk/moo-generated.defs.stamp
-moopython/pygtk/moo-generated.defs.stamp: $(gendefs_files) $(top_srcdir)/api/moo.xml Makefile
+built_moo_python_sources += moopython/pygtk/moo.defs
+moopython/pygtk/moo.defs: $(gendefs_files) $(top_srcdir)/api/moo.xml Makefile
 	$(AM_V_at)$(MKDIR_P) moopython/pygtk
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendefs.py $(top_srcdir)/api/moo.xml > moopython/pygtk/moo-generated.defs.tmp && \
-		(cmp -s moopython/pygtk/moo-generated.defs.tmp $(srcdir)/moopython/pygtk/moo-generated.defs || \
-			mv moopython/pygtk/moo-generated.defs.tmp $(srcdir)/moopython/pygtk/moo-generated.defs)
-	$(AM_V_at)rm -f moopython/pygtk/moo-generated.defs.tmp
-	$(AM_V_at)echo stamp > moopython/pygtk/moo-generated.defs.stamp
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendefs.py $(top_srcdir)/api/moo.xml > moopython/pygtk/moo.defs.tmp
+	$(AM_V_at)mv moopython/pygtk/moo.defs.tmp moopython/pygtk/moo.defs
 
 endif
 
@@ -61,7 +51,7 @@ codegen = $(PYTHON) $(codegen_script) $(codegen_platform) \
 	--codebefore $(srcdir)/moopython/pygtk/codebefore.c \
 	--codeafter $(srcdir)/moopython/pygtk/codeafter.c
 
-moopython/pygtk/moo-mod.c: $(moo_override_files) $(moo_defs_files) $(codegen_files) \
+moopython/pygtk/moo-mod.c: $(moo_override_files) moopython/pygtk/moo.defs $(codegen_files) \
 				$(srcdir)/moopython/pygtk/codebefore.c \
 				$(srcdir)/moopython/pygtk/codeafter.c
 	$(AM_V_at)$(MKDIR_P) moopython/pygtk
@@ -72,7 +62,7 @@ moopython/pygtk/moo-mod.c: $(moo_override_files) $(moo_defs_files) $(codegen_fil
 		--register $(PYGTK_DEFS_DIR)/gdk-types.defs \
 		--override $(srcdir)/moopython/pygtk/moo.override \
 		--outfilename moopython/pygtk/moo-mod.c \
-		$(moo_main_defs_file) > $@.tmp && \
+		moopython/pygtk/moo.defs > $@.tmp && \
 		mv $@.tmp $@
 
 moopython/pygtk/moo-mod.h: moopython/pygtk/moo.py $(top_srcdir)/tools/xml2h.py

@@ -69,6 +69,6 @@ class _ActionFactory(object):
 
 def window_class_add_action(klass, action_id, group=None, **kwargs):
     if kwargs.has_key("factory"):
-        _moo._window_class_add_action(klass, action_id, group, kwargs["factory"])
+        _moo.window_class_add_action(klass, action_id, group, kwargs["factory"])
     else:
-        _moo._window_class_add_action(klass, action_id, group, _ActionFactory(action_id, **kwargs))
+        _moo.window_class_add_action(klass, action_id, group, _ActionFactory(action_id, **kwargs))

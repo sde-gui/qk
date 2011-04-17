@@ -46,6 +46,7 @@ moo.xml.stamp: $(docparser_files) $(source_files)
 		--source-dir $(top_srcdir)/moo/mooedit \
 		--source-dir $(top_srcdir)/moo/moofileview \
 		--source-dir $(top_srcdir)/moo/mooutils \
+		--source-dir $(top_srcdir)/moo/moopython \
 		--source-dir $(top_srcdir)/moo/plugins/usertools \
 		--source-dir $(top_srcdir)/moo/plugins/support \
 		--source-file $(top_srcdir)/moo/moolua/medit-lua.cpp \

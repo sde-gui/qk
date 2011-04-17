@@ -1592,6 +1592,12 @@ moo_window_class_new_action_custom (MooWindowClass     *klass,
 }
 
 
+/**
+ * moo_window_class_find_action: (moo.lua 0) (moo.private 1)
+ *
+ * @klass: (type MooWindowClass*):
+ * @id: (type const-utf8):
+ **/
 gboolean
 moo_window_class_find_action (MooWindowClass *klass,
                               const char     *id)
@@ -1609,6 +1615,12 @@ moo_window_class_find_action (MooWindowClass *klass,
 }
 
 
+/**
+ * moo_window_class_remove_action: (moo.lua 0) (moo.private 1)
+ *
+ * @klass: (type MooWindowClass*):
+ * @id: (type const-utf8):
+ **/
 void
 moo_window_class_remove_action (MooWindowClass     *klass,
                                 const char         *action_id)

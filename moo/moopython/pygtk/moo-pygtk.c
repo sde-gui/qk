@@ -27,6 +27,10 @@
 #include "moopython/moopython-pygtkmod.h"
 #include <mooutils/moostock.h>
 
+/**
+ * moo_window_class_add_action: (moo.lua 0) (moo.private 1)
+ **/
+
 static void     init_moo_utils          (PyObject       *module);
 
 static PyObject *
