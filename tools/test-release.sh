@@ -1,7 +1,11 @@
 #! /bin/sh
 
-tmpdir=`mktemp --directory --tmpdir medit-release.XXXXXX`
-mkdir $tmpdir/files
+if [ -z "$test_release_tmpdir" ]; then
+  tmpdir=`mktemp --directory --tmpdir medit-release.XXXXXX`
+  mkdir $tmpdir/files
+else
+  tmpdir=$test_release_tmpdir
+fi
 
 if [ ! -d $1 ]; then
   echo "Usage: $0 <sourcedir>"
@@ -47,13 +51,13 @@ check_unix() {
   do_or_die make -j 3
   set_title "medit-release unix fullcheck"
   do_or_die make fullcheck
-  set_title "medit-release unix user-build"
-  do_or_die tar xjf medit-*.tar.bz2
-  do_or_die cd medit-*
-  do_or_die ./configure
-  do_or_die make -j 3
-  do_or_die make test
-  do_or_die cd ..
+#   set_title "medit-release unix user-build"
+#   do_or_die tar xjf medit-*.tar.bz2
+#   do_or_die cd medit-*
+#   do_or_die ./configure
+#   do_or_die make -j 3
+#   do_or_die make test
+#   do_or_die cd ..
   do_or_die mv medit-*.tar.bz2 $tmpdir/files/
 }
 
@@ -93,6 +97,8 @@ check_all() {
   all_checks="unix no_python python windows"
   fail=false
   failed_checks=
+
+  export test_release_tmpdir=$tmpdir
 
   for check in `echo $all_checks`; do
     if ! $0 $srcdir "$check"; then
