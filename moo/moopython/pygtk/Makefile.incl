@@ -31,15 +31,11 @@ if MOO_OS_WIN32
 codegen_platform = --platform win32
 endif
 
-if MOO_DEV_MODE
-
 built_moo_python_sources += moopython/pygtk/moo.defs
 moopython/pygtk/moo.defs: $(gendefs_files) $(top_srcdir)/api/moo.xml Makefile
 	$(AM_V_at)$(MKDIR_P) moopython/pygtk
 	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendefs.py $(top_srcdir)/api/moo.xml > moopython/pygtk/moo.defs.tmp
 	$(AM_V_at)mv moopython/pygtk/moo.defs.tmp moopython/pygtk/moo.defs
-
-endif
 
 codegen_files =						\
 	$(srcdir)/moopython/codegen/codegen.py		\
