@@ -101,7 +101,7 @@ check_all() {
   fail=false
 
   for check in `echo $all_checks`; do
-    if $0 $srcdir "check_$check"; then
+    if $0 $srcdir "$check"; then
       eval "status_$check=ok"
     else
       eval "status_$check=FAIL"
