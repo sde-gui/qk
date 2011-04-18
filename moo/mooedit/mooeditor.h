@@ -88,6 +88,10 @@ MooEditor           *moo_editor_create_instance     (gboolean                emb
 MooEditWindow       *moo_editor_new_window          (MooEditor              *editor);
 MooEdit             *moo_editor_new_doc             (MooEditor              *editor,
                                                      MooEditWindow          *window);
+MooEdit             *moo_editor_create_doc          (MooEditor              *editor,
+                                                     const char             *path,
+                                                     const char             *encoding,
+                                                     GError                **error);
 
 MooEdit             *moo_editor_new_file            (MooEditor              *editor,
                                                      MooOpenInfo            *info,
