@@ -1404,6 +1404,13 @@ moo_edit_save (MooEdit *doc,
 
 /**
  * moo_edit_save_as:
+ *
+ * @doc:
+ * @info: (allow-none):
+ * @error:
+ *
+ * Save document with new filename and/or encoding. If @info is
+ * missing or %NULL then the user is asked for a new filename first.
  **/
 gboolean
 moo_edit_save_as (MooEdit     *doc,
