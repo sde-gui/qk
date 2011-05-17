@@ -709,7 +709,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "display-name", _("Comment"),
                                  "label", _("Comment"),
                                  "tooltip", _("Comment"),
-                                 "closure-callback", _moo_edit_comment,
+                                 "closure-callback", moo_edit_comment_selection,
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-comments",
                                  NULL);
@@ -719,7 +719,7 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "display-name", _("Uncomment"),
                                  "label", _("Uncomment"),
                                  "tooltip", _("Uncomment"),
-                                 "closure-callback", _moo_edit_uncomment,
+                                 "closure-callback", moo_edit_uncomment_selection,
                                  "closure-proxy-func", moo_edit_window_get_active_doc,
                                  "condition::sensitive", "has-comments",
                                  NULL);

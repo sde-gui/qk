@@ -1714,8 +1714,11 @@ block_uncomment (GtkTextBuffer *buffer,
 }
 
 
+/**
+ * moo_edit_comment_selection:
+ **/
 void
-_moo_edit_comment (MooEdit *edit)
+moo_edit_comment_selection (MooEdit *edit)
 {
     MooLang *lang;
     GtkTextIter start, end;
@@ -1770,8 +1773,11 @@ _moo_edit_comment (MooEdit *edit)
 }
 
 
+/**
+ * moo_edit_uncomment_selection:
+ **/
 void
-_moo_edit_uncomment (MooEdit *edit)
+moo_edit_uncomment_selection (MooEdit *edit)
 {
     MooLang *lang;
     GtkTextIter start, end;

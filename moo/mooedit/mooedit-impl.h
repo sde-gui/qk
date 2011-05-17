@@ -60,8 +60,6 @@ void             _moo_edit_status_changed           (MooEdit        *edit);
 gboolean         _moo_edit_has_comments             (MooEdit        *edit,
                                                      gboolean       *single_line,
                                                      gboolean       *multi_line);
-void             _moo_edit_comment                  (MooEdit        *edit);
-void             _moo_edit_uncomment                (MooEdit        *edit);
 
 #define MOO_EDIT_GOTO_BOOKMARK_ACTION "GoToBookmark"
 void             _moo_edit_delete_bookmarks         (MooEdit        *edit,
