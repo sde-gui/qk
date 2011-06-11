@@ -119,8 +119,8 @@ gboolean             moo_edit_save_copy                 (MooEdit            *edi
                                                          GError            **error);
 gboolean             moo_edit_close                     (MooEdit            *edit);
 
-void                 moo_edit_comment                   (MooEdit            *edit);
-void                 moo_edit_uncomment                 (MooEdit            *edit);
+void                 moo_edit_comment_selection         (MooEdit            *edit);
+void                 moo_edit_uncomment_selection       (MooEdit            *edit);
 
 
 G_END_DECLS
