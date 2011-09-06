@@ -7,7 +7,7 @@ else
   tmpdir=$test_release_tmpdir
 fi
 
-if [ ! -d $1 ]; then
+if [ ! -d "$1" ]; then
   echo "Usage: $0 <sourcedir>"
   exit 1
 fi
