@@ -67,6 +67,7 @@ lang_files =				\
 	mooedit/langs/pkgconfig.lang	\
 	mooedit/langs/po.lang		\
 	mooedit/langs/prolog.lang	\
+	mooedit/langs/protobuf.lang	\
 	mooedit/langs/python-console.lang \
 	mooedit/langs/python.lang	\
 	mooedit/langs/R.lang		\
