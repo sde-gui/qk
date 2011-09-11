@@ -531,9 +531,6 @@ enc_mgr_add_used (EncodingsManager *mgr,
 {
     GSList *l;
     gboolean found_recent;
-    guint n_recent;
-
-    n_recent = g_slist_length (mgr->recent);
 
     for (l = mgr->recent, found_recent = FALSE; l != NULL; l = l->next)
     {

@@ -2990,7 +2990,7 @@ draw_left_margin (MooTextView    *view,
     GtkTextView *text_view;
     GtkTextBuffer *buffer;
     PangoLayout *layout = NULL;
-    int line, last_line, current_line, text_width, window_width, mark_icon_width;
+    int line, current_line, text_width, window_width, mark_icon_width;
     GdkRectangle area;
     GtkTextIter iter;
     char str[32];
@@ -3018,9 +3018,6 @@ draw_left_margin (MooTextView    *view,
                                            GTK_TEXT_WINDOW_LEFT,
                                            area.x, area.y,
                                            &area.x, &area.y);
-
-    gtk_text_view_get_line_at_y (text_view, &iter, area.y + area.height - 1, NULL);
-    last_line = gtk_text_iter_get_line (&iter);
 
     gtk_text_view_get_line_at_y (text_view, &iter, area.y, NULL);
     line = gtk_text_iter_get_line (&iter);
@@ -3107,7 +3104,7 @@ draw_marks_background (MooTextView    *view,
                        GdkEventExpose *event)
 {
     GtkTextView *text_view;
-    int line, last_line, window_width;
+    int line, window_width;
     GdkRectangle area;
     GtkTextIter iter;
 
@@ -3121,9 +3118,6 @@ draw_marks_background (MooTextView    *view,
 
     gdk_drawable_get_size (event->window, &window_width, NULL);
     window_width -= gtk_text_view_get_left_margin (text_view);
-
-    gtk_text_view_get_line_at_y (text_view, &iter, area.y + area.height - 1, NULL);
-    last_line = gtk_text_iter_get_line (&iter);
 
     gtk_text_view_get_line_at_y (text_view, &iter, area.y, NULL);
     line = gtk_text_iter_get_line (&iter);

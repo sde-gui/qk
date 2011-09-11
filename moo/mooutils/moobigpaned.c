@@ -546,13 +546,12 @@ move_pane_config (MooBigPaned     *paned,
 {
     GSList *old_link;
     MooBigPanedConfig *config = paned->priv->config;
-    MooPanedConfig *old_pc, *new_pc;
+    MooPanedConfig *old_pc;
 
     g_return_if_fail (new_index >= 0);
     g_return_if_fail (g_hash_table_lookup (config->panes, id) != NULL);
 
     old_pc = &config->paned[old_pos];
-    new_pc = &config->paned[new_pos];
     old_link = g_slist_find_custom (old_pc->order, id, (GCompareFunc) strcmp);
     g_return_if_fail (old_link != NULL);
 

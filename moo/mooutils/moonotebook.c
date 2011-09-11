@@ -3620,7 +3620,6 @@ moo_notebook_set_focus_child (GtkContainer *container,
     Page *page;
     GtkWidget *focus_child, *window;
     MooNotebook *nb = MOO_NOTEBOOK (container);
-    FocusType old_focus;
 
     window = gtk_widget_get_toplevel (GTK_WIDGET (nb));
 
@@ -3645,9 +3644,6 @@ moo_notebook_set_focus_child (GtkContainer *container,
             }
         }
     }
-
-    /* XXX should it be used? */
-    old_focus = nb->priv->focus;
 
     if (child)
     {

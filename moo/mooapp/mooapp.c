@@ -358,7 +358,6 @@ moo_app_constructor (GType           type,
                      GObjectConstructParam *params)
 {
     GObject *object;
-    MooApp *app;
 
     if (moo_app_data.instance != NULL)
     {
@@ -368,7 +367,6 @@ moo_app_constructor (GType           type,
     }
 
     object = moo_app_parent_class->constructor (type, n_params, params);
-    app = MOO_APP (object);
 
 #if defined(HAVE_SIGNAL) && defined(SIGINT)
     setup_signals (sigint_handler);

@@ -2255,7 +2255,6 @@ moo_editor_create_doc (MooEditor   *editor,
                        GError     **error)
 {
     MooEdit *doc;
-    MooEditView *view;
     GFile *file = NULL;
 
     moo_return_error_if_fail_p (MOO_IS_EDITOR (editor));
@@ -2264,7 +2263,6 @@ moo_editor_create_doc (MooEditor   *editor,
         file = g_file_new_for_path (filename);
 
     doc = g_object_new (get_doc_type (editor), "editor", editor, (const char*) NULL);
-    view = moo_edit_get_view (doc);
 
     if (file == NULL || _moo_edit_load_file (doc, file, encoding, NULL, error))
     {

@@ -464,14 +464,12 @@ moo_command_run (MooCommand         *cmd,
                  MooCommandContext  *ctx)
 {
     MooEdit *doc;
-    MooEditWindow *window;
 
     g_return_if_fail (MOO_IS_COMMAND (cmd));
     g_return_if_fail (MOO_IS_COMMAND_CONTEXT (ctx));
     g_return_if_fail (MOO_COMMAND_GET_CLASS (cmd)->run != NULL);
 
     doc = moo_command_context_get_doc (ctx);
-    window = moo_command_context_get_window (ctx);
 
     g_return_if_fail (check_context (cmd->options, doc));
 

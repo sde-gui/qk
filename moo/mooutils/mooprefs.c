@@ -382,7 +382,6 @@ prefs_new_key_from_string (const char   *key,
                            const char   *value,
                            int           prefs_kind)
 {
-    PrefsStore *prefs;
     PrefsItem *item;
     GValue string_val = { 0 };
     GValue real_val = { 0 };
@@ -409,7 +408,6 @@ prefs_new_key_from_string (const char   *key,
     g_value_init (&real_val, value_type);
     _moo_value_convert (&string_val, &real_val);
 
-    prefs = prefs_instance ();
     item = prefs_get_item (key);
 
     if (!item)
