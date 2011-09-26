@@ -16,7 +16,7 @@
 #include "mooedit/mootextsearch-private.h"
 #include "gtksourceview/gtksourceview-api.h"
 #include "mooutils/mooutils-misc.h"
-#include <glib/gregex.h>
+#include <glib.h>
 #include <string.h>
 
 

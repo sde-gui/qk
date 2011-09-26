@@ -18,8 +18,7 @@
 #endif
 
 #include <moofileview/moofileview-impl.h>
-#include <gtk/gtkvbox.h>
-#include <gtk/gtkmenu.h>
+#include <gtk/gtk.h>
 
 #ifndef MOO_FILE_VIEW_PRIVATE_H
 #define MOO_FILE_VIEW_PRIVATE_H

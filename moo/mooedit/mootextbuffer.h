@@ -16,7 +16,7 @@
 #ifndef MOO_TEXT_BUFFER_H
 #define MOO_TEXT_BUFFER_H
 
-#include <gtk/gtktextbuffer.h>
+#include <gtk/gtk.h>
 #include <mooedit/moolang.h>
 #include <mooedit/moolinemark.h>
 

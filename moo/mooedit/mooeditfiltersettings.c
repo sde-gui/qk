@@ -23,7 +23,7 @@
 #include "mooutils/mooprefs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
-#include <glib/gregex.h>
+#include <glib.h>
 #include <string.h>
 
 MOO_DEBUG_INIT(filters, FALSE)

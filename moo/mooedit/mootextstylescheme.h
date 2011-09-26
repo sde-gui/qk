@@ -16,8 +16,7 @@
 #ifndef MOO_TEXT_STYLE_SCHEME_H
 #define MOO_TEXT_STYLE_SCHEME_H
 
-#include <gtk/gtkwidget.h>
-#include <gtk/gtktexttag.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

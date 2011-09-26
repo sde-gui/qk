@@ -33,9 +33,7 @@
 #include "plugins/moofind-gxml.h"
 #include "plugins/moogrep-gxml.h"
 #include "moo-help-sections.h"
-#include <gtk/gtkdialog.h>
-#include <gtk/gtkscrolledwindow.h>
-#include <gtk/gtktogglebutton.h>
+#include <gtk/gtk.h>
 #include <string.h>
 #ifndef __WIN32__
 #include <sys/wait.h>

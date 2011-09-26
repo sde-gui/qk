@@ -16,7 +16,7 @@
 #ifndef MOO_ACTION_H
 #define MOO_ACTION_H
 
-#include <gtk/gtkradioaction.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

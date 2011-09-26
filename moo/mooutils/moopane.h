@@ -16,7 +16,7 @@
 #ifndef MOO_PANE_H
 #define MOO_PANE_H
 
-#include <gtk/gtkwidget.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

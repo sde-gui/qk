@@ -16,7 +16,7 @@
 #ifndef MOO_ACCEL_BUTTON_H
 #define MOO_ACCEL_BUTTON_H
 
-#include <gtk/gtkbutton.h>
+#include <gtk/gtk.h>
 
 
 G_BEGIN_DECLS

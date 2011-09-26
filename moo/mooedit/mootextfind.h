@@ -16,11 +16,10 @@
 #ifndef MOO_TEXT_FIND_H
 #define MOO_TEXT_FIND_H
 
-#include <gtk/gtktextview.h>
-#include <gtk/gtkdialog.h>
+#include <gtk/gtk.h>
 #include <mooedit/mooedit-enums.h>
 #include <mooutils/moohistorylist.h>
-#include <glib/gregex.h>
+#include <glib.h>
 
 G_BEGIN_DECLS
 

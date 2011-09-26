@@ -21,7 +21,7 @@
 #define MOO_BOOKMARK_VIEW_H
 
 #include <moofileview/moobookmarkmgr.h>
-#include <gtk/gtktreeview.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

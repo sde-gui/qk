@@ -23,7 +23,7 @@
 #include <string.h>
 #include <errno.h>
 #include <gobject/gvaluecollector.h>
-#include <glib/gregex.h>
+#include <glib.h>
 
 #define MOO_PREFS_ELEMENT "moo-prefs"
 #define PROP_VERSION "version"

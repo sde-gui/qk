@@ -16,7 +16,7 @@
 #ifndef MOO_HTML_H
 #define MOO_HTML_H
 
-#include <gtk/gtktextview.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

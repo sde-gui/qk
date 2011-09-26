@@ -29,7 +29,7 @@
 #include "mooutils/mooarray.h"
 #include "mooutils/moologwindow-gxml.h"
 #include <gtk/gtk.h>
-#include <glib/gmappedfile.h>
+#include <glib.h>
 #include <glib/gstdio.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>

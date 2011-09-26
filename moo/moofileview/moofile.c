@@ -44,9 +44,7 @@
 #if defined(HAVE_CARBON)
 #include <CoreServices/CoreServices.h>
 #endif
-#include <gtk/gtkicontheme.h>
-#include <gtk/gtkiconfactory.h>
-#include <gtk/gtkstock.h>
+#include <gtk/gtk.h>
 
 MOO_DEBUG_INIT(file, FALSE)
 

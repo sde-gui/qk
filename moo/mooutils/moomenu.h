@@ -16,7 +16,7 @@
 #ifndef MOO_MENU_H
 #define MOO_MENU_H
 
-#include <gtk/gtkmenu.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

@@ -17,7 +17,6 @@
 #define MOO_PANED_H
 
 #include "moopane.h"
-#include <gtk/gtkbin.h>
 
 G_BEGIN_DECLS
 

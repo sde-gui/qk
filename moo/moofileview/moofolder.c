@@ -32,9 +32,7 @@
 #endif
 #include <errno.h>
 #include <time.h>
-#include <gtk/gtkicontheme.h>
-#include <gtk/gtkiconfactory.h>
-#include <gtk/gtkstock.h>
+#include <gtk/gtk.h>
 
 #define NORMAL_PRIORITY         G_PRIORITY_DEFAULT_IDLE
 #define NORMAL_TIMEOUT          0.04

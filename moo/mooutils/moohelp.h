@@ -16,7 +16,7 @@
 #ifndef MOO_HELP_H
 #define MOO_HELP_H
 
-#include <gtk/gtkdialog.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

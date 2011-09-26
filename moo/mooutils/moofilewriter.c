@@ -25,7 +25,7 @@
 #include <string.h>
 #include <errno.h>
 #include <glib/gstdio.h>
-#include <glib/gmappedfile.h>
+#include <glib.h>
 #include <gio/gio.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>

@@ -16,7 +16,7 @@
 #ifndef MOO_ACTION_COLLECTION_H
 #define MOO_ACTION_COLLECTION_H
 
-#include <gtk/gtkactiongroup.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

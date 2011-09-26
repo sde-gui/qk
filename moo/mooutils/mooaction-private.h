@@ -18,7 +18,7 @@
 
 #include <mooutils/mooaction.h>
 #include <mooutils/mooclosure.h>
-#include <gtk/gtkactiongroup.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

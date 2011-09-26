@@ -18,7 +18,6 @@
 
 #include <mooutils/mooaction.h>
 #include <mooedit/mooedit.h>
-#include <gtk/gtkactiongroup.h>
 
 G_BEGIN_DECLS
 

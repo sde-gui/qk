@@ -17,7 +17,7 @@
 #define MOO_UTILS_FS_H
 
 #include <glib.h>
-#include <gtk/gtkwidget.h>
+#include <gtk/gtk.h>
 
 /* MSVC */
 #if defined(WIN32) && !defined(__GNUC__)

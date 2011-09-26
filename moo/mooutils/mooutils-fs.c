@@ -31,8 +31,7 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <glib/gstdio.h>
-/* for glib-2.6 */
-#include <glib/gmappedfile.h>
+#include <glib.h>
 
 #ifdef __WIN32__
 #include <windows.h>
@@ -1320,7 +1319,7 @@ _moo_rename (const char *old_name,
  */
 
 #define MOO_GLOB_REGEX
-#include <glib/gregex.h>
+#include <glib.h>
 
 typedef struct _MooGlob {
 #ifdef MOO_GLOB_REGEX

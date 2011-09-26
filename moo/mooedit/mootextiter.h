@@ -16,7 +16,7 @@
 #ifndef MOO_TEXT_ITER_H
 #define MOO_TEXT_ITER_H
 
-#include <gtk/gtktextbuffer.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

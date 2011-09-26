@@ -16,8 +16,7 @@
 #ifndef MOO_COMBO_H
 #define MOO_COMBO_H
 
-#include <gtk/gtktable.h>
-#include <gtk/gtktreemodel.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

@@ -16,7 +16,7 @@
 #ifndef MOO_COMMAND_H
 #define MOO_COMMAND_H
 
-#include <gtk/gtkwidget.h>
+#include <gtk/gtk.h>
 #include "moooutputfilter.h"
 #include "moousertools-enums.h"
 

@@ -47,7 +47,7 @@
 #include "mooutils/moohelp.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooutils-script.h"
-#include <glib/gmappedfile.h>
+#include <glib.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>

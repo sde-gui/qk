@@ -28,7 +28,7 @@
 
 #include "moofileview/moofolder.h"
 #include <mooutils/moofilewatch.h>
-#include <gtk/gtkwidget.h>
+#include <gtk/gtk.h>
 
 
 G_BEGIN_DECLS

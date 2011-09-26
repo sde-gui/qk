@@ -17,7 +17,7 @@
 #define MOO_I18N_H
 
 #include <config.h>
-#include <glib/gstrfuncs.h>
+#include <glib.h>
 
 #ifdef ENABLE_NLS
 

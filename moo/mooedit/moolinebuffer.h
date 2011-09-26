@@ -20,7 +20,7 @@
 #ifndef MOO_LINE_BUFFER_H
 #define MOO_LINE_BUFFER_H
 
-#include <gtk/gtktextbuffer.h>
+#include <gtk/gtk.h>
 #include "mooedit/mootextbtree.h"
 #include "mooedit/mootextbuffer.h"
 

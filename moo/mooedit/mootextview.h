@@ -16,7 +16,7 @@
 #ifndef MOO_TEXT_VIEW_H
 #define MOO_TEXT_VIEW_H
 
-#include <gtk/gtktextview.h>
+#include <gtk/gtk.h>
 #include <mooedit/mooindenter.h>
 #include <mooedit/moolang.h>
 #include <mooedit/mootextsearch.h>

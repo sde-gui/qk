@@ -23,7 +23,7 @@
 #include "mooedit/mooeditfiltersettings.h"
 #include "mooedit/mooedit-impl.h"
 #include "mooutils/mooutils.h"
-#include <glib/gregex.h>
+#include <glib.h>
 #include <string.h>
 
 

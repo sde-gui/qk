@@ -23,7 +23,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moomarkup.h"
 #include "mooutils/mooi18n.h"
-#include <glib/gregex.h>
+#include <glib.h>
 #include <string.h>
 
 #define FILTERS_VERSION     "1.0"

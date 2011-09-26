@@ -36,9 +36,7 @@
 #define MOO_FONTSEL_H
 
 
-#include <gdk/gdk.h>
-#include <gtk/gtkdialog.h>
-#include <gtk/gtkvbox.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

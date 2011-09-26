@@ -17,7 +17,7 @@
 #define MOO_ACTION_BASE_PRIVATE_H
 
 #include <mooutils/mooactionbase.h>
-#include <gtk/gtkaction.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

@@ -20,10 +20,7 @@
 #ifndef MOO_ICON_VIEW_H
 #define MOO_ICON_VIEW_H
 
-#include <gtk/gtkvbox.h>
-#include <gtk/gtktreemodel.h>
-#include <gtk/gtkcellrenderer.h>
-#include <gtk/gtkdnd.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

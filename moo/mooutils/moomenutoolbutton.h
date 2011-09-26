@@ -16,7 +16,7 @@
 #ifndef MOO_MENU_TOOL_BUTTON_H
 #define MOO_MENU_TOOL_BUTTON_H
 
-#include <gtk/gtktoggletoolbutton.h>
+#include <gtk/gtk.h>
 
 
 G_BEGIN_DECLS

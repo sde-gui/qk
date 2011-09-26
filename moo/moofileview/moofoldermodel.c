@@ -18,7 +18,7 @@
 #include "moofile-private.h"
 #include "moofolder-private.h"
 #include "moofoldermodel-private.h"
-#include <gtk/gtktreednd.h>
+#include <gtk/gtk.h>
 
 
 struct _MooFolderModelPrivate {

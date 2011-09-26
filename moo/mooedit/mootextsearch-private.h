@@ -17,7 +17,7 @@
 #define MOO_TEXT_SEARCH_PRIVATE_H
 
 #include <mooedit/mootextsearch.h>
-#include <glib/gregex.h>
+#include <glib.h>
 
 G_BEGIN_DECLS
 

@@ -16,7 +16,7 @@
 #ifndef MOO_LINK_LABEL_H
 #define MOO_LINK_LABEL_H
 
-#include <gtk/gtklabel.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

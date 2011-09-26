@@ -40,7 +40,7 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooedit/mooquicksearch-gxml.h"
 #include <gtk/gtk.h>
-#include <glib/gregex.h>
+#include <glib.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
 

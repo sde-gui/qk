@@ -16,7 +16,6 @@
 #ifndef MOO_BIG_PANED_H
 #define MOO_BIG_PANED_H
 
-#include <gtk/gtkframe.h>
 #include "moopaned.h"
 
 G_BEGIN_DECLS

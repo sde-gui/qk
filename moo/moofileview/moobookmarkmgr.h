@@ -16,8 +16,7 @@
 #ifndef MOO_BOOKMARK_MGR_H
 #define MOO_BOOKMARK_MGR_H
 
-#include <gtk/gtkwidget.h>
-#include <gtk/gtktreemodel.h>
+#include <gtk/gtk.h>
 #include <mooutils/moouixml.h>
 
 G_BEGIN_DECLS

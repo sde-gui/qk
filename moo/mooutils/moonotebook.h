@@ -16,8 +16,7 @@
 #ifndef MOO_NOTEBOOK_H
 #define MOO_NOTEBOOK_H
 
-#include <gtk/gtkmenu.h>
-#include <gtk/gtknotebook.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

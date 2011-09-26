@@ -16,7 +16,7 @@
 #ifndef MOO_GLADE_H
 #define MOO_GLADE_H
 
-#include <gtk/gtkwidget.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

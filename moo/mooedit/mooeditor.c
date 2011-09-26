@@ -43,7 +43,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/moolist.h"
-#include <glib/gbase64.h>
+#include <glib.h>
 #include <string.h>
 #include <stdlib.h>
 
