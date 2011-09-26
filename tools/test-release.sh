@@ -1,7 +1,7 @@
 #! /bin/sh
 
 if [ -z "$test_release_tmpdir" ]; then
-  tmpdir=`mktemp --directory --tmpdir medit-release.XXXXXX`
+  tmpdir=`mktemp --directory --tmpdir=/var/tmp medit-release.XXXXXX`
   mkdir $tmpdir/files
 else
   tmpdir=$test_release_tmpdir
