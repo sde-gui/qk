@@ -24,7 +24,7 @@ run_cmd $AUTOMAKE --add-missing --copy --force-missing
 cd $workingdir
 
 run_configure=true
-configure_args="--enable-dev-mode --enable-silent-rules"
+configure_args="--enable-dev-mode"
 if [ "$1" ]; then
   :
 else
