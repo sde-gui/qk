@@ -303,7 +303,7 @@ moo_edit_constructor (GType                  type,
     doc = MOO_EDIT (object);
 
     view = _moo_edit_view_new (doc);
-    g_assert (doc->priv->views->n_elms == 1 && doc->priv->views->elms[0] == view);
+    (void) view; g_assert (doc->priv->views->n_elms == 1 && doc->priv->views->elms[0] == view);
 
     _moo_edit_add_class_actions (doc);
     _moo_edit_instances = moo_edit_list_prepend (_moo_edit_instances, doc);

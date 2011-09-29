@@ -1402,7 +1402,7 @@ handle_keyword_char_class_element (ParserState *parser_state)
 
 	do {
 		ret = xmlTextReaderRead (parser_state->reader);
-		g_assert (ret == 1);
+		(void) ret; g_assert (ret == 1);
 		type = xmlTextReaderNodeType (parser_state->reader);
 	}
 	while (type != XML_READER_TYPE_TEXT && type != XML_READER_TYPE_CDATA);
