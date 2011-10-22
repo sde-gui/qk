@@ -22,7 +22,8 @@ static const luaL_Reg lualibs[] = {
   {LUA_TABLIBNAME, luaopen_table},
   {LUA_IOLIBNAME, luaopen_io},
   {LUA_OSLIBNAME, luaopen_os},
-  {LUA_STRLIBNAME, luaopen_string},
+  /*{LUA_STRLIBNAME, luaopen_string},*/
+  {SLN_UNICODENAME, luaopen_unicode},
   {LUA_MATHLIBNAME, luaopen_math},
   {LUA_DBLIBNAME, luaopen_debug},
   {"lfs", luaopen_lfs},

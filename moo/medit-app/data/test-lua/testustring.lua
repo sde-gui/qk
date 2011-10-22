@@ -1,5 +1,7 @@
 require("munit")
 
+local ascii = require("unicode.ascii")
+
 local strings = {
   { "", "", "", 0, 0 },
   { "a", "A", "a", 1, 1 },
@@ -12,21 +14,21 @@ local strings = {
   { "Мама", "МАМА", "мама", 8, 4 },
 }
 
-local test_ustring_one = function(case, ascii)
+local test_ustring_one = function(case)
   s = case[1]
   upper = case[2]
   lower = case[3]
   byte_len = case[4]
   char_len = case[5]
 
-  tassert(utf8.upper(s) == upper, '%q:upper() is %q, expected %q', s, utf8.upper(s), upper)
-  tassert(utf8.lower(s) == lower, '%q:lower() is %q, expected %q', s, utf8.lower(s), lower)
+  tassert(string.upper(s) == upper, '%q:upper() is %q, expected %q', s, string.upper(s), upper)
+  tassert(string.lower(s) == lower, '%q:lower() is %q, expected %q', s, string.lower(s), lower)
 
-  tassert(utf8.len(s) == char_len, 'utf8.len(%q) is %d, expected %d', s, utf8.len(s), char_len)
-  tassert(s:len() == byte_len, '%q:len() is %d, expected %d', s, s:len(), byte_len)
-  tassert(#s == s:len(), '#%q != %q:len()', s, s)
+  tassert(string.len(s) == char_len, 'utf8.len(%q) is %d, expected %d', s, string.len(s), char_len)
+  tassert(ascii.len(s) == byte_len, '%q:len() is %d, expected %d', s, ascii.len(s), byte_len)
+  --tassert(#s == s:len(), '#%q != %q:len()', s, s)
 end
 
 for index, case in pairs(strings) do
-  test_ustring_one(case, true)
+  test_ustring_one(case)
 end

@@ -88,7 +88,7 @@ local function testlen (str,bytes,codes,chars)
 	chars = chars or codes
 	return check(sprintf("len '%s'", str),
 		sprintf("%d/%d/%d", bytes, codes, chars),
-sprintf("%d/%d/%d", string.len(str), utf8.len(str), unicode.grapheme.len(str)))
+sprintf("%d/%d/%d", unicode.ascii.len(str), utf8.len(str), unicode.grapheme.len(str)))
 end
 
 -- 176 = 00B0;DEGREE SIGN -- UTF-8: C2,B0 = \194\176
@@ -120,10 +120,11 @@ local function testbyte (ctype, ok, str, ...)
 	return checka(sprintf("%s.byte('%s',%s)",ctype,str,table.concat({...}, ",")),
 		ok, unicode[ctype].byte(str, ...))
 end
-testbyte("string","194,176","Ä°Ö",3,4) -- the UTF-8 seq for °
-testbyte("ascii","194,176","Ä°Ö",3,4)
+testbyte("ascii","194,176","Ä°Ö",3,4) -- the UTF-8 seq for °
 testbyte("utf8","176,214","Ä°Ö",2,3) -- code points for °,Ö
+testbyte("string","176,214","Ä°Ö",2,3) -- code points for °,Ö
 testbyte("utf8","65,776","\204\136A\204\136O\204\136",2,3) -- decomposed
+testbyte("string","65,776","\204\136A\204\136O\204\136",2,3) -- decomposed
 testbyte("grapheme","65,776","\204\136A\204\136O\204\136",2) -- decomposed
 
 

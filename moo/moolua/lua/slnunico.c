@@ -1,7 +1,7 @@
 /*
 *	Selene Unicode/UTF-8
 *	This additions
-*	Copyright (c) 2005 Malete Partner, Berlin, partner@malete.org
+*	Copyright (c) 2005-2011 Malete Partner, Berlin, partner@malete.org
 *	Available under "Lua 5.0 license", see http://www.lua.org/license.html#5
 *	$Id: slnunico.c,v 1.5 2006/07/26 17:20:04 paul Exp $
 *
@@ -1301,6 +1301,7 @@ static const luaL_reg uniclib[] = {
 	{NULL, NULL}
 };
 
+#if defined( SLNUNICODE_AS_STRING ) && defined( STRING_WITH_METAT )
 static void createmetatable (lua_State *L) {
 	lua_newtable(L);  /* create metatable for strings */
 	lua_pushliteral(L, "");  /* dummy string */
@@ -1311,30 +1312,34 @@ static void createmetatable (lua_State *L) {
 	lua_setfield(L, -2, "__index");  /* ...is the __index metamethod */
 	lua_pop(L, 1);  /* pop metatable */
 }
+#endif
 
 /*
 ** Open string library
 */
-LUALIB_API int luaopen_string (lua_State *L) {
+LUALIB_API int luaopen_unicode (lua_State *L) {
 	/* register unicode itself so require("unicode") works */
 	luaL_register(L, SLN_UNICODENAME,
 		uniclib + (sizeof uniclib/sizeof uniclib[0] - 1)); /* empty func list */
-	lua_pop(L, 1);
+	/* lua_pop(L, 1); http://lua-users.org/lists/lua-l/2007-11/msg00070.html */
 	lua_pushinteger(L, MODE_ASCII);
 	luaI_openlib(L, SLN_UNICODENAME ".ascii", uniclib, 1);
-#if defined(LUA_COMPAT_GFIND)
-	lua_getfield(L, -1, "gmatch");
-	lua_setfield(L, -2, "gfind");
-#endif
-	createmetatable(L);
-	lua_setfield(L, LUA_GLOBALSINDEX, "string");
 	lua_pushinteger(L, MODE_LATIN);
 	luaI_openlib(L, SLN_UNICODENAME ".latin1", uniclib, 1);
 	lua_pushinteger(L, MODE_GRAPH);
 	luaI_openlib(L, SLN_UNICODENAME ".grapheme", uniclib, 1);
 	lua_pushinteger(L, MODE_UTF8);
 	luaI_openlib(L, SLN_UNICODENAME ".utf8", uniclib, 1);
-	lua_setfield(L, LUA_GLOBALSINDEX, "utf8");
+#ifdef SLNUNICODE_AS_STRING
+#if defined(LUA_COMPAT_GFIND)
+	lua_getfield(L, -1, "gmatch");
+	lua_setfield(L, -2, "gfind");
+#endif
+#ifdef STRING_WITH_METAT
+	createmetatable(L);
+#endif
+	lua_setfield(L, LUA_GLOBALSINDEX, "string");
+#endif
 #ifdef WANT_EXT_MATCH
 	{
 		unsigned i;
@@ -1355,6 +1360,7 @@ LUALIB_API int luaopen_string (lua_State *L) {
 		}
 	}
 #endif
+	lua_settop(L, 2); /* http://lua-users.org/lists/lua-l/2007-11/msg00070.html */
 	return 1;
 }
 
