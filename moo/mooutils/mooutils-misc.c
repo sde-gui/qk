@@ -74,6 +74,26 @@ open_uri (const char *uri,
 
 #else /* ! __WIN32__ */
 
+static gboolean
+open_uri (const char *uri,
+          G_GNUC_UNUSED gboolean email)
+{
+    GError *error = NULL;
+
+    if (!gtk_show_uri (NULL, uri, gtk_get_current_event_time (), &error))
+    {
+        g_warning ("Unable to show '%s': %s", uri, error->message);
+        g_error_free (error);
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+#endif /* ! __WIN32__ */
+
+
+#ifndef __WIN32__
 char *
 _moo_find_script (const char *name,
                   gboolean    search_path)
@@ -114,54 +134,7 @@ _moo_find_script (const char *name,
     _moo_message ("%s: %s", name, path);
     return path;
 }
-
-enum {
-    SCRIPT_XDG_OPEN,
-    SCRIPT_XDG_EMAIL
-};
-
-static const char *
-get_xdg_script (int type)
-{
-    static char *path[2];
-
-    g_return_val_if_fail (type < 2, NULL);
-
-    if (!path[0])
-    {
-        path[SCRIPT_XDG_OPEN] = _moo_find_script ("xdg-open", TRUE);
-        path[SCRIPT_XDG_EMAIL] = _moo_find_script ("xdg-email", TRUE);
-    }
-
-    return path[type];
-}
-
-static gboolean
-open_uri (const char *uri,
-          gboolean    email)
-{
-    gboolean result = FALSE;
-    const char *argv[3];
-    GError *error = NULL;
-
-    argv[0] = get_xdg_script (email ? SCRIPT_XDG_EMAIL : SCRIPT_XDG_OPEN);
-    argv[1] = uri;
-    argv[2] = NULL;
-
-    result = g_spawn_async (NULL, (char**) argv, NULL, (GSpawnFlags) 0, NULL, NULL,
-                            NULL, &error);
-
-    if (!result)
-    {
-        g_warning ("error in g_spawn_async: %s", moo_error_message (error));
-        g_error_free (error);
-        error = NULL;
-    }
-
-    return result;
-}
-
-#endif /* ! __WIN32__ */
+#endif /* __WIN32__ */
 
 
 gboolean
