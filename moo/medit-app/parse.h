@@ -24,7 +24,7 @@ parse_filename (const char *filename)
         return NULL;
     }
 
-    if (g_utf8_validate (filename, -1, NULL))
+    if (!g_file_test (filename, G_FILE_TEST_EXISTS) && g_utf8_validate (filename, -1, NULL))
     {
         GError *error = NULL;
         GRegex *re = g_regex_new ("((?P<path>.*):(?P<line>\\d+)?|(?P<path>.*)\\((?P<line>\\d+)\\))$",
