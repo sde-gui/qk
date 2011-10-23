@@ -565,6 +565,8 @@ parse_mod (const char *string, gssize len)
         mod = GDK_SHIFT_MASK;
     else if (!strcmp (stripped, "release"))
         mod = GDK_RELEASE_MASK;
+    else if (!strcmp (stripped, "primary"))
+        mod = COMMAND_MASK;
 
     g_free (stripped);
     return mod;
