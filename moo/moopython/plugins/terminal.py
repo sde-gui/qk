@@ -60,8 +60,8 @@ class Terminal(vte.Terminal):
             moo.prefs_set_string(COLOR_SCHEME_KEY, None)
 
     def font_item_activated(self, *whatever):
-        dlg = moo.FontSelectionDialog(D_("Pick a Font", "gtk20"))
-        dlg.fontsel.set_property('monospace', True)
+        dlg = gtk.FontSelectionDialog(D_("Pick a Font", "gtk20"))
+        # dlg.fontsel.set_property('monospace', True)
         old_font = self.get_font()
         if old_font:
             dlg.set_font_name(old_font.to_string())
