@@ -1,0 +1,12 @@
+diff -r aee1c0eff1fd glib/gspawn.h
+--- a/glib/gspawn.h	Sat Nov 26 03:25:11 2011 -0800
++++ b/glib/gspawn.h	Sat Nov 26 03:28:20 2011 -0800
+@@ -118,6 +118,8 @@
+  */
+ typedef void (* GSpawnChildSetupFunc) (gpointer user_data);
+ 
++#define MOO_PATCHED_G_SPAWN_WIN32_HIDDEN_CONSOLE 1
++
+ /**
+  * GSpawnFlags:
+  * @G_SPAWN_LEAVE_DESCRIPTORS_OPEN: the parent's open file descriptors will be

@@ -320,7 +320,12 @@ project_mode (const char *file)
 }
 #endif
 
-#ifdef GDK_WINDOWING_WIN32
+#undef WANT_SYNAPTICS_FIX
+#if defined(GDK_WINDOWING_WIN32) && !GTK_CHECK_VERSION(2,24,8)
+#define WANT_SYNAPTICS_FIX 1
+#endif
+
+#ifdef WANT_SYNAPTICS_FIX
 
 static GdkWindow *
 _moo_get_toplevel_window_at_pointer (void)
@@ -512,7 +517,7 @@ hookup_synaptics_touchpad (void)
     gdk_window_add_filter (NULL, touchpad_filter_func, NULL);
 }
 
-#endif // GDK_WINDOWING_WIN32
+#endif // WANT_SYNAPTICS_FIX
 
 static void
 unit_test_func (void)
@@ -558,7 +563,7 @@ medit_main (int argc, char *argv[])
 
     stamp = get_time_stamp ();
 
-#ifdef GDK_WINDOWING_WIN32
+#ifdef WANT_SYNAPTICS_FIX
     hookup_synaptics_touchpad ();
 #endif
 
