@@ -127,7 +127,7 @@ $(srcdir)/built/man-medit.t2t: man-medit.t2t.in $(top_builddir)/config.status
 	$(AM_V_at)mv man-medit.t2t $(srcdir)/built/man-medit.t2t
 
 $(srcdir)/built/medit.1: built/man-medit.t2t
-	$(AM_V_GEN)txt2tags --target=man --outfile=- $(srcdir)/built/man-medit.t2t | grep -v "cmdline: txt2tags" \
+	$(AM_V_GEN)$(TXT2TAGS) --target=man --outfile=- $(srcdir)/built/man-medit.t2t | grep -v "cmdline: txt2tags" \
 		> medit.1.tmp && mv medit.1.tmp $(srcdir)/built/medit.1
 
 endif
