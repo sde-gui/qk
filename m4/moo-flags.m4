@@ -295,6 +295,13 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
 
   if $MOO_OS_WIN32; then
     MOO_CPPFLAGS="$MOO_CPPFLAGS -DUNICODE -D_UNICODE -DSTRICT -DWIN32_LEAN_AND_MEAN -I$moo_top_src_dir/moo/mooutils/moowin32/mingw"
+
+    # work around bug in i586-mingw32msvc-gcc-4.2.1-sjlj
+    # it defines __STRICT_ANSI__ for some reason and that
+    # breaks compilation:
+    # /usr/lib/gcc/i586-mingw32msvc/4.2.1-sjlj/include/c++/cwchar:164: error: ‘::swprintf’ has not been declared
+    # /usr/lib/gcc/i586-mingw32msvc/4.2.1-sjlj/include/c++/cwchar:171: error: ‘::vswprintf’ has not been declared
+    MOO_CPPFLAGS="$MOO_CPPFLAGS -U__STRICT_ANSI__"
   fi
 
   if test x$MOO_USE_FAM = xyes; then
