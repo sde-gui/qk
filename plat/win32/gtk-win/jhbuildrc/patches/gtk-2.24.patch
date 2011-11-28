@@ -1,6 +1,6 @@
-diff -r 959ff2e88f4a Makefile.in
---- a/Makefile.in	Sat Nov 26 03:37:47 2011 -0800
-+++ b/Makefile.in	Sat Nov 26 03:40:41 2011 -0800
+diff -r 7c530856f369 Makefile.in
+--- a/Makefile.in	Sun Nov 27 22:39:29 2011 -0800
++++ b/Makefile.in	Sun Nov 27 22:44:26 2011 -0800
 @@ -457,8 +457,8 @@
  	|| { echo "Gtk+Tests:ERROR: Failed to start Xvfb environment for X11 target tests."; exit 1; } \
  	&& DISPLAY=:$$XID && export DISPLAY
@@ -12,9 +12,9 @@ diff -r 959ff2e88f4a Makefile.in
  
  # require automake 1.4
  AUTOMAKE_OPTIONS = 1.7
-diff -r 959ff2e88f4a gdk/Makefile.in
---- a/gdk/Makefile.in	Sat Nov 26 03:37:47 2011 -0800
-+++ b/gdk/Makefile.in	Sat Nov 26 03:40:41 2011 -0800
+diff -r 7c530856f369 gdk/Makefile.in
+--- a/gdk/Makefile.in	Sun Nov 27 22:39:29 2011 -0800
++++ b/gdk/Makefile.in	Sun Nov 27 22:44:26 2011 -0800
 @@ -516,7 +516,7 @@
     --includedir=$(srcdir) \
     --includedir=.
@@ -24,9 +24,20 @@ diff -r 959ff2e88f4a gdk/Makefile.in
  DIST_SUBDIRS = win32 x11 quartz directfb tests
  CLEANFILES = $(am__append_4)
  INCLUDES = \
-diff -r 959ff2e88f4a gdk/win32/gdkwindow-win32.c
---- a/gdk/win32/gdkwindow-win32.c	Sat Nov 26 03:37:47 2011 -0800
-+++ b/gdk/win32/gdkwindow-win32.c	Sat Nov 26 03:40:41 2011 -0800
+diff -r 7c530856f369 gdk/win32/gdkpixmap-win32.c
+--- a/gdk/win32/gdkpixmap-win32.c	Sun Nov 27 22:39:29 2011 -0800
++++ b/gdk/win32/gdkpixmap-win32.c	Sun Nov 27 22:44:26 2011 -0800
+@@ -175,6 +175,7 @@
+       format = CAIRO_FORMAT_A8;
+       break;
+ 
++    case 16:
+     case 24:
+     case 32:
+       format = CAIRO_FORMAT_RGB24;
+diff -r 7c530856f369 gdk/win32/gdkwindow-win32.c
+--- a/gdk/win32/gdkwindow-win32.c	Sun Nov 27 22:39:29 2011 -0800
++++ b/gdk/win32/gdkwindow-win32.c	Sun Nov 27 22:44:26 2011 -0800
 @@ -1260,7 +1260,7 @@
      {
        ShowWindow (GDK_WINDOW_HWND (window), SW_SHOWNOACTIVATE);
@@ -61,9 +72,9 @@ diff -r 959ff2e88f4a gdk/win32/gdkwindow-win32.c
    SetFocus (GDK_WINDOW_HWND (window));
  }
  
-diff -r 959ff2e88f4a gtk/Makefile.in
---- a/gtk/Makefile.in	Sat Nov 26 03:37:47 2011 -0800
-+++ b/gtk/Makefile.in	Sat Nov 26 03:40:41 2011 -0800
+diff -r 7c530856f369 gtk/Makefile.in
+--- a/gtk/Makefile.in	Sun Nov 27 22:39:29 2011 -0800
++++ b/gtk/Makefile.in	Sun Nov 27 22:44:26 2011 -0800
 @@ -1230,7 +1230,7 @@
  
  @USE_QUARTZ_FALSE@GTK_PRINT_PREVIEW_COMMAND = "evince --unlink-tempfile --preview --print-settings %s %f"
@@ -73,3 +84,15 @@ diff -r 959ff2e88f4a gtk/Makefile.in
  DIST_SUBDIRS = theme-bits tests
  @HAVE_CUPS_FALSE@@HAVE_PAPI_CUPS_FALSE@@HAVE_PAPI_FALSE@GTK_PRINT_BACKENDS = file,lpr
  @HAVE_CUPS_FALSE@@HAVE_PAPI_CUPS_FALSE@@HAVE_PAPI_TRUE@GTK_PRINT_BACKENDS = file,papi
+diff -r 7c530856f369 modules/other/gail/Makefile.in
+--- a/modules/other/gail/Makefile.in	Sun Nov 27 22:39:29 2011 -0800
++++ b/modules/other/gail/Makefile.in	Sun Nov 27 22:44:26 2011 -0800
+@@ -446,7 +446,7 @@
+ 	|| { echo "Gtk+Tests:ERROR: Failed to start Xvfb environment for X11 target tests."; exit 1; } \
+ 	&& DISPLAY=:$$XID && export DISPLAY
+ 
+-SUBDIRS = libgail-util tests
++SUBDIRS = libgail-util
+ @PLATFORM_WIN32_TRUE@no_undefined = -no-undefined
+ moduledir = $(libdir)/gtk-2.0/modules
+ module_LTLIBRARIES = libgail.la
