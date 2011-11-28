@@ -541,6 +541,22 @@ run_script_func (void)
         moo_app_run_script (moo_app_instance(), *p);
 }
 
+static void
+install_log_handlers (void)
+{
+    if (medit_opts.log_file)
+        moo_set_log_func_file (medit_opts.log_file);
+    else if (medit_opts.log_window)
+        moo_set_log_func_window (TRUE);
+#ifdef __WIN32__
+    // this will install do-nothing log and print handlers plus
+    // a fatal error win32 message handler (it will also turn off
+    // console output, but that is not visible anyway)
+    else
+        moo_set_log_func_silent ();
+#endif
+}
+
 static int
 medit_main (int argc, char *argv[])
 {
@@ -641,22 +657,7 @@ medit_main (int argc, char *argv[])
     gdk_threads_init ();
     gdk_threads_enter ();
 
-    if (medit_opts.log_file || medit_opts.log_window)
-    {
-        if (medit_opts.log_file)
-            moo_set_log_func_file (medit_opts.log_file);
-        else
-            moo_set_log_func_window (TRUE);
-    }
-#ifdef __WIN32__
-    else
-    {
-        // this will install do-nothing log and print handlers plus
-        // a fatal error win32 message handler (it will also turn off
-        // console output, but that is not visible anyway)
-        moo_set_log_func_silent ();
-    }
-#endif
+    install_log_handlers ();
 
     app = MOO_APP (g_object_new (medit_app_get_type (),
                                  "run-input", run_input,

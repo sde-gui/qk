@@ -807,22 +807,22 @@ win32_filter_fatal_errors (G_GNUC_UNUSED const gchar    *log_domain,
 }
 #endif /* __WIN32__ */
 
-#if !defined(__WIN32__) || !defined(DEBUG)
-
-static void
-on_warning_or_critical_message (G_GNUC_UNUSED const char *message)
+static char *
+format_log_message (const char *log_domain,
+                    const char *message)
 {
+    char *text = NULL;
+
+    if (!g_utf8_validate (message, -1, NULL))
+        message = "<corrupted string, invalid UTF8>";
+
+    if (log_domain)
+        text = g_strdup_printf ("%s: %s\n", log_domain, message);
+    else
+        text = g_strdup_printf ("%s\n", message);
+
+    return text;
 }
-
-#else /* __WIN32__ && DEBUG */
-
-static void
-on_warning_or_critical_message (const char *message)
-{
-    _moo_abort_debug_ignore (MOO_CODE_LOC_UNKNOWN, message);
-}
-
-#endif
 
 static void
 log_func_window (const gchar    *log_domain,
@@ -834,16 +834,7 @@ log_func_window (const gchar    *log_domain,
 
     win32_filter_fatal_errors (log_domain, flags, message);
 
-    if (!g_utf8_validate (message, -1, NULL))
-        message = "<corrupted string, invalid UTF8>";
-
-    if (log_domain)
-        text = g_strdup_printf ("%s: %s\n", log_domain, message);
-    else
-        text = g_strdup_printf ("%s\n", message);
-
-    if (flags < G_LOG_LEVEL_MESSAGE)
-        on_warning_or_critical_message (text);
+    text = format_log_message (log_domain, message);
 
     {
         GtkTextTag *tag;
@@ -1674,105 +1665,10 @@ _moo_widget_set_tooltip (GtkWidget  *widget,
  * Asserts
  */
 
-#if !defined(__WIN32__)
-
-void
-_moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
-{
-    if (moo_code_loc_valid (loc))
-	g_error ("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
-    else
-        g_error ("%s\n", message);
-}
-
-#else /* !__WIN32__ */
-
-static void
-break_into_debugger (void)
-{
-    RaiseException(0, EXCEPTION_NONCONTINUABLE, 0, NULL);
-}
-
-void
-_moo_abort_debug_ignore (MooCodeLoc loc, const char *message)
-{
-    gboolean skip = FALSE;
-    static GHashTable *locs_hash;
-    char *loc_id = NULL;
-    gboolean use_location;
-
-    use_location = moo_code_loc_valid (loc);
-
-    if (use_location)
-        loc_id = g_strdup_printf ("%s#%d#%d", loc.file, loc.line, loc.counter);
-    else
-        loc_id = g_strdup (message);
-
-    if (loc_id != NULL)
-    {
-        if (!locs_hash)
-            locs_hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-        if (g_hash_table_lookup (locs_hash, loc_id))
-            skip = TRUE;
-    }
-
-    if (!skip)
-    {
-        int ret;
-
-        if (use_location)
-            ret = _moo_win32_message_box (NULL, MB_ABORTRETRYIGNORE, NULL,
-                                          Q_("console message|in file %s, line %d, function %s:\n%s"),
-                                          loc.file, loc.line, loc.func, message);
-        else
-            ret = _moo_win32_message_box (NULL, MB_ABORTRETRYIGNORE, NULL,
-                                          "%s", message);
-
-        switch (ret)
-        {
-            case IDABORT:
-                TerminateProcess (GetCurrentProcess (), 1);
-                break;
-
-            case IDRETRY:
-                break_into_debugger ();
-                break;
-
-            case IDIGNORE:
-                if (GetKeyState(VK_CONTROL) < 0)
-                    skip = TRUE;
-                break;
-
-            default:
-                moo_abort ();
-                break;
-        }
-
-        if (skip && loc_id)
-        {
-            g_hash_table_insert (locs_hash, loc_id, GINT_TO_POINTER (1));
-            loc_id = NULL;
-        }
-    }
-
-    g_free (loc_id);
-}
-
-#endif /* !__WIN32__ */
-
-#if !defined(MOO_DEV_MODE) && !defined(DEBUG)
-NORETURN
-#endif
-void
+NORETURN void
 _moo_assert_message (MooCodeLoc loc, const char *message)
 {
-#if defined(MOO_DEV_MODE) && defined(__WIN32__)
-    _moo_abort_debug_ignore (loc, message);
-#elif defined(MOO_DEV_MODE) || defined(DEBUG)
-    g_critical ("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
-#else
     g_error ("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
-#endif
 }
 
 void
@@ -1810,14 +1706,6 @@ void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_lis
         return;
 
     message = g_strdup_vprintf (format, args);
-
-#if defined(MOO_DEV_MODE) && !defined(__WIN32__)
-    if (flags < G_LOG_LEVEL_MESSAGE)
-    {
-        _moo_abort_debug_ignore (loc, message);
-        flags = G_LOG_LEVEL_MESSAGE;
-    }
-#endif
 
     if (moo_code_loc_valid (loc))
         g_log (G_LOG_DOMAIN, flags,
