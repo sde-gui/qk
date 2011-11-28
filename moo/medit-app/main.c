@@ -648,6 +648,15 @@ medit_main (int argc, char *argv[])
         else
             moo_set_log_func_window (TRUE);
     }
+#ifdef __WIN32__
+    else
+    {
+        // this will install do-nothing log and print handlers plus
+        // a fatal error win32 message handler (it will also turn off
+        // console output, but that is not visible anyway)
+        moo_set_log_func_silent ();
+    }
+#endif
 
     app = MOO_APP (g_object_new (medit_app_get_type (),
                                  "run-input", run_input,

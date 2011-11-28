@@ -786,6 +786,27 @@ moo_reset_log_func (void)
  * Display log messages in a window
  */
 
+#ifdef __WIN32__
+static void
+win32_filter_fatal_errors (const gchar    *log_domain,
+                           GLogLevelFlags  flags,
+                           const gchar    *message)
+{
+    if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
+    {
+        _moo_win32_show_fatal_error (log_domain, message);
+        return;
+    }
+}
+#else /* __WIN32__ */
+static void
+win32_filter_fatal_errors (G_GNUC_UNUSED const gchar    *log_domain,
+                           G_GNUC_UNUSED GLogLevelFlags  flags,
+                           G_GNUC_UNUSED const gchar    *message)
+{
+}
+#endif /* __WIN32__ */
+
 #if !defined(__WIN32__) || !defined(DEBUG)
 
 static void
@@ -811,13 +832,7 @@ log_func_window (const gchar    *log_domain,
 {
     char *text;
 
-#ifdef __WIN32__
-    if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
-    {
-        _moo_win32_show_fatal_error (log_domain, message);
-        return;
-    }
-#endif /* __WIN32__ */
+    win32_filter_fatal_errors (log_domain, flags, message);
 
     if (!g_utf8_validate (message, -1, NULL))
         message = "<corrupted string, invalid UTF8>";
@@ -937,19 +952,11 @@ print_func_file (const char *string)
 
 static void
 log_func_file (const char       *log_domain,
-               G_GNUC_UNUSED GLogLevelFlags flags,
+               GLogLevelFlags    flags,
                const char       *message,
                G_GNUC_UNUSED gpointer dummy)
 {
     char *string;
-
-#ifdef __WIN32__
-    if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
-    {
-        _moo_win32_show_fatal_error (log_domain, message);
-        return;
-    }
-#endif /* __WIN32__ */
 
     if (log_domain)
         string = g_strdup_printf ("%s: %s\n", log_domain, message);
@@ -957,6 +964,9 @@ log_func_file (const char       *log_domain,
         string = g_strdup_printf ("%s\n", message);
 
     print_func_file (string);
+
+    win32_filter_fatal_errors (log_domain, flags, message);
+
     g_free (string);
 }
 
@@ -977,18 +987,12 @@ moo_set_log_func_file (const char *log_file)
  */
 
 static void
-log_func_silent (G_GNUC_UNUSED const gchar    *log_domain,
-                 G_GNUC_UNUSED GLogLevelFlags  flags,
-                 G_GNUC_UNUSED const gchar    *message,
-                 G_GNUC_UNUSED gpointer        data_unused)
+log_func_silent (const gchar    *log_domain,
+                 GLogLevelFlags  flags,
+                 const gchar    *message,
+                 G_GNUC_UNUSED gpointer data_unused)
 {
-#ifdef __WIN32__
-    if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
-    {
-        _moo_win32_show_fatal_error (log_domain, message);
-        return;
-    }
-#endif /* __WIN32__ */
+    win32_filter_fatal_errors (log_domain, flags, message);
 }
 
 static void
