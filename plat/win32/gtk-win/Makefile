@@ -35,5 +35,9 @@ bdist:
 
 bdist-all: bdist-en bdist
 
+dist-src:
+	rm -fr $(mgwbuildroot)/src-$(mgwconfig) $(mgwbuildroot)/src-$(mgwconfig).zip
+	$(mgwdir)/copysrc.sh
+
 clean:
 	rm -rf $(mgwbuilddir) $(mgwdestdir) $(mgwdestdir)-en

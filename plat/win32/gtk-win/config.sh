@@ -5,7 +5,10 @@ export mgwpythonver=`echo $mgwpythondotver | sed 's/[.]//'`
 
 export mgwdir_s=$mgwdir
 export mgwdir=`cd $mgwdir && pwd`
-export mgwconfig=release
+
+if [ -z "$mgwconfig" ]; then
+  export mgwconfig=release
+fi
 
 case "$1" in
   --debug)
