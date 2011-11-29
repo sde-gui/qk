@@ -105,12 +105,6 @@
     </patches>
   </tarball>
 
-  <!-- GOOD
-  <tarball id="pixman">
-    <source href="http://cairographics.org/releases/pixman-0.21.2.tar.gz"
-            md5sum="9e09fd6e58cbf9717140891e0b7d4a7a"/>
-  </tarball>
-  -->
   <tarball id="pixman">
     <source href="http://cairographics.org/releases/pixman-0.24.0.tar.gz"
             md5sum="a2d0b120509bdccb10aa7f4bec3730e4"/>
@@ -162,7 +156,6 @@
     </dependencies>
   </tarball>
 
-  <!-- GOOD
   <tarball id="gtk+">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gtk+/2.16/gtk+-2.16.6.tar.bz2"
             sha256sum="18e0f9792028e6cc5108447678f17d396f9a2cdfec1e6ab5dca98cb844f954af"/>
@@ -177,7 +170,7 @@
       <patch file="gtk-2.16.patch" strip="1"/>
     </patches>
   </tarball>
-  -->
+  <!-- Works but with bugs
   <tarball id="gtk+">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gtk+/2.24/gtk+-2.24.8.tar.bz2"
             md5sum="0413187f7e596aef00ccd1b54776ff03"/>
@@ -193,6 +186,7 @@
       <patch file="gtk-2.24.patch" strip="1"/>
     </patches>
   </tarball>
+  -->
 
   <tarball id="gdk-pixbuf">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/2.24/gdk-pixbuf-2.24.0.tar.bz2"
