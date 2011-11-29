@@ -27,7 +27,10 @@ cd src-$mgwconfig
 
 { find . -type d \( -name 'tests' \) -print0 | xargs -0 rm -r ; } || exit 1
 { find . -type d \( -name '.libs' -o -name '.deps' \) -print0 | xargs -0 rm -r ; } || exit 1
-rm -r */docs/html */docs/tmpl */docs/reference */po || exit 1
+rm -rf */test */docs */doc */man */demos */examples */po */.hg */.git \
+    gettext-*/gettext-tools/examples gettext-*/gettext-tools/man gettext-*/gettext-tools/po \
+    gettext-*/gettext-tools/doc gettext-*/gettext-tools/gnulib-tests \
+    */autom4te.cache libxml2-*/result || exit 1
 
 find . -type f \( \
     -name '*.o' -o \
@@ -73,6 +76,9 @@ find . -type f \( \
     -name '*.def' -o \
     -name '*.rc' -o \
     -name '*.symbols' -o \
+    -name '*.png' -o \
+    -name '*.override' -o \
+    -name '*.defs' -o \
     -name '*.lai' \
 \) -delete || exit 1
 
