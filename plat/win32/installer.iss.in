@@ -20,8 +20,11 @@ SolidCompression=yes
 DisableReadyPage=true
 ShowLanguageDialog=auto
 
+; Run plat/win32/istrans.sh to get language files
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "albanian"; MessagesFile: "compiler:Languages\Albanian.isl"
+Name: "armenian"; MessagesFile: "compiler:Languages\Armenian.islu"
 Name: "basque"; MessagesFile: "compiler:Languages\Basque.isl"
 Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
 Name: "catalan"; MessagesFile: "compiler:Languages\Catalan.isl"
@@ -39,9 +42,12 @@ Name: "norwegian"; MessagesFile: "compiler:Languages\Norwegian.isl"
 Name: "polish"; MessagesFile: "compiler:Languages\Polish.isl"
 Name: "portuguese"; MessagesFile: "compiler:Languages\Portuguese.isl"
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
+Name: "serbiancyrillic"; MessagesFile: "compiler:Languages\SerbianCyrillic.isl"
+Name: "serbian"; MessagesFile: "compiler:Languages\Serbian.isl"
 Name: "slovak"; MessagesFile: "compiler:Languages\Slovak.isl"
 Name: "slovenian"; MessagesFile: "compiler:Languages\Slovenian.isl"
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
+Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 
 [Files]
 Source: "@MEDIT_INNO_INSTDIR@/*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
