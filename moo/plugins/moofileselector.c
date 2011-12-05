@@ -48,7 +48,8 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-#define DIR_PREFS MOO_PLUGIN_PREFS_ROOT "/" MOO_FILE_SELECTOR_PLUGIN_ID "/last_dir"
+#define PREFS_LAST_DIR MOO_PLUGIN_PREFS_ROOT "/" MOO_FILE_SELECTOR_PLUGIN_ID "/last_dir"
+#define PREFS_HIDDEN_FILES MOO_PLUGIN_PREFS_ROOT "/" MOO_FILE_SELECTOR_PLUGIN_ID "/show_hidden_files"
 
 
 typedef struct {
@@ -233,7 +234,7 @@ file_selector_go_home (MooFileView *fileview)
 {
     const char *dir;
 
-    dir = moo_prefs_get_filename (DIR_PREFS);
+    dir = moo_prefs_get_filename (PREFS_LAST_DIR);
 
     if (!dir || !moo_file_view_chdir_path (fileview, dir, NULL))
         g_signal_emit_by_name (fileview, "go-home");
@@ -253,7 +254,7 @@ moo_file_selector_chdir (MooFileView    *fileview,
     {
         char *new_dir = NULL;
         g_object_get (fileview, "current-directory", &new_dir, NULL);
-        moo_prefs_set_filename (DIR_PREFS, new_dir);
+        moo_prefs_set_filename (PREFS_LAST_DIR, new_dir);
         g_free (new_dir);
     }
 
@@ -565,6 +566,13 @@ file_selector_open_files (MooFileSelector *filesel)
     }
 }
 
+static void
+notify_show_hidden_files (MooFileSelector *filesel)
+{
+    gboolean show = FALSE;
+    g_object_get (filesel, "show-hidden-files", &show, NULL);
+    moo_prefs_set_bool (PREFS_HIDDEN_FILES, show);
+}
 
 /****************************************************************************/
 /* Constructor
@@ -591,6 +599,9 @@ moo_file_selector_constructor (GType           type,
     g_return_val_if_fail (filesel->window != NULL, object);
 
     file_selector_go_home (MOO_FILE_VIEW (fileview));
+
+    g_object_set (fileview, "show-hidden-files", moo_prefs_get_bool (PREFS_HIDDEN_FILES), NULL);
+    g_signal_connect (fileview, "notify::show-hidden-files", G_CALLBACK (notify_show_hidden_files), NULL);
 
     group = moo_action_collection_get_group (moo_file_view_get_actions (MOO_FILE_VIEW (fileview)), NULL);
     xml = moo_file_view_get_ui_xml (MOO_FILE_VIEW (fileview));
@@ -1217,7 +1228,8 @@ moo_file_selector_drop_doc (MooFileSelector *filesel,
 static gboolean
 file_selector_plugin_init (G_GNUC_UNUSED Plugin *plugin)
 {
-    moo_prefs_create_key (DIR_PREFS, MOO_PREFS_STATE, G_TYPE_STRING, NULL);
+    moo_prefs_create_key (PREFS_LAST_DIR, MOO_PREFS_STATE, G_TYPE_STRING, NULL);
+    moo_prefs_create_key (PREFS_HIDDEN_FILES, MOO_PREFS_RC, G_TYPE_BOOLEAN, FALSE);
     return TRUE;
 }
 
