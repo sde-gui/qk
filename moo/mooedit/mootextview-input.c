@@ -752,7 +752,8 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
             place_start_mark (view, &iter);
 
             /* if clicked in selected, start drag */
-            if (!line_numbers && gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end))
+            if (!line_numbers && !(event->state & GDK_SHIFT_MASK)
+                && gtk_text_buffer_get_selection_bounds (buffer, &sel_start, &sel_end))
             {
                 gtk_text_iter_order (&sel_start, &sel_end);
 
