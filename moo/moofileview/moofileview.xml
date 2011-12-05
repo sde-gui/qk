@@ -17,9 +17,9 @@
       <item name="View" _label="View">
         <separator/>
         <item action="ShowHiddenFiles"/>
-        <item action="ShowParentFolder"/>
-        <item action="CaseSensitiveSort"/>
-        <item action="SortFoldersFirst"/>
+        <!--<item action="ShowParentFolder"/>-->
+        <!--<item action="CaseSensitiveSort"/>-->
+        <!--<item action="SortFoldersFirst"/>-->
         <separator/>
         <item action="Reload"/>
         <separator/>
