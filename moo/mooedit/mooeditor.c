@@ -330,6 +330,7 @@ moo_editor_class_init (MooEditorClass *klass)
     moo_window_class_new_action (edit_window_class, RECENT_DIALOG_ACTION_ID, NULL,
                                  "display-name", _("Open Recent Files Dialog"),
                                  "label", Q_("Open Recent|_More..."),
+                                 "default-accel", MOO_EDIT_ACCEL_OPEN_RECENT_DIALOG,
                                  "closure-callback", action_recent_dialog,
                                  NULL);
     g_type_class_unref (edit_window_class);
