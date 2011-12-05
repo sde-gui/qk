@@ -1,7 +1,0 @@
-syntax: glob
-jhbuild/
-debug/
-release/
-tarballs/
-*.log
-*~

@@ -23,6 +23,8 @@ endif
 
 CLEANFILES =
 
+include plat/win32/Makefile.incl
+
 if MOO_OS_WIN32
 CLEANFILES += plat/win32/installer.iss
 plat/win32/installer.iss: $(top_srcdir)/plat/win32/installer.iss.in $(top_builddir)/config.status

@@ -39,5 +39,9 @@ dist-src-dbg:
 	rm -fr $(mgwbuildroot)/src-$(mgwconfig) $(mgwbuildroot)/src-$(mgwconfig).zip
 	$(mgwdir)/copysrcdbg.sh
 
+dist-src:
+	rm -fr $(mgwbuildroot)/medit-deps-src
+	$(mgwdir)/copysrc.sh
+
 clean:
-	rm -rf $(mgwbuilddir) $(mgwdestdir) $(mgwdestdir)-en
+	rm -rf $(mgwbuilddir) $(mgwdestdir) $(mgwdestdir)-en $(mgwbuildroot)/medit-deps-src

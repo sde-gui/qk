@@ -2,6 +2,8 @@ export mgwbuildroot=$HOME/projects/gtk-win-build
 export mgwpythondotver=2.7
 
 export mgwpythonver=`echo $mgwpythondotver | sed 's/[.]//'`
+export mgwpythoninstdir=$HOME/.wine/drive_c/Python$mgwpythonver
+export mgwpythonsystem32dir=$HOME/.wine/drive_c/windows/system32
 
 export mgwdir_s=$mgwdir
 export mgwdir=`cd $mgwdir && pwd`
@@ -32,6 +34,3 @@ export mgwsourcedir=$mgwbuilddir/source
 export mgwtargetdir=$mgwbuilddir/target
 export mgwsourcedir_s=$mgwbuilddir_s/source
 export mgwtargetdir_s=$mgwbuilddir_s/target
-
-export mgwpythoninstdir=$HOME/.wine/drive_c/Python$mgwpythonver
-export mgwpythonsystem32dir=$HOME/.wine/drive_c/windows/system32
