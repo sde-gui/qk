@@ -5,7 +5,7 @@ export mgwdir=`dirname $0`
 
 jhtarballdir=$mgwbuildroot/tarballs
 jhsourcedir=$mgwbuilddir/source
-destdir=$mgwbuildroot/medit-deps-src
+destdir=$mgwbuildroot/medit-deps-src-`date +%Y%m%d`
 
 do_or_die() {
   echo "$@"

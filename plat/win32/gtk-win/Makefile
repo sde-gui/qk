@@ -43,5 +43,11 @@ dist-src:
 	rm -fr $(mgwbuildroot)/medit-deps-src
 	$(mgwdir)/copysrc.sh
 
+dist-bin:
+	$(mgwdir)/copybin.sh
+
+dist: dist-src dist-bin bdist
+
 clean:
-	rm -rf $(mgwbuilddir) $(mgwdestdir) $(mgwdestdir)-en $(mgwbuildroot)/medit-deps-src
+	rm -rf $(mgwbuilddir) $(mgwdestdir) $(mgwdestdir)-en $(mgwbuildroot)/medit-deps-src \
+	    $(mgwbuildroot)/medit-deps-bin-$mgwconfig.tar.bz2
