@@ -707,6 +707,15 @@ _moo_accel_normalize (const char *accel)
 
 #define TEST_PREFS_KEY_PREFIX "FooBar/"
 
+/* "Because Gtk cares about Mac (and screw compatibility)" */
+#if GTK_CHECK_VERSION(2,24,7)
+#define CONTROL_MOD "<Primary>"
+#define SHIFT_CONTROL "<Primary><Shift>"
+#else
+#define CONTROL_MOD "<Control>"
+#define SHIFT_CONTROL "<Shift><Control>"
+#endif
+
 static void
 test_moo_accel_register (void)
 {
@@ -730,9 +739,9 @@ test_moo_accel_register (void)
 
     PA cases[] = {
         { "<Something>/Foobar/a", "", "", "a" },
-        { "<Something>/Foobar/b", "", "<Control>a", "" },
-        { "<Something>/Foobar/c", "<Control>b", "", "plus" },
-        { "<Something>/Foobar/d", "<Control>c", "F4", "F4" },
+        { "<Something>/Foobar/b", "", CONTROL_MOD "a", "" },
+        { "<Something>/Foobar/c", CONTROL_MOD "b", "", "plus" },
+        { "<Something>/Foobar/d", CONTROL_MOD "c", "F4", "F4" },
         { "<Something>/Foobar/e", "F4", "a", "F4" },
     };
 
@@ -836,19 +845,19 @@ test_moo_accel_normalize (void)
         { "a+", NULL }, { "a-", NULL }, { "a+b", NULL }, { "Ctrl+Shift", NULL },
 
         { "Tab", "Tab" }, { "<shift>Tab", "<Shift>Tab" },
-        { "<Control>a", "<Control>a" }, { "<Ctl>b", "<Control>b" }, { "<Ctrl>c", "<Control>c" },
-        { "<ctl>d", "<Control>d" }, { "<control>e", "<Control>e" },
-        { "<ctl><shift>f", "<Shift><Control>f" }, { "<shift><ctrl>g", "<Shift><Control>g" },
+        { "<Control>a", CONTROL_MOD "a" }, { "<Ctl>b", CONTROL_MOD "b" }, { "<Ctrl>c", CONTROL_MOD "c" },
+        { "<ctl>d", CONTROL_MOD "d" }, { "<control>e", CONTROL_MOD "e" },
+        { "<ctl><shift>f", SHIFT_CONTROL "f" }, { "<shift><ctrl>g", SHIFT_CONTROL "g" },
         { "F8", "F8" }, { "F12", "F12" }, { "z", "z" }, { "X", "x" }, { "<shift>S", "<Shift>s" },
 
         { "shift+Tab", "<Shift>Tab" },
-        { "Control+a", "<Control>a" }, { "Ctl+b", "<Control>b" }, { "Ctrl+c", "<Control>c" },
-        { "ctl+d", "<Control>d" }, { "control+e", "<Control>e" },
-        { "ctl+shift+f", "<Shift><Control>f" }, { "shift+ctrl+G", "<Shift><Control>g" },
+        { "Control+a", CONTROL_MOD "a" }, { "Ctl+b", CONTROL_MOD "b" }, { "Ctrl+c", CONTROL_MOD "c" },
+        { "ctl+d", CONTROL_MOD "d" }, { "control+e", CONTROL_MOD "e" },
+        { "ctl+shift+f", SHIFT_CONTROL "f" }, { "shift+ctrl+G", SHIFT_CONTROL "g" },
         { "F8", "F8" }, { "F12", "F12" }, { "z", "z" }, { "X", "x" }, { "shift+S", "<Shift>s" },
 
         { "shift-Tab", "<Shift>Tab" },
-        { "Control-a", "<Control>a" }, { "Ctl-b", "<Control>b" }, { "Ctrl-c", "<Control>c" },
+        { "Control-a", CONTROL_MOD "a" }, { "Ctl-b", CONTROL_MOD "b" }, { "Ctrl-c", CONTROL_MOD "c" },
 
         { "shift-+", "<Shift>plus" }, { "shift+-", "<Shift>minus" },
         { "shift-plus", "<Shift>plus" }, { "shift+plus", "<Shift>plus" },
@@ -856,7 +865,7 @@ test_moo_accel_normalize (void)
 #ifdef GDK_WINDOWING_QUARTZ
         { "cmd-a", "<Meta>a" }, { "<Command>a", "<Meta>a" },
 #else
-        { "cmd-a", "<Control>a" }, { "<Command>a", "<Control>a" },
+        { "cmd-a", CONTROL_MOD "a" }, { "<Command>a", CONTROL_MOD "a" },
 #endif
     };
 
