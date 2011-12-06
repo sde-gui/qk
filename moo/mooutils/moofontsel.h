@@ -145,7 +145,7 @@ gchar*	   moo_font_selection_get_font_name	(MooFontSelection *fontsel);
 
 gboolean              moo_font_selection_set_font_name    (MooFontSelection *fontsel,
 							   const gchar      *fontname);
-G_CONST_RETURN gchar* moo_font_selection_get_preview_text (MooFontSelection *fontsel);
+const gchar* moo_font_selection_get_preview_text (MooFontSelection *fontsel);
 void                  moo_font_selection_set_preview_text (MooFontSelection *fontsel,
 							   const gchar      *text);
 
@@ -179,7 +179,7 @@ gboolean moo_font_selection_dialog_set_font_name    (MooFontSelectionDialog *fsd
 
 /* This returns the text in the preview entry. You should copy the returned
    text if you need it. */
-G_CONST_RETURN gchar* moo_font_selection_dialog_get_preview_text (MooFontSelectionDialog *fsd);
+const gchar* moo_font_selection_dialog_get_preview_text (MooFontSelectionDialog *fsd);
 
 /* This sets the text in the preview entry. It will be copied by the entry,
    so there's no need to g_strdup() it first. */
@@ -227,7 +227,7 @@ GType                 moo_font_button_get_type       (void) G_GNUC_CONST;
 GtkWidget            *moo_font_button_new            (void);
 GtkWidget            *moo_font_button_new_with_font  (const gchar   *fontname);
 
-G_CONST_RETURN gchar *moo_font_button_get_title      (MooFontButton *font_button);
+const gchar *moo_font_button_get_title      (MooFontButton *font_button);
 void                  moo_font_button_set_title      (MooFontButton *font_button,
                                                       const gchar   *title);
 gboolean              moo_font_button_get_use_font   (MooFontButton *font_button);
@@ -236,7 +236,7 @@ void                  moo_font_button_set_use_font   (MooFontButton *font_button
 gboolean              moo_font_button_get_use_size   (MooFontButton *font_button);
 void                  moo_font_button_set_use_size   (MooFontButton *font_button,
                                                       gboolean       use_size);
-G_CONST_RETURN gchar* moo_font_button_get_font_name  (MooFontButton *font_button);
+const gchar* moo_font_button_get_font_name  (MooFontButton *font_button);
 gboolean              moo_font_button_set_font_name  (MooFontButton *font_button,
                                                       const gchar   *fontname);
 gboolean              moo_font_button_get_show_style (MooFontButton *font_button);

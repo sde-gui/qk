@@ -32,6 +32,10 @@
 
 #define GTK_TEXT_UNKNOWN_CHAR 0xFFFC
 
+#if GLIB_CHECK_VERSION(2,30,0) && !defined(G_UNICODE_COMBINING_MARK)
+#define G_UNICODE_COMBINING_MARK G_UNICODE_SPACING_MARK
+#endif
+
 /* this function acts like g_utf8_offset_to_pointer() except that if it finds a
  * decomposable character it consumes the decomposition length from the given
  * offset.  So it's useful when the offset was calculated for the normalized

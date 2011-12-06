@@ -1239,7 +1239,7 @@ moo_font_selection_set_font_name (MooFontSelection *fontsel,
 
 /* This returns the text in the preview entry. You should copy the returned
    text if you need it. */
-G_CONST_RETURN gchar*
+const gchar*
 moo_font_selection_get_preview_text  (MooFontSelection *fontsel)
 {
   return gtk_entry_get_text (GTK_ENTRY (fontsel->preview_entry));
@@ -1394,7 +1394,7 @@ moo_font_selection_dialog_set_font_name (MooFontSelectionDialog *fsd,
   return moo_font_selection_set_font_name (MOO_FONT_SELECTION (fsd->fontsel), fontname);
 }
 
-G_CONST_RETURN gchar*
+const gchar*
 moo_font_selection_dialog_get_preview_text (MooFontSelectionDialog *fsd)
 {
   return moo_font_selection_get_preview_text (MOO_FONT_SELECTION (fsd->fontsel));
@@ -1839,7 +1839,7 @@ moo_font_button_set_title (MooFontButton *font_button,
  *
  * Since: 2.4
  */
-G_CONST_RETURN gchar*
+const gchar*
 moo_font_button_get_title (MooFontButton *font_button)
 {
   g_return_val_if_fail (MOO_IS_FONT_BUTTON (font_button), NULL);
@@ -2097,7 +2097,7 @@ moo_font_button_set_filter_visible (MooFontButton *font_button,
  *
  * Since: 2.4
  */
-G_CONST_RETURN gchar *
+const gchar *
 moo_font_button_get_font_name (MooFontButton *font_button)
 {
   g_return_val_if_fail (MOO_IS_FONT_BUTTON (font_button), NULL);

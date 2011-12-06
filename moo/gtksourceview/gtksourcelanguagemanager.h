@@ -62,13 +62,13 @@ GtkSourceLanguageManager *gtk_source_language_manager_new			(void);
 
 GtkSourceLanguageManager *gtk_source_language_manager_get_default		(void);
 
-G_CONST_RETURN gchar* G_CONST_RETURN *
+const gchar* const *
 			  gtk_source_language_manager_get_search_path		(GtkSourceLanguageManager *lm);
 
 void			  gtk_source_language_manager_set_search_path		(GtkSourceLanguageManager *lm,
 										 gchar                   **dirs);
 
-G_CONST_RETURN gchar* G_CONST_RETURN *
+const gchar* const *
 			  gtk_source_language_manager_get_language_ids		(GtkSourceLanguageManager *lm);
 
 GtkSourceLanguage	 *gtk_source_language_manager_get_language		(GtkSourceLanguageManager *lm,
