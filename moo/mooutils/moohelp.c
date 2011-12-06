@@ -223,63 +223,6 @@ warn_no_help_file (const char *basename,
     g_free (dir_utf8);
 }
 
-#ifndef __WIN32__
-static void
-open_html_file (const char *path,
-                GtkWidget  *parent)
-{
-    static gboolean been_here;
-    static char *script;
-
-    const char *argv[3];
-    GError *err = NULL;
-
-    if (!been_here)
-    {
-        been_here = TRUE;
-        script = _moo_find_script ("moo-open-html-help", FALSE);
-
-        if (script && !g_file_test (script, G_FILE_TEST_IS_EXECUTABLE))
-        {
-            g_warning ("could not find moo-open-html-help script");
-            g_free (script);
-            script = NULL;
-        }
-    }
-
-    if (!script)
-    {
-        moo_open_file (path);
-        return;
-    }
-
-    argv[0] = script;
-    argv[1] = path;
-    argv[2] = NULL;
-
-    if (parent && gtk_widget_has_screen (parent))
-        gdk_spawn_on_screen (gtk_widget_get_screen (parent),
-                             NULL, (char**) argv, NULL, 0, NULL, NULL,
-                             NULL, &err);
-    else
-        g_spawn_async (NULL, (char**) argv, NULL, 0, NULL, NULL,
-                       NULL, &err);
-
-    if (err)
-    {
-        g_warning ("error in g_spawn_async: %s", moo_error_message (err));
-        g_error_free (err);
-    }
-}
-#else /* __WIN32__ */
-static void
-open_html_file (const char *path,
-                G_GNUC_UNUSED GtkWidget *parent)
-{
-    moo_open_file (path);
-}
-#endif /* __WIN32__ */
-
 static void
 open_file_by_id (const char *id,
                  GtkWidget  *parent)
@@ -307,9 +250,9 @@ open_file_by_id (const char *id,
     filename = g_build_filename (dir, basename, NULL);
 
     if (g_file_test (filename, G_FILE_TEST_IS_REGULAR))
-        open_html_file (filename, parent);
+        moo_open_file (filename);
     else if (strcmp (id, MOO_HELP_ID_INDEX) != 0)
-        open_file_by_id (MOO_HELP_ID_INDEX, parent);
+        moo_open_file (MOO_HELP_ID_INDEX);
     else
         warn_no_help_file (basename, parent);
 

@@ -93,50 +93,6 @@ open_uri (const char *uri,
 #endif /* ! __WIN32__ */
 
 
-#ifndef __WIN32__
-char *
-_moo_find_script (const char *name,
-                  gboolean    search_path)
-{
-    char *path = NULL;
-
-    g_return_val_if_fail (name != NULL, NULL);
-
-    if (search_path)
-        path = g_find_program_in_path (name);
-
-    if (!path)
-    {
-        char **dirs, **p;
-
-        dirs = moo_get_data_subdirs ("scripts");
-
-        for (p = dirs; p && *p; ++p)
-        {
-            path = g_build_filename (*p, name, NULL);
-
-            if (g_file_test (path, G_FILE_TEST_IS_EXECUTABLE))
-                break;
-
-            g_free (path);
-            path = NULL;
-        }
-
-        g_strfreev (dirs);
-    }
-
-    if (!path)
-    {
-        g_warning ("could not find %s script", name);
-        path = g_strdup (name);
-    }
-
-    _moo_message ("%s: %s", name, path);
-    return path;
-}
-#endif /* __WIN32__ */
-
-
 gboolean
 moo_open_email (const char *address,
                 const char *subject,
