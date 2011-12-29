@@ -43,7 +43,7 @@ class Runner(object):
                                                      label_text=_("Python Output"))
             output = moo.CmdView()
             output.set_property("highlight-current-line", True)
-            output.set_filter(moo.command_filter_create("python"))
+            output.set_filter_by_id("python")
 
             pane = gtk.ScrolledWindow()
             pane.set_shadow_type(gtk.SHADOW_ETCHED_IN)
@@ -75,7 +75,7 @@ class Runner(object):
 
         pane = self.__ensure_output()
         pane.output.clear()
-        self.window.paned.present_pane(pane)
+        self.window.show_pane(self.pane_id)
 
         if working_dir is None:
             working_dir = os.path.dirname(filename)

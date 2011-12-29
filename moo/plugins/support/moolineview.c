@@ -177,6 +177,9 @@ moo_line_view_new (void)
 }
 
 
+/**
+ * moo_line_view_clear:
+ */
 void
 moo_line_view_clear (MooLineView *view)
 {

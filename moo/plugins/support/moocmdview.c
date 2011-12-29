@@ -22,6 +22,7 @@
 #include "marshals.h"
 #include "mooutils/moospawn.h"
 #include "mooutils/mooutils-misc.h"
+#include "plugins/usertools/moocommand.h"
 
 #ifndef __WIN32__
 #include <sys/wait.h>
@@ -254,6 +255,32 @@ moo_cmd_view_set_filter (MooCmdView      *view,
     }
 }
 
+/**
+ * moo_cmd_view_set_filter_by_id: (moo.lua 0)
+ *
+ * @view:
+ * @id: (type const-utf8)
+ */
+void
+moo_cmd_view_set_filter_by_id (MooCmdView *view,
+                               const char *id)
+{
+    MooOutputFilter *filter = NULL;
+
+    g_return_if_fail (MOO_IS_CMD_VIEW (view));
+
+    if (id != NULL)
+    {
+        filter = moo_command_filter_create (id);
+        g_return_if_fail (filter != NULL);
+    }
+
+    moo_cmd_view_set_filter (view, filter);
+
+    if (filter)
+        g_object_unref (filter);
+}
+
 void
 moo_cmd_view_add_filter_dirs (MooCmdView  *view,
                               char       **dirs)
@@ -307,6 +334,14 @@ stderr_line_cb (MooCmd     *cmd,
 }
 
 
+/**
+ * moo_cmd_view_run_command: (moo.lua 0)
+ *
+ * @view:
+ * @cmd: (type filename)
+ * @working_dir: (type filename) (allow-none) (default NULL)
+ * @job_name: (type const-utf8) (allow-none) (default NULL)
+ */
 gboolean
 moo_cmd_view_run_command (MooCmdView *view,
                           const char *cmd,

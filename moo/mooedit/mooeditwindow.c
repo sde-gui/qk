@@ -3517,9 +3517,7 @@ static void
 show_pane_callback (MooEditWindow *window,
                     const char    *user_id)
 {
-    GtkWidget *pane;
-    pane = moo_edit_window_get_pane (window, user_id);
-    moo_big_paned_present_pane (window->paned, pane);
+    moo_edit_window_show_pane (window, user_id);
 }
 
 static void
@@ -3664,6 +3662,27 @@ moo_edit_window_remove_pane (MooEditWindow *window,
 
     moo_big_paned_remove_pane (window->paned, moo_pane_get_child (pane));
     return TRUE;
+}
+
+
+/**
+ * moo_edit_window_show_pane: (moo.lua 0) (moo.private 1)
+ *
+ * @window:
+ * @user_id: (type const-utf8)
+ */
+void
+moo_edit_window_show_pane (MooEditWindow *window,
+                           const char    *user_id)
+{
+    GtkWidget *pane;
+
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+
+    pane = moo_edit_window_get_pane (window, user_id);
+    g_return_if_fail (pane != NULL);
+
+    moo_big_paned_present_pane (window->paned, pane);
 }
 
 

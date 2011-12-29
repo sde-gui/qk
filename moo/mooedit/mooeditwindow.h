@@ -121,6 +121,8 @@ gboolean             moo_edit_window_remove_pane            (MooEditWindow  *win
                                                              const char     *user_id);
 GtkWidget           *moo_edit_window_get_pane               (MooEditWindow  *window,
                                                              const char     *user_id);
+void                 moo_edit_window_show_pane              (MooEditWindow  *window,
+                                                             const char     *user_id);
 
 typedef void (*MooAbortJobFunc) (gpointer job);
 

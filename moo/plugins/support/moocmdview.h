@@ -70,6 +70,8 @@ GtkWidget  *moo_cmd_view_new                (void);
 
 void        moo_cmd_view_set_filter         (MooCmdView         *view,
                                              MooOutputFilter    *filter);
+void        moo_cmd_view_set_filter_by_id   (MooCmdView         *view,
+                                             const char         *id);
 void        moo_cmd_view_add_filter_dirs    (MooCmdView         *view,
                                              char              **dirs);
 

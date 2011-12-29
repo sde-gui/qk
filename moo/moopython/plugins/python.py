@@ -104,7 +104,7 @@ class Plugin(moo.Plugin):
 
             if not doc:
                 return
-            if not doc.get_filename() or doc.get_status() & moo.EDIT_MODIFIED:
+            if not doc.get_filename() or doc.get_status() & moo.EDIT_STATUS_MODIFIED:
                 if not doc.save():
                     return
 
