@@ -107,27 +107,6 @@ void MOO_NORETURN _moo_assert_message (MooCodeLoc loc, const char *message);
 
 void _moo_abort_debug_ignore (MooCodeLoc loc, const char *message);
 
-#ifdef MOO_DEV_MODE
-
-inline static gboolean __moo_test_func_bool (void)
-{
-    return TRUE;
-}
-
-inline static void __moo_test_func (void *p)
-{
-    _MOO_ASSERT_CHECK (p != (void*)0);
-    _MOO_DEBUG_ASSERT (p != (void*)0);
-    _MOO_RELEASE_ASSERT (p != (void*)0);
-    _MOO_RELEASE_ASSERT (0);
-    _MOO_RELEASE_ASSERT_NOT_REACHED ();
-    _MOO_DEBUG_ASSERT (0);
-    _MOO_DEBUG_ASSERT_NOT_REACHED ();
-    _MOO_DEBUG_SIDE_ASSERT (__moo_test_func_bool ());
-}
-
-#endif /* MOO_DEV_MODE */
-
 #define moo_return_val_if_fail(cond, val)               \
 do {                                                    \
     if (cond)                                           \
@@ -270,33 +249,6 @@ _MOO_DEFINE_LOG_FUNC (debug, DEBUG)
 #define g_return_val_if_fail moo_return_val_if_fail
 #define g_return_if_reached moo_return_if_reached
 #define g_return_val_if_reached moo_return_val_if_reached
-
-#ifdef MOO_DEV_MODE
-
-inline static int __moo_test_func (void)
-{
-    moo_return_val_if_fail (FALSE, 4);
-    moo_return_val_if_reached (18);
-    moo_error ("test");
-    moo_warning ("test");
-    moo_critical ("test");
-    moo_message ("test");
-    moo_debug ("test");
-    moo_error_noloc ("test");
-    moo_warning_noloc ("test");
-    moo_critical_noloc ("test");
-    moo_message_noloc ("test");
-    moo_debug_noloc ("test");
-    return 7;
-}
-
-inline static void __moo_test_func (void)
-{
-    moo_return_if_fail (FALSE);
-    moo_return_if_reached ();
-}
-
-#endif /* MOO_DEV_MODE */
 
 G_END_DECLS
 

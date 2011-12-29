@@ -15,17 +15,4 @@ do {                                            \
     }                                           \
 } while (0);
 
-#ifdef MOO_DEV_MODE
-
-inline static gboolean __moo_test_func()
-{
-    gboolean value;
-    MOO_DO_ONCE_BEGIN
-    value = TRUE;
-    MOO_DO_ONCE_END
-    return value;
-}
-
-#endif
-
 #endif /* MOO_ONCE_H */

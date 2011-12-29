@@ -65,6 +65,8 @@ AC_CHECK_PROGS(PYTHON, python, [AC_MSG_ERROR([Python not found])])
 
 MOO_AC_FLAGS
 
+AM_MAINTAINER_MODE([enable])
+
 AC_CHECK_PROG([TXT2TAGS], txt2tags, txt2tags)
 if test x$MOO_DEV_MODE = "xyes" -a "x$TXT2TAGS" = "x"; then
   AC_MSG_ERROR([txt2tags not found])
