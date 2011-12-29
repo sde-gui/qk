@@ -8,7 +8,7 @@
 <title>Gtk API for Lua scripts</title>
 <sect1>
 <title>Introduction</title>
-<para>Lua scripts running in &medit; have limited access to
+<para>Lua scripts running in &medit; have a limited access to
 <ulink url="http://www.gtk.org/">Gtk</ulink> functionality
 exposed through <code>gtk</code> package in addition to functions in
 <link linkend="chapter-script-lua"><code>moo</code> package</link>.

@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooApp: (parent GObject)
+ * class:MooApp: (parent GObject): application object
  */
 
 #ifdef HAVE_CONFIG_H

@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooEditor: (parent GObject)
+ * class:MooEditor: (parent GObject): editor object
  **/
 
 #define MOOEDIT_COMPILATION
@@ -258,14 +258,14 @@ moo_editor_class_init (MooEditorClass *klass)
      * @file: the #GFile object which represents saved file
      *
      * This signal is emitted when the document is going to be saved on disk.
-     * Callbacks should return #MOO_SAVE_RESPONSE_CANCEL if document
+     * Callbacks must return #MOO_SAVE_RESPONSE_CANCEL if document
      * should not be saved, and #MOO_SAVE_RESPONSE_CONTINUE otherwise.
      *
      * For example, if before saving the file must be checked out from a version
      * control system, a callback can do that and return #MOO_SAVE_RESPONSE_CANCEL
      * if checkout failed.
      *
-     * Callbacks should not modify document content. If you need to modify
+     * Callbacks must not modify document content. If you need to modify
      * it before saving, use MooEditor::will-save signal instead.
      *
      * Returns: #MOO_SAVE_RESPONSE_CANCEL to cancel saving,

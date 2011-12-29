@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooEditWindow: (parent MooWindow) (moo.doc-object-name window)
+ * class:MooEditWindow: (parent MooWindow) (moo.doc-object-name window): document window object
  **/
 
 #ifdef HAVE_CONFIG_H

@@ -12,6 +12,9 @@
 <xsl:param name="base.dir" select="'help/script/'"/>
 <xsl:param name="chunk.first.sections" select="'1'"/>
 
+<xsl:param name="toc.section.depth" select="1"/>
+<xsl:param name="generate.section.toc.level" select="1"/>
+
 <!--<xsl:param name="variablelist.as.table" select="1"/>-->
 
 <!--  <xsl:template match="sect1">

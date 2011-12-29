@@ -1,19 +1,19 @@
 /**
- * class:MooOpenInfo: (parent GObject)
+ * class:MooOpenInfo: (parent GObject): information for opening a file
  *
  * Object which contains filename, character encoding, line
  * number, and options to use in moo_editor_open_file().
  **/
 
 /**
- * class:MooSaveInfo: (parent GObject)
+ * class:MooSaveInfo: (parent GObject): information for saving a file
  *
  * Object which contains a filename and character encoding to
  * use in moo_editor_save() and moo_editor_save_as().
  **/
 
 /**
- * class:MooReloadInfo: (parent GObject)
+ * class:MooReloadInfo: (parent GObject): information for reloading a file
  *
  * Object which contains character encoding and line number to
  * use in moo_editor_reload().

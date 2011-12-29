@@ -1,5 +1,5 @@
 /**
- * class:MooEditTab: (parent GtkVBox) (moo.doc-object-name tab)
+ * class:MooEditTab: (parent GtkVBox) (moo.doc-object-name tab): document tab object
  **/
 
 #include "mooedittab-impl.h"

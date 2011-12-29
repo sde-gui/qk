@@ -20,7 +20,7 @@ need functions which are not present here.
 
 <sect1 id="section-script-lua-object-model">
 <title>&medit; object model</title>
-<para>&medit; uses very simple object model where its objects are
+<para>&medit; uses a very simple object model where its objects are
 represented as user data in Lua and methods are provided via metatable
 shared by all objects of all "classes". Method dispatch is dynamic,
 i.e. metatable does not contain functions which correspond to methods,
