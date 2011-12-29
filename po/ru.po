@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-29 22:40-0800\n"
+"POT-Creation-Date: 2011-12-28 23:10-0800\n"
 "PO-Revision-Date: 2007-07-11 10:00+0500\n"
 "Last-Translator: Yevgen Muntyan <emuntyan@users.sourceforge.net>\n"
 "Language-Team: Russian\n"
@@ -187,11 +187,11 @@ msgstr ""
 "fedoseev@gmail.com&gt;</a><br>Денис Корявов <a href=\"mailto:"
 "dkoryavov@yandex.ru\">&lt;dkoryavov@yandex.ru&gt;</a>"
 
-#: ../moo/mooapp/mooapp.c:993
+#: ../moo/mooapp/mooapp.c:991
 msgid "Report a Bug..."
 msgstr "Сообщить о проблеме..."
 
-#: ../moo/mooapp/mooapp.c:1356
+#: ../moo/mooapp/mooapp.c:1354
 #, c-format
 msgid ""
 "The following URL will be opened:\n"
@@ -206,12 +206,12 @@ msgstr ""
 "\n"
 "Он содержит версию программы и назавание вашей операционной системы (%s)"
 
-#: ../moo/mooapp/mooapp.c:1363
+#: ../moo/mooapp/mooapp.c:1361
 msgid "Open URL?"
 msgstr "Открыть интернет адрес?"
 
 #. Prefs dialog title
-#: ../moo/mooapp/mooapp.c:1401
+#: ../moo/mooapp/mooapp.c:1399
 msgid "Preferences"
 msgstr "Настройки"
 
@@ -500,7 +500,7 @@ msgstr "С учётом _регистра"
 msgid "Don't _prompt on replace"
 msgstr "Не спрашивать при замене"
 
-#: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1117
+#: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1115
 msgid "Find"
 msgstr "Найти"
 
@@ -739,7 +739,7 @@ msgstr ""
 msgid "Invalid regular expression"
 msgstr "Неверное регулярное выражение"
 
-#: ../moo/mooedit/mooedit-fileops.c:1306 ../moo/plugins/moofileselector.c:510
+#: ../moo/mooedit/mooedit-fileops.c:1306 ../moo/plugins/moofileselector.c:511
 msgid "Untitled"
 msgstr "Без имени"
 
@@ -756,11 +756,11 @@ msgstr "Последние файлы"
 msgid "Open Recent|_More..."
 msgstr "_Еще.."
 
-#: ../moo/mooedit/mooeditor.c:595
+#: ../moo/mooedit/mooeditor.c:598
 msgid "Open new editor window"
 msgstr "Открыть новое окно"
 
-#: ../moo/mooedit/mooeditor.c:781
+#: ../moo/mooedit/mooeditor.c:784
 msgid "Open Recent"
 msgstr "Последние файлы"
 
@@ -796,7 +796,7 @@ msgid "PreferencesPage|Languages"
 msgstr "Языки"
 
 #. Menu item in the Language menu
-#: ../moo/mooedit/mooeditprefspage.c:555 ../moo/mooedit/mooeditwindow.c:3862
+#: ../moo/mooedit/mooeditprefspage.c:555 ../moo/mooedit/mooeditwindow.c:3860
 msgid "Language|None"
 msgstr "Ничего"
 
@@ -1026,7 +1026,7 @@ msgstr "Параметры страницы..."
 msgid "Print..."
 msgstr "Печать..."
 
-#: ../moo/mooedit/mooeditwindow.c:784 ../moo/mooedit/mooeditwindow.c:1936
+#: ../moo/mooedit/mooeditwindow.c:784 ../moo/mooedit/mooeditwindow.c:1932
 msgid "Export as PDF"
 msgstr "Экспорт в PDF"
 
@@ -1105,49 +1105,49 @@ msgid "_Mac (CR)"
 msgstr ""
 
 #. Item in document tab context menu
-#: ../moo/mooedit/mooeditwindow.c:2143
+#: ../moo/mooedit/mooeditwindow.c:2139
 msgctxt "tab-context-menu"
 msgid "Close"
 msgstr "Закрыть"
 
 #. Item in document tab context menu
-#: ../moo/mooedit/mooeditwindow.c:2155
+#: ../moo/mooedit/mooeditwindow.c:2151
 msgctxt "tab-context-menu"
 msgid "Close All Others"
 msgstr "Закрыть Все Остальные"
 
 #. Item in document tab context menu
-#: ../moo/mooedit/mooeditwindow.c:2173
+#: ../moo/mooedit/mooeditwindow.c:2169
 msgctxt "tab-context-menu"
 msgid "Detach"
 msgstr "Отделить"
 
 #. Item in document tab context menu
-#: ../moo/mooedit/mooeditwindow.c:2183
+#: ../moo/mooedit/mooeditwindow.c:2179
 msgctxt "tab-context-menu"
 msgid "Move to Split Notebook"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3716
+#: ../moo/mooedit/mooeditwindow.c:3714
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr "Строка: %s Столбец: %s"
 
-#: ../moo/mooedit/mooeditwindow.c:3717
+#: ../moo/mooedit/mooeditwindow.c:3715
 #, c-format
 msgid "Chars: %s"
 msgstr "Символов: %s"
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3760
+#: ../moo/mooedit/mooeditwindow.c:3758
 msgid "OVR"
 msgstr "ЗАМЕНА"
 
-#: ../moo/mooedit/mooeditwindow.c:3760
+#: ../moo/mooedit/mooeditwindow.c:3758
 msgid "INS"
 msgstr "ВСТАВКА"
 
-#: ../moo/mooedit/mooeditwindow.c:3857
+#: ../moo/mooedit/mooeditwindow.c:3855
 msgid "_Language"
 msgstr "_Язык"
 
@@ -1276,7 +1276,7 @@ msgstr "Общее"
 
 #: ../moo/moofileview/glade/moofileview-drop.glade.h:1
 #: ../moo/plugins/glade/moofileselector.glade.h:2
-#: ../moo/plugins/moofileselector.c:896 ../moo/plugins/moofileselector.c:921
+#: ../moo/plugins/moofileselector.c:907 ../moo/plugins/moofileselector.c:932
 msgid "Save As"
 msgstr "Сохранить как"
 
@@ -1298,8 +1298,8 @@ msgctxt "fileview-bookmark-editor"
 msgid "Path"
 msgstr "Путь"
 
-#: ../moo/moofileview/moofileview.c:1116 ../moo/plugins/moofileselector.c:636
-#: ../moo/plugins/moofileselector.c:637 ../moo/plugins/moofileselector.c:1278
+#: ../moo/moofileview/moofileview.c:1116 ../moo/plugins/moofileselector.c:647
+#: ../moo/plugins/moofileselector.c:648 ../moo/plugins/moofileselector.c:1290
 #: ../moo/plugins/moofileselector-prefs.c:72
 msgid "File Selector"
 msgstr "Выбор файлов"
@@ -1540,16 +1540,16 @@ msgstr "Если вы не сохраните документ, изменени
 msgid "012345"
 msgstr "510234"
 
-#: ../moo/mooutils/mooencodings.c:692
+#: ../moo/mooutils/mooencodings.c:689
 msgid "Auto Detected"
 msgstr "Автоопределение"
 
 #. Translators: do not translate the part before |
-#: ../moo/mooutils/mooencodings.c:721
+#: ../moo/mooutils/mooencodings.c:718
 msgid "Encodings combo submenu|Other"
 msgstr "Другая"
 
-#: ../moo/mooutils/mooencodings.c:820
+#: ../moo/mooutils/mooencodings.c:817
 msgid "Charact_er encoding:"
 msgstr "_Кодировка символов"
 
@@ -1742,19 +1742,19 @@ msgid "Thai"
 msgstr "Тайская"
 
 #. menu item in Insert Special Character submenu of text entry context menu
-#: ../moo/mooutils/mooentry.c:536
+#: ../moo/mooutils/mooentry.c:533
 msgctxt "insert-special-char"
 msgid "Line End"
 msgstr "Конец строки"
 
 #. menu item in Insert Special Character submenu of text entry context menu
-#: ../moo/mooutils/mooentry.c:538
+#: ../moo/mooutils/mooentry.c:535
 msgctxt "insert-special-char"
 msgid "Tab"
 msgstr "Табуляция"
 
 #. label of Insert Special Character submenu in text entry context menu
-#: ../moo/mooutils/mooentry.c:581
+#: ../moo/mooutils/mooentry.c:578
 msgctxt "insert-special-char"
 msgid "Insert Special Character"
 msgstr "Вставить специальный символ"
@@ -1768,8 +1768,8 @@ msgstr "Выделенный файл не является регулярным
 msgid "Could not open %s: %s"
 msgstr "Не удалось открыть файл %s: %s"
 
-#: ../moo/mooutils/moofilewriter.c:291 ../moo/mooutils/mooutils-fs.c:387
-#: ../moo/mooutils/mooutils-fs.c:406 ../moo/mooutils/mooutils-fs.c:422
+#: ../moo/mooutils/moofilewriter.c:291 ../moo/mooutils/mooutils-fs.c:386
+#: ../moo/mooutils/mooutils-fs.c:405 ../moo/mooutils/mooutils-fs.c:421
 #, c-format
 msgid "Could not create folder %s: %s"
 msgstr "Не удалось создать папку %s: %s"
@@ -1831,7 +1831,7 @@ msgstr "Переместить"
 msgid "Link"
 msgstr "Сделать ссылку"
 
-#: ../moo/mooutils/moostock.c:35 ../moo/plugins/moofileselector.c:1125
+#: ../moo/mooutils/moostock.c:35 ../moo/plugins/moofileselector.c:1136
 msgid "Save Copy"
 msgstr "Сохранить копию"
 
@@ -1845,39 +1845,30 @@ msgstr "Новое _окно"
 
 #. This is error message in file selector when rm
 #. fails for some strange reason
-#: ../moo/mooutils/mooutils-fs.c:227
+#: ../moo/mooutils/mooutils-fs.c:226
 #, c-format
 msgid "Could not run 'rm' command: %s"
 msgstr "Не удалось выполнить команду 'rm':%s"
 
 #. This is error message in file selector when rm
 #. fails to delete a file or folder
-#: ../moo/mooutils/mooutils-fs.c:245
+#: ../moo/mooutils/mooutils-fs.c:244
 #, c-format
 msgid "'rm' command failed: %s"
 msgstr "Ошибка при выполнении команды 'rm': %s"
 
-#: ../moo/mooutils/mooutils-fs.c:295 ../moo/mooutils/mooutils-fs.c:315
-#: ../moo/mooutils/mooutils-fs.c:342
+#: ../moo/mooutils/mooutils-fs.c:294 ../moo/mooutils/mooutils-fs.c:314
+#: ../moo/mooutils/mooutils-fs.c:341
 #, c-format
 msgid "Could not remove %s: %s"
 msgstr "Не удалось удалить файл %s: %s"
 
-#: ../moo/mooutils/mooutils-fs.c:451
+#: ../moo/mooutils/mooutils-fs.c:450
 #, c-format
 msgid "Could not rename file %s to %s: %s"
 msgstr "Не удалось переименовать файл %s в %s: %s"
 
-#: ../moo/mooutils/mooutils-misc.c:1748
-#, c-format
-msgid ""
-"console message|in file %s, line %d, function %s:\n"
-"%s"
-msgstr ""
-"в файле %s, на строке %d, в функции %s:\n"
-"%s"
-
-#: ../moo/mooutils/mooutils-misc.c:1847
+#: ../moo/mooutils/mooutils-misc.c:1668
 #, c-format
 msgid "console message|in file %s, line %d, function %s: %s"
 msgstr "в файле %s, на строке %d, в функции %s: %s"
@@ -1885,7 +1876,7 @@ msgstr "в файле %s, на строке %d, в функции %s: %s"
 #. "Unknown error" may be displayed if there is a bug in the program
 #. and proper error message has not been set. It doesn't provide any
 #. useful information obviously
-#: ../moo/mooutils/mooutils-misc.c:2232
+#: ../moo/mooutils/mooutils-misc.c:2053
 msgid "Unknown error"
 msgstr "Неизвестная ошибка"
 
@@ -2017,17 +2008,17 @@ msgstr "Список файлов"
 msgid "List of files"
 msgstr "Список файлов"
 
-#: ../moo/plugins/moofileselector.c:387
+#: ../moo/plugins/moofileselector.c:388
 #, c-format
 msgid "Create file in folder '%s':"
 msgstr "Создать файл в папке '%s':"
 
-#: ../moo/plugins/moofileselector.c:442
+#: ../moo/plugins/moofileselector.c:443
 #, c-format
 msgid "Could not create file '%s'"
 msgstr "Не удалось создать файл '%s'"
 
-#: ../moo/plugins/moofileselector.c:443 ../moo/plugins/moofileselector.c:809
+#: ../moo/plugins/moofileselector.c:444 ../moo/plugins/moofileselector.c:820
 #, c-format
 msgid ""
 "Could not convert '%s' to filename encoding. Please consider simpler name, "
@@ -2036,82 +2027,82 @@ msgstr ""
 "Не удалось преобразовать '%s' к кодировке имени файла. Попробуйте "
 "использовать, более простое имя, например, foo.blah или blah.foo"
 
-#: ../moo/plugins/moofileselector.c:458
+#: ../moo/plugins/moofileselector.c:459
 #, c-format
 msgid "File '%s' already exists"
 msgstr "Файл '%s' уже существует"
 
-#: ../moo/plugins/moofileselector.c:601
+#: ../moo/plugins/moofileselector.c:612
 msgid "Go to current document directory"
 msgstr "Перейти в папку с текущим документом"
 
-#: ../moo/plugins/moofileselector.c:613 ../moo/plugins/moofileselector.c:614
+#: ../moo/plugins/moofileselector.c:624 ../moo/plugins/moofileselector.c:625
 msgid "New File..."
 msgstr "Создать файл..."
 
-#: ../moo/plugins/moofileselector.c:808
+#: ../moo/plugins/moofileselector.c:819
 #, c-format
 msgid "Could not save file as '%s'"
 msgstr "Не удалось сохранить файл как '%s'"
 
-#: ../moo/plugins/moofileselector.c:941
+#: ../moo/plugins/moofileselector.c:952
 msgid "Save Copy As"
 msgstr "Сохранить копию как"
 
-#: ../moo/plugins/moofileselector.c:967
+#: ../moo/plugins/moofileselector.c:978
 msgid "Rename To"
 msgstr "Переименовать"
 
-#: ../moo/plugins/moofileselector.c:1107
+#: ../moo/plugins/moofileselector.c:1118
 msgid "Move Here"
 msgstr "Переместить сюда"
 
-#: ../moo/plugins/moofileselector.c:1108
+#: ../moo/plugins/moofileselector.c:1119
 msgid "Move/Rename..."
 msgstr "Переместить/переименовать..."
 
-#: ../moo/plugins/moofileselector.c:1116
+#: ../moo/plugins/moofileselector.c:1127
 msgid "Save Here"
 msgstr "Сохранить здесь"
 
-#: ../moo/plugins/moofileselector.c:1117
+#: ../moo/plugins/moofileselector.c:1128
 msgid "Save As..."
 msgstr "Сохранить как..."
 
-#: ../moo/plugins/moofileselector.c:1126
+#: ../moo/plugins/moofileselector.c:1137
 msgid "Save Copy As..."
 msgstr "Сохранить копию как..."
 
-#: ../moo/plugins/moofileselector.c:1279
+#: ../moo/plugins/moofileselector.c:1291
 msgid "File selector pane for editor window"
 msgstr "Панель выбора файлов в окне редактора"
 
-#: ../moo/plugins/moofind.c:187
+#: ../moo/plugins/moofind.c:185
 msgid "Search Results"
 msgstr "Результаты поиска"
 
-#: ../moo/plugins/moofind.c:251 ../moo/plugins/moofind.c:252
+#: ../moo/plugins/moofind.c:249 ../moo/plugins/moofind.c:250
 msgid "Find In Files"
 msgstr "Найти в файлах"
 
-#: ../moo/plugins/moofind.c:253
+#: ../moo/plugins/moofind.c:251
 msgid "Find in files"
 msgstr "Поиск в файлах"
 
-#: ../moo/plugins/moofind.c:261 ../moo/plugins/moofind.c:262
-#: ../moo/plugins/moofind.c:997
+#: ../moo/plugins/moofind.c:259 ../moo/plugins/moofind.c:260
+#: ../moo/plugins/moofind.c:995
 msgid "Find File"
 msgstr "Найти файл"
 
-#: ../moo/plugins/moofind.c:263
+#: ../moo/plugins/moofind.c:261
 msgid "Find file"
 msgstr "Найти файл"
 
-#: ../moo/plugins/moofind.c:966
+#: ../moo/plugins/moofind.c:964
 msgid "Find in Files"
 msgstr "Поиск в файлах"
 
-#: ../moo/plugins/moofind.c:1049 ../moo/plugins/moofind.c:1075
+#: ../moo/plugins/moofind.c:1047 ../moo/plugins/moofind.c:1073
 #, c-format
 msgid "*** %u match found ***"
 msgid_plural "*** %u matches found ***"
@@ -2119,7 +2110,7 @@ msgstr[0] "*** Найдено %u совпадение ***"
 msgstr[1] "*** Найдены %u совпадения ***"
 msgstr[2] "*** Найдены %u совпадений ***"
 
-#: ../moo/plugins/moofind.c:1056 ../moo/plugins/moofind.c:1081
+#: ../moo/plugins/moofind.c:1054 ../moo/plugins/moofind.c:1079
 #, c-format
 msgid "*** %u file found ***"
 msgid_plural "*** %u files found ***"
@@ -2127,7 +2118,7 @@ msgstr[0] "*** Найден %u файл ***"
 msgstr[1] "*** Найдены %u файла ***"
 msgstr[2] "*** Найдены %u файлов ***"
 
-#: ../moo/plugins/moofind.c:1117
+#: ../moo/plugins/moofind.c:1115
 msgid "Finds everything"
 msgstr "Найдётся всё!"
 
@@ -2336,6 +2327,13 @@ msgstr "Текущий документ"
 msgctxt "Save-combo"
 msgid "All documents"
 msgstr "Все документы"
+
+#~ msgid ""
+#~ "console message|in file %s, line %d, function %s:\n"
+#~ "%s"
+#~ msgstr ""
+#~ "в файле %s, на строке %d, в функции %s:\n"
+#~ "%s"
 
 #~ msgid "Could not save file"
 #~ msgstr "Не удалось сохранить файл"

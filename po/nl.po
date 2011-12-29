@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-01-29 22:40-0800\n"
+"POT-Creation-Date: 2011-12-28 23:10-0800\n"
 "PO-Revision-Date: 2008-09-27\n"
 "Last-Translator: Kris Van Bruwaene <krvbr@yahoo.co.uk>\n"
 "Language-Team: Kris Van Bruwaene <krvbr@yahoo.co.uk>\n"
@@ -179,11 +179,11 @@ msgstr ""
 "Kris Van Bruwaene <a href=\"mailto:krvbr@yahoo.co.uk\">&lt;krvbr@yahoo.co."
 "uk&gt;</a>"
 
-#: ../moo/mooapp/mooapp.c:993
+#: ../moo/mooapp/mooapp.c:991
 msgid "Report a Bug..."
 msgstr ""
 
-#: ../moo/mooapp/mooapp.c:1356
+#: ../moo/mooapp/mooapp.c:1354
 #, c-format
 msgid ""
 "The following URL will be opened:\n"
@@ -193,12 +193,12 @@ msgid ""
 "It contains medit version and your operating system name (%s)"
 msgstr ""
 
-#: ../moo/mooapp/mooapp.c:1363
+#: ../moo/mooapp/mooapp.c:1361
 msgid "Open URL?"
 msgstr ""
 
 #. Prefs dialog title
-#: ../moo/mooapp/mooapp.c:1401
+#: ../moo/mooapp/mooapp.c:1399
 msgid "Preferences"
 msgstr "Voorkeuren"
 
@@ -486,7 +486,7 @@ msgstr "Let op hoofd-/kleine letters"
 msgid "Don't _prompt on replace"
 msgstr ""
 
-#: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1117
+#: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1115
 msgid "Find"
 msgstr "Zoeken"
 
@@ -716,7 +716,7 @@ msgstr ""
 msgid "Invalid regular expression"
 msgstr ""
 
-#: ../moo/mooedit/mooedit-fileops.c:1306 ../moo/plugins/moofileselector.c:510
+#: ../moo/mooedit/mooedit-fileops.c:1306 ../moo/plugins/moofileselector.c:511
 msgid "Untitled"
 msgstr "Naamloos"
 
@@ -733,11 +733,11 @@ msgstr "Open Dialoog Laatste Bestanden"
 msgid "Open Recent|_More..."
 msgstr "_Meer..."
 
-#: ../moo/mooedit/mooeditor.c:595
+#: ../moo/mooedit/mooeditor.c:598
 msgid "Open new editor window"
 msgstr "Open nieuw editorvenster"
 
-#: ../moo/mooedit/mooeditor.c:781
+#: ../moo/mooedit/mooeditor.c:784
 msgid "Open Recent"
 msgstr "Laatst Geopend"
 
@@ -773,7 +773,7 @@ msgid "PreferencesPage|Languages"
 msgstr ""
 
 #. Menu item in the Language menu
-#: ../moo/mooedit/mooeditprefspage.c:555 ../moo/mooedit/mooeditwindow.c:3862
+#: ../moo/mooedit/mooeditprefspage.c:555 ../moo/mooedit/mooeditwindow.c:3860
 msgid "Language|None"
 msgstr "Geen"
 
@@ -1003,7 +1003,7 @@ msgstr "Pagina-instellingen..."
 msgid "Print..."
 msgstr "Afdrukken..."
 
-#: ../moo/mooedit/mooeditwindow.c:784 ../moo/mooedit/mooeditwindow.c:1936
+#: ../moo/mooedit/mooeditwindow.c:784 ../moo/mooedit/mooeditwindow.c:1932
 msgid "Export as PDF"
 msgstr "Als PDF exporteren"
 
@@ -1082,49 +1082,49 @@ msgid "_Mac (CR)"
 msgstr ""
 
 #. Item in document tab context menu
-#: ../moo/mooedit/mooeditwindow.c:2143
+#: ../moo/mooedit/mooeditwindow.c:2139
 msgctxt "tab-context-menu"
 msgid "Close"
 msgstr ""
 
 #. Item in document tab context menu
-#: ../moo/mooedit/mooeditwindow.c:2155
+#: ../moo/mooedit/mooeditwindow.c:2151
 msgctxt "tab-context-menu"
 msgid "Close All Others"
 msgstr ""
 
 #. Item in document tab context menu
-#: ../moo/mooedit/mooeditwindow.c:2173
+#: ../moo/mooedit/mooeditwindow.c:2169
 msgctxt "tab-context-menu"
 msgid "Detach"
 msgstr ""
 
 #. Item in document tab context menu
-#: ../moo/mooedit/mooeditwindow.c:2183
+#: ../moo/mooedit/mooeditwindow.c:2179
 msgctxt "tab-context-menu"
 msgid "Move to Split Notebook"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3716
+#: ../moo/mooedit/mooeditwindow.c:3714
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr "Regel: %s Kolom: %s"
 
-#: ../moo/mooedit/mooeditwindow.c:3717
+#: ../moo/mooedit/mooeditwindow.c:3715
 #, c-format
 msgid "Chars: %s"
 msgstr "Tekens: %s"
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3760
+#: ../moo/mooedit/mooeditwindow.c:3758
 msgid "OVR"
 msgstr "OVR"
 
-#: ../moo/mooedit/mooeditwindow.c:3760
+#: ../moo/mooedit/mooeditwindow.c:3758
 msgid "INS"
 msgstr "INV"
 
-#: ../moo/mooedit/mooeditwindow.c:3857
+#: ../moo/mooedit/mooeditwindow.c:3855
 msgid "_Language"
 msgstr "_Taal"
 
@@ -1250,7 +1250,7 @@ msgstr "Algemeen"
 
 #: ../moo/moofileview/glade/moofileview-drop.glade.h:1
 #: ../moo/plugins/glade/moofileselector.glade.h:2
-#: ../moo/plugins/moofileselector.c:896 ../moo/plugins/moofileselector.c:921
+#: ../moo/plugins/moofileselector.c:907 ../moo/plugins/moofileselector.c:932
 msgid "Save As"
 msgstr "Opslaan Als"
 
@@ -1272,8 +1272,8 @@ msgctxt "fileview-bookmark-editor"
 msgid "Path"
 msgstr "Pad"
 
-#: ../moo/moofileview/moofileview.c:1116 ../moo/plugins/moofileselector.c:636
-#: ../moo/plugins/moofileselector.c:637 ../moo/plugins/moofileselector.c:1278
+#: ../moo/moofileview/moofileview.c:1116 ../moo/plugins/moofileselector.c:647
+#: ../moo/plugins/moofileselector.c:648 ../moo/plugins/moofileselector.c:1290
 #: ../moo/plugins/moofileselector-prefs.c:72
 msgid "File Selector"
 msgstr "Bestandskeuze"
@@ -1514,16 +1514,16 @@ msgstr "Als u niet opslaat verliest u de veranderingen"
 msgid "012345"
 msgstr "051423"
 
-#: ../moo/mooutils/mooencodings.c:692
+#: ../moo/mooutils/mooencodings.c:689
 msgid "Auto Detected"
 msgstr "Automatisch Herkend"
 
 #. Translators: do not translate the part before |
-#: ../moo/mooutils/mooencodings.c:721
+#: ../moo/mooutils/mooencodings.c:718
 msgid "Encodings combo submenu|Other"
 msgstr "Andere"
 
-#: ../moo/mooutils/mooencodings.c:820
+#: ../moo/mooutils/mooencodings.c:817
 msgid "Charact_er encoding:"
 msgstr "T_ekencodering:"
 
@@ -1716,19 +1716,19 @@ msgid "Thai"
 msgstr "Thai"
 
 #. menu item in Insert Special Character submenu of text entry context menu
-#: ../moo/mooutils/mooentry.c:536
+#: ../moo/mooutils/mooentry.c:533
 msgctxt "insert-special-char"
 msgid "Line End"
 msgstr ""
 
 #. menu item in Insert Special Character submenu of text entry context menu
-#: ../moo/mooutils/mooentry.c:538
+#: ../moo/mooutils/mooentry.c:535
 msgctxt "insert-special-char"
 msgid "Tab"
 msgstr ""
 
 #. label of Insert Special Character submenu in text entry context menu
-#: ../moo/mooutils/mooentry.c:581
+#: ../moo/mooutils/mooentry.c:578
 msgctxt "insert-special-char"
 msgid "Insert Special Character"
 msgstr ""
@@ -1742,8 +1742,8 @@ msgstr ""
 msgid "Could not open %s: %s"
 msgstr "Kon %s niet openen: %s"
 
-#: ../moo/mooutils/moofilewriter.c:291 ../moo/mooutils/mooutils-fs.c:387
-#: ../moo/mooutils/mooutils-fs.c:406 ../moo/mooutils/mooutils-fs.c:422
+#: ../moo/mooutils/moofilewriter.c:291 ../moo/mooutils/mooutils-fs.c:386
+#: ../moo/mooutils/mooutils-fs.c:405 ../moo/mooutils/mooutils-fs.c:421
 #, c-format
 msgid "Could not create folder %s: %s"
 msgstr "Kon map %s niet aanmaken: %s"
@@ -1805,7 +1805,7 @@ msgstr "Bewegen"
 msgid "Link"
 msgstr "Koppeling"
 
-#: ../moo/mooutils/moostock.c:35 ../moo/plugins/moofileselector.c:1125
+#: ../moo/mooutils/moostock.c:35 ../moo/plugins/moofileselector.c:1136
 msgid "Save Copy"
 msgstr "Kopie Opslaan"
 
@@ -1819,37 +1819,30 @@ msgstr "Nieuw _Venster"
 
 #. This is error message in file selector when rm
 #. fails for some strange reason
-#: ../moo/mooutils/mooutils-fs.c:227
+#: ../moo/mooutils/mooutils-fs.c:226
 #, c-format
 msgid "Could not run 'rm' command: %s"
 msgstr "Kon 'rm'-opdracht niet uitvoeren: %s"
 
 #. This is error message in file selector when rm
 #. fails to delete a file or folder
-#: ../moo/mooutils/mooutils-fs.c:245
+#: ../moo/mooutils/mooutils-fs.c:244
 #, c-format
 msgid "'rm' command failed: %s"
 msgstr "'rm' opdracht mislukt: %s"
 
-#: ../moo/mooutils/mooutils-fs.c:295 ../moo/mooutils/mooutils-fs.c:315
-#: ../moo/mooutils/mooutils-fs.c:342
+#: ../moo/mooutils/mooutils-fs.c:294 ../moo/mooutils/mooutils-fs.c:314
+#: ../moo/mooutils/mooutils-fs.c:341
 #, c-format
 msgid "Could not remove %s: %s"
 msgstr "Kon %s niet verwijderen: %s"
 
-#: ../moo/mooutils/mooutils-fs.c:451
+#: ../moo/mooutils/mooutils-fs.c:450
 #, c-format
 msgid "Could not rename file %s to %s: %s"
 msgstr "Kon bestand %s niet hernoemen tot %s: %s"
 
-#: ../moo/mooutils/mooutils-misc.c:1748
-#, c-format
-msgid ""
-"console message|in file %s, line %d, function %s:\n"
-"%s"
-msgstr ""
-
-#: ../moo/mooutils/mooutils-misc.c:1847
+#: ../moo/mooutils/mooutils-misc.c:1668
 #, c-format
 msgid "console message|in file %s, line %d, function %s: %s"
 msgstr ""
@@ -1857,7 +1850,7 @@ msgstr ""
 #. "Unknown error" may be displayed if there is a bug in the program
 #. and proper error message has not been set. It doesn't provide any
 #. useful information obviously
-#: ../moo/mooutils/mooutils-misc.c:2232
+#: ../moo/mooutils/mooutils-misc.c:2053
 msgid "Unknown error"
 msgstr ""
 
@@ -1991,17 +1984,17 @@ msgstr "Bestandslijst"
 msgid "List of files"
 msgstr "Lijst van bestanden"
 
-#: ../moo/plugins/moofileselector.c:387
+#: ../moo/plugins/moofileselector.c:388
 #, c-format
 msgid "Create file in folder '%s':"
 msgstr "Bestand in folder '%s' aanmaken:"
 
-#: ../moo/plugins/moofileselector.c:442
+#: ../moo/plugins/moofileselector.c:443
 #, c-format
 msgid "Could not create file '%s'"
 msgstr "Kan bestand '%s' niet aanmaken"
 
-#: ../moo/plugins/moofileselector.c:443 ../moo/plugins/moofileselector.c:809
+#: ../moo/plugins/moofileselector.c:444 ../moo/plugins/moofileselector.c:820
 #, c-format
 msgid ""
 "Could not convert '%s' to filename encoding. Please consider simpler name, "
@@ -2010,96 +2003,96 @@ msgstr ""
 "'%s' kan niet als bestandsnaam gecodeerd worden. Bedenk een eenvoudiger "
 "naam, zoals foo.bla of bla.foo"
 
-#: ../moo/plugins/moofileselector.c:458
+#: ../moo/plugins/moofileselector.c:459
 #, c-format
 msgid "File '%s' already exists"
 msgstr "Bestand '%s' bestaat al"
 
-#: ../moo/plugins/moofileselector.c:601
+#: ../moo/plugins/moofileselector.c:612
 msgid "Go to current document directory"
 msgstr "Ga naar huidige documentfolder"
 
-#: ../moo/plugins/moofileselector.c:613 ../moo/plugins/moofileselector.c:614
+#: ../moo/plugins/moofileselector.c:624 ../moo/plugins/moofileselector.c:625
 msgid "New File..."
 msgstr "Nieuw Bestand..."
 
-#: ../moo/plugins/moofileselector.c:808
+#: ../moo/plugins/moofileselector.c:819
 #, c-format
 msgid "Could not save file as '%s'"
 msgstr "Bestand kan niet als '%s' opgeslagen worden"
 
-#: ../moo/plugins/moofileselector.c:941
+#: ../moo/plugins/moofileselector.c:952
 msgid "Save Copy As"
 msgstr "Kopie Opslaan Als"
 
-#: ../moo/plugins/moofileselector.c:967
+#: ../moo/plugins/moofileselector.c:978
 msgid "Rename To"
 msgstr "Herbenoemen Als"
 
-#: ../moo/plugins/moofileselector.c:1107
+#: ../moo/plugins/moofileselector.c:1118
 msgid "Move Here"
 msgstr "Hierheen Verplaatsen"
 
-#: ../moo/plugins/moofileselector.c:1108
+#: ../moo/plugins/moofileselector.c:1119
 msgid "Move/Rename..."
 msgstr "Verplaatsen/Herbenoemen..."
 
-#: ../moo/plugins/moofileselector.c:1116
+#: ../moo/plugins/moofileselector.c:1127
 msgid "Save Here"
 msgstr "Hier Opslaan"
 
-#: ../moo/plugins/moofileselector.c:1117
+#: ../moo/plugins/moofileselector.c:1128
 msgid "Save As..."
 msgstr "Opslaan Als..."
 
-#: ../moo/plugins/moofileselector.c:1126
+#: ../moo/plugins/moofileselector.c:1137
 msgid "Save Copy As..."
 msgstr "Kopie Opslaan Als..."
 
-#: ../moo/plugins/moofileselector.c:1279
+#: ../moo/plugins/moofileselector.c:1291
 msgid "File selector pane for editor window"
 msgstr "Bestandskeuzepaneel voor editorvenster"
 
-#: ../moo/plugins/moofind.c:187
+#: ../moo/plugins/moofind.c:185
 msgid "Search Results"
 msgstr "Zoekresultaten"
 
-#: ../moo/plugins/moofind.c:251 ../moo/plugins/moofind.c:252
+#: ../moo/plugins/moofind.c:249 ../moo/plugins/moofind.c:250
 msgid "Find In Files"
 msgstr "Zoek In Bestanden"
 
-#: ../moo/plugins/moofind.c:253
+#: ../moo/plugins/moofind.c:251
 msgid "Find in files"
 msgstr "Zoek in bestanden"
 
-#: ../moo/plugins/moofind.c:261 ../moo/plugins/moofind.c:262
-#: ../moo/plugins/moofind.c:997
+#: ../moo/plugins/moofind.c:259 ../moo/plugins/moofind.c:260
+#: ../moo/plugins/moofind.c:995
 msgid "Find File"
 msgstr "Zoek Bestand"
 
-#: ../moo/plugins/moofind.c:263
+#: ../moo/plugins/moofind.c:261
 msgid "Find file"
 msgstr "Zoek bestand"
 
-#: ../moo/plugins/moofind.c:966
+#: ../moo/plugins/moofind.c:964
 msgid "Find in Files"
 msgstr "Zoek in Bestanden"
 
-#: ../moo/plugins/moofind.c:1049 ../moo/plugins/moofind.c:1075
+#: ../moo/plugins/moofind.c:1047 ../moo/plugins/moofind.c:1073
 #, c-format
 msgid "*** %u match found ***"
 msgid_plural "*** %u matches found ***"
 msgstr[0] "*** %u treffer gevonden ***"
 msgstr[1] "*** %u treffers gevonden ***"
 
-#: ../moo/plugins/moofind.c:1056 ../moo/plugins/moofind.c:1081
+#: ../moo/plugins/moofind.c:1054 ../moo/plugins/moofind.c:1079
 #, c-format
 msgid "*** %u file found ***"
 msgid_plural "*** %u files found ***"
 msgstr[0] "*** %u bestand gevonden ***"
 msgstr[1] "*** %u bestanden gevonden ***"
 
-#: ../moo/plugins/moofind.c:1117
+#: ../moo/plugins/moofind.c:1115
 msgid "Finds everything"
 msgstr "Vindt alles"
 
