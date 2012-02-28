@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-12-28 23:10-0800\n"
-"PO-Revision-Date: 2012-02-28 17:34-0300\n"
+"PO-Revision-Date: 2012-02-28 17:45-0300\n"
 "Last-Translator: sebikul <sebikul@gmail.com>\n"
 "Language-Team: Arnau Sanchez <arnau@ehas.org>\n"
 "Language: es\n"
@@ -180,7 +180,7 @@ msgstr "Arnau Sanchez <a href=\"mailto:arnau@ehas.org\">&lt;arnau@ehas.org&gt;</
 
 #: ../moo/mooapp/mooapp.c:991
 msgid "Report a Bug..."
-msgstr ""
+msgstr "Reportar un fallo..."
 
 #: ../moo/mooapp/mooapp.c:1354
 #, c-format
@@ -194,7 +194,7 @@ msgstr ""
 
 #: ../moo/mooapp/mooapp.c:1361
 msgid "Open URL?"
-msgstr ""
+msgstr "¿Abrir URL?"
 
 #. Prefs dialog title
 #: ../moo/mooapp/mooapp.c:1399
@@ -223,11 +223,11 @@ msgstr "Lista de codificaciones separadas por coma que se prueban al abrir un ar
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:6
 msgid "Enable _session support"
-msgstr ""
+msgstr "Habilitar soporte de _sesión"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
 msgid "Encoding for _new files:"
-msgstr ""
+msgstr "Codificación para _nuevos archivos:"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Encodings to _autodetect:"
@@ -239,7 +239,7 @@ msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:10
 msgid "Make _backups"
-msgstr ""
+msgstr "Realizar c_opias de seguridad"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
 msgid "Open and Save As dialogs show current document _folder"
@@ -366,7 +366,7 @@ msgstr "Mostrar números de línea"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
 msgid "Show spaces"
-msgstr ""
+msgstr "Mostrar espacios"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Show tabs"
@@ -395,7 +395,7 @@ msgstr "<b>Descripción:</b>"
 
 #: ../moo/mooedit/glade/moopluginprefs.glade.h:3
 msgid "<b>Plugins</b>"
-msgstr ""
+msgstr "<b>Complementos</b>"
 
 #: ../moo/mooedit/glade/moopluginprefs.glade.h:4
 msgid "<b>Version:</b>"
@@ -508,11 +508,11 @@ msgstr "Reemplazar por"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:9
 msgid "S_elected text"
-msgstr ""
+msgstr "T_exto seleccionado"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:10
 msgid "_Literal replacement"
-msgstr ""
+msgstr "Reemplazo _literal"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:11
 msgid "_Replacement text:"
@@ -520,7 +520,7 @@ msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:12
 msgid "_Text to find:"
-msgstr ""
+msgstr "_Texto a encontrar"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:13
 msgid "_Whole words only"
