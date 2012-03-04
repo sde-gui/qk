@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-12-28 23:10-0800\n"
+"POT-Creation-Date: 2012-03-04 02:51-0800\n"
 "PO-Revision-Date: 2007-07-11 10:00+0500\n"
 "Last-Translator: Yevgen Muntyan <emuntyan@users.sourceforge.net>\n"
 "Language-Team: Russian\n"
@@ -796,7 +796,7 @@ msgid "PreferencesPage|Languages"
 msgstr "Языки"
 
 #. Menu item in the Language menu
-#: ../moo/mooedit/mooeditprefspage.c:555 ../moo/mooedit/mooeditwindow.c:3860
+#: ../moo/mooedit/mooeditprefspage.c:555 ../moo/mooedit/mooeditwindow.c:3879
 msgid "Language|None"
 msgstr "Ничего"
 
@@ -1128,26 +1128,26 @@ msgctxt "tab-context-menu"
 msgid "Move to Split Notebook"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3714
+#: ../moo/mooedit/mooeditwindow.c:3733
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr "Строка: %s Столбец: %s"
 
-#: ../moo/mooedit/mooeditwindow.c:3715
+#: ../moo/mooedit/mooeditwindow.c:3734
 #, c-format
 msgid "Chars: %s"
 msgstr "Символов: %s"
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3758
+#: ../moo/mooedit/mooeditwindow.c:3777
 msgid "OVR"
 msgstr "ЗАМЕНА"
 
-#: ../moo/mooedit/mooeditwindow.c:3758
+#: ../moo/mooedit/mooeditwindow.c:3777
 msgid "INS"
 msgstr "ВСТАВКА"
 
-#: ../moo/mooedit/mooeditwindow.c:3855
+#: ../moo/mooedit/mooeditwindow.c:3874
 msgid "_Language"
 msgstr "_Язык"
 

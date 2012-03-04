@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-12-28 23:10-0800\n"
+"POT-Creation-Date: 2012-03-04 02:51-0800\n"
 "PO-Revision-Date: 2011-12-27 21:31+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -781,7 +781,7 @@ msgid "PreferencesPage|Languages"
 msgstr "言語"
 
 #. Menu item in the Language menu
-#: ../moo/mooedit/mooeditprefspage.c:555 ../moo/mooedit/mooeditwindow.c:3860
+#: ../moo/mooedit/mooeditprefspage.c:555 ../moo/mooedit/mooeditwindow.c:3879
 msgid "Language|None"
 msgstr "無し"
 
@@ -1113,26 +1113,26 @@ msgctxt "tab-context-menu"
 msgid "Move to Split Notebook"
 msgstr ""
 
-#: ../moo/mooedit/mooeditwindow.c:3714
+#: ../moo/mooedit/mooeditwindow.c:3733
 #, c-format
 msgid "Line: %s Col: %s"
 msgstr "行: %s 列: %s"
 
-#: ../moo/mooedit/mooeditwindow.c:3715
+#: ../moo/mooedit/mooeditwindow.c:3734
 #, c-format
 msgid "Chars: %s"
 msgstr "字数: %s"
 
 #. Label in the editor window statusbar - Overwrite or Insert mode
-#: ../moo/mooedit/mooeditwindow.c:3758
+#: ../moo/mooedit/mooeditwindow.c:3777
 msgid "OVR"
 msgstr "上書"
 
-#: ../moo/mooedit/mooeditwindow.c:3758
+#: ../moo/mooedit/mooeditwindow.c:3777
 msgid "INS"
 msgstr "挿入"
 
-#: ../moo/mooedit/mooeditwindow.c:3855
+#: ../moo/mooedit/mooeditwindow.c:3874
 msgid "_Language"
 msgstr "言語(_L)"
 
