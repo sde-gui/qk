@@ -1,6 +1,6 @@
 m4_define([_moo_major_version_],[1])
-m4_define([_moo_minor_version_],[0])
-m4_define([_moo_micro_version_],[98])
+m4_define([_moo_minor_version_],[1])
+m4_define([_moo_micro_version_],[0])
 m4_define([_moo_version_suffix_],[devel])
 m4_define([_moo_module_major_version_],[2])
 m4_define([_moo_module_minor_version_],[0])

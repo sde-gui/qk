@@ -1,3 +1,31 @@
+2012-03-04  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
+
+    * === Released 1.1.0 ===
+
+    Fixed few memory leaks.
+    Improved documentation.
+    Made lua scripts use UTF-8 strings by default.
+    Fixed font selector in terminal pane.
+    Fixed clicks and drags with Shift key pressed.
+    Store 'Show hidden files' setting of file selector in preferences.
+    Added Japanese translation by Toshiharu Kudoh.
+    Updated Spanish translation by Sebikul.
+    Added Finnish translation by Tommi Nieminen.
+
+2011-10-23  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
+
+    * === Released 1.0.5 ===
+
+    Fixed a bug where filename "12d1:1446" was treated as file "12d1"
+    and line number 1446.
+    Unbroke keyboard shortcuts when running under gtk-2.24.7.
+
+2011-09-11  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
+
+    * === Released 1.0.4 ===
+
+    Added protobuf lang file by Pavel Artyomkin.
+
 2011-04-14  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
 
     * === Released 1.0.3 ===
