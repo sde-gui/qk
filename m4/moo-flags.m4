@@ -280,7 +280,7 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   MOO_AC_FAM
 
   AC_CHECK_FUNCS_ONCE(getc_unlocked)
-  AC_CHECK_HEADERS(unistd.h sys/utsname.h signal.h)
+  AC_CHECK_HEADERS(unistd.h sys/utsname.h signal.h sys/wait.h)
 
   if $MOO_OS_WIN32; then
     AC_DEFINE(HAVE_MMAP, 1, [Fake mmap on win32])
