@@ -18,6 +18,7 @@
 #include "mooutils/moodialogs.h"
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooaccelbutton-gxml.h"
+#include "mooutils/mooaccel.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
@@ -277,7 +278,7 @@ key_event (GtkWidget    *widget,
     int mods;
 
     keymap = gdk_keymap_get_for_display (gtk_widget_get_display (widget));
-    gdk_keymap_translate_keyboard_state (keymap, event->hardware_keycode,
+    moo_keymap_translate_keyboard_state (keymap, event->hardware_keycode,
                                          (GdkModifierType) event->state, event->group,
                                          NULL, NULL, NULL, &consumed_modifiers);
 
