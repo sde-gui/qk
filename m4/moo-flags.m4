@@ -83,11 +83,7 @@ AC_ARG_ENABLE(strict,
       MOO_STRICT_MODE="yes"
     fi
   ],[
-  if test "$MOO_DEBUG_ENABLED" = yes -o "$MOO_DEV_MODE" = yes; then
-    MOO_STRICT_MODE="yes"
-  else
     MOO_STRICT_MODE="no"
-  fi
 ])
 AM_CONDITIONAL(MOO_STRICT_MODE, test x$MOO_STRICT_MODE = "xyes")
 
