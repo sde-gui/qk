@@ -1,3 +1,11 @@
+2012-07-27  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
+
+    * === Released 1.1.1 ===
+
+    Fixed some build errors:
+        Check for sys/wait.h, so that HAVE_SYS_WAIT_H is defined when needed.
+        Link with gmodule explicitly.
+
 2012-03-04  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
 
     * === Released 1.1.0 ===
