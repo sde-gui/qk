@@ -21,14 +21,14 @@ script_docbook_sources =			\
 
 $(srcdir)/built/script-python.docbook: $(gendocbook_files) script-python.tmpl.docbook $(top_srcdir)/api/moo.xml
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
+	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/api/gendocbook.py \
 		--python --template $(srcdir)/script-python.tmpl.docbook \
 		$(top_srcdir)/api/moo.xml > script-python.docbook.tmp && \
 		mv script-python.docbook.tmp $(srcdir)/built/script-python.docbook
 
 $(srcdir)/built/script-lua.docbook: $(gendocbook_files) script-lua.tmpl.docbook $(top_srcdir)/api/moo.xml $(top_srcdir)/api/gtk.xml
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
+	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/api/gendocbook.py \
 		--lua --template $(srcdir)/script-lua.tmpl.docbook \
 		--import $(top_srcdir)/api/gtk.xml \
 		$(top_srcdir)/api/moo.xml > script-lua.docbook.tmp && \
@@ -36,7 +36,7 @@ $(srcdir)/built/script-lua.docbook: $(gendocbook_files) script-lua.tmpl.docbook 
 
 $(srcdir)/built/script-lua-gtk.docbook: $(gendocbook_files) script-lua-gtk.tmpl.docbook $(top_srcdir)/api/gtk.xml
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
-	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
+	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/api/gendocbook.py \
 		--lua --template $(srcdir)/script-lua-gtk.tmpl.docbook \
 		$(top_srcdir)/api/gtk.xml > script-lua-gtk.docbook.tmp && \
 		mv script-lua-gtk.docbook.tmp $(srcdir)/built/script-lua-gtk.docbook
@@ -98,7 +98,7 @@ toc.xml: $(docbook_sources)
 
 moo-help-sections.h.stamp: $(docbook_files) toc.xml genhelpsectionsh.py
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
-	$(AM_V_GEN)$(PYTHON) $(srcdir)/genhelpsectionsh.py --toc=toc.xml --srcdir=$(srcdir) $(docbook_files) > moo-help-sections.h.tmp
+	$(AM_V_GEN)$(MOO_PYTHON) $(srcdir)/genhelpsectionsh.py --toc=toc.xml --srcdir=$(srcdir) $(docbook_files) > moo-help-sections.h.tmp
 	$(AM_V_at)cmp -s moo-help-sections.h.tmp $(srcdir)/built/moo-help-sections.h || \
 		mv moo-help-sections.h.tmp $(srcdir)/built/moo-help-sections.h
 	$(AM_V_at)rm -f moo-help-sections.h.tmp
