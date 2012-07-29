@@ -12,7 +12,7 @@ else:
 assert _gtkwinconfig in ['debug', 'release']
 
 _mingw_tool_prefix = None
-for __p in ('i586-mingw32msvc', 'i486-mingw32'):
+for __p in ('i686-pc-mingw32', 'i586-mingw32msvc', 'i486-mingw32'):
     if os.path.exists('/usr/bin/%s-gcc' % (__p,)):
         _mingw_tool_prefix = '/usr/bin/%s-' % (__p,)
         break
@@ -63,7 +63,7 @@ for _var in _mingw_tools:
 if _gtkwinconfig == 'debug':
     _def_cflags = '-gstabs'
 else:
-    _def_cflags = '-O2'
+    _def_cflags = '-gstabs -O2'
 
 # os.environ['LDFLAGS'] = "-L%s/lib" % (prefix,)
 # os.environ['CPPFLAGS'] = "-I%s/include" % (prefix,)
@@ -84,8 +84,14 @@ for __dir in os.environ['PATH'].split(':'):
 
 #Populating autogenargs
 
-_configure_target = 'i586-pc-mingw32msvc'
-_configure_build = 'i686-pc-linux-gnu'
+if os.environ['mgwlinux'] == 'true':
+    _configure_build = 'i686-pc-linux-gnu'
+    _configure_target = 'i586-pc-mingw32msvc'
+elif os.environ['mgwcygwin'] == 'true':
+    _configure_build = 'i686-pc-cygwin'
+    _configure_target = 'i686-pc-mingw32'
+else:
+    raise RuntimeError("oops")
 
 autogenargs  = ' --build=' + _configure_build
 autogenargs += ' --host=' + _configure_target
@@ -107,12 +113,14 @@ module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
 					    + " --with-included-gettext" \
 					    + " --without-libexpat-prefix" \
 					    + " --without-libxml2-prefix" \
-					    + " --without-libglib-2.0-prefix"
+					    + " --without-libglib-2.0-prefix" \
+                        + " --enable-threads=win32"
 if _gtkwinconfig == 'debug':
     module_autogenargs['gettext'] += " CPPFLAGS=-DHAVE_INLINE"
 
 module_autogenargs['libxml2'] = autogenargs + " --without-python" \
                                             + " --without-zlib" \
+                                            + " --without-threads" \
                                             + _cflags_cmdline.replace('-gstabs', '-g')
 
 module_autogenargs['pkgconfig'] = autogenargs \
