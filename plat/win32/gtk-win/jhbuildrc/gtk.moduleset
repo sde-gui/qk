@@ -3,11 +3,11 @@
 
   <repository type="hg" name="muntyan.bitbucket.org" href="http://bitbucket.org/muntyan/"/>
 
-  <tarball id="zlib" version="1.2.5" supports-non-srcdir-builds="no">
-    <source href="http://zlib.net/zlib-1.2.5.tar.gz"
-            md5sum="c735eab2d659a96e5a594c9e8541ad63"/>
+  <tarball id="zlib" version="1.2.7" supports-non-srcdir-builds="no">
+    <source href="http://zlib.net/zlib-1.2.7.tar.gz"
+            md5sum="60df6a37c56e7c1366cca812414f7b85"/>
     <patches>
-      <patch file="zlib-1.2.5.patch" strip="1"/>
+      <patch file="zlib-1.2.7.patch" strip="1"/>
     </patches>
   </tarball>
 
@@ -138,6 +138,9 @@
       <dep package="gettext"/>
       <dep package="libpng"/>
     </dependencies>
+    <patches>
+      <patch file="cairo-1.8.10.patch" strip="1"/>
+    </patches>
   </tarball>
 
   <!-- with cairo-1.10 icons disappear randomly -->
