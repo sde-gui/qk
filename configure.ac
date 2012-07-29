@@ -61,7 +61,10 @@ AC_ARG_VAR([WINDRES], [windres])
 AC_CHECK_TOOL(WINDRES, windres, :)
 
 AC_ARG_VAR([PYTHON], [Python executable, required to run build scripts])
-AC_CHECK_PROGS(PYTHON, python, [AC_MSG_ERROR([Python not found])])
+AC_CHECK_PROGS(MOO_PYTHON, [python2 python2.7 python2.6 python2.5 python2.4 python2.3 python2.2 python2.1 python2.0 python], [none])
+if test "x$MOO_PYTHON" = "x"; then
+  AC_MSG_ERROR([Python not found, it is required for the build])
+fi
 
 MOO_AC_FLAGS
 
