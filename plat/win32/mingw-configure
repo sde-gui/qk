@@ -1,4 +1,5 @@
 #! /bin/sh
+# -%- lang:sh; indent-width:2 -%-
 
 builddir=`pwd`
 srcdir=`dirname $0`/../..

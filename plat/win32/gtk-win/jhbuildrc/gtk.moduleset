@@ -1,4 +1,4 @@
-<?xml version="1.0" ?><!-- -%- indent-width:2; use-tabs:0 -%- -->
+<?xml version="1.0" ?><!-- -%- lang:xml; indent-width:2; use-tabs:0 -%- -->
 <moduleset>
 
   <repository type="hg" name="muntyan.bitbucket.org" href="http://bitbucket.org/muntyan/"/>
@@ -61,6 +61,9 @@
     <dependencies>
       <dep package="libiconv"/>
     </dependencies>
+    <patches>
+      <patch file="libxml2.patch" strip="1"/>
+    </patches>
   </tarball>
 
   <tarball id="glib">
