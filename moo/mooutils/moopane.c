@@ -79,7 +79,7 @@ _moo_window_set_icon_from_stock (GtkWindow  *window,
         if (icon)
         {
             gtk_window_set_icon (GTK_WINDOW (window), icon);
-            gdk_pixbuf_unref (icon);
+            g_object_unref (icon);
         }
     }
     else

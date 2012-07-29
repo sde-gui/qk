@@ -24,11 +24,11 @@ local function test_active_window()
   tassert(w1 ~= w2, 'old window != new window')
   tassert(#editor.get_windows() == 2, 'two window')
   editor.set_active_window(w2)
-  moo.spin_main_loop(0.1)
+  moo.spin_main_loop(0.3)
   tassert(w2 == editor.get_active_window(), 'w2 == editor.get_active_window()')
   if _moo.os.name == 'posix' then
     editor.set_active_window(w1)
-    moo.spin_main_loop(0.1)
+    moo.spin_main_loop(0.3)
     tassert(w1 == editor.get_active_window(), 'w1 == editor.get_active_window()')
   end
   editor.close_window(w1)

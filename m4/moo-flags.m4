@@ -280,7 +280,7 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   MOO_AC_FAM
 
   AC_CHECK_FUNCS_ONCE(getc_unlocked)
-  AC_CHECK_HEADERS(unistd.h sys/utsname.h signal.h)
+  AC_CHECK_HEADERS(unistd.h sys/utsname.h signal.h sys/wait.h)
 
   if $MOO_OS_WIN32; then
     AC_DEFINE(HAVE_MMAP, 1, [Fake mmap on win32])
@@ -294,7 +294,7 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   MOO_CFLAGS="$MOO_CFLAGS $GTK_CFLAGS"
   MOO_CXXFLAGS="$MOO_CXXFLAGS $GTK_CFLAGS"
   MOO_CPPFLAGS="$MOO_CPPFLAGS -I$moo_top_src_dir/moo -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\""
-  MOO_LIBS="$MOO_LIBS $GTK_LIBS $GTHREAD_LIBS $LIBM"
+  MOO_LIBS="$MOO_LIBS $GTK_LIBS $GTHREAD_LIBS $GMODULE_LIBS $LIBM"
 
   if $GDK_X11; then
     _moo_x_pkgs=

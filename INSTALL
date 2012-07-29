@@ -8,6 +8,9 @@ make install
 
 This will configure, build, and install medit to /usr/local.
 
+medit requires development packages of the following: gtk2, libxml2, python2.
+For example, on Debian you may need to install libgtk2.0-dev, libxml2-dev, python2.7-dev.
+
 If you checked out a copy of mercurial repository, then do the following to build:
 
 ./autogen.sh
@@ -15,8 +18,9 @@ If you checked out a copy of mercurial repository, then do the following to buil
 make
 make install
 
-You must have docbook, xsltproc, txt2tags to build medit from mercurial. Other
-tools may be required and configure may not check for them, please report those
+Building medit from Mercurial requires the following, in addition to the dependencies
+listed above: automake, autoconf, libtool, intltool, docbook, xsltproc, txt2tags.
+Other tools may be required and configure may not check for them, please report those
 to the author.
 
 To build a python module which could be used in other programs, use
