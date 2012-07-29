@@ -98,14 +98,14 @@ autogenargs += ' --host=' + _configure_target
 autogenargs += ' --target=' + _configure_target
 autogenargs += ' --disable-docs --disable-gtk-doc --disable-scrollkeeper'
 autogenargs += ' --enable-maintainer-mode --enable-shared --disable-static'
-autogenargs += ' --enable-relocatable --enable-silent-rules --disable-glibtest'
+autogenargs += ' --enable-relocatable --enable-silent-rules --disable-glibtest --disable-pthread'
 for _var in ['AR', 'RANLIB', 'STRIP', 'AS', 'DLLTOOL', 'OBJDUMP', 'NM', 'WINDRES', 'RC', 'INSTALL']:
     autogenargs += ' ' + _var + '="' + os.environ[_var] + '" '
 
 autogenargs += _cflags_cmdline
 
 # zlib uses custom configure script which doesn't ignore unknown options
-module_autogenargs['zlib'] = "--static"
+module_autogenargs['zlib'] = ""
 
 module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
 					    + " --disable-java" \
@@ -114,7 +114,7 @@ module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
 					    + " --without-libexpat-prefix" \
 					    + " --without-libxml2-prefix" \
 					    + " --without-libglib-2.0-prefix" \
-                        + " --enable-threads=win32"
+                                            + " --enable-threads=win32"
 if _gtkwinconfig == 'debug':
     module_autogenargs['gettext'] += " CPPFLAGS=-DHAVE_INLINE"
 
