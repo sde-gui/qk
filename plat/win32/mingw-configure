@@ -34,11 +34,16 @@ if $en_only; then
   destdir=$destdir-en
 fi
 
-if [ "$mgwconfig" = "debug" ]; then
-  _def_cflags='-gstabs'
-else
-  _def_cflags='-O2'
-fi
+case "$mgwconfig" in
+  debug) :
+    _def_cflags='-gstabs' ;;
+  reldbg) :
+    _def_cflags='-gstabs -O2' ;;
+  release) :
+    _def_cflags='-O2' ;;
+  *) :
+    echo "oops"; exit 1 ;;
+esac
 
 export ADDR2LINE=$_mingw_tool_prefix-addr2line
 export AS=$_mingw_tool_prefix-as
