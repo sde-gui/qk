@@ -9,7 +9,7 @@ if _gtkwinconfig is None:
     _gtkwinconfig = 'release'
 else:
     _gtkwinconfig = _gtkwinconfig.lower()
-assert _gtkwinconfig in ['debug', 'release']
+assert _gtkwinconfig in ['debug', 'reldbg', 'release']
 
 _mingw_tool_prefix = None
 for __p in ('i686-pc-mingw32', 'i586-mingw32msvc', 'i486-mingw32'):
@@ -62,8 +62,10 @@ for _var in _mingw_tools:
 
 if _gtkwinconfig == 'debug':
     _def_cflags = '-gstabs'
-else:
+elif _gtkwinconfig == 'reldbg':
     _def_cflags = '-gstabs -O2'
+else:
+    _def_cflags = '-O2'
 
 # os.environ['LDFLAGS'] = "-L%s/lib" % (prefix,)
 # os.environ['CPPFLAGS'] = "-I%s/include" % (prefix,)

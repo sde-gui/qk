@@ -5,25 +5,22 @@ export mgwdir=`dirname $0`
 
 jhsourcedir=$mgwbuilddir/source
 jhbuilddir=$mgwbuilddir/build
-destdir=src-$mgwconfig
+destdir=medit-deps-dbg-src-$mgwconfig-`date +%Y%m%d`
 
 do_or_die() {
   echo "$@"
   "$@" || exit 1
 }
 
-cd $mgwbuildroot
+do_or_die mkdir -p $mgwbuildroot/dist-$mgwconfig
+cd $mgwbuildroot/dist-$mgwconfig
 
-if [ -e $destdir ]; then
-  echo "Directory $destdir already exists"
-  exit 1
-fi
+do_or_die rm -fr $destdir.zip $destdir
+do_or_die mkdir -p $destdir
+do_or_die cp -lfR $jhsourcedir/* $destdir/
+do_or_die cp -lfR $jhbuilddir/* $destdir/
 
-do_or_die mkdir src-$mgwconfig
-do_or_die cp -lfR $jhsourcedir/* src-$mgwconfig/
-do_or_die cp -lfR $jhbuilddir/* src-$mgwconfig/
-
-cd src-$mgwconfig
+cd $destdir
 
 { find . -type d \( -name 'tests' \) -print0 | xargs -0 rm -r ; } || exit 1
 { find . -type d \( -name '.libs' -o -name '.deps' \) -print0 | xargs -0 rm -r ; } || exit 1
@@ -82,5 +79,6 @@ find . -type f \( \
     -name '*.lai' \
 \) -delete || exit 1
 
-cd $mgwbuildroot
-do_or_die zip -r src-$mgwconfig.zip src-$mgwconfig
+cd $mgwbuildroot/dist-$mgwconfig
+do_or_die zip -r9 $destdir.zip $destdir
+do_or_die rm -rf $destdir
