@@ -60,7 +60,7 @@ AM_PROG_CC_C_O
 AC_ARG_VAR([WINDRES], [windres])
 AC_CHECK_TOOL(WINDRES, windres, :)
 
-AC_ARG_VAR([PYTHON], [Python executable, required to run build scripts])
+AC_ARG_VAR([MOO_PYTHON], [Python executable, required to run build scripts])
 AC_CHECK_PROGS(MOO_PYTHON, [python2 python2.7 python2.6 python2.5 python2.4 python2.3 python2.2 python2.1 python2.0 python], [none])
 if test "x$MOO_PYTHON" = "x"; then
   AC_MSG_ERROR([Python not found, it is required for the build])
@@ -153,15 +153,37 @@ if test "x$MOO_ENABLE_COVERAGE" = "xyes"; then
 fi
 
 if $MOO_OS_WIN32; then
+  if test -d $HOME/.wine/drive_c/windows/syswow64 -o -d "/cygdrive/c/Program Files (x86)"; then
+    MEDIT_INNO_COMPILER='wine "c:\\program files (x86)\\inno setup 5\\ISCC.exe"'
+  else
+    MEDIT_INNO_COMPILER='wine "c:\\program files\\inno setup 5\\ISCC.exe"'
+  fi
+  AC_MSG_CHECKING([Inno compiler])
+  AC_MSG_RESULT([$MEDIT_INNO_COMPILER])
+
+  _moo_win32_config=release
+  if test "$MOO_DEBUG_ENABLED" = "yes"; then
+    _moo_win32_config="debug"
+  fi
+  if test -n "$mgwconfig"; then
+    _moo_win32_config="$mgwconfig"
+  fi
+  AC_ARG_VAR([MOO_WIN32_CONFIG], [$_moo_win32_config])
+  AC_MSG_CHECKING([Win32 build configuration])
+  AC_MSG_RESULT([$MOO_WIN32_CONFIG])
+
   AC_SUBST(MEDIT_WIN32_APP_UID,"7F9F899F-EE8A-47F0-9981-8C525AF78E4D")
   AC_SUBST(MEDIT_INNO_TOP_SRCDIR,"Z:`cd $srcdir && pwd`")
   AC_SUBST(MEDIT_INNO_TOP_BUILDDIR,"Z:`pwd`")
   AC_SUBST(MEDIT_INNO_INSTDIR,"Z:`cd $prefix && pwd`")
-  AC_SUBST(MEDIT_INNO_COMPILER,'wine "c:\\program files\\inno setup 5\\ISCC.exe"')
-  AC_SUBST(MEDIT_INNO_INSTALLER_SUFFIX,"")
-  if test "x$MOO_DEBUG_ENABLED" = "xyes"; then
-    MEDIT_INNO_INSTALLER_SUFFIX="-debug"
+  AC_SUBST(MEDIT_INNO_COMPILER)
+  MEDIT_INNO_INSTALLER_SUFFIX=""
+  if test -n "$MOO_WIN32_CONFIG" -a "$MOO_WIN32_CONFIG" != "release"; then
+    MEDIT_INNO_INSTALLER_SUFFIX="-$MOO_WIN32_CONFIG"
   fi
+  AC_SUBST(MEDIT_SETUP_NAME, "medit-$MOO_DISPLAY_VERSION$MEDIT_INNO_INSTALLER_SUFFIX")
+  AC_MSG_CHECKING([Win32 setup name])
+  AC_MSG_RESULT([$MEDIT_SETUP_NAME])
 fi
 
 AC_ARG_ENABLE(install-hooks,
