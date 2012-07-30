@@ -20,8 +20,10 @@ if $mgwlinux; then
   export mgwpythoninstdir=$HOME/.wine/drive_c/Python$mgwpythonver
   if [ -d $HOME/.wine/drive_c/windows/syswow64 ]; then
     export mgwpythonsystem32dir=$HOME/.wine/drive_c/windows/syswow64
+    export mgwprogramfilesdir="$HOME/.wine/drive_c/Program Files (x86)"
   else
     export mgwpythonsystem32dir=$HOME/.wine/drive_c/windows/system32
+    export mgwprogramfilesdir="$HOME/.wine/drive_c/Program Files"
   fi
 else
   export mgwpythoninstdir=/cygdrive/c/Tools/Python$mgwpythonver
