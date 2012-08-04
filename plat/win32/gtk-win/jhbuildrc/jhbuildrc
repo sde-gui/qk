@@ -18,7 +18,7 @@ for __p in ('i686-pc-mingw32', 'i586-mingw32msvc', 'i486-mingw32'):
         break
 assert _mingw_tool_prefix
 
-makeargs = '-j 2'
+makeargs = '-j 3'
 moduleset = os.path.join(_gtkwinjhbuilddir, 'gtk.moduleset')
 use_lib64 = False
 
@@ -61,9 +61,9 @@ for _var in _mingw_tools:
     os.environ[_var] = _mingw_tool_prefix + _mingw_tools[_var]
 
 if _gtkwinconfig == 'debug':
-    _def_cflags = '-gstabs'
+    _def_cflags = '-gstabs+'
 elif _gtkwinconfig == 'reldbg':
-    _def_cflags = '-gstabs -O2'
+    _def_cflags = '-gstabs+ -O2'
 else:
     _def_cflags = '-O2'
 
@@ -75,6 +75,8 @@ else:
 
 _cflags = "-mms-bitfields -march=i686 %s" % (_def_cflags,)
 _cflags_cmdline = ' CFLAGS="%(_cflags)s" CXXFLAGS="%(_cflags)s" OBJCFLAGS="%(_cflags)s"' % {'_cflags': _cflags}
+def _remove_gstabs(module):
+    module_autogenargs[module] = module_autogenargs[module].replace('-gstabs+', '-g').replace('-gstabs', '-g')
 
 os.environ['PKG_CONFIG_LIBDIR'] = "%s/lib/pkgconfig" % (prefix,)
 os.environ['PKG_CONFIG_PATH'] = "%s/lib/pkgconfig" % (prefix,)
@@ -119,11 +121,11 @@ module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
                                             + " --enable-threads=win32"
 if _gtkwinconfig == 'debug':
     module_autogenargs['gettext'] += " CPPFLAGS=-DHAVE_INLINE"
+_remove_gstabs('gettext')
 
 module_autogenargs['libxml2'] = autogenargs + " --without-python" \
-                                            + " --without-zlib" \
-                                            + " --without-threads" \
-                                            + _cflags_cmdline.replace('-gstabs', '-g')
+                                            + " --without-threads"
+_remove_gstabs('libxml2')
 
 module_autogenargs['pkgconfig'] = autogenargs \
                                             + " --with-installed-glib"

@@ -36,9 +36,9 @@ fi
 
 case "$mgwconfig" in
   debug) :
-    _def_cflags='-gstabs' ;;
+    _def_cflags='-gstabs+' ;;
   reldbg) :
-    _def_cflags='-gstabs -O2' ;;
+    _def_cflags='-gstabs+ -O2' ;;
   release) :
     _def_cflags='-O2' ;;
   *) :
