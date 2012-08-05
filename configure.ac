@@ -153,7 +153,14 @@ if test "x$MOO_ENABLE_COVERAGE" = "xyes"; then
 fi
 
 if $MOO_OS_WIN32; then
-  if test -d $HOME/.wine/drive_c/windows/syswow64 -o -d "/cygdrive/c/Program Files (x86)"; then
+  _moo_cygwin=false
+  if test "$OSTYPE" = "cygwin"; then
+    _moo_cygwin=true
+  fi
+
+  if $_moo_cygwin; then
+    MEDIT_INNO_COMPILER='"/cygdrive/c/Program Files (x86)/Inno Setup 5/ISCC.exe"'
+  elif test -d $HOME/.wine/drive_c/windows/syswow64 -o -d "/cygdrive/c/Program Files (x86)"; then
     MEDIT_INNO_COMPILER='wine "c:\\program files (x86)\\inno setup 5\\ISCC.exe"'
   else
     MEDIT_INNO_COMPILER='wine "c:\\program files\\inno setup 5\\ISCC.exe"'
@@ -173,9 +180,25 @@ if $MOO_OS_WIN32; then
   AC_MSG_RESULT([$MOO_WIN32_CONFIG])
 
   AC_SUBST(MEDIT_WIN32_APP_UID,"7F9F899F-EE8A-47F0-9981-8C525AF78E4D")
-  AC_SUBST(MEDIT_INNO_TOP_SRCDIR,"Z:`cd $srcdir && pwd`")
-  AC_SUBST(MEDIT_INNO_TOP_BUILDDIR,"Z:`pwd`")
-  AC_SUBST(MEDIT_INNO_INSTDIR,"Z:`cd $prefix && pwd`")
+
+  if $_moo_cygwin; then
+    AC_SUBST(MEDIT_INNO_TOP_SRCDIR,"`cygpath -m $MOO_TOP_SRCDIR`")
+    _moo_this_dir=`pwd`
+    AC_SUBST(MEDIT_INNO_TOP_BUILDDIR,"`cygpath -m $_moo_this_dir`")
+    AC_SUBST(MEDIT_INNO_INSTDIR,"`cygpath -m $prefix`")
+  else
+    AC_SUBST(MEDIT_INNO_TOP_SRCDIR,"Z:$MOO_TOP_SRCDIR")
+    AC_SUBST(MEDIT_INNO_TOP_BUILDDIR,"Z:`pwd`")
+    AC_SUBST(MEDIT_INNO_INSTDIR,"Z:`cd $prefix && pwd`")
+  fi
+
+  AC_MSG_CHECKING([MEDIT_INNO_TOP_SRCDIR])
+  AC_MSG_RESULT([$MEDIT_INNO_TOP_SRCDIR])
+  AC_MSG_CHECKING([MEDIT_INNO_TOP_BUILDDIR])
+  AC_MSG_RESULT([$MEDIT_INNO_TOP_BUILDDIR])
+  AC_MSG_CHECKING([MEDIT_INNO_INSTDIR])
+  AC_MSG_RESULT([$MEDIT_INNO_INSTDIR])
+
   AC_SUBST(MEDIT_INNO_COMPILER)
   MEDIT_INNO_INSTALLER_SUFFIX=""
   if test -n "$MOO_WIN32_CONFIG" -a "$MOO_WIN32_CONFIG" != "release"; then
