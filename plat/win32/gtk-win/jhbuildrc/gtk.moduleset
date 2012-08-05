@@ -78,6 +78,7 @@
       <patch file="glib-2.26.patch" strip="1"/>
       <patch file="glib-spawn-win32.patch" strip="1"/>
       <patch file="glib-spawn-win32-moo.patch" strip="1"/>
+      <patch file="glib-2.26-wchar.patch" strip="1"/>
     </patches>
   </tarball>
   <!-- glib-2.28 changed location of user config files

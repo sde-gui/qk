@@ -1,0 +1,149 @@
+diff -r 0a2c7e61b8bd glib/gunicollate.c
+--- a/glib/gunicollate.c	Sun Aug 05 12:28:33 2012 -0700
++++ b/glib/gunicollate.c	Sun Aug 05 15:16:32 2012 -0700
+@@ -22,9 +22,7 @@
+ 
+ #include <locale.h>
+ #include <string.h>
+-#ifdef __STDC_ISO_10646__
+ #include <wchar.h>
+-#endif
+ 
+ #ifdef HAVE_CARBON
+ #include <CoreServices/CoreServices.h>
+@@ -36,10 +34,27 @@
+ #include "gstring.h"
+ #include "gstrfuncs.h"
+ #include "gtestutils.h"
+-#ifndef __STDC_ISO_10646__
+ #include "gconvert.h"
+-#endif
+ 
++static gboolean running_in_wine (void)
++{
++  static gboolean in_wine = FALSE;
++  static gboolean been_here = FALSE;
++
++  if (!been_here)
++    {
++      const char *var1, *var2;
++
++      been_here = TRUE;
++
++      var1 = g_getenv ("WINELOADER");
++      var2 = g_getenv ("DISPLAY");
++
++      in_wine = var1 && var1[0] && var2 && var2[0];
++    }
++
++  return in_wine;
++}
+ 
+ #ifdef _MSC_VER
+ /* Workaround for bug in MSVCR80.DLL */
+@@ -80,30 +95,8 @@
+ {
+   gint result;
+ 
+-#ifdef HAVE_CARBON
+-
+-  UniChar *str1_utf16;
+-  UniChar *str2_utf16;
+-  glong len1;
+-  glong len2;
+-  SInt32 retval = 0;
+-
+-  g_return_val_if_fail (str1 != NULL, 0);
+-  g_return_val_if_fail (str2 != NULL, 0);
+-
+-  str1_utf16 = g_utf8_to_utf16 (str1, -1, NULL, &len1, NULL);
+-  str2_utf16 = g_utf8_to_utf16 (str2, -1, NULL, &len2, NULL);
+-
+-  UCCompareTextDefault (kUCCollateStandardOptions,
+-                        str1_utf16, len1, str2_utf16, len2,
+-                        NULL, &retval);
+-  result = retval;
+-
+-  g_free (str2_utf16);
+-  g_free (str1_utf16);
+-
+-#elif defined(__STDC_ISO_10646__)
+-
++if (!running_in_wine ())
++{
+   gunichar *str1_norm;
+   gunichar *str2_norm;
+ 
+@@ -117,9 +110,9 @@
+ 
+   g_free (str1_norm);
+   g_free (str2_norm);
+-
+-#else /* !__STDC_ISO_10646__ */
+-
++}
++else
++{
+   const gchar *charset;
+   gchar *str1_norm;
+   gchar *str2_norm;
+@@ -154,13 +147,11 @@
+ 
+   g_free (str1_norm);
+   g_free (str2_norm);
+-
+-#endif /* __STDC_ISO_10646__ */
++}
+ 
+   return result;
+ }
+ 
+-#if defined(__STDC_ISO_10646__) || defined(HAVE_CARBON)
+ /* We need UTF-8 encoding of numbers to encode the weights if
+  * we are using wcsxfrm. However, we aren't encoding Unicode
+  * characters, so we can't simply use g_unichar_to_utf8.
+@@ -207,7 +198,6 @@
+ 
+   return retval;
+ }
+-#endif /* __STDC_ISO_10646__ || HAVE_CARBON */
+ 
+ #ifdef HAVE_CARBON
+ 
+@@ -376,13 +366,8 @@
+ {
+   gchar *result;
+ 
+-#ifdef HAVE_CARBON
+-
+-  g_return_val_if_fail (str != NULL, NULL);
+-  result = carbon_collate_key (str, len);
+-
+-#elif defined(__STDC_ISO_10646__)
+-
++if (!running_in_wine ())
++{
+   gsize xfrm_len;
+   gunichar *str_norm;
+   wchar_t *result_wc;
+@@ -411,8 +396,9 @@
+   g_free (str_norm);
+ 
+   return result;
+-#else /* !__STDC_ISO_10646__ */
+-
++}
++else
++{
+   gsize xfrm_len;
+   const gchar *charset;
+   gchar *str_norm;
+@@ -465,7 +451,7 @@
+     }
+ 
+   g_free (str_norm);
+-#endif /* __STDC_ISO_10646__ */
++}
+ 
+   return result;
+ }
