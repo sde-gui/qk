@@ -173,6 +173,60 @@ static GOptionEntry medit_options[] = {
     { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
 };
 
+/* Check if there is an argument of the form +<number>, and treat it as --line <number> */
+static void
+check_plus_line_arg (void)
+{
+    gboolean done = FALSE;
+    char **p;
+    GRegex *re = NULL;
+
+    re = g_regex_new ("^\\+(?P<line>\\d+)", G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES, 0, NULL);
+    g_return_if_fail (re != NULL);
+
+    for (p = medit_opts.files; !done && p && *p && **p; ++p)
+    {
+        GMatchInfo *match_info = NULL;
+
+        if (g_regex_match (re, *p, 0, &match_info))
+        {
+            int line = 0;
+            char *line_string = g_match_info_fetch_named (match_info, "line");
+
+            errno = 0;
+            line = strtol (line_string, NULL, 10);
+            if (errno != 0)
+                line = 0;
+
+            // if a file "+10" exists, open it
+            if (line > 0 && g_file_test (*p, G_FILE_TEST_EXISTS))
+                line = 0;
+
+            if (line > 0)
+            {
+                medit_opts.line = line;
+
+                g_free (*p);
+                *p = NULL;
+                if (*(p + 1) != NULL)
+                {
+                    int n = g_strv_length (p + 1);
+                    memcpy (p, p + 1, n * sizeof(*p));
+                    *(p + n) = NULL;
+                }
+
+                done = TRUE;
+            }
+
+            g_free (line_string);
+        }
+
+        g_match_info_free (match_info);
+    }
+
+    g_regex_unref (re);
+}
+
 static gboolean
 post_parse_func (void)
 {
@@ -207,6 +261,8 @@ post_parse_func (void)
 
     if (medit_opts.project)
         medit_opts.project_mode = TRUE;
+
+    check_plus_line_arg ();
 
     return TRUE;
 }
