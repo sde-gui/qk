@@ -61,6 +61,7 @@ static struct MeditOpts {
     char **ut_tests;
     char **run_script;
     char **send_script;
+    gboolean portable;
 } medit_opts = { -1, -1 };
 
 #include "parse.h"
@@ -163,6 +164,10 @@ static GOptionEntry medit_options[] = {
             "File to write coverage data to", NULL },
     { "ut-list", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.ut_list,
             "List unit tests", NULL },
+#ifdef __WIN32__
+    { "portable", 0, G_OPTION_ARG_NONE, G_OPTION_ARG_NONE, &medit_opts.portable,
+            "Run medit in portable mode", NULL },
+#endif
     { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &medit_opts.files,
             NULL, /* "FILES" part in "medit [OPTION...] [FILES]" */ N_("FILES") },
     { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
@@ -557,6 +562,79 @@ install_log_handlers (void)
 #endif
 }
 
+#ifdef __WIN32__
+static void
+setup_portable_mode (void)
+{
+    char *appdir = NULL;
+    char *share = NULL;
+    char *datadir = NULL;
+    char *cachedir = NULL;
+    char *tmp = NULL;
+
+    appdir = moo_win32_get_app_dir ();
+    g_return_if_fail (appdir != NULL);
+
+    share = g_build_filename (appdir, "..", "share", NULL);
+    g_return_if_fail (share != NULL);
+
+    if (g_file_test (share, G_FILE_TEST_IS_DIR))
+    {
+        datadir = g_build_filename (share, MEDIT_PORTABLE_DATA_DIR, NULL);
+        cachedir = g_build_filename (share, MEDIT_PORTABLE_CACHE_DIR, NULL);
+    }
+    else
+    {
+        datadir = g_build_filename (appdir, MEDIT_PORTABLE_DATA_DIR, NULL);
+        cachedir = g_build_filename (appdir, MEDIT_PORTABLE_CACHE_DIR, NULL);
+    }
+
+    g_return_if_fail (datadir != NULL && cachedir != NULL);
+    
+    tmp = _moo_normalize_file_path (datadir);
+    moo_set_user_data_dir (tmp);
+    g_free (tmp);
+    tmp = NULL;
+
+    tmp = _moo_normalize_file_path (cachedir);
+    moo_set_user_cache_dir (tmp);
+    g_free (tmp);
+    tmp = NULL;
+
+    g_free (cachedir);
+    g_free (datadir);
+    g_free (share);
+    g_free (appdir);
+}
+
+static void
+check_portable_mode (void)
+{
+    gboolean portable = FALSE;
+    char *appdir = NULL;
+    char *magic_file = NULL;
+
+    if (medit_opts.portable)
+        portable = TRUE;
+
+    if (!portable)
+    {
+        appdir = moo_win32_get_app_dir ();
+        g_return_if_fail (appdir != NULL);
+        magic_file = g_build_filename (appdir, MEDIT_PORTABLE_MAGIC_FILE_NAME, NULL);
+        g_return_if_fail (magic_file != NULL);
+        if (g_file_test (magic_file, G_FILE_TEST_EXISTS))
+            portable = TRUE;
+    }
+
+    if (portable)
+        setup_portable_mode ();
+
+    g_free (magic_file);
+    g_free (appdir);
+}
+#endif // __WIN32__
+
 static int
 medit_main (int argc, char *argv[])
 {
@@ -589,6 +667,10 @@ medit_main (int argc, char *argv[])
 
 #if 0
     g_idle_add_full (G_PRIORITY_LOW, (GSourceFunc) exit, NULL, NULL);
+#endif
+
+#ifdef __WIN32__
+    check_portable_mode ();
 #endif
 
     if (medit_opts.new_app || medit_opts.project_mode)

@@ -59,9 +59,11 @@ MOO_DEFINE_OBJECT_ARRAY_FULL (MooObjectArray, moo_object_array, GObject)
 MOO_DEFINE_QUARK (moo-error, moo_error_quark)
 
 G_LOCK_DEFINE_STATIC (moo_user_data_dir);
+G_LOCK_DEFINE_STATIC (moo_user_cache_dir);
 static char *moo_app_instance_name;
 static char *moo_display_app_name;
 static char *moo_user_data_dir;
+static char *moo_user_cache_dir;
 
 #ifdef __WIN32__
 
@@ -1132,7 +1134,28 @@ moo_getenv_bool (const char *var)
 char *
 moo_get_user_cache_dir (void)
 {
-    return g_build_filename (g_get_user_cache_dir (), MOO_PACKAGE_NAME, NULL);
+    G_LOCK (moo_user_cache_dir);
+
+    if (!moo_user_cache_dir)
+        moo_user_cache_dir = g_build_filename (g_get_user_cache_dir (), MOO_PACKAGE_NAME, NULL);
+
+    G_UNLOCK (moo_user_cache_dir);
+
+    return g_strdup (moo_user_cache_dir);
+}
+
+void
+moo_set_user_cache_dir (const char *path)
+{
+    G_LOCK (moo_user_cache_dir);
+
+    if (moo_user_cache_dir)
+        g_critical ("user cache dir already set");
+
+    g_free (moo_user_cache_dir);
+    moo_user_cache_dir = g_strdup (path);
+
+    G_UNLOCK (moo_user_cache_dir);
 }
 
 char *

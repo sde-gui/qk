@@ -63,6 +63,7 @@ void        moo_enable_win32_error_message  (void);
 
 void       _moo_set_app_instance_name       (const char     *name);
 void        moo_set_user_data_dir           (const char     *path);
+void        moo_set_user_cache_dir          (const char     *path);
 void        moo_set_display_app_name        (const char     *name);
 const char *moo_get_display_app_name        (void);
 
