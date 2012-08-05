@@ -1643,7 +1643,7 @@ moo_editor_close_docs (MooEditor    *editor,
                        MooEditArray *docs)
 {
     guint i;
-    MooEditWindow *window;
+    MooEditWindowArray *windows;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), FALSE);
 
@@ -1663,28 +1663,44 @@ moo_editor_close_docs (MooEditor    *editor,
         }
     }
 
-    window = moo_edit_get_window (docs->elms[0]);
-
-    if (close_docs_real (editor, docs))
+    windows = moo_edit_window_array_new ();
+    for (i = 0; i < docs->n_elms; ++i)
     {
-        if (window &&
-            !moo_edit_window_get_n_tabs (window) &&
-            !test_flag (editor, ALLOW_EMPTY_WINDOW))
-        {
-            MooEdit *doc = MOO_EDIT (g_object_new (get_doc_type (editor),
-                                                   "editor", editor,
-                                                   (const char*) NULL));
-            _moo_edit_window_insert_doc (window, doc, NULL);
-            moo_editor_add_doc (editor, window, doc);
-            g_object_unref (doc);
-        }
-
-        return TRUE;
+        MooEdit *doc = docs->elms[i];
+        MooEditWindow *window = moo_edit_get_window (doc);
+        if (moo_edit_window_array_find (windows, window) < 0)
+            moo_edit_window_array_append (windows, window);
     }
-    else
+
+    if (!close_docs_real (editor, docs))
     {
+        moo_edit_window_array_free (windows);
         return FALSE;
     }
+
+    for (i = 0; i < windows->n_elms; ++i)
+    {
+        MooEditWindow *window = windows->elms[i];
+        if (!moo_edit_window_get_n_tabs (window))
+        {
+            if (editor->priv->windows->n_elms > 1)
+            {
+                moo_editor_close_window (editor, window);
+            }
+            else if (!test_flag (editor, ALLOW_EMPTY_WINDOW))
+            {
+                MooEdit *doc = MOO_EDIT (g_object_new (get_doc_type (editor),
+                                                       "editor", editor,
+                                                       (const char*) NULL));
+                _moo_edit_window_insert_doc (window, doc, NULL);
+                moo_editor_add_doc (editor, window, doc);
+                g_object_unref (doc);
+            }
+        }
+    }
+
+    moo_edit_window_array_free (windows);
+    return TRUE;
 }
 
 

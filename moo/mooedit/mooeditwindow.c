@@ -2869,6 +2869,13 @@ get_tab_num (MooEditWindow *window,
     return -1;
 }
 
+static int
+get_doc_num (MooEditWindow *window,
+             MooEdit       *doc)
+{
+    return get_tab_num (window, moo_edit_get_tab (doc));
+}
+
 
 static void
 connect_view (MooEditWindow *window,
@@ -4376,15 +4383,11 @@ moo_edit_window_job_finished (MooEditWindow  *window,
  */
 
 static int
-compare_tabs_for_menu (MooEditTab *tab1,
-                       MooEditTab *tab2)
+compare_docs_for_menu (MooEdit       *doc1,
+                       MooEdit       *doc2)
 {
     char *k1, *k2;
     int result;
-    MooEdit *doc1, *doc2;
-
-    doc1 = moo_edit_tab_get_doc (tab1);
-    doc2 = moo_edit_tab_get_doc (tab2);
 
     k1 = g_utf8_collate_key_for_filename (moo_edit_get_display_basename (doc1), -1);
     k2 = g_utf8_collate_key_for_filename (moo_edit_get_display_basename (doc2), -1);
@@ -4393,8 +4396,8 @@ compare_tabs_for_menu (MooEditTab *tab1,
 
     if (!result)
     {
-        MooEditWindow *window = moo_edit_tab_get_window (tab1);
-        result = get_tab_num (window, tab1) - get_tab_num (window, tab2);
+        MooEditWindow *window = moo_edit_get_window (doc1);
+        result = get_doc_num (window, doc1) - get_doc_num (window, doc2);
     }
 
     g_free (k2);
@@ -4403,14 +4406,9 @@ compare_tabs_for_menu (MooEditTab *tab1,
 }
 
 static void
-doc_menu_item_activated (MooEditTab *tab)
+doc_menu_item_activated (MooEdit *doc)
 {
-    MooEditWindow *window;
-
-    window = moo_edit_tab_get_window (tab);
-    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
-
-    moo_edit_window_set_active_tab (window, tab);
+    moo_editor_set_active_doc (moo_edit_get_editor (doc), doc);
 }
 
 static void
@@ -4418,8 +4416,8 @@ populate_window_menu (MooEditWindow *window,
                       GtkWidget     *menu,
                       GtkWidget     *no_docs_item)
 {
-    MooEditTab *active_tab;
-    MooEditTabArray *tabs;
+    MooEdit *active_doc;
+    MooEditArray *docs;
     GList *children, *l;
     int pos;
     guint i;
@@ -4439,11 +4437,11 @@ populate_window_menu (MooEditWindow *window,
 
     g_list_free (children);
 
-    tabs = moo_edit_window_get_tabs (window);
+    docs = moo_editor_get_docs (moo_edit_window_get_editor (window));
 
-    if (moo_edit_tab_array_is_empty (tabs))
+    if (moo_edit_array_is_empty (docs))
     {
-        moo_edit_tab_array_free (tabs);
+        moo_edit_array_free (docs);
         return;
     }
 
@@ -4452,27 +4450,26 @@ populate_window_menu (MooEditWindow *window,
     gtk_widget_show (item);
     gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, ++pos);
 
-    moo_edit_tab_array_sort (tabs, (GCompareFunc) compare_tabs_for_menu);
-    active_tab = ACTIVE_TAB (window);
+    moo_edit_array_sort (docs, (GCompareFunc) compare_docs_for_menu);
+    active_doc = ACTIVE_DOC (window);
 
-    for (i = 0; i < tabs->n_elms; ++i)
+    for (i = 0; i < docs->n_elms; ++i)
     {
         int idx;
-        MooEditTab *tab = tabs->elms[i];
-        MooEdit *doc = moo_edit_tab_get_doc (tab);
+        MooEdit *doc = docs->elms[i];
 
-        idx = get_tab_num (window, tab);
+        idx = get_doc_num (window, doc);
 
         item = gtk_check_menu_item_new_with_label (moo_edit_get_display_basename (doc));
         _moo_widget_set_tooltip (item, moo_edit_get_display_name (doc));
-        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), tab == active_tab);
+        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), doc == active_doc);
         gtk_check_menu_item_set_draw_as_radio (GTK_CHECK_MENU_ITEM (item), TRUE);
         g_object_set_data (G_OBJECT (item), "moo-document-menu-item", GINT_TO_POINTER (TRUE));
         gtk_widget_show (item);
         gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, ++pos);
-        g_signal_connect_swapped (item, "activate", G_CALLBACK (doc_menu_item_activated), tab);
+        g_signal_connect_swapped (item, "activate", G_CALLBACK (doc_menu_item_activated), doc);
 
-        if (idx < 9)
+        if (idx >= 0 && idx < 9)
         {
             char *action_name = g_strdup_printf (DOCUMENT_ACTION "%u", idx + 1);
             GtkAction *action = moo_window_get_action (MOO_WINDOW (window), action_name);
@@ -4482,7 +4479,7 @@ populate_window_menu (MooEditWindow *window,
         }
     }
 
-    moo_edit_tab_array_free (tabs);
+    moo_edit_array_free (docs);
 }
 
 static void

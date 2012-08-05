@@ -92,6 +92,9 @@ AC_SUBST(GLIB_GENMARSHAL, `$PKG_CONFIG --variable=glib_genmarshal glib-2.0`)
 AC_SUBST(GLIB_MKENUMS, `$PKG_CONFIG --variable=glib_mkenums glib-2.0`)
 
 AC_ARG_VAR([GDK_PIXBUF_CSOURCE], [gdk-pixbuf-csource])
-AC_CHECK_TOOL(GDK_PIXBUF_CSOURCE, gdk-pixbuf-csource, [AC_MSG_ERROR([gdk-pixbuf-csource not found])])
+AC_CHECK_TOOL(GDK_PIXBUF_CSOURCE, gdk-pixbuf-csource, [:])
+if test "$GDK_PIXBUF_CSOURCE" = ":"; then
+  AC_MSG_ERROR([gdk-pixbuf-csource not found])
+fi
 
 ])
