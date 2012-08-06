@@ -27,7 +27,7 @@
             md5sum="58a2bc6d39c0ba57823034d55d65d606"/>
     <patches>
       <patch file="gettext-0.17.patch" strip="1"/>
-      <patch file="gettext-0.17-mkdirglib.patch" strip="1"/>
+      <patch file="gettext-0.17-mkdir.patch" strip="1"/>
     </patches>
     <dependencies>
       <dep package="libiconv"/>
