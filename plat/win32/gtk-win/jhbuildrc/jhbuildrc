@@ -12,9 +12,12 @@ else:
 assert _gtkwinconfig in ['debug', 'reldbg', 'release']
 
 _mingw_tool_prefix = None
+_configure_target = None
+# i686-w64-mingw32 doesn't compile gettext
 for __p in ('i686-pc-mingw32', 'i586-mingw32msvc', 'i486-mingw32'):
     if os.path.exists('/usr/bin/%s-gcc' % (__p,)):
         _mingw_tool_prefix = '/usr/bin/%s-' % (__p,)
+        _configure_target = __p
         break
 assert _mingw_tool_prefix
 
@@ -90,10 +93,8 @@ for __dir in os.environ['PATH'].split(':'):
 
 if os.environ['mgwlinux'] == 'true':
     _configure_build = 'i686-pc-linux-gnu'
-    _configure_target = 'i586-pc-mingw32msvc'
 elif os.environ['mgwcygwin'] == 'true':
     _configure_build = 'i686-pc-cygwin'
-    _configure_target = 'i686-pc-mingw32'
 else:
     raise RuntimeError("oops")
 

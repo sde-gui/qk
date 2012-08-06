@@ -34,6 +34,19 @@
     </dependencies>
   </tarball>
 
+  <!--
+  <tarball id="gettext" version="0.18.1.1">
+    <source href="http://ftp.gnu.org/pub/gnu/gettext/gettext-0.18.1.1.tar.gz"
+            md5sum="3dd55b952826d2b32f51308f2f91aa89"/>
+    <patches>
+      <patch file="gettext-0.18.1.1.patch" strip="1"/>
+    </patches>
+    <dependencies>
+      <dep package="libiconv"/>
+    </dependencies>
+  </tarball>
+  -->
+
   <tarball id="grep">
     <source href="http://ftp.gnu.org/pub/gnu/grep/grep-2.7.tar.gz"
             md5sum="e848f07e3e79aa7899345d17c7e4115e"/>
