@@ -53,6 +53,7 @@
 #ifdef __WIN32__
 #include <windows.h>
 #include <shellapi.h>
+#include <shlobj.h>
 #endif
 
 MOO_DEFINE_OBJECT_ARRAY_FULL (MooObjectArray, moo_object_array, GObject)
@@ -1158,6 +1159,48 @@ moo_set_user_cache_dir (const char *path)
     G_UNLOCK (moo_user_cache_dir);
 }
 
+#ifdef __WIN32__
+// get_special_folder() from glib
+static gchar *
+get_special_folder (int csidl)
+{
+    wchar_t path[MAX_PATH+1];
+    HRESULT hr;
+    LPITEMIDLIST pidl = NULL;
+    BOOL b;
+    gchar *retval = NULL;
+
+    hr = SHGetSpecialFolderLocation (NULL, csidl, &pidl);
+    if (hr == S_OK)
+    {
+        b = SHGetPathFromIDListW (pidl, path);
+        if (b)
+            retval = g_utf16_to_utf8 (path, -1, NULL, NULL, NULL);
+        CoTaskMemFree (pidl);
+    }
+
+    return retval;
+}
+
+// This is what g_get_user_config_dir() used to return in glib-2.26 and older.
+// Workaround for the change done in https://bugzilla.gnome.org/show_bug.cgi?id=620710
+static char *
+get_user_config_dir (void)
+{
+    char *retval = NULL;
+
+    retval = get_special_folder (CSIDL_APPDATA);
+
+    if (!retval)
+    {
+        g_critical ("oops");
+        retval = g_strdup (g_get_user_config_dir ());
+    }
+
+    return retval;
+}
+#endif // __WIN32__
+
 char *
 moo_get_user_data_dir (void)
 {
@@ -1165,15 +1208,20 @@ moo_get_user_data_dir (void)
 
     if (!moo_user_data_dir)
     {
+        char *freeme = NULL;
+        const char *basedir = NULL;
+
 #ifdef __WIN32__
-        const char *basedir = g_get_user_config_dir ();
+        basedir = freeme = get_user_config_dir ();
 #else
-        const char *basedir = g_get_user_data_dir ();
+        basedir = g_get_user_data_dir ();
 #endif
 
         moo_user_data_dir = g_build_filename (basedir,
                                               MOO_PACKAGE_NAME,
                                               NULL);
+
+        g_free (freeme);
     }
 
     G_UNLOCK (moo_user_data_dir);
