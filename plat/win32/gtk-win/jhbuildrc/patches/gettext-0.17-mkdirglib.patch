@@ -1,0 +1,156 @@
+diff -r e1e8203eb193 gettext-tools/gnulib-lib/Makefile.gnulib
+--- a/gettext-tools/gnulib-lib/Makefile.gnulib	Mon Aug 06 01:20:18 2012 -0700
++++ b/gettext-tools/gnulib-lib/Makefile.gnulib	Mon Aug 06 01:23:04 2012 -0700
+@@ -816,42 +816,42 @@
+ 	mv -f $@-t $@
+ 
+ glib/ghash.h: glib/ghash.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/ghash.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/glist.h: glib/glist.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/glist.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/gprimes.h: glib/gprimes.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/gprimes.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/gstrfuncs.h: glib/gstrfuncs.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/gstrfuncs.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/gstring.h: glib/gstring.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/gstring.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/gtypes.h: glib/gtypes.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/gtypes.in.h; \
+ 	} > $@-t
+diff -r e1e8203eb193 gettext-tools/gnulib-lib/Makefile.in
+--- a/gettext-tools/gnulib-lib/Makefile.in	Mon Aug 06 01:20:18 2012 -0700
++++ b/gettext-tools/gnulib-lib/Makefile.in	Mon Aug 06 01:23:04 2012 -0700
+@@ -2598,42 +2598,42 @@
+ 	mv -f $@-t $@
+ 
+ glib/ghash.h: glib/ghash.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/ghash.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/glist.h: glib/glist.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/glist.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/gprimes.h: glib/gprimes.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/gprimes.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/gstrfuncs.h: glib/gstrfuncs.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/gstrfuncs.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/gstring.h: glib/gstring.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/gstring.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/gtypes.h: glib/gtypes.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/gtypes.in.h; \
+ 	} > $@-t
+diff -r e1e8203eb193 gnulib-local/modules/libglib
+--- a/gnulib-local/modules/libglib	Mon Aug 06 01:20:18 2012 -0700
++++ b/gnulib-local/modules/libglib	Mon Aug 06 01:23:04 2012 -0700
+@@ -58,42 +58,42 @@
+ 	mv -f $@-t $@
+ 
+ glib/ghash.h: glib/ghash.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/ghash.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/glist.h: glib/glist.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/glist.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/gprimes.h: glib/gprimes.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/gprimes.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/gstrfuncs.h: glib/gstrfuncs.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/gstrfuncs.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/gstring.h: glib/gstring.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/gstring.in.h; \
+ 	} > $@-t
+ 	mv -f $@-t $@
+ 
+ glib/gtypes.h: glib/gtypes.in.h
+-	test -d glib || mkdir glib
++	mkdir -p glib
+ 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
+ 	  cat $(srcdir)/glib/gtypes.in.h; \
+ 	} > $@-t
