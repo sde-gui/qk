@@ -6,6 +6,7 @@ _gtkwinbuildroot = os.environ['_GTKWINBUILDROOT']
 
 _gtkwinconfig = os.environ.get('_GTKWINCONFIG')
 if _gtkwinconfig is None:
+    raise RuntimeError()
     _gtkwinconfig = 'release'
 else:
     _gtkwinconfig = _gtkwinconfig.lower()
