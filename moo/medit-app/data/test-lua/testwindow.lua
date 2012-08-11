@@ -1,8 +1,6 @@
 require("munit")
 
-editor.close_docs(editor.get_docs())
-tassert(#editor.get_docs() == 1)
-window = editor.get_active_window()
+window = editor.new_window()
 tassert(#window.get_docs() == 1)
 tassert(window.get_docs()[1] == window.get_active_doc())
 editor.new_doc(window)
