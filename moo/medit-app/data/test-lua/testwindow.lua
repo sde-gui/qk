@@ -1,7 +1,6 @@
 require("munit")
 
-editor.close_docs(editor.get_docs())
-window = editor.get_active_window()
+window = editor.new_window()
 tassert(#window.get_docs() == 1)
 tassert(window.get_docs()[1] == window.get_active_doc())
 editor.new_doc(window)
@@ -86,3 +85,5 @@ tassert_eq(doc1.get_n_views(), 1)
 tassert(editor.close_docs({doc1, doc2, doc3}))
 tassert_eq(window.get_docs(), {doc4})
 tassert_eq(editor.get_active_doc(), doc4)
+
+window.close()

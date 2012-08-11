@@ -70,15 +70,9 @@ static const struct {
 
     { "UTF-7",          N_("Unicode"),             "UTF-7",            ENCODING_GROUP_UNICODE },
     { "UTF-8",          N_("Unicode"),             "UTF-8",            ENCODING_GROUP_UNICODE },
-    { "UTF-8-BOM",      N_("Unicode"),             "UTF-8 with BOM",   ENCODING_GROUP_UNICODE },
     { "UTF-16",         N_("Unicode"),             "UTF-16",           ENCODING_GROUP_UNICODE },
-    { "UTF-16BE",       N_("Unicode"),             "UTF-16BE",         ENCODING_GROUP_UNICODE },
-    { "UTF-16-BOM",     N_("Unicode"),             "UTF-16 with BOM",  ENCODING_GROUP_UNICODE },
-    { "UTF-16BE-BOM",   N_("Unicode"),             "UTF-16BE with BOM",ENCODING_GROUP_UNICODE },
-    { "UTF-32",         N_("Unicode"),             "UTF-32",           ENCODING_GROUP_UNICODE },
-    { "UTF-32BE",       N_("Unicode"),             "UTF-32BE",         ENCODING_GROUP_UNICODE },
-    { "UTF-32-BOM",     N_("Unicode"),             "UTF-32 with BOM",  ENCODING_GROUP_UNICODE },
-    { "UTF-32BE-BOM",   N_("Unicode"),             "UTF-32BE with BOM",ENCODING_GROUP_UNICODE },
+    { "UCS-2",          N_("Unicode"),             "UCS-2",            ENCODING_GROUP_UNICODE },
+    { "UCS-4",          N_("Unicode"),             "UCS-4",            ENCODING_GROUP_UNICODE },
 
     { "ARMSCII-8",      N_("Armenian"),            "ARMSCII-8",        ENCODING_GROUP_SE_SW_ASIAN },
     { "BIG5",           N_("Chinese Traditional"), "Big5",             ENCODING_GROUP_EAST_ASIAN },
