@@ -113,8 +113,6 @@ struct _EggSMClientXSMPClass
 
 };
 
-static void     sm_client_xsmp_finalize (GObject *object);
-
 static void     sm_client_xsmp_startup (EggSMClient *client,
 					const char  *client_id);
 static void     sm_client_xsmp_set_restart_command (EggSMClient  *client,
@@ -190,24 +188,16 @@ egg_sm_client_xsmp_class_init (EggSMClientXSMPClass *klass)
   sm_client_class->set_restart_command = sm_client_xsmp_set_restart_command;
   sm_client_class->will_quit           = sm_client_xsmp_will_quit;
   sm_client_class->end_session         = sm_client_xsmp_end_session;
-
-  G_OBJECT_CLASS (klass)->finalize     = sm_client_xsmp_finalize;
-}
-
-static void
-sm_client_xsmp_finalize (GObject *object)
-{
-  EggSMClientXSMP *xsmp = (EggSMClientXSMP *)object;
-
-  g_free (xsmp->client_id);
-  g_strfreev (xsmp->restart_command);
-
-  G_OBJECT_CLASS (egg_sm_client_xsmp_parent_class)->finalize (object);
 }
 
 EggSMClient *
 egg_sm_client_xsmp_new (void)
 {
+#if GTK_CHECK_VERSION(3,0,0)
+  if (!GDK_IS_X11_DISPLAY_MANAGER (gdk_display_manager_get ()))
+    return NULL;
+#endif
+
   if (!g_getenv ("SESSION_MANAGER"))
     return NULL;
 
@@ -242,7 +232,7 @@ sm_client_xsmp_set_initial_properties (gpointer user_data)
 
       if (xsmp->restart_style == SmRestartIfRunning)
 	{
-	  if (egg_desktop_file_get_boolean (desktop_file,
+	  if (egg_desktop_file_get_boolean (desktop_file, 
 					    "X-GNOME-AutoRestart", NULL))
 	    xsmp->restart_style = SmRestartImmediately;
 	}
@@ -382,11 +372,13 @@ sm_client_xsmp_startup (EggSMClient *client,
       xsmp->client_id = g_strdup (ret_client_id);
       free (ret_client_id);
 
-#if !GTK_CHECK_VERSION(2,91,7) && !GTK_CHECK_VERSION(3,0,0)
+      gdk_threads_enter ();
+#if !GTK_CHECK_VERSION(2,23,3) && !GTK_CHECK_VERSION(3,0,0)
       gdk_set_sm_client_id (xsmp->client_id);
 #else
       gdk_x11_set_sm_client_id (xsmp->client_id);
 #endif
+      gdk_threads_leave ();
 
       g_debug ("Got client ID \"%s\"", xsmp->client_id);
     }
@@ -461,7 +453,7 @@ sm_client_xsmp_will_quit (EggSMClient *client,
 
 static gboolean
 sm_client_xsmp_end_session (EggSMClient         *client,
-			    G_GNUC_UNUSED EggSMClientEndStyle  style,
+			    EggSMClientEndStyle  style,
 			    gboolean             request_confirmation)
 {
   EggSMClientXSMP *xsmp = (EggSMClientXSMP *)client;
@@ -627,7 +619,7 @@ fix_broken_state (EggSMClientXSMP *xsmp, const char *message,
 /* SM callbacks */
 
 static void
-xsmp_save_yourself (G_GNUC_UNUSED SmcConn   smc_conn,
+xsmp_save_yourself (SmcConn   smc_conn,
 		    SmPointer client_data,
 		    int       save_type,
 		    Bool      shutdown,
@@ -946,7 +938,7 @@ save_state (EggSMClientXSMP *xsmp)
 }
 
 static void
-xsmp_interact (G_GNUC_UNUSED SmcConn   smc_conn,
+xsmp_interact (SmcConn   smc_conn,
 	       SmPointer client_data)
 {
   EggSMClientXSMP *xsmp = client_data;
@@ -966,7 +958,7 @@ xsmp_interact (G_GNUC_UNUSED SmcConn   smc_conn,
 }
 
 static void
-xsmp_die (G_GNUC_UNUSED SmcConn   smc_conn,
+xsmp_die (SmcConn   smc_conn,
 	  SmPointer client_data)
 {
   EggSMClientXSMP *xsmp = client_data;
@@ -980,7 +972,7 @@ xsmp_die (G_GNUC_UNUSED SmcConn   smc_conn,
 }
 
 static void
-xsmp_save_complete (G_GNUC_UNUSED SmcConn   smc_conn,
+xsmp_save_complete (SmcConn   smc_conn,
 		    SmPointer client_data)
 {
   EggSMClientXSMP *xsmp = client_data;
@@ -995,7 +987,7 @@ xsmp_save_complete (G_GNUC_UNUSED SmcConn   smc_conn,
 }
 
 static void
-xsmp_shutdown_cancelled (G_GNUC_UNUSED SmcConn   smc_conn,
+xsmp_shutdown_cancelled (SmcConn   smc_conn,
 			 SmPointer client_data)
 {
   EggSMClientXSMP *xsmp = client_data;
@@ -1149,7 +1141,7 @@ delete_properties (EggSMClientXSMP *xsmp, ...)
  * until you're done with the SmProp.
  */
 static SmProp *
-array_prop (const char *name, ...)
+array_prop (const char *name, ...) 
 {
   SmProp *prop;
   SmPropValue pv;
@@ -1318,13 +1310,12 @@ process_ice_messages (IceConn ice_conn)
 
     default:
       g_assert_not_reached ();
-      return FALSE;
     }
 }
 
 static gboolean
-ice_iochannel_watch (G_GNUC_UNUSED GIOChannel   *channel,
-		     G_GNUC_UNUSED GIOCondition  condition,
+ice_iochannel_watch (GIOChannel   *channel,
+		     GIOCondition  condition,
 		     gpointer      client_data)
 {
   return process_ice_messages (client_data);
@@ -1332,7 +1323,7 @@ ice_iochannel_watch (G_GNUC_UNUSED GIOChannel   *channel,
 
 static void
 ice_connection_watch (IceConn     ice_conn,
-		      G_GNUC_UNUSED IcePointer  client_data,
+		      IcePointer  client_data,
 		      Bool        opening,
 		      IcePointer *watch_data)
 {
@@ -1359,31 +1350,31 @@ ice_connection_watch (IceConn     ice_conn,
 }
 
 static void
-ice_error_handler (G_GNUC_UNUSED IceConn       ice_conn,
-		   G_GNUC_UNUSED Bool          swap,
-		   G_GNUC_UNUSED int           offending_minor_opcode,
-		   G_GNUC_UNUSED unsigned long offending_sequence,
-		   G_GNUC_UNUSED int           error_class,
-		   G_GNUC_UNUSED int           severity,
-		   G_GNUC_UNUSED IcePointer    values)
+ice_error_handler (IceConn       ice_conn,
+		   Bool          swap,
+		   int           offending_minor_opcode,
+		   unsigned long offending_sequence,
+		   int           error_class,
+		   int           severity,
+		   IcePointer    values)
 {
   /* Do nothing */
-}
+} 
 
 static void
-ice_io_error_handler (G_GNUC_UNUSED IceConn ice_conn)
+ice_io_error_handler (IceConn ice_conn)
 {
   /* Do nothing */
-}
+} 
 
 static void
-smc_error_handler (G_GNUC_UNUSED SmcConn       smc_conn,
-                   G_GNUC_UNUSED Bool          swap,
-                   G_GNUC_UNUSED int           offending_minor_opcode,
-                   G_GNUC_UNUSED unsigned long offending_sequence,
-                   G_GNUC_UNUSED int           error_class,
-                   G_GNUC_UNUSED int           severity,
-                   G_GNUC_UNUSED SmPointer     values)
+smc_error_handler (SmcConn       smc_conn,
+                   Bool          swap,
+                   int           offending_minor_opcode,
+                   unsigned long offending_sequence,
+                   int           error_class,
+                   int           severity,
+                   SmPointer     values)
 {
   /* Do nothing */
 }

@@ -51,6 +51,8 @@
 #include "eggsmclient-private.h"
 #include <gdk/gdk.h>
 
+#define WIN32_LEAN_AND_MEAN
+#define UNICODE
 #include <windows.h>
 #include <process.h>
 
@@ -95,7 +97,7 @@ static void sm_client_thread (gpointer data);
 G_DEFINE_TYPE (EggSMClientWin32, egg_sm_client_win32, EGG_TYPE_SM_CLIENT)
 
 static void
-egg_sm_client_win32_init (G_GNUC_UNUSED EggSMClientWin32 *win32)
+egg_sm_client_win32_init (EggSMClientWin32 *win32)
 {
   ;
 }
@@ -118,13 +120,13 @@ egg_sm_client_win32_new (void)
 
 static void
 sm_client_win32_startup (EggSMClient *client,
-			 G_GNUC_UNUSED const char  *client_id)
+			 const char  *client_id)
 {
   EggSMClientWin32 *win32 = (EggSMClientWin32 *)client;
 
   win32->message_event = CreateEvent (NULL, FALSE, FALSE, NULL);
   win32->response_event = CreateEvent (NULL, FALSE, FALSE, NULL);
-  g_win32_handle_source_add (win32->message_event, got_message, win32);
+  g_win32_handle_source_add (win32->message_event, got_message, win32);  
   _beginthread (sm_client_thread, 0, client);
 }
 
@@ -139,9 +141,9 @@ sm_client_win32_will_quit (EggSMClient *client,
 }
 
 static gboolean
-sm_client_win32_end_session (G_GNUC_UNUSED EggSMClient         *client,
+sm_client_win32_end_session (EggSMClient         *client,
 			     EggSMClientEndStyle  style,
-			     G_GNUC_UNUSED gboolean             request_confirmation)
+			     gboolean             request_confirmation)
 {
   UINT uFlags = EWX_LOGOFF;
 
@@ -228,7 +230,7 @@ typedef struct {
 } GWin32HandleSource;
 
 static gboolean
-g_win32_handle_source_prepare (G_GNUC_UNUSED GSource *source, gint *timeout)
+g_win32_handle_source_prepare (GSource *source, gint *timeout)
 {
   *timeout = -1;
   return FALSE;
@@ -243,13 +245,13 @@ g_win32_handle_source_check (GSource *source)
 }
 
 static gboolean
-g_win32_handle_source_dispatch (G_GNUC_UNUSED GSource *source, GSourceFunc callback, gpointer user_data)
+g_win32_handle_source_dispatch (GSource *source, GSourceFunc callback, gpointer user_data)
 {
   return (*callback) (user_data);
 }
 
 static void
-g_win32_handle_source_finalize (G_GNUC_UNUSED GSource *source)
+g_win32_handle_source_finalize (GSource *source)
 {
   ;
 }
@@ -281,7 +283,7 @@ g_win32_handle_source_add (HANDLE handle, GSourceFunc callback, gpointer user_da
 
 /* logout-listener thread */
 
-static LRESULT CALLBACK
+LRESULT CALLBACK
 sm_client_win32_window_procedure (HWND   hwnd,
 				  UINT   message,
 				  WPARAM wParam,
@@ -325,7 +327,7 @@ static void
 sm_client_thread (gpointer smclient)
 {
   HINSTANCE instance;
-  WNDCLASSEXW wcl;
+  WNDCLASSEXW wcl; 
   ATOM klass;
   HWND window;
   MSG msg;

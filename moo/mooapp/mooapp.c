@@ -898,8 +898,11 @@ moo_app_run (MooApp *app)
                               G_CALLBACK (sm_quit_requested), app);
     g_signal_connect_swapped (app->priv->sm_client, "quit",
                               G_CALLBACK (sm_quit), app);
+
+    gdk_threads_leave ();
     if (EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup)
         EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup (app->priv->sm_client, NULL);
+    gdk_threads_enter ();
 
     gdk_threads_add_idle_full (G_PRIORITY_DEFAULT_IDLE + 1, (GSourceFunc) emit_started, app, NULL);
 

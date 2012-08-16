@@ -32,6 +32,10 @@
 #undef G_LOG_DOMAIN
 #define G_LOG_DOMAIN "EggSMClient"
 
+#if __GNUC__ >= 4
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
 G_BEGIN_DECLS
 
 GKeyFile *egg_sm_client_save_state     (EggSMClient *client);
