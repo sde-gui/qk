@@ -1,14 +1,14 @@
 # Japanese translations for medit package.
 # Copyright (C) 2011 THE medit'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the medit package.
-# Toshiharu Kudoh <toshi.kd2@gmail.com>, 2011.
+# Toshiharu Kudoh <toshi.kd2@gmail.com>, 2011, 2012.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: 1.0.0\n"
+"Project-Id-Version: 1.1.x-trunk\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-08-19 18:36-0700\n"
-"PO-Revision-Date: 2011-12-27 21:31+0900\n"
+"PO-Revision-Date: 2012-08-18 11:07+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
 "Language: ja\n"
@@ -46,7 +46,7 @@ msgstr ""
 #. help message for command line option --app-name=NAME
 #: ../moo/medit-app/main.c:123
 msgid "Set instance name to NAME if it's not already running"
-msgstr ""
+msgstr "既に実行されていないならインスタンス名を NAME に設定"
 
 #. "NAME" part in "--app-name=NAME"
 #: ../moo/medit-app/main.c:124
@@ -66,7 +66,7 @@ msgstr "新規タブでファイルを開く"
 #. help message for command line option --line=LINE
 #: ../moo/medit-app/main.c:134
 msgid "Open file and position cursor on line LINE"
-msgstr ""
+msgstr "ファイルを開き、カーソルを LINE 行に配置"
 
 #. "LINE" part in --line=LINE
 #: ../moo/medit-app/main.c:135
@@ -76,7 +76,7 @@ msgstr ""
 #. help message for command line option --encoding=ENCODING
 #: ../moo/medit-app/main.c:137
 msgid "Use character encoding ENCODING"
-msgstr ""
+msgstr "文字エンコーディングに ENCODING を使用"
 
 #. "ENCODING" part in --encoding=ENCODING
 #: ../moo/medit-app/main.c:138
@@ -86,12 +86,12 @@ msgstr ""
 #. help message for command line option --reload
 #: ../moo/medit-app/main.c:140
 msgid "Automatically reload file if it was modified on disk"
-msgstr "ディスク上で変更があった場合自動的にファイルを再読込"
+msgstr "ディスク上で変更があった場合、自動的にファイルを再読込"
 
 #. help message for command line option --geometry=WIDTHxHEIGHT[+X+Y]
 #: ../moo/medit-app/main.c:152
 msgid "Default window size and position"
-msgstr "デフォルトウィンドウサイズとポジション"
+msgstr "デフォルトウィンドウサイズと位置"
 
 #. "WIDTHxHEIGHT[+X+Y]" part in --geometry=WIDTHxHEIGHT[+X+Y]
 #: ../moo/medit-app/main.c:153
@@ -206,7 +206,7 @@ msgstr "URL を開きますか？"
 #. Prefs dialog title
 #: ../moo/mooapp/mooapp.c:1399
 msgid "Preferences"
-msgstr ""
+msgstr "設定"
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:1
 msgid "<b>Loading</b>"
@@ -262,7 +262,7 @@ msgstr "「開く」「保存」ダイアログで現在のドキュメントフ
 
 #: ../moo/mooedit/glade/mooeditprefs-filters.glade.h:1
 msgid "<b>File filters</b>"
-msgstr "<b>ファイルフィルタ</b>"
+msgstr "<b>ファイルフィルター</b>"
 
 #: ../moo/mooedit/glade/mooeditprefs-general.glade.h:1
 msgid "<b>Keyboard</b>"
@@ -319,7 +319,7 @@ msgstr "オプション:"
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:3
 #: ../moo/plugins/glade/moofileselector-prefs.glade.h:3
 msgid "Mime types:"
-msgstr "MIMEタイプ:"
+msgstr "MIME タイプ:"
 
 #: ../moo/mooedit/glade/mooeditprefs-langs.glade.h:4
 #: ../moo/plugins/glade/moofileselector-prefs.glade.h:5
@@ -414,7 +414,7 @@ msgstr "<b>概要:</b>"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:1
 msgid "Print using text styles"
-msgstr "使用しているテキストのスタイルを印刷"
+msgstr "テキストスタイルを使用して印刷"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:2
 msgid "Use custom font:"
@@ -445,7 +445,7 @@ msgstr "行"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:11
 msgid "Print header"
-msgstr "印刷用ヘッダー"
+msgstr "ヘッダーを印刷"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:12
 msgid "Print separator line"
@@ -469,7 +469,7 @@ msgstr "ヘッダー"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:17
 msgid "Print footer"
-msgstr "印刷用フッター"
+msgstr "フッターを印刷"
 
 #: ../moo/mooedit/glade/mooprint.glade.h:18
 msgid "Footer"
@@ -501,7 +501,7 @@ msgstr "置換するテキスト(_R):"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:5
 msgid "_Literal replacement"
-msgstr ""
+msgstr "リテラル置換(_L)"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:6
 msgid "Replace With"
@@ -655,12 +655,16 @@ msgid ""
 "Could not open file using character encoding %s. Try to select another "
 "encoding below."
 msgstr ""
+"文字エンコーディング %s を使用しているファイルを開けませんでした。以下の他の"
+"エンコーディングを選択してみてください。"
 
 #: ../moo/mooedit/mooeditdialogs.c:536
 #, c-format
 msgid ""
 "Could not detect file character encoding. Try to select an encoding below."
 msgstr ""
+"ファイルの文字エンコーディングを検出できませんでした。以下のエンコーディング"
+"を選択してみてください。"
 
 #. Could not reload file foo.txt
 #: ../moo/mooedit/mooeditdialogs.c:621
@@ -722,7 +726,7 @@ msgstr ""
 #: ../moo/mooedit/mooeditdialogs.c:741
 #, c-format
 msgid "Invalid regular expression"
-msgstr ""
+msgstr "不正な正規表現"
 
 #: ../moo/mooedit/mooedit-fileops.c:1306 ../moo/plugins/moofileselector.c:511
 msgid "Untitled"
@@ -739,7 +743,7 @@ msgstr ""
 
 #: ../moo/mooedit/mooeditor.c:332
 msgid "Open Recent|_More..."
-msgstr "詳細な履歴(_M)..."
+msgstr "詳細(_M)..."
 
 #: ../moo/mooedit/mooeditor.c:598
 msgid "Open new editor window"
@@ -936,23 +940,23 @@ msgstr "ドキュメントにフォーカス(_F)"
 
 #: ../moo/mooedit/mooeditwindow.c:614
 msgid "Move to Split Notebook"
-msgstr ""
+msgstr "分割ノートブックに移動"
 
 #: ../moo/mooedit/mooeditwindow.c:615
 msgid "_Move to Split Notebook"
-msgstr ""
+msgstr "分割ノートブックに移動(_M)"
 
 #: ../moo/mooedit/mooeditwindow.c:623 ../moo/mooedit/mooeditwindow.c:624
 msgid "Split View Horizontally"
-msgstr ""
+msgstr "水平に表示を分割"
 
 #: ../moo/mooedit/mooeditwindow.c:631 ../moo/mooedit/mooeditwindow.c:632
 msgid "Split View Vertically"
-msgstr ""
+msgstr "垂直に表示を分割"
 
 #: ../moo/mooedit/mooeditwindow.c:638 ../moo/mooedit/mooeditwindow.c:639
 msgid "Focus Next Split View"
-msgstr ""
+msgstr "次の分割表示にフォーカス"
 
 #: ../moo/mooedit/mooeditwindow.c:683
 msgid "Toggle Bookmark"
@@ -1017,7 +1021,7 @@ msgstr "PDF として出力"
 
 #: ../moo/mooedit/mooeditwindow.c:785
 msgid "E_xport as PDF..."
-msgstr "PDF として出力(_X)"
+msgstr "PDF として出力(_X)..."
 
 #: ../moo/mooedit/mooeditwindow.c:786
 msgid "Export as PDF..."
@@ -1111,7 +1115,7 @@ msgstr "切り離す"
 #: ../moo/mooedit/mooeditwindow.c:2179
 msgctxt "tab-context-menu"
 msgid "Move to Split Notebook"
-msgstr ""
+msgstr "分割ノートブックに移動"
 
 #: ../moo/mooedit/mooeditwindow.c:3733
 #, c-format
@@ -1325,7 +1329,7 @@ msgstr "ブックマークを追加"
 
 #: ../moo/moofileview/moofileview.c:1586
 msgid "Filter"
-msgstr "フィルタ"
+msgstr "フィルター"
 
 #: ../moo/moofileview/moofileview.c:3195
 #, c-format
@@ -1407,7 +1411,7 @@ msgstr "ファイルの実行"
 
 #: ../moo/moopython/plugins/terminal.py:177
 msgid "Terminal"
-msgstr "Terminal"
+msgstr "端末"
 
 #: ../moo/moopython/plugins/terminal.py:225
 msgid "Default"
@@ -1423,7 +1427,7 @@ msgstr "浅黄地に黒色"
 
 #: ../moo/moopython/plugins/terminal.py:232
 msgid "Marble"
-msgstr ""
+msgstr "マーブル"
 
 #: ../moo/moopython/plugins/terminal.py:235
 msgid "Green on Black"
@@ -1830,25 +1834,25 @@ msgstr "新規ウィンドウ(_W)"
 #: ../moo/mooutils/mooutils-fs.c:226
 #, c-format
 msgid "Could not run 'rm' command: %s"
-msgstr ""
+msgstr "'rm' コマンドを実行できませんでした: %s"
 
 #. This is error message in file selector when rm
 #. fails to delete a file or folder
 #: ../moo/mooutils/mooutils-fs.c:244
 #, c-format
 msgid "'rm' command failed: %s"
-msgstr ""
+msgstr "'rm' コマンドが失敗しました: %s"
 
 #: ../moo/mooutils/mooutils-fs.c:294 ../moo/mooutils/mooutils-fs.c:314
 #: ../moo/mooutils/mooutils-fs.c:341
 #, c-format
 msgid "Could not remove %s: %s"
-msgstr ""
+msgstr "%s を削除できませんでした: %s"
 
 #: ../moo/mooutils/mooutils-fs.c:450
 #, c-format
 msgid "Could not rename file %s to %s: %s"
-msgstr ""
+msgstr "file %s を %s にリネームできませんでした: %s"
 
 #: ../moo/mooutils/mooutils-misc.c:1668
 #, c-format
@@ -1925,11 +1929,11 @@ msgstr "<b>指定されたアプリで開く</b>"
 #: ../moo/plugins/glade/moofileselector-prefs.glade.h:2
 msgid ""
 "Semicolon-separated list of mime types, e.g. 'text/*;application/x-glade'"
-msgstr ""
+msgstr "MIME タイプのセミコロン区切りリスト 例） 'text/*;application/x-glade'"
 
 #: ../moo/plugins/glade/moofileselector-prefs.glade.h:4
 msgid "Semicolon-separated list of file globs, e.g. '*.txt;foo.*;*bar*'"
-msgstr ""
+msgstr "ファイル glob のセミコロン区切りリスト 例） '*.txt;foo.*;*bar*'"
 
 #: ../moo/plugins/glade/moofileselector-prefs.glade.h:7
 #, no-c-format
@@ -2053,7 +2057,7 @@ msgstr "コピーを保存..."
 
 #: ../moo/plugins/moofileselector.c:1291
 msgid "File selector pane for editor window"
-msgstr "エディタウィンドウのためのファイルセレクタペイン"
+msgstr "エディターウィンドウのためのファイルセレクターペイン"
 
 #: ../moo/plugins/moofind.c:185
 msgid "Search Results"
@@ -2137,7 +2141,7 @@ msgstr "Make"
 
 #: ../moo/plugins/usertools/glade/mooedittools-exe.glade.h:1
 msgid "Filter:"
-msgstr "フィルタ:"
+msgstr "フィルター:"
 
 #: ../moo/plugins/usertools/glade/mooedittools-exe.glade.h:2
 msgid "Output:"
@@ -2209,7 +2213,7 @@ msgstr "コンソール"
 
 #: ../moo/plugins/usertools/moocommand-exe.c:94
 msgid "Output|Output pane"
-msgstr "アウトプットペイン"
+msgstr "出力ペイン"
 
 #: ../moo/plugins/usertools/moocommand-exe.c:95
 msgid "Output|Insert into the document"
@@ -2304,9 +2308,41 @@ msgctxt "Save-combo"
 msgid "All documents"
 msgstr "全てのドキュメント"
 
-#~ msgid "Mi_xed"
-#~ msgstr "混合(_X)"
+#~ msgid "encoding label|UTF-7"
+#~ msgstr "UTF-7"
 
-#~ msgctxt "tab-context-menu"
-#~ msgid "Move to Split View"
-#~ msgstr "スプリットビューに移動"
+#~ msgid "encoding label|UTF-32BE-BOM (big-endian, with BOM)"
+#~ msgstr "UTF-32BE-BOM (ビッグエンディアン、BOM あり)"
+
+#~ msgid "encoding label|UTF-32LE-BOM (little-endian, with BOM)"
+#~ msgstr "UTF-32LE-BOM (リトルエンディアン、BOM あり)"
+
+#~ msgid "encoding label|UTF-32BE (big-endian, no BOM)"
+#~ msgstr "UTF-32BE-BOM (ビッグエンディアン、BOM なし)"
+
+#~ msgid "encoding label|UTF-32LE (little-endian, no BOM)"
+#~ msgstr "UTF-32LE-BOM (リトルエンディアン、BOM なし)"
+
+#~ msgid "encoding label|UTF-16BE-BOM (big-endian, with BOM)"
+#~ msgstr "UTF-16BE-BOM (ビッグエンディアン、BOM あり)"
+
+#~ msgid "encoding label|UTF-16LE-BOM (little-endian, with BOM)"
+#~ msgstr "UTF-16LE-BOM (リトルエンディアン、BOM あり)"
+
+#~ msgid "encoding label|UTF-16BE (big-endian, no BOM)"
+#~ msgstr "UTF-16BE-BOM (ビッグエンディアン、BOM なし)"
+
+#~ msgid "encoding label|UTF-16LE (little-endian, no BOM)"
+#~ msgstr "UTF-16LE-BOM (リトルエンディアン、BOM なし)"
+
+#~ msgid "encoding label|UTF-8-BOM"
+#~ msgstr "UTF-8-BOM"
+
+#~ msgid "encoding label|UTF-32"
+#~ msgstr "UTF-32"
+
+#~ msgid "encoding label|UTF-16"
+#~ msgstr "UTF-16"
+
+#~ msgid "encoding label|UTF-8"
+#~ msgstr "UTF-8"
