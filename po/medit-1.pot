@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-08-11 15:03-0700\n"
+"POT-Creation-Date: 2012-08-19 18:34-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -179,11 +179,11 @@ msgstr ""
 msgid "translator-credits-markup"
 msgstr ""
 
-#: ../moo/mooapp/mooapp.c:991
+#: ../moo/mooapp/mooapp.c:994
 msgid "Report a Bug..."
 msgstr ""
 
-#: ../moo/mooapp/mooapp.c:1354
+#: ../moo/mooapp/mooapp.c:1357
 #, c-format
 msgid ""
 "The following URL will be opened:\n"
@@ -193,12 +193,12 @@ msgid ""
 "It contains medit version and your operating system name (%s)"
 msgstr ""
 
-#: ../moo/mooapp/mooapp.c:1361
+#: ../moo/mooapp/mooapp.c:1364
 msgid "Open URL?"
 msgstr ""
 
 #. Prefs dialog title
-#: ../moo/mooapp/mooapp.c:1399
+#: ../moo/mooapp/mooapp.c:1402
 msgid "Preferences"
 msgstr ""
 
