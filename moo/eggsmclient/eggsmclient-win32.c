@@ -51,8 +51,6 @@
 #include "eggsmclient-private.h"
 #include <gdk/gdk.h>
 
-#define WIN32_LEAN_AND_MEAN
-#define UNICODE
 #include <windows.h>
 #include <process.h>
 
@@ -283,7 +281,7 @@ g_win32_handle_source_add (HANDLE handle, GSourceFunc callback, gpointer user_da
 
 /* logout-listener thread */
 
-LRESULT CALLBACK
+static LRESULT CALLBACK
 sm_client_win32_window_procedure (HWND   hwnd,
 				  UINT   message,
 				  WPARAM wParam,

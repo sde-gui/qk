@@ -1310,6 +1310,7 @@ process_ice_messages (IceConn ice_conn)
 
     default:
       g_assert_not_reached ();
+      return FALSE;
     }
 }
 
