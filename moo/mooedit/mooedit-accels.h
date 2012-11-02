@@ -45,6 +45,8 @@
 #define MOO_EDIT_ACCEL_SWITCH_TO_TAB "<Alt>"
 #define MOO_EDIT_ACCEL_PREV_TAB "<Alt>Left"
 #define MOO_EDIT_ACCEL_NEXT_TAB "<Alt>Right"
+#define MOO_EDIT_ACCEL_PREV_TAB_IN_VIEW "<Alt>O"
+#define MOO_EDIT_ACCEL_NEXT_TAB_IN_VIEW "<Alt>P"
 
 #else /* GDK_WINDOWING_QUARTZ */
 
@@ -60,6 +62,8 @@
 #define MOO_EDIT_ACCEL_SWITCH_TO_TAB "<Meta>"
 #define MOO_EDIT_ACCEL_PREV_TAB "<Meta>Left"
 #define MOO_EDIT_ACCEL_NEXT_TAB "<Meta>Right"
+#define MOO_EDIT_ACCEL_PREV_TAB_IN_VIEW "<Meta>O"
+#define MOO_EDIT_ACCEL_NEXT_TAB_IN_VIEW "<Meta>P"
 
 #endif /* GDK_WINDOWING_QUARTZ */
 
