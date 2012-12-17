@@ -78,6 +78,11 @@ if test x$MOO_DEV_MODE = "xyes" -a "x$TXT2TAGS" = "x"; then
   AC_MSG_ERROR([txt2tags not found])
 fi
 
+AC_CHECK_PROG([XSLTPROC], xsltproc, xsltproc)
+if test x$MOO_DEV_MODE = "xyes" -a "x$XSLTPROC" = "x"; then
+  AC_MSG_ERROR([xsltproc not found])
+fi
+
 AC_CONFIG_HEADERS([config.h])
 AH_TOP([#ifndef __CONFIG_H__
 #define __CONFIG_H__])

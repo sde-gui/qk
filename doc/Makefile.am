@@ -43,24 +43,24 @@ $(srcdir)/built/script-lua-gtk.docbook: $(gendocbook_files) script-lua-gtk.tmpl.
 
 # $(srcdir)/help/script-python.html: built/script-python.docbook built/medit-defines.ent script.xsl
 # 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
-# 	$(AM_V_GEN)xsltproc --output script-python.html.tmp \
+# 	$(AM_V_GEN)$(XSLTPROC) --output script-python.html.tmp \
 # 		$(srcdir)/script.xsl $(srcdir)/built/script-python.docbook \
 # 		&& mv script-python.html.tmp $(srcdir)/help/script-python.html
 #
 # $(srcdir)/help/script-lua.html: built/script-lua.docbook built/medit-defines.ent script.xsl
 # 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
-# 	$(AM_V_GEN)xsltproc --output script-lua.html.tmp \
+# 	$(AM_V_GEN)$(XSLTPROC) --output script-lua.html.tmp \
 # 		$(srcdir)/script.xsl $(srcdir)/built/script-lua.docbook \
 # 		&& mv script-lua.html.tmp $(srcdir)/help/script-lua.html
 #
 # $(srcdir)/help/script-lua-gtk.html: built/script-lua-gtk.docbook built/medit-defines.ent script.xsl
 # 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
-# 	$(AM_V_GEN)xsltproc --output script-lua-gtk.html.tmp \
+# 	$(AM_V_GEN)$(XSLTPROC) --output script-lua-gtk.html.tmp \
 # 		$(srcdir)/script.xsl $(srcdir)/built/script-lua-gtk.docbook \
 # 		&& mv script-lua-gtk.html.tmp $(srcdir)/help/script-lua-gtk.html
 
 $(srcdir)/help/script/index.html: $(script_docbook_sources) script-book.xsl
-	$(AM_V_GEN)cd $(srcdir) && xsltproc --xinclude script-book.xsl script.docbook
+	$(AM_V_GEN)cd $(srcdir) && $(XSLTPROC) --xinclude script-book.xsl script.docbook
 
 $(srcdir)/help/medit.css: medit.css
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
@@ -84,15 +84,15 @@ docbook_sources =			\
 	built/medit-defines.ent
 
 $(srcdir)/help/index.html: $(docbook_sources) medit.xsl medit-common.xsl
-	$(AM_V_GEN)cd $(srcdir) && xsltproc --xinclude medit.xsl medit.docbook
+	$(AM_V_GEN)cd $(srcdir) && $(XSLTPROC) --xinclude medit.xsl medit.docbook
 
 $(srcdir)/help/help.html: $(docbook_sources) medit-single.xsl medit-common.xsl
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
-	$(AM_V_GEN)xsltproc --xinclude --output help.html.tmp $(srcdir)/medit-single.xsl $(srcdir)/medit.docbook && \
+	$(AM_V_GEN)$(XSLTPROC) --xinclude --output help.html.tmp $(srcdir)/medit-single.xsl $(srcdir)/medit.docbook && \
 		mv help.html.tmp $(srcdir)/help/help.html
 
 toc.xml: $(docbook_sources)
-	$(AM_V_GEN)xsltproc --output toc.xml --xinclude \
+	$(AM_V_GEN)$(XSLTPROC) --output toc.xml --xinclude \
 		--stringparam chunk.first.sections 1 \
 		http://docbook.sourceforge.net/release/xsl/current/html/maketoc.xsl $(srcdir)/medit.docbook
 
