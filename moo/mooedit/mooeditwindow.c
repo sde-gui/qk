@@ -263,6 +263,8 @@ static void action_close_tab                    (MooEditWindow      *window);
 static void action_close_all                    (MooEditWindow      *window);
 static void action_previous_tab                 (MooEditWindow      *window);
 static void action_next_tab                     (MooEditWindow      *window);
+static void action_previous_tab_in_view         (MooEditWindow      *window);
+static void action_next_tab_in_view             (MooEditWindow      *window);
 static void action_switch_to_tab                (MooEditWindow      *window,
                                                  guint               n);
 
@@ -275,6 +277,7 @@ static GtkAction *create_goto_bookmark_action   (MooWindow          *window,
 static void action_find_now_f                   (MooEditWindow      *window);
 static void action_find_now_b                   (MooEditWindow      *window);
 static void action_focus_doc                    (MooEditWindow      *window);
+static void action_focus_other_split_notebook   (MooEditWindow      *window);
 static void action_move_to_split_notebook       (MooEditWindow      *window);
 static void action_abort_jobs                   (MooEditWindow      *window);
 
@@ -514,6 +517,24 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
+    moo_window_class_new_action (window_class, "PreviousTabInView", NULL,
+                                 "display-name", _("Previous Tab In View"),
+                                 "label", _("_Previous Tab In View"),
+                                 "tooltip", _("Previous tab in view"),
+                                 "default-accel", MOO_EDIT_ACCEL_PREV_TAB_IN_VIEW,
+                                 "closure-callback", action_previous_tab_in_view,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "NextTabInView", NULL,
+                                 "display-name", _("Next Tab In View"),
+                                 "label", _("_Next Tab In View"),
+                                 "tooltip", _("Next tab in view"),
+                                 "default-accel", MOO_EDIT_ACCEL_NEXT_TAB_IN_VIEW,
+                                 "closure-callback", action_next_tab_in_view,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
     moo_window_class_new_action (window_class, "Find", NULL,
                                  "display-name", GTK_STOCK_FIND,
                                  "label", GTK_STOCK_FIND,
@@ -607,6 +628,14 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "label", _("_Focus Document"),
                                  "default-accel", MOO_EDIT_ACCEL_FOCUS_DOC,
                                  "closure-callback", action_focus_doc,
+                                 "condition::sensitive", "has-open-document",
+                                 NULL);
+
+    moo_window_class_new_action (window_class, "FocusOtherSplitNotebook", NULL,
+                                 "display-name", _("Focus Other Split Notebook"),
+                                 "label", _("Focus Other Split Notebook"),
+                                 "default-accel", MOO_EDIT_ACCEL_FOCUS_SPLIT_NOTEBOOK,
+                                 "closure-callback", action_focus_other_split_notebook,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -1546,6 +1575,57 @@ action_next_tab (MooEditWindow *window)
         switch_to_tab (window, 0);
 }
 
+static int
+get_first_tab_in_notebook (MooNotebook *notebook, MooEditWindow *window)
+{
+    int tab = 0;
+    guint i;
+
+    for (i = 0; i < window->priv->notebooks->n_elms; ++i)
+    {
+        if (window->priv->notebooks->elms[i] == notebook)
+            return tab;
+
+        tab += moo_notebook_get_n_pages (window->priv->notebooks->elms[i]);
+    }
+
+    g_return_val_if_reached (-1);
+}
+
+static void
+action_previous_tab_in_view (MooEditWindow *window)
+{
+    int n, tabs_in_notebook, first_tab;
+    MooNotebook *notebook;
+
+    n = get_active_tab (window);
+    notebook = get_active_notebook (window);
+    tabs_in_notebook = moo_notebook_get_n_pages (notebook);
+    first_tab = get_first_tab_in_notebook (notebook, window);
+
+
+    if (n > first_tab)
+        switch_to_tab (window, n - 1);
+    else
+        switch_to_tab (window, first_tab + tabs_in_notebook - 1);
+}
+
+static void
+action_next_tab_in_view (MooEditWindow *window)
+{
+    int n, tabs_in_notebook, first_tab;
+    MooNotebook *notebook;
+
+    n = get_active_tab (window);
+    notebook = get_active_notebook (window);
+    tabs_in_notebook = moo_notebook_get_n_pages (notebook);
+    first_tab = get_first_tab_in_notebook (notebook, window);
+
+    if (n < (first_tab + tabs_in_notebook - 1))
+        switch_to_tab (window, n + 1);
+    else
+        switch_to_tab (window, first_tab);
+}
 
 static void
 action_switch_to_tab (MooEditWindow *window,
@@ -1607,6 +1687,25 @@ action_focus_doc (MooEditWindow *window)
             g_return_if_reached ();
     }
 }
+
+static void
+action_focus_other_split_notebook (MooEditWindow *window)
+{
+    if (both_notebooks_visible (window))
+    {
+        MooNotebook *current = get_active_notebook (window);
+        MooNotebook *nb1 = get_notebook (window, 0);
+        MooNotebook *nb2 = get_notebook (window, 1);
+
+        if (current == nb1)
+            moo_edit_window_set_active_tab (window,
+                get_nth_tab(nb2, moo_notebook_get_current_page(nb2)));
+        else
+            moo_edit_window_set_active_tab (window,
+                get_nth_tab(nb1, moo_notebook_get_current_page(nb1)));
+    }
+}
+
 
 static void
 action_move_to_split_notebook (MooEditWindow *window)
