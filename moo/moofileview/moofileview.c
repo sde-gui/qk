@@ -24,7 +24,7 @@
 #include "moofileview/mooiconview.h"
 #include "moofileview/moofileview-aux.h"
 #include "moofileview/moofileview-private.h"
-#include "moofileview-ui.h"
+#include "moofileview/moofileview-ui.h"
 #include "moofileview/mootreeview.h"
 #include "moofileview/moobookmarkview.h"
 #include "moofileview/moofileview-tools.h"

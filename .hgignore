@@ -48,3 +48,9 @@ doc/help/
 doc/built/
 po-gsv/po-original/
 po-gsv/po-stripped/
+plat/msvs/deps/
+plat/msvs/Debug/
+plat/msvs/medit.ncb
+plat/msvs/medit.suo
+plat/msvs/medit.vcproj.*.user
+plat/msvs/medit.sln

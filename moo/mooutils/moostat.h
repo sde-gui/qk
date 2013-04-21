@@ -31,6 +31,8 @@ inline static int moo_stat (const char *filename, struct stat *buf)
     /* _moo_check_stat_struct above checks that struct stat is okay,
        cast to void* is to avoid using glib's internal _g_stat_struct */
     return g_stat (filename, (struct _g_stat_struct*) buf);
+#elif defined (_MSC_VER)
+    return g_stat (filename, (struct _stat32*) buf);
 #else
     return g_stat (filename, buf);
 #endif
@@ -42,6 +44,8 @@ inline static int moo_lstat (const char *filename, struct stat *buf)
     /* _moo_check_stat_struct above checks that struct stat is okay,
        cast to void* is to avoid using glib's internal _g_stat_struct */
     return g_lstat (filename, (struct _g_stat_struct*) buf);
+#elif defined (_MSC_VER)
+    return g_lstat (filename, (struct _stat32*) buf);
 #else
     return g_lstat (filename, buf);
 #endif

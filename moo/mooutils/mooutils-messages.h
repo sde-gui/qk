@@ -74,14 +74,14 @@ typedef struct MooCodeLoc
     int counter;
 } MooCodeLoc;
 
-static inline MooCodeLoc
+G_INLINE_FUNC MooCodeLoc
 moo_default_code_loc (void)
 {
     MooCodeLoc loc = { "<unknown>", "<unknown>", 0, 0 };
     return loc;
 }
 
-static inline MooCodeLoc
+G_INLINE_FUNC MooCodeLoc
 moo_make_code_loc (const char *file, const char *func, int line, int counter)
 {
     MooCodeLoc loc;
@@ -92,7 +92,7 @@ moo_make_code_loc (const char *file, const char *func, int line, int counter)
     return loc;
 }
 
-static inline gboolean
+G_INLINE_FUNC gboolean
 moo_code_loc_valid (MooCodeLoc loc)
 {
     return loc.counter != 0;

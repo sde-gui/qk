@@ -101,7 +101,7 @@ type_name##_get_type (void)                                                 \
             NULL    /* value_table */                                       \
         };                                                                  \
                                                                             \
-        static const GInterfaceInfo iface_info = {};                        \
+        static const GInterfaceInfo iface_info = {NULL, NULL, NULL};        \
                                                                             \
         type = g_type_register_static (TYPE_PARENT,                         \
                                        #TypeName,                           \

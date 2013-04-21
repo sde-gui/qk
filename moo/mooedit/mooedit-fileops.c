@@ -1050,14 +1050,17 @@ moo_file_get_display_basename (GFile *file)
 char *
 _moo_edit_normalize_filename_for_comparison (const char *filename)
 {
-    g_return_val_if_fail (filename != NULL, NULL);
 #ifdef __WIN32__
     /* XXX */
-    char *tmp = g_utf8_normalize (filename, -1, G_NORMALIZE_ALL_COMPOSE);
-    char *ret = g_utf8_strdown (tmp, -1);
+    char *tmp;
+    char *ret;
+    g_return_val_if_fail (filename != NULL, NULL);
+    tmp = g_utf8_normalize (filename, -1, G_NORMALIZE_ALL_COMPOSE);
+    ret = g_utf8_strdown (tmp, -1);
     g_free (tmp);
     return ret;
 #else
+    g_return_val_if_fail (filename != NULL, NULL);
     return g_strdup (filename);
 #endif
 }

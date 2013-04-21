@@ -241,6 +241,7 @@ make_cmd (const char *base_cmd_line,
           const char *input)
 {
     char *cmd_line = NULL;
+    char *tmp_file = NULL;
     gsize input_len;
 
     input_len = input ? strlen (input) : 0;
@@ -248,7 +249,7 @@ make_cmd (const char *base_cmd_line,
     if (!input_len)
         return g_strdup (base_cmd_line);
 
-    char *tmp_file = save_temp (input, input_len);
+    tmp_file = save_temp (input, input_len);
 
     if (tmp_file)
     {
