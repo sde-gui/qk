@@ -22,7 +22,7 @@ for __p in ('i686-pc-mingw32', 'i586-mingw32msvc', 'i486-mingw32'):
         break
 assert _mingw_tool_prefix
 
-makeargs = '-j 3'
+makeargs = '-j 4'
 moduleset = os.path.join(_gtkwinjhbuilddir, 'gtk.moduleset')
 use_lib64 = False
 
