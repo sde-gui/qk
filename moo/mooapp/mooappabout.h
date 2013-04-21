@@ -42,7 +42,7 @@ get_system_name (void)
     ver.dwOSVersionInfoSize = sizeof (OSVERSIONINFOW);
 
     if (!GetVersionExW ((OSVERSIONINFOW*) &ver))
-        return g_strdup ("Win32");
+        return g_strdup ("Windows");
 
     switch (ver.dwMajorVersion)
     {
@@ -82,14 +82,34 @@ get_system_name (void)
             ver.dwOSVersionInfoSize = sizeof (OSVERSIONINFOEXW);
 
             if (!GetVersionExW ((OSVERSIONINFOW*) &ver) || ver.wProductType == VER_NT_WORKSTATION)
-                return ver.dwMinorVersion == 0 ? g_strdup ("Windows Vista") : g_strdup ("Windows 7");
+            {
+                switch (ver.dwMinorVersion)
+                {
+                    case 0:
+                        return g_strdup ("Windows Vista");
+                    case 1:
+                        return g_strdup ("Windows 7");
+                    case 2:
+                        return g_strdup ("Windows 8");
+                }
+            }
             else
-                return ver.dwMinorVersion == 0 ? g_strdup ("Windows Server 2008") : g_strdup ("Windows Server 2008 R2");
+            {
+                switch (ver.dwMinorVersion)
+                {
+                    case 0:
+                        return g_strdup ("Windows Server 2008");
+                    case 1:
+                        return g_strdup ("Windows Server 2008 R2");
+                    case 2:
+                        return g_strdup ("Windows Server 2012");
+                }
+            }
 
             break;
     }
 
-    return g_strdup ("Win32");
+    return g_strdup ("Windows");
 }
 
 #elif defined(HAVE_SYS_UTSNAME_H)
