@@ -899,9 +899,9 @@ lookup_merge (MooUiXml *xml,
  * @xml:
  * @merge_id:
  * @parent_path: (type const-utf8)
- * @name: (type const-utf8)
+ * @name: (type const-utf8) (allow-none) (default NULL)
  * @action: (type const-utf8)
- * @position:
+ * @position: (type index) (default -1)
  */
 MooUiNode*
 moo_ui_xml_add_item (MooUiXml       *xml,
@@ -957,7 +957,7 @@ moo_ui_xml_add_item (MooUiXml       *xml,
  * @xml:
  * @merge_id:
  * @parent:
- * @position:
+ * @position: (type index) (default -1)
  * @markup: (type const-utf8)
  */
 void
@@ -1217,7 +1217,7 @@ moo_ui_xml_insert_markup_before (MooUiXml       *xml,
  * @xml:
  * @merge_id:
  * @parent_path: (type const-utf8)
- * @position:
+ * @position: (type index) (default -1)
  * @markup: (type const-utf8)
  */
 void
