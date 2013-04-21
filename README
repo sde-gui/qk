@@ -1,9 +1,7 @@
 General Information
 ===================
 
-medit is a GTK text editor. Started as an editor component of GGAP
-(http://ggap.sourceforge.net/), it grew up to a real full-featured
-text editor.
+medit is a text editor.
 
 medit is free software, released under GNU GPL license. See the LICENSE
 file in this distribution for details.
@@ -23,24 +21,18 @@ See INSTALL file in this distribution.
 Bug reports and contact
 =======================
 
-Report bugs and file feature requests in medit bug base at
-http://sourceforge.net/tracker/?group_id=167563&atid=843451 .
-You can also send email to emuntyan@users.sourceforge.net if you don't feel like
-using bug base, or have any questions/comments/beer.
-medit IRC channel is #ggap at irc.freenode.net.
-
-Provide information available from menu Help > System Info
-along with bug report. See also INSTALL file for instructions on how to
-build medit for better debugging information.
+Report bugs and file feature requests in the medit bug tracker at
+http://sourceforge.net/tracker/?group_id=167563&atid=843451 . You can
+also send an email to emuntyan@users.sourceforge.net if you don't feel
+like using the bug tracker, or have any questions/comments.
 
 
-CVS
-===
+Sources
+=======
 
-medit sources are tracked using mercurial, therefore there is no
-CVS or SVN access. You may browse medit repository online at
-http://bitbucket.org/medit/medit/. To check out a copy of medit
-repository, install mercurial, and do
+medit sources are tracked using mercurial. You can browse medit source
+repository online at http://bitbucket.org/medit/medit/. To check out a
+copy of medit repository, install mercurial, and do
     hg clone http://bitbucket.org/medit/medit/
 This will create a new directory named 'medit' with medit sources inside.
 To update them later on, do
