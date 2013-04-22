@@ -156,20 +156,8 @@
       <patch file="cairo-1.8.10.patch" strip="1"/>
     </patches>
   </tarball>
-
   <!-- with cairo-1.10 icons disappear randomly -->
-<!--  <tarball id="cairo" supports-non-srcdir-builds="no">
-    <source href="http://cairographics.org/releases/cairo-1.10.0.tar.gz"
-            md5sum="70a2ece66cf473d976e2db0f75bf199e"/>
-    <dependencies>
-      <dep package="pixman"/>
-      <dep package="gettext"/>
-      <dep package="libpng"/>
-    </dependencies>
-    <patches>
-      <patch file="cairo-1.10.patch" strip="1"/>
-    </patches>
-  </tarball>-->
+  <!-- with cairo-1.12.14 icons and text don't draw in file selector -->
 
   <!-- GOOD -->
   <tarball id="pango">
