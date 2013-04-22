@@ -2012,6 +2012,10 @@ hf_format_parse (const char *format_string)
                         goto error;
                 }
                 break;
+            case 0:
+                g_warning ("trailing '%%' in %s",
+                           format_string);
+                goto error;
             default:
                 p = p + 2;
         }
