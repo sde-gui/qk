@@ -21,7 +21,6 @@
 #include "config.h"
 #endif
 
-#define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-impl.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditwindow-impl.h"

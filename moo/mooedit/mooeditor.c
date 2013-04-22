@@ -17,7 +17,6 @@
  * class:MooEditor: (parent GObject): editor object
  **/
 
-#define MOOEDIT_COMPILATION
 #include "mooedit/mooeditor-private.h"
 #include "mooedit/mooeditwindow-impl.h"
 #include "mooedit/mooeditdialogs.h"

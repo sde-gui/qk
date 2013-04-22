@@ -34,7 +34,6 @@
  * @MOO_EDIT_STATUS_CLEAN: doesn't prompt on close, even if it's modified.
  **/
 
-#define MOOEDIT_COMPILATION
 #include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditview-impl.h"

@@ -2,7 +2,6 @@
  * class:MooEditView: (parent MooTextView) (moo.doc-object-name view): document view object
  **/
 
-#define MOOEDIT_COMPILATION
 #include "mooedit/mooeditview-priv.h"
 #include "mooedit/mooedit-impl.h"
 #include "mooedit/mooeditwindow-impl.h"

@@ -13,7 +13,6 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define MOOEDIT_COMPILATION
 #include "mooedit/mootextstylescheme.h"
 #include "mooedit/mootextview.h"
 #include "mooutils/mooi18n.h"

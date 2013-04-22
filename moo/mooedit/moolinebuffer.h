@@ -13,10 +13,6 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOOEDIT_COMPILATION
-#error "This file may not be included"
-#endif
-
 #ifndef MOO_LINE_BUFFER_H
 #define MOO_LINE_BUFFER_H
 

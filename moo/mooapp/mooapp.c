@@ -21,7 +21,6 @@
 #include "config.h"
 #endif
 
-#define MOO_APP_COMPILATION
 #define WANT_MOO_APP_CMD_CHARS
 #include "mooapp-private.h"
 #include "eggsmclient/eggsmclient.h"

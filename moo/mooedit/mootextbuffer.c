@@ -17,7 +17,6 @@
  * class:MooTextBuffer: (parent GtkTextBuffer) (moo.private 1)
  **/
 
-#define MOOEDIT_COMPILATION
 #include "mooedit/mootextiter.h"
 #include "mooedit/mootext-private.h"
 #include "mooedit/moolang-private.h"

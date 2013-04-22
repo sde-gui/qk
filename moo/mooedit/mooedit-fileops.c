@@ -17,7 +17,6 @@
 #include "config.h"
 #endif
 
-#define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mooeditor-impl.h"
 #include "mooedit/mooedit-fileops.h"
@@ -1200,7 +1199,7 @@ try_convert_to_utf8_from_utf8 (const char *data,
 {
     const char *invalid;
     gboolean valid_utf8;
-    
+
 //     g_print ("try_convert_to_utf8_from_utf8()\n");
 
     if (len >= BOM_UTF8_LEN && memcmp (data, BOM_UTF8, BOM_UTF8_LEN) == 0)
@@ -1414,11 +1413,11 @@ moo_convert_file_data_to_utf8 (const char  *data,
     char *freeme = NULL;
     char *result = NULL;
     const char *bom_enc = NULL;
-    
+
 //     g_print ("moo_convert_file_data_to_utf8(%s, %s)\n",
 //              encoding ? encoding : "<null>",
 //              cached_encoding ? cached_encoding : "<null>");
-    
+
     *used_enc = NULL;
 
     if (!encoding && data_has_bom (data, len, &bom_enc))
@@ -1466,7 +1465,7 @@ moo_convert_file_data_to_utf8 (const char  *data,
     return result;
 }
 
-static gboolean 
+static gboolean
 encoding_is_utf8 (const char *encoding)
 {
     return !g_ascii_strcasecmp (encoding, "UTF-8") ||

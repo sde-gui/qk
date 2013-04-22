@@ -17,7 +17,6 @@
  * class:MooEditAction: (parent MooAction) (moo.private 1)
  **/
 
-#define MOOEDIT_COMPILATION
 #include "mooedit/mooeditaction.h"
 #include "mooedit/mooeditaction-factory.h"
 #include "mooedit/mooeditfiltersettings.h"

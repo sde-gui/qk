@@ -13,7 +13,6 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moofileview-accels.h"
 #include "moofileview/moofileview-dialogs.h"
 #include "moofileview/moobookmarkmgr.h"

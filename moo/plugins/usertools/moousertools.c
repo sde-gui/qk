@@ -13,7 +13,6 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define MOOEDIT_COMPILATION
 #include "moousertools.h"
 #include "moousertools-prefs.h"
 #include "moocommand-private.h"

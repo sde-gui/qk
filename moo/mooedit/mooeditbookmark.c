@@ -17,7 +17,6 @@
  * class:MooEditBookmark: (parent MooLineMark) (moo.private 1)
  **/
 
-#define MOOEDIT_COMPILATION
 #include "mooedit/mooeditbookmark.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mootextbuffer.h"

@@ -17,7 +17,6 @@
  * class:MooTextView: (parent GtkTextView) (constructable): text view object
  **/
 
-#define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-accels.h"
 #include "mooedit/mootextview-private.h"
 #include "mooedit/mootextview.h"

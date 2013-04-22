@@ -13,7 +13,6 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/mootreeview.h"
 #include "marshals.h"
 #include "mooutils/mooutils-gobject.h"

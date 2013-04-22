@@ -13,10 +13,6 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_FILE_VIEW_COMPILATION
-#error "This file may not be included"
-#endif
-
 #include "moofileview/moofile-private.h"
 #include <string.h>
 #include <glib.h>

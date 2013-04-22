@@ -19,10 +19,6 @@
  *  from gtk/gtkfilesystem.h).
  */
 
-#ifndef MOO_FILE_VIEW_COMPILATION
-#error "This file may not be included"
-#endif
-
 #ifndef MOO_FILE_SYSTEM_H
 #define MOO_FILE_SYSTEM_H
 
