@@ -28,6 +28,9 @@
 #ifndef STRICT
 #error "STRICT must be defined on win32"
 #endif
+#ifndef HAVE_CONFIG_H
+#error "HAVE_CONFIG_H must be defined on win32"
+#endif
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
