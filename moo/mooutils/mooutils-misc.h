@@ -176,6 +176,22 @@ moo_assign_strv (char ***where,
 
 #define MOO_ASSIGN_STRV(where, value) moo_assign_strv (&(where), (value))
 
+G_INLINE_FUNC void
+moo_assign_obj (void** dest, void* src)
+{
+    if (*dest != src)
+    {
+        void *tmp = *dest;
+        *dest = src;
+        if (src)
+            g_object_ref (src);
+        if (tmp)
+            g_object_unref (tmp);
+    }
+}
+
+#define MOO_ASSIGN_OBJ(dest, src) moo_assign_obj ((void**)&(dest), (src))
+
 const char *_moo_get_pid_string             (void);
 
 guint       _moo_io_add_watch               (GIOChannel     *channel,
