@@ -27,6 +27,8 @@ plat/win32/installer.iss: $(top_srcdir)/plat/win32/installer.iss.in $(top_buildd
 installer: plat/win32/installer.iss
 	$(MAKE) $(AM_MAKEFLAGS) install
 	$(MEDIT_INNO_COMPILER) plat/win32/installer.iss
+copy:
+	cp moo/medit.exe "/win/Program Files (x86)/medit/bin/"
 endif
 
 test:
