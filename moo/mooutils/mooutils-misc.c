@@ -1201,6 +1201,11 @@ get_user_config_dir (void)
 }
 #endif // __WIN32__
 
+/**
+ * moo_get_user_data_dir: (moo.private 1)
+ *
+ * Returns: (type filename)
+ */
 char *
 moo_get_user_data_dir (void)
 {
@@ -1469,12 +1474,22 @@ moo_get_data_dirs_real (MooDataDirType   type_requested,
     }
 }
 
+/**
+ * moo_get_data_dirs: (moo.private 1)
+ *
+ * Returns: (type strv)
+ */
 char **
 moo_get_data_dirs (void)
 {
     return moo_get_data_dirs_real (MOO_DATA_SHARE, TRUE, NULL);
 }
 
+/**
+ * moo_get_lib_dirs: (moo.private 1)
+ *
+ * Returns: (type strv)
+ */
 char **
 moo_get_lib_dirs (void)
 {
@@ -1516,24 +1531,52 @@ moo_get_stuff_subdirs (const char    *subdir,
     return dirs;
 }
 
+/**
+ * moo_get_data_subdirs: (moo.private 1)
+ *
+ * @subdir: (type const-utf8)
+ *
+ * Returns: (type strv)
+ */
 char **
 moo_get_data_subdirs (const char *subdir)
 {
     return moo_get_stuff_subdirs (subdir, MOO_DATA_SHARE, TRUE);
 }
 
+/**
+ * moo_get_sys_data_subdirs: (moo.private 1)
+ *
+ * @subdir: (type const-utf8)
+ *
+ * Returns: (type strv)
+ */
 char **
 moo_get_sys_data_subdirs (const char *subdir)
 {
     return moo_get_stuff_subdirs (subdir, MOO_DATA_SHARE, FALSE);
 }
 
+/**
+ * moo_get_lib_subdirs: (moo.private 1)
+ *
+ * @subdir: (type const-utf8)
+ *
+ * Returns: (type strv)
+ */
 char **
 moo_get_lib_subdirs (const char *subdir)
 {
     return moo_get_stuff_subdirs (subdir, MOO_DATA_LIB, TRUE);
 }
 
+/**
+ * moo_get_data_and_lib_subdirs: (moo.private 1)
+ *
+ * @subdir: (type const-utf8)
+ *
+ * Returns: (type strv)
+ */
 char **
 moo_get_data_and_lib_subdirs (const char *subdir)
 {
@@ -1562,6 +1605,13 @@ get_user_data_file (const char *basename,
     return file;
 }
 
+/**
+ * moo_get_named_user_data_file: (moo.private 1)
+ *
+ * @basename: (type const-utf8)
+ *
+ * Returns: (type filename)
+ */
 char *
 moo_get_named_user_data_file (const char *basename)
 {
@@ -1582,12 +1632,26 @@ moo_get_named_user_data_file (const char *basename)
     return file;
 }
 
+/**
+ * moo_get_user_data_file: (moo.private 1)
+ *
+ * @basename: (type const-utf8)
+ *
+ * Returns: (type filename)
+ */
 char *
 moo_get_user_data_file (const char *basename)
 {
     return get_user_data_file (basename, FALSE);
 }
 
+/**
+ * moo_get_user_cache_file: (moo.private 1)
+ *
+ * @basename: (type const-utf8)
+ *
+ * Returns: (type filename)
+ */
 char *
 moo_get_user_cache_file (const char *basename)
 {
