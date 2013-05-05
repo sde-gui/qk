@@ -2507,7 +2507,6 @@ moo_editor_reload (MooEditor     *editor,
 {
     guint i;
     GError *error_here = NULL;
-    MooEditView *active_view;
     MooEditViewArray *views = NULL;
     gboolean ret = FALSE;
 
@@ -2544,7 +2543,6 @@ moo_editor_reload (MooEditor     *editor,
     }
 
     views = moo_edit_get_views (doc);
-    active_view = moo_edit_get_view (doc);
 
     for (i = 0; i < moo_edit_view_array_get_size (views); ++i)
     {
@@ -2573,7 +2571,6 @@ moo_editor_reload (MooEditor     *editor,
 
         g_propagate_error (error, error_here);
 
-        moo_text_view_undo (MOO_TEXT_VIEW (active_view));
         g_object_set_data (G_OBJECT (doc), "moo-scroll-to", NULL);
         goto out;
     }

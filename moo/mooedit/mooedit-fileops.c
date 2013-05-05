@@ -603,32 +603,16 @@ moo_edit_reload_local (MooEdit    *edit,
                        const char *encoding,
                        GError    **error)
 {
-    GtkTextIter start, end;
-    GtkTextBuffer *buffer;
-    gboolean result, enable_highlight;
+    gboolean result;
     GFile *file;
 
     file = moo_edit_get_file (edit);
     moo_return_error_if_fail (G_IS_FILE (file));
 
-    buffer = moo_edit_get_buffer (edit);
-
-    block_buffer_signals (edit);
-    gtk_text_buffer_begin_user_action (buffer);
-
-    gtk_text_buffer_get_bounds (buffer, &start, &end);
-    gtk_text_buffer_delete (buffer, &start, &end);
-    g_object_get (buffer, "highlight-syntax", &enable_highlight, (char*) 0);
-    g_object_set (buffer, "highlight-syntax", FALSE, (char*) 0);
-
     result = _moo_edit_load_file (edit, file,
                                   encoding ? encoding : edit->priv->encoding,
                                   NULL,
                                   error);
-
-    g_object_set (buffer, "highlight-syntax", enable_highlight, (char*) 0);
-    gtk_text_buffer_end_user_action (buffer);
-    unblock_buffer_signals (edit);
 
     if (result)
     {
