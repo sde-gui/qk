@@ -109,6 +109,7 @@ struct MooEditWindowPrivate {
     GSList *jobs; /* Job* */
 
     GList *history;
+    gboolean enable_history : 1;
     guint history_blocked : 1;
 };
 
@@ -837,6 +838,7 @@ moo_edit_window_init (MooEditWindow *window)
     window->priv = G_TYPE_INSTANCE_GET_PRIVATE (window, MOO_TYPE_EDIT_WINDOW, MooEditWindowPrivate);
     window->priv->history = NULL;
     window->priv->history_blocked = FALSE;
+    window->priv->enable_history = TRUE;
 
     window->priv->notebooks = moo_notebook_array_new ();
 
@@ -3144,8 +3146,11 @@ _moo_edit_window_remove_doc (MooEditWindow *window,
         g_object_set_data (G_OBJECT (doc), "moo-doc-list-action", NULL);
     }
 
-    window->priv->history = g_list_remove (window->priv->history, doc);
-    window->priv->history_blocked = TRUE;
+    if (window->priv->enable_history)
+    {
+        window->priv->history = g_list_remove (window->priv->history, doc);
+        window->priv->history_blocked = TRUE;
+    }
 
     moo_edit_window_update_doc_list (window);
 
@@ -3154,9 +3159,12 @@ _moo_edit_window_remove_doc (MooEditWindow *window,
     if (moo_notebook_get_n_pages (notebook) == 0)
         gtk_widget_hide (GTK_WIDGET (notebook));
 
-    window->priv->history_blocked = FALSE;
-    if (window->priv->history)
-        moo_edit_window_set_active_doc (window, window->priv->history->data);
+    if (window->priv->enable_history)
+    {
+        window->priv->history_blocked = FALSE;
+        if (window->priv->history)
+            moo_edit_window_set_active_doc (window, window->priv->history->data);
+    }
 
     edit_changed (window, NULL);
 
@@ -4602,7 +4610,8 @@ moo_edit_window_update_doc_list (MooEditWindow *window)
 {
     MooEdit *doc;
 
-    if (!window->priv->history_blocked &&
+    if (window->priv->enable_history &&
+        !window->priv->history_blocked &&
         (doc = ACTIVE_DOC (window)))
     {
         GList *link = g_list_find (window->priv->history, doc);
