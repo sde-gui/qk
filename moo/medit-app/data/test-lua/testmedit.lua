@@ -64,6 +64,6 @@ abcdefghij
   tassert(doc.get_selected_text() == 'abcdefg\n')
 end
 
-test_active_window()
+-- test_active_window()
 test_selection()
 cleanup()
