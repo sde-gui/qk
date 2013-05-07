@@ -113,14 +113,8 @@ gtk20
 '
 
 copy_files_from_dir() {
-  op=$1
-  shift
   subdir=$1
   shift
-  copy_cmd="cp -f"
-  if [ "$op" = "link" ]; then
-    copy_cmd="$copy_cmd -l"
-  fi
   cd $srcdir/$subdir || exit 1
   for f in $@; do
     subsubdir=`dirname $f`
@@ -132,17 +126,17 @@ copy_files_from_dir() {
       mkdir -p "$dstsubdir" || exit 1
     fi
     echo " -- $dstsubdir/`basename $f`"
-    $copy_cmd $f "$dstsubdir/" || exit 1
+    cp -fl $f "$dstsubdir/" || exit 1
   done
 }
 
 copy_files() {
-  copy_files_from_dir copy bin $bin_files
-  copy_files_from_dir copy bin $old_grep_bin_files
-#   copy_files_from_dir link bin $new_grep_bin_files
-  copy_files_from_dir link etc $etc_files
-  copy_files_from_dir link lib $lib_files
-  copy_files_from_dir link share $share_files
+  copy_files_from_dir bin $bin_files
+  copy_files_from_dir bin $old_grep_bin_files
+#   copy_files_from_dir bin $new_grep_bin_files
+  copy_files_from_dir etc $etc_files
+  copy_files_from_dir lib $lib_files
+  copy_files_from_dir share $share_files
 }
 
 copy_locale() {
@@ -213,12 +207,5 @@ if ! $no_python; then
 fi
 copy_icons
 copy_mime
-
-tarball=medit-bdist-$mgwconfig-`date +%Y%m%d`.zip
-cd `dirname $dstdir`
-do_or_die rm -f $mgwdistdir/$tarball
-do_or_die zip -r9 $tarball.tmp `basename $dstdir`
-do_or_die mkdir -p $mgwdistdir
-do_or_die mv $tarball.tmp $mgwdistdir/$tarball
 
 # -%- indent-width:2 -%-

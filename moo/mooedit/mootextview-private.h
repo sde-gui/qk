@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef MOOEDIT_COMPILATION
+#error "Do not include this file"
+#endif
+
 #ifndef MOO_TEXT_VIEW_PRIVATE_H
 #define MOO_TEXT_VIEW_PRIVATE_H
 

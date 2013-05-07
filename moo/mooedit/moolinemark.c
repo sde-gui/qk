@@ -18,6 +18,7 @@
  * class:MooLineMark: (parent GObject) (constructable) (moo.private 1)
  **/
 
+#define MOOEDIT_COMPILATION
 #include "mooedit/mootext-private.h"
 #include "mooedit/mootextbuffer.h"
 #include "marshals.h"

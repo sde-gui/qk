@@ -21,6 +21,7 @@
 #include "config.h"
 #endif
 
+#define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moofilesystem.h"
 #include "moofileview/moofile-private.h"
 #include "mooutils/moofileicon.h"

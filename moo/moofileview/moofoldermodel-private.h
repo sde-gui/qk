@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef MOO_FILE_VIEW_COMPILATION
+#error "This file may not be included"
+#endif
+
 #ifndef MOO_FOLDER_MODEL_PRIVATE_H
 #define MOO_FOLDER_MODEL_PRIVATE_H
 

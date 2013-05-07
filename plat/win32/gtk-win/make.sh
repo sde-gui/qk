@@ -1,7 +1,7 @@
 #! /bin/sh
 
 if [ "$1" = "--help" -o "$1" = "-h" ]; then
-  echo "Usage: $0 [--debug|--release|--reldbg|--all] <make arguments...>"
+  echo "Usage: $0 [--debug|--release|--all] <make arguments...>"
   exit 0
 fi
 
@@ -11,8 +11,6 @@ if [ "$1" = "--all" ]; then
   $0 --debug "$@" || exit 1
   echo $0 --release "$@"
   $0 --release "$@" || exit 1
-  echo $0 --reldbg "$@"
-  $0 --reldbg "$@" || exit 1
   exit 0
 fi
 

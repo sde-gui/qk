@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef MOOEDIT_COMPILATION
+#error "This file may not be used"
+#endif
+
 #ifndef MOO_LANG_MGR_PRIVATE_H
 #define MOO_LANG_MGR_PRIVATE_H
 

@@ -5,8 +5,8 @@ export mgwdir=`dirname $0`
 
 jhtarballdir=$mgwbuildroot/tarballs
 jhsourcedir=$mgwbuilddir/source
-destname=medit-deps-sources-`date +%Y%m%d`
-destdir=$mgwbuildroot/dist-$mgwconfig/$destname
+destname=medit-deps-src-`date +%Y%m%d`
+destdir=$mgwbuildroot/$destname
 
 do_or_die() {
   echo "$@"
@@ -15,11 +15,11 @@ do_or_die() {
 
 cd $mgwbuildroot
 
-do_or_die rm -fr $destdir $destdir.zip
-do_or_die mkdir -p $destdir
+do_or_die rm -fr $destdir $destdir.tar.bz2
+do_or_die mkdir $destdir
 do_or_die cp -lfR $jhtarballdir/* $destdir/
 
-do_or_die mkdir -p $destdir/tmp
+do_or_die mkdir $destdir/tmp
 for proj in pycairo pygobject pygtk; do
     cd $destdir/tmp || exit 1
     hg clone $jhsourcedir/$proj
@@ -32,5 +32,5 @@ do_or_die cp -lfR $mgwdir $destdir/gtk-win
 do_or_die mv $destdir/gtk-win/extra/readme-medit-deps.txt $destdir/readme.txt
 
 do_or_die cd $destdir/..
-do_or_die zip -r $destname.zip $destname
+do_or_die tar cjf $destname.tar.bz2 $destname
 do_or_die rm -fr $destname

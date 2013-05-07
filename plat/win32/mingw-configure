@@ -1,5 +1,4 @@
 #! /bin/sh
-# -%- lang:sh; indent-width:2 -%-
 
 builddir=`pwd`
 srcdir=`dirname $0`/../..
@@ -14,9 +13,6 @@ if [ -e /usr/bin/i586-mingw32msvc-gcc ]; then
   STATIC_LIBGCC=
 elif [ -e /usr/bin/i486-mingw32-gcc ]; then
   _mingw_tool_prefix="/usr/bin/i486-mingw32"
-  STATIC_LIBGCC="-static-libgcc -static-libstdc++"
-elif [ -e /usr/bin/i686-pc-mingw32-gcc ]; then
-  _mingw_tool_prefix="/usr/bin/i686-pc-mingw32"
   STATIC_LIBGCC="-static-libgcc -static-libstdc++"
 else
   echo "don't know where mingw compiler is"
@@ -37,16 +33,11 @@ if $en_only; then
   destdir=$destdir-en
 fi
 
-case "$mgwconfig" in
-  debug) :
-    _def_cflags='-gstabs+' ;;
-  reldbg) :
-    _def_cflags='-gstabs+ -O2' ;;
-  release) :
-    _def_cflags='-O2' ;;
-  *) :
-    echo "oops"; exit 1 ;;
-esac
+if [ "$mgwconfig" = "debug" ]; then
+  _def_cflags='-gstabs'
+else
+  _def_cflags='-O2'
+fi
 
 export ADDR2LINE=$_mingw_tool_prefix-addr2line
 export AS=$_mingw_tool_prefix-as
@@ -83,19 +74,9 @@ export PYTHON_INCLUDES="-I$mgwtargetdir/include/python"
 export PYTHON_LIBS="-lpython$mgwpythonver"
 export PYTHON_VERSION=$mgwpythondotver
 
-if $mgwlinux; then
-    _configure_build=i686-pc-linux-gnu
-    _configure_target=i586-pc-mingw32msvc
-elif $mgwcygwin; then
-    _configure_build=i686-pc-cygwin
-    _configure_target=i686-pc-mingw32
-else
-  echo "*** oops, neither mgwlinux nor mgwcygwin are set ***"
-fi
-
-configure_args="--build=$_configure_build --host=$_configure_target --target=$_configure_target \
+configure_args="--build=i686-pc-linux-gnu --host=i586-pc-mingw32msvc --target=i586-pc-mingw32msvc \
 AR=$AR RANLIB=$RANLIB STRIP=$STRIP AS=$AS DLLTOOL=$DLLTOOL OBJDUMP=$OBJDUMP NM=$NM WINDRES=$WINDRES RC=$RC \
-INSTALL=`which install-check` MOO_WIN32_CONFIG=$mgwconfig \
+INSTALL=`which install-check` \
 --prefix=$destdir"
 
 if $en_only; then

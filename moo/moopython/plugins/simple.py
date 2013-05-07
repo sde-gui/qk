@@ -33,7 +33,7 @@ class Plugin(moo.Plugin):
                                     callback=self.do_stuff        # the action callback
                                     )
         # and add it into the xml, so it's actually persent in menu
-        xml.add_item(self.ui_merge_id, "Editor/Menubar/Tools", name="AnAction", action="AnAction", position=-1)
+        xml.add_item(self.ui_merge_id, "Editor/Menubar/Tools", action="AnAction")
 
         return True
 

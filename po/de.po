@@ -8,8 +8,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-03-04 02:51-0800\n"
 "PO-Revision-Date: 2008-02-04 21:47+0100\n"
-"Last-Translator: Debianer <debianer@rocketmail.com>\n"
-"Language-Team: Christian Dywan <christian@twotoasts.de>, Debianer <debianer@rocketmail.com>\n"
+"Last-Translator: Christian Dywan <christian@twotoasts.de>\n"
+"Language-Team: Christian Dywan <christian@twotoasts.de>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -75,27 +75,27 @@ msgstr "ZEILE"
 #. help message for command line option --encoding=ENCODING
 #: ../moo/medit-app/main.c:137
 msgid "Use character encoding ENCODING"
-msgstr "Nutze diese Zeichencodierung"
+msgstr ""
 
 #. "ENCODING" part in --encoding=ENCODING
 #: ../moo/medit-app/main.c:138
 msgid "ENCODING"
-msgstr "ZEICHENCODIERUNG"
+msgstr ""
 
 #. help message for command line option --reload
 #: ../moo/medit-app/main.c:140
 msgid "Automatically reload file if it was modified on disk"
-msgstr "Lade die Datei bei Veränderung auf der Festplatte automatisch neu"
+msgstr ""
 
 #. help message for command line option --geometry=WIDTHxHEIGHT[+X+Y]
 #: ../moo/medit-app/main.c:152
 msgid "Default window size and position"
-msgstr "Standard Fenstergröße und Position"
+msgstr ""
 
 #. "WIDTHxHEIGHT[+X+Y]" part in --geometry=WIDTHxHEIGHT[+X+Y]
 #: ../moo/medit-app/main.c:153
 msgid "WIDTHxHEIGHT[+X+Y]"
-msgstr "BreitexHöhe[+X+Y]"
+msgstr ""
 
 #. help message for command line option --version
 #: ../moo/medit-app/main.c:155
@@ -136,38 +136,38 @@ msgstr "Geschrieben von"
 #: ../moo/mooapp/glade/mooappabout-credits.glade.h:8
 msgctxt "yes"
 msgid "Dialog title|Credits"
-msgstr "Credits"
+msgstr ""
 
 #. Credits button label in About dialog
 #: ../moo/mooapp/glade/mooappabout-dialog.glade.h:2
 msgctxt "yes"
 msgid "C_redits"
-msgstr "C_redits"
+msgstr ""
 
 #. Translators: do not translate the part before |
 #: ../moo/mooapp/glade/mooappabout-dialog.glade.h:4
 msgctxt "yes"
 msgid "Dialog title|About"
-msgstr "About"
+msgstr ""
 
 #. License button label in About dialog
 #: ../moo/mooapp/glade/mooappabout-dialog.glade.h:6
 msgctxt "yes"
 msgid "_License"
-msgstr "_License"
+msgstr ""
 
 #. Translators: do not translate the part before |
 #: ../moo/mooapp/glade/mooappabout-license.glade.h:2
 msgctxt "yes"
 msgid "Dialog title|License"
-msgstr "License"
+msgstr ""
 
 #. Translators: this goes into About box, under Translated by tab,
 #. do not ignore it, markup isn't always used. It should be something
 #. like "Some Guy <someguy@domain.net>", with lines separated by \n
 #: ../moo/mooapp/mooappabout.c:57
 msgid "translator-credits"
-msgstr "Christian Dywan <christian@twotoasts.de>\nDebianer <debianer@rocketmail.com>"
+msgstr "Christian Dywan <christian@twotoasts.de>"
 
 #. Translators: this goes into About box, under Translated by tab,
 #. this must be valid html markup, e.g.
@@ -177,12 +177,11 @@ msgstr "Christian Dywan <christian@twotoasts.de>\nDebianer <debianer@rocketmail.
 msgid "translator-credits-markup"
 msgstr ""
 "Christian Dywan <a href=\"mailto:christian@twotoasts.de\">&lt;"
-"christian@twotoasts.de&gt;</a><br/>Debianer <a href=\"mailto:debianer@rocketmail.com\">&lt;"
-"debianer@rocketmail.com&gt;</a>"
+"christian@twotoasts.de&gt;</a>"
 
 #: ../moo/mooapp/mooapp.c:991
 msgid "Report a Bug..."
-msgstr "Einen Bug melden..."
+msgstr ""
 
 #: ../moo/mooapp/mooapp.c:1354
 #, c-format
@@ -193,15 +192,10 @@ msgid ""
 "\n"
 "It contains medit version and your operating system name (%s)"
 msgstr ""
-"Die folgende URL wird geöffnet:\n"
-"\n"
-"%s\n"
-"\n"
-"Es beinhaltet die medit Version und dein Betriebssystem (%s)"
 
 #: ../moo/mooapp/mooapp.c:1361
 msgid "Open URL?"
-msgstr "URL öffnen?"
+msgstr ""
 
 #. Prefs dialog title
 #: ../moo/mooapp/mooapp.c:1399
@@ -235,31 +229,31 @@ msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:6
 msgid "Enable _session support"
-msgstr "Speichern der _Sitzung"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:7
 msgid "Encoding for _new files:"
-msgstr "Zeichenkodierung für _neue Dateien:"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:8
 msgid "Encodings to _autodetect:"
-msgstr "_Erkenne Zeichenkodierungen:"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:9
 msgid "Ensure trailing new_line"
-msgstr "Füge am Ende eine leere _Zeile an"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:10
 msgid "Make _backups"
-msgstr "Automatisch _speichern"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:11
 msgid "Open and Save As dialogs show current document _folder"
-msgstr "Zeige Öffnen und Speichern Dialoge im aktuellen _Ordner"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-file.glade.h:12
 msgid "Remove trailing _spaces"
-msgstr "Entferne abschließende _Leerzeichen"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-filters.glade.h:1
 msgid "<b>File filters</b>"
@@ -378,7 +372,7 @@ msgstr "Zeilennummern anzeigen"
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:13
 msgid "Show spaces"
-msgstr "Zeige Leerzeichen"
+msgstr ""
 
 #: ../moo/mooedit/glade/mooeditprefs-view.glade.h:14
 msgid "Show tabs"
@@ -407,7 +401,7 @@ msgstr "<b>Beschreibung:</b>"
 
 #: ../moo/mooedit/glade/moopluginprefs.glade.h:3
 msgid "<b>Plugins</b>"
-msgstr "Plugins"
+msgstr ""
 
 #: ../moo/mooedit/glade/moopluginprefs.glade.h:4
 msgid "<b>Version:</b>"
@@ -487,11 +481,11 @@ msgstr "_Regulärer Ausdruck"
 #: ../moo/mooedit/glade/mootextfind.glade.h:1
 #: ../moo/plugins/glade/moogrep.glade.h:1
 msgid "Case _sensitive"
-msgstr "Groß-/ Kleinschreibung _beachten"
+msgstr "Groß-/ Kleinschreibung beachten"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:2
 msgid "Don't _prompt on replace"
-msgstr "Keine _Abfrage beim Ersetzen"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1115
 msgid "Find"
@@ -499,11 +493,11 @@ msgstr "Suchen"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:4
 msgid "Find _backwards"
-msgstr "_Rückwärtssuche"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:5
 msgid "From c_ursor"
-msgstr "Ab dem _Mauszeiger"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:6
 msgid "Options"
@@ -511,7 +505,7 @@ msgstr "Optionen"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:7
 msgid "Regular e_xpression"
-msgstr "Regulärer A_usdruck"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:8
 msgid "Replace With"
@@ -519,23 +513,23 @@ msgstr "Ersetzen mit"
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:9
 msgid "S_elected text"
-msgstr "_Ausgewählter Text"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:10
 msgid "_Literal replacement"
-msgstr "_Wörtlicher Ersatz"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:11
 msgid "_Replacement text:"
-msgstr "_Ersetzender Text:"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:12
 msgid "_Text to find:"
-msgstr "Gesuchter _Text:"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind.glade.h:13
 msgid "_Whole words only"
-msgstr "Nur vollständige Wörter"
+msgstr ""
 
 #: ../moo/mooedit/glade/mootextfind-prompt.glade.h:1
 #: ../moo/mooedit/mooeditwindow.c:530
@@ -630,11 +624,10 @@ msgid ""
 "Could not save file %s in encoding %s. Do you want to save it in UTF-8 "
 "encoding instead?"
 msgstr ""
-"Könnte die Datei %s nicht mit der Zeichenkodierung %s speichern. Möchtest du stattdessen in UTF-8 speichern?"
 
 #: ../moo/mooedit/mooeditdialogs.c:495
 msgid "Save file in UTF-8 encoding?"
-msgstr "Datei mit der UTF-8 Zeichenkodierung speichern?"
+msgstr ""
 
 #. Could not open file foo.txt
 #: ../moo/mooedit/mooeditdialogs.c:522 ../moo/mooedit/mooeditdialogs.c:589
@@ -656,14 +649,12 @@ msgid ""
 "Could not open file using character encoding %s. Try to select another "
 "encoding below."
 msgstr ""
-"Könnte die Datei mit der folgenden Zeichencodierung nicht öffnen: %s. Versuche eine andere auszuwählen."
 
 #: ../moo/mooedit/mooeditdialogs.c:536
 #, c-format
 msgid ""
 "Could not detect file character encoding. Try to select an encoding below."
 msgstr ""
-"Konnte die Zeichenkodierung nicht erkennen. Versuche eine andere auszuwählen."
 
 #. Could not reload file foo.txt
 #: ../moo/mooedit/mooeditdialogs.c:621
@@ -725,7 +716,7 @@ msgstr ""
 #: ../moo/mooedit/mooeditdialogs.c:741
 #, c-format
 msgid "Invalid regular expression"
-msgstr "Ungültiger Regulärer Ausdruck"
+msgstr ""
 
 #: ../moo/mooedit/mooedit-fileops.c:1306 ../moo/plugins/moofileselector.c:511
 msgid "Untitled"
@@ -765,23 +756,23 @@ msgstr "encodings_list"
 
 #: ../moo/mooedit/mooeditprefspage.c:168
 msgid "PreferencesPage|General"
-msgstr "Allgemein"
+msgstr ""
 
 #: ../moo/mooedit/mooeditprefspage.c:203
 msgid "PreferencesPage|File Filters"
-msgstr "Dateifilter"
+msgstr ""
 
 #: ../moo/mooedit/mooeditprefspage.c:255
 msgid "PreferencesPage|View"
-msgstr "Ansicht"
+msgstr ""
 
 #: ../moo/mooedit/mooeditprefspage.c:301
 msgid "PreferencesPage|File"
-msgstr "Datei"
+msgstr ""
 
 #: ../moo/mooedit/mooeditprefspage.c:340
 msgid "PreferencesPage|Languages"
-msgstr "Sprachen"
+msgstr ""
 
 #. Menu item in the Language menu
 #: ../moo/mooedit/mooeditprefspage.c:555 ../moo/mooedit/mooeditwindow.c:3879
@@ -839,7 +830,7 @@ msgstr "Alle Schließen"
 
 #: ../moo/mooedit/mooeditwindow.c:490
 msgid "Close A_ll"
-msgstr "A_lle Schließen"
+msgstr "Alle Schließen"
 
 #: ../moo/mooedit/mooeditwindow.c:491
 msgid "Close all documents"
@@ -927,7 +918,7 @@ msgstr "Zeilennummernanzeige umschalten"
 
 #: ../moo/mooedit/mooeditwindow.c:600
 msgid "Show _Line Numbers"
-msgstr "Zeige _Zeilennummern"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:606
 msgid "Focus Document"
@@ -939,23 +930,23 @@ msgstr "Dokument _fokussieren"
 
 #: ../moo/mooedit/mooeditwindow.c:614
 msgid "Move to Split Notebook"
-msgstr "Wechsel zu geteilter Ansicht"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:615
 msgid "_Move to Split Notebook"
-msgstr "_Wechsel zu geteilter Ansicht"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:623 ../moo/mooedit/mooeditwindow.c:624
 msgid "Split View Horizontally"
-msgstr "Horizontal geteilte Ansicht"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:631 ../moo/mooedit/mooeditwindow.c:632
 msgid "Split View Vertically"
-msgstr "Vertikal geteilte Ansicht"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:638 ../moo/mooedit/mooeditwindow.c:639
 msgid "Focus Next Split View"
-msgstr "Fokussiere nächstes Spalte"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:683
 msgid "Toggle Bookmark"
@@ -1004,7 +995,7 @@ msgstr "Seite einrichten"
 
 #: ../moo/mooedit/mooeditwindow.c:758
 msgid "Page S_etup..."
-msgstr "Seite _einrichten..."
+msgstr "Seite einrichten..."
 
 #: ../moo/mooedit/mooeditwindow.c:759
 msgid "Page Setup..."
@@ -1020,7 +1011,7 @@ msgstr "Als PDF exportieren"
 
 #: ../moo/mooedit/mooeditwindow.c:785
 msgid "E_xport as PDF..."
-msgstr "Als PDF e_xportieren..."
+msgstr "Als PDF exportieren..."
 
 #: ../moo/mooedit/mooeditwindow.c:786
 msgid "Export as PDF..."
@@ -1078,43 +1069,43 @@ msgstr "_Zeichensatz"
 
 #: ../moo/mooedit/mooeditwindow.c:1431
 msgid "Line En_dings"
-msgstr "Zeilenko_dierung"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:1438
 msgid "_Windows (CR+LF)"
-msgstr "_Windows (CR+LF)"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:1447
 msgid "_Unix (LF)"
-msgstr "_Unix (LF)"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:1451
 msgid "_Mac (CR)"
-msgstr "_Mac (CR)"
+msgstr ""
 
 #. Item in document tab context menu
 #: ../moo/mooedit/mooeditwindow.c:2139
 msgctxt "tab-context-menu"
 msgid "Close"
-msgstr "Tab schließen"
+msgstr ""
 
 #. Item in document tab context menu
 #: ../moo/mooedit/mooeditwindow.c:2151
 msgctxt "tab-context-menu"
 msgid "Close All Others"
-msgstr "Alle anderen Tabs schließen"
+msgstr ""
 
 #. Item in document tab context menu
 #: ../moo/mooedit/mooeditwindow.c:2169
 msgctxt "tab-context-menu"
 msgid "Detach"
-msgstr "Abtrennen und in neuem Fenster öffnen"
+msgstr ""
 
 #. Item in document tab context menu
 #: ../moo/mooedit/mooeditwindow.c:2179
 msgctxt "tab-context-menu"
 msgid "Move to Split Notebook"
-msgstr "Wechsel zu geteilter Ansicht"
+msgstr ""
 
 #: ../moo/mooedit/mooeditwindow.c:3733
 #, c-format
@@ -1142,7 +1133,7 @@ msgstr "_Sprache"
 #: ../moo/mooedit/mooplugin.c:1425
 msgctxt "Prefs page label"
 msgid "Plugins"
-msgstr "Plugins"
+msgstr ""
 
 #: ../moo/mooedit/mooplugin.c:1450
 msgctxt "plugin-prefs-column"
@@ -1152,7 +1143,7 @@ msgstr "Aktiviert"
 #: ../moo/mooedit/mooplugin.c:1456
 msgctxt "plugin-prefs-column"
 msgid "Plugin"
-msgstr "Plugin"
+msgstr ""
 
 #: ../moo/mooedit/mooplugin-loader.c:226
 #, c-format
@@ -1160,23 +1151,21 @@ msgid ""
 "console message|ignoring file '%s', module version '%s' is not compatible "
 "with current version %u.%u"
 msgstr ""
-"ignoriere Dateien '%s', Modul Version '%s' ist nicht kompatibel "
-"mit dieser Version %u.%u"
 
 #: ../moo/mooedit/mooplugin-loader.c:235
 #, c-format
 msgid "console message|invalid module version '%s' in file '%s'"
-msgstr "Ungültige Modul Version '%s' in Datei '%s'"
+msgstr ""
 
 #: ../moo/mooedit/mootextfind.c:165
 msgctxt "Dialog title"
 msgid "Replace"
-msgstr "Ersetzen"
+msgstr ""
 
 #: ../moo/mooedit/mootextfind.c:171
 msgctxt "Dialog title"
 msgid "Find"
-msgstr "Finden"
+msgstr ""
 
 #: ../moo/mooedit/mootextfind.c:475
 msgid "No search term entered"
@@ -1277,7 +1266,7 @@ msgstr "Symbol"
 #: ../moo/moofileview/moobookmarkmgr.c:978
 msgctxt "fileview-bookmark-editor"
 msgid "Label"
-msgstr "Label"
+msgstr ""
 
 #. Column label in file selector bookmark editor
 #: ../moo/moofileview/moobookmarkmgr.c:996
@@ -1392,11 +1381,11 @@ msgstr "Ansicht"
 
 #: ../moo/moolua/mooluaplugin.cpp:112
 msgid "Lua"
-msgstr "Lua"
+msgstr ""
 
 #: ../moo/moolua/mooluaplugin.cpp:112
 msgid "Lua support"
-msgstr "Lua Unterstützung"
+msgstr ""
 
 #: ../moo/moopython/plugins/medit/runpython.py:43
 msgid "Python Output"
@@ -1466,37 +1455,37 @@ msgstr "Verknüpfung zu ausgewählter Aktion"
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:4
 msgctxt "yes"
 msgid "Shortcut|Custom"
-msgstr "Benutzerdefiniert"
+msgstr ""
 
 #. Translators: do not translate the part before |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:6
 msgctxt "yes"
 msgid "Shortcut|Default"
-msgstr "Standard"
+msgstr ""
 
 #. Translators: do not translate the part before |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:8
 msgctxt "yes"
 msgid "Shortcut|None"
-msgstr "Keinen"
+msgstr ""
 
 #. Column label in Configure Shortcuts dialog
 #: ../moo/mooutils/mooaccelprefs.c:261
 msgctxt "accel-editor-column"
 msgid "Action"
-msgstr "Aktion"
+msgstr ""
 
 #. Column label in Configure Shortcuts dialog
 #: ../moo/mooutils/mooaccelprefs.c:270
 msgctxt "accel-editor-column"
 msgid "Shortcut"
-msgstr "Verknüpfung"
+msgstr ""
 
 #. Column label in Configure Shortcuts dialog
 #: ../moo/mooutils/mooaccelprefs.c:279
 msgctxt "accel-editor-column"
 msgid "Global"
-msgstr "Global"
+msgstr ""
 
 #: ../moo/mooutils/mooaccelprefs.c:804
 msgid "Configure Shortcuts"
@@ -1732,23 +1721,23 @@ msgstr "Thai"
 #: ../moo/mooutils/mooentry.c:533
 msgctxt "insert-special-char"
 msgid "Line End"
-msgstr "Zeilenende"
+msgstr ""
 
 #. menu item in Insert Special Character submenu of text entry context menu
 #: ../moo/mooutils/mooentry.c:535
 msgctxt "insert-special-char"
 msgid "Tab"
-msgstr "Tab"
+msgstr ""
 
 #. label of Insert Special Character submenu in text entry context menu
 #: ../moo/mooutils/mooentry.c:578
 msgctxt "insert-special-char"
 msgid "Insert Special Character"
-msgstr "Füge Sonderzeichen ein"
+msgstr ""
 
 #: ../moo/mooutils/moofiledialog.c:650
 msgid "Selected file is not a regular file"
-msgstr "Ausgewählte Datei ist keine reguläre Datei"
+msgstr ""
 
 #: ../moo/mooutils/moofilewriter.c:101
 #, c-format
@@ -1858,14 +1847,14 @@ msgstr "%s konnte nicht zu %s umbenannt werden: %s"
 #: ../moo/mooutils/mooutils-misc.c:1668
 #, c-format
 msgid "console message|in file %s, line %d, function %s: %s"
-msgstr "in Datei %s, Zeile %d, Funktion %s: %s"
+msgstr ""
 
 #. "Unknown error" may be displayed if there is a bug in the program
 #. and proper error message has not been set. It doesn't provide any
 #. useful information obviously
 #: ../moo/mooutils/mooutils-misc.c:2053
 msgid "Unknown error"
-msgstr "Unbekannter Fehler"
+msgstr ""
 
 #: ../moo/mooutils/moowindow.c:243
 msgid "Configure _Shortcuts..."
@@ -1886,7 +1875,7 @@ msgstr "Statusleiste anzeigen"
 #: ../moo/mooutils/moowindow.c:461
 #, c-format
 msgid "Could not parse geometry string '%s'\n"
-msgstr "Kann den Geometrischen string nicht erstellen '%s'\n"
+msgstr ""
 
 #: ../moo/mooutils/moowindow.c:1187
 msgid "_Icons Only"
@@ -1913,7 +1902,7 @@ msgstr "Werkzeugleistenstil"
 #: ../moo/plugins/ctags/ctags-plugin.c:120
 msgctxt "window-pane"
 msgid "Functions"
-msgstr "Funktionen"
+msgstr ""
 
 #: ../moo/plugins/glade/moofileselector.glade.h:1
 msgid "Create File"
@@ -2177,31 +2166,31 @@ msgstr "Neuer Eintrag"
 
 #: ../moo/plugins/usertools/glade/moousertools.glade.h:6
 msgid "_Files:"
-msgstr "_Dateien:"
+msgstr ""
 
 #: ../moo/plugins/usertools/glade/moousertools.glade.h:7
 msgid "_Requires:"
-msgstr "_Erfordert:"
+msgstr ""
 
 #: ../moo/plugins/usertools/glade/moousertools.glade.h:8
 msgid "_Save:"
-msgstr "_Speichern:"
+msgstr ""
 
 #: ../moo/plugins/usertools/glade/moousertools.glade.h:9
 msgid "_Type:"
-msgstr "_Typ:"
+msgstr ""
 
 #. Label of notebook tab on User Tools prefs page, do not translate the part before |
 #: ../moo/plugins/usertools/glade/moousertools.glade.h:11
 msgctxt "yes"
 msgid "user-tools-prefs|Context menu"
-msgstr "Contextmenü"
+msgstr ""
 
 #. Label of notebook tab on User Tools prefs page, do not translate the part before |
 #: ../moo/plugins/usertools/glade/moousertools.glade.h:13
 msgctxt "yes"
 msgid "user-tools-prefs|Tools menu"
-msgstr "Werkzeugmenü"
+msgstr ""
 
 #: ../moo/plugins/usertools/moocommand-exe.c:89
 msgid "Output|None"
@@ -2249,7 +2238,7 @@ msgstr "Gesamtes Dokument"
 
 #: ../moo/plugins/usertools/moocommand-exe.c:1074
 msgid "Input|Document copy"
-msgstr "Dokumentkopie"
+msgstr ""
 
 #: ../moo/plugins/usertools/moocommand-script.cpp:279
 msgid "Lua script"
@@ -2266,11 +2255,11 @@ msgstr "Werkzeuge"
 
 #: ../moo/plugins/usertools/moousertools.c:1377
 msgid "User Tools"
-msgstr "Benutzerwerkzeuge"
+msgstr ""
 
 #: ../moo/plugins/usertools/moousertools.c:1378
 msgid "Configurable tools"
-msgstr "Konfigurierbare Werkzeuge"
+msgstr ""
 
 #: ../moo/plugins/usertools/moousertools-prefs.c:109
 msgid "New Command"
@@ -2280,37 +2269,37 @@ msgstr "Neuer Befehl"
 #: ../moo/plugins/usertools/moousertools-prefs.c:162
 msgctxt "Requires-combo"
 msgid "Nothing"
-msgstr "Nichts"
+msgstr ""
 
 #. 'Requires' combo box entry on Tools prefs page
 #: ../moo/plugins/usertools/moousertools-prefs.c:164
 msgctxt "Requires-combo"
 msgid "Document"
-msgstr "Dokument"
+msgstr ""
 
 #. 'Requires' combo box entry on Tools prefs page
 #: ../moo/plugins/usertools/moousertools-prefs.c:166
 msgctxt "Requires-combo"
 msgid "File on disk"
-msgstr "Datei auf der Festplatte"
+msgstr ""
 
 #. 'Save' combo box entry on Tools prefs page
 #: ../moo/plugins/usertools/moousertools-prefs.c:177
 msgctxt "Save-combo"
 msgid "Nothing"
-msgstr "Nichts"
+msgstr ""
 
 #. 'Save' combo box entry on Tools prefs page
 #: ../moo/plugins/usertools/moousertools-prefs.c:179
 msgctxt "Save-combo"
 msgid "Current document"
-msgstr "aktuelles Dokument"
+msgstr ""
 
 #. 'Save' combo box entry on Tools prefs page
 #: ../moo/plugins/usertools/moousertools-prefs.c:181
 msgctxt "Save-combo"
 msgid "All documents"
-msgstr "alle Dokumente"
+msgstr ""
 
 #~ msgid "Could not save file"
 #~ msgstr "Datei konnte nicht gespeichert werden"

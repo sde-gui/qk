@@ -1,13 +1,13 @@
-<?xml version="1.0" ?><!-- -%- lang:xml; indent-width:2; use-tabs:0 -%- -->
+<?xml version="1.0" ?><!-- -%- indent-width:2; use-tabs:0 -%- -->
 <moduleset>
 
   <repository type="hg" name="muntyan.bitbucket.org" href="http://bitbucket.org/muntyan/"/>
 
-  <tarball id="zlib" version="1.2.7" supports-non-srcdir-builds="no">
-    <source href="http://zlib.net/zlib-1.2.7.tar.gz"
-            md5sum="60df6a37c56e7c1366cca812414f7b85"/>
+  <tarball id="zlib" version="1.2.5" supports-non-srcdir-builds="no">
+    <source href="http://zlib.net/zlib-1.2.5.tar.gz"
+            md5sum="c735eab2d659a96e5a594c9e8541ad63"/>
     <patches>
-      <patch file="zlib-1.2.7.patch" strip="1"/>
+      <patch file="zlib-1.2.5.patch" strip="1"/>
     </patches>
   </tarball>
 
@@ -27,25 +27,11 @@
             md5sum="58a2bc6d39c0ba57823034d55d65d606"/>
     <patches>
       <patch file="gettext-0.17.patch" strip="1"/>
-      <patch file="gettext-0.17-mkdir.patch" strip="1"/>
     </patches>
     <dependencies>
       <dep package="libiconv"/>
     </dependencies>
   </tarball>
-
-  <!--
-  <tarball id="gettext" version="0.18.1.1">
-    <source href="http://ftp.gnu.org/pub/gnu/gettext/gettext-0.18.1.1.tar.gz"
-            md5sum="3dd55b952826d2b32f51308f2f91aa89"/>
-    <patches>
-      <patch file="gettext-0.18.1.1.patch" strip="1"/>
-    </patches>
-    <dependencies>
-      <dep package="libiconv"/>
-    </dependencies>
-  </tarball>
-  -->
 
   <tarball id="grep">
     <source href="http://ftp.gnu.org/pub/gnu/grep/grep-2.7.tar.gz"
@@ -75,9 +61,6 @@
     <dependencies>
       <dep package="libiconv"/>
     </dependencies>
-    <patches>
-      <patch file="libxml2.patch" strip="1"/>
-    </patches>
   </tarball>
 
   <tarball id="glib">
@@ -152,12 +135,21 @@
       <dep package="gettext"/>
       <dep package="libpng"/>
     </dependencies>
-    <patches>
-      <patch file="cairo-1.8.10.patch" strip="1"/>
-    </patches>
   </tarball>
+
   <!-- with cairo-1.10 icons disappear randomly -->
-  <!-- with cairo-1.12.14 icons and text don't draw in file selector -->
+<!--  <tarball id="cairo" supports-non-srcdir-builds="no">
+    <source href="http://cairographics.org/releases/cairo-1.10.0.tar.gz"
+            md5sum="70a2ece66cf473d976e2db0f75bf199e"/>
+    <dependencies>
+      <dep package="pixman"/>
+      <dep package="gettext"/>
+      <dep package="libpng"/>
+    </dependencies>
+    <patches>
+      <patch file="cairo-1.10.patch" strip="1"/>
+    </patches>
+  </tarball>-->
 
   <!-- GOOD -->
   <tarball id="pango">

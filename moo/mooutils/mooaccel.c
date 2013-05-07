@@ -411,62 +411,6 @@ _moo_get_accel_label (const char *accel)
         return g_strdup ("");
 }
 
-static gboolean
-need_workaround_for_671562 (guint keyval)
-{
-    switch (keyval)
-    {
-        case GDK_F1:
-        case GDK_F2:
-        case GDK_F3:
-        case GDK_F4:
-        case GDK_F5:
-        case GDK_F6:
-        case GDK_F7:
-        case GDK_F8:
-        case GDK_F9:
-        case GDK_F10:
-        case GDK_F11:
-        case GDK_F12:
-            return TRUE;
-
-        default:
-            return FALSE;
-    }
-}
-
-/* Wrapper for gdk_keymap_translate_keyboard_state with a workaround
-   for https://bugzilla.gnome.org/show_bug.cgi?id=671562 */
-gboolean
-moo_keymap_translate_keyboard_state (GdkKeymap           *keymap,
-                                     guint                hardware_keycode,
-                                     GdkModifierType      state,
-                                     gint                 group,
-                                     guint               *keyval_p,
-                                     gint                *effective_group,
-                                     gint                *level,
-                                     GdkModifierType     *consumed_modifiers_p)
-{
-    guint keyval = 0;
-    GdkModifierType consumed_modifiers = 0;
-    gboolean retval = 
-        gdk_keymap_translate_keyboard_state (keymap, hardware_keycode, state, group,
-                                             &keyval, effective_group, level,
-                                             &consumed_modifiers);
-
-    /* Check whether Shift mask needs to be added back */
-    if ((state & GDK_SHIFT_MASK) && (consumed_modifiers & GDK_SHIFT_MASK) && 
-        need_workaround_for_671562 (keyval))
-    {
-        consumed_modifiers &= ~GDK_SHIFT_MASK;
-    }
-
-    if (keyval_p)
-        *keyval_p = keyval;
-    if (consumed_modifiers_p)
-        *consumed_modifiers_p = consumed_modifiers;
-    return retval;
-}
 
 void
 moo_accel_translate_event (GtkWidget       *widget,
@@ -489,7 +433,7 @@ moo_accel_translate_event (GtkWidget       *widget,
     else
         keymap = gdk_keymap_get_default ();
 
-    moo_keymap_translate_keyboard_state (keymap, event->hardware_keycode,
+    gdk_keymap_translate_keyboard_state (keymap, event->hardware_keycode,
                                          (GdkModifierType) event->state, event->group,
                                          keyval, NULL, NULL, &consumed);
     if (mods)

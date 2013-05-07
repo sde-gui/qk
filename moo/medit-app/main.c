@@ -61,7 +61,6 @@ static struct MeditOpts {
     char **ut_tests;
     char **run_script;
     char **send_script;
-    gboolean portable;
 } medit_opts = { -1, -1 };
 
 #include "parse.h"
@@ -164,68 +163,10 @@ static GOptionEntry medit_options[] = {
             "File to write coverage data to", NULL },
     { "ut-list", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.ut_list,
             "List unit tests", NULL },
-#ifdef __WIN32__
-    { "portable", 0, G_OPTION_ARG_NONE, G_OPTION_ARG_NONE, &medit_opts.portable,
-            "Run medit in portable mode", NULL },
-#endif
     { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &medit_opts.files,
             NULL, /* "FILES" part in "medit [OPTION...] [FILES]" */ N_("FILES") },
     { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
 };
-
-/* Check if there is an argument of the form +<number>, and treat it as --line <number> */
-static void
-check_plus_line_arg (void)
-{
-    gboolean done = FALSE;
-    char **p;
-    GRegex *re = NULL;
-
-    re = g_regex_new ("^\\+(?P<line>\\d+)", G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES, 0, NULL);
-    g_return_if_fail (re != NULL);
-
-    for (p = medit_opts.files; !done && p && *p && **p; ++p)
-    {
-        GMatchInfo *match_info = NULL;
-
-        if (g_regex_match (re, *p, 0, &match_info))
-        {
-            int line = 0;
-            char *line_string = g_match_info_fetch_named (match_info, "line");
-
-            errno = 0;
-            line = strtol (line_string, NULL, 10);
-            if (errno != 0)
-                line = 0;
-
-            // if a file "+10" exists, open it
-            if (line > 0 && g_file_test (*p, G_FILE_TEST_EXISTS))
-                line = 0;
-
-            if (line > 0)
-            {
-                medit_opts.line = line;
-
-                g_free (*p);
-                *p = NULL;
-                if (*(p + 1) != NULL)
-                {
-                    int n = g_strv_length (p + 1);
-                    memcpy (p, p + 1, n * sizeof(*p));
-                    *(p + n) = NULL;
-                }
-
-                done = TRUE;
-            }
-
-            g_free (line_string);
-        }
-
-        g_match_info_free (match_info);
-    }
-
-    g_regex_unref (re);
-}
 
 static gboolean
 post_parse_func (void)
@@ -261,8 +202,6 @@ post_parse_func (void)
 
     if (medit_opts.project)
         medit_opts.project_mode = TRUE;
-
-    check_plus_line_arg ();
 
     return TRUE;
 }
@@ -618,79 +557,6 @@ install_log_handlers (void)
 #endif
 }
 
-#ifdef __WIN32__
-static void
-setup_portable_mode (void)
-{
-    char *appdir = NULL;
-    char *share = NULL;
-    char *datadir = NULL;
-    char *cachedir = NULL;
-    char *tmp = NULL;
-
-    appdir = moo_win32_get_app_dir ();
-    g_return_if_fail (appdir != NULL);
-
-    share = g_build_filename (appdir, "..", "share", NULL);
-    g_return_if_fail (share != NULL);
-
-    if (g_file_test (share, G_FILE_TEST_IS_DIR))
-    {
-        datadir = g_build_filename (share, MEDIT_PORTABLE_DATA_DIR, NULL);
-        cachedir = g_build_filename (share, MEDIT_PORTABLE_CACHE_DIR, NULL);
-    }
-    else
-    {
-        datadir = g_build_filename (appdir, MEDIT_PORTABLE_DATA_DIR, NULL);
-        cachedir = g_build_filename (appdir, MEDIT_PORTABLE_CACHE_DIR, NULL);
-    }
-
-    g_return_if_fail (datadir != NULL && cachedir != NULL);
-    
-    tmp = _moo_normalize_file_path (datadir);
-    moo_set_user_data_dir (tmp);
-    g_free (tmp);
-    tmp = NULL;
-
-    tmp = _moo_normalize_file_path (cachedir);
-    moo_set_user_cache_dir (tmp);
-    g_free (tmp);
-    tmp = NULL;
-
-    g_free (cachedir);
-    g_free (datadir);
-    g_free (share);
-    g_free (appdir);
-}
-
-static void
-check_portable_mode (void)
-{
-    gboolean portable = FALSE;
-    char *appdir = NULL;
-    char *magic_file = NULL;
-
-    if (medit_opts.portable)
-        portable = TRUE;
-
-    if (!portable)
-    {
-        appdir = moo_win32_get_app_dir ();
-        g_return_if_fail (appdir != NULL);
-        magic_file = g_build_filename (appdir, MEDIT_PORTABLE_MAGIC_FILE_NAME, NULL);
-        g_return_if_fail (magic_file != NULL);
-        if (g_file_test (magic_file, G_FILE_TEST_EXISTS))
-            portable = TRUE;
-    }
-
-    if (portable)
-        setup_portable_mode ();
-
-    g_free (magic_file);
-    g_free (appdir);
-}
-#endif // __WIN32__
-
 static int
 medit_main (int argc, char *argv[])
 {
@@ -723,10 +589,6 @@ medit_main (int argc, char *argv[])
 
 #if 0
     g_idle_add_full (G_PRIORITY_LOW, (GSourceFunc) exit, NULL, NULL);
-#endif
-
-#ifdef __WIN32__
-    check_portable_mode ();
 #endif
 
     if (medit_opts.new_app || medit_opts.project_mode)

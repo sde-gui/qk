@@ -17,7 +17,7 @@ if MOO_BUILD_APP
 bin_PROGRAMS += medit
 
 TESTS = medit-app/run-tests-uninstalled.sh
-TESTS_ENVIRONMENT = EXEEXT=$(EXEEXT) top_srcdir=$(top_srcdir) bindir=$(bindir) PYTHON=$(MOO_PYTHON) print_functions=$(srcdir)/medit-app/print-functions.py
+TESTS_ENVIRONMENT = EXEEXT=$(EXEEXT) top_srcdir=$(top_srcdir) bindir=$(bindir) PYTHON=$(PYTHON) print_functions=$(srcdir)/medit-app/print-functions.py
 
 if !MOO_ENABLE_COVERAGE
 TESTS_ENVIRONMENT += IGNORE_COVERAGE=1

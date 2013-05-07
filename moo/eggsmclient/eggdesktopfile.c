@@ -185,9 +185,6 @@ egg_desktop_file_new_from_key_file (GKeyFile    *key_file,
 	{
 	  g_set_error (error, EGG_DESKTOP_FILE_ERROR,
 		       EGG_DESKTOP_FILE_ERROR_INVALID,
-		       /* translators: 'Version' is from a desktop file, and
-			* should not be translated. '%s' would probably be a
-			* version number. */
 		       _("Unrecognized desktop file Version '%s'"), version);
 	  g_free (version);
 	  g_key_file_free (key_file);
@@ -204,11 +201,8 @@ egg_desktop_file_new_from_key_file (GKeyFile    *key_file,
   else
     desktop_file->source = g_strdup (source);
 
-  desktop_file->name = g_key_file_get_locale_string (key_file,
-						     EGG_DESKTOP_FILE_GROUP,
-						     EGG_DESKTOP_FILE_KEY_NAME,
-						     NULL,
-						     error);
+  desktop_file->name = g_key_file_get_string (key_file, EGG_DESKTOP_FILE_GROUP,
+					      EGG_DESKTOP_FILE_KEY_NAME, error);
   if (!desktop_file->name)
     {
       egg_desktop_file_free (desktop_file);
@@ -1386,11 +1380,9 @@ egg_desktop_file_launch (EggDesktopFile *desktop_file,
 	{
 	  g_set_error (error, EGG_DESKTOP_FILE_ERROR,
 		       EGG_DESKTOP_FILE_ERROR_NOT_LAUNCHABLE,
-		       /* translators: The 'Type=Link' string is found in a
-			* desktop file, and should not be translated. */
 		       _("Can't pass document URIs to a 'Type=Link' desktop entry"));
 	  return FALSE;
-	}	  
+	}
 
       if (!parse_link (desktop_file, &app_desktop_file, &documents, error))
 	return FALSE;
@@ -1509,10 +1501,10 @@ egg_set_desktop_file_without_defaults (const char *desktop_file_path)
 
 /**
  * egg_get_desktop_file:
- * 
+ *
  * Gets the application's #EggDesktopFile, as set by
  * egg_set_desktop_file().
- * 
+ *
  * Return value: the #EggDesktopFile, or %NULL if it hasn't been set.
  **/
 EggDesktopFile *

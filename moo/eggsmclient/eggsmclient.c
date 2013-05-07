@@ -52,7 +52,7 @@ static EggSMClient *global_client;
 static EggSMClientMode global_client_mode = EGG_SM_CLIENT_MODE_NORMAL;
 
 static void
-egg_sm_client_init (EggSMClient *client)
+egg_sm_client_init (G_GNUC_UNUSED EggSMClient *client)
 {
   ;
 }
@@ -116,7 +116,7 @@ egg_sm_client_class_init (EggSMClientClass *klass)
    * handling this signal; if the user has requested that the session
    * be saved when logging out, then ::save_state will be emitted
    * separately.
-   * 
+   *
    * If the application agrees to quit, it should then wait for either
    * the ::quit_cancelled or ::quit signals to be emitted.
    **/
@@ -181,10 +181,10 @@ static char *sm_client_id = NULL;
 static char *sm_config_prefix = NULL;
 
 static gboolean
-sm_client_post_parse_func (GOptionContext  *context,
-			   GOptionGroup    *group,
-			   gpointer         data,
-			   GError         **error)
+sm_client_post_parse_func (G_GNUC_UNUSED GOptionContext  *context,
+			   G_GNUC_UNUSED GOptionGroup    *group,
+			   G_GNUC_UNUSED gpointer         data,
+			   G_GNUC_UNUSED GError         **error)
 {
   EggSMClient *client = egg_sm_client_get ();
 
@@ -592,7 +592,7 @@ static void
 egg_sm_client_debug_handler (const char *log_domain,
 			     GLogLevelFlags log_level,
 			     const char *message,
-			     gpointer user_data)
+			     G_GNUC_UNUSED gpointer user_data)
 {
   static int debug = -1;
 

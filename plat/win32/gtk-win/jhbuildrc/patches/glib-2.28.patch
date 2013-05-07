@@ -6,7 +6,7 @@ diff -r 00b9c5da9d6e Makefile.in
  TEST_PROGS = 
  ACLOCAL_AMFLAGS = -I m4macros ${ACLOCAL_FLAGS}
 -SUBDIRS = . m4macros glib gmodule gthread gobject gio tests po docs
-+SUBDIRS = . m4macros glib gmodule gthread gobject gio po
++SUBDIRS = . glib gmodule gthread gobject gio po
  DIST_SUBDIRS = $(SUBDIRS) build
  bin_SCRIPTS = glib-gettextize
  AM_CPPFLAGS = \

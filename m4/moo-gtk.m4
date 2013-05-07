@@ -20,16 +20,17 @@ AC_MSG_RESULT($[]$1[]_MAJOR_VERSION.$[]$1[]_MINOR_VERSION.$[]$1[]_MICRO_VERSION)
 
 
 ##############################################################################
-# MOO_CHECK_MINOR_VERSION(PKG_NAME,pkg-name,versions)
+# MOO_CHECK_VERSION(PKG_NAME,pkg-name)
 #
-AC_DEFUN([MOO_CHECK_MINOR_VERSION],[
-  _MOO_SPLIT_VERSION_PKG($1,$2)
-  m4_foreach([num],[$3],
-  [AM_CONDITIONAL($1[]_2_[]num, test $[]$1[]_MINOR_VERSION -ge num)
-  if test $[]$1[]_MINOR_VERSION -ge num; then
-    $1[]_2_[]num=yes
-  fi
-  ])
+AC_DEFUN([MOO_CHECK_VERSION],[
+PKG_CHECK_MODULES($1,$2)
+# _MOO_SPLIT_VERSION_PKG($1,$2)
+# m4_foreach([num],[2,4,6,8,10,12,14],
+# [AM_CONDITIONAL($1[]_2_[]num, test $[]$1[]_MINOR_VERSION -ge num)
+# if test $[]$1[]_MINOR_VERSION -ge num; then
+#   $1[]_2_[]num=yes
+# fi
+# ])
 ])
 
 
@@ -55,14 +56,12 @@ fi
 #
 AC_DEFUN_ONCE([MOO_PKG_CHECK_GTK_VERSIONS],[
 AC_REQUIRE([MOO_AC_CHECK_OS])
-PKG_CHECK_MODULES(GTK, gtk+-2.0)
-PKG_CHECK_MODULES(GLIB, glib-2.0)
-PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
-PKG_CHECK_MODULES(GMODULE, gmodule-2.0)
-# PKG_CHECK_MODULES(GDK, gdk-2.0)
-MOO_CHECK_MINOR_VERSION(GLIB, glib-2.0, [32])
+MOO_CHECK_VERSION(GTK, gtk+-2.0)
+MOO_CHECK_VERSION(GLIB, glib-2.0)
+MOO_CHECK_VERSION(GTHREAD, gthread-2.0)
+# MOO_CHECK_VERSION(GDK, gdk-2.0)
 
-PKG_CHECK_MODULES(XML, libxml-2.0)
+MOO_CHECK_VERSION(XML, libxml-2.0)
 
 _MOO_CHECK_BROKEN_GTK_THEME
 
@@ -92,9 +91,6 @@ AC_SUBST(GLIB_GENMARSHAL, `$PKG_CONFIG --variable=glib_genmarshal glib-2.0`)
 AC_SUBST(GLIB_MKENUMS, `$PKG_CONFIG --variable=glib_mkenums glib-2.0`)
 
 AC_ARG_VAR([GDK_PIXBUF_CSOURCE], [gdk-pixbuf-csource])
-AC_CHECK_TOOL(GDK_PIXBUF_CSOURCE, gdk-pixbuf-csource, [:])
-if test "$GDK_PIXBUF_CSOURCE" = ":"; then
-  AC_MSG_ERROR([gdk-pixbuf-csource not found])
-fi
+AC_CHECK_TOOL(GDK_PIXBUF_CSOURCE, gdk-pixbuf-csource, [AC_MSG_ERROR([gdk-pixbuf-csource not found])])
 
 ])

@@ -21,14 +21,14 @@ script_docbook_sources =			\
 
 $(srcdir)/built/script-python.docbook: $(gendocbook_files) script-python.tmpl.docbook $(top_srcdir)/api/moo.xml
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
-	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/api/gendocbook.py \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
 		--python --template $(srcdir)/script-python.tmpl.docbook \
 		$(top_srcdir)/api/moo.xml > script-python.docbook.tmp && \
 		mv script-python.docbook.tmp $(srcdir)/built/script-python.docbook
 
 $(srcdir)/built/script-lua.docbook: $(gendocbook_files) script-lua.tmpl.docbook $(top_srcdir)/api/moo.xml $(top_srcdir)/api/gtk.xml
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
-	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/api/gendocbook.py \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
 		--lua --template $(srcdir)/script-lua.tmpl.docbook \
 		--import $(top_srcdir)/api/gtk.xml \
 		$(top_srcdir)/api/moo.xml > script-lua.docbook.tmp && \
@@ -36,31 +36,31 @@ $(srcdir)/built/script-lua.docbook: $(gendocbook_files) script-lua.tmpl.docbook 
 
 $(srcdir)/built/script-lua-gtk.docbook: $(gendocbook_files) script-lua-gtk.tmpl.docbook $(top_srcdir)/api/gtk.xml
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
-	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/api/gendocbook.py \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/api/gendocbook.py \
 		--lua --template $(srcdir)/script-lua-gtk.tmpl.docbook \
 		$(top_srcdir)/api/gtk.xml > script-lua-gtk.docbook.tmp && \
 		mv script-lua-gtk.docbook.tmp $(srcdir)/built/script-lua-gtk.docbook
 
 # $(srcdir)/help/script-python.html: built/script-python.docbook built/medit-defines.ent script.xsl
 # 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
-# 	$(AM_V_GEN)$(XSLTPROC) --output script-python.html.tmp \
+# 	$(AM_V_GEN)xsltproc --output script-python.html.tmp \
 # 		$(srcdir)/script.xsl $(srcdir)/built/script-python.docbook \
 # 		&& mv script-python.html.tmp $(srcdir)/help/script-python.html
 #
 # $(srcdir)/help/script-lua.html: built/script-lua.docbook built/medit-defines.ent script.xsl
 # 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
-# 	$(AM_V_GEN)$(XSLTPROC) --output script-lua.html.tmp \
+# 	$(AM_V_GEN)xsltproc --output script-lua.html.tmp \
 # 		$(srcdir)/script.xsl $(srcdir)/built/script-lua.docbook \
 # 		&& mv script-lua.html.tmp $(srcdir)/help/script-lua.html
 #
 # $(srcdir)/help/script-lua-gtk.html: built/script-lua-gtk.docbook built/medit-defines.ent script.xsl
 # 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
-# 	$(AM_V_GEN)$(XSLTPROC) --output script-lua-gtk.html.tmp \
+# 	$(AM_V_GEN)xsltproc --output script-lua-gtk.html.tmp \
 # 		$(srcdir)/script.xsl $(srcdir)/built/script-lua-gtk.docbook \
 # 		&& mv script-lua-gtk.html.tmp $(srcdir)/help/script-lua-gtk.html
 
 $(srcdir)/help/script/index.html: $(script_docbook_sources) script-book.xsl
-	$(AM_V_GEN)cd $(srcdir) && $(XSLTPROC) --xinclude script-book.xsl script.docbook
+	$(AM_V_GEN)cd $(srcdir) && xsltproc --xinclude script-book.xsl script.docbook
 
 $(srcdir)/help/medit.css: medit.css
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
@@ -84,21 +84,21 @@ docbook_sources =			\
 	built/medit-defines.ent
 
 $(srcdir)/help/index.html: $(docbook_sources) medit.xsl medit-common.xsl
-	$(AM_V_GEN)cd $(srcdir) && $(XSLTPROC) --xinclude medit.xsl medit.docbook
+	$(AM_V_GEN)cd $(srcdir) && xsltproc --xinclude medit.xsl medit.docbook
 
 $(srcdir)/help/help.html: $(docbook_sources) medit-single.xsl medit-common.xsl
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
-	$(AM_V_GEN)$(XSLTPROC) --xinclude --output help.html.tmp $(srcdir)/medit-single.xsl $(srcdir)/medit.docbook && \
+	$(AM_V_GEN)xsltproc --xinclude --output help.html.tmp $(srcdir)/medit-single.xsl $(srcdir)/medit.docbook && \
 		mv help.html.tmp $(srcdir)/help/help.html
 
 toc.xml: $(docbook_sources)
-	$(AM_V_GEN)$(XSLTPROC) --output toc.xml --xinclude \
+	$(AM_V_GEN)xsltproc --output toc.xml --xinclude \
 		--stringparam chunk.first.sections 1 \
 		http://docbook.sourceforge.net/release/xsl/current/html/maketoc.xsl $(srcdir)/medit.docbook
 
 moo-help-sections.h.stamp: $(docbook_files) toc.xml genhelpsectionsh.py
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
-	$(AM_V_GEN)$(MOO_PYTHON) $(srcdir)/genhelpsectionsh.py --toc=toc.xml --srcdir=$(srcdir) $(docbook_files) > moo-help-sections.h.tmp
+	$(AM_V_GEN)$(PYTHON) $(srcdir)/genhelpsectionsh.py --toc=toc.xml --srcdir=$(srcdir) $(docbook_files) > moo-help-sections.h.tmp
 	$(AM_V_at)cmp -s moo-help-sections.h.tmp $(srcdir)/built/moo-help-sections.h || \
 		mv moo-help-sections.h.tmp $(srcdir)/built/moo-help-sections.h
 	$(AM_V_at)rm -f moo-help-sections.h.tmp

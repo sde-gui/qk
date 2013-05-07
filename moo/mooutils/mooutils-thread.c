@@ -198,6 +198,9 @@ init_queue (void)
         queue.pipe_out = fds[0];
 
 #ifdef __WIN32__
+#ifndef __GNUC__
+#error Are you sure your gtk is built with Visual Studio?
+#endif
         queue.io = g_io_channel_win32_new_fd (queue.pipe_out);
 #else
         queue.io = g_io_channel_unix_new (queue.pipe_out);

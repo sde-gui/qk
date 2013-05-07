@@ -17,6 +17,7 @@
 #include "config.h"
 #endif
 
+#define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moofileview-tools.h"
 #include "moofileview/moofileview-private.h"
 #include "moofileview/moofile-private.h"

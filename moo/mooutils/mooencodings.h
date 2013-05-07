@@ -21,20 +21,8 @@
 G_BEGIN_DECLS
 
 
-#define MOO_ENCODING_AUTO           "auto"
-#define MOO_ENCODING_UTF8           "UTF-8"
-
-#define MOO_ENCODING_UTF16          "UTF-16"
-#define MOO_ENCODING_UTF16LE        "UTF-16LE"
-#define MOO_ENCODING_UTF16BE        "UTF-16BE"
-#define MOO_ENCODING_UTF16LE_BOM    "UTF-16LE-BOM"
-#define MOO_ENCODING_UTF16BE_BOM    "UTF-16BE-BOM"
-
-#define MOO_ENCODING_UTF32          "UTF-32"
-#define MOO_ENCODING_UTF32LE        "UTF-32LE"
-#define MOO_ENCODING_UTF32BE        "UTF-32BE"
-#define MOO_ENCODING_UTF32LE_BOM    "UTF-32LE-BOM"
-#define MOO_ENCODING_UTF32BE_BOM    "UTF-32BE-BOM"
+#define MOO_ENCODING_AUTO   "auto"
+#define MOO_ENCODING_UTF8   "UTF-8"
 
 typedef enum {
     MOO_ENCODING_COMBO_OPEN,

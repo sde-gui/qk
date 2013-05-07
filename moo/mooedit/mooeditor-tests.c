@@ -1,3 +1,4 @@
+#define MOOEDIT_COMPILATION
 #include "mooedit/mooeditor-tests.h"
 #include "mooedit/mooeditor-impl.h"
 #include "mooutils/mooutils-fs.h"

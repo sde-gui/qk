@@ -24,7 +24,7 @@ EXTRA_DIST += moopython/medit-python-init.py
 built_moo_sources += moopython/medit-python-init.h
 moopython/medit-python-init.h: moopython/medit-python-init.py $(top_srcdir)/tools/xml2h.py
 	$(AM_V_at)$(MKDIR_P) moopython
-	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/moopython/medit-python-init.py \
+	$(AM_V_GEN)$(PYTHON) $(top_srcdir)/tools/xml2h.py $(srcdir)/moopython/medit-python-init.py \
 		moopython/medit-python-init.h.tmp MEDIT_PYTHON_INIT_PY \
 		&& mv moopython/medit-python-init.h.tmp moopython/medit-python-init.h
 

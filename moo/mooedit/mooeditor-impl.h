@@ -1,6 +1,10 @@
 #ifndef MOO_EDITOR_IMPL_H
 #define MOO_EDITOR_IMPL_H
 
+#ifndef MOOEDIT_COMPILATION
+#error "This file may not be used directly"
+#endif
+
 #include "mooedit/mooeditor.h"
 #include "mooutils/moohistorymgr.h"
 #include "mooutils/moofilewatch.h"

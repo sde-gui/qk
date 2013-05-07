@@ -2,7 +2,6 @@
 [ -z "$AUTOCONF" ] && AUTOCONF=autoconf
 [ -z "$AUTOHEADER" ] && AUTOHEADER=autoheader
 [ -z "$AUTOMAKE" ] && AUTOMAKE=automake
-[ -z "$LIBTOOLIZE" ] && LIBTOOLIZE=libtoolize
 
 workingdir=`pwd`
 rel_srcdir=`dirname "$0"`
@@ -15,7 +14,7 @@ run_cmd() {
     "$@" || exit $!
 }
 
-run_cmd $LIBTOOLIZE --copy --force
+run_cmd libtoolize --copy --force
 
 run_cmd $ACLOCAL --force -I m4 $ACLOCAL_FLAGS
 run_cmd $AUTOCONF --force

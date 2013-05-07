@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef MOOEDIT_COMPILATION
+#error "This file may not be used directly"
+#endif
+
 #ifndef MOO_TEXT_PRINT_PRIVATE_H
 #define MOO_TEXT_PRINT_PRIVATE_H
 

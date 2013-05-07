@@ -13,6 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define MOOEDIT_COMPILATION
 #include "mooedit/mootextprint-private.h"
 #include "mooedit/mooedit.h"
 #include "mooedit/mooedit-impl.h"
@@ -57,8 +58,6 @@ MOO_DEBUG_INIT (printing, FALSE)
 #define PREFS_FOOTER_LEFT               MOO_EDIT_PREFS_PREFIX "/print/footer/left"
 #define PREFS_FOOTER_CENTER             MOO_EDIT_PREFS_PREFIX "/print/footer/center"
 #define PREFS_FOOTER_RIGHT              MOO_EDIT_PREFS_PREFIX "/print/footer/right"
-
-#define PRINT_SETTINGS_FILE             "printsettings.ini"
 
 
 typedef struct {
@@ -117,8 +116,8 @@ static char     *hf_format_eval     (HFFormat           *format,
                                      const char         *basename);
 
 
-static GtkPageSetup *_global_page_setup;
-static GtkPrintSettings *_global_print_settings;
+static GtkPageSetup *global_page_setup;
+static GtkPrintSettings *global_print_settings;
 
 static void moo_print_init_prefs    (void);
 
@@ -161,11 +160,6 @@ static void fill_layout                     (MooPrintOperation  *op,
                                              const GtkTextIter  *start,
                                              const GtkTextIter  *end,
                                              gboolean            get_styles);
-
-static GtkPageSetup     *get_global_page_setup      (void);
-static GtkPrintSettings *get_global_print_settings  (void);
-static void              set_global_page_setup      (GtkPageSetup *page_setup);
-static void              set_global_print_settings  (GtkPrintSettings *print_settings);
 
 
 G_DEFINE_TYPE(MooPrintOperation, _moo_print_operation, GTK_TYPE_PRINT_OPERATION)
@@ -448,9 +442,9 @@ _moo_print_operation_init (MooPrintOperation *op)
     moo_dmsg ("_moo_print_operation_init");
 
     gtk_print_operation_set_print_settings (GTK_PRINT_OPERATION (op),
-                                            get_global_print_settings ());
+                                            global_print_settings);
     gtk_print_operation_set_default_page_setup (GTK_PRINT_OPERATION (op),
-                                                get_global_page_setup ());
+                                                global_page_setup);
 
     op->priv->first_line = 0;
     op->priv->last_line = -1;
@@ -536,10 +530,13 @@ _moo_edit_page_setup (GtkWidget *parent)
         parent_window = GTK_WINDOW (parent);
 
     new_page_setup = gtk_print_run_page_setup_dialog (parent_window,
-                                                      get_global_page_setup (),
-                                                      get_global_print_settings ());
+                                                      global_page_setup,
+                                                      global_print_settings);
 
-    set_global_page_setup (new_page_setup);
+    if (global_page_setup)
+        g_object_unref (global_page_setup);
+
+    global_page_setup = new_page_setup;
 }
 
 
@@ -1613,169 +1610,6 @@ moo_print_operation_load_prefs (MooPrintOperation *op)
 }
 
 
-static GKeyFile *
-get_print_settings_file (const char *filename)
-{
-    GKeyFile *key_file = NULL;
-
-    if (g_file_test (filename, G_FILE_TEST_EXISTS))
-    {
-        GError *error = NULL;
-        key_file = g_key_file_new ();
-        if (!g_key_file_load_from_file (key_file, filename, G_KEY_FILE_NONE, &error))
-        {
-            g_warning ("could not load print settings file '%s': %s",
-                       filename, moo_error_message (error));
-            g_error_free (error);
-            g_key_file_free (key_file);
-            key_file = NULL;
-        }
-    }
-
-    return key_file;
-}
-
-
-static void
-load_print_settings (void)
-{
-    static gboolean been_here = FALSE;
-    char *file = NULL;
-    GKeyFile *key_file = NULL;
-    GError *error = NULL;
-
-    if (been_here)
-        goto out;
-
-    file = moo_get_user_cache_file (PRINT_SETTINGS_FILE);
-    key_file = get_print_settings_file (file);
-    if (!key_file)
-        goto out;
-
-#define IGNORABLE_ERROR(err) ((err) && (err)->domain == GTK_PRINT_ERROR \
-                                && (err)->code == GTK_PRINT_ERROR_INVALID_FILE)
-
-    _global_page_setup = gtk_page_setup_new_from_key_file (key_file, NULL, &error);
-    if (!_global_page_setup)
-    {
-        if (!IGNORABLE_ERROR(error))
-            g_warning ("could not load page setup from file '%s': %s",
-                       file, moo_error_message (error));
-        g_error_free (error);
-        error = NULL;
-    }
-
-    _global_print_settings = gtk_print_settings_new_from_key_file (key_file, NULL, &error);
-    if (!_global_print_settings)
-    {
-        if (!IGNORABLE_ERROR(error))
-            g_warning ("could not load print settings from file '%s': %s",
-                       file, moo_error_message (error));
-        g_error_free (error);
-        error = NULL;
-    }
-
-#undef IGNORABLE_ERROR
-
-out:
-    if (key_file)
-        g_key_file_free (key_file);
-    g_free (file);
-}
-
-
-static GtkPageSetup *
-get_global_page_setup (void)
-{
-    load_print_settings ();
-    return _global_page_setup;
-}
-
-
-static GtkPrintSettings *
-get_global_print_settings (void)
-{
-    load_print_settings ();
-    return _global_print_settings;
-}
-
-
-static GKeyFile *
-get_key_file_for_saving (void)
-{
-    char *file = NULL;
-    GKeyFile *key_file = NULL;
-
-    file = moo_get_user_cache_file (PRINT_SETTINGS_FILE);
-    key_file = get_print_settings_file (file);
-    if (!key_file)
-        key_file = g_key_file_new ();
-
-    g_free (file);
-    return key_file;
-}
-
-
-static void
-save_print_settings_file (GKeyFile* key_file)
-{
-    char *file = NULL;
-    char *contents = NULL;
-    GError *error = NULL;
-
-    file = moo_get_user_cache_file (PRINT_SETTINGS_FILE);
-    contents = g_key_file_to_data (key_file, NULL, NULL);
-
-    if (contents && !moo_save_config_file (file, contents, -1, &error))
-    {
-        g_warning ("Could not save print settings file '%s': %s", file, moo_error_message (error));
-        g_error_free (error);
-        error = NULL;
-    }
-
-    g_free (contents);
-    g_free (file);
-}
-
-
-static void
-save_page_setup (GtkPageSetup *page_setup)
-{
-    GKeyFile* key_file = get_key_file_for_saving ();
-    gtk_page_setup_to_key_file (page_setup, key_file, NULL);
-    save_print_settings_file (key_file);
-    g_key_file_free (key_file);
-}
-
-
-static void
-save_print_settings (GtkPrintSettings *print_settings)
-{
-    GKeyFile* key_file = get_key_file_for_saving ();
-    gtk_print_settings_to_key_file (print_settings, key_file, NULL);
-    save_print_settings_file (key_file);
-    g_key_file_free (key_file);
-}
-
-
-static void
-set_global_page_setup (GtkPageSetup *page_setup)
-{
-    MOO_ASSIGN_OBJ (_global_page_setup, page_setup);
-    if (page_setup)
-        save_page_setup (page_setup);
-}
-
-
-static void
-set_global_print_settings (GtkPrintSettings *print_settings)
-{
-    MOO_ASSIGN_OBJ (_global_print_settings, print_settings);
-    if (print_settings)
-        save_print_settings (print_settings);
-}
-
-
 static void
 do_print_operation (GtkTextView            *view,
                     GtkWidget              *parent,
@@ -1831,7 +1665,10 @@ do_print_operation (GtkTextView            *view,
             break;
 
         case GTK_PRINT_OPERATION_RESULT_APPLY:
-            set_global_print_settings (gtk_print_operation_get_print_settings (GTK_PRINT_OPERATION (op)));
+            if (global_print_settings)
+                g_object_unref (global_print_settings);
+            global_print_settings = gtk_print_operation_get_print_settings (GTK_PRINT_OPERATION (op));
+            g_object_ref (global_print_settings);
             break;
 
         case GTK_PRINT_OPERATION_RESULT_CANCEL:
@@ -2175,10 +2012,6 @@ hf_format_parse (const char *format_string)
                         goto error;
                 }
                 break;
-            case 0:
-                g_warning ("trailing '%%' in %s",
-                           format_string);
-                goto error;
             default:
                 p = p + 2;
         }

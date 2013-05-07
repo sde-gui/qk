@@ -6,23 +6,19 @@ _gtkwinbuildroot = os.environ['_GTKWINBUILDROOT']
 
 _gtkwinconfig = os.environ.get('_GTKWINCONFIG')
 if _gtkwinconfig is None:
-    raise RuntimeError()
     _gtkwinconfig = 'release'
 else:
     _gtkwinconfig = _gtkwinconfig.lower()
-assert _gtkwinconfig in ['debug', 'reldbg', 'release']
+assert _gtkwinconfig in ['debug', 'release']
 
 _mingw_tool_prefix = None
-_configure_target = None
-# i686-w64-mingw32 doesn't compile gettext
-for __p in ('i686-pc-mingw32', 'i586-mingw32msvc', 'i486-mingw32'):
+for __p in ('i586-mingw32msvc', 'i486-mingw32'):
     if os.path.exists('/usr/bin/%s-gcc' % (__p,)):
         _mingw_tool_prefix = '/usr/bin/%s-' % (__p,)
-        _configure_target = __p
         break
 assert _mingw_tool_prefix
 
-makeargs = '-j 4'
+makeargs = '-j 2'
 moduleset = os.path.join(_gtkwinjhbuilddir, 'gtk.moduleset')
 use_lib64 = False
 
@@ -65,9 +61,7 @@ for _var in _mingw_tools:
     os.environ[_var] = _mingw_tool_prefix + _mingw_tools[_var]
 
 if _gtkwinconfig == 'debug':
-    _def_cflags = '-gstabs+'
-elif _gtkwinconfig == 'reldbg':
-    _def_cflags = '-gstabs+ -O2'
+    _def_cflags = '-gstabs'
 else:
     _def_cflags = '-O2'
 
@@ -79,8 +73,6 @@ else:
 
 _cflags = "-mms-bitfields -march=i686 %s" % (_def_cflags,)
 _cflags_cmdline = ' CFLAGS="%(_cflags)s" CXXFLAGS="%(_cflags)s" OBJCFLAGS="%(_cflags)s"' % {'_cflags': _cflags}
-def _remove_gstabs(module):
-    module_autogenargs[module] = module_autogenargs[module].replace('-gstabs+', '-g').replace('-gstabs', '-g')
 
 os.environ['PKG_CONFIG_LIBDIR'] = "%s/lib/pkgconfig" % (prefix,)
 os.environ['PKG_CONFIG_PATH'] = "%s/lib/pkgconfig" % (prefix,)
@@ -92,26 +84,22 @@ for __dir in os.environ['PATH'].split(':'):
 
 #Populating autogenargs
 
-if os.environ['mgwlinux'] == 'true':
-    _configure_build = 'i686-pc-linux-gnu'
-elif os.environ['mgwcygwin'] == 'true':
-    _configure_build = 'i686-pc-cygwin'
-else:
-    raise RuntimeError("oops")
+_configure_target = 'i586-pc-mingw32msvc'
+_configure_build = 'i686-pc-linux-gnu'
 
 autogenargs  = ' --build=' + _configure_build
 autogenargs += ' --host=' + _configure_target
 autogenargs += ' --target=' + _configure_target
 autogenargs += ' --disable-docs --disable-gtk-doc --disable-scrollkeeper'
 autogenargs += ' --enable-maintainer-mode --enable-shared --disable-static'
-autogenargs += ' --enable-relocatable --enable-silent-rules --disable-glibtest --disable-pthread'
+autogenargs += ' --enable-relocatable --enable-silent-rules --disable-glibtest'
 for _var in ['AR', 'RANLIB', 'STRIP', 'AS', 'DLLTOOL', 'OBJDUMP', 'NM', 'WINDRES', 'RC', 'INSTALL']:
     autogenargs += ' ' + _var + '="' + os.environ[_var] + '" '
 
 autogenargs += _cflags_cmdline
 
 # zlib uses custom configure script which doesn't ignore unknown options
-module_autogenargs['zlib'] = ""
+module_autogenargs['zlib'] = "--static"
 
 module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
 					    + " --disable-java" \
@@ -119,15 +107,13 @@ module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
 					    + " --with-included-gettext" \
 					    + " --without-libexpat-prefix" \
 					    + " --without-libxml2-prefix" \
-					    + " --without-libglib-2.0-prefix" \
-                                            + " --enable-threads=win32"
+					    + " --without-libglib-2.0-prefix"
 if _gtkwinconfig == 'debug':
     module_autogenargs['gettext'] += " CPPFLAGS=-DHAVE_INLINE"
-_remove_gstabs('gettext')
 
 module_autogenargs['libxml2'] = autogenargs + " --without-python" \
-                                            + " --without-threads"
-_remove_gstabs('libxml2')
+                                            + " --without-zlib" \
+                                            + _cflags_cmdline.replace('-gstabs', '-g')
 
 module_autogenargs['pkgconfig'] = autogenargs \
                                             + " --with-installed-glib"

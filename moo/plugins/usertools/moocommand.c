@@ -17,6 +17,7 @@
 #include <config.h>
 #endif
 
+#define MOOEDIT_COMPILATION
 #include "moocommand-private.h"
 #include "moocommand-script.h"
 #include "moocommand-exe.h"

@@ -131,12 +131,9 @@ static int
 compare_encodings (Encoding **enc1,
                    Encoding **enc2)
 {
-    int result = 0;
+    int result;
 
-    if ((*enc1)->subgroup_name != NULL && (*enc2)->subgroup_name != NULL)
-        result = g_utf8_collate ((*enc1)->subgroup_name, (*enc2)->subgroup_name);
-    else
-        result = (*enc1)->subgroup_name < (*enc2)->subgroup_name;
+    result = g_utf8_collate ((*enc1)->subgroup_name, (*enc2)->subgroup_name);
 
     if (!result)
         result = g_utf8_collate ((*enc1)->short_display_name, (*enc2)->short_display_name);
@@ -145,8 +142,7 @@ compare_encodings (Encoding **enc1,
 }
 
 static void
-fill_encoding_group (int            group_no,
-                     EncodingGroup *group,
+fill_encoding_group (EncodingGroup *group,
                      GSList        *encodings)
 {
     guint i;
@@ -160,9 +156,8 @@ fill_encoding_group (int            group_no,
     for (i = 0; encodings != NULL; encodings = encodings->next, ++i)
         group->encodings[i] = (Encoding*) encodings->data;
 
-    if (group_no != ENCODING_GROUP_UNICODE)
-        qsort (group->encodings, group->n_encodings, sizeof (Encoding*),
-               (int(*)(const void *, const void *)) compare_encodings);
+    qsort (group->encodings, group->n_encodings, sizeof (Encoding*),
+           (int(*)(const void *, const void *)) compare_encodings);
 }
 
 static void
@@ -248,19 +243,10 @@ get_enc_mgr (void)
 
             enc = g_new0 (Encoding, 1);
             enc->name = moo_encodings_data[i].name;
-
-            if (moo_encodings_data[i].display_subgroup != NULL)
-            {
-                enc->short_display_name = moo_encodings_data[i].short_display_name;
-                enc->subgroup_name = g_strdup (_(moo_encodings_data[i].display_subgroup));
-                enc->display_name = g_strdup_printf ("%s (%s)", enc->subgroup_name,
-                                                     enc->short_display_name);
-            }
-            else
-            {
-                enc->short_display_name = Q_(moo_encodings_data[i].short_display_name);
-                enc->display_name = g_strdup (enc->short_display_name);
-            }
+            enc->subgroup_name = g_strdup (_(moo_encodings_data[i].display_subgroup));
+            enc->short_display_name = moo_encodings_data[i].short_display_name;
+            enc->display_name = g_strdup_printf ("%s (%s)", enc->subgroup_name,
+                                                 enc->short_display_name);
 
             enc_groups[moo_encodings_data[i].group] =
                 g_slist_prepend (enc_groups[moo_encodings_data[i].group], enc);
@@ -283,7 +269,7 @@ get_enc_mgr (void)
 
         for (i = 0; i < N_ENCODING_GROUPS; ++i)
         {
-            fill_encoding_group (i, &mgr->groups[i], enc_groups[i]);
+            fill_encoding_group (&mgr->groups[i], enc_groups[i]);
             g_slist_free (enc_groups[i]);
         }
 

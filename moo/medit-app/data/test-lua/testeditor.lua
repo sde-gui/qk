@@ -33,8 +33,6 @@ trunchecked(function()
   tassert_eq(editor.get_docs(), {doc, doc2})
   tassert_eq(window.get_docs(), {doc})
   tassert_eq(window2.get_docs(), {doc2})
-
-  tassert(window2.close())
 end)
 
 function save_file(filename, content)

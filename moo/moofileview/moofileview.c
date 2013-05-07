@@ -13,6 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define MOO_FILE_VIEW_COMPILATION
 #include "moofileview/moofileview-accels.h"
 #include "moofileview/moofileview-dialogs.h"
 #include "moofileview/moobookmarkmgr.h"
@@ -23,7 +24,7 @@
 #include "moofileview/mooiconview.h"
 #include "moofileview/moofileview-aux.h"
 #include "moofileview/moofileview-private.h"
-#include "moofileview/moofileview-ui.h"
+#include "moofileview-ui.h"
 #include "moofileview/mootreeview.h"
 #include "moofileview/moobookmarkview.h"
 #include "moofileview/moofileview-tools.h"

@@ -15,6 +15,7 @@
 
 #include <config.h>
 
+#define MOO_FILE_VIEW_COMPILATION
 #include "moofilesystem.h"
 #include "moofolder-private.h"
 #include "mooutils/mooutils-fs.h"

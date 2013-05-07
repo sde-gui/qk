@@ -41,7 +41,7 @@ include sourcefiles.mak
 
 BUILT_SOURCES += moo.xml.stamp
 moo.xml.stamp: $(docparser_files) $(source_files)
-	$(AM_V_GEN)$(MOO_PYTHON) $(srcdir)/parsedocs.py \
+	$(AM_V_GEN)$(PYTHON) $(srcdir)/parsedocs.py \
 		--source-dir $(top_srcdir)/moo/mooapp \
 		--source-dir $(top_srcdir)/moo/mooedit \
 		--source-dir $(top_srcdir)/moo/moofileview \
@@ -60,7 +60,7 @@ moo.xml.stamp: $(docparser_files) $(source_files)
 BUILT_SOURCES += gtk.xml.stamp
 gtk.xml.stamp: $(docparser_files) $(top_srcdir)/moo/moolua/gtk-api.c $(top_srcdir)/moo/moolua/gtk-api.h
 	$(AM_V_at)$(MKDIR_P) moolua
-	$(AM_V_GEN)$(MOO_PYTHON) $(srcdir)/parsedocs.py \
+	$(AM_V_GEN)$(PYTHON) $(srcdir)/parsedocs.py \
 		--source-file $(top_srcdir)/moo/moolua/gtk-api.c \
 		--source-file $(top_srcdir)/moo/moolua/gtk-api.h \
 		--module Gtk \

@@ -241,7 +241,6 @@ make_cmd (const char *base_cmd_line,
           const char *input)
 {
     char *cmd_line = NULL;
-    char *tmp_file = NULL;
     gsize input_len;
 
     input_len = input ? strlen (input) : 0;
@@ -249,13 +248,26 @@ make_cmd (const char *base_cmd_line,
     if (!input_len)
         return g_strdup (base_cmd_line);
 
-    tmp_file = save_temp (input, input_len);
-
-    if (tmp_file)
+    if (input_len < 2048)
     {
-        cmd_line = g_strdup_printf ("( %s ) < '%s' ; rm '%s'",
-                                    base_cmd_line, tmp_file, tmp_file);
-        g_free (tmp_file);
+        char *quoted;
+
+        quoted = g_shell_quote (input);
+        g_return_val_if_fail (quoted != NULL, NULL);
+
+        cmd_line = g_strdup_printf ("echo -n %s | ( %s )", quoted, base_cmd_line);
+        g_free (quoted);
+    }
+    else
+    {
+        char *tmp_file = save_temp (input, input_len);
+
+        if (tmp_file)
+        {
+            cmd_line = g_strdup_printf ("( %s ) < '%s' ; rm '%s'",
+                                        base_cmd_line, tmp_file, tmp_file);
+            g_free (tmp_file);
+        }
     }
 
     return cmd_line;

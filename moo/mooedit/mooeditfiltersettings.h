@@ -13,6 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef MOOEDIT_COMPILATION
+#error "This file may not be used"
+#endif
+
 #ifndef MOO_EDIT_FILTER_SETTINGS_H
 #define MOO_EDIT_FILTER_SETTINGS_H
 

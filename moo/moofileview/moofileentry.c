@@ -15,6 +15,7 @@
 
 /* XXX use MooCombo */
 
+#define MOO_FILE_VIEW_COMPILATION
 #include "moofileentry.h"
 #include "moofilesystem.h"
 #include "moofoldermodel.h"

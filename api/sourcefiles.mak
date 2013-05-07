@@ -38,6 +38,7 @@ source_files = \
     ../moo/mooedit/mooedithistoryitem.c\
     ../moo/mooedit/mooedithistoryitem.h\
     ../moo/mooedit/mooedit-impl.h\
+    ../moo/mooedit/mooedit-misc.c\
     ../moo/mooedit/mooeditor.c\
     ../moo/mooedit/mooeditor.h\
     ../moo/mooedit/mooeditor-impl.h\

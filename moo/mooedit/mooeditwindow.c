@@ -21,6 +21,7 @@
 #include "config.h"
 #endif
 
+#define MOOEDIT_COMPILATION
 #include "mooedit/mooedit-impl.h"
 #include "mooedit/mooeditdialogs.h"
 #include "mooedit/mooeditwindow-impl.h"
@@ -109,7 +110,6 @@ struct MooEditWindowPrivate {
     GSList *jobs; /* Job* */
 
     GList *history;
-    gboolean enable_history : 1;
     guint history_blocked : 1;
 };
 
@@ -263,8 +263,6 @@ static void action_close_tab                    (MooEditWindow      *window);
 static void action_close_all                    (MooEditWindow      *window);
 static void action_previous_tab                 (MooEditWindow      *window);
 static void action_next_tab                     (MooEditWindow      *window);
-static void action_previous_tab_in_view         (MooEditWindow      *window);
-static void action_next_tab_in_view             (MooEditWindow      *window);
 static void action_switch_to_tab                (MooEditWindow      *window,
                                                  guint               n);
 
@@ -277,7 +275,6 @@ static GtkAction *create_goto_bookmark_action   (MooWindow          *window,
 static void action_find_now_f                   (MooEditWindow      *window);
 static void action_find_now_b                   (MooEditWindow      *window);
 static void action_focus_doc                    (MooEditWindow      *window);
-static void action_focus_other_split_notebook   (MooEditWindow      *window);
 static void action_move_to_split_notebook       (MooEditWindow      *window);
 static void action_abort_jobs                   (MooEditWindow      *window);
 
@@ -517,24 +514,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
-    moo_window_class_new_action (window_class, "PreviousTabInView", NULL,
-                                 "display-name", _("Previous Tab In View"),
-                                 "label", _("_Previous Tab In View"),
-                                 "tooltip", _("Previous tab in view"),
-                                 "default-accel", MOO_EDIT_ACCEL_PREV_TAB_IN_VIEW,
-                                 "closure-callback", action_previous_tab_in_view,
-                                 "condition::sensitive", "has-open-document",
-                                 NULL);
-
-    moo_window_class_new_action (window_class, "NextTabInView", NULL,
-                                 "display-name", _("Next Tab In View"),
-                                 "label", _("_Next Tab In View"),
-                                 "tooltip", _("Next tab in view"),
-                                 "default-accel", MOO_EDIT_ACCEL_NEXT_TAB_IN_VIEW,
-                                 "closure-callback", action_next_tab_in_view,
-                                 "condition::sensitive", "has-open-document",
-                                 NULL);
-
     moo_window_class_new_action (window_class, "Find", NULL,
                                  "display-name", GTK_STOCK_FIND,
                                  "label", GTK_STOCK_FIND,
@@ -628,14 +607,6 @@ moo_edit_window_class_init (MooEditWindowClass *klass)
                                  "label", _("_Focus Document"),
                                  "default-accel", MOO_EDIT_ACCEL_FOCUS_DOC,
                                  "closure-callback", action_focus_doc,
-                                 "condition::sensitive", "has-open-document",
-                                 NULL);
-
-    moo_window_class_new_action (window_class, "FocusOtherSplitNotebook", NULL,
-                                 "display-name", _("Focus Other Split Notebook"),
-                                 "label", _("Focus Other Split Notebook"),
-                                 "default-accel", MOO_EDIT_ACCEL_FOCUS_SPLIT_NOTEBOOK,
-                                 "closure-callback", action_focus_other_split_notebook,
                                  "condition::sensitive", "has-open-document",
                                  NULL);
 
@@ -838,7 +809,6 @@ moo_edit_window_init (MooEditWindow *window)
     window->priv = G_TYPE_INSTANCE_GET_PRIVATE (window, MOO_TYPE_EDIT_WINDOW, MooEditWindowPrivate);
     window->priv->history = NULL;
     window->priv->history_blocked = FALSE;
-    window->priv->enable_history = TRUE;
 
     window->priv->notebooks = moo_notebook_array_new ();
 
@@ -1576,57 +1546,6 @@ action_next_tab (MooEditWindow *window)
         switch_to_tab (window, 0);
 }
 
-static int
-get_first_tab_in_notebook (MooNotebook *notebook, MooEditWindow *window)
-{
-    int tab = 0;
-    guint i;
-
-    for (i = 0; i < window->priv->notebooks->n_elms; ++i)
-    {
-        if (window->priv->notebooks->elms[i] == notebook)
-            return tab;
-
-        tab += moo_notebook_get_n_pages (window->priv->notebooks->elms[i]);
-    }
-
-    g_return_val_if_reached (-1);
-}
-
-static void
-action_previous_tab_in_view (MooEditWindow *window)
-{
-    int n, tabs_in_notebook, first_tab;
-    MooNotebook *notebook;
-
-    n = get_active_tab (window);
-    notebook = get_active_notebook (window);
-    tabs_in_notebook = moo_notebook_get_n_pages (notebook);
-    first_tab = get_first_tab_in_notebook (notebook, window);
-
-
-    if (n > first_tab)
-        switch_to_tab (window, n - 1);
-    else
-        switch_to_tab (window, first_tab + tabs_in_notebook - 1);
-}
-
-static void
-action_next_tab_in_view (MooEditWindow *window)
-{
-    int n, tabs_in_notebook, first_tab;
-    MooNotebook *notebook;
-
-    n = get_active_tab (window);
-    notebook = get_active_notebook (window);
-    tabs_in_notebook = moo_notebook_get_n_pages (notebook);
-    first_tab = get_first_tab_in_notebook (notebook, window);
-
-    if (n < (first_tab + tabs_in_notebook - 1))
-        switch_to_tab (window, n + 1);
-    else
-        switch_to_tab (window, first_tab);
-}
 
 static void
 action_switch_to_tab (MooEditWindow *window,
@@ -1688,25 +1607,6 @@ action_focus_doc (MooEditWindow *window)
             g_return_if_reached ();
     }
 }
-
-static void
-action_focus_other_split_notebook (MooEditWindow *window)
-{
-    if (both_notebooks_visible (window))
-    {
-        MooNotebook *current = get_active_notebook (window);
-        MooNotebook *nb1 = get_notebook (window, 0);
-        MooNotebook *nb2 = get_notebook (window, 1);
-
-        if (current == nb1)
-            moo_edit_window_set_active_tab (window,
-                get_nth_tab(nb2, moo_notebook_get_current_page(nb2)));
-        else
-            moo_edit_window_set_active_tab (window,
-                get_nth_tab(nb1, moo_notebook_get_current_page(nb1)));
-    }
-}
-
 
 static void
 action_move_to_split_notebook (MooEditWindow *window)
@@ -2969,13 +2869,6 @@ get_tab_num (MooEditWindow *window,
     return -1;
 }
 
-static int
-get_doc_num (MooEditWindow *window,
-             MooEdit       *doc)
-{
-    return get_tab_num (window, moo_edit_get_tab (doc));
-}
-
 
 static void
 connect_view (MooEditWindow *window,
@@ -3146,11 +3039,8 @@ _moo_edit_window_remove_doc (MooEditWindow *window,
         g_object_set_data (G_OBJECT (doc), "moo-doc-list-action", NULL);
     }
 
-    if (window->priv->enable_history)
-    {
-        window->priv->history = g_list_remove (window->priv->history, doc);
-        window->priv->history_blocked = TRUE;
-    }
+    window->priv->history = g_list_remove (window->priv->history, doc);
+    window->priv->history_blocked = TRUE;
 
     moo_edit_window_update_doc_list (window);
 
@@ -3159,12 +3049,9 @@ _moo_edit_window_remove_doc (MooEditWindow *window,
     if (moo_notebook_get_n_pages (notebook) == 0)
         gtk_widget_hide (GTK_WIDGET (notebook));
 
-    if (window->priv->enable_history)
-    {
-        window->priv->history_blocked = FALSE;
-        if (window->priv->history)
-            moo_edit_window_set_active_doc (window, window->priv->history->data);
-    }
+    window->priv->history_blocked = FALSE;
+    if (window->priv->history)
+        moo_edit_window_set_active_doc (window, window->priv->history->data);
 
     edit_changed (window, NULL);
 
@@ -4489,11 +4376,15 @@ moo_edit_window_job_finished (MooEditWindow  *window,
  */
 
 static int
-compare_docs_for_menu (MooEdit       *doc1,
-                       MooEdit       *doc2)
+compare_tabs_for_menu (MooEditTab *tab1,
+                       MooEditTab *tab2)
 {
     char *k1, *k2;
     int result;
+    MooEdit *doc1, *doc2;
+
+    doc1 = moo_edit_tab_get_doc (tab1);
+    doc2 = moo_edit_tab_get_doc (tab2);
 
     k1 = g_utf8_collate_key_for_filename (moo_edit_get_display_basename (doc1), -1);
     k2 = g_utf8_collate_key_for_filename (moo_edit_get_display_basename (doc2), -1);
@@ -4502,8 +4393,8 @@ compare_docs_for_menu (MooEdit       *doc1,
 
     if (!result)
     {
-        MooEditWindow *window = moo_edit_get_window (doc1);
-        result = get_doc_num (window, doc1) - get_doc_num (window, doc2);
+        MooEditWindow *window = moo_edit_tab_get_window (tab1);
+        result = get_tab_num (window, tab1) - get_tab_num (window, tab2);
     }
 
     g_free (k2);
@@ -4512,9 +4403,14 @@ compare_docs_for_menu (MooEdit       *doc1,
 }
 
 static void
-doc_menu_item_activated (MooEdit *doc)
+doc_menu_item_activated (MooEditTab *tab)
 {
-    moo_editor_set_active_doc (moo_edit_get_editor (doc), doc);
+    MooEditWindow *window;
+
+    window = moo_edit_tab_get_window (tab);
+    g_return_if_fail (MOO_IS_EDIT_WINDOW (window));
+
+    moo_edit_window_set_active_tab (window, tab);
 }
 
 static void
@@ -4522,8 +4418,8 @@ populate_window_menu (MooEditWindow *window,
                       GtkWidget     *menu,
                       GtkWidget     *no_docs_item)
 {
-    MooEdit *active_doc;
-    MooEditArray *docs;
+    MooEditTab *active_tab;
+    MooEditTabArray *tabs;
     GList *children, *l;
     int pos;
     guint i;
@@ -4543,11 +4439,11 @@ populate_window_menu (MooEditWindow *window,
 
     g_list_free (children);
 
-    docs = moo_editor_get_docs (moo_edit_window_get_editor (window));
+    tabs = moo_edit_window_get_tabs (window);
 
-    if (moo_edit_array_is_empty (docs))
+    if (moo_edit_tab_array_is_empty (tabs))
     {
-        moo_edit_array_free (docs);
+        moo_edit_tab_array_free (tabs);
         return;
     }
 
@@ -4556,26 +4452,27 @@ populate_window_menu (MooEditWindow *window,
     gtk_widget_show (item);
     gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, ++pos);
 
-    moo_edit_array_sort (docs, (GCompareFunc) compare_docs_for_menu);
-    active_doc = ACTIVE_DOC (window);
+    moo_edit_tab_array_sort (tabs, (GCompareFunc) compare_tabs_for_menu);
+    active_tab = ACTIVE_TAB (window);
 
-    for (i = 0; i < docs->n_elms; ++i)
+    for (i = 0; i < tabs->n_elms; ++i)
     {
         int idx;
-        MooEdit *doc = docs->elms[i];
+        MooEditTab *tab = tabs->elms[i];
+        MooEdit *doc = moo_edit_tab_get_doc (tab);
 
-        idx = get_doc_num (window, doc);
+        idx = get_tab_num (window, tab);
 
         item = gtk_check_menu_item_new_with_label (moo_edit_get_display_basename (doc));
         _moo_widget_set_tooltip (item, moo_edit_get_display_name (doc));
-        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), doc == active_doc);
+        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), tab == active_tab);
         gtk_check_menu_item_set_draw_as_radio (GTK_CHECK_MENU_ITEM (item), TRUE);
         g_object_set_data (G_OBJECT (item), "moo-document-menu-item", GINT_TO_POINTER (TRUE));
         gtk_widget_show (item);
         gtk_menu_shell_insert (GTK_MENU_SHELL (menu), item, ++pos);
-        g_signal_connect_swapped (item, "activate", G_CALLBACK (doc_menu_item_activated), doc);
+        g_signal_connect_swapped (item, "activate", G_CALLBACK (doc_menu_item_activated), tab);
 
-        if (idx >= 0 && idx < 9)
+        if (idx < 9)
         {
             char *action_name = g_strdup_printf (DOCUMENT_ACTION "%u", idx + 1);
             GtkAction *action = moo_window_get_action (MOO_WINDOW (window), action_name);
@@ -4585,7 +4482,7 @@ populate_window_menu (MooEditWindow *window,
         }
     }
 
-    moo_edit_array_free (docs);
+    moo_edit_tab_array_free (tabs);
 }
 
 static void
@@ -4610,8 +4507,7 @@ moo_edit_window_update_doc_list (MooEditWindow *window)
 {
     MooEdit *doc;
 
-    if (window->priv->enable_history &&
-        !window->priv->history_blocked &&
+    if (!window->priv->history_blocked &&
         (doc = ACTIVE_DOC (window)))
     {
         GList *link = g_list_find (window->priv->history, doc);

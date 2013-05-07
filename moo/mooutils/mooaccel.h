@@ -48,15 +48,6 @@ gboolean      moo_accel_check_event         (GtkWidget       *widget,
                                              guint            keyval,
                                              GdkModifierType  mods);
 
-gboolean moo_keymap_translate_keyboard_state (GdkKeymap           *keymap,
-                                              guint                hardware_keycode,
-                                              GdkModifierType      state,
-                                              gint                 group,
-                                              guint               *keyval,
-                                              gint                *effective_group,
-                                              gint                *level,
-                                              GdkModifierType     *consumed_modifiers);
-
 
 #define MOO_ACCEL_MODS_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK | GDK_META_MASK)
 
