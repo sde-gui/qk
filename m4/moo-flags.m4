@@ -3,7 +3,7 @@ AC_DEFUN([_MOO_AC_CHECK_C_COMPILER_OPTIONS],[
   for opt in $1; do
     save_CFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS $opt"
-    if test "x$MOO_STRICT_MODE" = "xyes"; then
+    if test "x$MOO_ENABLE_FATAL_WARNINGS" = "xyes"; then
       CFLAGS="-Werror $CFLAGS"
     fi
     AC_TRY_COMPILE([],[],[MOO_CFLAGS="$MOO_CFLAGS $opt"],[:])
@@ -17,7 +17,7 @@ AC_DEFUN([_MOO_AC_CHECK_CXX_COMPILER_OPTIONS],[
   for opt in $1; do
     save_CXXFLAGS="$CXXFLAGS"
     CXXFLAGS="$CXXFLAGS $opt"
-    if test "x$MOO_STRICT_MODE" = "xyes"; then
+    if test "x$MOO_ENABLE_FATAL_WARNINGS" = "xyes"; then
       CXXFLAGS="-Werror $CXXFLAGS"
     fi
     AC_TRY_COMPILE([],[],[MOO_CXXFLAGS="$MOO_CXXFLAGS $opt"],[:])
@@ -75,21 +75,17 @@ AC_ARG_ENABLE(dev-mode,
 ])
 AM_CONDITIONAL(MOO_DEV_MODE, test x$MOO_DEV_MODE = "xyes")
 
-AC_ARG_ENABLE(strict,
-  AC_HELP_STRING([--enable-strict],[enable all warnings (default = NO, unless --enable-debug is used)]),[
+AC_ARG_ENABLE(fatal-warnings,
+  AC_HELP_STRING([--enable-fatal-warnings],[enable -Werror (default = NO, unless --enable-debug is used)]),[
     if test "$enableval" = "xno"; then
-      MOO_STRICT_MODE="no"
+      MOO_ENABLE_FATAL_WARNINGS="no"
     else
-      MOO_STRICT_MODE="yes"
+      MOO_ENABLE_FATAL_WARNINGS="yes"
     fi
   ],[
-  if test "$MOO_DEBUG_ENABLED" = yes -o "$MOO_DEV_MODE" = yes; then
-    MOO_STRICT_MODE="yes"
-  else
-    MOO_STRICT_MODE="no"
-  fi
+  MOO_ENABLE_FATAL_WARNINGS="no"
 ])
-AM_CONDITIONAL(MOO_STRICT_MODE, test x$MOO_STRICT_MODE = "xyes")
+AM_CONDITIONAL(MOO_ENABLE_FATAL_WARNINGS, test x$MOO_ENABLE_FATAL_WARNINGS = "xyes")
 
 MOO_COMPILER
 
@@ -111,7 +107,7 @@ else
   _MOO_AC_CHECK_CXX_COMPILER_OPTIONS([-fno-enforce-eh-specs])
 fi
 
-if test "x$MOO_STRICT_MODE" = "xyes"; then
+if test "x$MOO_ENABLE_FATAL_WARNINGS" = "xyes"; then
   if $MOO_GCC; then
     MOO_CFLAGS="$MOO_CFLAGS -Werror"
     MOO_CXXFLAGS="$MOO_CXXFLAGS -Werror"
