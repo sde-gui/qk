@@ -15,6 +15,7 @@
 
 #include "moo-test-macros.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-messages.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

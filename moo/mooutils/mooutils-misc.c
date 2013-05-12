@@ -1798,12 +1798,9 @@ void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_lis
 
     message = g_strdup_vprintf (format, args);
 
-    if (moo_code_loc_valid (loc))
-        g_log (G_LOG_DOMAIN, flags,
-               Q_("console message|in file %s, line %d, function %s: %s"),
-               loc.file, loc.line, loc.func, message);
-    else
-        g_log (G_LOG_DOMAIN, flags, "%s", message);
+    g_log (G_LOG_DOMAIN, flags,
+           Q_("console message|in file %s, line %d, function %s: %s"),
+           loc.file, loc.line, loc.func, message);
 
     g_free (message);
 }
