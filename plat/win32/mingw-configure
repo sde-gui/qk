@@ -112,7 +112,7 @@ fi
 
 if [ "$1" = "--python" ]; then
   shift
-  moo_configure_args="$moo_configure_args --enable-moo-module --enable-shared --disable-static"
+  moo_configure_args="$moo_configure_args --enable-strict --enable-moo-module --enable-shared --disable-static"
 fi
 
 echo $srcdir/configure $configure_args $moo_configure_args $moo_nls_flags "$@"
