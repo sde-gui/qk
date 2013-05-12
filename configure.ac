@@ -1,6 +1,6 @@
 m4_define([_moo_major_version_],[1])
 m4_define([_moo_minor_version_],[1])
-m4_define([_moo_micro_version_],[94])
+m4_define([_moo_micro_version_],[95])
 m4_define([_moo_version_suffix_],[devel])
 m4_define([_moo_module_major_version_],[2])
 m4_define([_moo_module_minor_version_],[0])
@@ -13,7 +13,7 @@ m4_if(_moo_version_suffix_,[],
 m4_define([_moo_website_],[http://mooedit.sourceforge.net/])
 m4_define([_moo_web_contact_],[http://mooedit.sourceforge.net/contact.html])
 m4_define([_moo_email_],[emuntyan@users.sourceforge.net])
-m4_define([_moo_copyright_],[2004-2011 Yevgen Muntyan <_moo_email_>])
+m4_define([_moo_copyright_],[2004-2013 Yevgen Muntyan <_moo_email_>])
 
 AC_PREREQ([2.65])
 AC_INIT([medit], [_moo_display_version_], [_moo_email_])
