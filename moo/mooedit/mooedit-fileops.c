@@ -1360,9 +1360,9 @@ data_has_bom (const char  *data,
         const char *bom;
         gsize bom_len;
     } encs[] = {
-        { "UTF-8",          BOM_UTF8,     BOM_UTF8_LEN },
-        { "UTF-16",         BOM_UTF16,    BOM_UTF16_LEN },
-        { "UTF-32",         BOM_UTF32,    BOM_UTF32_LEN },
+        { "UTF-8-BOM",      BOM_UTF8,     BOM_UTF8_LEN },
+        { "UTF-16-BOM",     BOM_UTF16,    BOM_UTF16_LEN },
+        { "UTF-32-BOM",     BOM_UTF32,    BOM_UTF32_LEN },
 #if G_BYTE_ORDER == G_LITTLE_ENDIAN
         { "UTF-16BE-BOM",   BOM_UTF16_BE, BOM_UTF16_LEN },
         { "UTF-32BE-BOM",   BOM_UTF32_BE, BOM_UTF32_LEN },
