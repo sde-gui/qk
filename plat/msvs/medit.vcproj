@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="medit"
 	ProjectGUID="{D221A7DD-2AB9-4F49-AAF4-A74C5ABDB3E4}"
+	RootNamespace="medit"
 	Keyword="MakeFileProj"
 	TargetFrameworkVersion="196613"
 	>
@@ -20,6 +21,7 @@
 			OutputDirectory="$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
+			InheritedPropertySheets=".\medit-deps.vsprops"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -38,7 +40,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\Projects\medit\build\mingw\moo;C:\Projects\medit\build\mingw;C:\Projects\medit\moo\plugins\support;C:\Projects\medit\moo\mooutils\moowin32\mingw;C:\Projects\medit\moo\mooutils\moowin32\ms;C:\Projects\medit\doc\built;C:\Projects\medit\moo;C:\Projects\medit\plat\msvs\inc;C:\Projects\medit\plat\msvs\deps\include;&quot;C:\Projects\medit\plat\msvs\deps\include\glib-2.0&quot;;&quot;C:\Projects\medit\plat\msvs\deps\include\atk-1.0&quot;;&quot;C:\Projects\medit\plat\msvs\deps\include\gtk-2.0&quot;;&quot;C:\Projects\medit\plat\msvs\deps\include\pango-1.0&quot;;&quot;C:\Projects\medit\plat\msvs\deps\lib\gtk-2.0\include&quot;;C:\Projects\medit\plat\msvs\deps\include\libxml2;C:\Projects\medit\plat\msvs\deps\include\cairo;&quot;C:\Projects\medit\plat\msvs\deps\include\pygtk-2.0&quot;;C:\Projects\medit\plat\msvs\deps\include\python"
+				AdditionalIncludeDirectories="$(ProjectDir)..\..\build\mingw\moo;$(ProjectDir)..\..\build\mingw;$(ProjectDir)..\..\moo\plugins\support;$(ProjectDir)..\..\moo\mooutils\moowin32\mingw;$(ProjectDir)..\..\moo\mooutils\moowin32\ms;$(ProjectDir)..\..\doc\built;$(ProjectDir)..\..\moo;$(ProjectDir)..\..\plat\msvs\inc;$(GtkRoot)\include;&quot;$(GtkRoot)\include\glib-2.0&quot;;&quot;$(GtkRoot)\include\atk-1.0&quot;;&quot;$(GtkRoot)\include\gtk-2.0&quot;;&quot;$(GtkRoot)\include\pango-1.0&quot;;&quot;$(GtkRoot)\lib\gtk-2.0\include&quot;;$(GtkRoot)\include\libxml2;$(GtkRoot)\include\cairo;&quot;$(GtkRoot)\include\pygtk-2.0&quot;;$(GtkRoot)\include\python"
 				PreprocessorDefinitions="UNICODE;_UNICODE;__WIN32__;STRICT;HAVE_CONFIG_H=1"
 			/>
 			<Tool
@@ -101,6 +103,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="$(ProjectDir)..\..\build\mingw\moo;$(ProjectDir)..\..\build\mingw;$(ProjectDir)..\..\moo\plugins\support;$(ProjectDir)..\..\moo\mooutils\moowin32\mingw;$(ProjectDir)..\..\moo\mooutils\moowin32\ms;$(ProjectDir)..\..\doc\built;$(ProjectDir)..\..\moo;$(ProjectDir)..\..\plat\msvs\inc;$(GtkRoot)\include;&quot;$(GtkRoot)\include\glib-2.0&quot;;&quot;$(GtkRoot)\include\atk-1.0&quot;;&quot;$(GtkRoot)\include\gtk-2.0&quot;;&quot;$(GtkRoot)\include\pango-1.0&quot;;&quot;$(GtkRoot)\lib\gtk-2.0\include&quot;;$(GtkRoot)\include\libxml2;$(GtkRoot)\include\cairo;&quot;$(GtkRoot)\include\pygtk-2.0&quot;;$(GtkRoot)\include\python"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
