@@ -26,29 +26,29 @@
 
 /* TODO: strncmp should accept char len, not byte len? */
 typedef struct {
-    int     (*strcmp_func)      (const char   *str,
-                                 MooFile      *file);
-    int     (*strncmp_func)     (const char   *str,
-                                 MooFile      *file,
-                                 guint         len);
-    char*   (*normalize_func)   (const char   *str,
-                                 gssize        len);
+    gboolean	(*file_equals_func)		(MooFile      *file,
+										 const char   *str);
+    gboolean	(*file_has_prefix_func)	(MooFile      *file,
+										 const char   *str,
+										 guint         len);
+    char*		(*normalize_func)		(const char   *str,
+										 gssize        len);
 } TextFuncs;
 
 
-static int
-strcmp_func (const char *str,
-             MooFile    *file)
+static gboolean
+file_equals_func (MooFile    *file,
+				  const char *str)
 {
-    return strcmp (str, _moo_file_display_name (file));
+    return !strcmp (str, _moo_file_display_name (file));
 }
 
-static int
-strncmp_func (const char *str,
-              MooFile    *file,
-              guint       len)
+static gboolean
+file_has_prefix_func (MooFile    *file,
+					  const char *str,
+					  guint       len)
 {
-    return strncmp (str, _moo_file_display_name (file), len);
+    return !strncmp (str, _moo_file_display_name (file), len);
 }
 
 static char *
@@ -59,21 +59,6 @@ normalize_func (const char *str,
 }
 
 
-static int
-case_strcmp_func (const char *str,
-                  MooFile    *file)
-{
-    return strcmp (str, _moo_file_case_display_name (file));
-}
-
-static int
-case_strncmp_func (const char *str,
-                   MooFile    *file,
-                   guint       len)
-{
-    return strncmp (str, _moo_file_case_display_name (file), len);
-}
-
 static char *
 case_normalize_func (const char *str,
                      gssize      len)
@@ -82,6 +67,27 @@ case_normalize_func (const char *str,
     char *res = g_utf8_casefold (norm, -1);
     g_free (norm);
     return res;
+}
+
+static gboolean
+case_file_equals_func (MooFile    *file,
+					   const char *str)
+{
+	char *temp = case_normalize_func (str, -1);
+	gboolean ret = !strcmp (temp, _moo_file_case_display_name (file));
+	g_free (temp);
+	return ret;
+}
+
+static gboolean
+case_file_has_prefix_func (MooFile    *file,
+						   const char *str,
+						   guint       len)
+{
+	char *temp = case_normalize_func (str, len);
+	gboolean ret = g_str_has_prefix (_moo_file_case_display_name (file), temp);
+	g_free (temp);
+	return ret;
 }
 
 
@@ -111,10 +117,11 @@ model_find_next_match (GtkTreeModel   *model,
         if (file)
         {
             if (exact_match)
-                match = !funcs->strcmp_func (normalized_text, file);
+                match = funcs->file_equals_func (file, normalized_text);
             else
-                match = !funcs->strncmp_func (normalized_text, file,
-                                              normalized_text_len);
+                match = funcs->file_has_prefix_func (file,
+													 normalized_text,
+													 normalized_text_len);
 
             _moo_file_unref (file);
 

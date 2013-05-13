@@ -253,4 +253,14 @@ G_END_DECLS
 
 #endif /* G_OS_WIN32 */
 
+G_INLINE_FUNC gboolean
+moo_os_win32 (void)
+{
+#ifdef __WIN32__
+    return TRUE;
+#else
+    return FALSE;
+#endif
+}
+
 #endif /* MOO_UTILS_MISC_H */

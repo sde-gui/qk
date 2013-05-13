@@ -30,6 +30,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moohelp.h"
 #include "mooutils/mooutils-fs.h"
+#include "mooutils/mooutils-misc.h"
 #include "plugins/moofind-gxml.h"
 #include "plugins/moogrep-gxml.h"
 #include "moo-help-sections.h"
@@ -323,7 +324,7 @@ setup_file_combo (MooHistoryCombo *hist_combo)
     entry = MOO_COMBO (hist_combo)->entry;
     completion = g_object_new (MOO_TYPE_FILE_ENTRY_COMPLETION,
                                "directories-only", TRUE,
-                               "case-sensitive", TRUE,
+                               "case-sensitive", !moo_os_win32 (),
                                "show-hidden", FALSE,
                                (const char*) NULL);
     _moo_file_entry_completion_set_entry (completion, GTK_ENTRY (entry));

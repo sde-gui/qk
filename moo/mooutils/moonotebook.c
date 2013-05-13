@@ -2213,7 +2213,7 @@ moo_notebook_draw_label (MooNotebook    *nb,
                          &event->area,
                          widget,
                          DETAIL_TAB,
-                         x, y,
+                         x, y + 1,
                          page->label->width,
                          height,
                          GTK_POS_BOTTOM);

@@ -248,14 +248,14 @@ _moo_file_entry_completion_init (MooFileEntryCompletion *cmpl)
 
     if (cmpl->priv->case_sensitive)
     {
-        cmpl->priv->text_funcs.strcmp_func = strcmp_func;
-        cmpl->priv->text_funcs.strncmp_func = strncmp_func;
+        cmpl->priv->text_funcs.file_equals_func = file_equals_func;
+        cmpl->priv->text_funcs.file_has_prefix_func = file_has_prefix_func;
         cmpl->priv->text_funcs.normalize_func = normalize_func;
     }
     else
     {
-        cmpl->priv->text_funcs.strcmp_func = case_strcmp_func;
-        cmpl->priv->text_funcs.strncmp_func = case_strncmp_func;
+        cmpl->priv->text_funcs.file_equals_func = case_file_equals_func;
+        cmpl->priv->text_funcs.file_has_prefix_func = case_file_has_prefix_func;
         cmpl->priv->text_funcs.normalize_func = case_normalize_func;
     }
 
@@ -751,14 +751,14 @@ completion_set_case_sensitive (MooFileEntryCompletion *cmpl,
 
         if (case_sensitive)
         {
-            cmpl->priv->text_funcs.strcmp_func = strcmp_func;
-            cmpl->priv->text_funcs.strncmp_func = strncmp_func;
+            cmpl->priv->text_funcs.file_equals_func = file_equals_func;
+            cmpl->priv->text_funcs.file_has_prefix_func = file_has_prefix_func;
             cmpl->priv->text_funcs.normalize_func = normalize_func;
         }
         else
         {
-            cmpl->priv->text_funcs.strcmp_func = case_strcmp_func;
-            cmpl->priv->text_funcs.strncmp_func = case_strncmp_func;
+            cmpl->priv->text_funcs.file_equals_func = case_file_equals_func;
+            cmpl->priv->text_funcs.file_has_prefix_func = case_file_has_prefix_func;
             cmpl->priv->text_funcs.normalize_func = case_normalize_func;
         }
 
@@ -1318,8 +1318,9 @@ completion_visible_func (GtkTreeModel           *model,
     }
     else if (cmpl->priv->visible_func (file, cmpl->priv->visible_func_data))
     {
-        visible = !cmpl->priv->text_funcs.strncmp_func (cmpl->priv->display_basename, file,
-                                                        cmpl->priv->display_basename_len);
+        visible = cmpl->priv->text_funcs.file_has_prefix_func (file,
+															   cmpl->priv->display_basename,
+															   cmpl->priv->display_basename_len);
     }
 
     _moo_file_unref (file);
