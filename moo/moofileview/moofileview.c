@@ -4809,7 +4809,7 @@ typeahead_tab_key (MooFileView *fileview)
             name = _moo_file_display_name (file);
 
 #if 0
-            if (!file || !stuff->file_equals_func (file, stuff->matched_prefix->str))
+            if (!file || !stuff->file_equals (file, stuff->matched_prefix->str))
                 goto error;
 #endif
 
@@ -4846,7 +4846,7 @@ typeahead_tab_key (MooFileView *fileview)
         goto error;
 
 #if 0
-//     if (!stuff->file_has_prefix_func (file, stuff->matched_prefix->str, stuff->matched_prefix->len))
+//     if (!stuff->file_has_prefix (file, stuff->matched_prefix->str, stuff->matched_prefix->len))
 //         goto error;
 #endif
 
@@ -4895,19 +4895,7 @@ typeahead_create (MooFileView *fileview)
     stuff->fileview = fileview;
     stuff->entry = fileview->priv->entry;
     stuff->case_sensitive = fileview->priv->typeahead_case_sensitive;
-
-    if (stuff->case_sensitive)
-    {
-        stuff->text_funcs.file_equals_func = file_equals_func;
-        stuff->text_funcs.file_has_prefix_func = file_has_prefix_func;
-        stuff->text_funcs.normalize_func = normalize_func;
-    }
-    else
-    {
-        stuff->text_funcs.file_equals_func = case_file_equals_func;
-        stuff->text_funcs.file_has_prefix_func = case_file_has_prefix_func;
-        stuff->text_funcs.normalize_func = case_normalize_func;
-    }
+    set_text_funcs (&stuff->text_funcs, stuff->case_sensitive);
 
     fileview->priv->typeahead = stuff;
 }
@@ -4936,19 +4924,7 @@ _moo_file_view_set_typeahead_case_sensitive (MooFileView *fileview,
 
         fileview->priv->typeahead_case_sensitive = case_sensitive;
         stuff->case_sensitive = case_sensitive;
-
-        if (case_sensitive)
-        {
-            stuff->text_funcs.file_equals_func = file_equals_func;
-            stuff->text_funcs.file_has_prefix_func = file_has_prefix_func;
-            stuff->text_funcs.normalize_func = normalize_func;
-        }
-        else
-        {
-            stuff->text_funcs.file_equals_func = case_file_equals_func;
-            stuff->text_funcs.file_has_prefix_func = case_file_has_prefix_func;
-            stuff->text_funcs.normalize_func = case_normalize_func;
-        }
+        set_text_funcs (&stuff->text_funcs, case_sensitive);
 
         g_object_notify (G_OBJECT (fileview), "typeahead-case-sensitive");
     }

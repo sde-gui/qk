@@ -25,43 +25,43 @@
 
 
 /* TODO: strncmp should accept char len, not byte len? */
-typedef struct {
-    gboolean	(*file_equals_func)		(MooFile      *file,
-										 const char   *str);
-    gboolean	(*file_has_prefix_func)	(MooFile      *file,
-										 const char   *str,
-										 guint         len);
-    char*		(*normalize_func)		(const char   *str,
-										 gssize        len);
+typedef struct TextFuncs {
+    gboolean    (*file_equals)          (MooFile      *file,
+                                         const char   *str);
+    gboolean    (*file_has_prefix)      (MooFile      *file,
+                                         const char   *str,
+                                         guint         len);
+    char*       (*normalize)            (const char   *str,
+                                         gssize        len);
 } TextFuncs;
 
 
 static gboolean
-file_equals_func (MooFile    *file,
-				  const char *str)
+file_equals (MooFile    *file,
+             const char *str)
 {
     return !strcmp (str, _moo_file_display_name (file));
 }
 
 static gboolean
-file_has_prefix_func (MooFile    *file,
-					  const char *str,
-					  guint       len)
+file_has_prefix (MooFile    *file,
+                 const char *str,
+                 guint       len)
 {
     return !strncmp (str, _moo_file_display_name (file), len);
 }
 
 static char *
-normalize_func (const char *str,
-                gssize      len)
+normalize (const char *str,
+           gssize      len)
 {
     return g_utf8_normalize (str, len, G_NORMALIZE_ALL);
 }
 
 
 static char *
-case_normalize_func (const char *str,
-                     gssize      len)
+case_normalize (const char *str,
+                gssize      len)
 {
     char *norm = g_utf8_normalize (str, len, G_NORMALIZE_ALL);
     char *res = g_utf8_casefold (norm, -1);
@@ -70,24 +70,43 @@ case_normalize_func (const char *str,
 }
 
 static gboolean
-case_file_equals_func (MooFile    *file,
-					   const char *str)
+case_file_equals (MooFile    *file,
+                  const char *str)
 {
-	char *temp = case_normalize_func (str, -1);
-	gboolean ret = !strcmp (temp, _moo_file_case_display_name (file));
-	g_free (temp);
-	return ret;
+    char *temp = case_normalize (str, -1);
+    gboolean ret = !strcmp (temp, _moo_file_case_display_name (file));
+    g_free (temp);
+    return ret;
 }
 
 static gboolean
-case_file_has_prefix_func (MooFile    *file,
-						   const char *str,
-						   guint       len)
+case_file_has_prefix (MooFile    *file,
+                      const char *str,
+                      guint       len)
 {
-	char *temp = case_normalize_func (str, len);
-	gboolean ret = g_str_has_prefix (_moo_file_case_display_name (file), temp);
-	g_free (temp);
-	return ret;
+    char *temp = case_normalize (str, len);
+    gboolean ret = g_str_has_prefix (_moo_file_case_display_name (file), temp);
+    g_free (temp);
+    return ret;
+}
+
+
+static void
+set_text_funcs (TextFuncs *funcs,
+                gboolean   case_sensitive)
+{
+    if (case_sensitive)
+    {
+        funcs->file_equals = file_equals;
+        funcs->file_has_prefix = file_has_prefix;
+        funcs->normalize = normalize;
+    }
+    else
+    {
+        funcs->file_equals = case_file_equals;
+        funcs->file_has_prefix = case_file_has_prefix;
+        funcs->normalize = case_normalize;
+    }
 }
 
 
@@ -104,7 +123,7 @@ model_find_next_match (GtkTreeModel   *model,
 
     g_return_val_if_fail (text != NULL, FALSE);
 
-    normalized_text = funcs->normalize_func (text, len);
+    normalized_text = funcs->normalize (text, len);
     normalized_text_len = strlen (normalized_text);
 
     while (TRUE)
@@ -117,12 +136,11 @@ model_find_next_match (GtkTreeModel   *model,
         if (file)
         {
             if (exact_match)
-                match = funcs->file_equals_func (file, normalized_text);
+                match = funcs->file_equals (file, normalized_text);
             else
-                match = funcs->file_has_prefix_func (file,
-													 normalized_text,
-													 normalized_text_len);
-
+                match = funcs->file_has_prefix (file,
+                                                normalized_text,
+                                                normalized_text_len);
             _moo_file_unref (file);
 
             if (match)

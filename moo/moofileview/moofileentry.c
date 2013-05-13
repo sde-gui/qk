@@ -245,19 +245,7 @@ _moo_file_entry_completion_init (MooFileEntryCompletion *cmpl)
 
     cmpl->priv->case_sensitive = CASE_SENSITIVE_DEFAULT;
     cmpl->priv->visible_func = (MooFileVisibleFunc) completion_default_visible_func;
-
-    if (cmpl->priv->case_sensitive)
-    {
-        cmpl->priv->text_funcs.file_equals_func = file_equals_func;
-        cmpl->priv->text_funcs.file_has_prefix_func = file_has_prefix_func;
-        cmpl->priv->text_funcs.normalize_func = normalize_func;
-    }
-    else
-    {
-        cmpl->priv->text_funcs.file_equals_func = case_file_equals_func;
-        cmpl->priv->text_funcs.file_has_prefix_func = case_file_has_prefix_func;
-        cmpl->priv->text_funcs.normalize_func = case_normalize_func;
-    }
+    set_text_funcs(&cmpl->priv->text_funcs, cmpl->priv->case_sensitive);
 
     model = _moo_folder_model_new (NULL);
     cmpl->priv->model = _moo_folder_filter_new (MOO_FOLDER_MODEL (model));
@@ -748,20 +736,7 @@ completion_set_case_sensitive (MooFileEntryCompletion *cmpl,
     if (case_sensitive != cmpl->priv->case_sensitive)
     {
         cmpl->priv->case_sensitive = case_sensitive;
-
-        if (case_sensitive)
-        {
-            cmpl->priv->text_funcs.file_equals_func = file_equals_func;
-            cmpl->priv->text_funcs.file_has_prefix_func = file_has_prefix_func;
-            cmpl->priv->text_funcs.normalize_func = normalize_func;
-        }
-        else
-        {
-            cmpl->priv->text_funcs.file_equals_func = case_file_equals_func;
-            cmpl->priv->text_funcs.file_has_prefix_func = case_file_has_prefix_func;
-            cmpl->priv->text_funcs.normalize_func = case_normalize_func;
-        }
-
+        set_text_funcs (&cmpl->priv->text_funcs, case_sensitive);
         g_object_notify (G_OBJECT (cmpl), "case-sensitive");
     }
 }
@@ -1318,13 +1293,13 @@ completion_visible_func (GtkTreeModel           *model,
     }
     else if (cmpl->priv->visible_func (file, cmpl->priv->visible_func_data))
     {
-        visible = cmpl->priv->text_funcs.file_has_prefix_func (file,
-															   cmpl->priv->display_basename,
-															   cmpl->priv->display_basename_len);
+        visible = cmpl->priv->text_funcs.file_has_prefix (file,
+                                                          cmpl->priv->display_basename,
+                                                          cmpl->priv->display_basename_len);
     }
 
     _moo_file_unref (file);
-    return visible ? TRUE : FALSE; /* #314335 */
+    return visible;
 }
 
 
