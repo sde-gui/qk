@@ -406,7 +406,7 @@ class Module(object):
                 else:
                     raise RuntimeError("in %s: invalid annotation '%s'" % (pfunc.name, a,))
         if param.type is None:
-            raise RuntimeError('in %s: param type missing' % pfunc.name)
+            raise RuntimeError('in %s: type of param "%s" is missing' % (pfunc.name, param.name))
         return param
 
     def __add_vmethod(self, pfunc):

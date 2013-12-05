@@ -7,7 +7,6 @@ G_BEGIN_DECLS
 
 void         moo_edit_window_present_output         (MooEditWindow  *window);
 GtkWidget   *moo_edit_window_get_output             (MooEditWindow  *window);
-GtkWidget   *moo_edit_window_get_output_pane        (MooEditWindow  *window);
 
 G_END_DECLS
 

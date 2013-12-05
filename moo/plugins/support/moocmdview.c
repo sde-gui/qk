@@ -14,7 +14,7 @@
  */
 
 /**
- * class:MooCmdView: (parent MooLineView) (constructable) (moo.private 1)
+ * class:MooCmdView: (parent MooLineView) (constructable)
  **/
 
 #include "moocmdview.h"
@@ -256,7 +256,7 @@ moo_cmd_view_set_filter (MooCmdView      *view,
 }
 
 /**
- * moo_cmd_view_set_filter_by_id: (moo.lua 0)
+ * moo_cmd_view_set_filter_by_id:
  *
  * @view:
  * @id: (type const-utf8)
@@ -335,11 +335,11 @@ stderr_line_cb (MooCmd     *cmd,
 
 
 /**
- * moo_cmd_view_run_command: (moo.lua 0)
+ * moo_cmd_view_run_command:
  *
  * @view:
- * @cmd: (type filename)
- * @working_dir: (type filename) (allow-none) (default NULL)
+ * @cmd: (type const-filename)
+ * @working_dir: (type const-filename) (allow-none) (default NULL)
  * @job_name: (type const-utf8) (allow-none) (default NULL)
  */
 gboolean
@@ -566,6 +566,35 @@ moo_cmd_view_abort (MooCmdView *view)
     gboolean handled;
     g_return_if_fail (MOO_IS_CMD_VIEW (view));
     g_signal_emit (view, signals[ABORT], 0, &handled);
+}
+
+
+/**
+ * moo_cmd_view_write_with_filter:
+ *
+ * @view:
+ * @text: (type const-utf8)
+ * @error: (allow-none) (default FALSE)
+ */
+void
+moo_cmd_view_write_with_filter (MooCmdView *view,
+                                const char *text,
+                                gboolean    error)
+{
+    char **lines;
+    char **p;
+    
+    lines = moo_splitlines (text);
+
+    for (p = lines; p && *p; ++p)
+    {
+        if (error)
+            moo_cmd_view_stderr_line (view, *p);
+        else
+            moo_cmd_view_stdout_line (view, *p);
+    }
+
+    g_strfreev (lines);
 }
 
 

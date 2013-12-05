@@ -3,6 +3,20 @@
 #include "mooutils/moostock.h"
 #include "mooutils/mooi18n.h"
 
+#define MOO_EDIT_WINDOW_OUTPUT "moo-edit-window-output"
+#define MOO_OUTPUT "moo-output"
+
+/**
+ * moo_edit_window_get_output:
+ *
+ * @window:
+ *
+ * Returns: an output pane, as #MooCmdView object.
+ *
+ * Get the output pane, create it if necessary. This function
+ * does not open the pane, use #moo_edit_window_present_output
+ * for that.
+ */
 GtkWidget *
 moo_edit_window_get_output (MooEditWindow *window)
 {
@@ -12,7 +26,7 @@ moo_edit_window_get_output (MooEditWindow *window)
 
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
 
-    scrolled_window = moo_edit_window_get_pane (window, "moo-edit-window-output");
+    scrolled_window = moo_edit_window_get_pane (window, MOO_EDIT_WINDOW_OUTPUT);
 
     if (!scrolled_window)
     {
@@ -26,14 +40,14 @@ moo_edit_window_get_output (MooEditWindow *window)
         moo_text_view_set_font_from_string (MOO_TEXT_VIEW (cmd_view), "Monospace");
         gtk_container_add (GTK_CONTAINER (scrolled_window), cmd_view);
         gtk_widget_show_all (scrolled_window);
-        g_object_set_data (G_OBJECT (scrolled_window), "moo-output", cmd_view);
+        g_object_set_data (G_OBJECT (scrolled_window), MOO_OUTPUT, cmd_view);
 
         label = moo_pane_label_new (MOO_STOCK_TERMINAL, NULL,
                                     /* label of Output window pane */
                                     C_("window-pane", "Output"),
                                     C_("window-pane", "Output"));
 
-        if (!moo_edit_window_add_pane (window, "moo-edit-window-output",
+        if (!moo_edit_window_add_pane (window, MOO_EDIT_WINDOW_OUTPUT,
                                        scrolled_window, label, MOO_PANE_POS_BOTTOM))
         {
             g_critical ("oops");
@@ -47,18 +61,25 @@ moo_edit_window_get_output (MooEditWindow *window)
         return cmd_view;
     }
 
-    return g_object_get_data (G_OBJECT (scrolled_window), "moo-output");
+    return g_object_get_data (G_OBJECT (scrolled_window), MOO_OUTPUT);
 }
 
 
-GtkWidget *
+static GtkWidget *
 moo_edit_window_get_output_pane (MooEditWindow *window)
 {
     g_return_val_if_fail (MOO_IS_EDIT_WINDOW (window), NULL);
-    return moo_edit_window_get_pane (window, "moo-edit-window-output");
+    return moo_edit_window_get_pane (window, MOO_EDIT_WINDOW_OUTPUT);
 }
 
 
+/**
+ * moo_edit_window_present_output:
+ *
+ * @window:
+ *
+ * Open the output pane.
+ */
 void
 moo_edit_window_present_output (MooEditWindow *window)
 {

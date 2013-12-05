@@ -75,6 +75,10 @@ void        moo_cmd_view_set_filter_by_id   (MooCmdView         *view,
 void        moo_cmd_view_add_filter_dirs    (MooCmdView         *view,
                                              char              **dirs);
 
+void        moo_cmd_view_write_with_filter  (MooCmdView         *view,
+                                             const char         *text,
+                                             gboolean            error);
+
 gboolean    moo_cmd_view_run_command        (MooCmdView         *view,
                                              const char         *cmd,
                                              const char         *working_dir,

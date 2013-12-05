@@ -120,6 +120,9 @@ class Writer(object):
             elif isinstance(sym, Type):
                 return '<constant><link linkend="%(mode)s.%(symbol)s">%(name)s</link></constant>' % \
                     dict(symbol=name, mode=self.mode, name=self.__make_class_name(sym))
+            elif isinstance(sym, Method):
+                return '<constant><link linkend="%(mode)s.%(symbol)s">%(Class)s.%(method)s()</link></constant>' % \
+                    dict(symbol=name, mode=self.mode, Class=self.__make_class_name(sym.cls), method=sym.name)
             else:
                 oops(name)
         if self.mode == 'python':
