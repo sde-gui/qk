@@ -35,6 +35,7 @@
 #undef ENABLE_CHECK_TREE
 #undef ENABLE_MEMORY_DEBUG /* define it to make it print memory usage information */
 			   /* it won't work with GRegex */
+#undef ENABLE_TREE_OUTPUT /* define it to make engine print syntax trees to stdout */
 
 #ifdef ENABLE_DEBUG
 #define DEBUG(x) (x)
@@ -434,6 +435,9 @@ struct _GtkSourceContextEnginePrivate
 #ifdef ENABLE_MEMORY_DEBUG
 	guint			 mem_usage_timeout;
 #endif
+#ifdef ENABLE_TREE_OUTPUT
+	guint			 tree_output_timeout;
+#endif
 };
 
 
@@ -510,6 +514,9 @@ static void		install_first_update	(GtkSourceContextEngine	*ce);
 
 #ifdef ENABLE_MEMORY_DEBUG
 static gboolean		mem_usage_timeout	(GtkSourceContextEngine *ce);
+#endif
+#ifdef ENABLE_TREE_OUTPUT
+static gboolean		tree_output_timeout	(GtkSourceContextEngine *ce);
 #endif
 
 
@@ -2409,6 +2416,10 @@ gtk_source_context_engine_finalize (GObject *object)
 	if (ce->priv->mem_usage_timeout)
 		g_source_remove (ce->priv->mem_usage_timeout);
 #endif
+#ifdef ENABLE_TREE_OUTPUT
+	if (ce->priv->tree_output_timeout)
+		g_source_remove (ce->priv->tree_output_timeout);
+#endif
 
 	g_assert (!ce->priv->tags);
 	g_assert (!ce->priv->root_context);
@@ -2462,6 +2473,10 @@ _gtk_source_context_engine_new (GtkSourceContextData *ctx_data)
 #ifdef ENABLE_MEMORY_DEBUG
 	ce->priv->mem_usage_timeout =
 		g_timeout_add (5000, (GSourceFunc) mem_usage_timeout, ce);
+#endif
+#ifdef ENABLE_TREE_OUTPUT
+	ce->priv->tree_output_timeout =
+		g_timeout_add (5000, (GSourceFunc) tree_output_timeout, ce);
 #endif
 
 	return ce;
@@ -6795,3 +6810,51 @@ mem_usage_timeout (GtkSourceContextEngine *ce)
 	return TRUE;
 }
 #endif /* ENABLE_MEMORY_DEBUG */
+
+
+#ifdef ENABLE_TREE_OUTPUT
+
+static void
+print_offset (int offset)
+{
+    if (offset > 0)
+    {
+        char *fill = g_strnfill (offset, '-');
+        g_print ("%s ", fill);
+        g_free (fill);
+    }
+}
+
+static void
+print_context (Context *ctx)
+{
+    g_print ("<%s> <%s>", ctx->definition->id, ctx->style);
+}
+
+static void
+print_segment (Segment *seg, int offset)
+{
+    Segment *child;
+
+    if (!seg->context)
+        return;
+
+    print_offset (offset);
+    g_print ("[%d, %d) ", seg->start_at, seg->end_at);
+    print_context (seg->context);
+    g_print ("\n");
+
+    for (child = seg->children; child != NULL; child = child->next)
+        print_segment (child, offset + 1);
+}
+
+static gboolean
+tree_output_timeout (GtkSourceContextEngine *ce)
+{
+    g_print ("Highlighting tree for %p\n", (void*) ce);
+    print_segment (ce->priv->root_segment, 0);
+    g_print ("\n\n\n");
+    return TRUE;
+}
+
+#endif /* ENABLE_TREE_OUTPUT */
