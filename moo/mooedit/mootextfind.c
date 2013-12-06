@@ -419,7 +419,7 @@ moo_find_setup (MooFind        *find,
 }
 
 
-static void
+G_GNUC_PRINTF(3, 0) static void
 print_messagev (MooFindMsgFunc func,
                 gpointer       data,
                 const char    *format,

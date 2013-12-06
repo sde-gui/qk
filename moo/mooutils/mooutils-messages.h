@@ -93,9 +93,9 @@ moo_make_code_loc (const char *file, const char *func, int line, int counter)
 }
 
 void _moo_log (MooCodeLoc loc, GLogLevelFlags flags, const char *format, ...) G_GNUC_PRINTF (3, 4);
-void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_list args);
+void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_list args) G_GNUC_PRINTF(3, 0);
 void MOO_NORETURN _moo_error (MooCodeLoc loc, const char *format, ...) G_GNUC_PRINTF (2, 3);
-void MOO_NORETURN _moo_errorv (MooCodeLoc loc, const char *format, va_list args);
+void MOO_NORETURN _moo_errorv (MooCodeLoc loc, const char *format, va_list args) G_GNUC_PRINTF(2, 0);
 
 void MOO_NORETURN _moo_assert_message (MooCodeLoc loc, const char *message);
 

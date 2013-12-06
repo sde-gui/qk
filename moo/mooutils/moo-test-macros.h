@@ -176,7 +176,7 @@ test_log_handler (const gchar    *log_domain,
     }
 }
 
-static void
+G_GNUC_PRINTF(4, 0) static void
 TEST_EXPECT_WARNINGV_ (int         howmany,
                        int         line,
                        const char *file,
@@ -199,7 +199,7 @@ TEST_EXPECT_WARNINGV_ (int         howmany,
                        test_log_handler, test_warnings_info);
 }
 
-G_GNUC_UNUSED static void
+G_GNUC_PRINTF(4, 5) G_GNUC_UNUSED static void
 TEST_EXPECT_WARNING_ (int         howmany,
                       int         line,
                       const char *file,

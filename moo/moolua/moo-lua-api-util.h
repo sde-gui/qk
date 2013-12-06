@@ -44,7 +44,7 @@ int             moo_lua_error                   (lua_State          *L,
                                                  ...) G_GNUC_PRINTF (2, 3);
 int             moo_lua_errorv                  (lua_State          *L,
                                                  const char         *fmt,
-                                                 va_list             args);
+                                                 va_list             args) G_GNUC_PRINTF(2, 0);
 int             moo_lua_arg_error               (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,
@@ -54,7 +54,7 @@ int             moo_lua_arg_errorv              (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,
                                                  const char         *fmt,
-                                                 va_list             args);
+                                                 va_list             args) G_GNUC_PRINTF(4, 0);
 
 const int MOO_NONEXISTING_INDEX = G_MININT;
 bool            moo_lua_check_kwargs            (lua_State          *L,

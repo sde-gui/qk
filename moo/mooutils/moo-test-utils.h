@@ -66,12 +66,12 @@ void             moo_test_assert_msgv       (gboolean            passed,
                                              const char         *file,
                                              int                 line,
                                              const char         *format,
-                                             va_list             args);
+                                             va_list             args) G_GNUC_PRINTF(4, 0);
 void             moo_test_assert_msg        (gboolean            passed,
                                              const char         *file,
                                              int                 line,
                                              const char         *format,
-                                             ...) G_GNUC_PRINTF(4,5);
+                                             ...) G_GNUC_PRINTF(4, 5);
 
 char            *moo_test_load_data_file    (const char         *basename);
 char            *moo_test_find_data_file    (const char         *basename);

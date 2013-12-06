@@ -133,7 +133,6 @@ if test "x$MOO_STRICT_MODE" = "xyes"; then
 -Woverloaded-virtual -Wsign-promo -Wnon-virtual-dtor dnl
 -Wno-long-long dnl
 ])
-  MOO_CPPFLAGS="$MOO_CPPFLAGS -DG_DISABLE_DEPRECATED"
 fi
 
 # m4_foreach([wname],[unused, sign-compare, write-strings],[dnl
@@ -294,6 +293,11 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   MOO_CXXFLAGS="$MOO_CXXFLAGS $GTK_CFLAGS"
   MOO_CPPFLAGS="$MOO_CPPFLAGS -I$moo_top_src_dir/moo -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\""
   MOO_LIBS="$MOO_LIBS $GTK_LIBS $GTHREAD_LIBS $GMODULE_LIBS $LIBM"
+
+  # G_DISABLE_DEPRECATED (or rather lack of it) is not respected anymore. Glib wants you
+  # to define it; if you don't, then you got to jump through additional hoops in order to
+  # really not disable deprecated stuff.
+  MOO_CPPFLAGS="$MOO_CPPFLAGS -DGLIB_DISABLE_DEPRECATION_WARNINGS=1"
 
   if $GDK_X11; then
     _moo_x_pkgs=
