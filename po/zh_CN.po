@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-06 09:07-0800\n"
+"POT-Creation-Date: 2013-12-06 09:58-0800\n"
 "PO-Revision-Date: 2007-12-06 04:32+0800\n"
 "Last-Translator: Chaosye <chao-7410@163.com>\n"
 "Language-Team: Chaosye <chao-7410@163.com>\n"
@@ -1395,7 +1395,8 @@ msgstr ""
 msgid "Move selected files to Trash"
 msgstr ""
 
-#: ../moo/moofileview/moofileview-tools.c:334
+#. Translators: this is a context menu item label in the file selector, remove the part before and including |
+#: ../moo/moofileview/moofileview-tools.c:335
 msgid "Open with|Default Application"
 msgstr ""
 

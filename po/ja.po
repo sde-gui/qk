@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.1.x-trunk\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-06 09:07-0800\n"
+"POT-Creation-Date: 2013-12-06 09:58-0800\n"
 "PO-Revision-Date: 2012-08-18 11:07+0900\n"
 "Last-Translator: Toshiharu Kudoh <toshi.kd2@gmail.com>\n"
 "Language-Team: Japanese\n"
@@ -1415,7 +1415,8 @@ msgstr "ゴミ箱へ移動..."
 msgid "Move selected files to Trash"
 msgstr "選択されたファイルをゴミ箱へ移動"
 
-#: ../moo/moofileview/moofileview-tools.c:334
+#. Translators: this is a context menu item label in the file selector, remove the part before and including |
+#: ../moo/moofileview/moofileview-tools.c:335
 msgid "Open with|Default Application"
 msgstr "デフォルトアプリケーション"
 

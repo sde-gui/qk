@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-06 09:07-0800\n"
+"POT-Creation-Date: 2013-12-06 09:58-0800\n"
 "PO-Revision-Date: 2012-02-28 18:21-0300\n"
 "Last-Translator: sebikul <sebikul@gmail.com>\n"
 "Language-Team: Arnau Sanchez <arnau@ehas.org>\n"
@@ -1422,7 +1422,8 @@ msgstr "Mover a la papelera..."
 msgid "Move selected files to Trash"
 msgstr "Mover archivos seleccionados a la papelera"
 
-#: ../moo/moofileview/moofileview-tools.c:334
+#. Translators: this is a context menu item label in the file selector, remove the part before and including |
+#: ../moo/moofileview/moofileview-tools.c:335
 msgid "Open with|Default Application"
 msgstr "Abrir con|Aplicación predeterminada"
 

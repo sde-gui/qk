@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-06 09:07-0800\n"
+"POT-Creation-Date: 2013-12-06 09:58-0800\n"
 "PO-Revision-Date: 2013-12-06 05:01+0200\n"
 "Last-Translator: Piotr Orzechowski <dev@porzechowski.com>\n"
 "Language-Team: Piotr Orzechowski <dev@porzechowski.com>\n"
@@ -1428,7 +1428,8 @@ msgstr "Przenieś do kosza..."
 msgid "Move selected files to Trash"
 msgstr "Przenieś wybrane pliki do kosza"
 
-#: ../moo/moofileview/moofileview-tools.c:334
+#. Translators: this is a context menu item label in the file selector, remove the part before and including |
+#: ../moo/moofileview/moofileview-tools.c:335
 msgid "Open with|Default Application"
 msgstr "Domyślny program"
 
@@ -1518,9 +1519,10 @@ msgstr "Domyślny"
 
 #. Translators: remove the part before and including |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:6
+#, fuzzy
 msgctxt "yes"
-msgid "Custom"
-msgstr "Własny"
+msgid "Shortcut|Custom"
+msgstr "Brak"
 
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:7
 msgid "Default key:"
@@ -2436,3 +2438,7 @@ msgstr "Bieżący dokument"
 msgctxt "Save-combo"
 msgid "All documents"
 msgstr "Wszystkie dokumenty"
+
+#~ msgctxt "yes"
+#~ msgid "Custom"
+#~ msgstr "Własny"

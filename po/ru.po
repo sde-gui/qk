@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moo\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-06 09:07-0800\n"
+"POT-Creation-Date: 2013-12-06 09:58-0800\n"
 "PO-Revision-Date: 2007-07-11 10:00+0500\n"
 "Last-Translator: Yevgen Muntyan <emuntyan@users.sourceforge.net>\n"
 "Language-Team: Russian\n"
@@ -1429,7 +1429,8 @@ msgstr "Удалить в корзину..."
 msgid "Move selected files to Trash"
 msgstr "Удалить выделенные файлы в корзину"
 
-#: ../moo/moofileview/moofileview-tools.c:334
+#. Translators: this is a context menu item label in the file selector, remove the part before and including |
+#: ../moo/moofileview/moofileview-tools.c:335
 msgid "Open with|Default Application"
 msgstr "Приложение по умолчанию"
 
