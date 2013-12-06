@@ -68,31 +68,31 @@ static const struct {
     { "ISO-8859-15",    N_("Western"),             "ISO-8859-15",      ENCODING_GROUP_WEST_EUROPEAN },
     { "ISO-8859-16",    N_("Romanian"),            "ISO-8859-16",      ENCODING_GROUP_EAST_EUROPEAN },
 
-    // Label of an encoding menu item, do not translate the part before |
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-7",          NULL, N_("encoding label|UTF-7"),                                 ENCODING_GROUP_UNICODE },
-    // Label of an encoding menu item, do not translate the part before |
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-32BE-BOM",   NULL, N_("encoding label|UTF-32BE-BOM (big-endian, with BOM)"),   ENCODING_GROUP_UNICODE },
-    // Label of an encoding menu item, do not translate the part before |
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-32LE-BOM",   NULL, N_("encoding label|UTF-32LE-BOM (little-endian, with BOM)"),ENCODING_GROUP_UNICODE },
-    // Label of an encoding menu item, do not translate the part before |
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-32BE",       NULL, N_("encoding label|UTF-32BE (big-endian, no BOM)"),         ENCODING_GROUP_UNICODE },
-    // Label of an encoding menu item, do not translate the part before |
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-32LE",       NULL, N_("encoding label|UTF-32LE (little-endian, no BOM)"),      ENCODING_GROUP_UNICODE },
-    // Label of an encoding menu item, do not translate the part before |
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-16BE-BOM",   NULL, N_("encoding label|UTF-16BE-BOM (big-endian, with BOM)"),   ENCODING_GROUP_UNICODE },
-    // Label of an encoding menu item, do not translate the part before |
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-16LE-BOM",   NULL, N_("encoding label|UTF-16LE-BOM (little-endian, with BOM)"),ENCODING_GROUP_UNICODE },
-    // Label of an encoding menu item, do not translate the part before |
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-16BE",       NULL, N_("encoding label|UTF-16BE (big-endian, no BOM)"),         ENCODING_GROUP_UNICODE },
-    // Label of an encoding menu item, do not translate the part before |
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-16LE",       NULL, N_("encoding label|UTF-16LE (little-endian, no BOM)"),      ENCODING_GROUP_UNICODE },
-    // Label of an encoding menu item, do not translate the part before |
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-8-BOM",      NULL, N_("encoding label|UTF-8-BOM"),                             ENCODING_GROUP_UNICODE },
-    // Label of an encoding menu item, do not translate the part before |
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-32",         NULL, N_("encoding label|UTF-32"),                                ENCODING_GROUP_UNICODE },
-    // Label of an encoding menu item, do not translate the part before |
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-16",         NULL, N_("encoding label|UTF-16"),                                ENCODING_GROUP_UNICODE },
-    // Label of an encoding menu item, do not translate the part before |
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-8",          NULL, N_("encoding label|UTF-8"),                                 ENCODING_GROUP_UNICODE },
 
     { "ARMSCII-8",      N_("Armenian"),            "ARMSCII-8",        ENCODING_GROUP_SE_SW_ASIAN },

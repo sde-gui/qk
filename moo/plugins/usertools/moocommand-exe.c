@@ -84,15 +84,20 @@ static const char *output_strings[] = {
     "new-doc"
 };
 
-/* Translators: these are actions for output of a shell command, do not translate the part before | */
 static const char *output_names[] = {
+    /* Translators: this is an action for output of a shell command, remove the part before and including | */
     N_("Output|None"),
+    /* Translators: this is an action for output of a shell command, remove the part before and including | */
     N_("Output|None, asynchronous"),
 #ifdef __WIN32__
+    /* Translators: this is an action for output of a shell command, remove the part before and including | */
     N_("Output|Console"),
 #endif
+    /* Translators: this is an action for output of a shell command, remove the part before and including | */
     N_("Output|Output pane"),
+    /* Translators: this is an action for output of a shell command, remove the part before and including | */
     N_("Output|Insert into the document"),
+    /* Translators: this is an action for output of a shell command, remove the part before and including | */
     N_("Output|New document")
 };
 
@@ -1053,12 +1058,16 @@ unx_factory_create_widget (G_GNUC_UNUSED MooCommandFactory *factory)
 {
     ExePageXml *xml;
 
-    /* Translators: these are kinds of input for a shell command, do not translate the part before | */
     const char *input_names[] = {
+        /* Translators: this is a kind of input for a shell command, remove the part before and including | */
         N_("Input|None"),
+        /* Translators: this is a kind of input for a shell command, remove the part before and including | */
         N_("Input|Selected lines"),
+        /* Translators: this is a kind of input for a shell command, remove the part before and including | */
         N_("Input|Selection"),
+        /* Translators: this is a kind of input for a shell command, remove the part before and including | */
         N_("Input|Whole document"),
+        /* Translators: this is a kind of input for a shell command, remove the part before and including | */
         N_("Input|Document copy")
     };
 

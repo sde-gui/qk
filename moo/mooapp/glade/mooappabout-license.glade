@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <glade-interface>
 <widget class="GtkDialog" id="LicenseDialog">
-<property name="title" translatable="yes" context="yes" comments="Translators: do not translate the part before |">Dialog title|License</property>
+<property name="title" translatable="yes" context="yes" comments="Translators: remove the part before and including |">Dialog title|License</property>
 <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
 <property name="default_width">420</property>
 <property name="default_height">320</property>

@@ -73,7 +73,7 @@
 <child>
 <widget class="GtkRadioButton" id="shortcut_none">
 <property name="visible">True</property>
-<property name="label" translatable="yes" context="yes" comments="Translators: do not translate the part before |">Shortcut|None</property>
+<property name="label" translatable="yes" context="yes" comments="Translators: remove the part before and including |">Shortcut|None</property>
 <property name="use_underline">True</property>
 <property name="focus_on_click">False</property>
 <property name="response_id">0</property>
@@ -87,7 +87,7 @@
 <child>
 <widget class="GtkRadioButton" id="shortcut_default">
 <property name="visible">True</property>
-<property name="label" translatable="yes" context="yes" comments="Translators: do not translate the part before |">Shortcut|Default</property>
+<property name="label" translatable="yes" context="yes" comments="Translators: remove the part before and including |">Shortcut|Default</property>
 <property name="use_underline">True</property>
 <property name="focus_on_click">False</property>
 <property name="response_id">0</property>
@@ -104,7 +104,7 @@
 <child>
 <widget class="GtkRadioButton" id="shortcut_custom">
 <property name="visible">True</property>
-<property name="label" translatable="yes" context="yes" comments="Translators: do not translate the part before |">Shortcut|Custom</property>
+<property name="label" translatable="yes" context="yes" comments="Translators: remove the part before and including |">Shortcut|Custom</property>
 <property name="use_underline">True</property>
 <property name="focus_on_click">False</property>
 <property name="response_id">0</property>

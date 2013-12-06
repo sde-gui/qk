@@ -1799,6 +1799,7 @@ void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_lis
     message = g_strdup_vprintf (format, args);
 
     g_log (G_LOG_DOMAIN, flags,
+           /* Translators: remove the part before and including | */
            Q_("console message|in file %s, line %d, function %s: %s"),
            loc.file, loc.line, loc.func, message);
 

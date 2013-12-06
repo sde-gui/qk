@@ -223,6 +223,7 @@ check_version (const char *version,
     {
         guint current_major, current_minor;
         _moo_module_version (&current_major, &current_minor);
+        /* Translators: remove the part before and including | */
         moo_message_noloc (Q_("console message|ignoring file '%s', module version '%s' is not "
                            "compatible with current version %u.%u"),
                      ini_file_path, version, current_major, current_minor);
@@ -232,6 +233,7 @@ check_version (const char *version,
     return TRUE;
 
 invalid:
+    /* Translators: remove the part before and including | */
     moo_warning_noloc (Q_("console message|invalid module version '%s' in file '%s'"),
                        version, ini_file_path);
     return FALSE;

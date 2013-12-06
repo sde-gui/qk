@@ -164,6 +164,7 @@ GtkWidget *
 moo_edit_prefs_page_new_1 (MooEditor *editor)
 {
     return prefs_page_new (editor,
+                           /* Label of a Preferences dialog page, remove the part before and including | */
                            Q_("PreferencesPage|General"),
                            GTK_STOCK_EDIT,
                            page_general_init_ui,
@@ -199,6 +200,7 @@ GtkWidget *
 moo_edit_prefs_page_new_5 (MooEditor *editor)
 {
     return prefs_page_new (editor,
+                           /* Label of a Preferences dialog page, remove the part before and including | */
                            Q_("PreferencesPage|File Filters"),
                            GTK_STOCK_EDIT,
                            page_filters_init_ui,
@@ -251,6 +253,7 @@ GtkWidget *
 moo_edit_prefs_page_new_2 (MooEditor *editor)
 {
     return prefs_page_new (editor,
+                           /* Label of a Preferences dialog page, remove the part before and including | */
                            Q_("PreferencesPage|View"),
                            GTK_STOCK_EDIT,
                            page_view_init_ui,
@@ -297,6 +300,7 @@ GtkWidget *
 moo_edit_prefs_page_new_3 (MooEditor *editor)
 {
     return prefs_page_new (editor,
+                           /* Label of a Preferences dialog page, remove the part before and including | */
                            Q_("PreferencesPage|File"),
                            GTK_STOCK_EDIT,
                            page_file_init_ui,
@@ -336,6 +340,7 @@ GtkWidget *
 moo_edit_prefs_page_new_4 (MooEditor *editor)
 {
     return prefs_page_new (editor,
+                           /* Label of a Preferences dialog page, remove the part before and including | */
                            Q_("PreferencesPage|Languages"),
                            GTK_STOCK_EDIT,
                            page_langs_init_ui,
@@ -551,6 +556,8 @@ create_lang_model (void)
     mime = list_to_string (_moo_lang_mgr_get_mime_types (mgr, NULL), TRUE);
     gtk_tree_store_set (store, &iter,
                         COLUMN_ID, MOO_LANG_NONE,
+                        /* Label in the Language combo box on Languages preferences page,
+                           remove the part before and including | */
                         COLUMN_NAME, Q_("Language|None"),
                         COLUMN_CONFIG, config,
                         COLUMN_MIMETYPES, mime,

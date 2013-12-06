@@ -728,7 +728,7 @@ setup_combo (GtkComboBox      *combo,
         gtk_tree_store_append (store, &iter, NULL);
 
     gtk_tree_store_append (store, &iter, NULL);
-    /* Translators: do not translate the part before | */
+    /* Translators: remove the part before and including | */
     gtk_tree_store_set (store, &iter, COLUMN_DISPLAY, Q_("Encodings combo submenu|Other"), -1);
 
     for (i = 0; i < enc_mgr->n_groups; ++i)
