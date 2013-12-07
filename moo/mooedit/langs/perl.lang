@@ -26,7 +26,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
 <language id="perl" _name="Perl" version="2.0" _section="Scripts">
   <metadata>
     <property name="mimetypes">text/x-perl;application/x-perl</property>
-    <property name="globs">*.pl;*.pm;*.al;*.perl</property>
+    <property name="globs">*.pl;*.pm;*.al;*.perl;*.t</property>
     <property name="line-comment-start">#</property>
   </metadata>
 
@@ -93,7 +93,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
     </context>
 
     <define-regex id="operator" extended="true">
-      \-(A|b|B|c|C|d|e|f|g|k|l|M|o|O|p|r|R|s|S|t|T|u|w|W|x|X|z) |
+      \-[rwxoRWXOezsfdlpSbctugkTBMAC](?=\s) |
       \-&gt; |
       \+\+ | \-\- |
       \*\* |
@@ -104,7 +104,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
       &lt; | &gt; | [&lt;&gt;=!]= | &lt;=&gt; |
       &amp; | \| | \^ |
       &amp;&amp; |
-      \.\. | \.\.\. |
+      \.\.\.? |
       \? | : |
       = | \*\*= | \+= | \*= | &amp;= | &lt;&lt;= | &amp;&amp;= | \-= | /= |
       \|= | &gt;&gt;= | \|\|= | \.= | %= | \^= | \bx= |
@@ -121,10 +121,12 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
     <!-- $ is not defined in this regexp because it would conflict with
          \%{plain-variable}. $ is the current module. -->
     <define-regex id="special-variable" extended="true">
-      \$^[ADEFHILMOPSTWX]? |                                  # ($^A, ...)
+      \$\^[ADEFHILMOPSTWX]? |                                 # ($^A, ...)
       \$[\\\&quot;\[\]'&amp;`+*.,;=%~?@$&gt;&lt;\(|/!-] |     # ($|, $', ...)
       \$:[^:] |            # avoid confusion with $::foo (equiv. to $main::foo)
-      \$(0|[1-9][0-9]*)    # numbered variables (regex matches)
+      \$(0|[1-9][0-9]*) |  # numbered variables (regex matches)
+      @[+-] |              # special array variables
+      %[!+-] | %\^H        # special hash variables
     </define-regex>
 
     <define-regex id="plain-variable" extended="true">
@@ -170,7 +172,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
          please look at it, it seems wrong. It probably should be a positive
          look-behind. -->
     <define-regex id="pattern-before" extended="true">
-      (?&lt;![a-zA-Z0-9@%{(-])
+      (?&lt;![a-zA-Z0-9@%{(])
     </define-regex>
 
     <context id="in-pattern">
@@ -541,7 +543,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
           </include>
         </context>
         <context style-inside="true" style-ref="regex">
-          <start>\%{operator}\s*(/)</start>
+          <start>([!=]\~)\s*(/)</start>
           <end>/[cgimosx]*</end>
           <include>
             <context sub-pattern="1" where="start" style-ref="operator"/>
@@ -554,11 +556,25 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
     </context>
 
     <!-- #### HEREDOC STRINGS ############################################# -->
+    <!--
+          There may not be a space between the << and the identifier, unless the
+          identifier is explicitly quoted (hence the \s* when using quotes.
 
-    <define-regex id="here-doc-bound-char">[^\s'"=;]</define-regex>
+          This also means that usage of null identifier <<"" is only valid
+          when using quotes (hence \%{here-doc-bound-char}* when using quotes
+          and \%{here-doc-bound-char}+ when not).
+    -->
+
+    <define-regex id="here-doc-bound-char">[^\s'"=;)&lt;&gt;]</define-regex>
 
     <context id="here-doc-no-ve">
-      <start>&lt;&lt;\'(?P&lt;HDB&gt;\%{here-doc-bound-char}*)\'</start>
+      <start extended="true" dupnames="true">
+        &lt;&lt;
+        (
+          \s*\'(?P&lt;HDB&gt;\%{here-doc-bound-char}*)\'|  # 'EOF'
+             \\(?P&lt;HDB&gt;\%{here-doc-bound-char}+)     # \EOF
+        )
+      </start>
       <end>^\%{HDB@start}$</end>
       <include>
         <context sub-pattern="0" where="start" style-ref="here-doc-bound"/>
@@ -574,8 +590,8 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
       <start extended="true" dupnames="true">
         &lt;&lt;
         (
-          \"(?P&lt;HDB&gt;\%{here-doc-bound-char}*)\"|   # "EOF"
-          (?P&lt;HDB&gt;\%{here-doc-bound-char}*)        # EOF
+          \s*\"(?P&lt;HDB&gt;\%{here-doc-bound-char}*)\"|   # "EOF"
+               (?P&lt;HDB&gt;\%{here-doc-bound-char}+)      # EOF
         )
       </start>
       <end>^\%{HDB@start}$</end>
@@ -632,6 +648,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
             <context sub-pattern="0" where="start" style-ref="include-statement"/>
             <context once-only="true" style-ref="include-statement">
               <keyword>attributes</keyword>
+              <keyword>autodie</keyword>
               <keyword>autouse</keyword>
               <keyword>base</keyword>
               <keyword>bigint</keyword>
@@ -643,6 +660,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
               <keyword>constant</keyword>
               <keyword>diagnostics</keyword>
               <keyword>encoding</keyword>
+              <keyword>feature</keyword>
               <keyword>fields</keyword>
               <keyword>fileset</keyword>
               <keyword>if</keyword>
@@ -650,9 +668,12 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
               <keyword>less</keyword>
               <keyword>lib</keyword>
               <keyword>locale</keyword>
+              <keyword>mro</keyword>
               <keyword>open</keyword>
               <keyword>ops</keyword>
               <keyword>overload</keyword>
+              <keyword>overloading</keyword>
+              <keyword>parent</keyword>
               <keyword>re</keyword>
               <keyword>sigtrap</keyword>
               <keyword>sort</keyword>
@@ -676,11 +697,13 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
       <keyword>break</keyword>
       <keyword>continue</keyword>
       <keyword>do</keyword>
+      <keyword>default</keyword>
       <keyword>each</keyword>
       <keyword>else</keyword>
       <keyword>elsif</keyword>
       <keyword>foreach</keyword>
       <keyword>for</keyword>
+      <keyword>given</keyword>
       <keyword>if</keyword>
       <keyword>last</keyword>
       <keyword>local</keyword>
@@ -690,8 +713,10 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
       <keyword>package</keyword>
       <keyword>return</keyword>
       <keyword>sub</keyword>
+      <keyword>state</keyword>
       <keyword>unless</keyword>
       <keyword>until</keyword>
+      <keyword>when</keyword>
       <keyword>while</keyword>
       <keyword>__FILE__</keyword>
       <keyword>__LINE__</keyword>
@@ -824,6 +849,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
       <keyword>rewinddir</keyword>
       <keyword>rindex</keyword>
       <keyword>rmdir</keyword>
+      <keyword>say</keyword>
       <keyword>scalar</keyword>
       <keyword>seekdir</keyword>
       <keyword>seek</keyword>
@@ -986,7 +1012,7 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
       </include>
     </context>
 
-    <context id="pod" style-ref="pod">
+    <context id="pod" style-ref="pod" class-disabled="no-spell-check">
       <start>^(?=(=[a-z]))</start>
       <end>^=(cut)$</end>
       <include>

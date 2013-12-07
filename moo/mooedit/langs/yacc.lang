@@ -88,8 +88,9 @@
         <context ref="c:hexadecimal"/>
         <context ref="c:octal"/>
         <context ref="c:decimal"/>
-        <context ref="c:comment"/>
-        <context ref="c:comment-multiline"/>
+        <context ref="def:c-like-comment"/>
+        <context ref="def:c-like-comment-multiline"/>
+        <context ref="def:c-like-close-comment-outside-comment"/>
       </include>
     </context>
 
@@ -98,8 +99,9 @@
         <context ref="inline-c"/>
         <context ref="options"/>
         <context ref="token"/>
-        <context ref="c:comment"/>
-        <context ref="c:comment-multiline"/>
+        <context ref="def:c-like-comment"/>
+        <context ref="def:c-like-comment-multiline"/>
+        <context ref="def:c-like-close-comment-outside-comment"/>
       </include>
     </context>
 
@@ -142,8 +144,9 @@
       <end>;</end>
       <include>
         <context sub-pattern="0" where="start" style-ref="rule"/>
-        <context ref="c:comment"/>
-        <context ref="c:comment-multiline"/>
+        <context ref="def:c-like-comment"/>
+        <context ref="def:c-like-comment-multiline"/>
+        <context ref="def:c-like-close-comment-outside-comment"/>
         <context ref="c:char"/>
         <context ref="c:string"/>
         <context ref="rule-code"/>
@@ -154,8 +157,9 @@
       <start>^%%</start>
       <include>
         <context sub-pattern="0" where="start" style-ref="keyword"/>
-        <context ref="c:comment"/>
-        <context ref="c:comment-multiline"/>
+        <context ref="def:c-like-comment"/>
+        <context ref="def:c-like-comment-multiline"/>
+        <context ref="def:c-like-close-comment-outside-comment"/>
         <context ref="c:char"/>
         <context ref="c:string"/>
         <context ref="rule"/>

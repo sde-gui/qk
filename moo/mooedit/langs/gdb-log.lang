@@ -22,7 +22,7 @@
   </metadata>
 
   <styles>
-    <style id="thread-action" _name="Thread Action" map-to="def:statement"/>
+    <style id="thread-action" _name="Thread Action" map-to="def:comment"/>
     <style id="thread-header" _name="Thread Header" map-to="def:statement"/>
     <style id="frame-number" _name="Frame Number" map-to="def:keyword"/>
     <style id="address" _name="Address" map-to="def:number"/>
@@ -31,7 +31,7 @@
     <style id="filename" _name="Filename" map-to="def:statement"/>
     <style id="optimized-out" _name="Optimized Out" map-to="def:special-constant"/>
     <style id="incomplete-sequence" _name="Incomplete Sequence" map-to="def:special-constant"/>
-    <style id="prompt" _name="Prompt" map-to="def:statement"/>
+    <style id="prompt" _name="Prompt" map-to="def:comment"/>
   </styles>
 
   <definitions>

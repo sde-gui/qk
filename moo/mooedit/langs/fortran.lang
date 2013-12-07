@@ -25,7 +25,7 @@
 <language id="fortran" _name="Fortran 95" version="2.0" _section="Sources">
   <metadata>
     <property name="mimetypes">text/x-fortran</property>
-    <property name="globs">*.f;*.f9[05];*.for</property>
+    <property name="globs">*.f;*.f90;*.f95;*.for</property>
     <property name="line-comment-start">!</property>
   </metadata>
 
@@ -45,7 +45,7 @@
 
     <!-- Note: contains an hack to avoid considering ^COMMON a comment -->
     <context id="line-comment" style-ref="comment" end-at-line-end="true" class="comment" class-disabled="no-spell-check">
-      <start>!|(^[Cc](\b|[^Oo]))</start>
+      <start>!|(^[Cc](\b|[^OoAaYy]))</start>
       <include>
         <context ref="def:escape"/>
         <context ref="def:in-line-comment"/>

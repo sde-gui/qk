@@ -24,7 +24,7 @@
 <language id="objc" _name="Objective-C" version="2.0" _section="Sources">
   <metadata>
     <property name="mimetypes">text/x-objcsrc</property>
-    <property name="globs">*.m;*.mm</property>
+    <property name="globs">*.m</property>
     <property name="line-comment-start">//</property>
     <property name="block-comment-start">/*</property>
     <property name="block-comment-end">*/</property>
