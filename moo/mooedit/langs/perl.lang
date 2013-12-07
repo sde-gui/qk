@@ -67,8 +67,10 @@ FIXME: =pod should require an empty line before/after, as written in perlpod
         <context ref="word-list"/>
         <context ref="regular-expression"/>
         <context ref="match"/>
+        <!--
         <context ref="substitution"/>
         <context ref="transliteration"/>
+        -->
 
         <context ref="match-slashslash"/>
 
