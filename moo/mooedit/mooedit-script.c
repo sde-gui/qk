@@ -260,7 +260,8 @@ moo_edit_get_pos_at_line (MooEdit *doc,
  * @doc:
  * @line: (type index): %INDEXBASE-based line number.
  *
- * Returns: (transfer full): Iterator which points to the end of the given line.
+ * Returns: (transfer full): Iterator which points to the end of the given line (i.e. the position
+ * before the line end character(s)).
  **/
 GtkTextIter *
 moo_edit_get_pos_at_line_end (MooEdit *doc,
