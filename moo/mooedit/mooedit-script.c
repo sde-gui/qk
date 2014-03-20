@@ -86,7 +86,7 @@ moo_edit_end_non_undoable_action (MooEdit *doc)
 /**
  * moo_edit_get_start_pos:
  *
- * Returns: (transfer full)
+ * Returns: (transfer full): Iterator which points to the beginning of the document.
  **/
 GtkTextIter *
 moo_edit_get_start_pos (MooEdit *doc)
@@ -100,7 +100,8 @@ moo_edit_get_start_pos (MooEdit *doc)
 /**
  * moo_edit_get_end_pos:
  *
- * Returns: (transfer full)
+ * Returns: (transfer full): Iterator which points to the end of the document,
+ * i.e. the position past the last character in the document.
  **/
 GtkTextIter *
 moo_edit_get_end_pos (MooEdit *doc)
@@ -122,7 +123,8 @@ get_iter_at_cursor (MooEdit     *doc,
 /**
  * moo_edit_get_cursor_pos:
  *
- * Returns: (transfer full)
+ * Returns: (transfer full): Iterator which points to the current cursor (insertion point) position.
+ * In the case when text selection is not empty, it points to one of the ends of the selection.
  **/
 GtkTextIter *
 moo_edit_get_cursor_pos (MooEdit *doc)
@@ -136,7 +138,8 @@ moo_edit_get_cursor_pos (MooEdit *doc)
 /**
  * moo_edit_get_selection_start_pos:
  *
- * Returns: (transfer full)
+ * Returns: (transfer full): Iterator which points to the beginning of the current
+ * text selection. If the selection is empty, it returns the current cursor position.
  **/
 GtkTextIter *
 moo_edit_get_selection_start_pos (MooEdit *doc)
@@ -152,7 +155,8 @@ moo_edit_get_selection_start_pos (MooEdit *doc)
 /**
  * moo_edit_get_selection_end_pos:
  *
- * Returns: (transfer full)
+ * Returns: (transfer full): Iterator which points to the end of the current
+ * text selection. If the selection is empty, it returns the current cursor position.
  **/
 GtkTextIter *
 moo_edit_get_selection_end_pos (MooEdit *doc)
@@ -167,6 +171,9 @@ moo_edit_get_selection_end_pos (MooEdit *doc)
 
 /**
  * moo_edit_set_cursor_pos:
+ *
+ * Move the text cursor to the given position. No text is selected
+ * after this operation, use one of the select* methods if you need to select a range of text.
  **/
 void
 moo_edit_set_cursor_pos (MooEdit           *doc,
@@ -199,7 +206,7 @@ moo_edit_get_line_count (MooEdit *doc)
 /**
  * moo_edit_get_line_at_cursor:
  *
- * Returns: (type index)
+ * Returns: (type index): %INDEXBASE-based number of the current cursor line.
  **/
 int
 moo_edit_get_line_at_cursor (MooEdit *doc)
@@ -213,7 +220,7 @@ moo_edit_get_line_at_cursor (MooEdit *doc)
 /**
  * moo_edit_get_line_at_pos:
  *
- * Returns: (type index)
+ * Returns: (type index): %INDEXBASE-based number of the line at the given position.
  **/
 int
 moo_edit_get_line_at_pos (MooEdit           *doc,
@@ -227,9 +234,9 @@ moo_edit_get_line_at_pos (MooEdit           *doc,
  * moo_edit_get_pos_at_line:
  *
  * @doc:
- * @line: (type index)
+ * @line: (type index): %INDEXBASE-based line number.
  *
- * Returns: (transfer full)
+ * Returns: (transfer full): Iterator which points to the beginning of the given line.
  **/
 GtkTextIter *
 moo_edit_get_pos_at_line (MooEdit *doc,
@@ -251,9 +258,9 @@ moo_edit_get_pos_at_line (MooEdit *doc,
  * moo_edit_get_pos_at_line_end:
  *
  * @doc:
- * @line: (type index)
+ * @line: (type index): %INDEXBASE-based line number.
  *
- * Returns: (transfer full)
+ * Returns: (transfer full): Iterator which points to the end of the given line.
  **/
 GtkTextIter *
 moo_edit_get_pos_at_line_end (MooEdit *doc,
@@ -327,7 +334,7 @@ moo_edit_get_text (MooEdit           *doc,
  * moo_edit_get_line_text:
  *
  * @doc:
- * @line: (type index) (default -1)
+ * @line: (type index) (default -1): %INDEXBASE-based line number.
  *
  * Returns: (type utf8): text at line @line, not including line
  * end characters. If @line is missing, returns text at cursor line.
@@ -366,7 +373,7 @@ moo_edit_get_line_text (MooEdit *doc,
  * moo_edit_get_line_text_at_pos:
  *
  * Returns: (type utf8): text at line which contains position @pos,
- * not including line end characters.
+ * not including the line end character(s).
  **/
 char *
 moo_edit_get_line_text_at_pos (MooEdit           *doc,
