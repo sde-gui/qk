@@ -24,7 +24,7 @@ common_types = {
 
 lua_types = dict(common_types)
 lua_types.update({
-    'index': '<constant>index</constant>',
+    'index': '<constant>integer index (1-based)</constant>',
     'value': '<constant>value</constant>',
     'gunichar': '<constant>string</constant>',
     'double': '<constant>number</constant>',
@@ -42,7 +42,7 @@ lua_types.update({
 
 python_types = dict(common_types)
 python_types.update({
-    'index': '<constant>int</constant>',
+    'index': '<constant>integer index (0-based)</constant>',
     'gunichar': '<constant>str</constant>',
     'double': '<constant>float</constant>',
     'int': '<constant>int</constant>',
