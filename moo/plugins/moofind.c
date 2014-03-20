@@ -702,12 +702,19 @@ process_grep_line (MooLineView *view,
         return TRUE;
 
     p = line;
-    if (!(colon = strchr (p, ':')) ||
+    if (!(colon = strchr (p, ':')))
+        goto parse_error;
+
 #ifdef __WIN32__
-        /* Absolute filename 'C:\foobar\blah.txt:100:lalala' */
-        !(colon = strchr (colon + 1, ':')) ||
+    /* Absolute filename 'C:\foobar\blah.txt:100:lalala' */
+    if (g_ascii_isalpha(p[0]) && p[1] == ':')
+    {
+        if (!(colon = strchr (colon + 1, ':')))
+            goto parse_error;
+    }
 #endif
-        !colon[1])
+
+    if (!colon[1])
         goto parse_error;
 
     filename = g_strndup (p, colon - p);
