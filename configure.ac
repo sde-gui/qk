@@ -15,13 +15,13 @@ m4_define([_moo_web_contact_],[http://mooedit.sourceforge.net/contact.html])
 m4_define([_moo_email_],[emuntyan@users.sourceforge.net])
 m4_define([_moo_copyright_],[2004-2013 Yevgen Muntyan <_moo_email_>])
 
-AC_PREREQ([2.65])
-AC_INIT([medit], [_moo_display_version_], [_moo_email_])
-AC_GNU_SOURCE
+AC_PREREQ([2.69])
+AC_INIT([medit],[_moo_display_version_],[_moo_email_])
+AC_USE_SYSTEM_EXTENSIONS
 AC_CONFIG_MACRO_DIR([m4])
 AC_SUBST(ACLOCAL_FLAGS)
 
-AM_INIT_AUTOMAKE([1.11 foreign dist-bzip2 no-dist-gzip])
+AM_INIT_AUTOMAKE([1.11 foreign dist-bzip2 no-dist-gzip subdir-objects])
 AM_SILENT_RULES([yes])
 LT_INIT([disable-shared])
 # AC_PROG_RANLIB
@@ -112,7 +112,7 @@ MOO_AC_PYTHON
 MOO_BUILD_APP=true
 MOO_BUILD_MODULE=false
 AC_ARG_ENABLE(moo-module,
-  AC_HELP_STRING([--enable-moo-module],[build standalone python module instead of medit, default NO (you must also use --enable-shared with this option)]),[
+  AS_HELP_STRING([--enable-moo-module],[build standalone python module instead of medit, default NO (you must also use --enable-shared with this option)]),[
   if test "$enable_moo_module" = "yes"; then
     MOO_BUILD_APP=false
     MOO_BUILD_MODULE=true
@@ -151,7 +151,7 @@ if $MOO_OS_UNIX; then
 fi
 
 AC_ARG_ENABLE(coverage,
-  AC_HELP_STRING([--enable-coverage],[check test coverage]),[
+  AS_HELP_STRING([--enable-coverage],[check test coverage]),[
   MOO_ENABLE_COVERAGE="$enable_coverage"
   ],[
   MOO_ENABLE_COVERAGE="no"
@@ -219,7 +219,7 @@ if $MOO_OS_WIN32; then
 fi
 
 AC_ARG_ENABLE(install-hooks,
-  AC_HELP_STRING([--enable-install-hooks],[run gtk-update-icon-cache during 'make install']),[
+  AS_HELP_STRING([--enable-install-hooks],[run gtk-update-icon-cache during 'make install']),[
   MOO_ENABLE_INSTALL_HOOKS="$enable_install_hooks"
   ],[
   if $MOO_BUILD_APP; then

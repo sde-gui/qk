@@ -37,7 +37,7 @@ AC_DEFUN([MOO_CHECK_MINOR_VERSION],[
 # _MOO_CHECK_BROKEN_GTK_THEME
 #
 AC_DEFUN([_MOO_CHECK_BROKEN_GTK_THEME],[
-AC_ARG_WITH([broken-gtk-theme], AC_HELP_STRING([--with-broken-gtk-theme], [Work around bug in gtk theme (Suse 9 has one)]), [
+AC_ARG_WITH([broken-gtk-theme], AS_HELP_STRING([--with-broken-gtk-theme],[Work around bug in gtk theme (Suse 9 has one)]), [
   if test x$with_broken_gtk_theme = "xyes"; then
     MOO_BROKEN_GTK_THEME="yes"
   fi

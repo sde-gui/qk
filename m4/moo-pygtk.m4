@@ -8,7 +8,7 @@ AC_DEFUN_ONCE([MOO_AC_PYTHON],[
   _moo_want_python="auto"
   _moo_python_version=2.2
 
-  AC_ARG_WITH([python],AC_HELP_STRING([--with-python], [whether to compile python support (default = YES)]),[
+  AC_ARG_WITH([python],AS_HELP_STRING([--with-python],[whether to compile python support (default = YES)]),[
     if test "x$with_python" = "xno"; then
       MOO_ENABLE_PYTHON=false
     elif test "x$with_python" = "xyes"; then

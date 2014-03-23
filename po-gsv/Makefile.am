@@ -20,7 +20,7 @@ all-catalogs-yes: $(CATALOGS)
 all-catalogs-no:
 $(CATALOGS): $(srcdir)/Makefile.am
 
-install: install-catalogs
+install-data-local: install-catalogs
 install-catalogs: install-catalogs-$(ENABLE_NLS)
 install-catalogs-no: all
 install-catalogs-yes: all
@@ -51,7 +51,7 @@ install-catalogs-yes: all
 	  fi; \
 	done
 
-uninstall:
+uninstall-local:
 	linguas="$(LINGUAS)"; \
 	for lang in $$linguas; do \
 	  rm -f $(DESTDIR)$(localedir)/$$lang/LC_MESSAGES/$(GETTEXT_PACKAGE_GSV).mo; \

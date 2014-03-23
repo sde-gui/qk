@@ -85,6 +85,7 @@ Please check your Python installation.])
 # checks python stuff when building for unix
 #
 AC_DEFUN([MOO_AC_CHECK_PYTHON_NATIVE],[
+    m4_define_default([_AM_PYTHON_INTERPRETER_LIST],[python2 python2.7 python2.6 python])
     AM_PATH_PYTHON([$1],[
         _MOO_AC_PYTHON_DEVEL([
             python_found=yes

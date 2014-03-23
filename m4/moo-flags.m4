@@ -6,7 +6,7 @@ AC_DEFUN([_MOO_AC_CHECK_C_COMPILER_OPTIONS],[
     if test "x$MOO_STRICT_MODE" = "xyes"; then
       CFLAGS="-Werror $CFLAGS"
     fi
-    AC_TRY_COMPILE([],[],[MOO_CFLAGS="$MOO_CFLAGS $opt"],[:])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],[MOO_CFLAGS="$MOO_CFLAGS $opt"],[:])
     CFLAGS="$save_CFLAGS"
   done
   AC_LANG_POP([C])
@@ -20,7 +20,7 @@ AC_DEFUN([_MOO_AC_CHECK_CXX_COMPILER_OPTIONS],[
     if test "x$MOO_STRICT_MODE" = "xyes"; then
       CXXFLAGS="-Werror $CXXFLAGS"
     fi
-    AC_TRY_COMPILE([],[],[MOO_CXXFLAGS="$MOO_CXXFLAGS $opt"],[:])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],[MOO_CXXFLAGS="$MOO_CXXFLAGS $opt"],[:])
     CXXFLAGS="$save_CXXFLAGS"
   done
   AC_LANG_POP([C++])
@@ -52,7 +52,7 @@ AC_DEFUN_ONCE([MOO_AC_DEBUG],[
 MOO_DEBUG_ENABLED="no"
 
 AC_ARG_ENABLE(debug,
-  AC_HELP_STRING([--enable-debug],[enable debug options (default = NO)]),[
+  AS_HELP_STRING([--enable-debug],[enable debug options (default = NO)]),[
   if test "$enableval" = "xno"; then
     MOO_DEBUG_ENABLED="no"
   else
@@ -64,7 +64,7 @@ AC_ARG_ENABLE(debug,
 AM_CONDITIONAL(MOO_DEBUG_ENABLED, test x$MOO_DEBUG_ENABLED = "xyes")
 
 AC_ARG_ENABLE(dev-mode,
-  AC_HELP_STRING([--enable-dev-mode],[dev-mode (default = NO, unless --enable-debug is used)]),[
+  AS_HELP_STRING([--enable-dev-mode],[dev-mode (default = NO, unless --enable-debug is used)]),[
     if test "$enableval" = "xno"; then
       MOO_DEV_MODE="no"
     else
@@ -76,7 +76,7 @@ AC_ARG_ENABLE(dev-mode,
 AM_CONDITIONAL(MOO_DEV_MODE, test x$MOO_DEV_MODE = "xyes")
 
 AC_ARG_ENABLE(strict,
-  AC_HELP_STRING([--enable-strict],[enable all warnings and -Werror (default = NO)]),[
+  AS_HELP_STRING([--enable-strict],[enable all warnings and -Werror (default = NO)]),[
     if test "$enableval" = "xno"; then
       MOO_STRICT_MODE="no"
     else
@@ -242,7 +242,7 @@ AC_DEFUN_ONCE([_MOO_AC_CHECK_FAM],[
 
 AC_DEFUN_ONCE([MOO_AC_FAM],[
   if $MOO_OS_UNIX; then
-    AC_ARG_WITH([fam], AC_HELP_STRING([--with-fam], [whether to use fam or gamin for monitoring files in the editor (default = NO)]), [
+    AC_ARG_WITH([fam], AS_HELP_STRING([--with-fam],[whether to use fam or gamin for monitoring files in the editor (default = NO)]), [
       if test x$with_fam = "xyes"; then
         MOO_USE_FAM="yes"
       else
