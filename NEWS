@@ -1,3 +1,15 @@
+2014-03-20  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
+
+    * === Released 1.2.0 ===
+
+    Updated Spanish translation by Eulogio Serradilla.
+    New Polish translation by Piotr Orzechowski.
+    Fixed a bug in parsing grep output for UNC paths on windows.
+    Updated syntax highlighting definitions.
+    Fixed compilation with new glib and gcc.
+    Exposed more functionality, in particular the output pane, to scripts.
+    Finally made file completion case-insensitive on windows.
+
 2012-11-25  Yevgen Muntyan  <emuntyan@users.sourceforge.net>
 
     * === Released 1.1.2 ===
