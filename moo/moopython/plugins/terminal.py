@@ -2,6 +2,7 @@
 #  terminal.py
 #
 #  Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+#  Copyright (C) 2014 by Yannick Duchêne
 #
 #  This file is part of medit.  medit is free software; you can
 #  redistribute it and/or modify it under the terms of the
@@ -34,6 +35,16 @@ moo.prefs_new_key_string(COLOR_SCHEME_KEY, 'Default')
 moo.prefs_new_key_string(SHELL_KEY, None)
 moo.prefs_new_key_string(FONT_KEY, None)
 
+
+def shell_supports_pushd(shell):
+   # There is no counterpart function to test whether or not a shell supports
+   # the “cd” command: they all support it, even MS‑DOS's “command.com” did.
+   name = os.path.split(shell)[1]
+   # If you happen know another shell which supports “pushd”, add its name to
+   # the list
+   return name in ["bash"]
+
+
 class Terminal(vte.Terminal):
     def __init__(self):
         vte.Terminal.__init__(self)
@@ -46,6 +57,11 @@ class Terminal(vte.Terminal):
         font_name = moo.prefs_get_string(FONT_KEY)
         if font_name:
             self.set_font_from_string(font_name)
+
+        self._support_pushd = False
+
+    def set_support_pushd(self, status):
+        self._support_pushd = status
 
     def set_color_scheme(self, cs):
         self.__cs = cs
@@ -103,6 +119,18 @@ class Terminal(vte.Terminal):
         item.connect('activate', lambda *whatever: self.paste_clipboard())
         menu.append(item)
 
+        item = gtk.MenuItem(_("“cd” to current file directory"))
+        item.connect(
+            'activate',
+            lambda *whatever: self.goto_file_dir(False))
+        menu.append(item)
+        if self._support_pushd:
+            item = gtk.MenuItem(_("“pushd” to current file directory"))
+            item.connect(
+                'activate',
+                lambda *whatever: self.goto_file_dir(True))
+            menu.append(item)
+
         menu.append(gtk.SeparatorMenuItem())
         item = gtk.MenuItem(D_("Input _Methods", "gtk20"))
         submenu = gtk.Menu()
@@ -126,6 +154,23 @@ class Terminal(vte.Terminal):
             time = 0
         menu.show_all()
         menu.popup(None, None, None, button, time)
+
+    def goto_file_dir(self, pushd=False):
+        # TODO: be able to check if the user was editing a command. Would be
+        # nice to able to not append to a command being edited and to only
+        # send this command only if there's nothing entered at the current
+        # shell prompt. Additionally, being able to disable the corresponding
+        # contextual menu entry under the same conditions.
+        ed = moo.Editor.instance()
+        doc = ed.get_active_doc()
+        path = doc.get_filename()
+        path = os.path.split(path)[0]
+        if pushd:
+            command = "pushd"
+        else:
+            command = "cd"
+        command += " '" + path + "'\n"
+        self.feed_child(command)
 
     def do_button_press_event(self, event):
         if event.button != 3 or event.type != gtk.gdk.BUTTON_PRESS:
@@ -170,6 +215,7 @@ class WinPlugin(moo.WinPlugin):
             except:
                 shell = "/bin/sh"
 
+        self.terminal.set_support_pushd(shell_supports_pushd(shell))
         self.terminal.fork_command(shell, [shell])
 
     def do_create(self):
@@ -205,6 +251,7 @@ class WinPlugin(moo.WinPlugin):
     def terminal_icon_title_changed(self, *whatever):
         self.pane.set_frame_text(self.terminal.get_icon_title())
 
+
 class ColorScheme(object):
     def __init__(self, name, colors):
         object.__init__(self)
@@ -219,6 +266,7 @@ class ColorScheme(object):
             term.set_colors(self.colors[0], self.colors[1], self.colors[2:10] + self.colors[12:20])
         else:
             term.set_colors(term.style.text[gtk.STATE_NORMAL], term.style.base[gtk.STATE_NORMAL], [])
+
 
 # Color schemes shamelessly stolen from Konsole, the best terminal emulator out there
 color_schemes = [ColorScheme(cs[0], cs[1]) for cs in [
