@@ -124,7 +124,6 @@ msgstr "Текстовый редактор"
 
 #. Translators: remove the part before and including |
 #: ../moo/mooapp/glade/mooappabout-credits.glade.h:2
-msgctxt "yes"
 msgid "Dialog title|Credits"
 msgstr "Благодарности"
 
@@ -145,25 +144,21 @@ msgstr "Перевод"
 
 #. Translators: remove the part before and including |
 #: ../moo/mooapp/glade/mooappabout-dialog.glade.h:2
-msgctxt "yes"
 msgid "Dialog title|About"
 msgstr "О программе"
 
 #. Credits button label in About dialog
 #: ../moo/mooapp/glade/mooappabout-dialog.glade.h:4
-msgctxt "yes"
 msgid "C_redits"
 msgstr "_Благодарности"
 
 #. License button label in About dialog
 #: ../moo/mooapp/glade/mooappabout-dialog.glade.h:6
-msgctxt "yes"
 msgid "_License"
 msgstr "Лицензия"
 
 #. Translators: remove the part before and including |
 #: ../moo/mooapp/glade/mooappabout-license.glade.h:2
-msgctxt "yes"
 msgid "Dialog title|License"
 msgstr "Лицензия"
 
@@ -1508,19 +1503,16 @@ msgstr "Белое на чёрном"
 
 #. Translators: remove the part before and including |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:2
-msgctxt "yes"
 msgid "Shortcut|None"
 msgstr "Нет"
 
 #. Translators: remove the part before and including |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:4
-msgctxt "yes"
 msgid "Shortcut|Default"
 msgstr "По умолчанию"
 
 #. Translators: remove the part before and including |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:6
-msgctxt "yes"
 msgid "Shortcut|Custom"
 msgstr "Особая"
 
@@ -2309,13 +2301,11 @@ msgstr "Тип:"
 
 #. Label of notebook tab on User Tools prefs page, remove the part before and including |
 #: ../moo/plugins/usertools/glade/moousertools.glade.h:11
-msgctxt "yes"
 msgid "user-tools-prefs|Tools menu"
 msgstr "Меню инструментов"
 
 #. Label of notebook tab on User Tools prefs page, remove the part before and including |
 #: ../moo/plugins/usertools/glade/moousertools.glade.h:13
-msgctxt "yes"
 msgid "user-tools-prefs|Context menu"
 msgstr "Контекстное меню"
 
