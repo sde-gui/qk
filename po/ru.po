@@ -707,7 +707,7 @@ msgid ""
 "on disk will be lost."
 msgstr ""
 "Файл '%s' был изменён другой программой. Если вы сохраните его, эти "
-"изменениябудут потеряны."
+"изменения будут потеряны."
 
 #: ../moo/mooedit/mooeditdialogs.c:676
 msgid "Over_write"
