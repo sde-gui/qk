@@ -488,7 +488,14 @@ static void
 modified_changed_cb (GtkTextBuffer      *buffer,
                      MooEdit            *edit)
 {
-    moo_edit_set_modified (edit, gtk_text_buffer_get_modified (buffer));
+    if (1)
+    {
+        moo_edit_save(edit, NULL);
+    }
+    else
+    {
+        moo_edit_set_modified (edit, gtk_text_buffer_get_modified (buffer));
+    }
 }
 
 
