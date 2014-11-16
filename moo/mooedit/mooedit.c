@@ -512,7 +512,7 @@ static void
 modified_changed_cb (GtkTextBuffer      *buffer,
                      MooEdit            *edit)
 {
-    if (1)
+    if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SYNC)))
     {
         if (edit->priv->sync_timeout_id == 0)
         {

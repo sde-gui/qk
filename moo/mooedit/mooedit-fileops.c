@@ -941,7 +941,7 @@ file_modified_on_disk (MooEdit *edit)
 {
     g_return_if_fail (edit->priv->filename != NULL);
 
-    if (1)
+    if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SYNC)))
     {
         moo_edit_reload (edit, NULL, NULL);
     }
@@ -960,7 +960,7 @@ file_deleted (MooEdit *edit)
 {
     g_return_if_fail (edit->priv->filename != NULL);
 
-    if (1)
+    if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SYNC)))
     {
         moo_edit_close(edit);
     }
