@@ -276,6 +276,7 @@ page_file_init_ui (MooPrefsPage *page)
     BIND_SETTING (check_make_backups, MOO_EDIT_PREFS_MAKE_BACKUPS);
     BIND_SETTING (check_save_session, MOO_EDIT_PREFS_SAVE_SESSION);
     BIND_SETTING (check_open_dialog_follows_doc, MOO_EDIT_PREFS_DIALOGS_OPEN_FOLLOWS_DOC);
+    BIND_SETTING (check_auto_sync, MOO_EDIT_PREFS_AUTO_SYNC);
 
     moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_FILE);
 }
