@@ -52,6 +52,9 @@ struct MooEditPrivate {
     gboolean modified_on_disk;
     gboolean deleted_from_disk;
 
+    // file sync event source ID
+    guint sync_timeout_id;
+
     MooEditState state;
     MooEditProgress *progress;
 

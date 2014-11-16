@@ -377,6 +377,12 @@ _moo_edit_closed (MooEdit *doc)
         doc->priv->file_monitor_id = 0;
     }
 
+    if (doc->priv->sync_timeout_id == 0)
+    {
+        g_source_remove (doc->priv->sync_timeout_id);
+        doc->priv->sync_timeout_id = 0;
+    }
+
     if (doc->priv->update_bookmarks_idle)
     {
         g_source_remove (doc->priv->update_bookmarks_idle);
@@ -484,13 +490,41 @@ _moo_edit_get_actions (MooEdit *doc)
 }
 
 
+/*
+ * autosync callback
+ *
+ * This will write the modified document back to disc and return
+ * false to signal that no further calls are necessary.
+ */
+static gboolean
+autosync_callback (gpointer user_data)
+{
+    MooEdit *edit = MOO_EDIT(user_data);
+    moo_edit_save(edit, NULL);
+
+    // zero the event ID and return false to reset the one-shot mechanism
+    edit->priv->sync_timeout_id = 0;
+    return FALSE;
+}
+
+
 static void
 modified_changed_cb (GtkTextBuffer      *buffer,
                      MooEdit            *edit)
 {
     if (1)
     {
-        moo_edit_save(edit, NULL);
+        if (edit->priv->sync_timeout_id == 0)
+        {
+            // On modification, start a callback that will sync the
+            // document to disk after some time.
+            edit->priv->sync_timeout_id = gdk_threads_add_timeout (1000, autosync_callback, edit);
+        }
+        // TODO: using just modify_status() to change the status is enough to
+        // prevent recursive starts of the timeout callback. It also prevents
+        // marking the document temporarily as modified in the title, but I'm
+        // not sure if that has any further effects.
+        moo_edit_set_modified (edit, gtk_text_buffer_get_modified (buffer));
     }
     else
     {
