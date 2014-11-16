@@ -1,3 +1,4 @@
+#!/bin/sh
 [ -z "$ACLOCAL" ] && ACLOCAL=aclocal
 [ -z "$AUTOCONF" ] && AUTOCONF=autoconf
 [ -z "$AUTOHEADER" ] && AUTOHEADER=autoheader
