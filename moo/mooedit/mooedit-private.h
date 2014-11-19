@@ -31,6 +31,7 @@ struct MooEditPrivate {
     MooEditView *active_view;
     gboolean dead_active_view;
 
+    gulong changed_handler_id;
     gulong modified_changed_handler_id;
     guint apply_config_idle;
     gboolean in_recheck_config;
