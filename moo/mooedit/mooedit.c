@@ -384,7 +384,7 @@ _moo_edit_closed (MooEdit *doc)
         doc->priv->file_monitor_id = 0;
     }
 
-    if (doc->priv->sync_timeout_id == 0)
+    if (doc->priv->sync_timeout_id)
     {
         g_source_remove (doc->priv->sync_timeout_id);
         doc->priv->sync_timeout_id = 0;
