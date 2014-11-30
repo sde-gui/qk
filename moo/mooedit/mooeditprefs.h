@@ -46,6 +46,7 @@ const char *moo_edit_setting            (const char *setting_name);
 #define MOO_EDIT_PREFS_TAB_INDENTS              "tab_indents"
 #define MOO_EDIT_PREFS_BACKSPACE_INDENTS        "backspace_indents"
 
+#define MOO_EDIT_PREFS_AUTO_SYNC                "auto_sync"
 #define MOO_EDIT_PREFS_AUTO_SAVE                "auto_save"
 #define MOO_EDIT_PREFS_AUTO_SAVE_INTERVAL       "auto_save_interval"
 #define MOO_EDIT_PREFS_MAKE_BACKUPS             "make_backups"

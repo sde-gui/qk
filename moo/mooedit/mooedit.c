@@ -87,6 +87,8 @@ static void     config_changed                  (MooEdit        *edit);
 static void     update_config_from_mode_lines   (MooEdit        *doc);
 static void     moo_edit_recheck_config         (MooEdit        *doc);
 
+static void     changed_cb                      (GtkTextBuffer  *buffer,
+                                                 MooEdit        *edit);
 static void     modified_changed_cb             (GtkTextBuffer  *buffer,
                                                  MooEdit        *edit);
 
@@ -307,6 +309,11 @@ moo_edit_constructor (GType                  type,
     _moo_edit_add_class_actions (doc);
     _moo_edit_instances = moo_edit_list_prepend (_moo_edit_instances, doc);
 
+    doc->priv->changed_handler_id =
+            g_signal_connect (doc->priv->buffer,
+                              "changed",
+                              G_CALLBACK (changed_cb),
+                              doc);
     doc->priv->modified_changed_handler_id =
             g_signal_connect (doc->priv->buffer,
                               "modified-changed",
@@ -375,6 +382,12 @@ _moo_edit_closed (MooEdit *doc)
     {
         _moo_edit_stop_file_watch (doc);
         doc->priv->file_monitor_id = 0;
+    }
+
+    if (doc->priv->sync_timeout_id == 0)
+    {
+        g_source_remove (doc->priv->sync_timeout_id);
+        doc->priv->sync_timeout_id = 0;
     }
 
     if (doc->priv->update_bookmarks_idle)
@@ -484,10 +497,60 @@ _moo_edit_get_actions (MooEdit *doc)
 }
 
 
+/*
+ * autosync callback
+ *
+ * This will write the modified document back to disc and return
+ * false to signal that no further calls are necessary.
+ */
+static gboolean
+autosync_callback (gpointer user_data)
+{
+    MooEdit *edit = MOO_EDIT(user_data);
+    GtkTextBuffer *buffer = moo_edit_get_buffer (edit);
+
+    // if the buffer is modified, sync it to disk
+    if (gtk_text_buffer_get_modified (buffer))
+        moo_edit_save(edit, NULL);
+
+    // zero the event ID and return false to reset the one-shot mechanism
+    edit->priv->sync_timeout_id = 0;
+    return FALSE;
+}
+
+/*
+ * text change callback
+ *
+ * This callback is triggered on any change. It triggers a timer which, when
+ * elapsed, syncs the document to dis. If the timer is already running, it
+ * is cancelled and started anew, in order to not sync unnecessarily. Since
+ * this is called for any change, even undo operations, the sync callback
+ * above checks if the document is modified before syncing.
+ */
+static void
+changed_cb (G_GNUC_UNUSED GtkTextBuffer *buffer,
+            MooEdit                     *edit)
+{
+    // nothing to do when not auto-syncing
+    if (!moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SYNC)))
+        return;
+
+    // cancel running timer
+    if (edit->priv->sync_timeout_id != 0)
+        g_source_remove(edit->priv->sync_timeout_id);
+
+    // start timer
+    edit->priv->sync_timeout_id = gdk_threads_add_timeout (500, autosync_callback, edit);
+}
+
 static void
 modified_changed_cb (GtkTextBuffer      *buffer,
                      MooEdit            *edit)
 {
+    // nothing to do when auto-syncing
+    if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SYNC)))
+        return;
+
     moo_edit_set_modified (edit, gtk_text_buffer_get_modified (buffer));
 }
 

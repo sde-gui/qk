@@ -31,6 +31,7 @@ struct MooEditPrivate {
     MooEditView *active_view;
     gboolean dead_active_view;
 
+    gulong changed_handler_id;
     gulong modified_changed_handler_id;
     guint apply_config_idle;
     gboolean in_recheck_config;
@@ -51,6 +52,9 @@ struct MooEditPrivate {
     guint file_monitor_id;
     gboolean modified_on_disk;
     gboolean deleted_from_disk;
+
+    // file sync event source ID
+    guint sync_timeout_id;
 
     MooEditState state;
     MooEditProgress *progress;

@@ -923,6 +923,18 @@ moo_editor_new_doc (MooEditor      *editor,
     _moo_edit_window_insert_doc (window, doc, NULL);
     moo_editor_add_doc (editor, window, doc);
     g_object_unref (doc);
+
+    if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SYNC)))
+    {
+        // After creating the new document, prompt the user for a path to save
+        // it to. If the user aborts, delete the document, too.
+        if (!moo_editor_save_as (editor, doc, NULL, NULL))
+        {
+            moo_editor_close_doc (editor, doc);
+            return NULL;
+        }
+    }
+
     return doc;
 }
 
