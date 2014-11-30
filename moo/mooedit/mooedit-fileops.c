@@ -2,6 +2,7 @@
  *   mooedit-fileops.c
  *
  *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2014 by Ulrich Eckhardt <ulrich.eckhardt@base-42.de>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
