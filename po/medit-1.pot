@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-06 09:58-0800\n"
+"POT-Creation-Date: 2014-08-30 10:39-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -117,6 +117,10 @@ msgstr ""
 
 #: ../moo/medit-app/medit.desktop.in.h:1
 msgid "Text editor"
+msgstr ""
+
+#: ../moo/medit-app/medit.desktop.in.h:2
+msgid "editor;texteditor;text"
 msgstr ""
 
 #. Translators: remove the part before and including |
@@ -483,7 +487,7 @@ msgstr ""
 msgid "Regular e_xpression"
 msgstr ""
 
-#: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1116
+#: ../moo/mooedit/glade/mootextfind.glade.h:3 ../moo/plugins/moofind.c:1123
 msgid "Find"
 msgstr ""
 
@@ -2142,7 +2146,7 @@ msgid "Find in files"
 msgstr ""
 
 #: ../moo/plugins/moofind.c:260 ../moo/plugins/moofind.c:261
-#: ../moo/plugins/moofind.c:996
+#: ../moo/plugins/moofind.c:1003
 msgid "Find File"
 msgstr ""
 
@@ -2150,25 +2154,25 @@ msgstr ""
 msgid "Find file"
 msgstr ""
 
-#: ../moo/plugins/moofind.c:965
+#: ../moo/plugins/moofind.c:972
 msgid "Find in Files"
 msgstr ""
 
-#: ../moo/plugins/moofind.c:1048 ../moo/plugins/moofind.c:1074
+#: ../moo/plugins/moofind.c:1055 ../moo/plugins/moofind.c:1081
 #, c-format
 msgid "*** %u match found ***"
 msgid_plural "*** %u matches found ***"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../moo/plugins/moofind.c:1055 ../moo/plugins/moofind.c:1080
+#: ../moo/plugins/moofind.c:1062 ../moo/plugins/moofind.c:1087
 #, c-format
 msgid "*** %u file found ***"
 msgid_plural "*** %u files found ***"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../moo/plugins/moofind.c:1116
+#: ../moo/plugins/moofind.c:1123
 msgid "Finds everything"
 msgstr ""
 
