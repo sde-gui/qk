@@ -119,7 +119,6 @@ msgstr "Tekstimuokkain"
 
 #. Translators: remove the part before and including |
 #: ../moo/mooapp/glade/mooappabout-credits.glade.h:2
-msgctxt "yes"
 msgid "Dialog title|Credits"
 msgstr "Kiitokset"
 
@@ -140,25 +139,21 @@ msgstr "Kääntäjä(t)"
 
 #. Translators: remove the part before and including |
 #: ../moo/mooapp/glade/mooappabout-dialog.glade.h:2
-msgctxt "yes"
 msgid "Dialog title|About"
 msgstr "Tietoja"
 
 #. Credits button label in About dialog
 #: ../moo/mooapp/glade/mooappabout-dialog.glade.h:4
-msgctxt "yes"
 msgid "C_redits"
 msgstr "_Kiitokset"
 
 #. License button label in About dialog
 #: ../moo/mooapp/glade/mooappabout-dialog.glade.h:6
-msgctxt "yes"
 msgid "_License"
 msgstr "_Lisenssi"
 
 #. Translators: remove the part before and including |
 #: ../moo/mooapp/glade/mooappabout-license.glade.h:2
-msgctxt "yes"
 msgid "Dialog title|License"
 msgstr "Lisenssi"
 
@@ -1498,19 +1493,16 @@ msgstr "Valkoista mustalla"
 
 #. Translators: remove the part before and including |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:2
-msgctxt "yes"
 msgid "Shortcut|None"
 msgstr "Ei mitään"
 
 #. Translators: remove the part before and including |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:4
-msgctxt "yes"
 msgid "Shortcut|Default"
 msgstr "Oletus"
 
 #. Translators: remove the part before and including |
 #: ../moo/mooutils/glade/mooaccelprefs.glade.h:6
-msgctxt "yes"
 msgid "Shortcut|Custom"
 msgstr "Oma"
 
@@ -2300,13 +2292,11 @@ msgstr "T_yyppi:"
 
 #. Label of notebook tab on User Tools prefs page, remove the part before and including |
 #: ../moo/plugins/usertools/glade/moousertools.glade.h:11
-msgctxt "yes"
 msgid "user-tools-prefs|Tools menu"
 msgstr "Työkaluvalikko"
 
 #. Label of notebook tab on User Tools prefs page, remove the part before and including |
 #: ../moo/plugins/usertools/glade/moousertools.glade.h:13
-msgctxt "yes"
 msgid "user-tools-prefs|Context menu"
 msgstr "Kontekstivalikko"
 
