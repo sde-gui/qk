@@ -604,9 +604,9 @@ same_content (const char *filename1,
 
 out:
     if (file1)
-        g_mapped_file_free (file1);
+        g_mapped_file_unref (file1);
     if (file2)
-        g_mapped_file_free (file2);
+        g_mapped_file_unref (file2);
     return equal;
 }
 

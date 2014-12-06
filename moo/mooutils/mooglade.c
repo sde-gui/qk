@@ -1770,7 +1770,11 @@ parse_property (GParamSpec     *param_spec,
 
     if (param_spec->value_type == G_TYPE_CHAR)
     {
+#if GLIB_CHECK_VERSION(2,32,0)
+        g_value_set_schar (&param->value, value[0]);
+#else
         g_value_set_char (&param->value, value[0]);
+#endif
     }
     else if (param_spec->value_type == G_TYPE_UCHAR)
     {

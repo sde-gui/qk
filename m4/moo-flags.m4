@@ -94,9 +94,6 @@ _MOO_AC_CHECK_COMPILER_OPTIONS([dnl
 -Wno-missing-field-initializers -Wno-overlength-strings dnl
 -Wno-format-y2k -Wno-overlength-strings dnl
 ])
-_MOO_AC_CHECK_C_COMPILER_OPTIONS([dnl
--Wno-missing-declarations dnl
-])
 _MOO_AC_CHECK_CXX_COMPILER_OPTIONS([dnl
 -std=c++98 -fno-rtti dnl
 ])
@@ -294,10 +291,17 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
   MOO_CPPFLAGS="$MOO_CPPFLAGS -I$moo_top_src_dir/moo -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\\\"Moo\\\""
   MOO_LIBS="$MOO_LIBS $GTK_LIBS $GTHREAD_LIBS $GMODULE_LIBS $LIBM"
 
-  # G_DISABLE_DEPRECATED (or rather lack of it) is not respected anymore. Glib wants you
-  # to define it; if you don't, then you got to jump through additional hoops in order to
-  # really not disable deprecated stuff.
-  MOO_CPPFLAGS="$MOO_CPPFLAGS -DGLIB_DISABLE_DEPRECATION_WARNINGS=1"
+  if test "x$MOO_STRICT_MODE" != "xyes"; then
+    # G_DISABLE_DEPRECATED (or rather lack of it) is not respected anymore. Glib wants you
+    # to define it; if you don't, then you got to jump through additional hoops in order to
+    # really not disable deprecated stuff.
+    MOO_CPPFLAGS="$MOO_CPPFLAGS -DGLIB_DISABLE_DEPRECATION_WARNINGS=1"
+  else
+    #MOO_CPPFLAGS="$MOO_CPPFLAGS -DG_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED"
+    #MOO_CPPFLAGS="$MOO_CPPFLAGS -DGSEAL_ENABLE"
+    #MOO_CPPFLAGS="$MOO_CPPFLAGS -DGTK_DISABLE_SINGLE_INCLUDES"
+    true
+  fi
 
   if $GDK_X11; then
     _moo_x_pkgs=

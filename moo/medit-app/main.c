@@ -706,7 +706,9 @@ medit_main (int argc, char *argv[])
     MooOpenInfoArray *files;
 
     init_mem_stuff ();
+#if !GLIB_CHECK_VERSION(2,32,0)
     g_thread_init (NULL);
+#endif
     g_set_prgname ("medit");
 
     ctx = parse_args (argc, argv);

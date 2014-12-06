@@ -71,6 +71,10 @@ _moo_gtk_action_connect_proxy (GtkAction *action,
 
 #endif /* GTK_DISABLE_DEPRECATED */
 
+#if GTK_CHECK_VERSION(2,24,0)
+#undef GTK_WIDGET_REALIZED
+#define GTK_WIDGET_REALIZED(w) gtk_widget_get_realized (GTK_WIDGET (w))
+#endif // GTK_CHECK_VERSION(2,24,0)
 
 #if GTK_CHECK_VERSION(2,22,0) && defined(GTK_DISABLE_DEPRECATED)
 
@@ -125,19 +129,6 @@ _moo_gdk_drawable_get_size (GdkDrawable *drawable,
 #else /* gtk-2.242.0 && DISABLE_DEPRECATED */
 
 #endif /* gtk-2.24.0 && DISABLE_DEPRECATED */
-
-
-#if GLIB_CHECK_VERSION(2,22,0) && defined(G_DISABLE_DEPRECATED)
-
-inline static void
-_moo_g_mapped_file_free (GMappedFile *file)
-{
-    g_mapped_file_unref (file);
-}
-
-#define g_mapped_file_free _moo_g_mapped_file_free
-
-#endif /* gtk-2-16 && GTK_DISABLE_DEPRECATED */
 
 
 #endif /* MOO_GTK_H */

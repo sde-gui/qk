@@ -861,18 +861,42 @@ moo_set_log_func_window (gboolean show_now)
 
 static char *moo_log_file;
 static gboolean moo_log_file_written;
+#if GLIB_CHECK_VERSION(2,32,0)
+static GRecMutex moo_log_file_mutex;
+
+static void moo_static_rec_mutex_lock (GRecMutex *mutex)
+{
+    g_rec_mutex_lock (mutex);
+}
+
+static void moo_static_rec_mutex_unlock (GRecMutex *mutex)
+{
+    g_rec_mutex_unlock (mutex);
+}
+#else
 static GStaticRecMutex moo_log_file_mutex = G_STATIC_REC_MUTEX_INIT;
+
+static void moo_static_rec_mutex_lock (GStaticRecMutex *mutex)
+{
+    g_static_rec_mutex_lock (mutex);
+}
+
+static void moo_static_rec_mutex_unlock (GStaticRecMutex *mutex)
+{
+    g_static_rec_mutex_unlock (mutex);
+}
+#endif
 
 static void
 print_func_file (const char *string)
 {
     FILE *file;
 
-    g_static_rec_mutex_lock (&moo_log_file_mutex);
+    moo_static_rec_mutex_lock (&moo_log_file_mutex);
 
     if (!moo_log_file)
     {
-        g_static_rec_mutex_unlock (&moo_log_file_mutex);
+        moo_static_rec_mutex_unlock (&moo_log_file_mutex);
         g_return_if_reached ();
     }
 
@@ -896,7 +920,7 @@ print_func_file (const char *string)
         /* TODO ??? */
     }
 
-    g_static_rec_mutex_unlock (&moo_log_file_mutex);
+    moo_static_rec_mutex_unlock (&moo_log_file_mutex);
 }
 
 
@@ -924,11 +948,11 @@ log_func_file (const char       *log_domain,
 void
 moo_set_log_func_file (const char *log_file)
 {
-    g_static_rec_mutex_lock (&moo_log_file_mutex);
+    moo_static_rec_mutex_lock (&moo_log_file_mutex);
     g_free (moo_log_file);
     moo_log_file = g_strdup (log_file);
     set_print_funcs (log_func_file, print_func_file, print_func_file);
-    g_static_rec_mutex_unlock (&moo_log_file_mutex);
+    moo_static_rec_mutex_unlock (&moo_log_file_mutex);
 }
 
 

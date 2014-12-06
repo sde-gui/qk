@@ -634,7 +634,7 @@ moo_app_init_ui (MooApp *app)
             moo_ui_xml_add_ui_from_string (xml,
                                            g_mapped_file_get_contents (file),
                                            g_mapped_file_get_length (file));
-            g_mapped_file_free (file);
+            g_mapped_file_unref (file);
             break;
         }
 

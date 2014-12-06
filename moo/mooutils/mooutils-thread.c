@@ -66,8 +66,75 @@ typedef struct {
 } EventQueue;
 
 
+#if !GLIB_CHECK_VERSION(2,32,0)
 static GStaticMutex queue_lock = G_STATIC_MUTEX_INIT;
+#else
+static GMutex queue_lock;
+#endif
 static EventQueue queue;
+
+
+#if GLIB_CHECK_VERSION(2,32,0)
+static GMutex *moo_mutex_new ()
+{
+    GMutex *mutex = g_slice_new (GMutex);
+    g_mutex_init (mutex);
+    return mutex;
+}
+
+static void moo_mutex_free (GMutex* mutex)
+{
+    if (mutex)
+    {
+        g_mutex_clear (mutex);
+        g_slice_free (GMutex, mutex);
+    }
+}
+
+static void moo_static_mutex_lock (GMutex* mutex)
+{
+    g_mutex_lock (mutex);
+}
+
+static void moo_static_mutex_unlock (GMutex* mutex)
+{
+    g_mutex_unlock (mutex);
+}
+
+static GThread *
+moo_thread_create (GThreadFunc thread_func,
+                   gpointer data)
+{
+    return g_thread_new (NULL, thread_func, data);
+}
+#else
+static GMutex *moo_mutex_new ()
+{
+    return g_mutex_new ();
+}
+
+static void moo_mutex_free (GMutex* mutex)
+{
+    g_mutex_free (mutex);
+}
+
+static void moo_static_mutex_lock (GStaticMutex* mutex)
+{
+    g_static_mutex_lock (mutex);
+}
+
+static void moo_static_mutex_unlock (GStaticMutex* mutex)
+{
+    g_static_mutex_unlock (mutex);
+}
+
+static GThread *
+moo_thread_create (GThreadFunc thread_func,
+                   gpointer data)
+{
+    return g_thread_create (thread_func, data, FALSE, NULL);
+}
+#endif
 
 
 static QueueClient *
@@ -136,11 +203,11 @@ got_data (GIOChannel *io)
     GHashTable *data;
     char buf[1];
 
-    g_static_mutex_lock (&queue_lock);
+    moo_static_mutex_lock (&queue_lock);
     data = queue.data;
     queue.data = NULL;
     g_io_channel_read_chars (io, buf, 1, NULL, NULL);
-    g_static_mutex_unlock (&queue_lock);
+    moo_static_mutex_unlock (&queue_lock);
 
     g_hash_table_foreach (data, (GHFunc) invoke_callback, NULL);
     g_hash_table_destroy (data);
@@ -156,7 +223,7 @@ _moo_event_queue_do_events (guint event_id)
 
     g_return_if_fail (queue.init);
 
-    g_static_mutex_lock (&queue_lock);
+    moo_static_mutex_lock (&queue_lock);
 
     if (queue.data)
     {
@@ -166,7 +233,7 @@ _moo_event_queue_do_events (guint event_id)
             g_hash_table_remove (queue.data, GUINT_TO_POINTER (event_id));
     }
 
-    g_static_mutex_unlock (&queue_lock);
+    moo_static_mutex_unlock (&queue_lock);
 
     if (events)
         invoke_callback (GUINT_TO_POINTER (event_id), events);
@@ -179,7 +246,7 @@ init_queue (void)
     if (g_atomic_int_get (&queue.init))
         return;
 
-    g_static_mutex_lock (&queue_lock);
+    moo_static_mutex_lock (&queue_lock);
 
     if (!queue.init)
     {
@@ -214,7 +281,7 @@ init_queue (void)
     }
 
 out:
-    g_static_mutex_unlock (&queue_lock);
+    moo_static_mutex_unlock (&queue_lock);
 }
 
 
@@ -234,10 +301,10 @@ _moo_event_queue_connect (MooEventQueueCallback callback,
     client->callback_data = data;
     client->notify = notify;
 
-    g_static_mutex_lock (&queue_lock);
+    moo_static_mutex_lock (&queue_lock);
     client->id = ++queue.last_id;
     queue.clients = queue_client_list_prepend (queue.clients, client);
-    g_static_mutex_unlock (&queue_lock);
+    moo_static_mutex_unlock (&queue_lock);
 
     return client->id;
 }
@@ -251,7 +318,7 @@ _moo_event_queue_disconnect (guint event_id)
     g_return_if_fail (event_id != 0);
     g_return_if_fail (queue.init);
 
-    g_static_mutex_lock (&queue_lock);
+    moo_static_mutex_lock (&queue_lock);
 
     client = get_event_client (event_id);
 
@@ -260,7 +327,7 @@ _moo_event_queue_disconnect (guint event_id)
     else
         queue.clients = queue_client_list_remove (queue.clients, client);
 
-    g_static_mutex_unlock (&queue_lock);
+    moo_static_mutex_unlock (&queue_lock);
 
     if (client && client->notify)
         client->notify (client->callback_data);
@@ -284,7 +351,7 @@ _moo_event_queue_push (guint          event_id,
     event_data->destroy = data_destroy;
     event_data->id = event_id;
 
-    g_static_mutex_lock (&queue_lock);
+    moo_static_mutex_lock (&queue_lock);
 
     if (!queue.data)
     {
@@ -302,7 +369,7 @@ _moo_event_queue_push (guint          event_id,
 
     event_data_queue_push_tail (events, event_data);
 
-    g_static_mutex_unlock (&queue_lock);
+    moo_static_mutex_unlock (&queue_lock);
 }
 
 
@@ -310,7 +377,11 @@ _moo_event_queue_push (guint          event_id,
 /* Messages
  */
 
+#if GLIB_CHECK_VERSION(2,32,0)
+static GMutex message_lock;
+#else
 static GStaticMutex message_lock = G_STATIC_MUTEX_INIT;
+#endif
 static volatile int message_event_id = 0;
 static volatile int print_event_id = 0;
 
@@ -341,14 +412,14 @@ print_callback (GList *events, G_GNUC_UNUSED gpointer data)
 static void
 init_message_queue (void)
 {
-    g_static_mutex_lock (&message_lock);
+    moo_static_mutex_lock (&message_lock);
 
     if (!message_event_id)
         message_event_id = _moo_event_queue_connect (message_callback, NULL, NULL);
     if (!print_event_id)
         print_event_id = _moo_event_queue_connect (print_callback, NULL, NULL);
 
-    g_static_mutex_unlock (&message_lock);
+    moo_static_mutex_unlock (&message_lock);
 }
 
 void
@@ -404,6 +475,7 @@ typedef struct {
     GObjectClass base_class;
 } MooAsyncJobClass;
 
+
 MOO_DEFINE_TYPE_STATIC (MooAsyncJob, moo_async_job, G_TYPE_OBJECT)
 
 static void
@@ -423,7 +495,7 @@ moo_async_job_dispose (GObject *object)
 
     if (job->mutex)
     {
-        g_mutex_free (job->mutex);
+        moo_mutex_free (job->mutex);
         job->mutex = NULL;
     }
 
@@ -444,7 +516,7 @@ moo_async_job_init (MooAsyncJob *job)
     job->data_notify = NULL;
 
     job->thread = NULL;
-    job->mutex = g_mutex_new ();
+    job->mutex = moo_mutex_new ();
     job->cancelled = FALSE;
 }
 
@@ -519,9 +591,8 @@ moo_async_job_start (MooAsyncJob *job)
 
     g_mutex_lock (job->mutex);
 
-    job->thread = g_thread_create ((GThreadFunc) moo_async_job_thread_func,
-                                   g_object_ref (job),
-                                   FALSE, &error);
+    job->thread = moo_thread_create ((GThreadFunc) moo_async_job_thread_func,
+                                     g_object_ref (job));
     if (!job->thread)
     {
         g_critical ("could not start thread: %s", moo_error_message (error));
