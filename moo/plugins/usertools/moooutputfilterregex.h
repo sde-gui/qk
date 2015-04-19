@@ -16,7 +16,7 @@
 #ifndef MOO_OUTPUT_FILTER_REGEX_H
 #define MOO_OUTPUT_FILTER_REGEX_H
 
-#include "moooutputfilter.h"
+#include "../support/moooutputfilter.h"
 
 G_BEGIN_DECLS
 

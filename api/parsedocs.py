@@ -5,6 +5,7 @@ import re
 import sys
 import optparse
 import fnmatch
+import filecmp
 
 from mdp.docparser import Parser
 from mdp.module import Module
@@ -51,5 +52,13 @@ def parse_args():
 
 opts, files = parse_args()
 mod = read_files(files, opts)
-with open(opts.output, 'w') as out:
+tmp_file = opts.output + '.tmp' 
+with open(tmp_file, 'w') as out:
     mdp.xmlwriter.write_xml(mod, out)
+
+if not filecmp.cmp(tmp_file, opts.output):
+    if os.path.exists(opts.output):
+        os.remove(opts.output)
+    os.rename(tmp_file, opts.output)
+else:
+    os.remove(tmp_file)

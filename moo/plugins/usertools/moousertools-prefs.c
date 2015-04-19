@@ -23,7 +23,9 @@
 #include "mooutils/mooutils.h"
 #include "mooutils/moohelp.h"
 #include "plugins/usertools/moousertools-gxml.h"
+#ifdef MOO_ENABLE_HELP
 #include "moo-help-sections.h"
+#endif
 #include <string.h>
 
 enum {
@@ -561,7 +563,9 @@ moo_user_tools_prefs_page_new (void)
 
     g_signal_connect_swapped (page, "init", G_CALLBACK (main_page_init), gxml);
     g_signal_connect_swapped (page, "apply", G_CALLBACK (main_page_apply), gxml);
+#ifdef MOO_ENABLE_HELP
     moo_help_set_id (page, HELP_SECTION_PREFS_USER_TOOLS);
+#endif
 
     cxml = command_xml_new_with_root (GTK_WIDGET (gxml->page_menu));
     g_object_set_data (G_OBJECT (gxml->page_menu), "moo-user-tools-prefs-xml", cxml);

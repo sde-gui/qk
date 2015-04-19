@@ -1,40 +1,91 @@
 # zzz AM_CPPFLAGS = $(MOO_CPPFLAGS) -I$(top_srcdir)/doc/built -Imooutils/glade
 
-# zzz
-# EXTRA_DIST += marshals.list
-# built_moo_sources += marshals.h
-# marshals.h: marshals.list
-# 	$(AM_V_GEN)$(GLIB_GENMARSHAL) --prefix=_moo_marshal --header $(srcdir)/marshals.list > marshals.h.tmp \
-# 		&& mv marshals.h.tmp marshals.h
+FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/genmarshals_h.cmake
+"EXECUTE_PROCESS(COMMAND ${GLIB_GENMARSHAL} --prefix=_moo_marshal --header ${CMAKE_CURRENT_SOURCE_DIR}/marshals.list
+    OUTPUT_FILE marshals.h.tmp)
+file(RENAME marshals.h.tmp marshals.h)
+")
+add_custom_command(OUTPUT marshals.h
+    COMMAND ${CMAKE_COMMAND} -P genmarshals_h.cmake
+    MAIN_DEPENDENCY marshals.list)
+LIST(APPEND built_moo_sources marshals.h)
 
-# include mooedit/Makefile.incl
-# include xdgmime/Makefile.incl
-# include mooutils/Makefile.incl
-# include moofileview/Makefile.incl
-# include gtksourceview/Makefile.incl
-# include eggsmclient/Makefile.incl
-# include mooapp/Makefile.incl
-# include moolua/Makefile.incl
+macro(ADD_GXML input)
+    string(REPLACE ".glade" "-gxml.h" _gxml_output "${input}")
+    string(REPLACE "/glade/" "/" _gxml_output "${_gxml_output}")
+    #message(STATUS "_gxml_output: ${_gxml_output}")
+    add_custom_command(OUTPUT ${_gxml_output}
+        COMMAND ${MOO_PYTHON} ${CMAKE_SOURCE_DIR}/tools/glade2c.py --output=${_gxml_output} ${CMAKE_CURRENT_SOURCE_DIR}/${input}
+        MAIN_DEPENDENCY ${input}
+        DEPENDS ${CMAKE_SOURCE_DIR}/tools/glade2c.py
+        COMMENT "Generating ${_gxml_output} from ${input}")
+    list(APPEND built_moo_sources ${_gxml_output})
+endmacro(ADD_GXML)
+
+macro(XML2H _xml2h_input _xml2h_output _xml2h_variable)
+    add_custom_command(OUTPUT ${_xml2h_output}
+        COMMAND ${MOO_PYTHON} ${CMAKE_SOURCE_DIR}/tools/xml2h.py ${CMAKE_CURRENT_SOURCE_DIR}/${_xml2h_input} ${_xml2h_output} ${_xml2h_variable}
+        MAIN_DEPENDENCY ${_xml2h_input}
+        DEPENDS ${CMAKE_SOURCE_DIR}/tools/xml2h.py
+        COMMENT "Generating ${_xml2h_output} from ${_xml2h_input}")
+    list(APPEND built_moo_sources ${_xml2h_output})
+endmacro(XML2H)
+
+macro(ADD_UI input)
+    string(REPLACE ".xml" "-ui.h" _ui_output "${input}")
+#     message(STATUS "_ui_output: ${_ui_output}")
+    string(REGEX REPLACE ".*/([^/]*)\\.xml" "\\1" _ui_variable "${input}")
+    XML2H(${input} ${_ui_output} ${_ui_variable}_ui_xml)
+endmacro(ADD_UI)
+
+file(MAKE_DIRECTORY
+    ${CMAKE_CURRENT_BINARY_DIR}/mooapp
+    ${CMAKE_CURRENT_BINARY_DIR}/mooedit
+    ${CMAKE_CURRENT_BINARY_DIR}/moofileview
+    ${CMAKE_CURRENT_BINARY_DIR}/mooutils
+    ${CMAKE_CURRENT_BINARY_DIR}/moolua
+    ${CMAKE_CURRENT_BINARY_DIR}/plugins/usertools
+)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/xdgmime/xdgmime.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/mooutils/mooutils.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/mooedit/mooedit.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/moofileview/moofileview.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/gtksourceview/gtksourceview.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/eggsmclient/eggsmclient.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/mooapp/mooapp.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/moolua/moolua.cmake)
 # include moopython/Makefile.incl
-# include plugins/Makefile.incl
+include(${CMAKE_CURRENT_SOURCE_DIR}/plugins/plugins.cmake)
 
 SET(MEDIT_SOURCES
     medit-app/mem-debug.h
     medit-app/run-tests.h
     medit-app/parse.h
-    medit-app/main.cpp
-    ${MOO_SOURCES}
-    ${PLUGINS_SOURCES}
+    medit-app/main.c
+    ${moo_sources}
+    ${built_moo_sources}
+    ${plugins_sources}
 )
 
 add_executable(medit WIN32
     ${MEDIT_SOURCES}
 )
 
-include_directories(${GTK2_INCLUDE_DIRS})
+include_directories(
+    ${PROJECT_BINARY_DIR}
+    ${GTK_INCLUDE_DIRS}
+    ${LIBXML2_INCLUDE_DIRS}
+)
+link_directories(${GTK_LIBRARY_DIRS} ${GMODULE_LIBRARY_DIRS})
 
 target_link_libraries(medit
-    ${GTK2_LIBRARIES}
+    ${GTK_LIBRARIES}
+    ${GMODULE_LIBRARIES}
+    ${LIBXML2_LIBRARIES}
+    ${XLIB_LIBRARIES}
+    ${LIBM}
+    ${moo_libadd}
     ${MEDIT_LIBS}
 )
 
@@ -66,11 +117,11 @@ target_link_libraries(medit
 # update_icon_cache = gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor
 # install-data-hook: install-data-hook-gtk-icon-cache
 # install-data-hook-gtk-icon-cache:
-# 	@if echo "Updating icon cache" && $(update_icon_cache); then		\
-# 		echo "Done.";							\
-# 	else									\
+# 	@if echo "Updating icon cache" && $(update_icon_cache); then	
+# 		echo "Done.";						
+# 	else								
 # 		echo "*** GTK icon cache not updated. After install, run this:";\
-# 		echo $(update_icon_cache);					\
+# 		echo $(update_icon_cache);				
 # 	fi
 # uninstall-hook: uninstall-data-hook-gtk-icon-cache
 # uninstall-data-hook-gtk-icon-cache:
@@ -78,36 +129,3 @@ target_link_libraries(medit
 # endif
 
 # zzz include medit-module/Makefile.incl
-
-# zzz
-# mooutils/%-gxml.h: mooutils/glade/%.glade $(top_srcdir)/tools/glade2c.py
-# 	$(AM_V_at) $(MKDIR_P) `dirname $@`
-# 	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
-#
-# moofileview/%-gxml.h: moofileview/glade/%.glade $(top_srcdir)/tools/glade2c.py
-# 	$(AM_V_at) $(MKDIR_P) `dirname $@`
-# 	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
-#
-# mooedit/%-gxml.h: mooedit/glade/%.glade $(top_srcdir)/tools/glade2c.py
-# 	$(AM_V_at) $(MKDIR_P) `dirname $@`
-# 	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
-#
-# mooapp/%-gxml.h: mooapp/glade/%.glade $(top_srcdir)/tools/glade2c.py
-# 	$(AM_V_at) $(MKDIR_P) `dirname $@`
-# 	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
-#
-# plugins/%-gxml.h: plugins/glade/%.glade $(top_srcdir)/tools/glade2c.py
-# 	$(AM_V_at) $(MKDIR_P) `dirname $@`
-# 	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
-#
-# plugins/usertools/%-gxml.h: plugins/usertools/glade/%.glade $(top_srcdir)/tools/glade2c.py
-# 	$(AM_V_at) $(MKDIR_P) `dirname $@`
-# 	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/tools/glade2c.py $< > $@.tmp && mv $@.tmp $@
-#
-# moofileview/%-ui.h: moofileview/%.xml $(top_srcdir)/tools/xml2h.py
-# 	$(AM_V_at) $(MKDIR_P) `dirname $@`
-# 	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/tools/xml2h.py $< $@.tmp $*_ui_xml && mv $@.tmp $@
-#
-# mooedit/%-ui.h: mooedit/%.xml $(top_srcdir)/tools/xml2h.py
-# 	$(AM_V_at) $(MKDIR_P) `dirname $@`
-# 	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/tools/xml2h.py $< $@.tmp $*_ui_xml && mv $@.tmp $@

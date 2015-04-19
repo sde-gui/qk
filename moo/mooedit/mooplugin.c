@@ -46,7 +46,9 @@
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moohelp.h"
 #include "mooutils/mootype-macros.h"
+#ifdef MOO_ENABLE_HELP
 #include "moo-help-sections.h"
+#endif
 #include <string.h>
 #include <gmodule.h>
 #include <gobject/gvaluecollector.h>
@@ -1429,7 +1431,9 @@ moo_plugin_attach_prefs (GtkWidget *dialog)
     g_signal_connect (page, "init", G_CALLBACK (prefs_page_init), gxml);
     g_signal_connect (page, "apply", G_CALLBACK (prefs_page_apply), gxml);
 
+#ifdef MOO_ENABLE_HELP
     moo_help_set_id (GTK_WIDGET (page), HELP_SECTION_PREFS_PLUGINS);
+#endif
 
     selection = gtk_tree_view_get_selection (gxml->treeview);
     gtk_tree_selection_set_mode (selection, GTK_SELECTION_SINGLE);

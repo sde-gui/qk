@@ -39,7 +39,9 @@
 #include "plugins/moofileselector-gxml.h"
 #include "mooutils/moohelp.h"
 #include "mooutils/mooatom.h"
+#ifdef MOO_ENABLE_HELP
 #include "moo-help-sections.h"
+#endif
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -175,7 +177,9 @@ _moo_file_selector_init (MooFileSelector *filesel)
     _moo_file_view_add_target (MOO_FILE_VIEW (filesel), MOO_EDIT_TAB_ATOM,
                                GTK_TARGET_SAME_APP, TARGET_MOO_EDIT_TAB);
 
+#ifdef MOO_ENABLE_HELP
     moo_help_set_id (GTK_WIDGET (filesel), HELP_SECTION_FILE_SELECTOR);
+#endif
     moo_help_connect_keys (GTK_WIDGET (filesel));
 }
 

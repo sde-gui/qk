@@ -7,7 +7,7 @@ tmpl_file_start = """\
 #include <config.h>
 #endif
 %(headers)s
-#include "moo-lua-api-util.h"
+#include "moolua/moo-lua-api-util.h"
 
 extern "C" void moo_test_coverage_record (const char *lang, const char *function);
 
