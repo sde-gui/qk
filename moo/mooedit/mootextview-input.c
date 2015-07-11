@@ -502,7 +502,7 @@ static MooFold *
 get_fold_at_mouse (GtkTextView    *text_view,
                    GdkEventButton *event)
 {
-    int line = left_window_to_line (text_view, event->y);
+    int line = left_window_to_line (text_view, (int) event->y);
     MooTextBuffer *buffer = MOO_TEXT_BUFFER (gtk_text_view_get_buffer (text_view));
     return moo_text_buffer_get_fold_at_line (buffer, line);
 }
@@ -555,7 +555,7 @@ left_window_click (GtkTextView    *text_view,
     if (view->priv->lm.show_icons && event->x >= 0 && event->x < view->priv->lm.icon_width)
     {
         gboolean ret;
-        int line = left_window_to_line (text_view, event->y);
+        int line = left_window_to_line (text_view, (int) event->y);
         g_signal_emit_by_name (text_view, "line-mark-clicked", line, &ret);
         return ret;
     }
@@ -664,7 +664,7 @@ event_button_to_buffer (GtkTextView    *text_view,
 {
     gtk_text_view_window_to_buffer_coords (text_view,
                                            gtk_text_view_get_window_type (text_view, event->window),
-                                           event->x, event->y, x, y);
+                                           (int) event->x, (int) event->y, x, y);
 }
 
 static void
@@ -735,7 +735,7 @@ _moo_text_view_button_press_event (GtkWidget          *widget,
     }
     else
     {
-        int line = left_window_to_line (text_view, event->y);
+        int line = left_window_to_line (text_view, (int) event->y);
         gtk_text_buffer_get_iter_at_line (buffer, &iter, line);
     }
 

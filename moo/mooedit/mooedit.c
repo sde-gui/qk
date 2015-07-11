@@ -935,7 +935,7 @@ int
 moo_edit_get_n_views (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), 0);
-    return moo_edit_view_array_get_size (doc->priv->views);
+    return (int) moo_edit_view_array_get_size (doc->priv->views);
 }
 
 /**
@@ -1910,7 +1910,7 @@ _moo_edit_strip_whitespace (MooEdit *doc)
     {
         GtkTextIter end;
         char *slice, *p;
-        int len;
+        gssize len;
 
         if (gtk_text_iter_ends_line (&iter))
             continue;

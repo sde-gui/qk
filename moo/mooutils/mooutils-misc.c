@@ -1851,7 +1851,7 @@ void MOO_NORETURN _moo_errorv (MooCodeLoc loc, const char *format, va_list args)
  */
 gboolean
 _moo_regex_escape (const char *string,
-                   int         bytes,
+                   gssize      bytes,
                    GString    *dest)
 {
     const char *p, *piece, *end;

@@ -1774,7 +1774,7 @@ static void     value_changed           (MooIconView    *view,
                                          GtkAdjustment  *adj)
 {
     if (adj->value != view->priv->xoffset)
-        moo_icon_view_scroll_to (view, adj->value);
+        moo_icon_view_scroll_to (view, (int) adj->value);
 }
 
 
@@ -1872,7 +1872,7 @@ moo_icon_view_button_press (GtkWidget      *widget,
     if (event->button == 1)
     {
         gtk_widget_grab_focus (widget);
-        _moo_icon_view_get_path_at_pos (view, event->x, event->y,
+        _moo_icon_view_get_path_at_pos (view, (int) event->x, (int) event->y,
                                         &path, NULL, NULL, NULL);
 
         switch (event->type)
@@ -1912,8 +1912,8 @@ moo_icon_view_button_press (GtkWidget      *widget,
                 /* this is later checked in maybe_drag */
                 view->priv->button_pressed = event->button;
                 view->priv->button_press_mods = mods;
-                view->priv->button_press_x = event->x + view->priv->xoffset;
-                view->priv->button_press_y = event->y;
+                view->priv->button_press_x = (int) event->x + view->priv->xoffset;
+                view->priv->button_press_y = (int) event->y;
 
                 return TRUE;
 
@@ -2132,7 +2132,7 @@ moo_icon_view_drag_select (MooIconView    *view,
     gdk_region_union_with_rect (region, &rect);
 
     gdk_window_invalidate_region (GTK_WIDGET (view)->window, region, TRUE);
-    drag_scroll_check (view, event->x, event->y);
+    drag_scroll_check (view, (int) event->x, (int) event->y);
 
     rect_items_list = moo_icon_view_get_paths_in_rect (view, &rect);
     new_selection = path_set_from_list (rect_items_list);
@@ -3622,7 +3622,7 @@ moo_icon_view_maybe_drag (MooIconView    *view,
     if (!gtk_drag_check_threshold (GTK_WIDGET (view),
                                    view->priv->button_press_x - view->priv->xoffset,
                                    view->priv->button_press_y,
-                                   event->x, event->y))
+                                   (int) event->x, (int) event->y))
         return FALSE;
 
     button = view->priv->button_pressed;

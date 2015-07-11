@@ -67,7 +67,7 @@ struct _MooFileEntryCompletionPrivate {
     char *dirname;
     char *display_dirname;
     char *display_basename;
-    guint display_basename_len;
+    gsize display_basename_len;
 
     char *real_text;
     gboolean walking_list;
@@ -510,7 +510,7 @@ completion_parse_text (MooFileEntryCompletion *cmpl,
     GError *error = NULL;
     MooFolder *folder;
     gboolean result = FALSE;
-    guint text_len;
+    gsize text_len;
     char *path = NULL, *dirname = NULL;
     char *display_dirname = NULL, *display_basename = NULL;
 
@@ -898,7 +898,7 @@ completion_list_button_press (MooFileEntryCompletion *cmpl,
     GtkTreeIter iter;
 
     if (gtk_tree_view_get_path_at_pos (cmpl->priv->treeview,
-                                       event->x, event->y,
+                                       (int) event->x, (int) event->y,
                                        &path, NULL, NULL, NULL))
     {
         gtk_tree_model_get_iter (cmpl->priv->model, &iter, path);

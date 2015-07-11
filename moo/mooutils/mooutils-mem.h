@@ -66,7 +66,7 @@ G_STMT_START {                                                      \
     if ((c_)->n_##name_ + howmuch_ > (c_)->n_##name_##_allocd__)    \
     {                                                               \
         gsize old_size__ = (c_)->n_##name_##_allocd__;              \
-        gsize new_size__ = MAX(old_size__ * 1.2,                    \
+        gsize new_size__ = MAX((gsize) (old_size__ * 1.2),          \
                                (c_)->n_##name_ + howmuch_);         \
         (c_)->name_ = (ElmType*) g_realloc ((c_)->name_,            \
                                  new_size__ * sizeof *(c_)->name_); \

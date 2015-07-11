@@ -3275,7 +3275,7 @@ tab_icon_motion_notify (GtkWidget      *evbox,
     if (info->drag_started)
         return TRUE;
 
-    if (gtk_drag_check_threshold (evbox, info->x, info->y, event->x, event->y))
+    if (gtk_drag_check_threshold (evbox, info->x, info->y, (int) event->x, (int) event->y))
     {
         info->drag_started = TRUE;
         tab_icon_start_drag (evbox, (GdkEvent*) event, window);

@@ -2784,8 +2784,8 @@ tab_drag_start (MooNotebook    *nb,
 
     g_return_if_fail (nb->priv->button_pressed);
 
-    event_x = event->x;
-    event_y = event->y;
+    event_x = (int) event->x;
+    event_y = (int) event->y;
 
     if (!translate_coords (nb->priv->tab_window, event->window, &event_x, &event_y))
     {
@@ -2830,8 +2830,8 @@ tab_drag_motion (MooNotebook    *nb,
 
     if (event)
     {
-        event_x = event->x;
-        event_y = event->y;
+        event_x = (int) event->x;
+        event_y = (int) event->y;
 
         if (!translate_coords (nb->priv->tab_window, event->window, &event_x, &event_y))
         {
@@ -2939,24 +2939,24 @@ moo_notebook_get_event_tab (MooNotebook    *nb,
     switch (event->type)
     {
         case GDK_MOTION_NOTIFY:
-            x = event->motion.x;
-            y = event->motion.y;
+            x = (int)event->motion.x;
+            y = (int)event->motion.y;
             break;
         case GDK_BUTTON_PRESS:
         case GDK_2BUTTON_PRESS:
         case GDK_3BUTTON_PRESS:
         case GDK_BUTTON_RELEASE:
-            x = event->button.x;
-            y = event->button.y;
+            x = (int)event->button.x;
+            y = (int)event->button.y;
             break;
         case GDK_ENTER_NOTIFY:
         case GDK_LEAVE_NOTIFY:
-            x = event->crossing.x;
-            y = event->crossing.y;
+            x = (int)event->crossing.x;
+            y = (int)event->crossing.y;
             break;
         case GDK_SCROLL:
-            x = event->scroll.x;
-            y = event->scroll.y;
+            x = (int)event->scroll.x;
+            y = (int)event->scroll.y;
             break;
         default:
             g_return_val_if_reached (-1);
@@ -2979,8 +2979,8 @@ moo_notebook_button_press (GtkWidget      *widget,
     MooNotebook *nb = MOO_NOTEBOOK (widget);
     int x, y;
 
-    x = event->x;
-    y = event->y;
+    x = (int) event->x;
+    y = (int) event->y;
 
     if (!translate_coords (nb->priv->tab_window, event->window, &x, &y))
         return FALSE;
@@ -3069,8 +3069,8 @@ moo_notebook_scroll_event (GtkWidget      *widget,
     MooNotebook *nb = MOO_NOTEBOOK (widget);
     int x, y;
 
-    x = event->x;
-    y = event->y;
+    x = (int) event->x;
+    y = (int) event->y;
 
     if (!translate_coords (nb->priv->tab_window, event->window, &x, &y))
         return FALSE;
@@ -3190,8 +3190,8 @@ popup_position_func (G_GNUC_UNUSED GtkMenu *menu,
 
     if (data->event)
     {
-        (*x) += data->event->x;
-        (*y) += data->event->y;
+        (*x) += (int) data->event->x;
+        (*y) += (int) data->event->y;
     }
     else
     {

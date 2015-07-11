@@ -228,7 +228,7 @@ moo_ipc_send (GObject    *sender,
               gssize      len)
 {
     GString *header;
-    guint id_len;
+    gsize id_len;
 
     g_return_if_fail (!sender || G_IS_OBJECT (sender));
     g_return_if_fail (id != NULL);
@@ -303,7 +303,7 @@ get_uint (const char *data,
 
     if (!errno && !end[0] && val <= G_MAXUINT)
     {
-        *dest = val;
+        *dest = (guint)val;
         result = TRUE;
     }
 

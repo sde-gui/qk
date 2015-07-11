@@ -101,7 +101,7 @@ pkg_check_modules(XLIB x11 xext xrender ice sm)
 
 pkg_check_modules(LIBXML2 REQUIRED libxml-2.0)
 
-find_library(LIBM m)
+#find_library(LIBM m)
 
 find_package(Gettext REQUIRED)
 SET(GETTEXT_PACKAGE "${MOO_PACKAGE_NAME}")
@@ -114,6 +114,12 @@ SET(MOO_PYTHON "${PYTHON_EXECUTABLE}")
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 add_definitions(-DMOO_COMPILATION=1 -DHAVE_CONFIG_H=1 -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\"Moo\")
 
+if(WIN32)
+	add_definitions(-DUNICODE=1 -D_UNICODE=1 -D__WIN32__=1 -D_CRT_SECURE_NO_WARNINGS=1 -D_CRT_NONSTDC_NO_WARNINGS=1)
+	add_definitions(-DHAVE_MMAP=1)
+	set(MOO_OS_WIN32 TRUE)
+endif(WIN32)
+
 # zzz SUBDIRS = po po-gsv api doc moo
-add_subdirectory(api)
+#add_subdirectory(api)
 add_subdirectory(moo)

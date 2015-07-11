@@ -988,7 +988,7 @@ moo_font_selection_size_activate (GtkWidget   *w,
   fontsel = MOO_FONT_SELECTION (data);
 
   text = gtk_entry_get_text (GTK_ENTRY (fontsel->size_entry));
-  new_size = MAX (0.1, atof (text) * PANGO_SCALE + 0.5);
+  new_size = (gint) MAX (0.1, atof (text) * PANGO_SCALE + 0.5);
 
   if (fontsel->size != new_size)
     moo_font_selection_set_size (fontsel, new_size);
@@ -1003,7 +1003,7 @@ moo_font_selection_size_focus_out (MooFontSelection *fontsel)
   const gchar *text;
 
   text = gtk_entry_get_text (GTK_ENTRY (fontsel->size_entry));
-  new_size = MAX (0.1, atof (text) * PANGO_SCALE + 0.5);
+  new_size = (gint) MAX (0.1, atof (text) * PANGO_SCALE + 0.5);
 
   moo_font_selection_set_size (fontsel, new_size);
 

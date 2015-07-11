@@ -91,7 +91,7 @@ static void     moo_entry_changed           (GtkEditable        *editable);
 static void     init_undo_actions           (void);
 static MooUndoAction *insert_action_new     (GtkEditable        *editable,
                                              const gchar        *text,
-                                             gint                length,
+                                             gssize              length,
                                              gint               *position);
 static MooUndoAction *delete_action_new     (GtkEditable        *editable,
                                              gint                start_pos,
@@ -629,7 +629,7 @@ moo_entry_do_insert_text (GtkEditable        *editable,
                           gint               *position)
 {
     if (length < 0)
-        length = strlen (text);
+        length = (int) strlen (text);
 
     if (*position < 0)
         *position = GTK_ENTRY(editable)->text_length;
@@ -793,7 +793,7 @@ init_undo_actions (void)
 static MooUndoAction *
 insert_action_new (G_GNUC_UNUSED GtkEditable *editable,
                    const gchar        *text,
-                   gint                length,
+                   gssize              length,
                    gint               *position)
 {
     InsertAction *action;
@@ -807,7 +807,7 @@ insert_action_new (G_GNUC_UNUSED GtkEditable *editable,
 
     action->pos = *position;
     action->text = g_strndup (text, length);
-    action->length = length;
+    action->length = (int) length;
     action->chars = g_utf8_strlen (text, length);
 
     return (MooUndoAction*) action;

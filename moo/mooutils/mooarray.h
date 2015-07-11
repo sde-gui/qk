@@ -27,17 +27,17 @@ array_type##_foreach (const ArrayType *ar,                              \
                       ArrayType##Foreach func,                          \
                       gpointer data)                                    \
 {                                                                       \
-    guint i;                                                            \
+    gsize i;                                                            \
     g_return_if_fail (ar != NULL && func != NULL);                      \
     for (i = 0; i < ar->n_elms; ++i)                                    \
         func (ar->elms[i], data);                                       \
 }                                                                       \
                                                                         \
 void array_type##_sort (ArrayType *ar, GCompareFunc func);              \
-int array_type##_find (const ArrayType *ar, ElmType *elm);              \
+gssize array_type##_find (const ArrayType *ar, ElmType *elm);           \
 void array_type##_remove (ArrayType *ar, ElmType *elm);                 \
 void array_type##_clear (ArrayType *ar);                                \
-guint array_type##_insert_sorted (ArrayType *ar, ElmType *elm,          \
+gsize array_type##_insert_sorted (ArrayType *ar, ElmType *elm,          \
                                     GCompareFunc func);                 \
                                                                         \
 G_INLINE_FUNC gboolean array_type##_is_empty (ArrayType *ar)            \
@@ -87,7 +87,7 @@ array_type##_append (ArrayType *ar, ElmType *elm)                       \
                                                                         \
 void array_type##_append_array (ArrayType *ar, ArrayType *ar2)          \
 {                                                                       \
-    guint i, old_size;                                                  \
+    gsize i, old_size;                                                  \
     g_return_if_fail (ar != NULL && ar2 != NULL);                       \
     if (!ar2->n_elms)                                                   \
         return;                                                         \
@@ -116,7 +116,7 @@ array_type##_copy (ArrayType *ar)                                       \
                                                                         \
     if (ar->n_elms)                                                     \
     {                                                                   \
-        guint i;                                                        \
+        gsize i;                                                        \
         MOO_IP_ARRAY_GROW (ElmType*, copy, elms, ar->n_elms);           \
         for (i = 0; i < ar->n_elms; ++i)                                \
             copy->elms[i] = copy_elm (ar->elms[i]);                     \
@@ -127,7 +127,7 @@ array_type##_copy (ArrayType *ar)                                       \
                                                                         \
 void array_type##_remove (ArrayType *ar, ElmType *elm)                  \
 {                                                                       \
-    guint i;                                                            \
+    gsize i;                                                            \
                                                                         \
     g_return_if_fail (ar != NULL);                                      \
                                                                         \
@@ -148,8 +148,8 @@ void array_type##_clear (ArrayType *ar)                                 \
                                                                         \
     if (ar->n_elms)                                                     \
     {                                                                   \
-        guint i;                                                        \
-        guint n_elms = ar->n_elms;                                      \
+        gsize i;                                                        \
+        gsize n_elms = ar->n_elms;                                      \
         ElmType **elms = ar->elms;                                      \
         MOO_IP_ARRAY_INIT (ElmType*, ar, elms, 0);                      \
                                                                         \
@@ -184,9 +184,9 @@ array_type##_sort (ArrayType *ar, GCompareFunc func)                    \
                        func);                                           \
 }                                                                       \
                                                                         \
-int array_type##_find (const ArrayType *ar, ElmType *elm)               \
+gssize array_type##_find (const ArrayType *ar, ElmType *elm)            \
 {                                                                       \
-    guint i;                                                            \
+    gsize i;                                                            \
     g_return_val_if_fail (ar != NULL && elm != NULL, -1);               \
     for (i = 0; i < ar->n_elms; ++i)                                    \
         if (ar->elms[i] == elm)                                         \

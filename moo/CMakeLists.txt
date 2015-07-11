@@ -2,7 +2,13 @@
 
 FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/genmarshals_h.cmake
 "EXECUTE_PROCESS(COMMAND ${GLIB_GENMARSHAL} --prefix=_moo_marshal --header ${CMAKE_CURRENT_SOURCE_DIR}/marshals.list
-    OUTPUT_FILE marshals.h.tmp)
+    RESULT_VARIABLE result
+	OUTPUT_VARIABLE error
+	ERROR_VARIABLE error
+	OUTPUT_FILE marshals.h.tmp)
+if(NOT result EQUAL 0)
+	MESSAGE(FATAL_ERROR ${ERROR_VARIABLE})
+endif()
 file(RENAME marshals.h.tmp marshals.h)
 ")
 add_custom_command(OUTPUT marshals.h
@@ -72,6 +78,8 @@ add_executable(medit WIN32
     ${MEDIT_SOURCES}
 )
 
+include_directories(${PROJECT_SOURCE_DIR}/moo/mooutils/moowin32/ms)
+
 include_directories(
     ${PROJECT_BINARY_DIR}
     ${GTK_INCLUDE_DIRS}
@@ -84,7 +92,7 @@ target_link_libraries(medit
     ${GMODULE_LIBRARIES}
     ${LIBXML2_LIBRARIES}
     ${XLIB_LIBRARIES}
-    ${LIBM}
+    #${LIBM}
     ${moo_libadd}
     ${MEDIT_LIBS}
 )

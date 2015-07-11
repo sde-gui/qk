@@ -1374,11 +1374,11 @@ glob_to_re (const char *pattern)
                 if (p[1] == '^')
                 {
                     g_string_append_c (string, '^');
-                    escaped = g_regex_escape_string (p + 2, bracket - p - 2);
+                    escaped = g_regex_escape_string (p + 2, (int) (bracket - p - 2));
                 }
                 else
                 {
-                    escaped = g_regex_escape_string (p + 1, bracket - p - 1);
+                    escaped = g_regex_escape_string (p + 1, (int) (bracket - p - 1));
                 }
                 g_string_append (string, escaped);
                 g_free (escaped);

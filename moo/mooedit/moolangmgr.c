@@ -305,7 +305,7 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
 {
     MooLang *lang = NULL;
     char *base = NULL;
-    int len;
+    gsize len;
     guint i;
 
     static const char *bak_globs[] = {"*~", "*.bak", "*.in", "*.orig"};
@@ -316,7 +316,7 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
 
     for (i = 0; i < G_N_ELEMENTS (bak_globs); ++i)
     {
-        int ext_len = strlen (bak_globs[i]) - 1;
+        gsize ext_len = strlen (bak_globs[i]) - 1;
 
         if (len > ext_len && _moo_glob_match_simple (bak_globs[i], filename))
         {

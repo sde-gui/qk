@@ -580,7 +580,7 @@ moo_text_buffer_insert_text (GtkTextBuffer      *text_buffer,
         return;
 
     if (length < 0)
-        length = strlen (text);
+        length = (int) strlen (text);
 
     start_offset = gtk_text_iter_get_offset (pos);
     first_line = gtk_text_iter_get_line (pos);

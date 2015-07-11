@@ -770,7 +770,7 @@ process_grep_line (MooLineView *view,
     }
     else
     {
-        line_no = line_no_64 - 1;
+        line_no = (int) (line_no_64 - 1);
     }
 
     view_line = moo_line_view_start_line (view);
@@ -908,7 +908,7 @@ append_grep_globs (GString    *command,
         }
         else
         {
-            guint len = strlen (*p);
+            gsize len = strlen (*p);
 
             if ((*p)[len-1] == '/')
             {

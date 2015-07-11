@@ -83,7 +83,7 @@ void             moo_app_set_ui_xml             (MooApp                 *app,
 
 gboolean         moo_app_send_msg               (const char             *pid,
                                                  const char             *data,
-                                                 int                     len);
+                                                 gssize                  len);
 
 gboolean         moo_app_send_files             (MooOpenInfoArray       *files,
                                                  guint32                 stamp,

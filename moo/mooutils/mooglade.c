@@ -1821,11 +1821,19 @@ parse_property (GParamSpec     *param_spec,
         else
         {
             if (param_spec->value_type == G_TYPE_UINT)
-                g_value_set_uint (&param->value, val);
+            {
+                moo_assert (val <= G_MAXUINT);
+                g_value_set_uint (&param->value, (guint) val);
+            }
             else if (param_spec->value_type == G_TYPE_ULONG)
-                g_value_set_ulong (&param->value, val);
+            {
+                moo_assert (val <= G_MAXULONG);
+                g_value_set_ulong (&param->value, (gulong) val);
+            }
             else
+            {
                 g_value_set_uint64 (&param->value, val);
+            }
         }
     }
     else if (param_spec->value_type == G_TYPE_FLOAT ||
@@ -1842,7 +1850,7 @@ parse_property (GParamSpec     *param_spec,
         else
         {
             if (param_spec->value_type == G_TYPE_FLOAT)
-                g_value_set_float (&param->value, val);
+                g_value_set_float (&param->value, (float) val);
             else
                 g_value_set_double (&param->value, val);
         }

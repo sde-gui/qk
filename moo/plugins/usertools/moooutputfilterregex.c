@@ -466,7 +466,7 @@ process_line (MooOutputFilterRegex  *filter,
               FilterState           *state,
               OutputType             type)
 {
-    int start_pos;
+    gssize start_pos;
     int match_start, match_end;
     int line_no;
     PatternInfo *pattern;

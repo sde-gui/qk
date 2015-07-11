@@ -704,7 +704,7 @@ _moo_accel_parse (const char      *accel,
                   GdkModifierType *modifiers)
 {
     guint key = 0;
-    guint len;
+    gsize len;
     GdkModifierType mods = (GdkModifierType) 0;
     char *p;
 

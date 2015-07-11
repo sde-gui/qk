@@ -1102,7 +1102,7 @@ normalize_path_win32 (G_GNUC_UNUSED MooFileSystem *fs,
 
     if (isdir)
     {
-        guint len = strlen (normpath);
+        gsize len = strlen (normpath);
 
         if (!len || normpath[len -1] != '\\')
         {

@@ -130,7 +130,7 @@ struct MooMarkupText {
     MooMarkupDoc            *doc;       /* the containing document */
 
     char                    *text;      /* 0-terminated content of the node */
-    guint                    size;      /* strlen (text) */
+    gsize                    size;      /* strlen (text) */
 };
 
 

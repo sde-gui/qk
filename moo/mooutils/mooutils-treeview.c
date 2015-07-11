@@ -945,14 +945,14 @@ moo_expander_cell_get_size (GtkCellRenderer      *cell,
         if (x_offset)
         {
             float xalign = (gtk_widget_get_direction (widget) == GTK_TEXT_DIR_RTL) ?
-                                (1.0 - cell->xalign) : cell->xalign;
-            *x_offset = xalign * (cell_area->width - width);
+                                (1.0f - cell->xalign) : cell->xalign;
+            *x_offset = (int) (xalign * (cell_area->width - width));
             *x_offset = MAX (*x_offset, 0);
         }
 
         if (y_offset)
         {
-            *y_offset = cell->yalign * (cell_area->height - height);
+            *y_offset = (int) (cell->yalign * (cell_area->height - height));
             *y_offset = MAX (*y_offset, 0);
         }
     }
@@ -1136,7 +1136,7 @@ tree_view_button_press (GtkTreeView    *treeview,
         goto out;
 
     if (!gtk_tree_view_get_path_at_pos (treeview,
-                                        event->x, event->y,
+                                        (int) event->x, (int) event->y,
                                         &path, &column,
                                         &cell_x, &cell_y))
         goto out;
