@@ -84,22 +84,49 @@ endif()
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GTK REQUIRED gtk+-2.0)
-pkg_check_modules(GMODULE REQUIRED gmodule-2.0)
-execute_process(
-    COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=glib_genmarshal glib-2.0
-    OUTPUT_VARIABLE GLIB_GENMARSHAL
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(
-    COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=glib_mkenums glib-2.0
-    OUTPUT_VARIABLE GLIB_MKENUMS
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+set(MOO_USE_PKGCONFIG true CACHE BOOL "Use pkg-config")
+
+if(MOO_USE_PKGCONFIG)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GTK REQUIRED gtk+-2.0)
+    pkg_check_modules(GMODULE REQUIRED gmodule-2.0)
+    #execute_process(
+    #    COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=glib_genmarshal glib-2.0
+    #    OUTPUT_VARIABLE GLIB_GENMARSHAL
+    #    OUTPUT_STRIP_TRAILING_WHITESPACE
+    #    RESULT_VARIABLE RESULT)
+    #if(NOT RESULT EQUAL 0)
+    #	MESSAGE(FATAL_ERROR "Could not find glib-genmarshal")
+    #endif()
+    execute_process(
+        COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=glib_mkenums glib-2.0
+        OUTPUT_VARIABLE GLIB_MKENUMS
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        RESULT_VARIABLE RESULT)
+    if(NOT RESULT EQUAL 0)
+	    MESSAGE(FATAL_ERROR "Could not find glib-mkenums")
+    endif()
+
+    pkg_check_modules(XLIB x11 xext xrender ice sm)
+    pkg_check_modules(LIBXML2 REQUIRED libxml-2.0)
+else()
+    set(MOO_GTK_DIR "" CACHE PATH "Gtk root dir")
+    include_directories(SYSTEM "${MOO_GTK_DIR}/include")
+    include_directories(SYSTEM "${MOO_GTK_DIR}/include/glib-2.0")
+    include_directories(SYSTEM "${MOO_GTK_DIR}/lib/glib-2.0/include")
+    include_directories(SYSTEM "${MOO_GTK_DIR}/lib/gtk-2.0/include")
+    include_directories(SYSTEM "${MOO_GTK_DIR}/include/gtk-2.0")
+    include_directories(SYSTEM "${MOO_GTK_DIR}/include/gdk-pixbuf-2.0")
+    include_directories(SYSTEM "${MOO_GTK_DIR}/include/pango-1.0")
+    include_directories(SYSTEM "${MOO_GTK_DIR}/include/atk-1.0")
+
+    SET(GTK_LIBRARY_DIRS "${MOO_GTK_DIR}/lib")
+    SET(GTK_LIBRARIES gtk-win32-2.0 atk-1.0 gdk-win32-2.0 gdk_pixbuf-2.0 pango-1.0 pangocairo-1.0 cairo gio-2.0 gobject-2.0 gmodule-2.0 glib-2.0 libintl)
+    SET(LIBXML2_LIBRARIES "libxml2")
+endif()
+
+find_program(GLIB_GENMARSHAL glib-genmarshal)
 find_program(GDK_PIXBUF_CSOURCE gdk-pixbuf-csource)
-
-pkg_check_modules(XLIB x11 xext xrender ice sm)
-
-pkg_check_modules(LIBXML2 REQUIRED libxml-2.0)
 
 #find_library(LIBM m)
 
@@ -115,11 +142,13 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DI
 add_definitions(-DMOO_COMPILATION=1 -DHAVE_CONFIG_H=1 -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\"Moo\")
 
 if(WIN32)
-	add_definitions(-DUNICODE=1 -D_UNICODE=1 -D__WIN32__=1 -D_CRT_SECURE_NO_WARNINGS=1 -D_CRT_NONSTDC_NO_WARNINGS=1)
-	add_definitions(-DHAVE_MMAP=1)
+	add_definitions(-DUNICODE=1 -D_UNICODE=1 -D__WIN32__=1 -DSTRICT=1 -D_CRT_SECURE_NO_WARNINGS=1 -D_CRT_NONSTDC_NO_WARNINGS=1)
 	set(MOO_OS_WIN32 TRUE)
+	add_definitions(-DHAVE_MMAP=1)
+	add_definitions(-DMOO_NEED_GETTIMEOFDAY=1)
+    add_definitions(-DHAVE_UNISTD_H=1 -DENABLE_NLS=1 -DHAVE_BIND_TEXTDOMAIN_CODESET=1)
 endif(WIN32)
 
 # zzz SUBDIRS = po po-gsv api doc moo
-#add_subdirectory(api)
+add_subdirectory(api)
 add_subdirectory(moo)

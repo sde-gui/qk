@@ -56,9 +56,10 @@ tmp_file = opts.output + '.tmp'
 with open(tmp_file, 'w') as out:
     mdp.xmlwriter.write_xml(mod, out)
 
-if not filecmp.cmp(tmp_file, opts.output):
-    if os.path.exists(opts.output):
-        os.remove(opts.output)
+if not os.path.exists(opts.output):
     os.rename(tmp_file, opts.output)
-else:
+elif filecmp.cmp(tmp_file, opts.output):
     os.remove(tmp_file)
+else:
+    os.remove(opts.output)
+    os.rename(tmp_file, opts.output)

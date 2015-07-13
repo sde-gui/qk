@@ -168,7 +168,9 @@ LIST(APPEND built_moo_sources marshals.c)
 # 	$(AM_V_at)echo stamp > mooutils/mooutils-enums.c.stamp
 # endif
 
-# mooutils_win32_sources = mooutils/mooutils-win32.c
+SET(mooutils_win32_sources
+    mooutils/mooutils-win32.c
+)
 SET(mooutils_unittest_sources
     mooutils/moo-test-utils.c
     mooutils/moo-test-utils.h
@@ -176,9 +178,9 @@ SET(mooutils_unittest_sources
 )
 # EXTRA_DIST += $(mooutils_win32_sources) $(mooutils_unittest_sources)
 
-# if MOO_OS_WIN32
-# moo_sources += $(mooutils_win32_sources)
-# endif
+if(WIN32)
+    LIST(APPEND moo_sources ${mooutils_win32_sources})
+endif()
 
 LIST(APPEND moo_sources ${mooutils_unittest_sources})
 

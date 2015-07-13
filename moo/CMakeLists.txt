@@ -7,7 +7,7 @@ FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/genmarshals_h.cmake
 	ERROR_VARIABLE error
 	OUTPUT_FILE marshals.h.tmp)
 if(NOT result EQUAL 0)
-	MESSAGE(FATAL_ERROR ${ERROR_VARIABLE})
+	MESSAGE(FATAL_ERROR \"Error generating marshals.h: \${error}\")
 endif()
 file(RENAME marshals.h.tmp marshals.h)
 ")
@@ -74,10 +74,6 @@ SET(MEDIT_SOURCES
     ${plugins_sources}
 )
 
-add_executable(medit WIN32
-    ${MEDIT_SOURCES}
-)
-
 include_directories(${PROJECT_SOURCE_DIR}/moo/mooutils/moowin32/ms)
 
 include_directories(
@@ -86,6 +82,10 @@ include_directories(
     ${LIBXML2_INCLUDE_DIRS}
 )
 link_directories(${GTK_LIBRARY_DIRS} ${GMODULE_LIBRARY_DIRS})
+
+add_executable(medit WIN32
+    ${MEDIT_SOURCES}
+)
 
 target_link_libraries(medit
     ${GTK_LIBRARIES}

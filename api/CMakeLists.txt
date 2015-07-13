@@ -331,13 +331,17 @@ FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/genmooxml.cmake
 		--source-file ${CMAKE_SOURCE_DIR}/moo/moolua/medit-lua.cpp 
 		--source-file ${CMAKE_SOURCE_DIR}/moo/moolua/medit-lua.h 
                 --skip moofontsel.*
-		--output ${CMAKE_CURRENT_SOURCE_DIR}/moo.xml)
+		--output ${CMAKE_CURRENT_SOURCE_DIR}/moo.xml
+        RESULT_VARIABLE RESULT)
+if(NOT RESULT EQUAL 0)
+    MESSAGE(FATAL_ERROR \"Error: \${RESULT}\")
+endif()
 file(WRITE moo.xml.stamp moo.xml.stamp)
 ")
 
 add_custom_command(OUTPUT moo.xml.stamp
     COMMAND ${CMAKE_COMMAND} -P genmooxml.cmake
-    DEPENDS ${docparser_files} ${source_files} ${CMAKE_CURRENT_BINARY_DIR}/genmooxml.cmake)
+    DEPENDS ${docparser_files} ${source_files} ${CMAKE_CURRENT_BINARY_DIR}/genmooxml.cmake ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
 LIST(APPEND built_moo_sources moo.xml.stamp)
 
 FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gengtkxml.cmake
@@ -345,13 +349,17 @@ FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gengtkxml.cmake
 		--source-file ${CMAKE_SOURCE_DIR}/moo/moolua/gtk-api.c 
 		--source-file ${CMAKE_SOURCE_DIR}/moo/moolua/gtk-api.h 
 		--module Gtk 
-		--output ${CMAKE_CURRENT_SOURCE_DIR}/gtk.xml)
+		--output ${CMAKE_CURRENT_SOURCE_DIR}/gtk.xml
+        RESULT_VARIABLE RESULT)
+if(NOT RESULT EQUAL 0)
+    MESSAGE(FATAL_ERROR \"Error: \${RESULT}\")
+endif()
 file(WRITE gtk.xml.stamp gtk.xml.stamp)
 ")
 
 add_custom_command(OUTPUT gtk.xml.stamp
     COMMAND ${CMAKE_COMMAND} -P gengtkxml.cmake
-    DEPENDS ${docparser_files} ${source_files} ${CMAKE_CURRENT_BINARY_DIR}/gengtkxml.cmake)
+    DEPENDS ${docparser_files} ${source_files} ${CMAKE_CURRENT_BINARY_DIR}/gengtkxml.cmake ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt)
 LIST(APPEND built_moo_sources gtk.xml.stamp)
 
 add_custom_target(apixml ALL DEPENDS moo.xml.stamp gtk.xml.stamp)
