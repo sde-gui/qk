@@ -25,6 +25,7 @@ G_BEGIN_DECLS
 const char *_moo_get_default_encodings (void);
 
 typedef enum {
+    MOO_EDIT_SAVE_FLAGS_NONE = 0,
     MOO_EDIT_SAVE_BACKUP = 1 << 0
 } MooEditSaveFlags;
 
@@ -64,5 +65,13 @@ gboolean         _moo_edit_save_file_copy       (MooEdit        *edit,
 
 
 G_END_DECLS
+
+#ifdef __cplusplus
+
+#include "mooutils/mooutils-cpp.h"
+
+MOO_DEFINE_FLAGS(MooEditSaveFlags)
+
+#endif // __cplusplus
 
 #endif /* MOO_EDIT_FILE_OPS_H */

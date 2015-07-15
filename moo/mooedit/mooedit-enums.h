@@ -75,6 +75,7 @@ typedef enum {
  * @MOO_OPEN_FLAG_CREATE_NEW: if file doesn't exist on disk, create a new document
  **/
 typedef enum {
+    MOO_OPEN_FLAGS_NONE      = 0,
     MOO_OPEN_FLAG_NEW_WINDOW = 1 << 0,
     MOO_OPEN_FLAG_NEW_TAB    = 1 << 1,
     MOO_OPEN_FLAG_RELOAD     = 1 << 2,
@@ -133,5 +134,17 @@ typedef enum {
 } MooTextCursor;
 
 G_END_DECLS
+
+#ifdef __cplusplus
+
+#include "mooutils/mooutils-cpp.h"
+
+MOO_DEFINE_FLAGS(MooEditStatus)
+MOO_DEFINE_FLAGS(MooOpenFlags)
+MOO_DEFINE_FLAGS(MooTextSearchFlags)
+MOO_DEFINE_FLAGS(MooFindFlags)
+MOO_DEFINE_FLAGS(MooDrawWsFlags)
+
+#endif // __cplusplus
 
 #endif /* MOO_EDIT_ENUMS_H */

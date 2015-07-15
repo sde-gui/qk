@@ -23,7 +23,7 @@ LIST(APPEND moo_sources
     mooedit/mootextiter.h
     mooedit/mootextsearch.h
     mooedit/mootextstylescheme.h
-    mooedit/mooeditview.c	
+    mooedit/mooeditview.c
     mooedit/mooeditview-priv.h
     mooedit/mooeditview-impl.h
     mooedit/mooeditview-script.c
@@ -33,7 +33,7 @@ LIST(APPEND moo_sources
     mooedit/mooeditaction-factory.c
     mooedit/mooeditaction-factory.h
     mooedit/mooeditbookmark.c
-    mooedit/mooedit.c	
+    mooedit/mooedit.c
     mooedit/mooeditconfig.c	
     mooedit/mooeditdialogs.c
     mooedit/mooedit-enum-types.c
@@ -54,7 +54,7 @@ LIST(APPEND moo_sources
     mooedit/mooedittab.c	
     mooedit/mooedittab.h	
     mooedit/mooedittab-impl.h
-    mooedit/mooeditwindow.c	
+    mooedit/mooeditwindow.c
     mooedit/mooeditwindow-impl.h
     mooedit/mooeditfileinfo-impl.h
     mooedit/mooeditfileinfo.c
@@ -89,7 +89,7 @@ LIST(APPEND moo_sources
     mooedit/mootextview.c	
     mooedit/mootextview-input.c
     mooedit/mootextview-private.h
-    mooedit/mooeditor.c	
+    mooedit/mooeditor.cpp
     mooedit/mooeditor-impl.h
     mooedit/mooeditor-private.h
     mooedit/mooeditor-tests.c
