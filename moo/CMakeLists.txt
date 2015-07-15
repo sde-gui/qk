@@ -97,6 +97,17 @@ target_link_libraries(medit
     ${MEDIT_LIBS}
 )
 
+install(TARGETS medit RUNTIME DESTINATION bin)
+
+if(MOO_WIN32_BUILD)
+    install(DIRECTORY ${MOO_GTK_DIST_DIR}/bin DESTINATION ${CMAKE_INSTALL_PREFIX})
+    install(DIRECTORY ${MOO_GTK_DIST_DIR}/etc DESTINATION ${CMAKE_INSTALL_PREFIX})
+    install(DIRECTORY ${MOO_GTK_DIST_DIR}/lib DESTINATION ${CMAKE_INSTALL_PREFIX})
+    install(DIRECTORY ${MOO_GTK_DIST_DIR}/share DESTINATION ${CMAKE_INSTALL_PREFIX})
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/plat/win32/gtk-win/extra/medit-data/bin DESTINATION ${CMAKE_INSTALL_PREFIX})
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/plat/win32/gtk-win/extra/medit-data/etc DESTINATION ${CMAKE_INSTALL_PREFIX})
+endif()
+
 #zzz
 # if MOO_OS_WIN32
 # CLEANFILES += medit-app/medit.rc medit-app/medit.res

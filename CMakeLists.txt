@@ -72,11 +72,11 @@ SET(MOO_PYTHON_PLUGIN_DIR "${MOO_DATA_DIR}/plugins")
 SET(MOO_PYTHON_LIB_DIR "${MOO_DATA_DIR}/python")
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-    list(APPEND CMAKE_CXX_FLAGS "-std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
 if(CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_CONFIGURATION_TYPES Debug Release)
+    set(CMAKE_CONFIGURATION_TYPES Debug RelWithDebInfo)
     set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING
         "Reset the configurations to what we need" FORCE)
 endif()
@@ -84,9 +84,15 @@ endif()
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-set(MOO_USE_PKGCONFIG true CACHE BOOL "Use pkg-config")
+if(WIN32)
+    SET(MOO_OS_WIN32 TRUE)
+else()
+    SET(MOO_OS_UNIX TRUE)
+endif()
 
-if(MOO_USE_PKGCONFIG)
+set(MOO_WIN32_BUILD ${MOO_OS_WIN32} CACHE BOOL "Create a win32 build from hexchat gtk build and friends")
+
+if(NOT MOO_WIN32_BUILD)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(GTK REQUIRED gtk+-2.0)
     pkg_check_modules(GMODULE REQUIRED gmodule-2.0)
@@ -111,6 +117,9 @@ if(MOO_USE_PKGCONFIG)
     pkg_check_modules(LIBXML2 REQUIRED libxml-2.0)
 else()
     set(MOO_GTK_DIR "" CACHE PATH "Gtk root dir")
+    set(MOO_GTK_DIST_DIR "" CACHE PATH "Gtk binary dir")
+    set(MOO_MSYS_BIN_DIR "" CACHE PATH "MSYS bin dir")
+
     include_directories(SYSTEM "${MOO_GTK_DIR}/include")
     include_directories(SYSTEM "${MOO_GTK_DIR}/include/glib-2.0")
     include_directories(SYSTEM "${MOO_GTK_DIR}/lib/glib-2.0/include")
@@ -123,6 +132,13 @@ else()
     SET(GTK_LIBRARY_DIRS "${MOO_GTK_DIR}/lib")
     SET(GTK_LIBRARIES gtk-win32-2.0 atk-1.0 gdk-win32-2.0 gdk_pixbuf-2.0 pango-1.0 pangocairo-1.0 cairo gio-2.0 gobject-2.0 gmodule-2.0 glib-2.0 libintl)
     SET(LIBXML2_LIBRARIES "libxml2")
+
+    set(ENV{PATH} "ENV{PATH};${MOO_GTK_DIR}/bin;${MOO_MSYS_BIN_DIR}")
+
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP /Zo")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /Zo")
+    string(REPLACE "/Ob1" "/Ob2" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+    string(REPLACE "/Ob1" "/Ob2" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 
 find_program(GLIB_GENMARSHAL glib-genmarshal)
@@ -135,6 +151,8 @@ SET(GETTEXT_PACKAGE "${MOO_PACKAGE_NAME}")
 SET(GETTEXT_PACKAGE_GSV "${MOO_PACKAGE_NAME}-gsv")
 # MOO_INTL
 
+set(PythonInterp_FIND_VERSION TRUE)
+set(PythonInterp_FIND_VERSION_MAJOR 2)
 find_package(PythonInterp REQUIRED)
 SET(MOO_PYTHON "${PYTHON_EXECUTABLE}")
 

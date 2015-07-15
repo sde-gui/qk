@@ -46,7 +46,7 @@ file_equals (MooFile    *file,
 static gboolean
 file_has_prefix (MooFile    *file,
                  const char *str,
-                 guint       len)
+                 gsize       len)
 {
     return !strncmp (str, _moo_file_display_name (file), len);
 }
@@ -82,7 +82,7 @@ case_file_equals (MooFile    *file,
 static gboolean
 case_file_has_prefix (MooFile    *file,
                       const char *str,
-                      guint       len)
+                      gsize       len)
 {
     char *temp = case_normalize (str, len);
     gboolean ret = g_str_has_prefix (_moo_file_case_display_name (file), temp);
@@ -182,7 +182,7 @@ model_find_max_prefix (GtkTreeModel   *model,
     {
         MooFile *file = NULL;
         const char *name;
-        guint i;
+        gsize i;
 
         if (!model_find_next_match (model, &iter, text, text_len, funcs, FALSE))
             goto out;
