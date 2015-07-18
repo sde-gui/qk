@@ -1,4 +1,4 @@
-LIST(APPEND moo_sources
+SET(moofileview_sources
     moofileview/moobookmarkmgr.c
     moofileview/moobookmarkmgr.h
     moofileview/moobookmarkview.c

@@ -1,4 +1,4 @@
-LIST(APPEND moo_sources
+SET(moolua_sources
     moolua/medit-lua.h
     moolua/medit-lua.cpp
     moolua/mooluaplugin.cpp
@@ -6,9 +6,7 @@ LIST(APPEND moo_sources
     moolua/moolua-tests.cpp
     moolua/moo-lua-api-util.h
     moolua/moo-lua-api-util.cpp
-    moolua/moo-lua-api.cpp
     moolua/moo-lua-api.h
-    moolua/gtk-lua-api.cpp
     moolua/gtk-lua-api.h
 )
 
@@ -33,7 +31,7 @@ add_custom_command(OUTPUT moolua/moo-lua-api.cpp
 		${CMAKE_SOURCE_DIR}/api/moo.xml
     MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/api/moo.xml
     DEPENDS ${genlua_files} ${CMAKE_SOURCE_DIR}/api/gtk.xml)
-list(APPEND built_moo_sources moolua/moo-lua-api.cpp)
+list(APPEND built_moolua_sources moolua/moo-lua-api.cpp)
 
 add_custom_command(OUTPUT moolua/gtk-lua-api.cpp
     COMMAND ${MOO_PYTHON} ${CMAKE_SOURCE_DIR}/api/genlua.py
@@ -42,4 +40,4 @@ add_custom_command(OUTPUT moolua/gtk-lua-api.cpp
 		${CMAKE_SOURCE_DIR}/api/gtk.xml
     MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/api/gtk.xml
     DEPENDS ${genlua_files})
-list(APPEND built_moo_sources moolua/gtk-lua-api.cpp)
+list(APPEND built_moolua_sources moolua/gtk-lua-api.cpp)

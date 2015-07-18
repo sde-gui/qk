@@ -1,4 +1,4 @@
-LIST(APPEND moo_sources
+SET(gtksourceview_sources
     gtksourceview/gtksourcecontextengine.c
     gtksourceview/gtksourcecontextengine.h
     gtksourceview/gtksourceengine.c

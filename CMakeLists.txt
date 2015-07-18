@@ -135,10 +135,13 @@ else()
 
     set(ENV{PATH} "ENV{PATH};${MOO_GTK_DIR}/bin;${MOO_MSYS_BIN_DIR}")
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP /Zo")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /Zo")
-    string(REPLACE "/Ob1" "/Ob2" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-    string(REPLACE "/Ob1" "/Ob2" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    foreach(var CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
+        set(${var} "${${var}} /MP /Zo")
+        string(REPLACE "/Ob1" "/Ob2" ${var}_RELEASE "${${var}_RELEASE}")
+        string(REPLACE "/Ob1" "/Ob2" ${var}_RELWITHDEBINFO "${${var}_RELWITHDEBINFO}")
+        string(REPLACE "/MDd" "/MD" ${var}_DEBUG "${${var}_DEBUG}")
+        string(REPLACE "/D_DEBUG" "" ${var}_DEBUG "${${var}_DEBUG}")
+    endforeach()
 endif()
 
 find_program(GLIB_GENMARSHAL glib-genmarshal)

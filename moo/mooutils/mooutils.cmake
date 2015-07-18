@@ -5,7 +5,7 @@ SET(moo_utils_enum_headers
 	mooutils/moowindow.h
 )
 
-LIST(APPEND moo_sources
+SET(mooutils_sources
 	${moo_utils_enum_headers}
 	mooutils/mooarray.h
 	mooutils/mooutils-thread.c
@@ -145,7 +145,7 @@ file(RENAME marshals.c.tmp marshals.c)
 add_custom_command(OUTPUT marshals.c
     COMMAND ${CMAKE_COMMAND} -P genmarshals_c.cmake
     MAIN_DEPENDENCY marshals.list)
-LIST(APPEND built_moo_sources marshals.c)
+LIST(APPEND built_mooutils_sources marshals.c)
 
 
 # if MOO_DEV_MODE
@@ -176,13 +176,14 @@ SET(mooutils_unittest_sources
     mooutils/moo-test-utils.h
     mooutils/moo-test-macros.h
 )
-# EXTRA_DIST += $(mooutils_win32_sources) $(mooutils_unittest_sources)
+
+LIST(APPEND mooutils_extra_dist ${mooutils_win32_sources} ${mooutils_unittest_sources})
 
 if(WIN32)
-    LIST(APPEND moo_sources ${mooutils_win32_sources})
+    LIST(APPEND mooutils_sources ${mooutils_win32_sources})
 endif()
 
-LIST(APPEND moo_sources ${mooutils_unittest_sources})
+LIST(APPEND mooutils_sources ${mooutils_unittest_sources})
 
 foreach(input_file
     mooutils/glade/mooaccelprefs.glade
@@ -219,7 +220,7 @@ file(RENAME moo-pixbufs.h.tmp moo-pixbufs.h)
 add_custom_command(OUTPUT moo-pixbufs.h
     COMMAND ${CMAKE_COMMAND} -P genpixbufs.cmake
     DEPENDS )
-LIST(APPEND built_moo_sources moo-pixbufs.h)
+LIST(APPEND built_mooutils_sources moo-pixbufs.h)
 
 # built_moo_sources += stock-moo.h moofileicon-symlink.h
 # EXTRA_DIST += $(PIXMAPS)

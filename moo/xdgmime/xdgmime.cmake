@@ -1,4 +1,4 @@
-LIST(APPEND moo_sources
+SET(xdgmime_sources
     xdgmime/xdgmimealias.c
     xdgmime/xdgmimealias.h
     xdgmime/xdgmime.c

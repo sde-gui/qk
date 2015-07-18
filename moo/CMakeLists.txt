@@ -64,15 +64,39 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/moolua/moolua.cmake)
 # include moopython/Makefile.incl
 include(${CMAKE_CURRENT_SOURCE_DIR}/plugins/plugins.cmake)
 
-SET(MEDIT_SOURCES
+set(medit_app_sources
     medit-app/mem-debug.h
     medit-app/run-tests.h
     medit-app/parse.h
     medit-app/main.c
+)
+
+SET(MEDIT_SOURCES
     ${moo_sources}
     ${built_moo_sources}
-    ${plugins_sources}
 )
+
+macro(ADD_MODULE name)
+    string(REPLACE "-" "_" _escaped_name "${name}")
+    source_group(${name} FILES ${${_escaped_name}_sources} ${built_${_escaped_name}_sources} ${${_escaped_name}_extra_files})
+    #source_group(${name} FILES ${${_escaped_name}_sources} ${${_escaped_name}_extra_files})
+    #source_group(${name}\\generated FILES ${built_${_escaped_name}_sources})
+    LIST(APPEND MEDIT_SOURCES ${${_escaped_name}_sources} ${built_${_escaped_name}_sources})
+    LIST(APPEND MEDIT_EXTRA_DIST ${${_escaped_name}_extra_dist} ${${_escaped_name}_extra_files})
+    message(STATUS "built_${_escaped_name}_sources: ${built_${_escaped_name}_sources}")
+endmacro(ADD_MODULE)
+
+ADD_MODULE(xdgmime)
+ADD_MODULE(eggsmclient)
+ADD_MODULE(gtksourceview)
+ADD_MODULE(mooutils)
+ADD_MODULE(moofileview)
+ADD_MODULE(mooedit)
+ADD_MODULE(mooapp)
+ADD_MODULE(plugins)
+ADD_MODULE(moolua)
+#ADD_MODULE(moopython)
+ADD_MODULE(medit-app)
 
 include_directories(${PROJECT_SOURCE_DIR}/moo/mooutils/moowin32/ms)
 

@@ -1,4 +1,4 @@
-LIST(APPEND moo_sources 
+SET(mooapp_sources 
     mooapp/mooappabout.c
     mooapp/mooappabout.h
     mooapp/mooapp.c
@@ -24,4 +24,4 @@ add_custom_command(OUTPUT mooapp-credits.h
     COMMAND ${MOO_PYTHON} ${CMAKE_SOURCE_DIR}/tools/xml2h.py ${CMAKE_SOURCE_DIR}/THANKS mooapp-credits.h MOO_APP_CREDITS
     MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/THANKS
     DEPENDS ${CMAKE_SOURCE_DIR}/tools/xml2h.py)
-list(APPEND built_moo_sources mooapp-credits.h)
+list(APPEND built_mooapp_sources mooapp-credits.h)

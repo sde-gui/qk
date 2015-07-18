@@ -1,6 +1,6 @@
 LIST(APPEND moo_edit_enum_headers mooedit/mooedit-enums.h)
 
-LIST(APPEND moo_sources
+SET(mooedit_sources
     ${moo_edit_enum_headers}
     mooedit/mooeditor.h
     mooedit/mootextview.h
@@ -97,7 +97,7 @@ LIST(APPEND moo_sources
     mooedit/mooeditor-tests.h
 )
 
-# LIST(APPEND built_moo_sources mooedit/mooedit-enum-types.h.stamp mooedit/mooedit-enum-types.c.stamp)
+# SET(built_mooedit_sources mooedit/mooedit-enum-types.h.stamp mooedit/mooedit-enum-types.c.stamp)
 
 # add_custom_command(OUTPUT mooedit/mooedit-enum-types.h.stamp
 #     COMMAND ${MOO_PYTHON} ${CMAKE_SOURCE_DIR}/tools/xml2h.py ${CMAKE_CURRENT_SOURCE_DIR}/${input} zzz_ui_xml -o ${_ui_output}
