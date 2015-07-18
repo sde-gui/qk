@@ -1,4 +1,5 @@
 SET(plugins_sources
+    plugins/plugins.cmake
     plugins/moofileselector-prefs.c
     plugins/moofileselector.c
     plugins/moofileselector.h

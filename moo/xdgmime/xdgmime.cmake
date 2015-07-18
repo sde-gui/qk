@@ -1,4 +1,5 @@
 SET(xdgmime_sources
+    xdgmime/xdgmime.cmake
     xdgmime/xdgmimealias.c
     xdgmime/xdgmimealias.h
     xdgmime/xdgmime.c

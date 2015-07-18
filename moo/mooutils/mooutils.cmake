@@ -6,6 +6,7 @@ SET(moo_utils_enum_headers
 )
 
 SET(mooutils_sources
+	mooutils/mooutils.cmake
 	${moo_utils_enum_headers}
 	mooutils/mooarray.h
 	mooutils/mooutils-thread.c

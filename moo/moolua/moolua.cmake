@@ -1,4 +1,5 @@
 SET(moolua_sources
+    moolua/moolua.cmake
     moolua/medit-lua.h
     moolua/medit-lua.cpp
     moolua/mooluaplugin.cpp
@@ -8,6 +9,12 @@ SET(moolua_sources
     moolua/moo-lua-api-util.cpp
     moolua/moo-lua-api.h
     moolua/gtk-lua-api.h
+)
+
+SET(moolua_extra_files
+    moolua/lua-default-init.lua
+    moolua/lua-module-init.lua
+    moolua/lua-plugin-init.lua
 )
 
 SET(genlua_files

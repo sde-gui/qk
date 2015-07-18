@@ -1,4 +1,5 @@
 SET(mooapp_sources 
+    mooapp/mooapp.cmake
     mooapp/mooappabout.c
     mooapp/mooappabout.h
     mooapp/mooapp.c

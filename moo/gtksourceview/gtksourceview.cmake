@@ -1,4 +1,5 @@
 SET(gtksourceview_sources
+    gtksourceview/gtksourceview.cmake
     gtksourceview/gtksourcecontextengine.c
     gtksourceview/gtksourcecontextengine.h
     gtksourceview/gtksourceengine.c

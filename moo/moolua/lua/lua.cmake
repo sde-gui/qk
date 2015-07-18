@@ -9,6 +9,7 @@ LIST(APPEND moo_libadd -ldl)
 endif(MOO_OS_DARWIN)
 
 LIST(APPEND moolua_sources
+    moolua/lua/lua.cmake
     moolua/lua/lfs.h
     moolua/lua/lfs.cpp
     moolua/lua/moolua.h

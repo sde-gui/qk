@@ -1,4 +1,5 @@
 SET(moofileview_sources
+    moofileview/moofileview.cmake
     moofileview/moobookmarkmgr.c
     moofileview/moobookmarkmgr.h
     moofileview/moobookmarkview.c

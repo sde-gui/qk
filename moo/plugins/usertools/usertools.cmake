@@ -26,6 +26,8 @@ foreach(input_file
     ADD_GXML(${input_file})
 endforeach(input_file)
 
+LIST(APPEND plugins_extra_files plugins/usertools/lua-tool-setup.lua)
+
 XML2H(plugins/usertools/lua-tool-setup.lua plugins/usertools/lua-tool-setup.h LUA_TOOL_SETUP_LUA)
 
 # EXTRA_DIST +=						\

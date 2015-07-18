@@ -83,7 +83,6 @@ macro(ADD_MODULE name)
     #source_group(${name}\\generated FILES ${built_${_escaped_name}_sources})
     LIST(APPEND MEDIT_SOURCES ${${_escaped_name}_sources} ${built_${_escaped_name}_sources})
     LIST(APPEND MEDIT_EXTRA_DIST ${${_escaped_name}_extra_dist} ${${_escaped_name}_extra_files})
-    message(STATUS "built_${_escaped_name}_sources: ${built_${_escaped_name}_sources}")
 endmacro(ADD_MODULE)
 
 ADD_MODULE(xdgmime)
@@ -106,6 +105,11 @@ include_directories(
     ${LIBXML2_INCLUDE_DIRS}
 )
 link_directories(${GTK_LIBRARY_DIRS} ${GMODULE_LIBRARY_DIRS})
+
+source_group(misc REGULAR_EXPRESSION .*)
+source_group("generated\\sources" REGULAR_EXPRESSION ".*\\.c(pp)?$")
+source_group("generated\\headers" REGULAR_EXPRESSION ".*\\.h$")
+source_group("misc\\glade" REGULAR_EXPRESSION ".*\\.glade$")
 
 add_executable(medit WIN32
     ${MEDIT_SOURCES}

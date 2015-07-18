@@ -1,6 +1,7 @@
 LIST(APPEND moo_edit_enum_headers mooedit/mooedit-enums.h)
 
 SET(mooedit_sources
+    mooedit/mooedit.cmake
     ${moo_edit_enum_headers}
     mooedit/mooeditor.h
     mooedit/mootextview.h

@@ -1,4 +1,5 @@
 SET(eggsmclient_sources
+    eggsmclient/eggsmclient.cmake
     eggsmclient/eggsmclient.c
     eggsmclient/eggsmclient.h
     eggsmclient/eggsmclient-mangle.h
