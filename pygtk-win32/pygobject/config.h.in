@@ -1,0 +1,86 @@
+#ifndef INCLUDED_CONFIG_H
+#define INCLUDED_CONFIG_H
+
+/* Use introspection information */
+#undef ENABLE_INTROSPECTION
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
+/* Have libffi include files */
+#undef HAVE_FFI_H
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#define HAVE_INTTYPES_H 1
+
+/* Define to 1 if you have the <memory.h> header file. */
+#define HAVE_MEMORY_H 1
+
+/* Define to 1 if PySignal_SetWakeupFd is available */
+#undef HAVE_PYSIGNAL_SETWAKEUPFD
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#define HAVE_STDINT_H 1
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#define HAVE_STDLIB_H 1
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#define HAVE_STRING_H 1
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#define HAVE_SYS_STAT_H 1
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#define HAVE_SYS_TYPES_H 1
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
+
+/* Name of package */
+#define PACKAGE "pygobject"
+
+/* Define to the address where bug reports for this package should be sent. */
+#define PACKAGE_BUGREPORT "http://bugzilla.gnome.org/enter_bug.cgi?product=pygobject"
+
+/* Define to the full name of this package. */
+#define PACKAGE_NAME "pygobject"
+
+/* Define to the full name and version of this package. */
+#define PACKAGE_STRING "pygobject-@pygobject_version@"
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#define PACKAGE_VERSION "@pygobject_version@"
+
+/* pygobject major version */
+#define PYGOBJECT_MAJOR_VERSION @pygobject_major_version@
+
+/* pygobject micro version */
+#define PYGOBJECT_MICRO_VERSION @pygobject_micro_version@
+
+/* pygobject minor version */
+#define PYGOBJECT_MINOR_VERSION @pygobject_minor_version@
+
+/* Define to 1 if you have the ANSI C header files. */
+#define STDC_HEADERS 1
+
+/* Version number of package */
+#define VERSION PACKAGE_VERSION
+
+#endif // INCLUDED_CONFIG_H

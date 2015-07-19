@@ -130,7 +130,7 @@ else()
     include_directories(SYSTEM "${MOO_GTK_DIR}/include/atk-1.0")
 
     SET(GTK_LIBRARY_DIRS "${MOO_GTK_DIR}/lib")
-    SET(GTK_LIBRARIES gtk-win32-2.0 atk-1.0 gdk-win32-2.0 gdk_pixbuf-2.0 pango-1.0 pangocairo-1.0 cairo gio-2.0 gobject-2.0 gmodule-2.0 glib-2.0 libintl)
+    SET(GTK_LIBRARIES gtk-win32-2.0 atk-1.0 gdk-win32-2.0 gdk_pixbuf-2.0 pango-1.0 pangocairo-1.0 cairo gio-2.0 gobject-2.0 gmodule-2.0 gthread-2.0 glib-2.0 libintl)
     SET(LIBXML2_LIBRARIES "libxml2")
 
     set(ENV{PATH} "ENV{PATH};${MOO_GTK_DIR}/bin;${MOO_MSYS_BIN_DIR}")
@@ -172,4 +172,10 @@ endif(WIN32)
 
 # zzz SUBDIRS = po po-gsv api doc moo
 add_subdirectory(api)
+
+if(MOO_WIN32_BUILD)
+    include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/moo/mooutils/moowin32/ms")
+    add_subdirectory(pygtk-win32)
+endif()
+
 add_subdirectory(moo)
