@@ -16,6 +16,10 @@ set(PYCAIRO_SRC_DIR py2cairo-1.10.0)
 
 set(MEDIT_PY_LIBDIR bin/lib/site-packages)
 
+foreach(var CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
+    set(${var} "${${var}} /wd4018 /wd4090 /wd4101 /wd4244 /wd4996")
+endforeach()
+
 macro(DEFS2C)
     set(_srcdir ${ARGV0})
     set(_prefix ${ARGV1})

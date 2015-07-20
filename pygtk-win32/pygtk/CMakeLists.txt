@@ -20,6 +20,17 @@ include_directories(
     ../${PYCAIRO_SRC_DIR}/src
 )
 
+set(PYGTK_CODEGEN_DEFINES
+    -DHAVE_PYCAIRO
+    -DHAVE_GTK_2_12
+    -DHAVE_GTK_2_14
+    -DHAVE_GTK_2_16
+    -DHAVE_GTK_2_18
+    -DHAVE_GTK_2_20
+    -DHAVE_GTK_2_22
+    -DHAVE_GTK_2_24
+)
+
 #======================================================================================
 
 add_library(atk MODULE
@@ -42,7 +53,8 @@ DEFS2C(${PYGTK_SRC_DIR} atk atk.c atk.defs
     --register pango-types.defs
     --register atk-types.defs
     --register gtk/gtk-base-types.defs
-    --override atk.override)
+    ${PYGTK_CODEGEN_DEFINES}
+    --override ${CMAKE_CURRENT_SOURCE_DIR}/${PYGTK_SRC_DIR}/atk.override)
 
 #======================================================================================
 
@@ -66,7 +78,8 @@ DEFS2C(${PYGTK_SRC_DIR} pango pango.c pango.defs
     --register pango-types.defs
     --register atk-types.defs
     --register gtk/gtk-base-types.defs
-    --override pango.override)
+    ${PYGTK_CODEGEN_DEFINES}
+    --override ${CMAKE_CURRENT_SOURCE_DIR}/${PYGTK_SRC_DIR}/pango.override)
 
 #======================================================================================
 
@@ -90,7 +103,8 @@ DEFS2C(${PYGTK_SRC_DIR} pangocairo pangocairo.c pangocairo.defs
     --register pango-types.defs
     --register atk-types.defs
     --register gtk/gtk-base-types.defs
-    --override pangocairo.override)
+    ${PYGTK_CODEGEN_DEFINES}
+    --override ${CMAKE_CURRENT_SOURCE_DIR}/${PYGTK_SRC_DIR}/pangocairo.override)
 
 #======================================================================================
 
@@ -159,7 +173,8 @@ DEFS2C(${PYGTK_SRC_DIR}/gtk gtk gtk.c gtk.defs
     --register ../atk-types.defs
     --register gdk-types.defs
     --register gtk-types.defs
-    --override gtk.override
+    ${PYGTK_CODEGEN_DEFINES}
+    --override ${CMAKE_CURRENT_SOURCE_DIR}/${PYGTK_SRC_DIR}/gtk/gtk.override
 )
 
 set(DEFS2C_ADDITIONAL_DEFS_FILES gdk-types.defs)
@@ -169,7 +184,8 @@ DEFS2C(${PYGTK_SRC_DIR}/gtk gdk gdk.c gdk.defs
     --register ../atk-types.defs
     --register gdk-types.defs
     --register gtk-types.defs
-    --override gdk.override
+    ${PYGTK_CODEGEN_DEFINES}
+    --override ${CMAKE_CURRENT_SOURCE_DIR}/${PYGTK_SRC_DIR}/gtk/gdk.override
 )
 
 add_library(_gtk MODULE
