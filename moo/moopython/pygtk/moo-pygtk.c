@@ -91,19 +91,35 @@ _moo_module_init (void)
                                py_object_from_moo_py_object,
                                py_object_to_moo_py_object);
 
+    if (PyErr_Occurred ())
+        return FALSE;
+
     _moo_module = Py_InitModule3 ("_moo", (PyMethodDef*) _moo_functions, (char*) _moo_module_doc);
 
     if (!_moo_module)
         return FALSE;
 
     PyModule_AddObject (_moo_module, "version", moo_version());
+    if (PyErr_Occurred ())
+        return FALSE;
+
     PyModule_AddObject (_moo_module, "detailed_version", moo_detailed_version());
+    if (PyErr_Occurred ())
+        return FALSE;
+
     init_moo_utils (_moo_module);
+    if (PyErr_Occurred ())
+        return FALSE;
 
     _moo_add_constants (_moo_module, "MOO_");
-    _moo_register_classes (PyModule_GetDict (_moo_module));
+    if (PyErr_Occurred ())
+        return FALSE;
 
-    return !PyErr_Occurred ();
+    _moo_register_classes (PyModule_GetDict (_moo_module));
+    if (PyErr_Occurred ())
+        return FALSE;
+
+    return TRUE;
 }
 
 static void

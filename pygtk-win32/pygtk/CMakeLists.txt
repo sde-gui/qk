@@ -46,6 +46,7 @@ target_link_libraries(atk
 )
 
 SET_TARGET_PROPERTIES(atk PROPERTIES SUFFIX ".pyd")
+SET_TARGET_PROPERTIES(atk PROPERTIES LINK_FLAGS /EXPORT:initatk)
 
 install(TARGETS atk LIBRARY DESTINATION ${PYGTK_DEST_DIR})
 
@@ -55,6 +56,8 @@ DEFS2C(${PYGTK_SRC_DIR} atk atk.c atk.defs
     --register gtk/gtk-base-types.defs
     ${PYGTK_CODEGEN_DEFINES}
     --override ${CMAKE_CURRENT_SOURCE_DIR}/${PYGTK_SRC_DIR}/atk.override)
+
+COPYDEFS(atk ${CMAKE_CURRENT_SOURCE_DIR}/${PYGTK_SRC_DIR} atk.defs atk-types.defs)
 
 #======================================================================================
 
@@ -71,6 +74,7 @@ target_link_libraries(pango
 )
 
 SET_TARGET_PROPERTIES(pango PROPERTIES SUFFIX ".pyd")
+SET_TARGET_PROPERTIES(pango PROPERTIES LINK_FLAGS /EXPORT:initpango)
 
 install(TARGETS pango LIBRARY DESTINATION ${PYGTK_DEST_DIR})
 
@@ -80,6 +84,8 @@ DEFS2C(${PYGTK_SRC_DIR} pango pango.c pango.defs
     --register gtk/gtk-base-types.defs
     ${PYGTK_CODEGEN_DEFINES}
     --override ${CMAKE_CURRENT_SOURCE_DIR}/${PYGTK_SRC_DIR}/pango.override)
+
+COPYDEFS(pango ${CMAKE_CURRENT_SOURCE_DIR}/${PYGTK_SRC_DIR} pango.defs pango-types.defs)
 
 #======================================================================================
 
@@ -96,6 +102,7 @@ target_link_libraries(pangocairo
 )
 
 SET_TARGET_PROPERTIES(pangocairo PROPERTIES SUFFIX ".pyd")
+SET_TARGET_PROPERTIES(pangocairo PROPERTIES LINK_FLAGS /EXPORT:initpangocairo)
 
 install(TARGETS pangocairo LIBRARY DESTINATION ${PYGTK_DEST_DIR})
 
@@ -105,6 +112,8 @@ DEFS2C(${PYGTK_SRC_DIR} pangocairo pangocairo.c pangocairo.defs
     --register gtk/gtk-base-types.defs
     ${PYGTK_CODEGEN_DEFINES}
     --override ${CMAKE_CURRENT_SOURCE_DIR}/${PYGTK_SRC_DIR}/pangocairo.override)
+
+COPYDEFS(pangocairo ${CMAKE_CURRENT_SOURCE_DIR}/${PYGTK_SRC_DIR} pangocairo.defs)
 
 #======================================================================================
 
@@ -213,6 +222,7 @@ target_link_libraries(_gtk
 )
 
 SET_TARGET_PROPERTIES(_gtk PROPERTIES SUFFIX ".pyd")
+SET_TARGET_PROPERTIES(_gtk PROPERTIES LINK_FLAGS /EXPORT:init_gtk)
 
 install(TARGETS _gtk LIBRARY DESTINATION ${PYGTK_DEST_DIR}/gtk)
 install(FILES
@@ -227,3 +237,12 @@ install(FILES
     pygtk.pth
     DESTINATION ${MEDIT_PY_LIBDIR}
 )
+
+COPYDEFS(_gtk ${CMAKE_CURRENT_SOURCE_DIR}/${PYGTK_SRC_DIR}/gtk
+    gtk.defs ${GTK_DEFS}
+    gdk.defs ${GDK_DEFS}
+    gtk-types.defs ${GTK_TYPES_DEFS}
+    gdk-types.defs ${GDK_TYPES_DEFS}
+)
+
+COPYHEADER(_gtk pygtk ${CMAKE_CURRENT_SOURCE_DIR}/${PYGTK_SRC_DIR}/gtk/pygtk.h)

@@ -55,6 +55,40 @@ macro(DEFS2C)
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${_srcdir})
 endmacro(DEFS2C)
 
+macro(COPYDEFS)
+    set(_target ${ARGV0})
+    set(_srcdir ${ARGV1})
+    set(_additional_args "${ARGV}")
+    list(REMOVE_AT _additional_args 0 1)
+
+    set(_commands)
+    foreach(_a ${_additional_args})
+        list(APPEND _commands COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_srcdir}/${_a} ${PYGTK_DEFS_DIR})
+    endforeach()
+
+    add_custom_command(TARGET ${_target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PYGTK_DEFS_DIR}
+        ${_commands}
+    )
+endmacro()
+
+macro(COPYHEADER)
+    set(_target ${ARGV0})
+    set(_subdir ${ARGV1})
+    set(_additional_args "${ARGV}")
+    list(REMOVE_AT _additional_args 0 1)
+
+    set(_commands)
+    foreach(_a ${_additional_args})
+        list(APPEND _commands COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_a} ${PYGTK_INCLUDE_DIR}/${_subdir})
+    endforeach()
+
+    add_custom_command(TARGET ${_target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${PYGTK_INCLUDE_DIR}/${_subdir}
+        ${_commands}
+    )
+endmacro()
+
 add_subdirectory(pycairo)
 add_subdirectory(pygobject)
 add_subdirectory(pygtk)

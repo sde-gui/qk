@@ -49,6 +49,7 @@ target_link_libraries(_gobject
 
 SET_TARGET_PROPERTIES(_gobject PROPERTIES SUFFIX ".pyd")
 SET_TARGET_PROPERTIES(_gobject PROPERTIES COMPILE_FLAGS -DPY_SSIZE_T_CLEAN)
+SET_TARGET_PROPERTIES(_gobject PROPERTIES LINK_FLAGS /EXPORT:init_gobject)
 
 set(GOBJECT_DEST_DIR ${MEDIT_PY_LIBDIR}/gobject)
 
@@ -58,6 +59,8 @@ install(FILES
     ../${PYGOBJECT_SRC_DIR}/gobject/constants.py
     ../${PYGOBJECT_SRC_DIR}/gobject/propertyhelper.py
     DESTINATION ${GOBJECT_DEST_DIR})
+
+COPYHEADER(_gobject "" ${CMAKE_CURRENT_SOURCE_DIR}/../${PYGOBJECT_SRC_DIR}/gobject/pygobject.h)
 
 #======================================================================================
 
@@ -87,7 +90,8 @@ target_link_libraries(_glib
 )
 
 SET_TARGET_PROPERTIES(_glib PROPERTIES SUFFIX ".pyd")
-SET_TARGET_PROPERTIES(_gobject PROPERTIES COMPILE_FLAGS -DPY_SSIZE_T_CLEAN)
+SET_TARGET_PROPERTIES(_glib PROPERTIES COMPILE_FLAGS -DPY_SSIZE_T_CLEAN)
+SET_TARGET_PROPERTIES(_glib PROPERTIES LINK_FLAGS /EXPORT:init_glib)
 
 set(GLIB_DEST_DIR ${MEDIT_PY_LIBDIR}/glib)
 
@@ -118,6 +122,7 @@ target_link_libraries(_gio
 )
 
 SET_TARGET_PROPERTIES(_gio PROPERTIES SUFFIX ".pyd")
+SET_TARGET_PROPERTIES(_gio PROPERTIES LINK_FLAGS /EXPORT:init_gio)
 
 set(GLIB_DEST_DIR ${MEDIT_PY_LIBDIR}/gtk-2.0/gio)
 
@@ -125,5 +130,7 @@ install(TARGETS _gio LIBRARY DESTINATION ${GLIB_DEST_DIR})
 install(FILES
     ../${PYGOBJECT_SRC_DIR}/gio/__init__.py
     DESTINATION ${GLIB_DEST_DIR})
+
+COPYDEFS(_gio ${CMAKE_CURRENT_SOURCE_DIR}/../${PYGOBJECT_SRC_DIR}/gio gio.defs gio-types.defs)
 
 #======================================================================================

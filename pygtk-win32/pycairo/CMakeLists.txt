@@ -21,6 +21,7 @@ target_link_libraries(_cairo
 )
 
 SET_TARGET_PROPERTIES(_cairo PROPERTIES SUFFIX ".pyd")
+SET_TARGET_PROPERTIES(_cairo PROPERTIES LINK_FLAGS /EXPORT:init_cairo)
 
 install(TARGETS _cairo LIBRARY DESTINATION ${MEDIT_PY_LIBDIR}/cairo)
 install(FILES

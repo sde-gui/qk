@@ -53,16 +53,18 @@ file(MAKE_DIRECTORY
     ${CMAKE_CURRENT_BINARY_DIR}/plugins/usertools
 )
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/xdgmime/xdgmime.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/mooutils/mooutils.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/mooedit/mooedit.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/moofileview/moofileview.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/gtksourceview/gtksourceview.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/eggsmclient/eggsmclient.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/mooapp/mooapp.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/moolua/moolua.cmake)
-# include moopython/Makefile.incl
-include(${CMAKE_CURRENT_SOURCE_DIR}/plugins/plugins.cmake)
+include(xdgmime/xdgmime.cmake)
+include(mooutils/mooutils.cmake)
+include(mooedit/mooedit.cmake)
+include(moofileview/moofileview.cmake)
+include(gtksourceview/gtksourceview.cmake)
+include(eggsmclient/eggsmclient.cmake)
+include(mooapp/mooapp.cmake)
+include(moolua/moolua.cmake)
+if(MOO_ENABLE_PYTHON)
+include(moopython/moopython.cmake)
+endif()
+include(plugins/plugins.cmake)
 
 set(medit_app_sources
     medit-app/mem-debug.h
@@ -94,7 +96,9 @@ ADD_MODULE(mooedit)
 ADD_MODULE(mooapp)
 ADD_MODULE(plugins)
 ADD_MODULE(moolua)
-#ADD_MODULE(moopython)
+if(MOO_ENABLE_PYTHON)
+ADD_MODULE(moopython)
+endif()
 ADD_MODULE(medit-app)
 
 include_directories(${PROJECT_SOURCE_DIR}/moo/mooutils/moowin32/ms)
@@ -121,6 +125,7 @@ target_link_libraries(medit
     ${LIBXML2_LIBRARIES}
     ${XLIB_LIBRARIES}
     #${LIBM}
+    ${PYTHON_LIBRARIES}
     ${moo_libadd}
     ${MEDIT_LIBS}
 )

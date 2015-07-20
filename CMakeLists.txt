@@ -159,14 +159,16 @@ set(PythonInterp_FIND_VERSION_MAJOR 2)
 find_package(PythonInterp REQUIRED)
 SET(MOO_PYTHON "${PYTHON_EXECUTABLE}")
 
+set(MOO_ENABLE_PYTHON TRUE CACHE BOOL "Use python")
+
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 add_definitions(-DMOO_COMPILATION=1 -DHAVE_CONFIG_H=1 -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\"Moo\")
 
 if(WIN32)
-	add_definitions(-DUNICODE=1 -D_UNICODE=1 -D__WIN32__=1 -DSTRICT=1 -D_CRT_SECURE_NO_WARNINGS=1 -D_CRT_NONSTDC_NO_WARNINGS=1)
-	set(MOO_OS_WIN32 TRUE)
-	add_definitions(-DHAVE_MMAP=1)
-	add_definitions(-DMOO_NEED_GETTIMEOFDAY=1)
+    add_definitions(-DUNICODE=1 -D_UNICODE=1 -D__WIN32__=1 -DSTRICT=1 -D_CRT_SECURE_NO_WARNINGS=1 -D_CRT_NONSTDC_NO_WARNINGS=1)
+    set(MOO_OS_WIN32 TRUE)
+    add_definitions(-DHAVE_MMAP=1)
+    add_definitions(-DMOO_NEED_GETTIMEOFDAY=1)
     add_definitions(-DHAVE_UNISTD_H=1 -DENABLE_NLS=1 -DHAVE_BIND_TEXTDOMAIN_CODESET=1)
 endif(WIN32)
 
@@ -175,7 +177,13 @@ add_subdirectory(api)
 
 if(MOO_WIN32_BUILD)
     include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/moo/mooutils/moowin32/ms")
+
+    set(PYGTK_DEFS_DIR ${CMAKE_BINARY_DIR}/pygtk-win32/defs)
+    set(PYGTK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/pygtk-win32/include)
     add_subdirectory(pygtk-win32)
+
+    set(PYGOBJECT_DEFS_DIR ${PYGTK_DEFS_DIR})
+    include_directories("${PYGTK_INCLUDE_DIR}")
 endif()
 
 add_subdirectory(moo)
