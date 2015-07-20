@@ -48,3 +48,5 @@ add_custom_command(OUTPUT moolua/gtk-lua-api.cpp
     MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/api/gtk.xml
     DEPENDS ${genlua_files})
 list(APPEND built_moolua_sources moolua/gtk-lua-api.cpp)
+
+install(DIRECTORY moolua/lua/_moo DESTINATION ${MOO_DATA_DIR}/lua)
