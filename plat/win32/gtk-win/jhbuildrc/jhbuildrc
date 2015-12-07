@@ -15,12 +15,12 @@ assert _gtkwinconfig in ['debug', 'reldbg', 'release']
 _mingw_tool_prefix = None
 _configure_target = None
 # i686-w64-mingw32 doesn't compile gettext
-for __p in ('i686-pc-mingw32', 'i586-mingw32msvc', 'i486-mingw32'):
+for __p in ('i686-pc-mingw32', 'i586-mingw32msvc', 'i486-mingw32', 'i686-w64-mingw32'):
     if os.path.exists('/usr/bin/%s-gcc' % (__p,)):
         _mingw_tool_prefix = '/usr/bin/%s-' % (__p,)
         _configure_target = __p
-        break
-assert _mingw_tool_prefix
+if not _mingw_tool_prefix:
+    raise RuntimeError('Could not find mingw-gcc')
 
 makeargs = '-j 4'
 moduleset = os.path.join(_gtkwinjhbuilddir, 'gtk.moduleset')
@@ -132,9 +132,7 @@ _remove_gstabs('libxml2')
 module_autogenargs['pkgconfig'] = autogenargs \
                                             + " --with-installed-glib"
 
-_glib_win32_cache = os.path.join(_gtkwinjhbuilddir, 'glib-win32.cache')
-module_autogenargs['glib'] =    autogenargs + " --cache-file=" + _glib_win32_cache \
-                                            + " --with-pcre=internal" \
+module_autogenargs['glib'] =    autogenargs + " --with-pcre=internal" \
 					    + " --with-threads=win32" \
 					    + " --disable-fam" \
 					    + " --disable-selinux"
@@ -149,7 +147,7 @@ module_autogenargs['cairo'] =   autogenargs + " --without-x" \
 
 module_autogenargs['pango'] =   autogenargs + " --with-included-modules"
 
-module_autogenargs['gtk+'] = autogenargs \
+module_autogenargs['gtk'] = autogenargs \
                                             + " --without-libjpeg" \
                                             + " --without-libtiff" \
 					    + " --disable-cups" \
@@ -169,7 +167,7 @@ module_autogenargs['gdk-pixbuf'] = autogenargs \
                                             + " --with-included-immodules" \
                                             + " --disable-introspection"
 
-# module_autogenargs['gtk+-2.18'] = autogenargs \
+# module_autogenargs['gtk-2.18'] = autogenargs \
 #                                             + " --without-libjpeg" \
 #                                             + " --without-libtiff" \
 # 					    + " --disable-cups" \
@@ -177,7 +175,7 @@ module_autogenargs['gdk-pixbuf'] = autogenargs \
 # 					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
 #                                             + " --with-included-immodules" \
 #                                             + " --disable-introspection"
-# module_autogenargs['gtk+-2.20'] = autogenargs \
+# module_autogenargs['gtk-2.20'] = autogenargs \
 #                                             + " --without-libjpeg" \
 #                                             + " --without-libtiff" \
 # 					    + " --disable-cups" \
@@ -185,7 +183,7 @@ module_autogenargs['gdk-pixbuf'] = autogenargs \
 # 					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
 #                                             + " --with-included-immodules" \
 #                                             + " --disable-introspection"
-# module_autogenargs['gtk-2-20'] = module_autogenargs['gtk+-2.20']
+# module_autogenargs['gtk-2-20'] = module_autogenargs['gtk-2.20']
 
 module_autogenargs['pygobject'] = autogenargs \
                                             + " --disable-cairo" \

@@ -1,20 +1,32 @@
 <?xml version="1.0" ?><!-- -%- lang:xml; indent-width:2; use-tabs:0 -%- -->
 <moduleset>
 
-  <repository type="hg" name="muntyan.bitbucket.org" href="http://bitbucket.org/muntyan/"/>
+  <repository type="hg" name="medit.bitbucket.org" href="http://bitbucket.org/medit/"/>
 
-  <tarball id="zlib" version="1.2.7" supports-non-srcdir-builds="no">
-    <source href="http://zlib.net/zlib-1.2.7.tar.gz"
-            md5sum="60df6a37c56e7c1366cca812414f7b85"/>
+  <!--
+  <tarball id="zlib" version="1.2.8" supports-non-srcdir-builds="no">
+    <source href="http://zlib.net/zlib-1.2.8.tar.gz"
+            md5sum="44d667c142d7cda120332623eab69f40"/>
     <patches>
-      <patch file="zlib-1.2.7.patch" strip="1"/>
+      <patch file="zlib-1.2.8.patch" strip="1"/>
     </patches>
   </tarball>
+  -->
 
+  <autotools id="zlib" supports-non-srcdir-builds="no">
+    <branch repo="medit.bitbucket.org" module="zlib"/>
+  </autotools>
+
+  <autotools id="libiconv">
+    <branch repo="medit.bitbucket.org" module="libiconv"/>
+  </autotools>
+
+  <!--
   <tarball id="libiconv" version="1.13.1">
     <source href="http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.1.tar.gz"
             md5sum="7ab33ebd26687c744a37264a330bbe9a"/>
   </tarball>
+  -->
   <!-- does not link
   <tarball id="libiconv" version="1.14">
     <source href="http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.14.tar.gz"
@@ -22,17 +34,25 @@
   </tarball>
   -->
 
+  <autotools id="gettext">
+    <branch repo="medit.bitbucket.org" module="gettext"/>
+    <dependencies>
+      <dep package="libiconv"/>
+    </dependencies>
+  </autotools>
+
+  <!--
   <tarball id="gettext" version="0.17">
     <source href="http://ftp.gnu.org/pub/gnu/gettext/gettext-0.17.tar.gz"
             md5sum="58a2bc6d39c0ba57823034d55d65d606"/>
     <patches>
-      <patch file="gettext-0.17.patch" strip="1"/>
-      <patch file="gettext-0.17-mkdir.patch" strip="1"/>
+      <patch file="gettext-0.17-all.patch" strip="1"/>
     </patches>
     <dependencies>
       <dep package="libiconv"/>
     </dependencies>
   </tarball>
+  -->
 
   <!--
   <tarball id="gettext" version="0.18.1.1">
@@ -58,6 +78,14 @@
     </dependencies>
   </tarball>
 
+  <autotools id="libpng">
+    <branch repo="medit.bitbucket.org" module="libpng"/>
+    <dependencies>
+      <dep package="zlib"/>
+    </dependencies>
+  </autotools>
+
+  <!--
   <tarball id="libpng" version="1.4.1">
     <source href="http://download.sourceforge.net/libpng/libpng-1.4.1.tar.gz"
             md5sum="fa0b2a84733463f90d3ac9f43ccafabc"/>
@@ -68,7 +96,17 @@
       <patch file="libpng.patch" strip="1"/>
     </patches>
   </tarball>
+  -->
 
+  <autotools id="libxml2">
+    <branch repo="medit.bitbucket.org" module="libxml2"/>
+    <dependencies>
+      <dep package="libiconv"/>
+      <dep package="zlib"/>
+    </dependencies>
+  </autotools>
+
+  <!--
   <tarball id="libxml2" version="2.6.30">
     <source href="http://ftp.gnome.org/pub/gnome/sources/libxml2/2.6/libxml2-2.6.30.tar.bz2"
             md5sum="cbc6d381daaa836b90a7ab449c1bc1ae"/>
@@ -79,7 +117,18 @@
       <patch file="libxml2.patch" strip="1"/>
     </patches>
   </tarball>
+  -->
 
+  <autotools id="glib">
+    <branch repo="medit.bitbucket.org" module="glib"/>
+    <dependencies>
+      <dep package="libiconv"/>
+      <dep package="gettext"/>
+      <dep package="zlib"/>
+    </dependencies>
+  </autotools>
+
+  <!--
   <tarball id="glib">
     <source href="http://ftp.gnome.org/pub/gnome/sources/glib/2.26/glib-2.26.1.tar.bz2"
             md5sum="17535accceef55bcb17a74d73f9c2aef"/>
@@ -94,6 +143,7 @@
       <patch file="glib-spawn-win32-moo.patch" strip="1"/>
     </patches>
   </tarball>
+  -->
   <!-- glib-2.28 changed location of user config files
   <tarball id="glib">
     <source href="http://ftp.gnome.org/pub/gnome/sources/glib/2.28/glib-2.28.5.tar.bz2"
@@ -127,6 +177,7 @@
   </tarball>
   -->
 
+  <!--
   <tarball id="pkgconfig" version="0.23">
     <source href="http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz"
             md5sum="d922a88782b64441d06547632fd85744"/>
@@ -137,13 +188,30 @@
       <patch file="pkgconfig.patch" strip="1"/>
     </patches>
   </tarball>
+  -->
 
+  <!--
   <tarball id="pixman">
     <source href="http://cairographics.org/releases/pixman-0.24.0.tar.gz"
             md5sum="a2d0b120509bdccb10aa7f4bec3730e4"/>
   </tarball>
+  -->
+
+  <autotools id="pixman">
+    <branch repo="medit.bitbucket.org" module="pixman"/>
+  </autotools>
+
+  <autotools id="cairo" supports-non-srcdir-builds="no">
+    <branch repo="medit.bitbucket.org" module="cairo"/>
+    <dependencies>
+      <dep package="pixman"/>
+      <dep package="gettext"/>
+      <dep package="libpng"/>
+    </dependencies>
+  </autotools>
 
   <!-- GOOD -->
+  <!--
   <tarball id="cairo" supports-non-srcdir-builds="no">
     <source href="http://cairographics.org/releases/cairo-1.8.10.tar.gz"
             md5sum="b60a82f405f9400bbfdcf850b1728d25"/>
@@ -156,10 +224,20 @@
       <patch file="cairo-1.8.10.patch" strip="1"/>
     </patches>
   </tarball>
+  -->
   <!-- with cairo-1.10 icons disappear randomly -->
   <!-- with cairo-1.12.14 icons and text don't draw in file selector -->
 
+  <autotools id="pango">
+    <branch repo="medit.bitbucket.org" module="pango"/>
+    <dependencies>
+      <dep package="cairo"/>
+      <dep package="glib"/>
+    </dependencies>
+  </autotools>
+
   <!-- GOOD -->
+  <!--
   <tarball id="pango">
     <source href="http://ftp.acc.umu.se/pub/GNOME/sources/pango/1.28/pango-1.28.0.tar.bz2"
             sha256sum="68480485b714e3570a58c270add9e9785fa78068f7410949b478e8a9d3f5bc40"/>
@@ -171,7 +249,16 @@
       <dep package="glib"/>
     </dependencies>
   </tarball>
+  -->
 
+  <autotools id="atk" supports-non-srcdir-builds="no">
+    <branch repo="medit.bitbucket.org" module="atk"/>
+    <dependencies>
+      <dep package="glib"/>
+    </dependencies>
+  </autotools>
+
+  <!--
   <tarball id="atk" supports-non-srcdir-builds="no">
     <source href="http://ftp.acc.umu.se/pub/GNOME/sources/atk/1.32/atk-1.32.0.tar.bz2"
             sha256sum="b9a19a3e426cd9ca930f0108c4ee343f"/>
@@ -179,8 +266,21 @@
       <dep package="glib"/>
     </dependencies>
   </tarball>
+  -->
 
-  <tarball id="gtk+">
+  <autotools id="gtk">
+    <branch repo="medit.bitbucket.org" module="gtk"/>
+    <dependencies>
+      <dep package="cairo"/>
+      <dep package="pango"/>
+      <dep package="atk"/>
+      <dep package="glib"/>
+      <dep package="libpng"/>
+    </dependencies>
+  </autotools>
+
+  <!--
+  <tarball id="gtk">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gtk+/2.16/gtk+-2.16.6.tar.bz2"
             sha256sum="18e0f9792028e6cc5108447678f17d396f9a2cdfec1e6ab5dca98cb844f954af"/>
     <dependencies>
@@ -194,8 +294,9 @@
       <patch file="gtk-2.16.patch" strip="1"/>
     </patches>
   </tarball>
+  -->
   <!-- Works but with bugs
-  <tarball id="gtk+">
+  <tarball id="gtk">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gtk+/2.24/gtk+-2.24.8.tar.bz2"
             md5sum="0413187f7e596aef00ccd1b54776ff03"/>
     <dependencies>
@@ -212,6 +313,7 @@
   </tarball>
   -->
 
+  <!-- needed by gtk-2.24
   <tarball id="gdk-pixbuf">
     <source href="http://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/2.24/gdk-pixbuf-2.24.0.tar.bz2"
             md5sum="d8ece3a4ade4a91c768328620e473ab8"/>
@@ -223,12 +325,14 @@
       <dep package="libpng"/>
     </dependencies>
   </tarball>
+  -->
 
   <tarball id="hicolor-icon-theme" supports-non-srcdir-builds="no">
     <source href="http://freedesktop.org/software/icon-theme/releases/hicolor-icon-theme-0.5.tar.gz"
             sha256sum="8643ddab3b5afd2f94a2db771bae6710ec49d76a6c6890debaa711de8f3bf12e"/>
   </tarball>
 
+  <!--
   <tarball id="icon-naming-utils" supports-non-srcdir-builds="no">
     <source href="http://tango.freedesktop.org/releases/icon-naming-utils-0.8.90.tar.gz"
             sha256sum="044ab2199ed8c6a55ce36fd4fcd8b8021a5e21f5bab028c0a7cdcf52a5902e1c"/>
@@ -247,7 +351,9 @@
       <patch file="tango-icon-theme.patch" strip="1"/>
     </patches>
   </tarball>
+  -->
 
+  <!--
   <tarball id="intltool">
     <source href="http://launchpadlibrarian.net/41841194/intltool-0.41.1.tar.gz"
             sha256sum="06d02133a85b9d6f29cd763050dc9267a6d73ef3008993f5b917cafc7ece96c0"/>
@@ -255,25 +361,26 @@
       <patch file="intltool.patch" strip="1"/>
     </patches>
   </tarball>
+  -->
 
   <autotools id="pycairo">
-    <branch repo="muntyan.bitbucket.org" module="pycairo"/>
+    <branch repo="medit.bitbucket.org" module="pycairo"/>
     <dependencies>
       <dep package="cairo"/>
     </dependencies>
   </autotools>
 
   <autotools id="pygobject" supports-non-srcdir-builds="no">
-    <branch repo="muntyan.bitbucket.org" module="pygobject"/>
+    <branch repo="medit.bitbucket.org" module="pygobject"/>
     <dependencies>
       <dep package="glib"/>
     </dependencies>
   </autotools>
 
   <autotools id="pygtk" supports-non-srcdir-builds="no">
-    <branch repo="muntyan.bitbucket.org" module="pygtk"/>
+    <branch repo="medit.bitbucket.org" module="pygtk"/>
     <dependencies>
-      <dep package="gtk+"/>
+      <dep package="gtk"/>
       <dep package="pygobject"/>
       <dep package="pycairo"/>
     </dependencies>
@@ -283,8 +390,8 @@
     <dependencies>
       <dep package="hicolor-icon-theme"/>
       <dep package="libxml2"/>
-      <dep package="gtk+"/>
-      <dep package="intltool"/>
+      <dep package="gtk"/>
+      <!--<dep package="intltool"/>-->
       <dep package="pygtk"/>
     </dependencies>
   </metamodule>
