@@ -83,7 +83,7 @@ libpangocairo-1.0-0.dll
 libxml2-2.dll
 libpixman-1-0.dll
 libpng14-14.dll
-zlib1-m314.dll
+zlib1-m314-128.dll
 libgailutil-18.dll
 libpangowin32-1.0-0.dll
 libiconv-2.dll

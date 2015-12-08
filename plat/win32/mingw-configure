@@ -9,19 +9,26 @@ if [ ! -e $srcdir/configure ]; then
   exit 1
 fi
 
-if [ -e /usr/bin/i586-mingw32msvc-gcc ]; then
-  _mingw_tool_prefix="/usr/bin/i586-mingw32msvc"
-  STATIC_LIBGCC=
-elif [ -e /usr/bin/i486-mingw32-gcc ]; then
-  _mingw_tool_prefix="/usr/bin/i486-mingw32"
-  STATIC_LIBGCC="-static-libgcc -static-libstdc++"
-elif [ -e /usr/bin/i686-pc-mingw32-gcc ]; then
-  _mingw_tool_prefix="/usr/bin/i686-pc-mingw32"
-  STATIC_LIBGCC="-static-libgcc -static-libstdc++"
-else
+_configure_target=
+for prefix in i586-mingw32msvc i686-w64-mingw32 i486-mingw32 i686-pc-mingw32; do
+  if [ -e /usr/bin/$prefix-gcc ]; then
+    _configure_target=$prefix
+    break
+  fi
+done
+if [ -z "$_configure_target" ]; then
   echo "don't know where mingw compiler is"
   exit 1
 fi
+
+STATIC_LIBGCC=
+case "$_configure_target" in
+  i686-w64-mingw32|i486-mingw32|i686-pc-mingw32) :
+    STATIC_LIBGCC="-static-libgcc -static-libstdc++"
+    ;;
+esac
+
+_mingw_tool_prefix="/usr/bin/$_configure_target"
 
 export mgwdir=`dirname $0`/gtk-win
 . $mgwdir/config.sh || exit 1
@@ -85,7 +92,6 @@ export PYTHON_VERSION=$mgwpythondotver
 
 if $mgwlinux; then
     _configure_build=i686-pc-linux-gnu
-    _configure_target=i586-pc-mingw32msvc
 elif $mgwcygwin; then
     _configure_build=i686-pc-cygwin
     _configure_target=i686-pc-mingw32
