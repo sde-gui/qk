@@ -29,7 +29,6 @@ gtk-win (where this file is) directory contents:
     jhbuildrc: directory which contains jhbuild configuration
         jhbuildrc: actual jhbuildrc file
         gtk.moduleset: jhbuild moduleset file
-        patches: patches used in the build, referenced in gtk.moduleset
 
 Build directory layout:
     - gtk-win-build: root directory for the build, set in config.sh.
@@ -46,5 +45,3 @@ Build directory layout:
                          non-distributed files (e.g. headers) removed, plus extra files
                          copied by "make.sh bdist" command.
         - bdist-debug: same as bdist-release, but for debug configuration.
-        - medit-deps-src: directory with all source tarballs used to built medit and
-                          dependent binaries.

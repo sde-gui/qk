@@ -14,13 +14,16 @@ assert _gtkwinconfig in ['debug', 'reldbg', 'release']
 
 _mingw_tool_prefix = None
 _configure_target = None
-# i686-w64-mingw32 doesn't compile gettext
-for __p in ('i686-pc-mingw32', 'i586-mingw32msvc', 'i486-mingw32'):
+for __p in ('i686-w64-mingw32', 'i686-pc-mingw32', 'i586-mingw32msvc', 'i486-mingw32'):
     if os.path.exists('/usr/bin/%s-gcc' % (__p,)):
         _mingw_tool_prefix = '/usr/bin/%s-' % (__p,)
         _configure_target = __p
-        break
-assert _mingw_tool_prefix
+if not _mingw_tool_prefix:
+    raise RuntimeError('Could not find mingw-gcc')
+
+_static_libgcc = ''
+#if _configure_target in ('i686-w64-mingw32', 'i486-mingw32', 'i686-pc-mingw32'):
+#    _static_libgcc = '-static-libgcc -static-libstdc++'
 
 makeargs = '-j 4'
 moduleset = os.path.join(_gtkwinjhbuilddir, 'gtk.moduleset')
@@ -71,13 +74,16 @@ elif _gtkwinconfig == 'reldbg':
 else:
     _def_cflags = '-O2'
 
-# os.environ['LDFLAGS'] = "-L%s/lib" % (prefix,)
+_ldflags_cmdline = ''
+if _static_libgcc:
+    _ldflags_cmdline=' LDFLAGS="-L%s/lib %s"' % (prefix, _static_libgcc,)
+
 # os.environ['CPPFLAGS'] = "-I%s/include" % (prefix,)
 # os.environ['CFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 # os.environ['CXXFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 # os.environ['OBJCFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 
-_cflags = "-mms-bitfields -march=i686 %s" % (_def_cflags,)
+_cflags = "-mms-bitfields -march=i686 %s %s" % (_def_cflags, _static_libgcc)
 _cflags_cmdline = ' CFLAGS="%(_cflags)s" CXXFLAGS="%(_cflags)s" OBJCFLAGS="%(_cflags)s"' % {'_cflags': _cflags}
 def _remove_gstabs(module):
     module_autogenargs[module] = module_autogenargs[module].replace('-gstabs+', '-g').replace('-gstabs', '-g')
@@ -108,7 +114,7 @@ autogenargs += ' --enable-relocatable --enable-silent-rules --disable-glibtest -
 for _var in ['AR', 'RANLIB', 'STRIP', 'AS', 'DLLTOOL', 'OBJDUMP', 'NM', 'WINDRES', 'RC', 'INSTALL']:
     autogenargs += ' ' + _var + '="' + os.environ[_var] + '" '
 
-autogenargs += _cflags_cmdline
+autogenargs += _cflags_cmdline + _ldflags_cmdline
 
 # zlib uses custom configure script which doesn't ignore unknown options
 module_autogenargs['zlib'] = ""
@@ -120,7 +126,9 @@ module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
 					    + " --without-libexpat-prefix" \
 					    + " --without-libxml2-prefix" \
 					    + " --without-libglib-2.0-prefix" \
-                                            + " --enable-threads=win32"
+                                            + " --enable-threads=win32" \
+					    + " --disable-openmp"
+
 if _gtkwinconfig == 'debug':
     module_autogenargs['gettext'] += " CPPFLAGS=-DHAVE_INLINE"
 _remove_gstabs('gettext')
@@ -132,9 +140,7 @@ _remove_gstabs('libxml2')
 module_autogenargs['pkgconfig'] = autogenargs \
                                             + " --with-installed-glib"
 
-_glib_win32_cache = os.path.join(_gtkwinjhbuilddir, 'glib-win32.cache')
-module_autogenargs['glib'] =    autogenargs + " --cache-file=" + _glib_win32_cache \
-                                            + " --with-pcre=internal" \
+module_autogenargs['glib'] =    autogenargs + " --with-pcre=internal" \
 					    + " --with-threads=win32" \
 					    + " --disable-fam" \
 					    + " --disable-selinux"
@@ -149,7 +155,7 @@ module_autogenargs['cairo'] =   autogenargs + " --without-x" \
 
 module_autogenargs['pango'] =   autogenargs + " --with-included-modules"
 
-module_autogenargs['gtk+'] = autogenargs \
+module_autogenargs['gtk'] = autogenargs \
                                             + " --without-libjpeg" \
                                             + " --without-libtiff" \
 					    + " --disable-cups" \
@@ -169,7 +175,7 @@ module_autogenargs['gdk-pixbuf'] = autogenargs \
                                             + " --with-included-immodules" \
                                             + " --disable-introspection"
 
-# module_autogenargs['gtk+-2.18'] = autogenargs \
+# module_autogenargs['gtk-2.18'] = autogenargs \
 #                                             + " --without-libjpeg" \
 #                                             + " --without-libtiff" \
 # 					    + " --disable-cups" \
@@ -177,7 +183,7 @@ module_autogenargs['gdk-pixbuf'] = autogenargs \
 # 					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
 #                                             + " --with-included-immodules" \
 #                                             + " --disable-introspection"
-# module_autogenargs['gtk+-2.20'] = autogenargs \
+# module_autogenargs['gtk-2.20'] = autogenargs \
 #                                             + " --without-libjpeg" \
 #                                             + " --without-libtiff" \
 # 					    + " --disable-cups" \
@@ -185,7 +191,7 @@ module_autogenargs['gdk-pixbuf'] = autogenargs \
 # 					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
 #                                             + " --with-included-immodules" \
 #                                             + " --disable-introspection"
-# module_autogenargs['gtk-2-20'] = module_autogenargs['gtk+-2.20']
+# module_autogenargs['gtk-2-20'] = module_autogenargs['gtk-2.20']
 
 module_autogenargs['pygobject'] = autogenargs \
                                             + " --disable-cairo" \

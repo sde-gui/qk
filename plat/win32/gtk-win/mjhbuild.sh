@@ -14,7 +14,5 @@ export _GTKWINBUILDROOT=$mgwbuildroot
 # JHBUILD=$mgwjhbuilddir/bin/jhbuild
 JHBUILD=jhbuild
 
-chmod a-w $mgwdir/jhbuildrc/glib-win32.cache
-
 echo $JHBUILD -f $mgwdir_s/jhbuildrc/jhbuildrc "$@"
 exec $JHBUILD -f $mgwdir_s/jhbuildrc/jhbuildrc "$@"
