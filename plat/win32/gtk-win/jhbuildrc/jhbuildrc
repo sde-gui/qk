@@ -21,10 +21,6 @@ for __p in ('i686-w64-mingw32', 'i686-pc-mingw32', 'i586-mingw32msvc', 'i486-min
 if not _mingw_tool_prefix:
     raise RuntimeError('Could not find mingw-gcc')
 
-_static_libgcc = ''
-#if _configure_target in ('i686-w64-mingw32', 'i486-mingw32', 'i686-pc-mingw32'):
-#    _static_libgcc = '-static-libgcc -static-libstdc++'
-
 makeargs = '-j 4'
 moduleset = os.path.join(_gtkwinjhbuilddir, 'gtk.moduleset')
 use_lib64 = False
@@ -74,16 +70,12 @@ elif _gtkwinconfig == 'reldbg':
 else:
     _def_cflags = '-O2'
 
-_ldflags_cmdline = ''
-if _static_libgcc:
-    _ldflags_cmdline=' LDFLAGS="-L%s/lib %s"' % (prefix, _static_libgcc,)
-
 # os.environ['CPPFLAGS'] = "-I%s/include" % (prefix,)
 # os.environ['CFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 # os.environ['CXXFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 # os.environ['OBJCFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 
-_cflags = "-mms-bitfields -march=i686 %s %s" % (_def_cflags, _static_libgcc)
+_cflags = "-mms-bitfields -march=i686 %s " % (_def_cflags)
 _cflags_cmdline = ' CFLAGS="%(_cflags)s" CXXFLAGS="%(_cflags)s" OBJCFLAGS="%(_cflags)s"' % {'_cflags': _cflags}
 def _remove_gstabs(module):
     module_autogenargs[module] = module_autogenargs[module].replace('-gstabs+', '-g').replace('-gstabs', '-g')
@@ -114,7 +106,7 @@ autogenargs += ' --enable-relocatable --enable-silent-rules --disable-glibtest -
 for _var in ['AR', 'RANLIB', 'STRIP', 'AS', 'DLLTOOL', 'OBJDUMP', 'NM', 'WINDRES', 'RC', 'INSTALL']:
     autogenargs += ' ' + _var + '="' + os.environ[_var] + '" '
 
-autogenargs += _cflags_cmdline + _ldflags_cmdline
+autogenargs += _cflags_cmdline
 
 # zlib uses custom configure script which doesn't ignore unknown options
 module_autogenargs['zlib'] = ""
