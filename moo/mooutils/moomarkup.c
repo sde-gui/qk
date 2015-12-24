@@ -175,7 +175,7 @@ markup_parse_memory (const char     *buffer,
 
 MooMarkupDoc *
 moo_markup_parse_memory (const char     *buffer,
-                         int             size,
+                         gssize          size,
                          GError        **error)
 {
     g_return_val_if_fail (buffer != NULL, NULL);

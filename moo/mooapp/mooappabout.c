@@ -25,7 +25,9 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moohelp.h"
+#ifdef MOO_ENABLE_HELP
 #include "moo-help-sections.h"
+#endif
 #include "mooapp/mooappabout-dialog-gxml.h"
 #include "mooapp/mooappabout-license-gxml.h"
 #include "mooapp/mooappabout-credits-gxml.h"
@@ -132,7 +134,9 @@ show_credits (void)
 static void
 license_clicked (void)
 {
+#ifdef MOO_ENABLE_HELP
     moo_help_open_id (HELP_SECTION_APP_LICENSE, NULL);
+#endif
 }
 
 

@@ -87,13 +87,13 @@ void        moo_line_view_clear         (MooLineView    *view);
 int         moo_line_view_start_line    (MooLineView    *view);
 void        moo_line_view_write         (MooLineView    *view,
                                          const char     *text,
-                                         gssize          len,
+                                         int             len,
                                          GtkTextTag     *tag);
 void        moo_line_view_end_line      (MooLineView    *view);
 
 int         moo_line_view_write_line    (MooLineView    *view,
                                          const char     *text,
-                                         gssize          len,
+                                         int             len,
                                          GtkTextTag     *tag);
 
 void        moo_line_view_set_cursor    (MooLineView    *view,

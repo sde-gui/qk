@@ -1031,7 +1031,7 @@ list_button_press (MooCombo       *combo,
     GtkTreeIter iter;
 
     if (gtk_tree_view_get_path_at_pos (combo->priv->treeview,
-                                       event->x, event->y,
+                                       (int) event->x, (int) event->y,
                                        &path, NULL, NULL, NULL))
     {
         gtk_tree_model_get_iter (combo->priv->model, &iter, path);

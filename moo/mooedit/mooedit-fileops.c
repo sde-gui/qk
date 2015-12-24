@@ -586,7 +586,7 @@ do_load_text (MooEdit    *edit,
             g_string_append_c (strbuf, '\n');
     }
 
-    gtk_text_buffer_insert_at_cursor (buffer, strbuf->str, strbuf->len);
+    gtk_text_buffer_insert_at_cursor (buffer, strbuf->str, (int) strbuf->len);
 
     if (mixed_le)
         le = MOO_LE_NATIVE;
@@ -633,7 +633,7 @@ moo_edit_reload_local (MooEdit    *edit,
  */
 
 static char *
-get_contents_with_fixed_line_end (GtkTextBuffer *buffer, const char *le, guint le_len)
+get_contents_with_fixed_line_end (GtkTextBuffer *buffer, const char *le, gsize le_len)
 {
     GtkTextIter line_start;
     GString *contents;

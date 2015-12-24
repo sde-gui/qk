@@ -30,7 +30,7 @@ typedef struct TextFuncs {
                                          const char   *str);
     gboolean    (*file_has_prefix)      (MooFile      *file,
                                          const char   *str,
-                                         guint         len);
+                                         gsize         len);
     char*       (*normalize)            (const char   *str,
                                          gssize        len);
 } TextFuncs;
@@ -46,7 +46,7 @@ file_equals (MooFile    *file,
 static gboolean
 file_has_prefix (MooFile    *file,
                  const char *str,
-                 guint       len)
+                 gsize       len)
 {
     return !strncmp (str, _moo_file_display_name (file), len);
 }
@@ -82,7 +82,7 @@ case_file_equals (MooFile    *file,
 static gboolean
 case_file_has_prefix (MooFile    *file,
                       const char *str,
-                      guint       len)
+                      gsize       len)
 {
     char *temp = case_normalize (str, len);
     gboolean ret = g_str_has_prefix (_moo_file_case_display_name (file), temp);
@@ -119,7 +119,7 @@ model_find_next_match (GtkTreeModel   *model,
                        gboolean        exact_match)
 {
     char *normalized_text;
-    guint normalized_text_len;
+    gsize normalized_text_len;
 
     g_return_val_if_fail (text != NULL, FALSE);
 
@@ -167,7 +167,7 @@ model_find_max_prefix (GtkTreeModel   *model,
                        GtkTreeIter    *unique_iter_p)
 {
     GtkTreeIter iter;
-    guint text_len;
+    gsize text_len;
     GString *prefix = NULL;
     gboolean unique = FALSE;
 
@@ -182,7 +182,7 @@ model_find_max_prefix (GtkTreeModel   *model,
     {
         MooFile *file = NULL;
         const char *name;
-        guint i;
+        gsize i;
 
         if (!model_find_next_match (model, &iter, text, text_len, funcs, FALSE))
             goto out;

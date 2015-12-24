@@ -19,7 +19,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moostock.h"
-#include "moofileicon-symlink.h"
+#include "moo-pixbufs.h"
 #include <glib/gstdio.h>
 #include <gtk/gtk.h>
 #include <sys/stat.h>

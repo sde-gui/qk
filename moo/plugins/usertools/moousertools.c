@@ -570,7 +570,7 @@ load_file (const char      *filename,
     MooCommandData *cmd_data;
     MooCommandFactory *cmd_factory;
     char **params;
-    guint suffix_len = 0;
+    gsize suffix_len = 0;
 
     cmd_data = _moo_command_parse_file (filename, &cmd_factory, &params);
     if (!cmd_data)

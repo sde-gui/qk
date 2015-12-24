@@ -24,7 +24,9 @@
 #include "mooutils/moohelp.h"
 #include "mooutils/mooutils-treeview.h"
 #include "mooutils/moocompat.h"
+#ifdef MOO_ENABLE_HELP
 #include "moo-help-sections.h"
+#endif
 
 
 enum {
@@ -554,7 +556,11 @@ moo_prefs_dialog_help (GtkWidget *widget)
         current_page = gtk_notebook_get_nth_page (dialog->notebook, index);
 
     if (!current_page || !moo_help_open (current_page))
+    {
+#ifdef MOO_ENABLE_HELP
         moo_help_open_id (HELP_SECTION_PREFS_DIALOG, widget);
+#endif
+    }
 
     return TRUE;
 }

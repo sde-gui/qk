@@ -520,7 +520,7 @@ breakup_string (const char *string,
 	s = strstr (string, delimiter);
 	if (s)
 	{
-		guint delimiter_len = strlen (delimiter);
+		gsize delimiter_len = strlen (delimiter);
 
 		do
 		{

@@ -217,7 +217,7 @@ find_last_match (GRegex            *regex,
                  int               *end_pos,
                  GMatchInfo       **match_infop)
 {
-    int len, start;
+    gssize len, start;
     GMatchInfo *match_info = NULL;
 
     *start_pos = -1;

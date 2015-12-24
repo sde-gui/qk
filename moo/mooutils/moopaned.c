@@ -3100,8 +3100,8 @@ handle_motion (GtkWidget      *widget,
         if (!gtk_drag_check_threshold (widget,
                                        paned->priv->handle_drag_start_x,
                                        paned->priv->handle_drag_start_y,
-                                       event->x,
-                                       event->y))
+                                       (int) event->x,
+                                       (int) event->y))
             return FALSE;
 
         paned->priv->handle_in_drag = TRUE;

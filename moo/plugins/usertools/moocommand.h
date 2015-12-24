@@ -17,7 +17,7 @@
 #define MOO_COMMAND_H
 
 #include <gtk/gtk.h>
-#include "moooutputfilter.h"
+#include "../support/moooutputfilter.h"
 #include "moousertools-enums.h"
 
 G_BEGIN_DECLS

@@ -2081,7 +2081,7 @@ treeview_button_press (GtkTreeView    *treeview,
     if (event->type != GDK_BUTTON_PRESS || event->button != 3)
         return FALSE;
 
-    gtk_tree_view_get_path_at_pos (treeview, event->x, event->y,
+    gtk_tree_view_get_path_at_pos (treeview, (int) event->x, (int) event->y,
                                    &path, NULL, &x, &y);
 
     selection = gtk_tree_view_get_selection (treeview);

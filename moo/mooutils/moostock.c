@@ -17,7 +17,7 @@
 #include "mooutils/stock-terminal-24.h"
 #include "mooutils/stock-file-selector-24.h"
 #include "mooutils/stock-file-24.h"
-#include "stock-moo.h"
+#include "moo-pixbufs.h"
 #include "mooutils/mooi18n.h"
 #include <gtk/gtk.h>
 #include <string.h>

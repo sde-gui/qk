@@ -1,0 +1,45 @@
+SET(moofileview_sources
+    moofileview/moofileview.cmake
+    moofileview/moobookmarkmgr.c
+    moofileview/moobookmarkmgr.h
+    moofileview/moobookmarkview.c
+    moofileview/moobookmarkview.h
+    moofileview/moofile.c
+    moofileview/moofile.h
+    moofileview/moofile-private.h
+    moofileview/moofileentry.c
+    moofileview/moofileentry.h
+    moofileview/moofilesystem.c
+    moofileview/moofilesystem.h
+    moofileview/moofileview.c
+    moofileview/moofileview.h
+    moofileview/moofileview-accels.h
+    moofileview/moofileview-aux.h
+    moofileview/moofileview-dialogs.c
+    moofileview/moofileview-dialogs.h
+    moofileview/moofileview-impl.h
+    moofileview/moofileview-private.h
+    moofileview/moofileview-tools.c
+    moofileview/moofileview-tools.h
+    moofileview/moofolder-private.h
+    moofileview/moofolder.c
+    moofileview/moofolder.h
+    moofileview/moofoldermodel.c
+    moofileview/moofoldermodel.h
+    moofileview/moofoldermodel-private.h
+    moofileview/mooiconview.c
+    moofileview/mooiconview.h
+    moofileview/mootreeview.c
+    moofileview/mootreeview.h
+)
+
+foreach(input_file
+    moofileview/glade/moofileview-drop.glade
+    moofileview/glade/moofileprops.glade
+    moofileview/glade/moocreatefolder.glade
+    moofileview/glade/moobookmark-editor.glade
+)
+    ADD_GXML(${input_file})
+endforeach(input_file)
+
+ADD_UI(moofileview/moofileview.xml)

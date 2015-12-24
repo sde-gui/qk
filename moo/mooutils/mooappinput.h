@@ -23,7 +23,7 @@ G_BEGIN_DECLS
 
 typedef void (*MooAppInputCallback) (char        cmd,
                                      const char *data,
-                                     guint       len,
+                                     gsize       len,
                                      gpointer    cb_data);
 
 void         _moo_app_input_start       (const char     *name,

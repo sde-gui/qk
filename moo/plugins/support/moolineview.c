@@ -221,7 +221,7 @@ moo_line_view_button_release (GtkWidget      *widget,
     {
         gtk_text_view_window_to_buffer_coords (textview,
                                                GTK_TEXT_WINDOW_TEXT,
-                                               event->x, event->y,
+                                               (int) event->x, (int) event->y,
                                                &buffer_x, &buffer_y);
         /* XXX */
         gtk_text_view_get_line_at_y (textview, &iter, buffer_y, NULL);
@@ -473,7 +473,7 @@ moo_line_view_lookup_tag (MooLineView    *view,
 int
 moo_line_view_write_line (MooLineView    *view,
                           const char     *text,
-                          gssize          len,
+                          int             len,
                           GtkTextTag     *tag)
 {
     int line;
@@ -563,7 +563,7 @@ moo_line_view_start_line (MooLineView *view)
 void
 moo_line_view_write (MooLineView    *view,
                      const char     *text,
-                     gssize          len,
+                     int             len,
                      GtkTextTag     *tag)
 {
     GtkTextBuffer *buffer;

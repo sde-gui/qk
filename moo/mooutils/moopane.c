@@ -23,7 +23,7 @@
 
 #include "marshals.h"
 #include "moopaned.h"
-#include "stock-moo.h"
+#include "moo-pixbufs.h"
 
 #include <string.h>
 #include <gdk/gdkkeysyms.h>

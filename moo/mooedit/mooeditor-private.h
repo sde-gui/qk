@@ -47,4 +47,12 @@ struct MooEditorPrivate {
 
 G_END_DECLS
 
+#ifdef __cplusplus
+
+#include "mooutils/mooutils-cpp.h"
+
+MOO_DEFINE_FLAGS(MooEditorOptions);
+
+#endif // __cplusplus
+
 #endif /* MOO_EDITOR_PRIVATE_H */

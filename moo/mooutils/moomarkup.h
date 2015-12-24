@@ -130,7 +130,7 @@ struct MooMarkupText {
     MooMarkupDoc            *doc;       /* the containing document */
 
     char                    *text;      /* 0-terminated content of the node */
-    guint                    size;      /* strlen (text) */
+    gsize                    size;      /* strlen (text) */
 };
 
 
@@ -147,7 +147,7 @@ MooMarkupDoc       *moo_markup_doc_new              (const char         *name);
 MooMarkupDoc       *moo_markup_parse_file           (const char         *filename,
                                                      GError            **error);
 MooMarkupDoc       *moo_markup_parse_memory         (const char         *buffer,
-                                                     int                 size,
+                                                     gssize              size,
                                                      GError            **error);
 gboolean            moo_markup_write_pretty         (MooMarkupDoc       *doc,
                                                      MooFileWriter      *writer,

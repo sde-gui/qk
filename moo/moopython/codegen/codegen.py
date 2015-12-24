@@ -92,10 +92,10 @@ class FileOutput:
     def setline(self, linenum, filename):
         '''writes out a #line statement, for use by the C
         preprocessor.''' # "
-        self.write('#line %d "%s"\n' % (linenum, filename))
+        self.write('#line %d "%s"\n' % (linenum, filename.replace('\\', '/')))
     def resetline(self):
         '''resets line numbering to the original file'''
-        self.setline(self.lineno + 1, self.filename)
+        self.setline(self.lineno + 1, self.filename.replace('\\', '/'))
 
 class Wrapper:
     type_tmpl = (

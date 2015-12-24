@@ -3560,7 +3560,7 @@ file_list_button_press (MooFileView    *fileview,
     if (event->button != 3)
         return FALSE;
 
-    if (_moo_tree_view_get_path_at_pos (view, event->x, event->y, &filter_path))
+    if (_moo_tree_view_get_path_at_pos (view, (int) event->x, (int) event->y, &filter_path))
     {
         if (!_moo_tree_view_path_is_selected (view, filter_path))
         {
@@ -4937,7 +4937,7 @@ typeahead_find_match_visible (MooFileView    *fileview,
                               GtkTreeIter    *filter_iter,
                               gboolean        exact_match)
 {
-    guint len;
+    gsize len;
 
     g_return_val_if_fail (text && text[0], FALSE);
 
@@ -4959,7 +4959,7 @@ typeahead_find_match_hidden (MooFileView    *fileview,
                              GtkTreeIter    *iter,
                              gboolean        exact)
 {
-    guint len;
+    gsize len;
     GtkTreeModel *model = fileview->priv->model;
 
     g_return_val_if_fail (text && text[0], FALSE);

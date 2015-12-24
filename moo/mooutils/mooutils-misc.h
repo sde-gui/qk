@@ -207,7 +207,7 @@ guint       _moo_io_add_watch_full          (GIOChannel     *channel,
 
 
 gboolean    _moo_regex_escape               (const char *string,
-                                             int         bytes,
+                                             gssize      bytes,
                                              GString    *dest);
 
 const char  *moo_error_message              (GError *error);

@@ -719,7 +719,7 @@ start_input (MooApp *app)
 gboolean
 moo_app_send_msg (const char *pid,
                   const char *data,
-                  int         len)
+                  gssize      len)
 {
     g_return_val_if_fail (data != NULL, FALSE);
     return _moo_app_input_send_msg (pid, data, len);

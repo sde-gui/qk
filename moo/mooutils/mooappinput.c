@@ -84,7 +84,7 @@ static const char   *input_channel_get_name (InputChannel   *ch);
 static void
 exec_callback (char        cmd,
                const char *data,
-               guint       len)
+               gsize       len)
 {
     g_return_if_fail (inp_instance && inp_instance->callback);
     if (cmd == IPC_MAGIC_CHAR)
@@ -1101,7 +1101,7 @@ write_data (HANDLE      file,
 {
     DWORD bytes_written;
 
-    if (!WriteFile (file, data, len, &bytes_written, NULL))
+    if (!WriteFile (file, data, (DWORD) len, &bytes_written, NULL))
     {
         char *err_msg = g_win32_error_message (GetLastError ());
         g_warning ("could not write data to '%s': %s", pipe_name, err_msg);

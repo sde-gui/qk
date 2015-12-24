@@ -27,7 +27,9 @@
 #include "mooutils/moocompat.h"
 #include "mooedit/mootextfind-gxml.h"
 #include "mooedit/mootextgotoline-gxml.h"
+#ifdef MOO_ENABLE_HELP
 #include "moo-help-sections.h"
+#endif
 #include <gtk/gtk.h>
 #include <glib/gprintf.h>
 
@@ -186,8 +188,10 @@ moo_find_constructor (GType           type,
                                              -1);
     gtk_dialog_set_default_response (GTK_DIALOG (find), GTK_RESPONSE_OK);
 
+#ifdef MOO_ENABLE_HELP
     moo_help_set_id (GTK_WIDGET (find), find->replace ?
                                 HELP_SECTION_DIALOG_REPLACE : HELP_SECTION_DIALOG_FIND);
+#endif
     moo_help_connect_keys (GTK_WIDGET (find));
 
     return object;

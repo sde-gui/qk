@@ -654,7 +654,7 @@ create_ln_layout (MooPrintOperation    *op,
     op->priv->page.text_width = op->priv->page.width - op->priv->page.text_x;
 
     pango_layout_set_alignment (op->priv->ln_layout, PANGO_ALIGN_RIGHT);
-    pango_layout_set_width (op->priv->ln_layout, op->priv->page.ln_margin);
+    pango_layout_set_width (op->priv->ln_layout, (int) op->priv->page.ln_margin);
 
     if (freeme)
         pango_font_description_free (freeme);
@@ -958,12 +958,12 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
 
     if (GET_OPTION (op, MOO_PRINT_WRAP))
     {
-        pango_layout_set_width (op->priv->layout, op->priv->page.text_width * PANGO_SCALE);
+        pango_layout_set_width (op->priv->layout, (int) (op->priv->page.text_width * PANGO_SCALE));
         pango_layout_set_wrap (op->priv->layout, settings->wrap_mode);
     }
     else if (GET_OPTION (op, MOO_PRINT_ELLIPSIZE))
     {
-        pango_layout_set_width (op->priv->layout, op->priv->page.text_width * PANGO_SCALE);
+        pango_layout_set_width (op->priv->layout, (int) (op->priv->page.text_width * PANGO_SCALE));
         pango_layout_set_ellipsize (op->priv->layout, PANGO_ELLIPSIZE_END);
     }
 
@@ -2087,14 +2087,14 @@ struct HFFormat {
 static HFFormatChunk *
 hf_format_chunk_new (HFFormatType type,
                      const char  *string,
-                     int          len)
+                     gssize       len)
 {
     HFFormatChunk *chunk = g_slice_new0 (HFFormatChunk);
 
     chunk->type = type;
 
     if (string)
-        chunk->string = g_strndup (string, len >= 0 ? len : (int) strlen (string));
+        chunk->string = g_strndup (string, len >= 0 ? len : strlen (string));
 
     return chunk;
 }

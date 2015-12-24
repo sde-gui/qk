@@ -270,6 +270,12 @@ init_queue (void)
         queue.io = g_io_channel_unix_new (queue.pipe_out);
 #endif
 
+        if (queue.io)
+        {
+            g_critical ("g_io_channel_new failed");
+            goto out;
+        }
+
         source = g_io_create_watch (queue.io, G_IO_IN);
         g_source_set_callback (source, (GSourceFunc) got_data, NULL, NULL);
         g_source_set_can_recurse (source, TRUE);
