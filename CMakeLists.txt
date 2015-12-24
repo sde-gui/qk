@@ -75,7 +75,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
-if(CMAKE_CONFIGURATION_TYPES)
+if(WIN32 AND CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_CONFIGURATION_TYPES Debug RelWithDebInfo)
     set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING
         "Reset the configurations to what we need" FORCE)
@@ -118,7 +118,6 @@ if(NOT MOO_WIN32_BUILD)
 else()
     set(MOO_GTK_DIR "" CACHE PATH "Gtk root dir")
     set(MOO_GTK_DIST_DIR "" CACHE PATH "Gtk binary dir")
-    set(MOO_MSYS_BIN_DIR "" CACHE PATH "MSYS bin dir")
 
     include_directories(SYSTEM "${MOO_GTK_DIR}/include")
     include_directories(SYSTEM "${MOO_GTK_DIR}/include/glib-2.0")
@@ -128,10 +127,14 @@ else()
     include_directories(SYSTEM "${MOO_GTK_DIR}/include/gdk-pixbuf-2.0")
     include_directories(SYSTEM "${MOO_GTK_DIR}/include/pango-1.0")
     include_directories(SYSTEM "${MOO_GTK_DIR}/include/atk-1.0")
+    include_directories(SYSTEM "${MOO_GTK_DIR}/include/cairo")
+    include_directories(SYSTEM "${MOO_GTK_DIR}/include/libxml2")
 
     SET(GTK_LIBRARY_DIRS "${MOO_GTK_DIR}/lib")
-    SET(GTK_LIBRARIES gtk-win32-2.0 atk-1.0 gdk-win32-2.0 gdk_pixbuf-2.0 pango-1.0 pangocairo-1.0 cairo gio-2.0 gobject-2.0 gmodule-2.0 gthread-2.0 glib-2.0 libintl)
-    SET(LIBXML2_LIBRARIES "libxml2")
+    SET(GTK_LIBRARIES libgtk-win32-2.0-0 libatk-1.0-0 libgdk-win32-2.0-0 libgdk_pixbuf-2.0-0
+		libpango-1.0-0 libpangocairo-1.0-0 libcairo-2
+		libgio-2.0-0 libgobject-2.0-0 libgmodule-2.0-0 libgthread-2.0-0 libglib-2.0-0 libintl-8)
+    SET(LIBXML2_LIBRARIES "libxml2-2")
 
     set(ENV{PATH} "ENV{PATH};${MOO_GTK_DIR}/bin;${MOO_MSYS_BIN_DIR}")
 
@@ -174,16 +177,18 @@ endif(WIN32)
 
 # zzz SUBDIRS = po po-gsv api doc moo
 add_subdirectory(api)
+# add_subdirectory(doc)
+#add_subdirectory(po)
+#add_subdirectory(po-gsv)
 
 if(MOO_WIN32_BUILD)
     include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/moo/mooutils/moowin32/ms")
 
-    set(PYGTK_DEFS_DIR ${CMAKE_BINARY_DIR}/pygtk-win32/defs)
-    set(PYGTK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/pygtk-win32/include)
-    add_subdirectory(pygtk-win32)
+    set(PYGTK_DEFS_DIR ${MOO_GTK_DIR}/share/pygtk/2.0/defs)
+    set(PYGOBJECT_DEFS_DIR ${MOO_GTK_DIR}/share/pygobject/2.0/defs)
 
-    set(PYGOBJECT_DEFS_DIR ${PYGTK_DEFS_DIR})
-    include_directories("${PYGTK_INCLUDE_DIR}")
+    set(PYGTK_INCLUDE_DIR "${MOO_GTK_DIR}/include/pygtk-2.0")
+    include_directories(SYSTEM "${PYGTK_INCLUDE_DIR}")
 endif()
 
 add_subdirectory(moo)

@@ -3,11 +3,11 @@
 FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/genmarshals_h.cmake
 "EXECUTE_PROCESS(COMMAND ${GLIB_GENMARSHAL} --prefix=_moo_marshal --header ${CMAKE_CURRENT_SOURCE_DIR}/marshals.list
     RESULT_VARIABLE result
-	OUTPUT_VARIABLE error
+	OUTPUT_VARIABLE output
 	ERROR_VARIABLE error
 	OUTPUT_FILE marshals.h.tmp)
 if(NOT result EQUAL 0)
-	MESSAGE(FATAL_ERROR \"Error generating marshals.h: \${error}\")
+	MESSAGE(FATAL_ERROR \"Error generating marshals.h: \${output} \${error}\")
 endif()
 file(RENAME marshals.h.tmp marshals.h)
 ")
