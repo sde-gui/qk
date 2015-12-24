@@ -22,8 +22,8 @@ if not _mingw_tool_prefix:
     raise RuntimeError('Could not find mingw-gcc')
 
 _static_libgcc = ''
-if _configure_target in ('i686-w64-mingw32', 'i486-mingw32', 'i686-pc-mingw32'):
-    _static_libgcc = '-static-libgcc -static-libstdc++'
+#if _configure_target in ('i686-w64-mingw32', 'i486-mingw32', 'i686-pc-mingw32'):
+#    _static_libgcc = '-static-libgcc -static-libstdc++'
 
 makeargs = '-j 4'
 moduleset = os.path.join(_gtkwinjhbuilddir, 'gtk.moduleset')
@@ -126,7 +126,9 @@ module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
 					    + " --without-libexpat-prefix" \
 					    + " --without-libxml2-prefix" \
 					    + " --without-libglib-2.0-prefix" \
-                                            + " --enable-threads=win32"
+                                            + " --enable-threads=win32" \
+					    + " --disable-openmp"
+
 if _gtkwinconfig == 'debug':
     module_autogenargs['gettext'] += " CPPFLAGS=-DHAVE_INLINE"
 _remove_gstabs('gettext')
