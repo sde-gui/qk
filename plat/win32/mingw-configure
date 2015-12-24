@@ -21,13 +21,6 @@ if [ -z "$_configure_target" ]; then
   exit 1
 fi
 
-STATIC_LIBGCC=
-case "$_configure_target" in
-  i686-w64-mingw32|i486-mingw32|i686-pc-mingw32) :
-    STATIC_LIBGCC="-static-libgcc -static-libstdc++"
-    ;;
-esac
-
 _mingw_tool_prefix="/usr/bin/$_configure_target"
 
 export mgwdir=`dirname $0`/gtk-win
@@ -77,11 +70,10 @@ export AR=$_mingw_tool_prefix-ar
 export RANLIB=$_mingw_tool_prefix-ranlib
 export STRIP=$_mingw_tool_prefix-strip
 
-export LDFLAGS="$STATIC_LIBGCC -L$mgwtargetdir/lib"
 export CPPFLAGS="-I$mgwtargetdir/include"
-export CFLAGS="-mms-bitfields -march=i686 $_def_cflags $STATIC_LIBGCC"
-export CXXFLAGS="-mms-bitfields -march=i686 $_def_cflags $STATIC_LIBGCC"
-export OBJCFLAGS="-mms-bitfields -march=i686 $_def_cflags $STATIC_LIBGCC"
+export CFLAGS="-mms-bitfields -march=i686 $_def_cflags"
+export CXXFLAGS="-mms-bitfields -march=i686 $_def_cflags"
+export OBJCFLAGS="-mms-bitfields -march=i686 $_def_cflags"
 
 export PKG_CONFIG_LIBDIR="$mgwtargetdir/lib/pkgconfig"
 export PKG_CONFIG_PATH="$mgwtargetdir/lib/pkgconfig"
