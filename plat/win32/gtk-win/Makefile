@@ -22,7 +22,10 @@ build-python: check-make
 	cp -fl $(mgwpythoninstdir)/libs/libpython2*.a $(mgwtargetdir)/lib/
 	cp -fl $(mgwpythoninstdir)/include/* $(mgwtargetdir)/include/python/
 
-build: build-python build-gtk build-data
+build-defs: check-make
+	cd $(mgwtargetdir)/lib && gendef ../bin/*.dll
+
+build: build-python build-gtk build-data build-defs
 rebuild: clean build
 
 bdist-en:
