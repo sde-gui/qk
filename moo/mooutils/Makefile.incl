@@ -108,6 +108,7 @@ moo_sources +=				\
 	mooutils/mooundo.c		\
 	mooutils/mooundo.h		\
 	mooutils/mooutils.h		\
+	mooutils/mooutils-cpp.h		\
 	mooutils/mooutils-debug.h	\
 	mooutils/mooutils-enums.c	\
 	mooutils/mooutils-enums.h	\
@@ -182,7 +183,7 @@ built_moo_sources +=				\
 	mooutils/mooaccelbutton-gxml.h		\
 	mooutils/moologwindow-gxml.h
 
-built_moo_sources += stock-moo.h moofileicon-symlink.h
+built_moo_sources += moo-pixbufs.h
 PIXMAPS =					\
 	mooutils/pixmaps/hide.png		\
 	mooutils/pixmaps/close.png		\
@@ -190,9 +191,11 @@ PIXMAPS =					\
 	mooutils/pixmaps/detach.png		\
 	mooutils/pixmaps/attach.png		\
 	mooutils/pixmaps/keepontop.png		\
-	mooutils/pixmaps/medit.png
+	mooutils/pixmaps/medit.png		\
+	mooutils/pixmaps/symlink.png		\
+	mooutils/pixmaps/symlink-small.png
 EXTRA_DIST += $(PIXMAPS)
-stock-moo.h: $(PIXMAPS)
+moo-pixbufs.h: $(PIXMAPS)
 	$(AM_V_GEN)$(GDK_PIXBUF_CSOURCE) --static --build-list \
 		MOO_HIDE_ICON $(moo_srcdir)/mooutils/pixmaps/hide.png \
 		MOO_CLOSE_ICON $(moo_srcdir)/mooutils/pixmaps/close.png \
@@ -201,11 +204,6 @@ stock-moo.h: $(PIXMAPS)
 		MOO_ATTACH_ICON $(moo_srcdir)/mooutils/pixmaps/attach.png \
 		MOO_KEEP_ON_TOP_ICON $(moo_srcdir)/mooutils/pixmaps/keepontop.png \
 		MEDIT_ICON $(moo_srcdir)/mooutils/pixmaps/medit.png \
-			> $@.tmp && mv $@.tmp $@
-
-EXTRA_DIST += mooutils/pixmaps/symlink.png mooutils/pixmaps/symlink-small.png
-moofileicon-symlink.h: mooutils/pixmaps/symlink.png mooutils/pixmaps/symlink-small.png
-	$(AM_V_GEN)$(GDK_PIXBUF_CSOURCE) --static --build-list \
 		SYMLINK_ARROW $(moo_srcdir)/mooutils/pixmaps/symlink.png \
 		SYMLINK_ARROW_SMALL $(moo_srcdir)/mooutils/pixmaps/symlink-small.png \
 			> $@.tmp && mv $@.tmp $@

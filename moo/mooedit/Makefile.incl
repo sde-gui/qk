@@ -90,7 +90,7 @@ moo_sources +=				\
 	mooedit/mootextview.c		\
 	mooedit/mootextview-input.c	\
 	mooedit/mootextview-private.h   \
-	mooedit/mooeditor.c		\
+	mooedit/mooeditor.cpp		\
 	mooedit/mooeditor-impl.h	\
 	mooedit/mooeditor-private.h	\
 	mooedit/mooeditor-tests.c	\

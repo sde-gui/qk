@@ -127,10 +127,11 @@ moo_open_flags_get_type (void)
     if (G_UNLIKELY (!etype))
     {
         static const GFlagsValue values[] = {
-            { MOO_OPEN_FLAG_NEW_WINDOW, (char*) "MOO_OPEN_FLAG_NEW_WINDOW", (char*) "new-window" },
-            { MOO_OPEN_FLAG_NEW_TAB, (char*) "MOO_OPEN_FLAG_NEW_TAB", (char*) "new-tab" },
-            { MOO_OPEN_FLAG_RELOAD, (char*) "MOO_OPEN_FLAG_RELOAD", (char*) "reload" },
-            { MOO_OPEN_FLAG_CREATE_NEW, (char*) "MOO_OPEN_FLAG_CREATE_NEW", (char*) "create-new" },
+            { MOO_OPEN_FLAGS_NONE, (char*) "MOO_OPEN_FLAGS_NONE", (char*) "flags-none" },
+            { MOO_OPEN_FLAG_NEW_WINDOW, (char*) "MOO_OPEN_FLAG_NEW_WINDOW", (char*) "flag-new-window" },
+            { MOO_OPEN_FLAG_NEW_TAB, (char*) "MOO_OPEN_FLAG_NEW_TAB", (char*) "flag-new-tab" },
+            { MOO_OPEN_FLAG_RELOAD, (char*) "MOO_OPEN_FLAG_RELOAD", (char*) "flag-reload" },
+            { MOO_OPEN_FLAG_CREATE_NEW, (char*) "MOO_OPEN_FLAG_CREATE_NEW", (char*) "flag-create-new" },
             { 0, NULL, NULL }
         };
 
