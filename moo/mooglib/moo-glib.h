@@ -15,6 +15,7 @@ G_BEGIN_DECLS
 typedef struct mgw_errno_t mgw_errno_t;
 typedef struct MGW_FILE MGW_FILE;
 typedef struct MgwFd MgwFd;
+typedef struct mgw_access_mode_t mgw_access_mode_t;
 
 enum mgw_errno_value_t
 {
@@ -84,9 +85,25 @@ mgw_spawn_async_with_pipes (const gchar *working_directory,
                             GError **error);
 GIOChannel *mgw_io_channel_unix_new (MgwFd fd);
 
+enum mgw_access_mode_value_t
+{
+    MGW_F_OK = 0,
+    MGW_R_OK = 1,
+    MGW_W_OK = 2,
+    MGW_X_OK = 4,
+};
+
+struct mgw_access_mode_t
+{
+    enum mgw_access_mode_value_t value;
+};
+
+int mgw_access (const char *path, mgw_access_mode_t mode);
+
 #ifndef MOO_DO_NOT_MANGLE_GLIB_FUNCTIONS
 
 #undef g_stat
+#undef g_access
 #undef g_lstat
 #undef g_strerror
 #undef g_ascii_strtoull
@@ -101,6 +118,7 @@ GIOChannel *mgw_io_channel_unix_new (MgwFd fd);
 #undef g_io_channel_unix_new
 
 #define g_stat DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
+#define g_access DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
 #define g_lstat DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
 #define g_strerror DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
 #define g_ascii_strtoull DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD

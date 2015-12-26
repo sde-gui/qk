@@ -85,15 +85,15 @@ cfunc__access (lua_State *L)
     const char *filename = luaL_checkstring (L, 1);
     int mode = luaL_checkint (L, 2);
 
-    int g_mode = F_OK;
+    mgw_access_mode_t m = { MGW_F_OK };
     if (mode & my_R_OK)
-        g_mode |= R_OK;
+        m.value = mgw_access_mode_value_t (m.value | MGW_R_OK);
     if (mode & my_W_OK)
-        g_mode |= W_OK;
+        m.value = mgw_access_mode_value_t (m.value | MGW_W_OK);
     if (mode & my_X_OK)
-        g_mode |= X_OK;
+        m.value = mgw_access_mode_value_t (m.value | MGW_X_OK);
 
-    lua_pushboolean (L, g_access (filename, g_mode) == 0);
+    lua_pushboolean (L, mgw_access (filename, m) == 0);
     return 1;
 }
 
