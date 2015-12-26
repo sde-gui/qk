@@ -43,8 +43,18 @@ struct MgwFd
     int value;
 };
 
-GLIB_VAR const mgw_errno_t MGW_E_NOERROR;
-GLIB_VAR const mgw_errno_t MGW_E_EXIST;
+#ifdef __WIN32__
+#  ifdef MOO_GLIB_LIBRARY
+#    define MOO_GLIB_VAR __declspec(dllexport)
+#  else
+#    define MOO_GLIB_VAR extern __declspec(dllimport)
+#  endif
+#else
+#  define MOO_GLIB_VAR extern
+#endif
+
+MOO_GLIB_VAR const mgw_errno_t MGW_E_NOERROR;
+MOO_GLIB_VAR const mgw_errno_t MGW_E_EXIST;
 
 inline static gboolean mgw_errno_is_set (mgw_errno_t err) { return err.value != MGW_ENOERROR; }
 const char *mgw_strerror (mgw_errno_t err);

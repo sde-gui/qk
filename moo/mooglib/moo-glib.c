@@ -1,7 +1,7 @@
 #define MOO_DO_NOT_MANGLE_GLIB_FUNCTIONS
-#include <mooglib/moo-glib.h>
-#include <mooglib/moo-time.h>
-#include <mooglib/moo-stat.h>
+#include "moo-glib.h"
+#include "moo-time.h"
+#include "moo-stat.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
