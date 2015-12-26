@@ -995,7 +995,7 @@ test_one_enum (GType       enum_type,
 
     TEST_EXPECT_WARNING (0, "%s", "string to enum");
 
-    if (!bad != _moo_value_convert (&sval, &eval))
+    if ((!bad) != _moo_value_convert (&sval, &eval))
     {
         if (!bad)
             TEST_FAILED_MSG ("could not convert string '%s' to enum '%s'",
@@ -1047,7 +1047,7 @@ test_one_flags (GType       flags_type,
 
     TEST_EXPECT_WARNING (0, "%s", "string to flags");
 
-    if (!bad != _moo_value_convert (&sval, &eval))
+    if ((!bad) != _moo_value_convert (&sval, &eval))
     {
         if (!bad)
             TEST_FAILED_MSG ("could not convert string '%s' to flags type '%s'",

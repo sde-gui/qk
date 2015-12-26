@@ -354,7 +354,7 @@ typedef struct {
 static int
 cache_glob_lookup_literal (const char *file_name,
 			   const char *mime_types[],
-			   int         n_mime_types)
+			   G_GNUC_UNUSED int n_mime_types)
 {
   const char *ptr;
   int i, min, max, mid, cmp;

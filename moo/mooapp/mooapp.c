@@ -697,7 +697,7 @@ moo_app_init_mac (G_GNUC_UNUSED MooApp *app)
 static void
 input_callback (char        cmd,
                 const char *data,
-                guint       len,
+                gsize       len,
                 gpointer    cb_data)
 {
     MooApp *app = cb_data;

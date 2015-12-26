@@ -2094,7 +2094,7 @@ hf_format_chunk_new (HFFormatType type,
     chunk->type = type;
 
     if (string)
-        chunk->string = g_strndup (string, len >= 0 ? len : strlen (string));
+        chunk->string = g_strndup (string, len >= 0 ? (gsize) len : strlen (string));
 
     return chunk;
 }
