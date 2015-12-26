@@ -14,6 +14,7 @@ G_BEGIN_DECLS
 
 typedef struct mgw_errno_t mgw_errno_t;
 typedef struct MGW_FILE MGW_FILE;
+typedef struct MgwFd MgwFd;
 
 enum mgw_errno_value_t
 {
@@ -36,6 +37,11 @@ struct mgw_errno_t
     mgw_errno_value_t value;
 };
 
+struct MgwFd
+{
+    int value;
+};
+
 extern const mgw_errno_t MGW_E_NOERROR;
 extern const mgw_errno_t MGW_E_EXIST;
 
@@ -53,11 +59,27 @@ gsize mgw_fwrite(const void *ptr, gsize size, gsize nmemb, MGW_FILE *stream);
 int mgw_ferror (MGW_FILE *file);
 char *mgw_fgets(char *s, int size, MGW_FILE *stream);
 
+MgwFd mgw_open (const char *filename, int flags, int mode);
+int mgw_close (MgwFd fd);
+
 int mgw_unlink (const char *path, mgw_errno_t *err);
 int mgw_remove (const char *path, mgw_errno_t *err);
 int mgw_mkdir (const gchar *filename, int mode, mgw_errno_t *err);
 int mgw_mkdir_with_parents (const gchar *pathname, gint mode, mgw_errno_t *err);
 
+gboolean
+mgw_spawn_async_with_pipes (const gchar *working_directory,
+                            gchar **argv,
+                            gchar **envp,
+                            GSpawnFlags flags,
+                            GSpawnChildSetupFunc child_setup,
+                            gpointer user_data,
+                            GPid *child_pid,
+                            MgwFd *standard_input,
+                            MgwFd *standard_output,
+                            MgwFd *standard_error,
+                            GError **error);
+GIOChannel *mgw_io_channel_unix_new (MgwFd fd);
 
 #ifndef MOO_DO_NOT_MANGLE_GLIB_FUNCTIONS
 
@@ -71,6 +93,9 @@ int mgw_mkdir_with_parents (const gchar *pathname, gint mode, mgw_errno_t *err);
 #undef g_unlink
 #undef g_mkdir
 #undef g_mkdir_with_parents
+#undef g_open
+#undef g_spawn_async_with_pipes
+#undef g_io_channel_unix_new
 
 #define g_stat DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
 #define g_lstat DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
@@ -82,6 +107,9 @@ int mgw_mkdir_with_parents (const gchar *pathname, gint mode, mgw_errno_t *err);
 #define g_unlink DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
 #define g_mkdir DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
 #define g_mkdir_with_parents DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
+#define g_open DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
+#define g_spawn_async_with_pipes DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
+#define g_io_channel_unix_new DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
 
 #endif // MOO_DO_NOT_MANGLE_GLIB_FUNCTIONS
 

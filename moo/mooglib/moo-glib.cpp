@@ -4,9 +4,12 @@
 #include <mooglib/moo-stat.h>
 
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <time.h>
 #include <stdio.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 
 const mgw_errno_t MGW_E_NOERROR { MGW_ENOERROR };
@@ -166,6 +169,19 @@ mgw_fgets(char *s, int size, MGW_FILE *stream)
 }
 
 
+MgwFd
+mgw_open (const char *filename, int flags, int mode)
+{
+    return { g_open (filename, flags, mode) };
+}
+
+int
+mgw_close (MgwFd fd)
+{
+    return close (fd.value);
+}
+
+
 int
 mgw_unlink (const char *path, mgw_errno_t *err)
 {
@@ -188,4 +204,32 @@ int
 mgw_mkdir_with_parents (const gchar *pathname, gint mode, mgw_errno_t *err)
 {
     return call_with_errno (err, g_mkdir_with_parents, pathname, mode);
+}
+
+
+gboolean
+mgw_spawn_async_with_pipes (const gchar *working_directory,
+                            gchar **argv,
+                            gchar **envp,
+                            GSpawnFlags flags,
+                            GSpawnChildSetupFunc child_setup,
+                            gpointer user_data,
+                            GPid *child_pid,
+                            MgwFd *standard_input,
+                            MgwFd *standard_output,
+                            MgwFd *standard_error,
+                            GError **error)
+{
+    return g_spawn_async_with_pipes (working_directory, argv, envp, flags,
+                                     child_setup, user_data, child_pid,
+                                     standard_input ? &standard_input->value : nullptr,
+                                     standard_output ? &standard_output->value : nullptr,
+                                     standard_error ? &standard_error->value : nullptr,
+                                     error);
+}
+
+GIOChannel *
+mgw_io_channel_unix_new (MgwFd fd)
+{
+    return g_io_channel_unix_new (fd.value);
 }
