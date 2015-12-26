@@ -664,6 +664,9 @@ const char *
 _xdg_mime_cache_get_mime_type_for_file (const char  *file_name,
 					int         *is_regular)
 {
+#ifdef __WIN32__
+  return XDG_MIME_TYPE_UNKNOWN;
+#else
   const char *mime_type;
   const char *mime_types[10];
   FILE *file;
@@ -691,7 +694,7 @@ _xdg_mime_cache_get_mime_type_for_file (const char  *file_name,
       struct stat statbuf;
 
       if (XDG_MIME_STAT (file_name, &statbuf) != 0)
-	return XDG_MIME_TYPE_UNKNOWN;
+        return XDG_MIME_TYPE_UNKNOWN;
 
       is_regular_here = S_ISREG (statbuf.st_mode);
       is_regular = &is_regular_here;
@@ -730,6 +733,7 @@ _xdg_mime_cache_get_mime_type_for_file (const char  *file_name,
   fclose (file);
 
   return mime_type;
+#endif // !__WIN32__
 }
 
 const char *

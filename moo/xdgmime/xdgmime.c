@@ -423,6 +423,9 @@ const char *
 xdg_mime_get_mime_type_for_file (const char  *file_name,
                                  int         *is_regular)
 {
+#ifdef __WIN32__
+  return XDG_MIME_TYPE_UNKNOWN;
+#else
   const char *mime_type;
   /* currently, only a few globs occur twice, and none
    * more often, so 5 seems plenty.
@@ -503,6 +506,7 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
     return mime_type;
 
   return XDG_MIME_TYPE_UNKNOWN;
+#endif // __WIN32__
 }
 
 const char *

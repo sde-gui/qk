@@ -37,6 +37,7 @@ SET(mooutils_sources
 	mooutils/mooappinput-common.c
 	mooutils/mooappinput-priv.h
 	mooutils/mooappinput.h
+	mooutils/mooappinput-win32.c
 	mooutils/mooatom.h
 	mooutils/moobigpaned.c
 	mooutils/moobigpaned.h
