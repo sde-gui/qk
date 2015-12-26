@@ -260,7 +260,6 @@ source_files = \
     ../moo/mooutils/mooutils-win32.c\
     ../moo/mooutils/moowin32/mingw/fnmatch.h\
     ../moo/mooutils/moowin32/mingw/netinet/in.h\
-    ../moo/mooutils/moowin32/mingw/sys/mman.h\
     ../moo/mooutils/moowin32/ms/sys/time.h\
     ../moo/mooutils/moowin32/ms/unistd.h\
     ../moo/mooutils/moowindow.c\
