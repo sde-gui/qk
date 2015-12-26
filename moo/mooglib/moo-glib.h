@@ -43,8 +43,8 @@ struct MgwFd
     int value;
 };
 
-extern const mgw_errno_t MGW_E_NOERROR;
-extern const mgw_errno_t MGW_E_EXIST;
+GLIB_VAR const mgw_errno_t MGW_E_NOERROR;
+GLIB_VAR const mgw_errno_t MGW_E_EXIST;
 
 inline static gboolean mgw_errno_is_set (mgw_errno_t err) { return err.value != MGW_ENOERROR; }
 const char *mgw_strerror (mgw_errno_t err);
