@@ -42,7 +42,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-#include <glib/gstdio.h>
+#include <mooglib/moo-glib.h>
 
 #define ENCODING_LOCALE "LOCALE"
 

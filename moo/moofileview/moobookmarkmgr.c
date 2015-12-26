@@ -32,7 +32,7 @@
 #include <unistd.h>
 #endif
 #include <gtk/gtk.h>
-#include <glib/gstdio.h>
+#include <mooglib/moo-glib.h>
 
 #define COLUMN_BOOKMARK MOO_BOOKMARK_MGR_COLUMN_BOOKMARK
 

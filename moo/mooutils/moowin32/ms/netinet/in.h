@@ -1,7 +1,7 @@
 #ifndef MOO_NETINET_IN_H
 #define MOO_NETINET_IN_H
 
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 
 #define ntohl g_ntohl
 #define ntohs g_ntohs

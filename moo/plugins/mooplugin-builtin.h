@@ -16,7 +16,7 @@
 #ifndef MOO_EDIT_PLUGINS_H
 #define MOO_EDIT_PLUGINS_H
 
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 
 G_BEGIN_DECLS
 

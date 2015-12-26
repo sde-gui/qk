@@ -26,7 +26,7 @@
 #include "mooedit/mooeditsavemult-gxml.h"
 #include "mooedit/mootryencoding-gxml.h"
 #include <gtk/gtk.h>
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 #include <string.h>
 
 

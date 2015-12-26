@@ -1,7 +1,7 @@
 #ifndef MEDIT_PYTHON_H
 #define MEDIT_PYTHON_H
 
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 
 G_BEGIN_DECLS
 

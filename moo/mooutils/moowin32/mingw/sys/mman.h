@@ -1,7 +1,7 @@
 #ifndef MOO_SYS_MMAN_H
 #define MOO_SYS_MMAN_H
 
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 
 #define mmap	_moo_win32_mmap
 #define munmap	_moo_win32_munmap

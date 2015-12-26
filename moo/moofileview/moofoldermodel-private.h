@@ -16,7 +16,7 @@
 #ifndef MOO_FOLDER_MODEL_PRIVATE_H
 #define MOO_FOLDER_MODEL_PRIVATE_H
 
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 #include <string.h>
 
 G_BEGIN_DECLS

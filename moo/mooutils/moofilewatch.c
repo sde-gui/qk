@@ -35,7 +35,7 @@
 #include <time.h>
 #endif
 
-#include <glib/gstdio.h>
+#include <mooglib/moo-glib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>

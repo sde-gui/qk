@@ -16,7 +16,7 @@
 #ifndef MOO_UTILS_FS_H
 #define MOO_UTILS_FS_H
 
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 #include <gtk/gtk.h>
 
 /* MSVC */

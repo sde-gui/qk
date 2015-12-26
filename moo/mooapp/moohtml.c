@@ -20,7 +20,7 @@
 #include "mooutils/moocompat.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 #include <string.h>
 #include <errno.h>
 

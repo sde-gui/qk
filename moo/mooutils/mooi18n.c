@@ -16,7 +16,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-tests.h"
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 
 
 /**

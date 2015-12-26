@@ -44,7 +44,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/moolist.h"
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 #include <string.h>
 #include <stdlib.h>
 

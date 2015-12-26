@@ -17,7 +17,7 @@
 #define MOO_TEST_MACROS_H
 
 #include "moo-test-utils.h"
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>

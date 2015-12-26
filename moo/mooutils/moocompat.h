@@ -1,7 +1,7 @@
 #ifndef MOO_GTK_H
 #define MOO_GTK_H
 
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 #include <gtk/gtk.h>
 
 #ifndef GTK_WIDGET_REALIZED

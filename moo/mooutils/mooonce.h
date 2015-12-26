@@ -1,7 +1,7 @@
 #ifndef MOO_ONCE_H
 #define MOO_ONCE_H
 
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 #include <mooutils/mooutils-macros.h>
 
 #define MOO_DO_ONCE_BEGIN                       \

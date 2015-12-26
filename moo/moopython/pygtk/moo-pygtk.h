@@ -17,7 +17,7 @@
 #define MOO_PYGTK_H
 
 #include <Python.h>
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 
 G_BEGIN_DECLS
 

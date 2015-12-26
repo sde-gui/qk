@@ -20,7 +20,7 @@
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/moostock.h"
 #include "moo-pixbufs.h"
-#include <glib/gstdio.h>
+#include <mooglib/moo-glib.h>
 #include <gtk/gtk.h>
 #include <sys/stat.h>
 #include <string.h>

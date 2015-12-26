@@ -16,7 +16,7 @@
 #ifndef MOO_UTILS_MEM_H
 #define MOO_UTILS_MEM_H
 
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 #include <string.h>
 
 

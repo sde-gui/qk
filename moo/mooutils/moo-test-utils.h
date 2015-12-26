@@ -16,7 +16,7 @@
 #ifndef MOO_TEST_UTILS_H
 #define MOO_TEST_UTILS_H
 
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 #include <string.h>
 #include <stdarg.h>
 #include <mooutils/mooutils-macros.h>

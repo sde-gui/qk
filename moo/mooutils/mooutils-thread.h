@@ -16,7 +16,7 @@
 #ifndef MOO_UTILS_WIN32_H
 #define MOO_UTILS_WIN32_H
 
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 
 G_BEGIN_DECLS
 

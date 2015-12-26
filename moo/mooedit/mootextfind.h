@@ -19,7 +19,7 @@
 #include <gtk/gtk.h>
 #include <mooedit/mooedit-enums.h>
 #include <mooutils/moohistorylist.h>
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 
 G_BEGIN_DECLS
 

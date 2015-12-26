@@ -16,7 +16,7 @@
 #ifndef MOO_PYTHON_BUILTIN_H
 #define MOO_PYTHON_BUILTIN_H
 
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 
 G_BEGIN_DECLS
 

@@ -45,7 +45,7 @@
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-#include <glib/gstdio.h>
+#include <mooglib/moo-glib.h>
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>

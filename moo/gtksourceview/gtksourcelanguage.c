@@ -33,7 +33,7 @@
 #include <fcntl.h>
 
 #include <libxml/xmlreader.h>
-#include <glib/gstdio.h>
+#include <mooglib/moo-glib.h>
 #include "gtksourceview-i18n.h"
 #include "gtksourcelanguage-private.h"
 #include "gtksourcelanguage.h"

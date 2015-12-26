@@ -19,7 +19,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
 #include <string.h>
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 
 
 typedef struct {

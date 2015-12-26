@@ -18,7 +18,7 @@
 
 #include <mooutils/mooutils-macros.h>
 #include <stdarg.h>
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 
 G_BEGIN_DECLS
 

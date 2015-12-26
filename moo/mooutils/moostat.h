@@ -1,7 +1,7 @@
 #ifndef MOO_STAT_H
 #define MOO_STAT_H
 
-#include <glib/gstdio.h>
+#include <mooglib/moo-glib.h>
 
 #undef MOO_G_STAT_BROKEN
 

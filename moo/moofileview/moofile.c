@@ -31,7 +31,7 @@
 #include "mooutils/moostat.h"
 #include "marshals.h"
 #include "mooutils/moo-mime.h"
-#include <glib/gstdio.h>
+#include <mooglib/moo-glib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>

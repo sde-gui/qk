@@ -46,7 +46,7 @@
 #include "mooutils/moohelp.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mooutils-script.h"
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>

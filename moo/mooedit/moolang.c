@@ -18,7 +18,7 @@
 #endif
 #include "mooedit/moolang-private.h"
 #include "mooutils/mooi18n.h"
-#include <glib/gstdio.h>
+#include <mooglib/moo-glib.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #ifdef HAVE_UNISTD_H

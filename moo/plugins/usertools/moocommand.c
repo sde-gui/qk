@@ -28,7 +28,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
 #include <gtk/gtk.h>
-#include <glib/gstdio.h>
+#include <mooglib/moo-glib.h>
 #include <string.h>
 #include <stdio.h>
 

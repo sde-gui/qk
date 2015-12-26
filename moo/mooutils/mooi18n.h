@@ -17,7 +17,7 @@
 #define MOO_I18N_H
 
 #include <config.h>
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 
 #ifdef ENABLE_NLS
 

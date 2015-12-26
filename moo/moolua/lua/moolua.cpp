@@ -26,8 +26,7 @@
 #ifdef __WIN32__
 #include <io.h>
 #endif
-#include <glib.h>
-#include <glib/gstdio.h>
+#include <mooglib/moo-glib.h>
 
 void
 lua_push_utf8string (lua_State  *L,

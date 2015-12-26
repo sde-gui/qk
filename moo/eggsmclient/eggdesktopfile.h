@@ -20,7 +20,7 @@
 #ifndef __EGG_DESKTOP_FILE_H__
 #define __EGG_DESKTOP_FILE_H__
 
-#include <glib.h>
+#include <mooglib/moo-glib.h>
 
 G_BEGIN_DECLS
 
