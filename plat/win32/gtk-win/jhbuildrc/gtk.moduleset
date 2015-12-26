@@ -386,6 +386,13 @@
     </dependencies>
   </autotools>
 
+  <autotools id="mooglib">
+    <branch repo="medit.bitbucket.org" module="mooglib"/>
+    <dependencies>
+      <dep package="glib"/>
+    </dependencies>
+  </autotools>
+
   <metamodule id="medit-gtk-win">
     <dependencies>
       <dep package="hicolor-icon-theme"/>
@@ -393,6 +400,7 @@
       <dep package="gtk"/>
       <!--<dep package="intltool"/>-->
       <dep package="pygtk"/>
+      <dep package="mooglib"/>
     </dependencies>
   </metamodule>
 
