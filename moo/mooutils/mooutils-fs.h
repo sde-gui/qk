@@ -83,9 +83,6 @@ gboolean        _moo_move_files_ui          (GList      *filenames,
 
 int             _moo_mkdir                  (const char  *path,
                                              mgw_errno_t *err); /* S_IRWXU on unix */
-int             _moo_rename                 (const char  *old_name,
-                                             const char  *new_name,
-                                             mgw_errno_t *err);
 
 gboolean        _moo_glob_match_simple      (const char *pattern,
                                              const char *filename);

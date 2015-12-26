@@ -427,7 +427,7 @@ _moo_rename_file (const char *path,
     g_return_val_if_fail (path != NULL, FALSE);
     g_return_val_if_fail (new_path != NULL, FALSE);
 
-    if (_moo_rename (path, new_path, &err) != 0)
+    if (mgw_rename (path, new_path, &err) != 0)
     {
         char *utf8_path = g_filename_display_name (path);
         char *utf8_new_path = g_filename_display_name (new_path);
@@ -533,86 +533,6 @@ _moo_filename_to_uri (const char *file,
     g_free (freeme);
     return uri;
 }
-
-
-#if 0
-static int
-_moo_chdir (const char *path)
-{
-#ifdef __WIN32__
-    CCALL_1 (_chdir, _wchdir, path);
-#else
-    return chdir (path);
-#endif
-}
-
-// char *
-// _moo_normalize_file_path (const char *filename)
-// {
-//     char *freeme = NULL;
-//     char *working_dir, *basename, *dirname;
-//     char *real_filename = NULL;
-//
-//     g_return_val_if_fail (filename != NULL, NULL);
-//
-//     working_dir = g_get_current_dir ();
-//     g_return_val_if_fail (working_dir != NULL, g_strdup (filename));
-//
-//     if (!_moo_path_is_absolute (filename))
-//     {
-//         freeme = g_build_filename (working_dir, filename, NULL);
-//         filename = freeme;
-//     }
-//
-//     /* It's an error to call this function for a directory, so if
-//      * it's the case, just return what we got. */
-//     if (g_file_test (filename, G_FILE_TEST_IS_DIR) ||
-//         /* and this totally screws up dirname/basename */
-//         g_str_has_suffix (filename, G_DIR_SEPARATOR_S))
-//     {
-//         if (!freeme)
-//             freeme = g_strdup (filename);
-//         g_free (working_dir);
-//         return freeme;
-//     }
-//
-//     dirname = g_path_get_dirname (filename);
-//     basename = g_path_get_basename (filename);
-//     g_return_val_if_fail (dirname && basename, g_strdup (filename));
-//
-//     errno = 0;
-//
-//     if (_moo_chdir (dirname) != 0)
-//     {
-//         int err = errno;
-//         g_warning ("%s", g_strerror (err));
-//     }
-//     else
-//     {
-//         char *real_dirname = g_get_current_dir ();
-//         real_filename = g_build_filename (real_dirname, basename, NULL);
-//         g_free (real_dirname);
-//
-//         errno = 0;
-//
-//         if (_moo_chdir (working_dir) != 0)
-//         {
-//             int err = errno;
-//             g_warning ("%s", g_strerror (err));
-//         }
-//     }
-//
-//     if (!real_filename)
-//         real_filename = g_strdup (filename);
-//
-//     g_free (freeme);
-//     g_free (dirname);
-//     g_free (basename);
-//     g_free (working_dir);
-//
-//     return real_filename;
-// }
-#endif
 
 
 #ifndef __WIN32__
@@ -1125,123 +1045,13 @@ moo_test_mooutils_fs (void)
 }
 
 
-/**********************************************************************/
-/* MSLU for poor
- */
-
-#ifdef __WIN32__
-static gpointer
-convert_filename (const char *filename,
-                  gboolean   *use_wide_char_api)
-{
-    if (G_WIN32_HAVE_WIDECHAR_API ())
-    {
-        *use_wide_char_api = TRUE;
-        return g_utf8_to_utf16 (filename, -1, NULL, NULL, NULL);
-    }
-    else
-    {
-        *use_wide_char_api = FALSE;
-        return g_locale_from_utf8 (filename, -1, NULL,
-                                   NULL, NULL);
-    }
-}
-#endif
-
-
-#define CCALL_1(_AFunc, _WFunc, path)                           \
-G_STMT_START {                                                  \
-    gboolean use_wide_char_api;                                 \
-    gpointer converted;                                         \
-    int retval;                                                 \
-    mgw_errno_t save_errno;                                     \
-                                                                \
-    converted = convert_filename (path, &use_wide_char_api);    \
-                                                                \
-    if (!converted)                                             \
-    {                                                           \
-        mgw_set_errno (MGW_EINVAL);                             \
-        return -1;                                              \
-    }                                                           \
-                                                                \
-    mgw_set_errno (0);                                          \
-                                                                \
-    if (use_wide_char_api)                                      \
-        retval = _WFunc (converted);                            \
-    else                                                        \
-        retval = _AFunc (converted);                            \
-                                                                \
-    save_errno = mgw_errno ();                                  \
-    g_free (converted);                                         \
-    mgw_set_errno (save_errno);                                 \
-                                                                \
-    return retval;                                              \
-} G_STMT_END
-
-
 int
 _moo_mkdir (const char *path, mgw_errno_t *err)
 {
-#ifdef __WIN32__
-    CCALL_1 (mkdir, _wmkdir, path, err);
+#ifndef __WIN32__
+    return mgw_mkdir (path, S_IRWXU, err);
 #else
-    int result;
-    errno = 0;
-    result = mkdir (path, S_IRWXU);
-    err->value = errno;
-    return result;
-#endif
-}
-
-
-int
-_moo_rename (const char  *old_name,
-             const char  *new_name,
-             mgw_errno_t *err)
-{
-#ifdef __WIN32__
-    gboolean use_wide_char_api;
-    gpointer old_conv, new_conv;
-    int retval;
-
-    if (G_WIN32_HAVE_WIDECHAR_API ())
-    {
-        use_wide_char_api = TRUE;
-        old_conv = g_utf8_to_utf16 (old_name, -1, NULL, NULL, NULL);
-        new_conv = g_utf8_to_utf16 (new_name, -1, NULL, NULL, NULL);
-    }
-    else
-    {
-        use_wide_char_api = FALSE;
-        old_conv = g_locale_from_utf8 (old_name, -1, NULL, NULL, NULL);
-        new_conv = g_locale_from_utf8 (new_name, -1, NULL, NULL, NULL);
-    }
-
-    if (!old_conv || !new_conv)
-    {
-        g_free (old_conv);
-        g_free (new_conv);
-        *err = MGW_E_INVAL;
-        return -1;
-    }
-
-    mgw_set_errno (0);
-
-    if (use_wide_char_api)
-        retval = mw_wrename (old_conv, new_conv, err);
-    else
-        retval = mw_rename (old_conv, new_conv, err);
-
-    g_free (old_conv);
-    g_free (new_conv);
-
-    return retval;
-#else
-    int result;
-    errno = 0;
-    result = rename (old_name, new_name);
-    err->value = errno;
-    return result;
+    return mgw_mkdir (path, 0, err);
 #endif
 }
 

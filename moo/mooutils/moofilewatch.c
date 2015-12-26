@@ -795,11 +795,9 @@ fam_thread_check_dir (FAMThread *thr,
                       guint      idx)
 {
     MgwStatBuf buf;
+    mgw_errno_t err;
 
-    errno = 0;
-
-    if (mgw_stat (thr->watches[idx].path, &buf) != 0 &&
-        errno == ENOENT)
+    if (mgw_stat (thr->watches[idx].path, &buf, &err) != 0 && err.value == MGW_ENOENT)
     {
         fam_thread_event (MOO_FILE_EVENT_DELETED,
                           FALSE, NULL,
@@ -895,7 +893,7 @@ fam_thread_main (FAMThread *thr)
 
         if (ret == WAIT_OBJECT_0)
             fam_thread_do_command (thr);
-        else if (WAIT_OBJECT_0 < ret && ret < (int) thr->n_events)
+        else if ((int) WAIT_OBJECT_0 < ret && ret < (int) thr->n_events)
             fam_thread_check_dir (thr, ret - WAIT_OBJECT_0);
         else
         {
@@ -1130,7 +1128,7 @@ watch_win32_start_monitor (MooFileWatch   *watch,
         return FALSE;
     }
 
-    monitor->isdir = S_ISDIR (buf.st_mode) != 0;
+    monitor->isdir = buf.isdir;
 
     if (!monitor->isdir)
         return watch_stat_start_monitor (watch, monitor, error);

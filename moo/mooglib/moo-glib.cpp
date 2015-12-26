@@ -11,6 +11,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#ifdef __WIN32__
+#include <io.h>
+#endif // __WIN32__
 
 const mgw_errno_t MGW_E_NOERROR { MGW_ENOERROR };
 const mgw_errno_t MGW_E_EXIST   { MGW_EEXIST };
@@ -33,11 +36,36 @@ static void convert_g_stat_buf (const GStatBuf* gbuf, MgwStatBuf* mbuf)
 
     mbuf->isreg = S_ISREG (gbuf->st_mode);
     mbuf->isdir = S_ISDIR (gbuf->st_mode);
+
+#ifdef S_ISLNK
     mbuf->islnk = S_ISLNK (gbuf->st_mode);
+#else
+    mbuf->islnk = 0;
+#endif
+
+#ifdef S_ISSOCK
     mbuf->issock = S_ISSOCK (gbuf->st_mode);
+#else
+    mbuf->issock = 0;
+#endif
+
+#ifdef S_ISFIFO
     mbuf->isfifo = S_ISFIFO (gbuf->st_mode);
+#else
+    mbuf->isfifo = 0;
+#endif
+
+#ifdef S_ISCHR
     mbuf->ischr = S_ISCHR (gbuf->st_mode);
+#else
+    mbuf->ischr = 0;
+#endif
+
+#ifdef S_ISBLK
     mbuf->isblk = S_ISBLK (gbuf->st_mode);
+#else
+    mbuf->isblk = 0;
+#endif
 }
 
 
@@ -101,6 +129,19 @@ mgw_localtime (const mgw_time_t *timep)
     time_t t = timep->value;
     return localtime(&t);
 }
+
+#ifdef __WIN32__
+static struct tm *
+localtime_r (const time_t *timep,
+             struct tm *result)
+{
+    struct tm *res;
+    res = localtime (timep);
+    if (res)
+        *result = *res;
+    return res;
+}
+#endif
 
 const struct tm *
 mgw_localtime_r (const mgw_time_t *timep, struct tm *result, mgw_errno_t *err)
@@ -191,7 +232,13 @@ int
 mgw_pipe (MgwFd *fds)
 {
     int t[2];
+
+#ifndef __WIN32__
     int result = pipe (t);
+#else
+    int result = _pipe(t, 4096, O_BINARY);
+#endif
+
     fds[0].value = t[0];
     fds[1].value = t[1];
     return result;
@@ -214,6 +261,12 @@ int
 mgw_remove (const char *path, mgw_errno_t *err)
 {
     return call_with_errno (err, g_remove, path);
+}
+
+int
+mgw_rename (const char *oldpath, const char *newpath, mgw_errno_t *err)
+{
+    return call_with_errno (err, g_rename, oldpath, newpath);
 }
 
 int
@@ -268,3 +321,11 @@ mgw_io_channel_unix_new (MgwFd fd)
 {
     return g_io_channel_unix_new (fd.value);
 }
+
+#ifdef __WIN32__
+GIOChannel *
+mgw_io_channel_win32_new_fd (MgwFd fd)
+{
+    return g_io_channel_win32_new_fd (fd.value);
+}
+#endif // __WIN32__

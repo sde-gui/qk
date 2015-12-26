@@ -788,7 +788,7 @@ move_file_unix (G_GNUC_UNUSED MooFileSystem *fs,
     g_return_val_if_fail (_moo_path_is_absolute (new_path), FALSE);
 
     /* XXX */
-    if (_moo_rename (old_path, new_path, &err))
+    if (mgw_rename (old_path, new_path, &err))
     {
         g_set_error (error, MOO_FILE_ERROR,
                      _moo_file_error_from_errno (err),

@@ -68,6 +68,7 @@ void mgw_perror (const char *s);
 
 int mgw_unlink (const char *path, mgw_errno_t *err);
 int mgw_remove (const char *path, mgw_errno_t *err);
+int mgw_rename (const char *oldpath, const char *newpath, mgw_errno_t *err);
 int mgw_mkdir (const gchar *filename, int mode, mgw_errno_t *err);
 int mgw_mkdir_with_parents (const gchar *pathname, gint mode, mgw_errno_t *err);
 
@@ -84,6 +85,10 @@ mgw_spawn_async_with_pipes (const gchar *working_directory,
                             MgwFd *standard_error,
                             GError **error);
 GIOChannel *mgw_io_channel_unix_new (MgwFd fd);
+
+#ifdef __WIN32__
+GIOChannel *mgw_io_channel_win32_new_fd (MgwFd fd);
+#endif
 
 enum mgw_access_mode_value_t
 {
@@ -103,6 +108,7 @@ int mgw_access (const char *path, mgw_access_mode_t mode);
 #ifndef MOO_DO_NOT_MANGLE_GLIB_FUNCTIONS
 
 #undef g_stat
+#undef g_rename
 #undef g_access
 #undef g_lstat
 #undef g_strerror
@@ -116,8 +122,10 @@ int mgw_access (const char *path, mgw_access_mode_t mode);
 #undef g_open
 #undef g_spawn_async_with_pipes
 #undef g_io_channel_unix_new
+#undef g_io_channel_win32_new_fd
 
 #define g_stat DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
+#define g_rename DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
 #define g_access DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
 #define g_lstat DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
 #define g_strerror DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
@@ -131,6 +139,7 @@ int mgw_access (const char *path, mgw_access_mode_t mode);
 #define g_open DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
 #define g_spawn_async_with_pipes DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
 #define g_io_channel_unix_new DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
+#define g_io_channel_win32_new_fd DO_NOT_USE_THIS_DIRECTLY_USE_MGW_WRAPPERS_INSTEAD
 
 #endif // MOO_DO_NOT_MANGLE_GLIB_FUNCTIONS
 

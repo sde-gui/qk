@@ -723,20 +723,6 @@ moo_print_operation_calc_page_size (MooPrintOperation    *op,
 }
 
 
-#ifdef __WIN32__
-static struct tm *
-localtime_r (const time_t *timep,
-             struct tm *result)
-{
-    struct tm *res;
-    res = localtime (timep);
-    if (res)
-        *result = *res;
-    return res;
-}
-#endif
-
-
 static gboolean
 line_number_displayed (MooPrintOperation *op,
                        int                line_no)
