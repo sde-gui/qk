@@ -177,7 +177,7 @@ SET(source_files
     ../moo/mooutils/mooactiongroup.h
     ../moo/mooutils/mooaction.h
     ../moo/mooutils/mooaction-private.h
-    ../moo/mooutils/mooappinput.c
+    ../moo/mooutils/mooappinput-common.c
     ../moo/mooutils/mooappinput.h
     ../moo/mooutils/mooapp-ipc.c
     ../moo/mooutils/mooapp-ipc.h

@@ -32,8 +32,9 @@ moo_sources +=				\
 	mooutils/mooactiongroup.h	\
 	mooutils/mooapp-ipc.c		\
 	mooutils/mooapp-ipc.h		\
-	mooutils/mooappinput.c		\
+	mooutils/mooappinput-common.c	\
 	mooutils/mooappinput.h		\
+	mooutils/mooappinput-priv.h	\
 	mooutils/mooatom.h		\
 	mooutils/moobigpaned.c		\
 	mooutils/moobigpaned.h		\
@@ -160,15 +161,27 @@ mooutils/mooutils-enums.c.stamp: $(moo_utils_enum_headers) Makefile mooutils/moo
 	$(AM_V_at)echo stamp > mooutils/mooutils-enums.c.stamp
 endif
 
-mooutils_win32_sources = mooutils/mooutils-win32.c
+mooutils_win32_sources =		\
+	mooutils/mooutils-win32.c	\
+	mooutils/mooappinput-win32.c
+
+mooutils_unix_sources =			\
+	mooutils/mooappinput-unix.c
+
 mooutils_unittest_sources =		\
 	mooutils/moo-test-utils.c	\
 	mooutils/moo-test-utils.h	\
 	mooutils/moo-test-macros.h
-EXTRA_DIST += $(mooutils_win32_sources) $(mooutils_unittest_sources)
+
+EXTRA_DIST += 				\
+	$(mooutils_win32_sources)	\
+	$(mooutils_unix_sources)	\
+	$(mooutils_unittest_sources)
 
 if MOO_OS_WIN32
 moo_sources += $(mooutils_win32_sources)
+else
+moo_sources += $(mooutils_unix_sources)
 endif
 
 moo_sources += $(mooutils_unittest_sources)

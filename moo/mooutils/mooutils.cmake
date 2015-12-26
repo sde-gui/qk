@@ -34,7 +34,8 @@ SET(mooutils_sources
 	mooutils/mooactiongroup.h
 	mooutils/mooapp-ipc.c
 	mooutils/mooapp-ipc.h
-	mooutils/mooappinput.c
+	mooutils/mooappinput-common.c
+	mooutils/mooappinput-priv.h
 	mooutils/mooappinput.h
 	mooutils/mooatom.h
 	mooutils/moobigpaned.c
