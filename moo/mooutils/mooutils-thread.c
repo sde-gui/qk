@@ -25,13 +25,6 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#ifdef __WIN32__
-#include <windows.h>
-#include <io.h>
-#ifndef pipe
-#define pipe(phandles)	_pipe (phandles, 4096, _O_BINARY)
-#endif
-#endif
 
 MOO_DEBUG_INIT(threads, FALSE)
 
@@ -55,8 +48,8 @@ typedef struct {
     QueueClientList *clients;
     guint last_id;
 
-    int pipe_in;
-    int pipe_out;
+    MgwFd pipe_in;
+    MgwFd pipe_out;
     GIOChannel *io;
 
     GHashTable *data;
@@ -249,12 +242,12 @@ init_queue (void)
 
     if (!queue.init)
     {
-        int fds[2];
+        MgwFd fds[2];
         GSource *source;
 
-        if (pipe (fds) != 0)
+        if (mgw_pipe (fds) != 0)
         {
-            perror ("pipe");
+            mgw_perror ("pipe");
             goto out;
         }
 
@@ -266,7 +259,7 @@ init_queue (void)
 #ifdef __WIN32__
         queue.io = mgw_io_channel_win32_new_fd (queue.pipe_out);
 #else
-        queue.io = g_io_channel_unix_new (queue.pipe_out);
+        queue.io = mgw_io_channel_unix_new (queue.pipe_out);
 #endif
 
         if (queue.io)
@@ -360,7 +353,7 @@ _moo_event_queue_push (guint          event_id,
 
     if (!queue.data)
     {
-        seriously_ignore_return_value (write (queue.pipe_in, &c, 1));
+        seriously_ignore_return_value (mgw_write (queue.pipe_in, &c, 1));
         queue.data = g_hash_table_new (g_direct_hash, g_direct_equal);
     }
 
