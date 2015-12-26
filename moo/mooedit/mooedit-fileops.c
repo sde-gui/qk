@@ -39,7 +39,6 @@
 #include <unistd.h>
 #endif
 #include <stdio.h>
-#include <errno.h>
 
 #include <mooglib/moo-glib.h>
 

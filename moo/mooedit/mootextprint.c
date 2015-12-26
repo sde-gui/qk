@@ -25,9 +25,8 @@
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mootype-macros.h"
 #include "mooedit/mooprint-gxml.h"
+#include "mooglib/moo-time.h"
 #include <sys/types.h>
-#include <time.h>
-#include <errno.h>
 #include <string.h>
 
 #ifdef __WIN32__
@@ -903,7 +902,8 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
     MooPrintSettings *settings;
     PangoFontDescription *font = NULL;
     GTimer *timer;
-    time_t t;
+    mgw_time_t t;
+    mgw_errno_t err;
 
     g_return_if_fail (op->priv->buffer != NULL);
     g_return_if_fail (op->priv->first_line >= 0);
@@ -984,20 +984,11 @@ moo_print_operation_begin_print (GtkPrintOperation *operation,
     if (!op->priv->tm)
         op->priv->tm = g_new (struct tm, 1);
 
-    errno = 0;
-    time (&t);
+    mgw_time (&t, &err);
 
-    if (errno)
+    if (mgw_errno_is_set (err) || !mgw_localtime_r (&t, op->priv->tm, &err))
     {
-        int err = errno;
-        g_critical ("time: %s", g_strerror (err));
-        g_free (op->priv->tm);
-        op->priv->tm = NULL;
-    }
-    else if (!localtime_r (&t, op->priv->tm))
-    {
-        int err = errno;
-        g_critical ("time: %s", g_strerror (err));
+        g_critical ("time: %s", mgw_strerror (err));
         g_free (op->priv->tm);
         op->priv->tm = NULL;
     }

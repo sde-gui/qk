@@ -15,6 +15,7 @@
  */
 
 #include "config.h"
+#define MOO_DO_NOT_MANGLE_GLIB_FUNCTIONS
 #include "ctags-doc.h"
 #include "ctags-view.h"
 #include "readtags.h"

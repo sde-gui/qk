@@ -41,8 +41,8 @@
 #include "mooutils/moolist.h"
 #include <gtk/gtk.h>
 #include <string.h>
-#include <errno.h>
 #include <stdlib.h>
+#include <errno.h>
 
 typedef enum {
     MOO_GLADE_XML_ERROR_FAILED
@@ -1766,8 +1766,6 @@ parse_property (GParamSpec     *param_spec,
 
     g_value_init (&param->value, param_spec->value_type);
 
-    errno = 0;
-
     if (param_spec->value_type == G_TYPE_CHAR)
     {
 #if GLIB_CHECK_VERSION(2,32,0)
@@ -1810,9 +1808,10 @@ parse_property (GParamSpec     *param_spec,
              param_spec->value_type == G_TYPE_ULONG ||
              param_spec->value_type == G_TYPE_UINT64) /* XXX */
     {
-        guint64 val = g_ascii_strtoull (value, NULL, 0);
+        mgw_errno_t err;
+        guint64 val = mgw_ascii_strtoull (value, NULL, 0, &err);
 
-        if (errno)
+        if (mgw_errno_is_set (err))
         {
             g_warning ("could not convert string '%s' to a guint",
                        value);
@@ -1839,9 +1838,10 @@ parse_property (GParamSpec     *param_spec,
     else if (param_spec->value_type == G_TYPE_FLOAT ||
              param_spec->value_type == G_TYPE_DOUBLE) /* XXX */
     {
-        double val = g_ascii_strtod (value, NULL);
+        mgw_errno_t err;
+        double val = mgw_ascii_strtod (value, NULL, &err);
 
-        if (errno)
+        if (mgw_errno_is_set (err))
         {
             g_warning ("could not convert string '%s' to double",
                        value);
@@ -1980,13 +1980,13 @@ parse_adjustment (const char *value)
     if (g_strv_length (pieces) != 6)
         goto out;
 
-    errno = 0;
-
     for (i = 0; i < 6; ++i)
     {
-        vals[i] = g_ascii_strtod (pieces[i], NULL);
+        mgw_errno_t err;
+    
+        vals[i] = mgw_ascii_strtod (pieces[i], NULL, &err);
 
-        if (errno)
+        if (mgw_errno_is_set (err))
         {
             g_warning ("could not convert '%s' to double", pieces[i]);
             goto out;

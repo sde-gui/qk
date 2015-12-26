@@ -78,12 +78,13 @@ moo_tempdir (void)
         for (i = 0; i < 1000; ++i)
         {
             char *basename;
+            mgw_errno_t err;
 
             basename = g_strdup_printf ("%s-tmpdir-%08x", short_name, g_random_int ());
             dirname = g_build_filename (g_get_tmp_dir (), basename, NULL);
             g_free (basename);
 
-            if (_moo_mkdir (dirname) == 0)
+            if (_moo_mkdir (dirname, &err) == 0)
                 break;
 
             g_free (dirname);

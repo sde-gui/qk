@@ -37,7 +37,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <stdarg.h>
 
 #ifdef GDK_WINDOWING_X11
@@ -1306,18 +1305,18 @@ moo_make_user_data_dir (const char *path)
     int result = 0;
     char *full_path;
     char *user_dir;
+    mgw_errno_t err;
 
     user_dir = moo_get_user_data_dir ();
     g_return_val_if_fail (user_dir != NULL, FALSE);
 
     full_path = g_build_filename (user_dir, path, NULL);
-    result = _moo_mkdir_with_parents (full_path);
+    result = _moo_mkdir_with_parents (full_path, &err);
 
     if (result != 0)
     {
-        int err = errno;
         g_critical ("could not create directory '%s': %s",
-                    full_path, g_strerror (err));
+                    full_path, mgw_strerror (err));
     }
 
     g_free (user_dir);

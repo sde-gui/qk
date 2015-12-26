@@ -21,7 +21,6 @@
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
-#include <errno.h>
 
 #define VERSION_STRING "0001"
 #define VERSION_LEN 4
@@ -296,12 +295,12 @@ get_uint (const char *data,
     char *string, *end;
     guint64 val;
     gboolean result = FALSE;
+    mgw_errno_t err;
 
     string = g_strndup (data, len);
-    errno = 0;
-    val = g_ascii_strtoull (string, &end, 16);
+    val = mgw_ascii_strtoull (string, &end, 16, &err);
 
-    if (!errno && !end[0] && val <= G_MAXUINT)
+    if (!mgw_errno_is_set (err) && !end[0] && val <= G_MAXUINT)
     {
         *dest = (guint)val;
         result = TRUE;

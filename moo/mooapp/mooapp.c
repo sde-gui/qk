@@ -49,7 +49,6 @@
 #include <mooglib/moo-glib.h>
 #include <string.h>
 #include <stdio.h>
-#include <errno.h>
 #include <stdlib.h>
 
 #ifdef MOO_USE_QUARTZ
@@ -1105,7 +1104,8 @@ moo_app_write_session (MooApp *app)
 
     if (!app->priv->session)
     {
-        _moo_unlink (filename);
+        mgw_errno_t err;
+        mgw_unlink (filename, &err);
         g_free (filename);
         return;
     }

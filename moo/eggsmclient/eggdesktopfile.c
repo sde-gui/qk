@@ -25,6 +25,8 @@
 #include "config.h"
 #endif
 
+#define MOO_DO_NOT_MANGLE_GLIB_FUNCTIONS
+
 #include "eggdesktopfile.h"
 
 #include <string.h>

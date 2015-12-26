@@ -21,7 +21,6 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mootype-macros.h"
 #include <string.h>
-#include <errno.h>
 #include <gobject/gvaluecollector.h>
 #include <mooglib/moo-glib.h>
 
@@ -878,8 +877,11 @@ save_file (const char    *file,
     if (empty)
     {
         if (g_file_test (file, G_FILE_TEST_EXISTS))
-            if (_moo_unlink (file))
-                g_critical ("%s", g_strerror (errno));
+        {
+            mgw_errno_t err;
+            if (mgw_unlink (file, &err) != 0)
+                g_critical ("%s", mgw_strerror (err));
+        }
         return TRUE;
     }
 

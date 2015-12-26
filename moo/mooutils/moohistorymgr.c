@@ -807,7 +807,8 @@ moo_history_mgr_save (MooHistoryMgr *mgr)
 
     if (!mgr->priv->files->length)
     {
-        _moo_unlink (filename);
+        mgw_errno_t err;
+        mgw_unlink (filename, &err);
         return;
     }
 

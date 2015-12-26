@@ -827,30 +827,31 @@ get_options_from_file (MooCommandFactory *factory,
                        const char        *filename,
                        GPtrArray        **options)
 {
-    FILE *file;
+    MGW_FILE *file;
     char buf[2048];
+    mgw_errno_t err;
 
-    if (!(file = g_fopen (filename, "rb")))
+    if (!(file = mgw_fopen (filename, "rb", &err)))
     {
-        g_warning ("%s: could not open file %s", G_STRFUNC, filename);
+        g_warning ("%s: could not open file %s: %s", G_STRFUNC, filename, mgw_strerror (err));
         return;
     }
 
     buf[0] = 0;
     buf[sizeof buf - 1] = '\1';
 
-    if (fgets (buf, sizeof buf, file) && buf[sizeof buf - 1] != 0)
+    if (mgw_fgets (buf, sizeof buf, file) && buf[sizeof buf - 1] != 0)
     {
         int len = strlen (buf);
-        seriously_ignore_return_value_p (fgets (buf + len, sizeof buf - len, file));
+        seriously_ignore_return_value_p (mgw_fgets (buf + len, sizeof buf - len, file));
     }
 
-    if (ferror (file))
+    if (mgw_ferror (file))
         g_warning ("%s: error reading file %s", G_STRFUNC, filename);
     else
         get_options_from_contents (factory, cmd_data, buf, options, filename);
 
-    fclose (file);
+    mgw_fclose (file);
 }
 #endif /* !__WIN32__ */
 

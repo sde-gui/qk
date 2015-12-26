@@ -38,7 +38,6 @@
 #include <mooglib/moo-glib.h>
 #include <mooglib/moo-stat.h>
 #include <sys/types.h>
-#include <errno.h>
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-mem.h"
 #include "mooutils/moofilewatch.h"
@@ -768,7 +767,7 @@ out:
 #define MOO_STAT_PRIORITY   G_PRIORITY_DEFAULT
 #define MOO_STAT_TIMEOUT    500
 
-static MooFileWatchError errno_to_file_error    (int             code);
+static MooFileWatchError errno_to_file_error    (mgw_errno_t     code);
 static gboolean do_stat                         (MooFileWatch   *watch);
 
 
@@ -802,18 +801,16 @@ watch_stat_start_monitor (MooFileWatch   *watch,
                           GError        **error)
 {
     MgwStatBuf buf;
+    mgw_errno_t err;
 
     g_return_val_if_fail (watch != NULL, FALSE);
     g_return_val_if_fail (monitor->filename != NULL, FALSE);
 
-    errno = 0;
-
-    if (mgw_stat (monitor->filename, &buf) != 0)
+    if (mgw_stat (monitor->filename, &buf, &err) != 0)
     {
-        int saved_errno = errno;
         g_set_error (error, MOO_FILE_WATCH_ERROR,
-                     errno_to_file_error (saved_errno),
-                     "stat: %s", g_strerror (saved_errno));
+                     errno_to_file_error (err),
+                     "stat: %s", mgw_strerror (err));
         return FALSE;
     }
 
@@ -866,6 +863,7 @@ do_stat (MooFileWatch *watch)
         MooFileEvent event;
         Monitor *monitor;
         mgw_time_t old;
+        mgw_errno_t err;
 
         monitor = (Monitor*) g_hash_table_lookup (watch->requests, lid->data);
 
@@ -874,27 +872,24 @@ do_stat (MooFileWatch *watch)
 
         old = monitor->statbuf.mtime;
 
-        errno = 0;
-
         event.monitor_id = monitor->id;
         event.filename = monitor->filename;
         event.error = NULL;
 
-        if (mgw_stat (monitor->filename, &monitor->statbuf) != 0)
+        if (mgw_stat (monitor->filename, &monitor->statbuf, &err) != 0)
         {
-            if (errno == ENOENT)
+            if (err.value == MGW_ENOENT)
             {
                 event.code = MOO_FILE_EVENT_DELETED;
                 to_remove = g_slist_prepend (to_remove, GUINT_TO_POINTER (monitor->id));
             }
             else
             {
-                int err = errno;
                 event.code = MOO_FILE_EVENT_ERROR;
                 g_set_error (&event.error, MOO_FILE_WATCH_ERROR,
                              errno_to_file_error (err),
                              "stat failed: %s",
-                             g_strerror (err));
+                             mgw_strerror (err));
                 monitor->alive = FALSE;
             }
 
@@ -927,23 +922,26 @@ out:
 
 
 static MooFileWatchError
-errno_to_file_error (int code)
+errno_to_file_error (mgw_errno_t code)
 {
     MooFileWatchError fcode = MOO_FILE_WATCH_ERROR_FAILED;
 
-    switch (code)
+    switch (code.value)
     {
-        case EACCES:
+        case MGW_EACCES:
             fcode = MOO_FILE_WATCH_ERROR_ACCESS_DENIED;
             break;
-        case ENAMETOOLONG:
+        case MGW_ENAMETOOLONG:
             fcode = MOO_FILE_WATCH_ERROR_BAD_FILENAME;
             break;
-        case ENOENT:
+        case MGW_ENOENT:
             fcode = MOO_FILE_WATCH_ERROR_NONEXISTENT;
             break;
-        case ENOTDIR:
+        case MGW_ENOTDIR:
             fcode = MOO_FILE_WATCH_ERROR_NOT_DIR;
+            break;
+
+        default:
             break;
     }
 
@@ -1442,18 +1440,16 @@ watch_win32_start_monitor (MooFileWatch   *watch,
                            GError        **error)
 {
     MgwStatBuf buf;
+    mgw_errno_t err;
 
     g_return_val_if_fail (watch != NULL, FALSE);
     g_return_val_if_fail (monitor->filename != NULL, FALSE);
 
-    errno = 0;
-
-    if (mgw_stat (monitor->filename, &buf) != 0)
+    if (mgw_stat (monitor->filename, &buf, &err) != 0)
     {
-        int saved_errno = errno;
         g_set_error (error, MOO_FILE_WATCH_ERROR,
-                     errno_to_file_error (saved_errno),
-                     "stat: %s", g_strerror (saved_errno));
+                     errno_to_file_error (err),
+                     "stat: %s", mgw_strerror (err));
         return FALSE;
     }
 

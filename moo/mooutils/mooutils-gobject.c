@@ -19,8 +19,8 @@
 #include <mooutils/mooutils-tests.h>
 #include <gobject/gvaluecollector.h>
 #include <string.h>
-#include <errno.h>
 #include <stdlib.h>
+#include <errno.h>
 
 
 /*****************************************************************************/
@@ -260,11 +260,11 @@ string_to_uint (const char *string,
 {
     char *end;
     guint64 val;
+    mgw_errno_t err;
 
-    errno = 0;
-    val = g_ascii_strtoull (string, &end, 10);
+    val = mgw_ascii_strtoull (string, &end, 10, &err);
 
-    if (errno || !end || *end)
+    if (mgw_errno_is_set (err) || !end || *end)
         return FALSE;
 
     if (val > G_MAXUINT)
@@ -515,9 +515,9 @@ _moo_value_convert (const GValue *src,
 
             if (string && string[0])
             {
-                errno = 0;
-                val = g_ascii_strtod (string, &end);
-                if (errno || !end || *end)
+                mgw_errno_t err;
+                val = mgw_ascii_strtod (string, &end, &err);
+                if (mgw_errno_is_set (err) || !end || *end)
                     return FALSE;
             }
 

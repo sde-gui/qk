@@ -28,6 +28,7 @@
 #include <windows.h>
 #endif
 
+#include <mooglib/moo-glib.h>
 #include <errno.h>
 #include <gtk/gtk.h>
 
@@ -121,8 +122,9 @@ get_system_name (void)
 
     if (uname (&name) != 0)
     {
-        int err = errno;
-        g_critical ("%s", g_strerror (err));
+        MGW_ERROR_IF_NOT_SHARED_LIBC
+        mgw_errno_t err = { errno };
+        g_critical ("%s", mgw_strerror (err));
         return g_strdup ("unknown");
     }
 

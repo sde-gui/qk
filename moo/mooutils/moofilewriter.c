@@ -23,7 +23,6 @@
 #include <mooutils/mooutils-tests.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
 #include <mooglib/moo-glib.h>
 #include <gio/gio.h>
 #ifdef HAVE_UNISTD_H
@@ -36,7 +35,7 @@
 
 struct _MooFileReader {
     GObject base;
-    FILE *file;
+    MGW_FILE *file;
 };
 
 MOO_DEFINE_TYPE_STATIC (MooFileReader, moo_file_reader, G_TYPE_OBJECT)
@@ -52,7 +51,7 @@ moo_file_reader_close_file (MooFileReader *reader)
 {
     if (reader->file)
     {
-        fclose (reader->file);
+        mgw_fclose (reader->file);
         reader->file = NULL;
     }
 }
@@ -85,20 +84,19 @@ moo_file_reader_new_real (const char  *filename,
                           GError     **error)
 {
     const char *mode = binary ? "rb" : "r";
-    FILE *file;
+    MGW_FILE *file;
     MooFileReader *reader;
+    mgw_errno_t err;
 
     g_return_val_if_fail (filename != NULL, NULL);
     g_return_val_if_fail (!error || !*error, NULL);
 
-    errno = 0;
-    if (!(file = g_fopen (filename, mode)))
+    if (!(file = mgw_fopen (filename, mode, &err)))
     {
-        int err = errno;
         g_set_error (error, MOO_FILE_ERROR,
                      _moo_file_error_from_errno (err),
                      _("Could not open %s: %s"), filename,
-                     g_strerror (err));
+                     mgw_strerror (err));
         return NULL;
     }
 
@@ -130,6 +128,7 @@ moo_file_reader_read (MooFileReader  *reader,
                       GError        **error)
 {
     gsize size_read;
+    mgw_errno_t err;
 
     g_return_val_if_fail (MOO_IS_FILE_READER (reader), FALSE);
     g_return_val_if_fail (size_read_p != NULL, FALSE);
@@ -140,16 +139,14 @@ moo_file_reader_read (MooFileReader  *reader,
     if (buf_size == 0)
         return TRUE;
 
-    errno = 0;
-    size_read = fread (buf, 1, buf_size, reader->file);
+    size_read = mgw_fread (buf, 1, buf_size, reader->file, &err);
 
-    if (size_read != buf_size && ferror (reader->file))
+    if (size_read != buf_size && mgw_ferror (reader->file))
     {
-        int err = errno;
         g_set_error (error, MOO_FILE_ERROR,
                      _moo_file_error_from_errno (err),
                      "error reading file: %s",
-                     g_strerror (err));
+                     mgw_strerror (err));
         return FALSE;
     }
 
@@ -277,18 +274,18 @@ moo_local_file_writer_new (GFile               *file,
     {
         char *dirname;
         char *filename;
+        mgw_errno_t err;
 
         filename = g_file_get_path (file);
         dirname = filename ? g_path_get_dirname (filename) : NULL;
 
-        if (dirname && _moo_mkdir_with_parents (dirname) != 0)
+        if (dirname && _moo_mkdir_with_parents (dirname, &err) != 0)
         {
-            int err = errno;
             char *display_name = g_filename_display_name (dirname);
             g_set_error (error, G_FILE_ERROR,
-                         g_file_error_from_errno (err),
+                         mgw_file_error_from_errno (err),
                          _("Could not create folder %s: %s"),
-                         display_name, g_strerror (err));
+                         display_name, mgw_strerror (err));
             g_free (display_name);
             g_free (dirname);
             goto error;

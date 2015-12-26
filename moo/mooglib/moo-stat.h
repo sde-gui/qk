@@ -24,7 +24,7 @@ struct MgwStatBuf
                isblk  : 1; // S_ISBLK
 };
 
-int mgw_stat (const gchar *filename, MgwStatBuf *buf);
-int mgw_lstat (const gchar *filename, MgwStatBuf *buf);
+int mgw_stat (const gchar *filename, MgwStatBuf *buf, mgw_errno_t *err);
+int mgw_lstat (const gchar *filename, MgwStatBuf *buf, mgw_errno_t *err);
 
 G_END_DECLS

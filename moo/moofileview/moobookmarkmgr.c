@@ -27,7 +27,6 @@
 #include "mooutils/mootype-macros.h"
 #include "moofileview/moobookmark-editor-gxml.h"
 #include <string.h>
-#include <errno.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif

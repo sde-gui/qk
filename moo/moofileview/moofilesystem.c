@@ -22,7 +22,6 @@
 #include "mooutils/mooutils.h"
 #include "marshals.h"
 #include <gio/gio.h>
-#include <errno.h>
 #include <stdio.h>
 #ifndef __WIN32__
 #include <sys/wait.h>
@@ -543,6 +542,8 @@ create_folder (G_GNUC_UNUSED MooFileSystem *fs,
                const char     *path,
                GError        **error)
 {
+    mgw_errno_t err;
+
     g_return_val_if_fail (path != NULL, FALSE);
 
     /* XXX check the caller */
@@ -557,15 +558,14 @@ create_folder (G_GNUC_UNUSED MooFileSystem *fs,
 
     /* TODO mkdir must (?) adjust permissions according to umask */
 #ifndef __WIN32__
-    if (mkdir (path, S_IRWXU | S_IRWXG | S_IRWXO))
+    if (mgw_mkdir (path, S_IRWXU | S_IRWXG | S_IRWXO, &err))
 #else
-    if (_moo_mkdir (path))
+    if (_moo_mkdir (path, &err))
 #endif
     {
-        int saved_errno = errno;
         g_set_error (error, MOO_FILE_ERROR,
-                     _moo_file_error_from_errno (saved_errno),
-                     "%s", g_strerror (saved_errno));
+                     _moo_file_error_from_errno (err),
+                     "%s", mgw_strerror (err));
         return FALSE;
     }
 
@@ -730,6 +730,7 @@ delete_file (G_GNUC_UNUSED MooFileSystem *fs,
              GError             **error)
 {
     gboolean isdir;
+    mgw_errno_t err;
 
     g_return_val_if_fail (path != NULL, FALSE);
     g_return_val_if_fail (_moo_path_is_absolute (path), FALSE);
@@ -755,15 +756,14 @@ delete_file (G_GNUC_UNUSED MooFileSystem *fs,
     if (isdir)
         return _moo_remove_dir (path, (flags & MOO_DELETE_RECURSIVE) != 0, error);
 
-    if (_moo_remove (path))
+    if (mgw_remove (path, &err) != 0)
     {
-        int err = errno;
         char *path_utf8 = g_filename_display_name (path);
         g_set_error (error, MOO_FILE_ERROR,
                      _moo_file_error_from_errno (err),
                      "Could not delete file '%s': %s",
                      path_utf8 ? path_utf8 : BROKEN_NAME,
-                     g_strerror (err));
+                     mgw_strerror (err));
         g_free (path_utf8);
         return FALSE;
     }
@@ -781,17 +781,18 @@ move_file_unix (G_GNUC_UNUSED MooFileSystem *fs,
                 const char     *new_path,
                 GError        **error)
 {
+    mgw_errno_t err;
+
     g_return_val_if_fail (old_path && new_path, FALSE);
     g_return_val_if_fail (_moo_path_is_absolute (old_path), FALSE);
     g_return_val_if_fail (_moo_path_is_absolute (new_path), FALSE);
 
     /* XXX */
-    if (_moo_rename (old_path, new_path))
+    if (_moo_rename (old_path, new_path, &err))
     {
-        int saved_errno = errno;
         g_set_error (error, MOO_FILE_ERROR,
-                     _moo_file_error_from_errno (saved_errno),
-                     "%s", g_strerror (saved_errno));
+                     _moo_file_error_from_errno (err),
+                     "%s", mgw_strerror (err));
         return FALSE;
     }
 

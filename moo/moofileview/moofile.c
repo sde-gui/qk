@@ -35,10 +35,10 @@
 
 #include <string.h>
 #include <sys/types.h>
+#include <errno.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <errno.h>
 #include <time.h>
 #if defined(HAVE_CARBON)
 #include <CoreServices/CoreServices.h>
@@ -320,6 +320,7 @@ _moo_file_stat (MooFile    *file,
                 const char *dirname)
 {
     char *fullname;
+    mgw_errno_t err;
 
     g_return_if_fail (file != NULL);
 
@@ -331,14 +332,12 @@ _moo_file_stat (MooFile    *file,
     g_free (file->link_target);
     file->link_target = NULL;
 
-    errno = 0;
-
     if (!file->statbuf)
         file->statbuf = g_slice_new (MgwStatBuf);
 
-    if (mgw_lstat (fullname, file->statbuf) != 0)
+    if (mgw_lstat (fullname, file->statbuf, &err) != 0)
     {
-        if (errno == ENOENT)
+        if (err.value == MGW_ENOENT)
         {
             MOO_DEBUG_CODE({
                 gchar *display_name = g_filename_display_name (fullname);
@@ -350,10 +349,9 @@ _moo_file_stat (MooFile    *file,
         else
         {
             MOO_DEBUG_CODE({
-                int save_errno = errno;
                 gchar *display_name = g_filename_display_name (fullname);
                 _moo_message ("error getting information for '%s': %s",
-                              display_name, g_strerror (save_errno));
+                              display_name, mgw_strerror (err));
                 g_free (display_name);
             });
             file->info = MOO_FILE_INFO_IS_LOCKED | MOO_FILE_INFO_EXISTS;
@@ -362,17 +360,17 @@ _moo_file_stat (MooFile    *file,
     }
     else
     {
+#ifndef __WIN32__
         if (file->statbuf->islnk)
         {
             static char buf[1024];
             gssize len;
 
             file->info |= MOO_FILE_INFO_IS_LINK;
-            errno = 0;
 
-            if (mgw_stat (fullname, file->statbuf) != 0)
+            if (mgw_stat (fullname, file->statbuf, &err) != 0)
             {
-                if (errno == ENOENT)
+                if (err.value == MGW_ENOENT)
                 {
                     MOO_DEBUG_CODE({
                         gchar *display_name = g_filename_display_name (fullname);
@@ -384,10 +382,9 @@ _moo_file_stat (MooFile    *file,
                 else
                 {
                     MOO_DEBUG_CODE({
-                        int save_errno = errno;
                         gchar *display_name = g_filename_display_name (fullname);
                         _moo_message ("error getting information for '%s': %s",
-                                      display_name, g_strerror (save_errno));
+                                      display_name, mgw_strerror (err));
                         g_free (display_name);
                     });
                     file->info = MOO_FILE_INFO_IS_LOCKED | MOO_FILE_INFO_EXISTS;
@@ -395,15 +392,16 @@ _moo_file_stat (MooFile    *file,
                 }
             }
 
+            errno = 0;
             len = readlink (fullname, buf, 1024);
+            err.value = errno;
 
             if (len == -1)
             {
                 MOO_DEBUG_CODE({
-                    int save_errno = errno;
                     gchar *display_name = g_filename_display_name (fullname);
                     _moo_message ("error getting link target for '%s': %s",
-                                  display_name, g_strerror (save_errno));
+                                  display_name, mgw_strerror (err));
                     g_free (display_name);
                 });
             }
@@ -412,6 +410,7 @@ _moo_file_stat (MooFile    *file,
                 file->link_target = g_strndup (buf, len);
             }
         }
+#endif // !__WIN32__
     }
 
     if ((file->info & MOO_FILE_INFO_EXISTS) &&

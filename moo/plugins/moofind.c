@@ -41,7 +41,6 @@
 #ifndef __WIN32__
 #include <sys/wait.h>
 #endif
-#include <errno.h>
 #include <signal.h>
 
 #define FIND_PLUGIN_ID "Find"
@@ -697,6 +696,7 @@ process_grep_line (MooLineView *view,
     int view_line;
     int line_no;
     guint64 line_no_64;
+    mgw_errno_t err;
 
     g_return_val_if_fail (line != NULL, FALSE);
 
@@ -750,10 +750,9 @@ process_grep_line (MooLineView *view,
         g_free (filename);
     }
 
-    errno = 0;
-    line_no_64 = g_ascii_strtoull (number, NULL, 0);
+    line_no_64 = mgw_ascii_strtoull (number, NULL, 0, &err);
 
-    if (errno)
+    if (mgw_errno_is_set (err))
     {
         g_warning ("could not parse number '%s'", number);
         line_no = -1;

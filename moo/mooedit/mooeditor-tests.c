@@ -186,6 +186,7 @@ test_encodings (void)
     GDir *dir;
     const char *name;
     char *working_dir;
+    mgw_errno_t err;
 
     dir = g_dir_open (test_data.encodings_dir, 0, NULL);
 
@@ -197,7 +198,7 @@ test_encodings (void)
     }
 
     working_dir = g_build_filename (test_data.working_dir, "encodings", (char*)0);
-    _moo_mkdir_with_parents (working_dir);
+    _moo_mkdir_with_parents (working_dir, &err);
 
     while ((name = g_dir_read_name (dir)))
         test_encodings_1 (name, working_dir);
@@ -226,15 +227,18 @@ test_types (void)
 static gboolean
 test_suite_init (G_GNUC_UNUSED gpointer data)
 {
+    mgw_errno_t err;
+
     test_data.working_dir = g_build_filename (moo_test_get_working_dir (),
                                               "editor-work", (char*)0);
     test_data.encodings_dir = g_build_filename (moo_test_get_data_dir (),
                                                 "encodings", (char*)0);
 
-    if (_moo_mkdir_with_parents (test_data.working_dir) != 0)
+    if (_moo_mkdir_with_parents (test_data.working_dir, &err) != 0)
     {
-        g_critical ("could not create directory '%s'",
-                    test_data.working_dir);
+        g_critical ("could not create directory '%s': %s",
+                    test_data.working_dir,
+                    mgw_strerror (err));
         g_free (test_data.working_dir);
         test_data.working_dir = NULL;
         return FALSE;

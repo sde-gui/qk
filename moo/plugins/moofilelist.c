@@ -1069,7 +1069,8 @@ file_list_save_config (FileList   *list,
 
     if (!gtk_tree_model_get_iter_first (GTK_TREE_MODEL (list), &iter))
     {
-        _moo_unlink (filename);
+        mgw_errno_t err;
+        mgw_unlink (filename, &err);
         return;
     }
 

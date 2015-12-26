@@ -47,7 +47,6 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
-#include <errno.h>
 
 #define PREFS_LAST_DIR MOO_PLUGIN_PREFS_ROOT "/" MOO_FILE_SELECTOR_PLUGIN_ID "/last_dir"
 #define PREFS_HIDDEN_FILES MOO_PLUGIN_PREFS_ROOT "/" MOO_FILE_SELECTOR_PLUGIN_ID "/show_hidden_files"
@@ -272,15 +271,13 @@ moo_file_selector_activate (MooFileView    *fileview,
     MgwStatBuf statbuf;
     MooFileSelector *filesel = MOO_FILE_SELECTOR (fileview);
     gboolean is_text = TRUE, is_exe = FALSE;
+    mgw_errno_t err;
 
     g_return_if_fail (path != NULL);
 
-    errno = 0;
-
-    if (mgw_stat (path, &statbuf) != 0)
+    if (mgw_stat (path, &statbuf, &err) != 0)
     {
-        int err = errno;
-        g_warning ("error in stat(%s): %s", path, g_strerror (err));
+        g_warning ("error in stat(%s): %s", path, mgw_strerror (err));
         return;
     }
 

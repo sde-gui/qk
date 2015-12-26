@@ -28,8 +28,8 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <sys/types.h>
 #include <errno.h>
+#include <sys/types.h>
 
 #ifdef __WIN32__
 #include <windows.h>
@@ -281,16 +281,15 @@ rm_r (const char *path,
         }
         else
         {
-            errno = 0;
+            mgw_errno_t err;
 
-            if (_moo_remove (file_path) != 0)
+            if (mgw_remove (file_path, &err) != 0)
             {
-                int err = errno;
                 success = FALSE;
                 g_set_error (error, MOO_FILE_ERROR,
                              _moo_file_error_from_errno (err),
                              _("Could not remove %s: %s"), file_path,
-                             g_strerror (err));
+                             mgw_strerror (err));
             }
         }
 
@@ -301,16 +300,15 @@ rm_r (const char *path,
 
     if (success)
     {
-        errno = 0;
+        mgw_errno_t err;
 
-        if (_moo_remove (path) != 0)
+        if (mgw_remove (path, &err) != 0)
         {
-            int err = errno;
             success = FALSE;
             g_set_error (error, MOO_FILE_ERROR,
                          _moo_file_error_from_errno (err),
                          _("Could not remove %s: %s"), path,
-                         g_strerror (err));
+                         mgw_strerror (err));
         }
     }
 
@@ -328,16 +326,15 @@ _moo_remove_dir (const char *path,
 
     if (!recursive)
     {
-        errno = 0;
+        mgw_errno_t err;
 
-        if (_moo_remove (path) != 0)
+        if (mgw_remove (path, &err) != 0)
         {
-            int err = errno;
             char *path_utf8 = g_filename_display_name (path);
             g_set_error (error, MOO_FILE_ERROR,
                          _moo_file_error_from_errno (err),
                          _("Could not remove %s: %s"),
-                         path_utf8, g_strerror (err));
+                         path_utf8, mgw_strerror (err));
             g_free (path_utf8);
             return FALSE;
         }
@@ -356,9 +353,9 @@ _moo_remove_dir (const char *path,
 
 
 int
-_moo_mkdir_with_parents (const char *path)
+_moo_mkdir_with_parents (const char *path, mgw_errno_t* err)
 {
-    return g_mkdir_with_parents (path, S_IRWXU);
+    return mgw_mkdir_with_parents (path, S_IRWXU, err);
 }
 
 
@@ -368,40 +365,35 @@ _moo_create_dir (const char *path,
 {
     MgwStatBuf buf;
     char *utf8_path;
+    mgw_errno_t err;
 
     g_return_val_if_fail (path != NULL, FALSE);
 
-    errno = 0;
-
-    if (mgw_stat (path, &buf) != 0 && errno != ENOENT)
+    if (mgw_stat (path, &buf, &err) != 0 && err.value != MGW_ENOENT)
     {
-        int err_code = errno;
         utf8_path = g_filename_display_name (path);
 
         g_set_error (error,
                      MOO_FILE_ERROR,
-                     _moo_file_error_from_errno (err_code),
+                     _moo_file_error_from_errno (err),
                      _("Could not create folder %s: %s"),
-                     utf8_path, g_strerror (err_code));
+                     utf8_path, mgw_strerror (err));
 
         g_free (utf8_path);
         return FALSE;
     }
 
-    if (errno != 0)
+    if (mgw_errno_is_set (err))
     {
-        errno = 0;
-
-        if (_moo_mkdir (path) == -1)
+        if (_moo_mkdir (path, &err) == -1)
         {
-            int err_code = errno;
             utf8_path = g_filename_display_name (path);
 
             g_set_error (error,
                          MOO_FILE_ERROR,
-                         _moo_file_error_from_errno (err_code),
+                         _moo_file_error_from_errno (err),
                          _("Could not create folder %s: %s"),
-                         utf8_path, g_strerror (err_code));
+                         utf8_path, mgw_strerror (err));
 
             g_free (utf8_path);
             return FALSE;
@@ -417,7 +409,7 @@ _moo_create_dir (const char *path,
     g_set_error (error, MOO_FILE_ERROR,
                  MOO_FILE_ERROR_ALREADY_EXISTS,
                  _("Could not create folder %s: %s"),
-                 utf8_path, g_strerror (EEXIST));
+                 utf8_path, mgw_strerror (MGW_E_EXIST));
     g_free (utf8_path);
 
     return FALSE;
@@ -430,23 +422,21 @@ _moo_rename_file (const char *path,
                   GError    **error)
 {
     // Do not break this for directories!
+    mgw_errno_t err;
 
     g_return_val_if_fail (path != NULL, FALSE);
     g_return_val_if_fail (new_path != NULL, FALSE);
 
-    errno = 0;
-
-    if (_moo_rename (path, new_path) != 0)
+    if (_moo_rename (path, new_path, &err) != 0)
     {
-        int err_code = errno;
         char *utf8_path = g_filename_display_name (path);
         char *utf8_new_path = g_filename_display_name (new_path);
 
         g_set_error (error,
                      MOO_FILE_ERROR,
-                     _moo_file_error_from_errno (err_code),
+                     _moo_file_error_from_errno (err),
                      _("Could not rename file %s to %s: %s"),
-                     utf8_path, utf8_new_path, g_strerror (err_code));
+                     utf8_path, utf8_new_path, mgw_strerror (err));
 
         g_free (utf8_path);
         g_free (utf8_new_path);
@@ -458,31 +448,32 @@ _moo_rename_file (const char *path,
 
 
 MooFileError
-_moo_file_error_from_errno (int code)
+_moo_file_error_from_errno (mgw_errno_t code)
 {
-    switch (code)
+    switch (code.value)
     {
-        case EACCES:
-        case EPERM:
+        case MGW_EACCES:
+        case MGW_EPERM:
             return MOO_FILE_ERROR_ACCESS_DENIED;
-        case EEXIST:
+        case MGW_EEXIST:
             return MOO_FILE_ERROR_ALREADY_EXISTS;
 #ifndef __WIN32__
-        case ELOOP:
+        case MGW_ELOOP:
 #endif
-        case ENAMETOOLONG:
+        case MGW_ENAMETOOLONG:
             return MOO_FILE_ERROR_BAD_FILENAME;
-        case ENOENT:
+        case MGW_ENOENT:
             return MOO_FILE_ERROR_NONEXISTENT;
-        case ENOTDIR:
+        case MGW_ENOTDIR:
             return MOO_FILE_ERROR_NOT_FOLDER;
-        case EROFS:
+        case MGW_EROFS:
             return MOO_FILE_ERROR_READONLY;
-        case EXDEV:
+        case MGW_EXDEV:
             return MOO_FILE_ERROR_DIFFERENT_FS;
-    }
 
-    return MOO_FILE_ERROR_FAILED;
+        default:
+            return MOO_FILE_ERROR_FAILED;
+    }
 }
 
 
@@ -1163,53 +1154,43 @@ G_STMT_START {                                                  \
     gboolean use_wide_char_api;                                 \
     gpointer converted;                                         \
     int retval;                                                 \
-    int save_errno;                                             \
+    mgw_errno_t save_errno;                                     \
                                                                 \
     converted = convert_filename (path, &use_wide_char_api);    \
                                                                 \
     if (!converted)                                             \
     {                                                           \
-        errno = EINVAL;                                         \
+        mgw_set_errno (MGW_EINVAL);                             \
         return -1;                                              \
     }                                                           \
                                                                 \
-    errno = 0;                                                  \
+    mgw_set_errno (0);                                          \
                                                                 \
     if (use_wide_char_api)                                      \
         retval = _WFunc (converted);                            \
     else                                                        \
         retval = _AFunc (converted);                            \
                                                                 \
-    save_errno = errno;                                         \
+    save_errno = mgw_errno ();                                  \
     g_free (converted);                                         \
-    errno = save_errno;                                         \
+    mgw_set_errno (save_errno);                                 \
                                                                 \
     return retval;                                              \
 } G_STMT_END
 
 
 int
-_moo_unlink (const char *path)
-{
-    return g_unlink (path);
-}
-
-
-int
-_moo_mkdir (const char *path)
+_moo_mkdir (const char *path, mgw_errno_t *err)
 {
 #ifdef __WIN32__
-    CCALL_1 (mkdir, _wmkdir, path);
+    CCALL_1 (mkdir, _wmkdir, path, err);
 #else
-    return mkdir (path, S_IRWXU);
+    int result;
+    errno = 0;
+    result = mkdir (path, S_IRWXU);
+    err->value = errno;
+    return result;
 #endif
-}
-
-
-int
-_moo_remove (const char *path)
-{
-    return g_remove (path);
 }
 
 
@@ -1221,7 +1202,7 @@ _moo_fopen (const char *path,
     gboolean use_wide_char_api;
     gpointer path_conv, mode_conv;
     FILE *retval;
-    int save_errno;
+    mgw_errno_t save_errno;
 
     if (G_WIN32_HAVE_WIDECHAR_API ())
     {
@@ -1240,21 +1221,21 @@ _moo_fopen (const char *path,
     {
         g_free (path_conv);
         g_free (mode_conv);
-        errno = EINVAL;
+        mgw_set_errno (MGW_EINVAL);
         return NULL;
     }
 
-    errno = 0;
+    mgw_set_errno (0);
 
     if (use_wide_char_api)
         retval = _wfopen (path_conv, mode_conv);
     else
         retval = fopen (path_conv, mode_conv);
 
-    save_errno = errno;
+    save_errno = mgw_errno ();
     g_free (path_conv);
     g_free (mode_conv);
-    errno = save_errno;
+    mgw_set_errno (save_errno);
 
     return retval;
 #else
@@ -1264,13 +1245,14 @@ _moo_fopen (const char *path,
 
 
 int
-_moo_rename (const char *old_name,
-             const char *new_name)
+_moo_rename (const char  *old_name,
+             const char  *new_name,
+             mgw_errno_t *err)
 {
 #ifdef __WIN32__
     gboolean use_wide_char_api;
     gpointer old_conv, new_conv;
-    int retval, save_errno;
+    int retval;
 
     if (G_WIN32_HAVE_WIDECHAR_API ())
     {
@@ -1289,25 +1271,27 @@ _moo_rename (const char *old_name,
     {
         g_free (old_conv);
         g_free (new_conv);
-        errno = EINVAL;
+        *err = MGW_E_INVAL;
         return -1;
     }
 
-    errno = 0;
+    mgw_set_errno (0);
 
     if (use_wide_char_api)
-        retval = _wrename (old_conv, new_conv);
+        retval = mw_wrename (old_conv, new_conv, err);
     else
-        retval = rename (old_conv, new_conv);
+        retval = mw_rename (old_conv, new_conv, err);
 
-    save_errno = errno;
     g_free (old_conv);
     g_free (new_conv);
-    errno = save_errno;
 
     return retval;
 #else
-    return rename (old_name, new_name);
+    int result;
+    errno = 0;
+    result = rename (old_name, new_name);
+    err->value = errno;
+    return result;
 #endif
 }
 

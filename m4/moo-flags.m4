@@ -95,7 +95,7 @@ _MOO_AC_CHECK_COMPILER_OPTIONS([dnl
 -Wno-format-y2k -Wno-overlength-strings dnl
 ])
 _MOO_AC_CHECK_CXX_COMPILER_OPTIONS([dnl
--std=c++98 -fno-rtti dnl
+-std=c++11 -fno-rtti dnl
 ])
 
 if test "x$MOO_DEBUG_ENABLED" = "xyes"; then

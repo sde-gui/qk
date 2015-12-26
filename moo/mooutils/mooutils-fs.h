@@ -30,7 +30,6 @@ G_BEGIN_DECLS
 
 /* XXX */
 #define _moo_save_file_utf8 moo_save_file_utf8
-#define _moo_unlink moo_unlink
 
 typedef enum
 {
@@ -46,7 +45,7 @@ typedef enum
 } MooFileError;
 
 GQuark          _moo_file_error_quark       (void) G_GNUC_CONST;
-MooFileError    _moo_file_error_from_errno  (int         err_code);
+MooFileError    _moo_file_error_from_errno  (mgw_errno_t err_code);
 
 gboolean        _moo_save_file_utf8         (const char *name,
                                              const char *text,
@@ -57,7 +56,8 @@ gboolean        _moo_remove_dir             (const char *path,
                                              GError    **error);
 gboolean        _moo_create_dir             (const char *path,
                                              GError    **error);
-int             _moo_mkdir_with_parents     (const char *path); /* S_IRWXU on unix */
+int             _moo_mkdir_with_parents     (const char *path,
+                                             mgw_errno_t* err); /* S_IRWXU on unix */
 gboolean        _moo_rename_file            (const char *path,
                                              const char *new_path,
                                              GError    **error);
@@ -81,13 +81,13 @@ gboolean        _moo_move_files_ui          (GList      *filenames,
  * C library and WinAPI functions wrappers analogous to glib/gstdio.h
  */
 
-int             _moo_unlink                 (const char *path);
-int             _moo_mkdir                  (const char *path); /* S_IRWXU on unix */
-int             _moo_remove                 (const char *path);
-gpointer        _moo_fopen                  (const char *path,
-                                             const char *mode);
-int             _moo_rename                 (const char *old_name,
-                                             const char *new_name);
+int             _moo_mkdir                  (const char  *path,
+                                             mgw_errno_t *err); /* S_IRWXU on unix */
+gpointer        _moo_fopen                  (const char  *path,
+                                             const char  *mode);
+int             _moo_rename                 (const char  *old_name,
+                                             const char  *new_name,
+                                             mgw_errno_t *err);
 
 gboolean        _moo_glob_match_simple      (const char *pattern,
                                              const char *filename);

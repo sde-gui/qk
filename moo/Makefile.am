@@ -24,7 +24,7 @@ moo_sources +=				\
 	mooglib/moo-glib.h		\
 	mooglib/moo-stat.h		\
 	mooglib/moo-time.h		\
-	mooglib/moo-glib.c
+	mooglib/moo-glib.cpp
 
 EXTRA_DIST += marshals.list
 built_moo_sources += marshals.h

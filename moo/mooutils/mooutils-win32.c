@@ -47,7 +47,6 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <time.h>
-#include <errno.h>
 #include <sys/time.h>
 #include <io.h>
 #include <stdarg.h>
@@ -350,7 +349,7 @@ _moo_win32_gettimeofday (struct timeval *tp,
 
     if (tp == NULL || tzp != NULL)
     {
-        errno = EINVAL;
+        mgw_set_errno (MGW_EINVAL);
         return -1;
     }
 
@@ -374,7 +373,7 @@ _moo_win32_fnmatch (const char *pattern,
 {
     if (flags != 0)
     {
-        errno = EINVAL;
+        mgw_set_errno (MGW_EINVAL);
         return -1;
     }
 
@@ -517,13 +516,13 @@ _moo_win32_mmap (gpointer start,
     g_return_val_if_fail (flags == MAP_SHARED, NULL);
     g_return_val_if_fail (offset == 0, NULL);
 
-    errno = 0;
+    mgw_set_errno (0);
     if (mgw_fstat (fd, &st) != 0)
         return MAP_FAILED;
 
     if ((guint64) st.st_size != length)
     {
-        errno = EINVAL;
+        mgw_set_errno (MGW_EINVAL);
         return MAP_FAILED;
     }
 
@@ -540,7 +539,7 @@ _moo_win32_mmap (gpointer start,
 
     if (!mapping)
     {
-        errno = EINVAL;
+        mgw_set_errno (MGW_EINVAL);
         return MAP_FAILED;
     }
 
@@ -549,7 +548,7 @@ _moo_win32_mmap (gpointer start,
     if (!buffer)
     {
         CloseHandle (mapping);
-        errno = EINVAL;
+        mgw_set_errno (MGW_EINVAL);
         return MAP_FAILED;
     }
 
@@ -564,7 +563,7 @@ _moo_win32_munmap (gpointer start,
 {
     if (!remove_mapped_file (start))
     {
-        errno = EINVAL;
+        mgw_set_errno (MGW_EINVAL);
         return -1;
     }
     else

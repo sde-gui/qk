@@ -25,6 +25,9 @@
 # include <windows.h>
 # include <io.h>
 #else
+#define MOO_DO_NOT_MANGLE_GLIB_FUNCTIONS
+#include <mooglib/moo-glib.h>
+MGW_ERROR_IF_NOT_SHARED_LIBC
 # include <sys/socket.h>
 # include <sys/un.h>
 #endif
@@ -509,6 +512,8 @@ do_write (int         fd,
 
 
 #ifdef MOO_APP_INPUT_SOCKET
+
+MGW_ERROR_IF_NOT_SHARED_LIBC
 
 #ifndef UNIX_PATH_MAX
 #define UNIX_PATH_MAX 108
