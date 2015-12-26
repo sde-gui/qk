@@ -119,7 +119,7 @@
   </tarball>
   -->
 
-  <autotools id="glib">
+  <autotools id="glib" supports-non-srcdir-builds="no">
     <branch repo="medit.bitbucket.org" module="glib"/>
     <dependencies>
       <dep package="libiconv"/>
