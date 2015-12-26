@@ -12,6 +12,10 @@ else:
     _gtkwinconfig = _gtkwinconfig.lower()
 assert _gtkwinconfig in ['debug', 'reldbg', 'release']
 
+_mooglib_dir = os.environ.get('_MOOGLIBDIR')
+if not _mooglib_dir:
+    raise RuntimeError('_MOOGLIBDIR is not set')
+
 _mingw_tool_prefix = None
 _configure_target = None
 for __p in ('i686-w64-mingw32', 'i686-pc-mingw32', 'i586-mingw32msvc', 'i486-mingw32'):
@@ -136,8 +140,8 @@ module_autogenargs['glib'] =    autogenargs + " --with-pcre=internal" \
 					    + " --with-threads=win32" \
 					    + " --disable-fam" \
 					    + " --disable-selinux"
-# module_autogenargs['glib-2.24.0'] = module_autogenargs['glib']
-# module_autogenargs['glib-2.24.2'] = module_autogenargs['glib']
+
+module_autogenargs['glib'] += " MOO_GLIB_DIR=" + _mooglib_dir
 
 module_autogenargs['cairo'] =   autogenargs + " --without-x" \
 					    + " --disable-ft" \

@@ -15,8 +15,8 @@
 #include <io.h>
 #endif // __WIN32__
 
-const mgw_errno_t MGW_E_NOERROR { MGW_ENOERROR };
-const mgw_errno_t MGW_E_EXIST   { MGW_EEXIST };
+const mgw_errno_t MGW_E_NOERROR = { MGW_ENOERROR };
+const mgw_errno_t MGW_E_EXIST   = { MGW_EEXIST };
 
 
 static mgw_time_t convert_time_t (time_t t)
@@ -69,26 +69,15 @@ static void convert_g_stat_buf (const GStatBuf* gbuf, MgwStatBuf* mbuf)
 }
 
 
-static MGW_FILE *convert_mgw_file (FILE *file)
-{
-    return reinterpret_cast<MGW_FILE*> (file);
-}
-
-static FILE *convert_mgw_file (MGW_FILE *file)
-{
-    return reinterpret_cast<FILE*> (file);
-}
-
-
-template<typename Func, typename ...Args>
-auto call_with_errno (mgw_errno_t *err, const Func& func, Args... args) -> decltype(func(args...))
-{
-    errno = 0;
-    const auto& result = func (args...);
-    if (err != nullptr)
-        err->value = mgw_errno_value_t (errno);
-    return result;
-}
+#define call_with_errno(err__, func__, rtype__, ...)    \
+({                                                      \
+    rtype__ result__;                                   \
+    errno = 0;                                          \
+    result__ = (func__) (__VA_ARGS__);                  \
+    if ((err__) != NULL)                                \
+        (err__)->value = errno;                         \
+    result__;                                           \
+})
 
 
 const char *
@@ -108,7 +97,7 @@ int
 mgw_stat (const gchar *filename, MgwStatBuf *buf, mgw_errno_t *err)
 {
     GStatBuf gbuf = { 0 };
-    int result = call_with_errno (err, g_stat, filename, &gbuf);
+    int result = call_with_errno (err, g_stat, int, filename, &gbuf);
     convert_g_stat_buf (&gbuf, buf);
     return result;
 }
@@ -117,7 +106,7 @@ int
 mgw_lstat (const gchar *filename, MgwStatBuf *buf, mgw_errno_t *err)
 {
     GStatBuf gbuf = { 0 };
-    int result = call_with_errno (err, g_lstat, filename, &gbuf);
+    int result = call_with_errno (err, g_lstat, int, filename, &gbuf);
     convert_g_stat_buf (&gbuf, buf);
     return result;
 }
@@ -147,73 +136,74 @@ const struct tm *
 mgw_localtime_r (const mgw_time_t *timep, struct tm *result, mgw_errno_t *err)
 {
     time_t t = timep->value;
-    return call_with_errno (err, localtime_r, &t, result);
+    return call_with_errno (err, localtime_r, struct tm*, &t, result);
 }
 
 mgw_time_t
 mgw_time (mgw_time_t *t, mgw_errno_t *err)
 {
     time_t t1;
-    time_t t2 = call_with_errno (err, time, &t1);
-    if (t != nullptr)
+    mgw_time_t result = { call_with_errno (err, time, time_t, &t1) };
+    if (t != NULL)
         t->value = t1;
-    return { t2 };
+    return result;
 }
 
 
 guint64
 mgw_ascii_strtoull (const gchar *nptr, gchar **endptr, guint base, mgw_errno_t *err)
 {
-    return call_with_errno (err, g_ascii_strtoull, nptr, endptr, base);
+    return call_with_errno (err, g_ascii_strtoull, guint64, nptr, endptr, base);
 }
 
 gdouble
 mgw_ascii_strtod (const gchar *nptr, gchar **endptr, mgw_errno_t *err)
 {
-    return call_with_errno (err, g_ascii_strtod, nptr, endptr);
+    return call_with_errno (err, g_ascii_strtod, double, nptr, endptr);
 }
 
 
 MGW_FILE *
 mgw_fopen (const char *filename, const char *mode, mgw_errno_t *err)
 {
-    return convert_mgw_file (call_with_errno (err, g_fopen, filename, mode));
+    return (MGW_FILE*) call_with_errno (err, g_fopen, FILE*, filename, mode);
 }
 
 int mgw_fclose (MGW_FILE *file)
 {
-    return fclose (convert_mgw_file (file));
+    return fclose ((FILE*) file);
 }
 
 gsize
 mgw_fread(void *ptr, gsize size, gsize nmemb, MGW_FILE *stream, mgw_errno_t *err)
 {
-    return call_with_errno (err, fread, ptr, size, nmemb, convert_mgw_file (stream));
+    return call_with_errno (err, fread, gsize, ptr, size, nmemb, (FILE*) stream);
 }
 
 gsize
 mgw_fwrite(const void *ptr, gsize size, gsize nmemb, MGW_FILE *stream)
 {
-    return fwrite (ptr, size, nmemb, convert_mgw_file (stream));
+    return fwrite (ptr, size, nmemb, (FILE*) stream);
 }
 
 int
 mgw_ferror (MGW_FILE *file)
 {
-    return ferror (convert_mgw_file (file));
+    return ferror ((FILE*) file);
 }
 
 char *
 mgw_fgets(char *s, int size, MGW_FILE *stream)
 {
-    return fgets(s, size, convert_mgw_file (stream));
+    return fgets(s, size, (FILE*) stream);
 }
 
 
 MgwFd
 mgw_open (const char *filename, int flags, int mode)
 {
-    return { g_open (filename, flags, mode) };
+    MgwFd fd = { g_open (filename, flags, mode) };
+    return fd;
 }
 
 int
@@ -254,31 +244,31 @@ mgw_perror (const char *s)
 int
 mgw_unlink (const char *path, mgw_errno_t *err)
 {
-    return call_with_errno (err, g_unlink, path);
+    return call_with_errno (err, g_unlink, int, path);
 }
 
 int
 mgw_remove (const char *path, mgw_errno_t *err)
 {
-    return call_with_errno (err, g_remove, path);
+    return call_with_errno (err, g_remove, int, path);
 }
 
 int
 mgw_rename (const char *oldpath, const char *newpath, mgw_errno_t *err)
 {
-    return call_with_errno (err, g_rename, oldpath, newpath);
+    return call_with_errno (err, g_rename, int, oldpath, newpath);
 }
 
 int
 mgw_mkdir (const gchar *filename, int mode, mgw_errno_t *err)
 {
-    return call_with_errno (err, g_mkdir, filename, mode);
+    return call_with_errno (err, g_mkdir, int, filename, mode);
 }
 
 int
 mgw_mkdir_with_parents (const gchar *pathname, gint mode, mgw_errno_t *err)
 {
-    return call_with_errno (err, g_mkdir_with_parents, pathname, mode);
+    return call_with_errno (err, g_mkdir_with_parents, int, pathname, mode);
 }
 
 int
@@ -310,9 +300,9 @@ mgw_spawn_async_with_pipes (const gchar *working_directory,
 {
     return g_spawn_async_with_pipes (working_directory, argv, envp, flags,
                                      child_setup, user_data, child_pid,
-                                     standard_input ? &standard_input->value : nullptr,
-                                     standard_output ? &standard_output->value : nullptr,
-                                     standard_error ? &standard_error->value : nullptr,
+                                     standard_input ? &standard_input->value : NULL,
+                                     standard_output ? &standard_output->value : NULL,
+                                     standard_error ? &standard_error->value : NULL,
                                      error);
 }
 

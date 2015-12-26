@@ -11,6 +11,8 @@ else
   export mgwcygwin=true
 fi
 
+export mooglibdir=$HOME/projects/medit/moo/mooglib
+
 export mgwbuildroot=$HOME/projects/gtk-win-build
 export mgwpythondotver=2.7
 
