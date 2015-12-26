@@ -138,6 +138,7 @@ copy_files_from_dir() {
 
 copy_files() {
   copy_files_from_dir copy bin $bin_files
+  copy_files_from_dir copy bin `basename $libgccdll`
   copy_files_from_dir copy bin $old_grep_bin_files
 #   copy_files_from_dir link bin $new_grep_bin_files
   copy_files_from_dir link etc $etc_files

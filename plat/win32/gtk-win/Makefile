@@ -12,6 +12,7 @@ build-data: check-make
 	mkdir -p $(mgwtargetdir)
 	cp -flR $(mgwdir)/extra/medit-data/* $(mgwtargetdir)/
 # 	cp -flR $(mgwdir)/extra/medit-data/etc/* $(mgwtargetdir)/etc/
+	cp -f $(libgccdll) $(mgwtargetdir)/bin/
 
 build-python: check-make
 	mkdir -p $(mgwtargetdir)/bin $(mgwtargetdir)/lib $(mgwtargetdir)/include/python

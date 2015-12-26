@@ -11,6 +11,8 @@ else
   export mgwcygwin=true
 fi
 
+export libgccdll=/usr/lib/gcc/i686-w64-mingw32/5.3-win32/libgcc_s_sjlj-1.dll
+
 export mooglibdir=$HOME/projects/medit/moo/mooglib
 
 export mgwbuildroot=$HOME/projects/gtk-win-build
