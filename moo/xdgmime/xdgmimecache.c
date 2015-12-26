@@ -47,7 +47,7 @@
 
 #ifdef HAVE_MMAP
 #include <sys/mman.h>
-#else
+#elif !defined(__WIN32__)
 #warning Building xdgmime without MMAP support. Binary "mime.info" cache files will not be used.
 #endif
 
@@ -107,7 +107,7 @@ _xdg_mime_cache_unref (XdgMimeCache *cache)
 }
 
 XdgMimeCache *
-_xdg_mime_cache_new_from_file (const char *file_name)
+_xdg_mime_cache_new_from_file (G_GNUC_UNUSED const char *file_name)
 {
   XdgMimeCache *cache = NULL;
 

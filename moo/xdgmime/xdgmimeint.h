@@ -185,12 +185,8 @@ _xdg_reverse_ucs4 (xdg_unichar_t *source, int len)
     }
 }
 
-#ifdef __WIN32__
-#error "xdgmime can't be used on windows"
-#else
 #define XDG_MIME_STAT  stat
 #define XDG_MIME_FSTAT fstat
-#endif
 
 /* end muntyan's stuff */
 
