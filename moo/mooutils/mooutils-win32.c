@@ -347,10 +347,7 @@ _moo_win32_gettimeofday (struct timeval *tp,
     time_t sec;
 
     if (tp == NULL || tzp != NULL)
-    {
-        mgw_set_errno (MGW_EINVAL);
         return -1;
-    }
 
     sec = time (NULL);
 
