@@ -28,13 +28,13 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooutils-debug.h"
-#include "mooutils/moostat.h"
 #include "marshals.h"
 #include "mooutils/moo-mime.h"
 #include <mooglib/moo-glib.h>
+#include <mooglib/moo-stat.h>
+
 #include <string.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -309,7 +309,7 @@ _moo_file_unref (MooFile *file)
         g_free (file->case_display_name);
         g_free (file->collation_key);
         g_free (file->link_target);
-        g_slice_free (struct stat, file->statbuf);
+        g_slice_free (MgwStatBuf, file->statbuf);
         g_slice_free (MooFile, file);
     }
 }
@@ -334,9 +334,9 @@ _moo_file_stat (MooFile    *file,
     errno = 0;
 
     if (!file->statbuf)
-        file->statbuf = g_slice_new (struct stat);
+        file->statbuf = g_slice_new (MgwStatBuf);
 
-    if (moo_lstat (fullname, file->statbuf) != 0)
+    if (mgw_lstat (fullname, file->statbuf) != 0)
     {
         if (errno == ENOENT)
         {
@@ -362,8 +362,7 @@ _moo_file_stat (MooFile    *file,
     }
     else
     {
-#ifdef S_ISLNK
-        if (S_ISLNK (file->statbuf->st_mode))
+        if (file->statbuf->islnk)
         {
             static char buf[1024];
             gssize len;
@@ -371,7 +370,7 @@ _moo_file_stat (MooFile    *file,
             file->info |= MOO_FILE_INFO_IS_LINK;
             errno = 0;
 
-            if (moo_stat (fullname, file->statbuf) != 0)
+            if (mgw_stat (fullname, file->statbuf) != 0)
             {
                 if (errno == ENOENT)
                 {
@@ -413,30 +412,21 @@ _moo_file_stat (MooFile    *file,
                 file->link_target = g_strndup (buf, len);
             }
         }
-#endif
     }
 
     if ((file->info & MOO_FILE_INFO_EXISTS) &&
          !(file->info & MOO_FILE_INFO_IS_LOCKED))
     {
-        if (S_ISDIR (file->statbuf->st_mode))
+        if (file->statbuf->isdir)
             file->info |= MOO_FILE_INFO_IS_DIR;
-#ifdef S_ISBLK
-        else if (S_ISBLK (file->statbuf->st_mode))
+        else if (file->statbuf->isblk)
             file->info |= MOO_FILE_INFO_IS_BLOCK_DEV;
-#endif
-#ifdef S_ISCHR
-        else if (S_ISCHR (file->statbuf->st_mode))
+        else if (file->statbuf->ischr)
             file->info |= MOO_FILE_INFO_IS_CHAR_DEV;
-#endif
-#ifdef S_ISFIFO
-        else if (S_ISFIFO (file->statbuf->st_mode))
+        else if (file->statbuf->isfifo)
             file->info |= MOO_FILE_INFO_IS_FIFO;
-#endif
-#ifdef S_ISSOCK
-        else if (S_ISSOCK (file->statbuf->st_mode))
+        else if (file->statbuf->issock)
             file->info |= MOO_FILE_INFO_IS_SOCKET;
-#endif
     }
 
     if (file->info & MOO_FILE_INFO_IS_DIR)
@@ -457,7 +447,7 @@ void
 _moo_file_free_statbuf (MooFile *file)
 {
     g_return_if_fail (file != NULL);
-    g_slice_free (struct stat, file->statbuf);
+    g_slice_free (MgwStatBuf, file->statbuf);
     file->statbuf = NULL;
     file->flags &= ~MOO_FILE_HAS_STAT;
 }

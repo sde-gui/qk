@@ -186,26 +186,7 @@ _xdg_reverse_ucs4 (xdg_unichar_t *source, int len)
 }
 
 #ifdef __WIN32__
-#include <mooutils/moostat.h>
-
-inline static int
-_xdg_mime_stat (const char  *path,
-		struct stat *buf)
-{
-  errno = 0;
-  return moo_stat (path, buf);
-}
-
-inline static int
-_xdg_mime_fstat (int          fd,
-		 struct stat *buf)
-{
-  errno = 0;
-  return fstat (fd, buf);
-}
-
-#define XDG_MIME_STAT  _xdg_mime_stat
-#define XDG_MIME_FSTAT _xdg_mime_fstat
+#error "xdgmime can't be used on windows"
 #else
 #define XDG_MIME_STAT  stat
 #define XDG_MIME_FSTAT fstat

@@ -18,20 +18,18 @@
 #endif
 
 #include "mooutils/mooutils-fs.h"
-#include "mooutils/moostat.h"
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooutils-mem.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooi18n.h"
 #include <mooutils/mooutils-tests.h>
+#include <mooglib/moo-stat.h>
+#include <mooglib/moo-glib.h>
 
 #include <stdio.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
-#include <glib/gstdio.h>
-#include <mooglib/moo-glib.h>
 
 #ifdef __WIN32__
 #include <windows.h>
@@ -368,14 +366,14 @@ gboolean
 _moo_create_dir (const char *path,
                  GError    **error)
 {
-    struct stat buf;
+    MgwStatBuf buf;
     char *utf8_path;
 
     g_return_val_if_fail (path != NULL, FALSE);
 
     errno = 0;
 
-    if (moo_stat (path, &buf) != 0 && errno != ENOENT)
+    if (mgw_stat (path, &buf) != 0 && errno != ENOENT)
     {
         int err_code = errno;
         utf8_path = g_filename_display_name (path);
@@ -412,7 +410,7 @@ _moo_create_dir (const char *path,
         return TRUE;
     }
 
-    if (S_ISDIR (buf.st_mode))
+    if (buf.isdir)
         return TRUE;
 
     utf8_path = g_filename_display_name (path);

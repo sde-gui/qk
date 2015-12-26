@@ -1,4 +1,4 @@
-moo_sources +=			\
+xdgmime_sources =		\
 	xdgmime/xdgmimealias.c	\
 	xdgmime/xdgmimealias.h	\
 	xdgmime/xdgmime.c	\
@@ -14,3 +14,9 @@ moo_sources +=			\
 	xdgmime/xdgmimemagic.h	\
 	xdgmime/xdgmimeparent.c	\
 	xdgmime/xdgmimeparent.h
+
+if MOO_OS_WIN32
+EXTRA_DIST += $(xdgmime_sources)
+else
+moo_sources += $(xdgmime_sources)
+endif

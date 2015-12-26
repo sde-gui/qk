@@ -223,7 +223,6 @@ source_files = \
     ../moo/mooutils/mooprefspage.h\
     ../moo/mooutils/moospawn.c\
     ../moo/mooutils/moospawn.h\
-    ../moo/mooutils/moostat.h\
     ../moo/mooutils/moostock.c\
     ../moo/mooutils/moostock.h\
     ../moo/mooutils/moo-test-macros.h\

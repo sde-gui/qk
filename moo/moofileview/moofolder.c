@@ -23,9 +23,9 @@
 #include "mooutils/mooutils-misc.h"
 #include "marshals.h"
 #include <mooglib/moo-glib.h>
+#include <mooglib/moo-stat.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -1036,10 +1036,10 @@ moo_file_get_type_string (MooFile *file)
 
 /* XXX */
 static char *
-get_size_string (struct stat *statbuf)
+get_size_string (MgwStatBuf *statbuf)
 {
     g_return_val_if_fail (statbuf != NULL, NULL);
-    return g_strdup_printf ("%" G_GINT64_FORMAT, (gint64) statbuf->st_size);
+    return g_strdup_printf ("%" G_GUINT64_FORMAT, statbuf->size);
 }
 
 
@@ -1059,7 +1059,7 @@ moo_file_get_mtime_string (MooFile *file)
 
     g_return_val_if_fail (file->statbuf != NULL, NULL);
 
-    if (strftime (buf, 1024, "%x %X", localtime (&file->statbuf->st_mtime)))
+    if (strftime (buf, 1024, "%x %X", mgw_localtime (&file->statbuf->mtime)))
         return g_strdup (buf);
     else
         return NULL;

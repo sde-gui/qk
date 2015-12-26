@@ -83,7 +83,7 @@ const char  *xdg_mime_get_mime_type_for_data       (const void *data,
 						    size_t      len,
 						    int        *result_prio);
 const char  *xdg_mime_get_mime_type_for_file       (const char *file_name,
-                                                    struct stat *statbuf);
+                                                    int        *is_regular);
 const char  *xdg_mime_get_mime_type_from_file_name (const char *file_name);
 int          xdg_mime_get_mime_types_from_file_name(const char *file_name,
 						    const char *mime_types[],

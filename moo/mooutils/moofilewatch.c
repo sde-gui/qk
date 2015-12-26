@@ -36,15 +36,12 @@
 #endif
 
 #include <mooglib/moo-glib.h>
-#include <sys/stat.h>
+#include <mooglib/moo-stat.h>
 #include <sys/types.h>
 #include <errno.h>
-/* sys/stat.h macros */
-#include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-mem.h"
 #include "mooutils/moofilewatch.h"
-#include "mooutils/moostat.h"
 #include "mooutils/mootype-macros.h"
 #include "marshals.h"
 #include "mooutils/mooutils-thread.h"
@@ -73,7 +70,7 @@ typedef struct {
     GDestroyNotify notify;
     gpointer data;
 
-    struct stat statbuf;
+    MgwStatBuf statbuf;
 
     guint isdir : 1;
     guint alive : 1;
@@ -505,7 +502,7 @@ watch_fam_start (MooFileWatch   *watch,
     FAMNoExists (&watch->fam_connection);
 #endif
 
-    fam_socket = g_io_channel_unix_new (watch->fam_connection.fd);
+    fam_socket = moo_g_io_channel_unix_new (watch->fam_connection.fd);
     watch->fam_connection_watch =
             _moo_io_add_watch_full (fam_socket, MOO_FAM_SOCKET_WATCH_PRIORITY,
                                     G_IO_IN | G_IO_PRI | G_IO_HUP,
@@ -804,14 +801,14 @@ watch_stat_start_monitor (MooFileWatch   *watch,
                           Monitor        *monitor,
                           GError        **error)
 {
-    struct stat buf;
+    MgwStatBuf buf;
 
     g_return_val_if_fail (watch != NULL, FALSE);
     g_return_val_if_fail (monitor->filename != NULL, FALSE);
 
     errno = 0;
 
-    if (moo_stat (monitor->filename, &buf) != 0)
+    if (mgw_stat (monitor->filename, &buf) != 0)
     {
         int saved_errno = errno;
         g_set_error (error, MOO_FILE_WATCH_ERROR,
@@ -820,7 +817,7 @@ watch_stat_start_monitor (MooFileWatch   *watch,
         return FALSE;
     }
 
-    monitor->isdir = S_ISDIR (buf.st_mode) != 0;
+    monitor->isdir = buf.isdir;
 
 #ifdef __WIN32__
     if (monitor->isdir) /* it's fatal on windows */
@@ -868,14 +865,14 @@ do_stat (MooFileWatch *watch)
         gboolean do_emit = FALSE;
         MooFileEvent event;
         Monitor *monitor;
-        time_t old;
+        mgw_time_t old;
 
         monitor = (Monitor*) g_hash_table_lookup (watch->requests, lid->data);
 
         if (!monitor || !monitor->alive)
             continue;
 
-        old = monitor->statbuf.st_mtime;
+        old = monitor->statbuf.mtime;
 
         errno = 0;
 
@@ -883,7 +880,7 @@ do_stat (MooFileWatch *watch)
         event.filename = monitor->filename;
         event.error = NULL;
 
-        if (moo_stat (monitor->filename, &monitor->statbuf) != 0)
+        if (mgw_stat (monitor->filename, &monitor->statbuf) != 0)
         {
             if (errno == ENOENT)
             {
@@ -903,7 +900,7 @@ do_stat (MooFileWatch *watch)
 
             do_emit = TRUE;
         }
-        else if (monitor->statbuf.st_mtime > old)
+        else if (monitor->statbuf.mtime.value > old.value)
         {
             event.code = MOO_FILE_EVENT_CHANGED;
             do_emit = TRUE;
@@ -1122,11 +1119,11 @@ static void
 fam_thread_check_dir (FAMThread *thr,
                       guint      idx)
 {
-    struct stat buf;
+    MgwStatBuf buf;
 
     errno = 0;
 
-    if (moo_stat (thr->watches[idx].path, &buf) != 0 &&
+    if (mgw_stat (thr->watches[idx].path, &buf) != 0 &&
         errno == ENOENT)
     {
         fam_thread_event (MOO_FILE_EVENT_DELETED,
@@ -1444,14 +1441,14 @@ watch_win32_start_monitor (MooFileWatch   *watch,
                            Monitor        *monitor,
                            GError        **error)
 {
-    struct stat buf;
+    MgwStatBuf buf;
 
     g_return_val_if_fail (watch != NULL, FALSE);
     g_return_val_if_fail (monitor->filename != NULL, FALSE);
 
     errno = 0;
 
-    if (moo_stat (monitor->filename, &buf) != 0)
+    if (mgw_stat (monitor->filename, &buf) != 0)
     {
         int saved_errno = errno;
         g_set_error (error, MOO_FILE_WATCH_ERROR,

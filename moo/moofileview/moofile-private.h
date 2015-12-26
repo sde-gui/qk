@@ -17,7 +17,6 @@
 #define MOO_FILE_PRIVATE_H
 
 #include "moofileview/moofile.h"
-#include <sys/stat.h>
 #include <sys/types.h>
 
 G_BEGIN_DECLS
@@ -39,17 +38,17 @@ typedef struct MooCollationKey MooCollationKey;
 
 struct _MooFile
 {
-    char           *name;
-    char           *link_target;
-    char           *display_name; /* normalized */
-    char           *case_display_name;
-    MooCollationKey *collation_key;
-    MooFileInfo     info;
-    MooFileFlags    flags;
-    guint8          icon;
-    const char     *mime_type;
-    int             ref_count;
-    struct stat    *statbuf;
+    char               *name;
+    char               *link_target;
+    char               *display_name; /* normalized */
+    char               *case_display_name;
+    MooCollationKey    *collation_key;
+    MooFileInfo         info;
+    MooFileFlags        flags;
+    guint8              icon;
+    const char         *mime_type;
+    int                 ref_count;
+    struct MgwStatBuf  *statbuf;
 };
 
 

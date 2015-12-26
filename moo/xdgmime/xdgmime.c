@@ -421,7 +421,7 @@ xdg_mime_get_mime_type_for_data (const void *data,
 
 const char *
 xdg_mime_get_mime_type_for_file (const char  *file_name,
-                                 struct stat *statbuf)
+                                 int         *is_regular)
 {
   const char *mime_type;
   /* currently, only a few globs occur twice, and none
@@ -432,7 +432,7 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
   unsigned char *data;
   int max_extent;
   int bytes_read;
-  struct stat buf;
+  int is_regular_here;
   const char *base_name;
   int n;
 
@@ -444,7 +444,7 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
   xdg_mime_init ();
 
   if (_xdg_mime_caches)
-    return _xdg_mime_cache_get_mime_type_for_file (file_name, statbuf);
+    return _xdg_mime_cache_get_mime_type_for_file (file_name, is_regular);
 
   base_name = _xdg_get_base_name (file_name);
   n = _xdg_glob_hash_lookup_file_name (global_hash, base_name, mime_types, 5);
@@ -452,15 +452,18 @@ xdg_mime_get_mime_type_for_file (const char  *file_name,
   if (n == 1)
     return mime_types[0];
 
-  if (!statbuf)
+  if (!is_regular)
     {
-      if (XDG_MIME_STAT (file_name, &buf) != 0)
+      struct stat statbuf;
+
+      if (XDG_MIME_STAT (file_name, &statbuf) != 0)
 	return XDG_MIME_TYPE_UNKNOWN;
 
-      statbuf = &buf;
+      is_regular_here = S_ISREG (statbuf.st_mode);
+      is_regular = &is_regular_here;
     }
 
-  if (!S_ISREG (statbuf->st_mode))
+  if (!*is_regular)
     return XDG_MIME_TYPE_UNKNOWN;
 
   /* FIXME: Need to make sure that max_extent isn't totally broken.  This could

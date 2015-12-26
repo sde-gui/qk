@@ -20,16 +20,16 @@
 
 G_BEGIN_DECLS
 
-
 /* All public functions here are thread-safe */
+
+typedef struct MgwStatBuf MgwStatBuf;
 
 #define MOO_MIME_TYPE_UNKNOWN (moo_mime_type_unknown ())
 
 const char  *moo_mime_type_unknown              (void) G_GNUC_CONST;
 
-struct stat;
 const char  *moo_get_mime_type_for_file         (const char     *filename,
-                                                 struct stat    *statbuf);
+                                                 MgwStatBuf     *statbuf);
 const char  *moo_get_mime_type_for_filename     (const char     *filename);
 gboolean     moo_mime_type_is_subclass          (const char     *mime_type,
                                                  const char     *base);

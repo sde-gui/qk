@@ -20,6 +20,12 @@ moo_builddir = .
 
 moo_sources += moo-config.h
 
+moo_sources +=				\
+	mooglib/moo-glib.h		\
+	mooglib/moo-stat.h		\
+	mooglib/moo-time.h		\
+	mooglib/moo-glib.c
+
 EXTRA_DIST += marshals.list
 built_moo_sources += marshals.h
 marshals.h: marshals.list

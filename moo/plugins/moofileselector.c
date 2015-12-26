@@ -35,20 +35,19 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moo-mime.h"
 #include "mooutils/moomenu.h"
-#include "mooutils/moostat.h"
 #include "plugins/moofileselector-gxml.h"
 #include "mooutils/moohelp.h"
 #include "mooutils/mooatom.h"
+#include <mooglib/moo-glib.h>
+#include <mooglib/moo-stat.h>
 #ifdef MOO_ENABLE_HELP
 #include "moo-help-sections.h"
 #endif
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-#include <mooglib/moo-glib.h>
 #include <string.h>
 #include <errno.h>
-#include <sys/stat.h>
 
 #define PREFS_LAST_DIR MOO_PLUGIN_PREFS_ROOT "/" MOO_FILE_SELECTOR_PLUGIN_ID "/last_dir"
 #define PREFS_HIDDEN_FILES MOO_PLUGIN_PREFS_ROOT "/" MOO_FILE_SELECTOR_PLUGIN_ID "/show_hidden_files"
@@ -270,7 +269,7 @@ static void
 moo_file_selector_activate (MooFileView    *fileview,
                             const char     *path)
 {
-    struct stat statbuf;
+    MgwStatBuf statbuf;
     MooFileSelector *filesel = MOO_FILE_SELECTOR (fileview);
     gboolean is_text = TRUE, is_exe = FALSE;
 
@@ -278,7 +277,7 @@ moo_file_selector_activate (MooFileView    *fileview,
 
     errno = 0;
 
-    if (moo_stat (path, &statbuf) != 0)
+    if (mgw_stat (path, &statbuf) != 0)
     {
         int err = errno;
         g_warning ("error in stat(%s): %s", path, g_strerror (err));

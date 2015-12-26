@@ -41,12 +41,13 @@
 #include "mooutils/moowin32/mingw/fnmatch.h"
 #include "mooutils/moowin32/mingw/sys/mman.h"
 #include <mooutils/mooutils-tests.h>
+#include <mooglib/moo-stat.h>
+
 #include <gdk/gdkwin32.h>
 #include <windows.h>
 #include <shellapi.h>
 #include <time.h>
 #include <errno.h>
-#include <sys/stat.h>
 #include <sys/time.h>
 #include <io.h>
 #include <stdarg.h>
@@ -507,7 +508,7 @@ _moo_win32_mmap (gpointer start,
                  int      fd,
                  guint64  offset)
 {
-    struct stat st;
+    MgwStatBuf st;
     HANDLE mapping;
     char *buffer;
 
@@ -517,7 +518,7 @@ _moo_win32_mmap (gpointer start,
     g_return_val_if_fail (offset == 0, NULL);
 
     errno = 0;
-    if (fstat (fd, &st) != 0)
+    if (mgw_fstat (fd, &st) != 0)
         return MAP_FAILED;
 
     if ((guint64) st.st_size != length)

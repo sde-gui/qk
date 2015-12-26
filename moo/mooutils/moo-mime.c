@@ -16,6 +16,7 @@
 #include "mooutils/moo-mime.h"
 #include "xdgmime/xdgmime.h"
 #include "mooutils/mooutils-fs.h"
+#include <mooglib/moo-stat.h>
 #include <string.h>
 
 G_LOCK_DEFINE (moo_mime);
@@ -49,17 +50,18 @@ mime_type_intern (const char *mime)
 }
 
 const char *
-moo_get_mime_type_for_file (const char  *filename,
-                            struct stat *statbuf)
+moo_get_mime_type_for_file (const char *filename,
+                            MgwStatBuf *statbuf)
 {
     const char *mime;
     char *filename_utf8 = NULL;
+    gboolean is_regular = statbuf ? statbuf->isreg : FALSE;
 
     if (filename)
         filename_utf8 = g_filename_display_name (filename);
 
     G_LOCK (moo_mime);
-    mime = mime_type_intern (xdg_mime_get_mime_type_for_file (filename_utf8, statbuf));
+    mime = mime_type_intern (xdg_mime_get_mime_type_for_file (filename_utf8, statbuf ? &is_regular : NULL));
     G_UNLOCK (moo_mime);
 
     g_free (filename_utf8);

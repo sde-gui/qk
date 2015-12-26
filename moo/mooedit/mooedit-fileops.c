@@ -34,7 +34,6 @@
 #include "mooutils/moocompat.h"
 #include <string.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>

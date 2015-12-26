@@ -102,7 +102,6 @@ SET(mooutils_sources
 	mooutils/mooprefspage.h
 	mooutils/moospawn.c
 	mooutils/moospawn.h
-	mooutils/moostat.h
 	mooutils/moostock.c
 	mooutils/moostock.h
 	mooutils/mootype-macros.h

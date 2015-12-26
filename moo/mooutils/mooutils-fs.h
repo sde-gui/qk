@@ -19,16 +19,6 @@
 #include <mooglib/moo-glib.h>
 #include <gtk/gtk.h>
 
-/* MSVC */
-#if defined(_WIN32) && !defined(__GNUC__)
-#include <sys/stat.h>
-#include <fcntl.h>
-#ifndef S_ISREG
-#define S_ISREG(m) (((m) & (_S_IFMT)) == (_S_IFREG))
-#define S_ISDIR(m) (((m) & (_S_IFMT)) == (_S_IFDIR))
-#endif
-#endif
-
 #ifndef O_BINARY
 #define O_BINARY 0x0
 #endif
