@@ -887,7 +887,8 @@ static void moo_static_rec_mutex_unlock (GStaticRecMutex *mutex)
 static void
 print_func_file (const char *string)
 {
-    FILE *file;
+    MGW_FILE *file;
+    mgw_errno_t err;
 
     moo_static_rec_mutex_lock (&moo_log_file_mutex);
 
@@ -899,18 +900,18 @@ print_func_file (const char *string)
 
     if (!moo_log_file_written)
     {
-        file = fopen (moo_log_file, "w+");
+        file = mgw_fopen (moo_log_file, "w+", &err);
         moo_log_file_written = TRUE;
     }
     else
     {
-        file = fopen (moo_log_file, "a+");
+        file = mgw_fopen (moo_log_file, "a+", &err);
     }
 
     if (file)
     {
-        fprintf (file, "%s", string);
-        fclose (file);
+        mgw_fwrite (string, strlen(string), 1, file);
+        mgw_fclose (file);
     }
     else
     {

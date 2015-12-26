@@ -1194,56 +1194,6 @@ _moo_mkdir (const char *path, mgw_errno_t *err)
 }
 
 
-gpointer
-_moo_fopen (const char *path,
-            const char *mode)
-{
-#ifdef __WIN32__
-    gboolean use_wide_char_api;
-    gpointer path_conv, mode_conv;
-    FILE *retval;
-    mgw_errno_t save_errno;
-
-    if (G_WIN32_HAVE_WIDECHAR_API ())
-    {
-        use_wide_char_api = TRUE;
-        path_conv = g_utf8_to_utf16 (path, -1, NULL, NULL, NULL);
-        mode_conv = g_utf8_to_utf16 (mode, -1, NULL, NULL, NULL);
-    }
-    else
-    {
-        use_wide_char_api = FALSE;
-        path_conv = g_locale_from_utf8 (path, -1, NULL, NULL, NULL);
-        mode_conv = g_locale_from_utf8 (mode, -1, NULL, NULL, NULL);
-    }
-
-    if (!path_conv || !mode_conv)
-    {
-        g_free (path_conv);
-        g_free (mode_conv);
-        mgw_set_errno (MGW_EINVAL);
-        return NULL;
-    }
-
-    mgw_set_errno (0);
-
-    if (use_wide_char_api)
-        retval = _wfopen (path_conv, mode_conv);
-    else
-        retval = fopen (path_conv, mode_conv);
-
-    save_errno = mgw_errno ();
-    g_free (path_conv);
-    g_free (mode_conv);
-    mgw_set_errno (save_errno);
-
-    return retval;
-#else
-    return fopen (path, mode);
-#endif
-}
-
-
 int
 _moo_rename (const char  *old_name,
              const char  *new_name,
