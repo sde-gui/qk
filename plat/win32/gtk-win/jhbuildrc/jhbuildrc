@@ -70,27 +70,34 @@ _mingw_tools = {
 for _var in _mingw_tools:
     os.environ[_var] = _mingw_tool_prefix + _mingw_tools[_var]
 
-_cflags = ''
+_common_cflags = ''
 
 if _gtkwinconfig == 'debug':
-    _cflags += ' -gstabs+'
+    _common_cflags += ' -gstabs+'
 elif _gtkwinconfig == 'reldbg':
-    _cflags += ' -gstabs+ -O2'
+    _common_cflags += ' -gstabs+ -O2'
 else:
-    _cflags += ' -O2'
+    _common_cflags += ' -O2'
 
 # os.environ['CPPFLAGS'] = "-I%s/include" % (prefix,)
 # os.environ['CFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 # os.environ['CXXFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 # os.environ['OBJCFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 
-_cflags += ' -Werror -Wall -Wno-unused-but-set-variable -Wno-unused-function -Wno-unused-value'
+_common_cflags = ' -Werror -Wall -Wno-unused-but-set-variable -Wno-unused-function -Wno-unused-value ' \
+    + '-Wno-unused-variable -Wno-sign-compare -Wno-enum-compare -Wno-array-bounds ' \
+    + '-Wno-unused-local-typedefs -Wno-maybe-uninitialized -Wno-attributes'
+_c_warnings = ' -Wno-pointer-sign '
+_cxx_warnings = ''
 
-_cflags += ' -mms-bitfields'
+_common_cflags += ' -mms-bitfields'
 if _gtkwinplatform != 'x64':
-    _cflags += ' -march=i686'
+    _common_cflags += ' -march=i686'
 
-_cflags_cmdline = ' CFLAGS="%(_cflags)s" CXXFLAGS="%(_cflags)s" OBJCFLAGS="%(_cflags)s"' % {'_cflags': _cflags}
+_cxxflags = _common_cflags + _cxx_warnings
+_cflags = _common_cflags + _c_warnings
+
+_cflags_cmdline = ' CFLAGS="%(_cflags)s" CXXFLAGS="%(_cxxflags)s"' % {'_cflags': _cflags, '_cxxflags': _cxxflags}
 def _remove_gstabs(module):
     module_autogenargs[module] = module_autogenargs[module].replace('-gstabs+', '-g').replace('-gstabs', '-g')
 
@@ -115,7 +122,7 @@ autogenargs  = ' --build=' + _configure_build
 autogenargs += ' --host=' + _configure_target
 autogenargs += ' --target=' + _configure_target
 autogenargs += ' --disable-docs --disable-gtk-doc --disable-scrollkeeper'
-autogenargs += ' --enable-maintainer-mode --enable-shared --disable-static'
+autogenargs += ' --enable-shared --disable-static'
 autogenargs += ' --enable-relocatable --enable-silent-rules --disable-glibtest --disable-pthread'
 for _var in ['AR', 'RANLIB', 'STRIP', 'AS', 'DLLTOOL', 'OBJDUMP', 'NM', 'WINDRES', 'RC', 'INSTALL']:
     autogenargs += ' ' + _var + '="' + os.environ[_var] + '" '
