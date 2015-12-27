@@ -70,22 +70,25 @@ _mingw_tools = {
 for _var in _mingw_tools:
     os.environ[_var] = _mingw_tool_prefix + _mingw_tools[_var]
 
+_cflags = ''
+
 if _gtkwinconfig == 'debug':
-    _def_cflags = '-gstabs+'
+    _cflags += ' -gstabs+'
 elif _gtkwinconfig == 'reldbg':
-    _def_cflags = '-gstabs+ -O2'
+    _cflags += ' -gstabs+ -O2'
 else:
-    _def_cflags = '-O2'
+    _cflags += ' -O2'
 
 # os.environ['CPPFLAGS'] = "-I%s/include" % (prefix,)
 # os.environ['CFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 # os.environ['CXXFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 # os.environ['OBJCFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 
-_cflags = "-mms-bitfields -Wno-unused-but-set-variable %s " % (_def_cflags)
+_cflags += ' -Werror -Wall -Wno-unused-but-set-variable -Wno-unused-function -Wno-unused-value'
 
+_cflags += ' -mms-bitfields'
 if _gtkwinplatform != 'x64':
-    _cflags = "-march=i686 %s " % (_cflags)
+    _cflags += ' -march=i686'
 
 _cflags_cmdline = ' CFLAGS="%(_cflags)s" CXXFLAGS="%(_cflags)s" OBJCFLAGS="%(_cflags)s"' % {'_cflags': _cflags}
 def _remove_gstabs(module):
@@ -135,6 +138,8 @@ module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
 if _gtkwinconfig == 'debug':
     module_autogenargs['gettext'] += " CPPFLAGS=-DHAVE_INLINE"
 _remove_gstabs('gettext')
+
+module_autogenargs['libiconv'] = autogenargs + " --disable-relocatable"
 
 module_autogenargs['libxml2'] = autogenargs + " --without-python" \
                                             + " --without-threads"
