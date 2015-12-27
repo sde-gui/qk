@@ -1,3 +1,11 @@
+export mgwx64=true
+
+if $mgwx64; then
+  export mgwplatform="x64"
+else
+  export mgwplatform="x86"
+fi
+
 if [ -z "$OSTYPE" -o "$OSTYPE" != "cygwin" ]; then
   export mgwsystem=linux
 else
@@ -11,9 +19,11 @@ else
   export mgwcygwin=true
 fi
 
-export libgccdll=/usr/lib/gcc/i686-w64-mingw32/5.3-win32/libgcc_s_sjlj-1.dll
-
-export mooglibdir=$HOME/projects/medit/moo/mooglib
+if [ $mgwplatform = 'x64' ]; then
+  export libgccdll=/usr/lib/gcc/i686-w64-mingw32/*-win32/libgcc_s_sjlj-1.dll
+else
+  export libgccdll=/usr/lib/gcc/x86_64-w64-mingw32/*-win32/libgcc_s_sjlj-1.dll
+fi
 
 export mgwbuildroot=$HOME/projects/gtk-win-build
 export mgwpythondotver=2.7
@@ -21,11 +31,12 @@ export mgwpythondotver=2.7
 export mgwpythonver=`echo $mgwpythondotver | sed 's/[.]//'`
 
 if $mgwlinux; then
-  export mgwpythoninstdir=$HOME/.wine/drive_c/Python$mgwpythonver
-  if [ -d $HOME/.wine/drive_c/windows/syswow64 ]; then
-    export mgwpythonsystem32dir=$HOME/.wine/drive_c/windows/syswow64
-    export mgwprogramfilesdir="$HOME/.wine/drive_c/Program Files (x86)"
+  if [ $mgwplatform = 'x64' ]; then
+    export mgwpythoninstdir=$HOME/.wine64/drive_c/Python$mgwpythonver
+    export mgwpythonsystem32dir=$HOME/.wine64/drive_c/windows/system32
+    export mgwprogramfilesdir="$HOME/.wine64/drive_c/Program Files (x86)"
   else
+    export mgwpythoninstdir=$HOME/.wine/drive_c/Python$mgwpythonver
     export mgwpythonsystem32dir=$HOME/.wine/drive_c/windows/system32
     export mgwprogramfilesdir="$HOME/.wine/drive_c/Program Files"
   fi
@@ -56,15 +67,20 @@ case "$1" in
     ;;
 esac
 
+export mgwplatsuffix=
+if [ $mgwplatform = 'x64' ]; then
+  export mgwplatsuffix="-x64"
+fi
+
 export mgwjhbuildsrcdir=$mgwbuildroot/jhbuild
 export mgwjhbuilddir=$mgwbuildroot/jhbuild-bin
 
-export mgwdestdir=$mgwbuildroot/bdist-$mgwconfig
+export mgwdestdir=$mgwbuildroot/bdist-$mgwconfig$mgwplatsuffix
 
-export mgwbuilddir=$mgwbuildroot/$mgwconfig
-export mgwbuilddir_s=$mgwbuildroot/$mgwconfig
+export mgwbuilddir=$mgwbuildroot/$mgwconfig$mgwplatsuffix
+export mgwbuilddir_s=$mgwbuildroot/$mgwconfig$mgwplatsuffix
 export mgwsourcedir=$mgwbuilddir/source
 export mgwtargetdir=$mgwbuilddir/target
 export mgwsourcedir_s=$mgwbuilddir_s/source
 export mgwtargetdir_s=$mgwbuilddir_s/target
-export mgwdistdir=$mgwbuildroot/dist-$mgwconfig
+export mgwdistdir=$mgwbuildroot/dist-$mgwconfig$mgwplatsuffix

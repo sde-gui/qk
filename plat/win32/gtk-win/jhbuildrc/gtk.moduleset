@@ -268,7 +268,7 @@
   </tarball>
   -->
 
-  <autotools id="gtk">
+  <autotools id="gtk" supports-non-srcdir-builds="no">
     <branch repo="medit.bitbucket.org" module="gtk"/>
     <dependencies>
       <dep package="cairo"/>

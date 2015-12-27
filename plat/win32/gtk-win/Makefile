@@ -51,7 +51,7 @@ dist-bin:
 dist: dist-src dist-bin bdist dist-src-dbg
 
 clean-dist:
-	rm -rf $(mgwbuildroot)/dist-$(mgwconfig)
+	rm -rf $(mgwbuildroot)/dist-$(mgwconfig)$(mgwplatsuffix)
 
 clean: clean-dist
 	rm -rf $(mgwbuilddir) $(mgwdestdir) $(mgwdestdir)-en $(mgwdistdir)

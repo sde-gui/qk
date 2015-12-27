@@ -215,7 +215,7 @@ fi
 copy_icons
 copy_mime
 
-tarball=medit-bdist-$mgwconfig-`date +%Y%m%d`.zip
+tarball=medit-bdist-$mgwconfig$mgwplatsuffix-`date +%Y%m%d`.zip
 cd `dirname $dstdir`
 do_or_die rm -f $mgwdistdir/$tarball
 do_or_die zip -r9 $tarball.tmp `basename $dstdir`
