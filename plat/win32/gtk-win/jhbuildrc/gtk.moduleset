@@ -34,7 +34,7 @@
   </tarball>
   -->
 
-  <autotools id="gettext">
+  <autotools id="gettext" >
     <branch repo="medit.bitbucket.org" module="gettext"/>
     <dependencies>
       <dep package="libiconv"/>
@@ -119,7 +119,7 @@
   </tarball>
   -->
 
-  <autotools id="glib">
+  <autotools id="glib" supports-non-srcdir-builds="no">
     <branch repo="medit.bitbucket.org" module="glib"/>
     <dependencies>
       <dep package="libiconv"/>
@@ -268,7 +268,7 @@
   </tarball>
   -->
 
-  <autotools id="gtk">
+  <autotools id="gtk" supports-non-srcdir-builds="no">
     <branch repo="medit.bitbucket.org" module="gtk"/>
     <dependencies>
       <dep package="cairo"/>
@@ -386,6 +386,13 @@
     </dependencies>
   </autotools>
 
+  <autotools id="mooglib">
+    <branch repo="medit.bitbucket.org" module="mooglib"/>
+    <dependencies>
+      <dep package="glib"/>
+    </dependencies>
+  </autotools>
+
   <metamodule id="medit-gtk-win">
     <dependencies>
       <dep package="hicolor-icon-theme"/>
@@ -393,6 +400,7 @@
       <dep package="gtk"/>
       <!--<dep package="intltool"/>-->
       <dep package="pygtk"/>
+      <dep package="mooglib"/>
     </dependencies>
   </metamodule>
 

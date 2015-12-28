@@ -236,6 +236,8 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
     # /usr/lib/gcc/i586-mingw32msvc/4.2.1-sjlj/include/c++/cwchar:164: error: ‘::swprintf’ has not been declared
     # /usr/lib/gcc/i586-mingw32msvc/4.2.1-sjlj/include/c++/cwchar:171: error: ‘::vswprintf’ has not been declared
     MOO_CPPFLAGS="$MOO_CPPFLAGS -U__STRICT_ANSI__"
+
+    MOO_LIBS="$MOO_LIBS -lmooglib"
   fi
 
   if $MOO_OS_UNIX; then

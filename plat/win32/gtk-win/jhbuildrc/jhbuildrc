@@ -3,6 +3,7 @@
 _gtkwindir = os.environ['_GTKWINDIR']
 _gtkwinjhbuilddir = os.path.join(_gtkwindir, 'jhbuildrc')
 _gtkwinbuildroot = os.environ['_GTKWINBUILDROOT']
+_gtkwinplatform = os.environ['_GTKWINPLATFORM']
 
 _gtkwinconfig = os.environ.get('_GTKWINCONFIG')
 if _gtkwinconfig is None:
@@ -12,16 +13,17 @@ else:
     _gtkwinconfig = _gtkwinconfig.lower()
 assert _gtkwinconfig in ['debug', 'reldbg', 'release']
 
-_mooglib_dir = os.environ.get('_MOOGLIBDIR')
-if not _mooglib_dir:
-    raise RuntimeError('_MOOGLIBDIR is not set')
-
 _mingw_tool_prefix = None
 _configure_target = None
-for __p in ('i686-w64-mingw32', 'i686-pc-mingw32', 'i586-mingw32msvc', 'i486-mingw32'):
+if _gtkwinplatform == 'x64':
+    __mingw_tool_prefixes = ('x86_64-w64-mingw32',)
+else:
+    __mingw_tool_prefixes = ('i686-w64-mingw32', 'i686-pc-mingw32', 'i586-mingw32msvc', 'i486-mingw32')
+for __p in __mingw_tool_prefixes:
     if os.path.exists('/usr/bin/%s-gcc' % (__p,)):
         _mingw_tool_prefix = '/usr/bin/%s-' % (__p,)
         _configure_target = __p
+        break
 if not _mingw_tool_prefix:
     raise RuntimeError('Could not find mingw-gcc')
 
@@ -31,9 +33,10 @@ use_lib64 = False
 
 modules = ['medit-gtk-win']
 
-checkoutroot = os.path.join(_gtkwinbuildroot, _gtkwinconfig, 'source')
-buildroot = os.path.join(_gtkwinbuildroot, _gtkwinconfig, 'build')
-prefix = os.path.join(_gtkwinbuildroot, _gtkwinconfig, 'target')
+_gtkwindirsuffix = _gtkwinplatform == 'x64' and '-x64' or ''
+checkoutroot = os.path.join(_gtkwinbuildroot, _gtkwinconfig + _gtkwindirsuffix, 'source')
+buildroot = os.path.join(_gtkwinbuildroot, _gtkwinconfig + _gtkwindirsuffix, 'build')
+prefix = os.path.join(_gtkwinbuildroot, _gtkwinconfig + _gtkwindirsuffix, 'target')
 tarballdir = os.path.join(_gtkwinbuildroot, 'tarballs')
 
 os.environ['prefix'] = prefix
@@ -67,20 +70,43 @@ _mingw_tools = {
 for _var in _mingw_tools:
     os.environ[_var] = _mingw_tool_prefix + _mingw_tools[_var]
 
+_common_cflags = ''
+
 if _gtkwinconfig == 'debug':
-    _def_cflags = '-gstabs+'
+    _common_cflags += ' -gstabs+'
 elif _gtkwinconfig == 'reldbg':
-    _def_cflags = '-gstabs+ -O2'
+    _common_cflags += ' -gstabs+ -O2'
 else:
-    _def_cflags = '-O2'
+    #_common_cflags += ' -O2'
+    _common_cflags += ' -gstabs+ -O2'
 
 # os.environ['CPPFLAGS'] = "-I%s/include" % (prefix,)
 # os.environ['CFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 # os.environ['CXXFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 # os.environ['OBJCFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 
-_cflags = "-mms-bitfields -march=i686 %s " % (_def_cflags)
-_cflags_cmdline = ' CFLAGS="%(_cflags)s" CXXFLAGS="%(_cflags)s" OBJCFLAGS="%(_cflags)s"' % {'_cflags': _cflags}
+_c_warnings = ''
+_cxx_warnings = ''
+
+# x64 warnings are important, everybody confuses long with ssize_t
+if _gtkwinplatform == 'x64':
+    #_common_cflags += ' -Werror -Wall'
+    _common_cflags += ' -Wall'
+
+_common_cflags += ' -Wno-unused-but-set-variable -Wno-unused-function -Wno-unused-value ' \
+    + '-Wno-unused-variable -Wno-sign-compare -Wno-enum-compare -Wno-array-bounds ' \
+    + '-Wno-unused-local-typedefs -Wno-maybe-uninitialized -Wno-attributes ' \
+    + '-Wno-logical-not-parentheses -Wno-int-to-pointer-cast'
+_c_warnings += ' -Wno-pointer-sign -Wno-incompatible-pointer-types'
+
+_common_cflags += ' -mms-bitfields'
+if _gtkwinplatform != 'x64':
+    _common_cflags += ' -march=i686'
+
+_cxxflags = _common_cflags + _cxx_warnings
+_cflags = _common_cflags + _c_warnings
+
+_cflags_cmdline = ' CFLAGS="%(_cflags)s" CXXFLAGS="%(_cxxflags)s"' % {'_cflags': _cflags, '_cxxflags': _cxxflags}
 def _remove_gstabs(module):
     module_autogenargs[module] = module_autogenargs[module].replace('-gstabs+', '-g').replace('-gstabs', '-g')
 
@@ -105,7 +131,7 @@ autogenargs  = ' --build=' + _configure_build
 autogenargs += ' --host=' + _configure_target
 autogenargs += ' --target=' + _configure_target
 autogenargs += ' --disable-docs --disable-gtk-doc --disable-scrollkeeper'
-autogenargs += ' --enable-maintainer-mode --enable-shared --disable-static'
+autogenargs += ' --enable-shared --disable-static'
 autogenargs += ' --enable-relocatable --enable-silent-rules --disable-glibtest --disable-pthread'
 for _var in ['AR', 'RANLIB', 'STRIP', 'AS', 'DLLTOOL', 'OBJDUMP', 'NM', 'WINDRES', 'RC', 'INSTALL']:
     autogenargs += ' ' + _var + '="' + os.environ[_var] + '" '
@@ -113,7 +139,7 @@ for _var in ['AR', 'RANLIB', 'STRIP', 'AS', 'DLLTOOL', 'OBJDUMP', 'NM', 'WINDRES
 autogenargs += _cflags_cmdline
 
 # zlib uses custom configure script which doesn't ignore unknown options
-module_autogenargs['zlib'] = ""
+module_autogenargs['zlib'] = (_gtkwinplatform == 'x64' and ' --64' or '')
 
 module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
 					    + " --disable-java" \
@@ -123,11 +149,15 @@ module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
 					    + " --without-libxml2-prefix" \
 					    + " --without-libglib-2.0-prefix" \
                                             + " --enable-threads=win32" \
-					    + " --disable-openmp"
+					    + " --disable-openmp" \
+                                            + " --disable-rpath" \
+                                            + " --disable-relocatable"
 
 if _gtkwinconfig == 'debug':
     module_autogenargs['gettext'] += " CPPFLAGS=-DHAVE_INLINE"
 _remove_gstabs('gettext')
+
+module_autogenargs['libiconv'] = autogenargs + " --disable-relocatable"
 
 module_autogenargs['libxml2'] = autogenargs + " --without-python" \
                                             + " --without-threads"
@@ -140,8 +170,6 @@ module_autogenargs['glib'] =    autogenargs + " --with-pcre=internal" \
 					    + " --with-threads=win32" \
 					    + " --disable-fam" \
 					    + " --disable-selinux"
-
-module_autogenargs['glib'] += " MOO_GLIB_DIR=" + _mooglib_dir
 
 module_autogenargs['cairo'] =   autogenargs + " --without-x" \
 					    + " --disable-ft" \
@@ -159,7 +187,9 @@ module_autogenargs['gtk'] = autogenargs \
 					    + " --disable-gdiplus" \
 					    + " --with-included-loaders=ani,icns,pcx,ras,tga,png,pnm,wbmp,xbm,xpm,bmp,gif,ico" \
                                             + " --with-included-immodules" \
-                                            + " --disable-introspection"
+                                            + " --disable-introspection" \
+                                            + " --disable-visibility" \
+                                            + (" LDFLAGS=-L%s/lib" % prefix)
 
 module_autogenargs['gdk-pixbuf'] = autogenargs \
                                             + " --without-libjpeg" \
