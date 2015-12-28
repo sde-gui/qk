@@ -1,4 +1,4 @@
-export mgwx64=true
+export mgwx64=false
 
 if $mgwx64; then
   export mgwplatform="x64"
@@ -20,9 +20,9 @@ else
 fi
 
 if [ $mgwplatform = 'x64' ]; then
-  export libgccdll=/usr/lib/gcc/i686-w64-mingw32/*-win32/libgcc_s_sjlj-1.dll
-else
   export libgccdll=/usr/lib/gcc/x86_64-w64-mingw32/*-win32/libgcc_s_sjlj-1.dll
+else
+  export libgccdll=/usr/lib/gcc/i686-w64-mingw32/*-win32/libgcc_s_sjlj-1.dll
 fi
 
 export mgwbuildroot=$HOME/projects/gtk-win-build

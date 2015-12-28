@@ -26,8 +26,18 @@ build-python: check-make
 build-defs: check-make
 	cd $(mgwtargetdir)/lib && gendef ../bin/*.dll
 
-build: build-python build-gtk build-data build-defs
+pre-build: build-python
+post-build: build-data build-defs
+
+build: pre-build build-gtk post-build
 rebuild: clean build
+
+RSYNC = rsync --recursive --verbose --copy-links --update
+copy-win: check-make
+	mkdir -p ~/projects/win/gtk-win-build/$(mgwconfig)$(mgwplatsuffix)/
+	$(RSYNC) $(mgwtargetdir) ~/projects/win/gtk-win-build/$(mgwconfig)$(mgwplatsuffix)/
+	mkdir -p ~/projects/win/
+	$(RSYNC) $(mgwdestdir) ~/projects/win/
 
 bdist-en:
 	rm -fr $(mgwdestdir)-en
