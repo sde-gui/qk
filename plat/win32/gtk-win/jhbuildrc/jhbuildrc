@@ -84,11 +84,17 @@ else:
 # os.environ['CXXFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 # os.environ['OBJCFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
 
-_common_cflags = ' -Werror -Wall -Wno-unused-but-set-variable -Wno-unused-function -Wno-unused-value ' \
+_c_warnings = ''
+_cxx_warnings = ''
+
+# x64 warnings are important, everybody confuses long with ssize_t
+if _gtkwinplatform == 'x64':
+    _common_cflags += ' -Werror -Wall'
+
+_common_cflags += ' -Wno-unused-but-set-variable -Wno-unused-function -Wno-unused-value ' \
     + '-Wno-unused-variable -Wno-sign-compare -Wno-enum-compare -Wno-array-bounds ' \
     + '-Wno-unused-local-typedefs -Wno-maybe-uninitialized -Wno-attributes'
-_c_warnings = ' -Wno-pointer-sign '
-_cxx_warnings = ''
+_c_warnings += ' -Wno-pointer-sign '
 
 _common_cflags += ' -mms-bitfields'
 if _gtkwinplatform != 'x64':
@@ -133,6 +139,7 @@ autogenargs += _cflags_cmdline
 module_autogenargs['zlib'] = (_gtkwinplatform == 'x64' and ' --64' or '')
 
 module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
+                                            + " --disable-dependency-tracking" \
 					    + " --disable-java" \
 					    + " --disable-csharp" \
 					    + " --with-included-gettext" \
@@ -140,7 +147,9 @@ module_autogenargs['gettext'] = autogenargs + " --without-emacs" \
 					    + " --without-libxml2-prefix" \
 					    + " --without-libglib-2.0-prefix" \
                                             + " --enable-threads=win32" \
-					    + " --disable-openmp"
+					    + " --disable-openmp" \
+                                            + " --disable-rpath" \
+                                            + " --disable-relocatable"
 
 if _gtkwinconfig == 'debug':
     module_autogenargs['gettext'] += " CPPFLAGS=-DHAVE_INLINE"
