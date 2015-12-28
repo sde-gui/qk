@@ -34,7 +34,7 @@
   </tarball>
   -->
 
-  <autotools id="gettext" supports-non-srcdir-builds="no">
+  <autotools id="gettext" >
     <branch repo="medit.bitbucket.org" module="gettext"/>
     <dependencies>
       <dep package="libiconv"/>
