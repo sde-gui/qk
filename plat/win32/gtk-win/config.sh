@@ -21,8 +21,10 @@ fi
 
 if [ $mgwplatform = 'x64' ]; then
   export libgccdll=/usr/lib/gcc/x86_64-w64-mingw32/*-win32/libgcc_s_sjlj-1.dll
+  export libstdcppdll=/usr/lib/gcc/x86_64-w64-mingw32/*-win32/libstdc++*.dll
 else
   export libgccdll=/usr/lib/gcc/i686-w64-mingw32/*-win32/libgcc_s_sjlj-1.dll
+  export libstdcppdll=/usr/lib/gcc/i686-w64-mingw32/*-win32/libstdc++*.dll
 fi
 
 export moosrcdir=$HOME/projects/medit/moo

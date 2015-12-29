@@ -78,8 +78,8 @@ if _gtkwinconfig == 'debug':
 elif _gtkwinconfig == 'reldbg':
     _common_cflags += ' -gstabs+ -O2'
 else:
-    #_common_cflags += ' -O2'
-    _common_cflags += ' -gstabs+ -O2'
+    _common_cflags += ' -O3 -fno-strict-aliasing -fwrapv'
+    #_common_cflags += ' -gstabs+ -O2'
 
 # os.environ['CPPFLAGS'] = "-I%s/include" % (prefix,)
 # os.environ['CFLAGS'] = "-I%s/include -mms-bitfields -march=i686 %s" % (prefix, _def_cflags)
