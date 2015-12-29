@@ -58,7 +58,9 @@ include(mooutils/mooutils.cmake)
 include(mooedit/mooedit.cmake)
 include(moofileview/moofileview.cmake)
 include(gtksourceview/gtksourceview.cmake)
+if(NOT MOO_WIN32_BUILD)
 include(eggsmclient/eggsmclient.cmake)
+endif()
 include(mooapp/mooapp.cmake)
 include(moolua/moolua.cmake)
 if(MOO_ENABLE_PYTHON)
@@ -74,6 +76,7 @@ set(medit_app_sources
 )
 
 SET(MEDIT_SOURCES
+    CMakeLists.txt
     ${moo_sources}
     ${built_moo_sources}
 )

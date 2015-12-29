@@ -96,8 +96,11 @@ struct _MooAppPrivate {
     gboolean    in_after_close_window;
     int         exit_status;
 
-    int         use_session;
+#ifndef __WIN32__
     EggSMClient *sm_client;
+#endif
+
+    int         use_session;
     char       *session_file;
     MooMarkupDoc *session;
 
@@ -759,6 +762,8 @@ emit_started (MooApp *app)
     return FALSE;
 }
 
+#ifndef __WIN32__
+
 static void
 sm_quit_requested (MooApp *app)
 {
@@ -778,6 +783,8 @@ sm_quit (MooApp *app)
     if (!moo_app_quit (app))
         moo_app_do_quit (app);
 }
+
+#endif // __WIN32__
 
 
 void
@@ -820,8 +827,10 @@ moo_app_do_quit (MooApp *app)
 
     g_signal_emit (app, signals[QUIT], 0);
 
+#ifndef __WIN32__
     g_object_unref (app->priv->sm_client);
     app->priv->sm_client = NULL;
+#endif
 
     _moo_editor_close_all (app->priv->editor);
 
@@ -889,6 +898,7 @@ moo_app_run (MooApp *app)
 
     gdk_threads_add_timeout (100, (GSourceFunc) check_signal, NULL);
 
+#ifndef __WIN32__
     app->priv->sm_client = egg_sm_client_get ();
     /* make it install log handler */
     g_option_group_free (egg_sm_client_get_option_group ());
@@ -901,6 +911,7 @@ moo_app_run (MooApp *app)
     if (EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup)
         EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup (app->priv->sm_client, NULL);
     gdk_threads_enter ();
+#endif // __WIN32__
 
     gdk_threads_add_idle_full (G_PRIORITY_DEFAULT_IDLE + 1, (GSourceFunc) emit_started, app, NULL);
 
