@@ -1,6 +1,8 @@
 @echo off
 setlocal
 
+call "c:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\vcvars32.bat"
+
 cd C:\Projects\debian\gtk-win-build\release\target\lib
 
 FOR %%d IN (*.def) DO (
