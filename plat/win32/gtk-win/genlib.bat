@@ -7,6 +7,3 @@ FOR %%d IN (*.def) DO (
   echo %%d
   lib /def:%%d /machine:x86
 )
-
-dir
-

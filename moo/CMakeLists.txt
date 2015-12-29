@@ -123,6 +123,7 @@ add_executable(medit WIN32
 )
 
 target_link_libraries(medit
+    libmooglib-0
     ${GTK_LIBRARIES}
     ${GMODULE_LIBRARIES}
     ${LIBXML2_LIBRARIES}
