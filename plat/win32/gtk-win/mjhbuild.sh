@@ -11,6 +11,7 @@ export _GTKWINDIR=`cd $mgwdir && pwd`
 export _GTKWINCONFIG=$mgwconfig
 export _GTKWINBUILDROOT=$mgwbuildroot
 export _GTKWINPLATFORM=$mgwplatform
+export _MOOSRCDIR=$moosrcdir
 
 # JHBUILD=$mgwjhbuilddir/bin/jhbuild
 JHBUILD=jhbuild

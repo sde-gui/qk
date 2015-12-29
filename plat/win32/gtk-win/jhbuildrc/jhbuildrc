@@ -4,6 +4,7 @@ _gtkwindir = os.environ['_GTKWINDIR']
 _gtkwinjhbuilddir = os.path.join(_gtkwindir, 'jhbuildrc')
 _gtkwinbuildroot = os.environ['_GTKWINBUILDROOT']
 _gtkwinplatform = os.environ['_GTKWINPLATFORM']
+_moosrcdir = os.environ['_MOOSRCDIR']
 
 _gtkwinconfig = os.environ.get('_GTKWINCONFIG')
 if _gtkwinconfig is None:
@@ -228,3 +229,6 @@ module_autogenargs['pygtk'] = autogenargs \
                                             + " --disable-introspection" \
                                             + " --disable-docs" \
                                             + " --disable-numpy"
+
+module_autogenargs['mooglib'] = autogenargs \
+                                            + (" --with-moo-glib-src-dir=\"%s/mooglib\"" % (_moosrcdir))
