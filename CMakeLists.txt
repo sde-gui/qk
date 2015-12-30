@@ -151,7 +151,11 @@ else()
 
     foreach(var CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
         set(${var} "${${var}} /MP /Zo /wd4996")
-        string(REPLACE "/Ob1" "/Ob2" ${var}_RELEASE "${${var}_RELEASE}")
+        
+        #string(REPLACE "/W3" "/W4 /WX" ${var} "${${var}}")
+        set(${var} "${${var}} /WX")
+
+        set(${var}_RELEASE "${${var}_RELEASE} /Zi")
         string(REPLACE "/Ob1" "/Ob2" ${var}_RELWITHDEBINFO "${${var}_RELWITHDEBINFO}")
         string(REPLACE "/MDd" "/MD" ${var}_DEBUG "${${var}_DEBUG}")
         string(REPLACE "/D_DEBUG" "" ${var}_DEBUG "${${var}_DEBUG}")

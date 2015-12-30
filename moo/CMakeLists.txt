@@ -66,6 +66,7 @@ if(MOO_ENABLE_PYTHON)
 include(moopython/moopython.cmake)
 endif()
 include(plugins/plugins.cmake)
+include(medit-app/medit-app.cmake)
 
 SET(MEDIT_SOURCES
     CMakeLists.txt
@@ -75,7 +76,8 @@ SET(MEDIT_SOURCES
 
 macro(ADD_MODULE name)
     string(REPLACE "-" "_" _escaped_name "${name}")
-    source_group(${name} FILES ${${_escaped_name}_sources} ${built_${_escaped_name}_sources} ${${_escaped_name}_extra_files})
+    source_group(${name} FILES ${${_escaped_name}_sources} ${${_escaped_name}_extra_files})
+    source_group(${name}\\generated FILES ${built_${_escaped_name}_sources})
     #source_group(${name} FILES ${${_escaped_name}_sources} ${${_escaped_name}_extra_files})
     #source_group(${name}\\generated FILES ${built_${_escaped_name}_sources})
     LIST(APPEND MEDIT_SOURCES ${${_escaped_name}_sources} ${built_${_escaped_name}_sources})
