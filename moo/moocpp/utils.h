@@ -46,7 +46,7 @@ public:
 };
 
 template<typename T, typename Deleter>
-class GMemHolderBase : std::unique_ptr<T, Deleter>
+class GMemHolderBase : public std::unique_ptr<T, Deleter>
 {
     typedef std::unique_ptr<T, Deleter> unique_ptr;
 
@@ -56,7 +56,7 @@ public:
     {
     }
 
-    GMemHolderBase& operator=(T* mem) { if (mem != get()) *this = unique_ptr(mem); return *this; }
+    GMemHolderBase& operator=(T* mem) { if (mem != this->get()) *this = unique_ptr(mem); return *this; }
 };
 
 template<typename T>

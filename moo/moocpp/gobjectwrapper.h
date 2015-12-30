@@ -126,14 +126,16 @@ public:
 template<typename GObjClass>
 class GObjRefPtr : public RefPtr<GObjClass, GObjRefUnref>
 {
+    typedef RefPtr<GObjClass, GObjRefUnref> base;
+
 public:
     explicit GObjRefPtr(GObjClass* obj = nullptr)
-        : RefPtr(obj)
+        : base(obj)
     {
     }
 
-    GObject* gobj() const { return get() ? G_OBJECT(get()) : nullptr; }
-    GTypeInstance* g_type_instance() const { return get() ? &G_OBJECT(get())->g_type_instance : nullptr; }
+    GObject* gobj() const { return this->get() ? G_OBJECT(this->get()) : nullptr; }
+    GTypeInstance* g_type_instance() const { return gobj() ? &gobj()->g_type_instance : nullptr; }
 };
 
 template<typename T, typename U>
