@@ -104,7 +104,7 @@ moo_tempdir (void)
  * moo_tempnam:
  *
  * Generate a unique filename for a temporary file. Generated filename
- * is located inside directory returned by moo_tempdir(), and it
+ * is located inside the directory returned by moo_tempdir(), and it
  * will be automatically removed on exit.
  *
  * @extension: (type const-filename) (allow-none) (default NULL)
