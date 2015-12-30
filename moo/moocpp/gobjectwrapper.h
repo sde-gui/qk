@@ -86,9 +86,26 @@ public:
     {
     }
 
+    RefPtr(RefPtr&& other)
+        : RefPtr(other.get(), true)
+    {
+        other.m_obj = nullptr;
+    }
+
     RefPtr& operator=(const RefPtr& other)
     {
         assign(other.get(), false);
+        return *this;
+    }
+
+    RefPtr& operator=(RefPtr&& other)
+    {
+        if (m_obj != other.m_obj)
+        {
+            assign(other.m_obj, false);
+            other.m_obj = nullptr;
+        }
+        
         return *this;
     }
 

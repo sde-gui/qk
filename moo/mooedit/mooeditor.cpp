@@ -622,13 +622,13 @@ get_top_window (MooEditor *editor)
 
     GSList *window_list = nullptr;
     for (const auto& window: editor->priv->windows)
-        window_list = g_slist_prepend (window_list, window.get());
+        window_list = g_slist_prepend (window_list, window);
     window_list = g_slist_reverse (window_list);
 
     window = _moo_get_top_window (window_list);
 
     if (!window)
-        window = GTK_WINDOW (editor->priv->windows[0].g_type_instance());
+        window = GTK_WINDOW (editor->priv->windows[0]);
 
     g_slist_free (window_list);
 
@@ -681,7 +681,7 @@ moo_editor_set_ui_xml (MooEditor      *editor,
     editor->priv->ui_xml.set(xml);
 
     for (const auto& window: editor->priv->windows)
-        moo_window_set_ui_xml (MOO_WINDOW (window.get()), editor->priv->ui_xml.get());
+        moo_window_set_ui_xml (MOO_WINDOW (window), editor->priv->ui_xml.get());
 }
 
 
@@ -810,7 +810,7 @@ create_window (MooEditor *editor)
                       "ui-xml", moo_editor_get_ui_xml (editor),
                       (const char*) NULL));
 
-    editor->priv->windows.push_back(MooEditWindowPtr(window));
+    editor->priv->windows.emplace_back(window);
     _moo_window_attach_plugins (window);
     gtk_widget_show (GTK_WIDGET (window));
     return window;
@@ -2056,7 +2056,7 @@ moo_editor_get_windows (MooEditor *editor)
     gsize i = 0;
     for (const auto& window: editor->priv->windows)
     {
-        copy->elms[i++] = MOO_EDIT_WINDOW(g_object_ref(window.gobj()));
+        copy->elms[i++] = MOO_EDIT_WINDOW(g_object_ref(window));
     }
 
     return copy;
@@ -2078,7 +2078,7 @@ moo_editor_get_docs (MooEditor *editor)
 
     for (const auto& window: editor->priv->windows)
     {
-        MooEditArray *docs_here = moo_edit_window_get_docs (window.get());
+        MooEditArray *docs_here = moo_edit_window_get_docs (window);
         moo_edit_array_append_array (docs, docs_here);
         moo_edit_array_free (docs_here);
     }
@@ -2908,7 +2908,7 @@ moo_editor_get_doc_for_file (MooEditor *editor,
 
     for (const auto& window: editor->priv->windows)
     {
-        MooEditArray *docs = moo_edit_window_get_docs (window.get());
+        MooEditArray *docs = moo_edit_window_get_docs (window);
         doc = doc_array_find_norm_name (docs, norm_name);
         moo_edit_array_free (docs);
     }
