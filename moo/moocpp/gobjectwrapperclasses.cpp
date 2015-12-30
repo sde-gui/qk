@@ -13,8 +13,6 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
 #include "moocpp/gobjectwrapperclasses.h"
 
 using namespace moo;
