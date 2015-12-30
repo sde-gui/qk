@@ -125,4 +125,15 @@ void                 moo_edit_uncomment_selection       (MooEdit            *edi
 
 G_END_DECLS
 
+#ifdef __cplusplus
+
+namespace moo {
+
+template<typename GObjClass> class GObjRefPtr;
+typedef GObjRefPtr<MooEdit> MooEditPtr;
+
+} // namespace moo
+
+#endif // __cplusplus
+
 #endif /* MOO_EDIT_H */

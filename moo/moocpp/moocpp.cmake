@@ -1,4 +1,9 @@
 SET(moocpp_sources
 	moocpp/moocpp.cmake
+	moocpp/gobjectutils.h
+	moocpp/gobjectwrapper.h
+	moocpp/gobjectwrapper.cpp
+	moocpp/gobjectwrapperclasses.h
+	moocpp/gobjectwrapperclasses.cpp
 	moocpp/utils.h
 )

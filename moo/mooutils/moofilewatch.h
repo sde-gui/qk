@@ -76,4 +76,22 @@ void            moo_file_watch_cancel_monitor       (MooFileWatch   *watch,
 
 G_END_DECLS
 
+#ifdef __cplusplus
+
+namespace moo
+{
+
+template<typename ObjClass> class ObjRefUnref;
+
+template<> class ObjRefUnref<MooFileWatch>
+{
+public:
+    static void ref(MooFileWatch* watch) { moo_file_watch_ref(watch); }
+    static void unref(MooFileWatch* watch) { moo_file_watch_unref(watch); }
+};
+
+}
+
+#endif // __cplusplus
+
 #endif /* MOO_FILE_WATCH_H */

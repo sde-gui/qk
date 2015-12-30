@@ -1,5 +1,5 @@
 /*
- *   mooutils-cpp.h
+ *   moocpp/utils.h
  *
  *   Copyright (C) 2004-2015 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *

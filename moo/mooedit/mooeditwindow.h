@@ -135,4 +135,15 @@ void                 moo_edit_window_abort_jobs             (MooEditWindow  *win
 
 G_END_DECLS
 
+#ifdef __cplusplus
+
+namespace moo {
+
+template<typename GObjClass> class GObjRefPtr;
+typedef GObjRefPtr<MooEditWindow> MooEditWindowPtr;
+
+} // namespace moo
+
+#endif // __cplusplus
+
 #endif /* MOO_EDIT_WINDOW_H */
