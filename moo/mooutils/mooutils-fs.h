@@ -19,10 +19,6 @@
 #include <mooglib/moo-glib.h>
 #include <gtk/gtk.h>
 
-#ifndef O_BINARY
-#define O_BINARY 0x0
-#endif
-
 G_BEGIN_DECLS
 
 

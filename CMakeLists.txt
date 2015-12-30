@@ -153,7 +153,7 @@ else()
         set(${var} "${${var}} /MP /Zo /wd4996")
         
         #string(REPLACE "/W3" "/W4 /WX" ${var} "${${var}}")
-        set(${var} "${${var}} /WX")
+        set(${var} "${${var}} /wd4244 /wd4800 /WX")
 
         set(${var}_RELEASE "${${var}_RELEASE} /Zi")
         string(REPLACE "/Ob1" "/Ob2" ${var}_RELWITHDEBINFO "${${var}_RELWITHDEBINFO}")
