@@ -1,5 +1,3 @@
-# zzz AM_CPPFLAGS = $(MOO_CPPFLAGS) -I$(top_srcdir)/doc/built -Imooutils/glade
-
 FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/genmarshals_h.cmake
 "EXECUTE_PROCESS(COMMAND ${GLIB_GENMARSHAL} --prefix=_moo_marshal --header ${CMAKE_CURRENT_SOURCE_DIR}/marshals.list
     RESULT_VARIABLE result
@@ -51,6 +49,7 @@ file(MAKE_DIRECTORY
     ${CMAKE_CURRENT_BINARY_DIR}/mooutils
     ${CMAKE_CURRENT_BINARY_DIR}/moolua
     ${CMAKE_CURRENT_BINARY_DIR}/plugins/usertools
+    ${CMAKE_CURRENT_BINARY_DIR}/medit-app
 )
 
 include(xdgmime/xdgmime.cmake)
@@ -58,7 +57,7 @@ include(mooutils/mooutils.cmake)
 include(mooedit/mooedit.cmake)
 include(moofileview/moofileview.cmake)
 include(gtksourceview/gtksourceview.cmake)
-if(NOT MOO_WIN32_BUILD)
+if(NOT MOO_OS_WIN32)
 include(eggsmclient/eggsmclient.cmake)
 endif()
 include(mooapp/mooapp.cmake)
@@ -67,13 +66,6 @@ if(MOO_ENABLE_PYTHON)
 include(moopython/moopython.cmake)
 endif()
 include(plugins/plugins.cmake)
-
-set(medit_app_sources
-    medit-app/mem-debug.h
-    medit-app/run-tests.h
-    medit-app/parse.h
-    medit-app/main.c
-)
 
 SET(MEDIT_SOURCES
     CMakeLists.txt
@@ -100,7 +92,7 @@ ADD_MODULE(mooapp)
 ADD_MODULE(plugins)
 ADD_MODULE(moolua)
 if(MOO_ENABLE_PYTHON)
-ADD_MODULE(moopython)
+    ADD_MODULE(moopython)
 endif()
 ADD_MODULE(medit-app)
 
@@ -136,7 +128,7 @@ target_link_libraries(medit
 
 install(TARGETS medit RUNTIME DESTINATION bin)
 
-if(MOO_WIN32_BUILD)
+if(MOO_BUILD_FROM_MINGW)
     install(DIRECTORY ${MOO_GTK_DIST_DIR}/bin DESTINATION ${CMAKE_INSTALL_PREFIX})
     install(DIRECTORY ${MOO_GTK_DIST_DIR}/etc DESTINATION ${CMAKE_INSTALL_PREFIX})
     install(DIRECTORY ${MOO_GTK_DIST_DIR}/lib DESTINATION ${CMAKE_INSTALL_PREFIX})
@@ -144,17 +136,6 @@ if(MOO_WIN32_BUILD)
     #install(DIRECTORY ${CMAKE_SOURCE_DIR}/plat/win32/gtk-win/extra/medit-data/bin DESTINATION ${CMAKE_INSTALL_PREFIX})
     #install(DIRECTORY ${CMAKE_SOURCE_DIR}/plat/win32/gtk-win/extra/medit-data/etc DESTINATION ${CMAKE_INSTALL_PREFIX})
 endif()
-
-#zzz
-# if MOO_OS_WIN32
-# CLEANFILES += medit-app/medit.rc medit-app/medit.res
-# medit-app/medit.rc: medit-app/medit.rc.in $(top_builddir)/config.status
-# 	$(AM_V_at)$(MKDIR_P) medit-app
-# 	$(AM_V_GEN)cd $(top_builddir) && ./config.status --silent --file=moo/medit-app/medit.rc
-# medit-app/medit.res: medit-app/medit.rc
-# 	$(AM_V_GEN)$(WINDRES) -i medit-app/medit.rc --input-format=rc -o medit-app/medit.res -O coff
-# medit_LDADD += medit-app/medit.res
-# endif
 
 # zzz
 # if MOO_OS_UNIX
