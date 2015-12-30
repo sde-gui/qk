@@ -34,7 +34,6 @@
 #include "mooedit/medit-ui.h"
 #include "mooutils/moomenuaction.h"
 #include "marshals.h"
-#include "mooutils/mooutils-cpp.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooutils-gobject.h"

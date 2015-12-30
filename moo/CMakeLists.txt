@@ -54,6 +54,7 @@ file(MAKE_DIRECTORY
 
 include(xdgmime/xdgmime.cmake)
 include(mooutils/mooutils.cmake)
+include(moocpp/moocpp.cmake)
 include(mooedit/mooedit.cmake)
 include(moofileview/moofileview.cmake)
 include(gtksourceview/gtksourceview.cmake)
@@ -93,6 +94,7 @@ ADD_MODULE(mooedit)
 ADD_MODULE(mooapp)
 ADD_MODULE(plugins)
 ADD_MODULE(moolua)
+ADD_MODULE(moocpp)
 if(MOO_ENABLE_PYTHON)
     ADD_MODULE(moopython)
 endif()
@@ -107,10 +109,10 @@ include_directories(
 )
 link_directories(${GTK_LIBRARY_DIRS} ${GMODULE_LIBRARY_DIRS})
 
-source_group(misc REGULAR_EXPRESSION .*)
+source_group(moo REGULAR_EXPRESSION .*)
 source_group("generated\\sources" REGULAR_EXPRESSION ".*\\.c(pp)?$")
 source_group("generated\\headers" REGULAR_EXPRESSION ".*\\.h$")
-source_group("misc\\glade" REGULAR_EXPRESSION ".*\\.glade$")
+source_group("moo\\glade" REGULAR_EXPRESSION ".*\\.glade$")
 
 add_executable(medit WIN32
     ${MEDIT_SOURCES}
