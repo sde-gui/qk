@@ -1,0 +1,9 @@
+moo_sources +=				\
+	moocpp/gobjectutils.h		\
+	moocpp/gobjectwrapper.cpp	\
+	moocpp/gobjectwrapper.h		\
+	moocpp/gobjectwrapperclasses.cpp\
+	moocpp/gobjectwrapperclasses.h	\
+	moocpp/utils.h
+
+# -%- use-tabs:true, indent-width: 8, strip:true -%-
