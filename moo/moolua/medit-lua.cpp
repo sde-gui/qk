@@ -189,7 +189,7 @@ lua_panic (lua_State *L)
 {
     g_error ("PANIC: unprotected error in call to Lua API (%s)\n",
              lua_tostring(L, -1));
-    return 0;
+    // g_error does not return
 }
 
 lua_State *

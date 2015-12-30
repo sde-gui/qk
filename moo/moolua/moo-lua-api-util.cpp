@@ -1032,6 +1032,7 @@ moo_lua_cfunc_set_property (gpointer   pself,
 }
 
 namespace {
+
 class ValueHolder
 {
 public:
@@ -1045,9 +1046,13 @@ public:
         g_value_unset (&m_gval);
     }
 
+    ValueHolder(const ValueHolder&) = delete;
+    ValueHolder& operator=(const ValueHolder&) = delete;
+
 private:
     GValue &m_gval;
 };
+
 }
 
 int

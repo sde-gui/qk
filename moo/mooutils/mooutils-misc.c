@@ -1833,7 +1833,7 @@ void MOO_NORETURN _moo_error (MooCodeLoc loc, const char *format, ...)
     va_list args;
     va_start (args, format);
     _moo_errorv (loc, format, args);
-    va_end (args);
+    // _moo_errorv does not return
 }
 
 void MOO_NORETURN _moo_errorv (MooCodeLoc loc, const char *format, va_list args)

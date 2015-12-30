@@ -22,6 +22,15 @@
 
 G_BEGIN_DECLS
 
+#define MOO_STMT_START                  \
+    G_STMT_START
+
+#define MOO_STMT_END                    \
+    __pragma(warning(push))             \
+    __pragma(warning(disable: 4127))    \
+    G_STMT_END                          \
+    __pragma(warning(pop))
+
 #ifdef __COUNTER__
 #define _MOO_CODE_LOC_COUNTER (__COUNTER__ + 1)
 #else
@@ -34,18 +43,18 @@ G_BEGIN_DECLS
 #define _MOO_ASSERT_MESSAGE(msg) _moo_assert_message (MOO_CODE_LOC, msg)
 
 #define _MOO_ASSERT_CHECK_MSG(cond, msg)    \
-do {                                        \
+MOO_STMT_START {                            \
     if (cond)                               \
         ;                                   \
     else                                    \
         _MOO_ASSERT_MESSAGE (msg);          \
-} while(0)
+} MOO_STMT_END
 
 #define _MOO_ASSERT_CHECK(cond)             \
     _MOO_ASSERT_CHECK_MSG(cond,             \
         "condition failed: " #cond)
 
-#define MOO_VOID_STMT do {} while (0)
+#define MOO_VOID_STMT MOO_STMT_START {} MOO_STMT_END
 
 #define _MOO_RELEASE_ASSERT _MOO_ASSERT_CHECK
 #define _MOO_RELEASE_ASSERT_NOT_REACHED() _MOO_ASSERT_MESSAGE ("should not be reached")
@@ -53,7 +62,7 @@ do {                                        \
 #ifdef DEBUG
 #define _MOO_DEBUG_ASSERT _MOO_ASSERT_CHECK
 #define _MOO_DEBUG_ASSERT_NOT_REACHED() _MOO_ASSERT_MESSAGE ("should not be reached")
-#define _MOO_DEBUG_SIDE_ASSERT(what) do { gboolean res__ = (what); _MOO_DEBUG_ASSERT(res__); } while (0)
+#define _MOO_DEBUG_SIDE_ASSERT(what) MOO_STMT_START { gboolean res__ = (what); _MOO_DEBUG_ASSERT(res__); } MOO_STMT_END
 #else
 #define _MOO_DEBUG_ASSERT(cond) MOO_VOID_STMT
 #define _MOO_DEBUG_ASSERT_NOT_REACHED() MOO_VOID_STMT
@@ -102,7 +111,7 @@ void MOO_NORETURN _moo_assert_message (MooCodeLoc loc, const char *message);
 void _moo_abort_debug_ignore (MooCodeLoc loc, const char *message);
 
 #define moo_return_val_if_fail(cond, val)               \
-do {                                                    \
+MOO_STMT_START {                                        \
     if (cond)                                           \
     {                                                   \
     }                                                   \
@@ -111,15 +120,15 @@ do {                                                    \
         moo_critical("Condition '%s' failed", #cond);   \
         return val;                                     \
     }                                                   \
-} while (0)
+} MOO_STMT_END
 
 #define moo_return_if_fail(cond) moo_return_val_if_fail(cond,;)
 
 #define moo_return_val_if_reached(val)                  \
-do {                                                    \
+MOO_STMT_START {                                        \
     moo_critical("should not be reached");              \
     return val;                                         \
-} while (0)
+} MOO_STMT_END
 
 #define moo_return_if_reached() moo_return_val_if_reached(;)
 
@@ -133,7 +142,7 @@ enum {
 };
 
 #define moo_return_error_if_fail_val(cond, val)             \
-do {                                                        \
+MOO_STMT_START {                                            \
     if (cond)                                               \
     {                                                       \
     }                                                       \
@@ -144,7 +153,7 @@ do {                                                        \
                      "unexpected error");                   \
         return val;                                         \
     }                                                       \
-} while (0)
+} MOO_STMT_END
 
 #define moo_return_error_if_fail(cond)                      \
     moo_return_error_if_fail_val (cond, FALSE)
@@ -193,7 +202,7 @@ moo_error (const char *format, ...) G_GNUC_PRINTF (1, 2)
     va_list args;
     va_start (args, format);
     _moo_errorv (MOO_CODE_LOC_UNKNOWN, format, args);
-    va_end (args);
+    // _moo_errorv does not return
 }
 
 #define _MOO_DEFINE_LOG_FUNC(func, FUNC)    \

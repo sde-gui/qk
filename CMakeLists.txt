@@ -151,9 +151,11 @@ else()
 
     foreach(var CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
         set(${var} "${${var}} /MP /Zo /wd4996")
-        
-        #string(REPLACE "/W3" "/W4 /WX" ${var} "${${var}}")
-        set(${var} "${${var}} /wd4244 /wd4800 /WX")
+
+        # "C4706: assignment within conditional expression" - it's a good warning, it catches
+        # 'if(x = 5)'. Unfortunately it also complains about 'while ((p = x()))' which is fine
+        # and is used a lot. Additional parentheses don't silence it, unlike with gcc.
+        set(${var} "${${var}} /W4 /WX /wd4244 /wd4800 /wd4100 /wd4127 /wd4054 /wd4055 /wd4306 /wd4706 /wd4125 /wd4389 /wd4152 /wd4505")
 
         set(${var}_RELEASE "${${var}_RELEASE} /Zi")
         string(REPLACE "/Ob1" "/Ob2" ${var}_RELWITHDEBINFO "${${var}_RELWITHDEBINFO}")

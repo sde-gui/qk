@@ -771,7 +771,7 @@ do_save_local (MooEdit        *edit,
         {
             g_propagate_error (error, encoding_error);
             set_encoding_error (error);
-            success = FALSE;
+            goto error;
         }
     }
     else
@@ -780,9 +780,14 @@ do_save_local (MooEdit        *edit,
         to_save_size = strlen (utf8_contents);
     }
 
-    if (success && !do_write (file, bom, bom_len, to_save, to_save_size, flags, error))
-        success = FALSE;
+    if (!do_write (file, bom, bom_len, to_save, to_save_size, flags, error))
+        goto error;
 
+    goto out;
+
+error:
+    success = FALSE;
+out:
     g_free (freeme);
     g_free (utf8_contents);
     return success;
