@@ -30,7 +30,7 @@
 
 #if defined(MOO_CL_MSVC)
 #define MOO_MSVC_WARNING_PUSH       __pragma(warning(push))
-#define MOO_MSVC_WARNING_POP        __pragma(warning(push))
+#define MOO_MSVC_WARNING_POP        __pragma(warning(pop))
 #define MOO_MSVC_WARNING_DISABLE(N) __pragma(warning(disable:N))
 #define MOO_MSVC_WARNING_PUSH_DISABLE(N) MOO_MSVC_WARNING_PUSH MOO_MSVC_WARNING_DISABLE(N)
 #else
