@@ -290,10 +290,9 @@ _moo_app_input_send_msg (const char *name,
 	/* XXX unicode */
     pipe_handle = CreateFileA (pipe_name, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
-    if (!pipe_handle)
+    if (pipe_handle == INVALID_HANDLE_VALUE)
     {
         err_msg = g_win32_error_message (GetLastError ());
-        g_warning ("could not open pipe '%s': %s", pipe_name, err_msg);
         goto out;
     }
 
