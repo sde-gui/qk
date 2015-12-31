@@ -16,14 +16,25 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 
 namespace moo {
 
-#define MOO_INITIALIZE_PRIVATE(_priv_, _owner_, _owner_g_type_, _priv_type_)    \
-    (_priv_) = G_TYPE_INSTANCE_GET_PRIVATE ((_owner_), (_owner_g_type_), _priv_type_); \
-    new(_priv_) (_priv_type_)
+template<typename T, typename TPriv, typename ...Args>
+inline void init_private(TPriv*& p, T* owner, GType owner_type, Args&& ...args)
+{
+    p = G_TYPE_INSTANCE_GET_PRIVATE(owner, owner_type, TPriv);
+    new(p) TPriv(std::forward<Args>(args)...);
+}
 
-#define MOO_FINALIZE_PRIVATE(_priv_, _priv_type_) \
-    _priv_->~_priv_type_()
+template<typename TPriv>
+inline void finalize_private(TPriv*& p)
+{
+    if (p != nullptr)
+    {
+        p->~TPriv();
+        p = nullptr;
+    }
+}
 
 } // namespace moo

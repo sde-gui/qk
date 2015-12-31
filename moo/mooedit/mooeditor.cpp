@@ -153,7 +153,7 @@ static void
 moo_editor_class_init (MooEditorClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-    G_GNUC_UNUSED MooWindowClass *edit_window_class;
+    MooWindowClass *edit_window_class;
 
     gobject_class->constructor = moo_editor_constructor;
     gobject_class->finalize = moo_editor_finalize;
@@ -374,7 +374,7 @@ MooEditorPrivate::~MooEditorPrivate()
 static void
 moo_editor_init (MooEditor *editor)
 {
-    MOO_INITIALIZE_PRIVATE (editor->priv, editor, MOO_TYPE_EDITOR, MooEditorPrivate);
+    init_private(editor->priv, editor, MOO_TYPE_EDITOR);
 }
 
 static GObject *
@@ -500,7 +500,7 @@ moo_editor_finalize (GObject *object)
     if (editor_instance == editor)
         editor_instance = NULL;
 
-    MOO_FINALIZE_PRIVATE (editor->priv, MooEditorPrivate);
+    finalize_private(editor->priv);
 
     G_OBJECT_CLASS (moo_editor_parent_class)->finalize (object);
 }

@@ -28,38 +28,24 @@ namespace moo {
     inline Flags& operator &= (Flags& f1, Flags f2) { f1 = f1 & f2; return f1; }                                \
     inline Flags operator ~ (Flags f) { return static_cast<Flags>(~static_cast<int>(f)); }                      \
 
-class GMemDeleter
+struct mg_mem_deleter
 {
-public:
     void operator()(void* mem) { g_free(mem); }
 };
 
 template<typename T>
-class GSliceDeleter
+struct mg_slice_deleter
 {
-public:
     void operator()(T* mem) { g_slice_free (T, mem); }
 };
 
-template<typename T, typename Deleter>
-class GMemHolderBase : public std::unique_ptr<T, Deleter>
-{
-    typedef std::unique_ptr<T, Deleter> unique_ptr;
-
-public:
-    GMemHolderBase(T *mem)
-        : unique_ptr(mem)
-    {
-    }
-
-    GMemHolderBase& operator=(T* mem) { if (mem != this->get()) *this = unique_ptr(mem); return *this; }
-};
+template<typename T>
+using mg_mem_ptr = std::unique_ptr<T, mg_mem_deleter>;
 
 template<typename T>
-using GMemHolder = GMemHolderBase<T, GMemDeleter>;
+using mg_slice_ptr = std::unique_ptr<T, mg_slice_deleter<T>>;
 
-template<typename T>
-using GSliceHolder = GMemHolderBase<T, GSliceDeleter<T>>;
+using mg_str_holder = mg_mem_ptr<char>;
 
 template<typename T, typename U>
 auto find(const std::vector<T>& vec, const U& elm) -> decltype(vec.begin())
