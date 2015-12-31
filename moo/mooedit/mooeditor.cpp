@@ -342,10 +342,8 @@ moo_editor_class_init (MooEditorClass *klass)
 
 
 MooEditorPrivate::MooEditorPrivate()
-    : opts(MooEditorOptions(0))
-    , window_type(G_TYPE_NONE)
-    , doc_type(G_TYPE_NONE)
 {
+    // zero-initialized when allocated with the GObject
 }
 
 MooEditorPrivate::~MooEditorPrivate()
