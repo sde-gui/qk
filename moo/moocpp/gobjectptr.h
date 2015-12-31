@@ -51,7 +51,7 @@ public:
         auto* tmp = m_obj;
         m_obj = nullptr;
         if (tmp)
-            ObjRefUnrefHelper::unref(m_obj);
+            ObjRefUnrefHelper::unref(tmp);
     }
 
     ObjClass* get() const { return m_obj; }
