@@ -18,7 +18,7 @@
 #include <vector>
 #include "mooedit/mooeditor-impl.h"
 #include "mooedit/moolangmgr.h"
-#include "moocpp/gobjectwrapper.h"
+#include "moocpp/gobjectptr.h"
 #include "moocpp/utils.h"
 
 using namespace moo;

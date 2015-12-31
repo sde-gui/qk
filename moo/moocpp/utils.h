@@ -15,15 +15,11 @@
 
 #pragma once
 
+#include <algorithm>
 #include <memory>
+#include <vector>
 
 namespace moo {
-
-template<typename T>
-inline T *moo_object_ref(T *obj)
-{
-    return static_cast<T*>(g_object_ref(obj));
-}
 
 #define MOO_DEFINE_FLAGS(Flags)                                                                                 \
     inline Flags operator | (Flags f1, Flags f2) { return static_cast<Flags>(static_cast<int>(f1) | f2); }      \
@@ -64,5 +60,31 @@ using GMemHolder = GMemHolderBase<T, GMemDeleter>;
 
 template<typename T>
 using GSliceHolder = GMemHolderBase<T, GSliceDeleter<T>>;
+
+template<typename T, typename U>
+auto find(const std::vector<T>& vec, const U& elm) -> decltype(vec.begin())
+{
+    return std::find(vec.begin(), vec.end(), elm);
+}
+
+template<typename T, typename U>
+auto find(std::vector<T>& vec, const U& elm) -> decltype(vec.begin())
+{
+    return std::find(vec.begin(), vec.end(), elm);
+}
+
+template<typename T, typename U>
+bool contains(const std::vector<T>& vec, const U& elm)
+{
+    return find(vec, elm) != vec.end();
+}
+
+template<typename T, typename U>
+void remove(std::vector<T>& vec, const U& elm)
+{
+    auto itr = find(vec, elm);
+    g_assert (itr != vec.end());
+    vec.erase(itr);
+}
 
 } // namespace moo

@@ -1,5 +1,5 @@
 /*
- *   moocpp/gobjectwrapper.h
+ *   moocpp/gobjectptr.h
  *
  *   Copyright (C) 2004-2015 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
@@ -14,10 +14,6 @@
  */
 
 #pragma once
-
-#include <algorithm>
-#include <memory>
-#include <vector>
 
 #include "mooedit/mooedit.h"
 
@@ -153,49 +149,6 @@ public:
 
     GObject* gobj() const { return this->get() ? G_OBJECT(this->get()) : nullptr; }
     GTypeInstance* g_type_instance() const { return gobj() ? &gobj()->g_type_instance : nullptr; }
-};
-
-template<typename T, typename U>
-auto find(const std::vector<T>& vec, const U& elm) -> decltype(vec.begin())
-{
-    return std::find(vec.begin(), vec.end(), elm);
-}
-
-template<typename T, typename U>
-auto find(std::vector<T>& vec, const U& elm) -> decltype(vec.begin())
-{
-    return std::find(vec.begin(), vec.end(), elm);
-}
-
-template<typename T, typename U>
-bool contains(const std::vector<T>& vec, const U& elm)
-{
-    return find(vec, elm) != vec.end();
-}
-
-template<typename T, typename U>
-void remove(std::vector<T>& vec, const U& elm)
-{
-    auto itr = find(vec, elm);
-    g_assert (itr != vec.end());
-    vec.erase(itr);
-}
-
-class GObjectWrapper
-{
-public:
-    GObjectWrapper(GObject* obj);
-
-protected:
-    GObjectWrapper(GObject* obj, bool takeReference);
-    ~GObjectWrapper();
-
-    GObjectWrapper(const GObjectWrapper&) = delete;
-    GObjectWrapper& operator=(const GObjectWrapper&) = delete;
-
-private:
-    GObject* m_gobj;
-    bool m_ownReference;
 };
 
 } // namespace moo

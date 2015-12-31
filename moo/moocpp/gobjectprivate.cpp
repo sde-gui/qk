@@ -1,5 +1,5 @@
 /*
- *   moocpp/gobjectwrapper.cpp
+ *   moocpp/gobjectprivate.cpp
  *
  *   Copyright (C) 2004-2015 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
@@ -13,25 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "moocpp/gobjectwrapper.h"
+#include "moocpp/gobjectprivate.h"
 
 using namespace moo;
 
-GObjectWrapper::GObjectWrapper(GObject* obj)
-    : GObjectWrapper(obj, true)
-{
-}
-
-GObjectWrapper::GObjectWrapper(GObject* obj, bool takeReference)
-    : m_gobj(obj)
-    , m_ownReference(takeReference)
-{
-    if (takeReference)
-        g_object_ref(obj);
-}
-
-GObjectWrapper::~GObjectWrapper()
-{
-    if (m_ownReference)
-        g_object_unref(m_gobj);
-}

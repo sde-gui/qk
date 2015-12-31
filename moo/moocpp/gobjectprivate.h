@@ -1,5 +1,5 @@
 /*
- *   moocpp/gobjectwrapperclasses.cpp
+ *   moocpp/gobjectprivate.h
  *
  *   Copyright (C) 2004-2015 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
@@ -13,11 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "moocpp/gobjectwrapperclasses.h"
+#pragma once
 
-using namespace moo;
+#include "moocpp/gobjectptr.h"
 
-Edit::Edit(MooEdit *doc)
-    : GObjectWrapper(G_OBJECT(doc))
-{
-}
+namespace moo {
+
+} // namespace moo

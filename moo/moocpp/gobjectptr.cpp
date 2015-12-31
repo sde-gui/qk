@@ -1,5 +1,5 @@
 /*
- *   moocpp/gobjectwrapperclasses.h
+ *   moocpp/gobjectptr.cpp
  *
  *   Copyright (C) 2004-2015 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
@@ -13,19 +13,6 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "moocpp/gobjectptr.h"
 
-#include "moocpp/gobjectwrapper.h"
-
-namespace moo {
-
-class Edit : GObjectWrapper
-{
-public:
-    Edit(MooEdit *doc);
-
-    Edit(const Edit&) = delete;
-    Edit& operator=(const Edit&) = delete;
-};
-
-} // namespace moo
+using namespace moo;
