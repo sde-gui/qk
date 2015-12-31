@@ -18,12 +18,16 @@
 
 #include "mooedit/mooedit-impl.h"
 #include "mooedit/mooeditprogress.h"
+#include "moocpp/utils.h"
 
 G_BEGIN_DECLS
 
 #define MOO_EDIT_IS_UNTITLED(edit) (!(edit)->priv->file)
 
 struct MooEditPrivate {
+    MooEditPrivate(MooEdit* doc);
+    ~MooEditPrivate();
+
     MooEditor *editor;
 
     GtkTextBuffer *buffer;
@@ -40,12 +44,12 @@ struct MooEditPrivate {
     /* Document
      */
     GFile *file;
-    char *filename;
-    char *norm_name;
-    char *display_filename;
-    char *display_basename;
+    moo::mg_str filename;
+    moo::mg_str norm_name;
+    moo::mg_str display_filename;
+    moo::mg_str display_basename;
 
-    char *encoding;
+    moo::mg_str encoding;
     MooLineEndType line_end_type;
     MooEditStatus status;
 

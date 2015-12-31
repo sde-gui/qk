@@ -1,7 +1,7 @@
 /*
- *   mooedit.c
+ *   mooedit.cpp
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2015 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *   Copyright (C) 2014 by Ulrich Eckhardt <ulrich.eckhardt@base-42.de>
  *
  *   This file is part of medit.  medit is free software; you can
@@ -55,8 +55,11 @@
 #include "mooutils/mooatom.h"
 #include "mooutils/moocompat.h"
 #include "mooedit/mooeditprogress-gxml.h"
+#include "moocpp/gobjectutils.h"
 #include <string.h>
 #include <stdlib.h>
+
+using namespace moo;
 
 #define KEY_ENCODING "encoding"
 #define KEY_LINE "line"
@@ -271,22 +274,31 @@ moo_edit_class_init (MooEditClass *klass)
 }
 
 
+MooEditPrivate::MooEditPrivate(MooEdit* doc)
+    : line_end_type(MOO_LE_NONE)
+{
+    views = moo_edit_view_array_new ();
+    buffer = GTK_TEXT_BUFFER (g_object_new (MOO_TYPE_TEXT_BUFFER, NULL));
+    actions = moo_action_collection_new ("MooEdit", "MooEdit");
+}
+
+MooEditPrivate::~MooEditPrivate()
+{
+    moo_edit_view_array_free (views);
+    g_object_unref (buffer);
+    moo_file_free (file);
+}
+
+
 static void
 moo_edit_init (MooEdit *edit)
 {
-    edit->priv = G_TYPE_INSTANCE_GET_PRIVATE (edit, MOO_TYPE_EDIT, MooEditPrivate);
-
-    edit->priv->views = moo_edit_view_array_new ();
-    edit->priv->buffer = g_object_new (MOO_TYPE_TEXT_BUFFER, NULL);
+    init_private(edit->priv, edit, MOO_TYPE_EDIT, edit);
 
     edit->config = moo_edit_config_new ();
     g_signal_connect_swapped (edit->config, "notify",
                               G_CALLBACK (config_changed),
                               edit);
-
-    edit->priv->actions = moo_action_collection_new ("MooEdit", "MooEdit");
-
-    edit->priv->line_end_type = MOO_LE_NONE;
 }
 
 
@@ -339,14 +351,7 @@ moo_edit_finalize (GObject *object)
 {
     MooEdit *edit = MOO_EDIT (object);
 
-    moo_edit_view_array_free (edit->priv->views);
-    g_object_unref (edit->priv->buffer);
-    moo_file_free (edit->priv->file);
-    g_free (edit->priv->filename);
-    g_free (edit->priv->norm_name);
-    g_free (edit->priv->display_filename);
-    g_free (edit->priv->display_basename);
-    g_free (edit->priv->encoding);
+    finalize_private(edit->priv);
 
     G_OBJECT_CLASS (moo_edit_parent_class)->finalize (object);
 }
@@ -871,7 +876,7 @@ moo_edit_set_encoding (MooEdit    *edit,
 
     if (!moo_str_equal (encoding, edit->priv->encoding))
     {
-        MOO_ASSIGN_STRING (edit->priv->encoding, encoding);
+        edit->priv->encoding.copy(encoding);
         g_object_notify (G_OBJECT (edit), "encoding");
     }
 }

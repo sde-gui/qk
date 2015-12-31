@@ -31,16 +31,16 @@ SET(mooedit_sources
     mooedit/mooeditview-script.h
     mooedit/mooedit-accels.h
     mooedit/mooeditaction.c	
-    mooedit/mooeditaction-factory.c
+    mooedit/mooeditaction-factory.cpp
     mooedit/mooeditaction-factory.h
-    mooedit/mooeditbookmark.c
-    mooedit/mooedit.c
+    mooedit/mooeditbookmark.cpp
+    mooedit/mooedit.cpp
     mooedit/mooeditconfig.c	
     mooedit/mooeditdialogs.c
     mooedit/mooedit-enum-types.c
     mooedit/mooedit-enum-types.h
     mooedit/mooedit-enums.h	
-    mooedit/mooedit-fileops.c
+    mooedit/mooedit-fileops.cpp
     mooedit/mooedit-fileops.h
     mooedit/mooeditfiltersettings.c
     mooedit/mooedithistoryitem.c

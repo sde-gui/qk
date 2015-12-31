@@ -855,7 +855,7 @@ file_watch_callback (G_GNUC_UNUSED MooFileWatch *watch,
 
     g_return_if_fail (MOO_IS_EDIT (data));
     g_return_if_fail (event->monitor_id == edit->priv->file_monitor_id);
-    g_return_if_fail (edit->priv->filename != NULL);
+    g_return_if_fail (edit->priv->filename);
     g_return_if_fail (!(edit->priv->status & MOO_EDIT_STATUS_CHANGED_ON_DISK));
 
     switch (event->code)
@@ -896,7 +896,7 @@ _moo_edit_start_file_watch (MooEdit *edit)
     edit->priv->file_monitor_id = 0;
 
     g_return_if_fail ((edit->priv->status & MOO_EDIT_STATUS_CHANGED_ON_DISK) == 0);
-    g_return_if_fail (edit->priv->filename != NULL);
+    g_return_if_fail (edit->priv->filename);
 
     edit->priv->file_monitor_id =
         moo_file_watch_create_monitor (watch, edit->priv->filename,
@@ -930,7 +930,7 @@ _moo_edit_stop_file_watch (MooEdit *edit)
 static void
 check_file_status (MooEdit *edit)
 {
-    g_return_if_fail (edit->priv->filename != NULL);
+    g_return_if_fail (edit->priv->filename);
     g_return_if_fail (!(edit->priv->status & MOO_EDIT_STATUS_CHANGED_ON_DISK));
 
     if (edit->priv->deleted_from_disk)
@@ -943,7 +943,7 @@ check_file_status (MooEdit *edit)
 static void
 file_modified_on_disk (MooEdit *edit)
 {
-    g_return_if_fail (edit->priv->filename != NULL);
+    g_return_if_fail (edit->priv->filename);
 
     if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SYNC)))
     {
@@ -962,7 +962,7 @@ file_modified_on_disk (MooEdit *edit)
 static void
 file_deleted (MooEdit *edit)
 {
-    g_return_if_fail (edit->priv->filename != NULL);
+    g_return_if_fail (edit->priv->filename);
 
     if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_AUTO_SYNC)))
     {
@@ -1106,15 +1106,7 @@ _moo_edit_set_file (MooEdit    *edit,
                     GFile      *file,
                     const char *encoding)
 {
-    GFile *tmp;
-    GSList *free_list = NULL;
-
-    tmp = edit->priv->file;
-
-    free_list = g_slist_prepend (free_list, edit->priv->filename);
-    free_list = g_slist_prepend (free_list, edit->priv->norm_name);
-    free_list = g_slist_prepend (free_list, edit->priv->display_filename);
-    free_list = g_slist_prepend (free_list, edit->priv->display_basename);
+    GFile *tmp = edit->priv->file;
 
     if (!UNTITLED_NO)
         UNTITLED_NO = g_hash_table_new (g_direct_hash, g_direct_equal);
@@ -1124,24 +1116,24 @@ _moo_edit_set_file (MooEdit    *edit,
         int n = add_untitled (edit);
 
         edit->priv->file = NULL;
-        edit->priv->filename = NULL;
-        edit->priv->norm_name = NULL;
+        edit->priv->filename = nullptr;
+        edit->priv->norm_name = nullptr;
 
         if (n == 1)
-            edit->priv->display_filename = g_strdup (_("Untitled"));
+            edit->priv->display_filename.copy(_("Untitled"));
         else
-            edit->priv->display_filename = g_strdup_printf (_("Untitled %d"), n);
+            edit->priv->display_filename.take(g_strdup_printf(_("Untitled %d"), n));
 
-        edit->priv->display_basename = g_strdup (edit->priv->display_filename);
+        edit->priv->display_basename.copy(edit->priv->display_filename);
     }
     else
     {
         _moo_edit_remove_untitled (edit);
         edit->priv->file = g_file_dup (file);
-        edit->priv->filename = g_file_get_path (file);
-        edit->priv->norm_name = _moo_file_get_normalized_name (file);
-        edit->priv->display_filename = moo_file_get_display_name (file);
-        edit->priv->display_basename = moo_file_get_display_basename (file);
+        edit->priv->filename.take(g_file_get_path(file));
+        edit->priv->norm_name.take(_moo_file_get_normalized_name(file));
+        edit->priv->display_filename.take(moo_file_get_display_name(file));
+        edit->priv->display_basename.take(moo_file_get_display_basename(file));
     }
 
     if (!encoding)
@@ -1154,9 +1146,6 @@ _moo_edit_set_file (MooEdit    *edit,
     _moo_edit_queue_recheck_config (edit);
 
     moo_file_free (tmp);
-
-    g_slist_foreach (free_list, (GFunc) g_free, NULL);
-    g_slist_free (free_list);
 }
 
 
@@ -1455,7 +1444,7 @@ moo_convert_file_data_to_utf8 (const char  *data,
             g_free (enc);
         }
 
-        g_slist_foreach (encodings, (GFunc) g_free, NULL);
+        g_slist_foreach (encodings, (GFunc) glib_g_free, NULL);
         g_slist_free (encodings);
     }
     else

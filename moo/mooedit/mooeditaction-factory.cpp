@@ -421,13 +421,13 @@ error:
 
     if (doc_conditions)
     {
-        g_ptr_array_foreach (doc_conditions, (GFunc) g_free, NULL);
+        g_ptr_array_foreach (doc_conditions, (GFunc) glib_g_free, NULL);
         g_ptr_array_free (doc_conditions, TRUE);
     }
 
     if (view_conditions)
     {
-        g_ptr_array_foreach (view_conditions, (GFunc) g_free, NULL);
+        g_ptr_array_foreach (view_conditions, (GFunc) glib_g_free, NULL);
         g_ptr_array_free (view_conditions, TRUE);
     }
 
@@ -606,7 +606,7 @@ create_input_methods_menu_item (GtkAction *action)
     GtkWidget *item, *menu;
     gboolean visible = TRUE;
 
-    view = g_object_get_data (G_OBJECT (action), "moo-edit-view");
+    view = MOO_EDIT_VIEW (g_object_get_data (G_OBJECT (action), "moo-edit-view"));
     g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), NULL);
 
     item = gtk_menu_item_new ();
@@ -632,7 +632,7 @@ create_special_chars_menu_item (GtkAction *action)
     GtkWidget *item, *menu;
     gboolean visible = TRUE;
 
-    view = g_object_get_data (G_OBJECT (action), "moo-edit-view");
+    view = MOO_EDIT_VIEW (g_object_get_data (G_OBJECT (action), "moo-edit-view"));
     g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), NULL);
 
     item = gtk_menu_item_new ();
