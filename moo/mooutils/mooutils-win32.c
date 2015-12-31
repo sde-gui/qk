@@ -367,7 +367,7 @@ _moo_win32_fnmatch (const char *pattern,
                     const char *string,
                     int         flags)
 {
-    g_return_val_if_fail (flags != 0, -1);
+    g_return_val_if_fail (flags == 0, -1);
     return _moo_glob_match_simple (pattern, string) ? 0 : 1;
 }
 

@@ -262,7 +262,7 @@ init_queue (void)
         queue.io = mgw_io_channel_unix_new (queue.pipe_out);
 #endif
 
-        if (queue.io)
+        if (!queue.io)
         {
             g_critical ("g_io_channel_new failed");
             goto out;
