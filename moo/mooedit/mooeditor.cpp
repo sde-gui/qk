@@ -338,8 +338,11 @@ moo_editor_class_init (MooEditorClass *klass)
     g_type_class_unref (edit_window_class);
 
     add_new_window_action ();
-}
 
+    class_helper::verify_g_object_subclass_alignment<GObject, MooOpenInfo>();
+    class_helper::verify_g_object_subclass_alignment<GObject, MooSaveInfo>();
+    class_helper::verify_g_object_subclass_alignment<GObject, MooReloadInfo>();
+}
 
 MooEditorPrivate::MooEditorPrivate()
 {

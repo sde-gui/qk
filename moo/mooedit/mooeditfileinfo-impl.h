@@ -5,10 +5,8 @@
 
 G_BEGIN_DECLS
 
-struct MooOpenInfo
+struct MooOpenInfo : public GObject
 {
-    GObject parent;
-
     GFile *file;
     char *encoding;
     int line;
@@ -20,9 +18,7 @@ struct MooOpenInfoClass
     GObjectClass parent_class;
 };
 
-struct MooReloadInfo {
-    GObject parent;
-
+struct MooReloadInfo : public GObject {
     char *encoding;
     int line;
 };
@@ -32,9 +28,7 @@ struct MooReloadInfoClass
     GObjectClass parent_class;
 };
 
-struct MooSaveInfo {
-    GObject parent;
-
+struct MooSaveInfo : public GObject {
     GFile *file;
     char *encoding;
 };

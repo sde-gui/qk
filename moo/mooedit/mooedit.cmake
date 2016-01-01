@@ -58,7 +58,7 @@ SET(mooedit_sources
     mooedit/mooeditwindow.c
     mooedit/mooeditwindow-impl.h
     mooedit/mooeditfileinfo-impl.h
-    mooedit/mooeditfileinfo.c
+    mooedit/mooeditfileinfo.cpp
     mooedit/moofold.c	
     mooedit/moofold.h	
     mooedit/mooindenter.c	

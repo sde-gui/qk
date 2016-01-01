@@ -43,4 +43,21 @@ inline T* object_ref(T *obj)
     return static_cast<T*>(g_object_ref(obj));
 }
 
+struct class_helper
+{
+    template<typename X>
+    static size_t address(X* x)
+    {
+        return reinterpret_cast<size_t>(reinterpret_cast<const volatile char*>(x));
+    }
+
+    template<typename Sup, typename Sub>
+    static void verify_g_object_subclass_alignment()
+    {
+        Sup* x = nullptr;
+        Sub* y = static_cast<Sub*>(x);
+        moo_release_assert(class_helper::address(x) == class_helper::address(y));
+    }
+};
+
 } // namespace moo
