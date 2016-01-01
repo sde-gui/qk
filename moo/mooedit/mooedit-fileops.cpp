@@ -1106,8 +1106,6 @@ _moo_edit_set_file (MooEdit    *edit,
                     GFile      *file,
                     const char *encoding)
 {
-    GFile *tmp = edit->priv->file;
-
     if (!UNTITLED_NO)
         UNTITLED_NO = g_hash_table_new (g_direct_hash, g_direct_equal);
 
@@ -1115,7 +1113,7 @@ _moo_edit_set_file (MooEdit    *edit,
     {
         int n = add_untitled (edit);
 
-        edit->priv->file = NULL;
+        edit->priv->file = nullptr;
         edit->priv->filename = nullptr;
         edit->priv->norm_name = nullptr;
 
@@ -1129,7 +1127,7 @@ _moo_edit_set_file (MooEdit    *edit,
     else
     {
         _moo_edit_remove_untitled (edit);
-        edit->priv->file = g_file_dup (file);
+        edit->priv->file.take (g_file_dup (file));
         edit->priv->filename.take(g_file_get_path(file));
         edit->priv->norm_name.take(_moo_file_get_normalized_name(file));
         edit->priv->display_filename.take(moo_file_get_display_name(file));
@@ -1144,8 +1142,6 @@ _moo_edit_set_file (MooEdit    *edit,
     g_signal_emit_by_name (edit, "filename-changed", NULL);
     _moo_edit_status_changed (edit);
     _moo_edit_queue_recheck_config (edit);
-
-    moo_file_free (tmp);
 }
 
 
@@ -1444,7 +1440,7 @@ moo_convert_file_data_to_utf8 (const char  *data,
             g_free (enc);
         }
 
-        g_slist_foreach (encodings, (GFunc) glib_g_free, NULL);
+        g_slist_foreach (encodings, (GFunc) g_free, NULL);
         g_slist_free (encodings);
     }
     else

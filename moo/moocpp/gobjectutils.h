@@ -37,4 +37,10 @@ inline void finalize_private(TPriv*& p)
     }
 }
 
+template<typename T>
+inline T* object_ref(T *obj)
+{
+    return static_cast<T*>(g_object_ref(obj));
+}
+
 } // namespace moo

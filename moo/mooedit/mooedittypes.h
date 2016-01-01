@@ -1,5 +1,4 @@
-#ifndef MOO_EDIT_TYPES_H
-#define MOO_EDIT_TYPES_H
+#pragma once
 
 #include <gtk/gtk.h>
 #include <mooutils/mooarray.h>
@@ -38,4 +37,12 @@ MOO_DECLARE_QUARK (moo-edit-save-error, moo_edit_save_error_quark)
 
 G_END_DECLS
 
-#endif /* MOO_EDIT_TYPES_H */
+#ifdef __cplusplus
+
+#include <moocpp/gobjectptr.h>
+
+using MooEditPtr = moo::GObjRefPtr<MooEdit>;
+using MooEditViewPtr = moo::GObjRefPtr<MooEditView>;
+using MooEditTabPtr = moo::GObjRefPtr<MooEditTab>;
+
+#endif // __cplusplus

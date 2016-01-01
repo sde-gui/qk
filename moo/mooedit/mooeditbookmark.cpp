@@ -13,10 +13,6 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * class:MooEditBookmark: (parent MooLineMark) (moo.private 1)
- **/
-
 #include "mooedit/mooeditbookmark.h"
 #include "mooedit/mooedit-private.h"
 #include "mooedit/mootextbuffer.h"
@@ -80,7 +76,7 @@ moo_edit_set_enable_bookmarks (MooEdit  *edit,
 
     enable = enable != 0;
 
-    if (enable != edit->priv->enable_bookmarks)
+    if ((bool)enable != edit->priv->enable_bookmarks)
     {
         edit->priv->enable_bookmarks = enable;
 
@@ -263,15 +259,14 @@ moo_edit_add_bookmark (MooEdit *edit,
                        guint    line,
                        guint    no)
 {
-    guint i;
     MooEditBookmark *bk;
 
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_return_if_fail (line < get_line_count (edit));
     g_return_if_fail (moo_edit_get_bookmark_at_line (edit, line) == NULL);
 
-    for (i = 0; i < edit->priv->views->n_elms; ++i)
-        g_object_set (edit->priv->views->elms[i], "show-line-marks", TRUE, (char*) 0);
+    for (const auto& view: edit->priv->views)
+        g_object_set (view.get(), "show-line-marks", TRUE, (char*) 0);
 
     bk = MOO_EDIT_BOOKMARK (g_object_new (MOO_TYPE_EDIT_BOOKMARK, "background", get_bookmark_color (edit), (char*) 0));
     moo_text_buffer_add_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bk), line);

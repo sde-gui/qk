@@ -63,20 +63,37 @@ G_STMT_START {                                                      \
 
 #define MOO_IP_ARRAY_GROW(ElmType,c_,name_,howmuch_)                \
 G_STMT_START {                                                      \
-    if ((c_)->n_##name_ + howmuch_ > (c_)->n_##name_##_allocd__)    \
+    if (howmuch_ > 0)                                               \
     {                                                               \
-        gsize old_size__ = (c_)->n_##name_##_allocd__;              \
-        gsize new_size__ = MAX((gsize) (old_size__ * 1.2),          \
-                               (c_)->n_##name_ + howmuch_);         \
+        MOO_IP_ARRAY_RESERVE_AT_LEAST(ElmType, c_, name_,           \
+                             (c_)->n_##name_ + howmuch_);           \
+        memset ((c_)->name_ + (c_)->n_##name_, 0,                   \
+                howmuch_ * sizeof *(c_)->name_);                    \
+        (c_)->n_##name_ += howmuch_;                                \
+    }                                                               \
+} G_STMT_END
+
+#define MOO_IP_ARRAY_RESERVE_EXACT(ElmType,c_,name_,size_)          \
+G_STMT_START {                                                      \
+    gsize new_size__ = size_;                                       \
+    if (new_size__ > (c_)->n_##name_##_allocd__)                    \
+    {                                                               \
         (c_)->name_ = (ElmType*) g_realloc ((c_)->name_,            \
                                  new_size__ * sizeof *(c_)->name_); \
         (c_)->n_##name_##_allocd__ = new_size__;                    \
     }                                                               \
-                                                                    \
-    if (howmuch_ > 0)                                               \
-        memset ((c_)->name_ + (c_)->n_##name_, 0,                   \
-                howmuch_ * sizeof *(c_)->name_);                    \
-    (c_)->n_##name_ += howmuch_;                                    \
+} G_STMT_END
+
+#define MOO_IP_ARRAY_RESERVE_AT_LEAST(ElmType,c_,name_,size_)       \
+G_STMT_START {                                                      \
+    if (size_ > (c_)->n_##name_##_allocd__)                         \
+    {                                                               \
+        gsize old_size__ = (c_)->n_##name_##_allocd__;              \
+        gsize new_size__ = MAX((gsize) (old_size__ * 1.2), size_);  \
+        (c_)->name_ = (ElmType*) g_realloc ((c_)->name_,            \
+                                 new_size__ * sizeof *(c_)->name_); \
+        (c_)->n_##name_##_allocd__ = new_size__;                    \
+    }                                                               \
 } G_STMT_END
 
 #define MOO_IP_ARRAY_REMOVE_INDEX(c_,name_,idx_)                    \

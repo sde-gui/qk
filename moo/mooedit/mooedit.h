@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_EDIT_H
-#define MOO_EDIT_H
+#pragma once
 
 #include <mooedit/mooeditconfig.h>
 #include <mooedit/mooedit-enums.h>
@@ -122,18 +121,4 @@ gboolean             moo_edit_close                     (MooEdit            *edi
 void                 moo_edit_comment_selection         (MooEdit            *edit);
 void                 moo_edit_uncomment_selection       (MooEdit            *edit);
 
-
 G_END_DECLS
-
-#ifdef __cplusplus
-
-namespace moo {
-
-template<typename GObjClass> class GObjRefPtr;
-typedef GObjRefPtr<MooEdit> MooEditPtr;
-
-} // namespace moo
-
-#endif // __cplusplus
-
-#endif /* MOO_EDIT_H */

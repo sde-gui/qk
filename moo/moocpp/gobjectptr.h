@@ -15,7 +15,8 @@
 
 #pragma once
 
-#include "mooedit/mooedit.h"
+#include "moocpp/utils.h"
+#include <glib-object.h>
 
 namespace moo {
 
@@ -26,27 +27,36 @@ template<typename ObjClass, typename ObjRefUnrefHelper = ObjRefUnref<ObjClass>>
 class RefPtr
 {
 public:
-    explicit RefPtr(ObjClass* obj = nullptr)
-        : RefPtr(obj, false)
+    enum AssignmentPolicy
     {
+        get_reference,
+        steal_reference,
+    };
+
+    RefPtr() : RefPtr(nullptr) {}
+
+    explicit RefPtr(ObjClass* obj, AssignmentPolicy policy = get_reference)
+        : m_obj(nullptr)
+    {
+        assign(obj, policy);
     }
 
     ~RefPtr()
     {
-        release();
+        reset();
     }
 
-    void set(ObjClass* obj)
+    void ref(ObjClass* obj)
     {
-        assign(obj, false);
+        assign(obj, get_reference);
     }
 
     void take(ObjClass* obj)
     {
-        assign(obj, true);
+        assign(obj, steal_reference);
     }
 
-    void release()
+    void reset()
     {
         auto* tmp = m_obj;
         m_obj = nullptr;
@@ -54,13 +64,19 @@ public:
             ObjRefUnrefHelper::unref(tmp);
     }
 
+    // Implicit conversion to ObjClass* is dangerous because there is a lot
+    // of code still which frees/steals objects directly. For example:
+    // FooObject* tmp = x->s;
+    // x->s = NULL;
+    // g_object_unref (tmp);
+    operator const ObjClass* () const { return m_obj; }
     ObjClass* get() const { return m_obj; }
 
     operator bool() const { return m_obj != nullptr; }
     bool operator!() const { return m_obj == nullptr; }
 
     template<typename X>
-    bool operator==(const X* other) const
+    bool operator==(X* other) const
     {
         return get() == other;
     }
@@ -83,14 +99,29 @@ public:
     }
 
     RefPtr(RefPtr&& other)
-        : RefPtr(other.get(), true)
+        : m_obj(other.m_obj)
     {
         other.m_obj = nullptr;
     }
 
     RefPtr& operator=(const RefPtr& other)
     {
-        assign(other.get(), false);
+        assign(other.m_obj, get_reference);
+        return *this;
+    }
+
+    // Note that when T is const Foo, then assign(p) inside will be called with
+    // a const Foo, which can't be converted to non-const ObjClass*, so one can't
+    // steal a reference to a const object with this method.
+    template<typename T>
+    RefPtr& operator=(T* p)
+    {
+        assign(p, steal_reference);
+    }
+
+    RefPtr& operator=(const nullptr_t&)
+    {
+        reset();
         return *this;
     }
 
@@ -98,7 +129,7 @@ public:
     {
         if (m_obj != other.m_obj)
         {
-            assign(other.m_obj, false);
+            assign(other.m_obj, steal_reference);
             other.m_obj = nullptr;
         }
         
@@ -106,19 +137,13 @@ public:
     }
 
 private:
-    RefPtr(ObjClass* obj, bool newObject)
-        : m_obj(nullptr)
-    {
-        assign(obj, newObject);
-    }
-
-    void assign(ObjClass* obj, bool newObject)
+    void assign(ObjClass* obj, AssignmentPolicy policy)
     {
         if (m_obj != obj)
         {
             ObjClass* tmp = m_obj;
             m_obj = obj;
-            if (m_obj && !newObject)
+            if (m_obj && (policy == get_reference))
                 ObjRefUnrefHelper::ref(m_obj);
             if (tmp)
                 ObjRefUnrefHelper::unref(tmp);
@@ -139,16 +164,57 @@ public:
 template<typename GObjClass>
 class GObjRefPtr : public RefPtr<GObjClass, GObjRefUnref>
 {
-    typedef RefPtr<GObjClass, GObjRefUnref> base;
+    using base = RefPtr<GObjClass, GObjRefUnref>;
 
 public:
-    explicit GObjRefPtr(GObjClass* obj = nullptr)
-        : base(obj)
+    GObjRefPtr() {}
+
+    explicit GObjRefPtr(GObjClass* obj, AssignmentPolicy policy = get_reference)
+        : base(obj, policy)
     {
     }
 
-    GObject* gobj() const { return this->get() ? G_OBJECT(this->get()) : nullptr; }
-    GTypeInstance* g_type_instance() const { return gobj() ? &gobj()->g_type_instance : nullptr; }
+    GObjRefPtr(const GObjRefPtr& other)
+        : base(other)
+    {
+    }
+
+    GObjRefPtr(GObjRefPtr&& other)
+        : base(std::move(other))
+    {
+    }
+
+    GObjRefPtr& operator=(const GObjRefPtr& other)
+    {
+        (static_cast<base&>(*this)) = other;
+        return *this;
+    }
+
+    template<typename T>
+    GObjRefPtr& operator=(T* p)
+    {
+        (static_cast<base&>(*this)) = p;
+        return *this;
+    }
+
+    GObjRefPtr& operator=(const nullptr_t&)
+    {
+        (static_cast<base&>(*this)) = nullptr;
+        return *this;
+    }
+
+    GObjRefPtr& operator=(GObjRefPtr&& other)
+    {
+        (static_cast<base&>(*this)) = std::move(other);
+        return *this;
+    }
+
+    // Returning the GTypeInstance pointer is just as unsafe in general
+    // as returning the pointer to the object, but it's unlikely that there
+    // is code which gets a GTypeInstance and then calls g_object_unref()
+    // on it. Normally GTypeInstance* is used inside FOO_WIDGET() macros,
+    // where this conversion is safe.
+    operator GTypeInstance* () const { return get() ? &G_OBJECT(get())->g_type_instance : nullptr; }
 };
 
 } // namespace moo

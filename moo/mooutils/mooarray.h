@@ -14,6 +14,7 @@ struct ArrayType {                                                      \
                                                                         \
 ArrayType *array_type##_new (void);                                     \
 void array_type##_free (ArrayType *ar);                                 \
+void array_type##_reserve (ArrayType *ar, gsize n);                     \
 void array_type##_append (ArrayType *ar, ElmType *elm);                 \
 void array_type##_take (ArrayType *ar, ElmType *elm);                   \
 void array_type##_append_array (ArrayType *ar, ArrayType *ar2);         \
@@ -75,6 +76,13 @@ array_type##_free (ArrayType *ar)                                       \
         MOO_IP_ARRAY_DESTROY (ar, elms);                                \
         g_slice_free (ArrayType, ar);                                   \
     }                                                                   \
+}                                                                       \
+                                                                        \
+void                                                                    \
+array_type##_reserve (ArrayType *ar, gsize n)                           \
+{                                                                       \
+    g_return_if_fail (ar != NULL);                                      \
+    MOO_IP_ARRAY_RESERVE_EXACT (ElmType*, ar, elms, n);                 \
 }                                                                       \
                                                                         \
 void                                                                    \

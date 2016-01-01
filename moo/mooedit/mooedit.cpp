@@ -274,26 +274,22 @@ moo_edit_class_init (MooEditClass *klass)
 }
 
 
-MooEditPrivate::MooEditPrivate(MooEdit* doc)
+MooEditPrivate::MooEditPrivate()
     : line_end_type(MOO_LE_NONE)
 {
-    views = moo_edit_view_array_new ();
-    buffer = GTK_TEXT_BUFFER (g_object_new (MOO_TYPE_TEXT_BUFFER, NULL));
+    buffer.take(GTK_TEXT_BUFFER(g_object_new(MOO_TYPE_TEXT_BUFFER, NULL)));
     actions = moo_action_collection_new ("MooEdit", "MooEdit");
 }
 
 MooEditPrivate::~MooEditPrivate()
 {
-    moo_edit_view_array_free (views);
-    g_object_unref (buffer);
-    moo_file_free (file);
 }
 
 
 static void
 moo_edit_init (MooEdit *edit)
 {
-    init_private(edit->priv, edit, MOO_TYPE_EDIT, edit);
+    init_private(edit->priv, edit, MOO_TYPE_EDIT);
 
     edit->config = moo_edit_config_new ();
     g_signal_connect_swapped (edit->config, "notify",
@@ -317,28 +313,28 @@ moo_edit_constructor (GType                  type,
     doc = MOO_EDIT (object);
 
     view = _moo_edit_view_new (doc);
-    (void) view; g_assert (doc->priv->views->n_elms == 1 && doc->priv->views->elms[0] == view);
+    (void) view; g_assert (doc->priv->views.size() == 1 && doc->priv->views[0] == view);
 
     _moo_edit_add_class_actions (doc);
     _moo_edit_instances = moo_edit_list_prepend (_moo_edit_instances, doc);
 
     doc->priv->changed_handler_id =
-            g_signal_connect (doc->priv->buffer,
+            g_signal_connect (doc->priv->buffer.get(),
                               "changed",
                               G_CALLBACK (changed_cb),
                               doc);
     doc->priv->modified_changed_handler_id =
-            g_signal_connect (doc->priv->buffer,
+            g_signal_connect (doc->priv->buffer.get(),
                               "modified-changed",
                               G_CALLBACK (modified_changed_cb),
                               doc);
 
     _moo_edit_set_file (doc, NULL, NULL);
 
-    g_signal_connect_swapped (doc->priv->buffer, "line-mark-moved",
+    g_signal_connect_swapped (doc->priv->buffer.get(), "line-mark-moved",
                               G_CALLBACK (_moo_edit_line_mark_moved),
                               doc);
-    g_signal_connect_swapped (doc->priv->buffer, "line-mark-deleted",
+    g_signal_connect_swapped (doc->priv->buffer.get(), "line-mark-deleted",
                               G_CALLBACK (_moo_edit_line_mark_deleted),
                               doc);
 
@@ -366,8 +362,8 @@ _moo_edit_closed (MooEdit *doc)
     _moo_edit_remove_untitled (doc);
     _moo_edit_instances = moo_edit_list_remove (_moo_edit_instances, doc);
 
-    while (!moo_edit_view_array_is_empty (doc->priv->views))
-        gtk_widget_destroy (GTK_WIDGET (doc->priv->views->elms[0]));
+    while (!doc->priv->views.empty())
+        gtk_widget_destroy (GTK_WIDGET (doc->priv->views[0]));
 
     if (doc->config)
     {
@@ -428,7 +424,7 @@ _moo_edit_set_active_view (MooEdit     *doc,
     g_return_if_fail (MOO_IS_EDIT (doc));
     g_return_if_fail (MOO_IS_EDIT_VIEW (view));
 
-    g_return_if_fail (moo_edit_view_array_find (doc->priv->views, view) >= 0);
+    g_return_if_fail (contains(doc->priv->views, view));
 
     buffer = moo_edit_get_buffer (doc);
 
@@ -461,10 +457,10 @@ _moo_edit_add_view (MooEdit     *doc,
     g_return_if_fail (MOO_IS_EDIT (doc));
     g_return_if_fail (MOO_IS_EDIT_VIEW (view));
 
-    g_assert (moo_edit_view_array_find (doc->priv->views, view) < 0);
+    g_return_if_fail (!contains(doc->priv->views, view));
 
     g_object_ref_sink (view);
-    moo_edit_view_array_append (doc->priv->views, view);
+    doc->priv->views.emplace_back (view);
     g_object_unref (view);
 
     _moo_edit_view_apply_prefs (view);
@@ -478,7 +474,7 @@ _moo_edit_remove_view (MooEdit     *doc,
     g_return_if_fail (MOO_IS_EDIT (doc));
     g_return_if_fail (MOO_IS_EDIT_VIEW (view));
 
-    g_return_if_fail (moo_edit_view_array_find (doc->priv->views, view) >= 0);
+    g_return_if_fail (contains (doc->priv->views, view));
 
     if (view == doc->priv->active_view)
     {
@@ -488,7 +484,7 @@ _moo_edit_remove_view (MooEdit     *doc,
 
     g_object_ref (view);
 
-    moo_edit_view_array_remove (doc->priv->views, view);
+    remove (doc->priv->views, view);
     _moo_edit_view_unset_doc (view);
 
     g_object_unref (view);
@@ -784,7 +780,7 @@ GFile *
 moo_edit_get_file (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->file ? g_file_dup (edit->priv->file) : NULL;
+    return edit->priv->file ? g_file_dup (edit->priv->file.get()) : NULL;
 }
 
 /**
@@ -796,21 +792,21 @@ char *
 moo_edit_get_filename (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return g_strdup (edit->priv->filename);
+    return edit->priv->filename.get_copy();
 }
 
 char *
 _moo_edit_get_normalized_name (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return g_strdup (edit->priv->norm_name);
+    return edit->priv->norm_name.get_copy();
 }
 
 char *
 _moo_edit_get_utf8_filename (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->filename ? g_strdup (edit->priv->display_filename) : NULL;
+    return edit->priv->display_filename.get_copy();
 }
 
 /**
@@ -846,7 +842,7 @@ char *
 moo_edit_get_uri (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->file ? g_file_get_uri (edit->priv->file) : NULL;
+    return edit->priv->file ? g_file_get_uri (edit->priv->file.get()) : NULL;
 }
 
 /**
@@ -874,7 +870,7 @@ moo_edit_set_encoding (MooEdit    *edit,
     g_return_if_fail (MOO_IS_EDIT (edit));
     g_return_if_fail (encoding != NULL);
 
-    if (!moo_str_equal (encoding, edit->priv->encoding))
+    if (edit->priv->encoding != encoding)
     {
         edit->priv->encoding.copy(encoding);
         g_object_notify (G_OBJECT (edit), "encoding");
@@ -913,8 +909,8 @@ moo_edit_get_view (MooEdit *doc)
     g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
 
     if (!doc->priv->active_view)
-        if (!moo_edit_view_array_is_empty (doc->priv->views))
-            doc->priv->active_view = doc->priv->views->elms[doc->priv->views->n_elms - 1];
+        if (!doc->priv->views.empty())
+            doc->priv->active_view = doc->priv->views.back().get();
 
     return doc->priv->active_view;
 }
@@ -928,7 +924,14 @@ MooEditViewArray *
 moo_edit_get_views (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
-    return moo_edit_view_array_copy (doc->priv->views);
+
+    MooEditViewArray *ret = moo_edit_view_array_new ();
+    gsize n_views = doc->priv->views.size ();
+    moo_edit_view_array_reserve (ret, n_views);
+    for (gsize i = 0; i < n_views; ++i)
+        moo_edit_view_array_append (ret, doc->priv->views[i].get());
+
+    return ret;
 }
 
 /**
@@ -940,7 +943,7 @@ int
 moo_edit_get_n_views (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), 0);
-    return (int) moo_edit_view_array_get_size (doc->priv->views);
+    return (int) doc->priv->views.size();
 }
 
 /**
@@ -960,7 +963,7 @@ GtkTextBuffer *
 moo_edit_get_buffer (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
-    return doc->priv->buffer;
+    return doc->priv->buffer.get();
 }
 
 
@@ -1271,7 +1274,7 @@ update_lang_config_from_lang_globs (MooEdit *doc)
     if (doc->priv->file)
     {
         MooLangMgr *mgr = moo_lang_mgr_default ();
-        MooLang *lang = moo_lang_mgr_get_lang_for_file (mgr, doc->priv->file);
+        MooLang *lang = moo_lang_mgr_get_lang_for_file (mgr, doc->priv->file.get());
         lang_id = lang ? _moo_lang_id (lang) : NULL;
     }
 
@@ -1304,7 +1307,6 @@ update_config_from_lang (MooEdit *doc)
 static void
 moo_edit_apply_config (MooEdit *doc)
 {
-    guint i;
     const char *lang_id = moo_edit_config_get_string (doc->config, "lang");
     MooLangMgr *mgr = moo_lang_mgr_default ();
     MooLang *lang = lang_id ? _moo_lang_mgr_find_lang (mgr, lang_id) : NULL;
@@ -1314,8 +1316,8 @@ moo_edit_apply_config (MooEdit *doc)
     g_object_notify (G_OBJECT (doc), "has-comments");
     g_object_notify (G_OBJECT (doc), "lang");
 
-    for (i = 0; i < doc->priv->views->n_elms; ++i)
-        _moo_edit_view_apply_config (doc->priv->views->elms[i]);
+    for (const auto& view: doc->priv->views)
+        _moo_edit_view_apply_config (view.get());
 }
 
 static void
@@ -1387,14 +1389,12 @@ config_changed (MooEdit *doc)
 static void
 moo_edit_apply_prefs (MooEdit *edit)
 {
-    guint i;
-
     g_return_if_fail (MOO_IS_EDIT (edit));
 
     moo_edit_freeze_notify (edit);
 
-    for (i = 0; i < edit->priv->views->n_elms; ++i)
-        _moo_edit_view_apply_prefs (edit->priv->views->elms[i]);
+    for (const auto& view: edit->priv->views)
+        _moo_edit_view_apply_prefs (view.get());
 
     moo_edit_thaw_notify (edit);
 }
@@ -1402,25 +1402,21 @@ moo_edit_apply_prefs (MooEdit *edit)
 static void
 moo_edit_freeze_notify (MooEdit *doc)
 {
-    guint i;
-
     g_return_if_fail (MOO_IS_EDIT (doc));
 
     g_object_freeze_notify (G_OBJECT (doc));
 
-    for (i = 0; i < doc->priv->views->n_elms; ++i)
-       g_object_freeze_notify (G_OBJECT (doc->priv->views->elms[i]));
+    for (const auto& view: doc->priv->views)
+       g_object_freeze_notify (G_OBJECT (view));
 }
 
 static void
 moo_edit_thaw_notify (MooEdit *doc)
 {
-    guint i;
-
     g_return_if_fail (MOO_IS_EDIT (doc));
 
-    for (i = 0; i < doc->priv->views->n_elms; ++i)
-       g_object_thaw_notify (G_OBJECT (doc->priv->views->elms[i]));
+    for (const auto& view: doc->priv->views)
+       g_object_thaw_notify (G_OBJECT (view));
 
     g_object_thaw_notify (G_OBJECT (doc));
 }
@@ -1539,7 +1535,6 @@ _moo_edit_set_state (MooEdit        *doc,
                      GDestroyNotify  cancel,
                      gpointer        data)
 {
-    guint i;
     MooEditTab *tab;
 
     g_return_if_fail (MOO_IS_EDIT (doc));
@@ -1554,8 +1549,8 @@ _moo_edit_set_state (MooEdit        *doc,
 
     doc->priv->state = state;
 
-    for (i = 0; i < moo_edit_view_array_get_size (doc->priv->views); ++i)
-        gtk_text_view_set_editable (GTK_TEXT_VIEW (doc->priv->views->elms[i]), !state);
+    for (const auto& view: doc->priv->views)
+        gtk_text_view_set_editable (GTK_TEXT_VIEW (view), !state);
 
     tab = moo_edit_get_tab (doc);
 

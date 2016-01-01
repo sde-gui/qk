@@ -359,7 +359,7 @@ MooEditorPrivate::~MooEditorPrivate()
             error = NULL;
         }
 
-        file_watch.release();
+        file_watch.reset();
     }
 
     if (!windows.empty())
@@ -392,8 +392,8 @@ moo_editor_constructor (GType                  type,
     moo_ui_xml_add_ui_from_string (editor->priv->doc_ui_xml.get(),
                                    mooedit_ui_xml, -1);
 
-    editor->priv->lang_mgr.set(moo_lang_mgr_default());
-    g_signal_connect_swapped (editor->priv->lang_mgr.get(), "loaded",
+    editor->priv->lang_mgr.ref(moo_lang_mgr_default());
+    g_signal_connect_swapped (editor->priv->lang_mgr, "loaded",
                               G_CALLBACK (_moo_editor_apply_prefs),
                               editor);
 
@@ -676,10 +676,10 @@ moo_editor_set_ui_xml (MooEditor      *editor,
     g_return_if_fail (MOO_IS_EDITOR (editor));
     g_return_if_fail (MOO_IS_UI_XML (xml));
 
-    if (editor->priv->ui_xml.get() == xml)
+    if (editor->priv->ui_xml == xml)
         return;
 
-    editor->priv->ui_xml.set(xml);
+    editor->priv->ui_xml.ref(xml);
 
     for (const auto& window: editor->priv->windows)
         moo_window_set_ui_xml (MOO_WINDOW (window), editor->priv->ui_xml.get());
@@ -745,10 +745,10 @@ create_recent_menu (GtkAction *action)
 
     editor = moo_editor_instance ();
     menu = moo_history_mgr_create_menu (editor->priv->history.get(),
-                                       recent_item_activated,
-                                       window, NULL);
+                                        recent_item_activated,
+                                        window, NULL);
     moo_bind_bool_property (action,
-                            "sensitive", editor->priv->history.get(),
+                            "sensitive", editor->priv->history,
                             "empty", TRUE);
 
     item = gtk_separator_menu_item_new ();
@@ -787,8 +787,8 @@ action_recent_dialog (MooEditWindow *window)
     g_return_if_fail (MOO_IS_EDITOR (editor));
 
     dialog = moo_history_mgr_create_dialog (editor->priv->history.get(),
-                                           recent_item_activated,
-                                           window, NULL);
+                                            recent_item_activated,
+                                            window, NULL);
     gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
     _moo_window_set_remember_size (GTK_WINDOW (dialog),
                                    moo_edit_setting (MOO_EDIT_PREFS_DIALOGS "/recent-files"),
@@ -824,7 +824,7 @@ moo_editor_add_doc (MooEditor      *editor,
                     MooEdit        *doc)
 {
     if (!window)
-        editor->priv->windowless.push_back(MooEditPtr(doc));
+        editor->priv->windowless.emplace_back(doc);
 }
 
 
