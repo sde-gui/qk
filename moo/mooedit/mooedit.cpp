@@ -361,7 +361,7 @@ _moo_edit_closed (MooEdit *doc)
     _moo_edit_instances = moo_edit_list_remove (_moo_edit_instances, doc);
 
     while (!doc->priv->views.empty())
-        gtk_widget_destroy (GTK_WIDGET (doc->priv->views[0]));
+        gtk_widget_destroy (doc->priv->views[0].get<GtkWidget>());
 
     if (doc->config)
     {
@@ -1213,7 +1213,7 @@ moo_edit_get_lang (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
     moo_assert (!doc->priv->in_recheck_config);
-    return moo_text_buffer_get_lang (MOO_TEXT_BUFFER (doc->priv->buffer));
+    return moo_text_buffer_get_lang (doc->priv->buffer.get<MooTextBuffer>());
 }
 
 /**
@@ -1309,7 +1309,7 @@ moo_edit_apply_config (MooEdit *doc)
     MooLangMgr *mgr = moo_lang_mgr_default ();
     MooLang *lang = lang_id ? _moo_lang_mgr_find_lang (mgr, lang_id) : NULL;
 
-    moo_text_buffer_set_lang (MOO_TEXT_BUFFER (doc->priv->buffer), lang);
+    moo_text_buffer_set_lang (doc->priv->buffer.get<MooTextBuffer>(), lang);
 
     g_object_notify (G_OBJECT (doc), "has-comments");
     g_object_notify (G_OBJECT (doc), "lang");
@@ -1405,7 +1405,7 @@ moo_edit_freeze_notify (MooEdit *doc)
     g_object_freeze_notify (G_OBJECT (doc));
 
     for (const auto& view: doc->priv->views)
-       g_object_freeze_notify (G_OBJECT (view));
+       view->freeze_notify ();
 }
 
 static void
@@ -1414,7 +1414,7 @@ moo_edit_thaw_notify (MooEdit *doc)
     g_return_if_fail (MOO_IS_EDIT (doc));
 
     for (const auto& view: doc->priv->views)
-       g_object_thaw_notify (G_OBJECT (view));
+       view->thaw_notify ();
 
     g_object_thaw_notify (G_OBJECT (doc));
 }
@@ -1548,7 +1548,7 @@ _moo_edit_set_state (MooEdit        *doc,
     doc->priv->state = state;
 
     for (const auto& view: doc->priv->views)
-        gtk_text_view_set_editable (GTK_TEXT_VIEW (view), !state);
+        gtk_text_view_set_editable (view.get<GtkTextView>(), !state);
 
     tab = moo_edit_get_tab (doc);
 

@@ -10,7 +10,7 @@ moo_sources +=					\
 	moofileview/moofile-private.h		\
 	moofileview/moofileentry.c		\
 	moofileview/moofileentry.h		\
-	moofileview/moofilesystem.c		\
+	moofileview/moofilesystem.cpp		\
 	moofileview/moofilesystem.h		\
 	moofileview/moofileview.c		\
 	moofileview/moofileview.h		\
@@ -23,9 +23,9 @@ moo_sources +=					\
 	moofileview/moofileview-tools.c		\
 	moofileview/moofileview-tools.h		\
 	moofileview/moofolder-private.h		\
-	moofileview/moofolder.c			\
+	moofileview/moofolder.cpp		\
 	moofileview/moofolder.h			\
-	moofileview/moofoldermodel.c		\
+	moofileview/moofoldermodel.cpp		\
 	moofileview/moofoldermodel.h		\
 	moofileview/moofoldermodel-private.h	\
 	moofileview/mooiconview.c		\

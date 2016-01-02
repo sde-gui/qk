@@ -14,6 +14,7 @@
  */
 
 #include "moocpp/strutils.h"
+#include <string.h>
 
 using namespace moo;
 

@@ -41,35 +41,40 @@ typedef void (*MooFileWatchCallback) (MooFileWatch& watch,
                                       MooFileEvent* event,
                                       gpointer      user_data);
 
+namespace moo
+{
+
 template<>
-class moo::obj_ref_unref<MooFileWatch> : public moo::obj_class_ref_unref<MooFileWatch>
+class obj_ref_unref<MooFileWatch> : public obj_class_ref_unref<MooFileWatch>
 {
 };
 
-using MooFileWatchPtr = moo::grefptr<MooFileWatch>;
+using MooFileWatchPtr = grefptr<MooFileWatch>;
+
+} // namespace moo
 
 class MooFileWatch
 {
 public:
     MooFileWatch();
 
-    static MooFileWatchPtr  create          (GError        **error);
+    static moo::MooFileWatchPtr create          (GError        **error);
 
-    bool                    close           (GError        **error);
+    bool                        close           (GError        **error);
 
-    guint                   create_monitor  (const char     *filename,
-                                             MooFileWatchCallback callback,
-                                             gpointer        data,
-                                             GDestroyNotify  notify,
-                                             GError        **error);
+    guint                       create_monitor  (const char     *filename,
+                                                 MooFileWatchCallback callback,
+                                                 gpointer        data,
+                                                 GDestroyNotify  notify,
+                                                 GError        **error);
 
-    void                    cancel_monitor  (guint           monitor_id);
+    void                        cancel_monitor  (guint           monitor_id);
 
     struct Impl;
-    Impl&                   impl            () { return *m_impl; }
+    Impl&                       impl            () { return *m_impl; }
 
-    void                    ref             ();
-    void                    unref           ();
+    void                        ref             ();
+    void                        unref           ();
 
     MooFileWatch(const MooFileWatch&) = delete;
     MooFileWatch& operator=(const MooFileWatch&) = delete;

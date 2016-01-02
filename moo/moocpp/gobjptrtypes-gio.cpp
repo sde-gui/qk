@@ -20,22 +20,6 @@ using namespace moo;
 
 using FilePtr = gobjptr<GFile>;
 
-static void test()
-{
-    {
-    FilePtr x;
-    x.g_file();
-    }
-
-    {
-    FilePtr x;
-    x.new_for_path("");
-    FilePtr f = FilePtr::new_for_path("");
-    f->set("foo", 1, nullptr);
-    }
-}
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // mg_gobjptr_methods<GFile>

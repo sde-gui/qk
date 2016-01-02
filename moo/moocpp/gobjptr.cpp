@@ -17,10 +17,3 @@
 
 using namespace moo;
 
-static void test()
-{
-    gobjptr<GFile> x;
-    x.new_for_path("");
-    gobjptr<GFile> f = gobjptr<GFile>::new_for_path("");
-    f->set("foo", 1, nullptr);
-}

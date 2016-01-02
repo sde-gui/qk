@@ -14,23 +14,22 @@ source_files = \
     ../moo/mooapp/moolinklabel.h\
     ../moo/mooedit/mooedit-accels.h\
     ../moo/mooedit/mooeditaction.c\
-    ../moo/mooedit/mooeditaction-factory.c\
+    ../moo/mooedit/mooeditaction-factory.cpp\
     ../moo/mooedit/mooeditaction-factory.h\
     ../moo/mooedit/mooeditaction.h\
-    ../moo/mooedit/mooeditbookmark.c\
+    ../moo/mooedit/mooeditbookmark.cpp\
     ../moo/mooedit/mooeditbookmark.h\
-    ../moo/mooedit/mooedit.c\
+    ../moo/mooedit/mooedit.cpp\
     ../moo/mooedit/mooeditconfig.c\
     ../moo/mooedit/mooeditconfig.h\
-    ../moo/mooedit/mooeditdialogs.c\
+    ../moo/mooedit/mooeditdialogs.cpp\
     ../moo/mooedit/mooeditdialogs.h\
     ../moo/mooedit/mooedit-enum-types.c\
     ../moo/mooedit/mooedit-enum-types.h\
     ../moo/mooedit/mooedit-enums.h\
-    ../moo/mooedit/mooeditfileinfo.c\
-    ../moo/mooedit/mooeditfileinfo.c\
+    ../moo/mooedit/mooeditfileinfo.cpp\
     ../moo/mooedit/mooeditfileinfo.h\
-    ../moo/mooedit/mooedit-fileops.c\
+    ../moo/mooedit/mooedit-fileops.cpp\
     ../moo/mooedit/mooedit-fileops.h\
     ../moo/mooedit/mooeditfiltersettings.c\
     ../moo/mooedit/mooeditfiltersettings.h\
@@ -66,7 +65,7 @@ source_files = \
     ../moo/mooedit/mooindenter.h\
     ../moo/mooedit/moolang.c\
     ../moo/mooedit/moolang.h\
-    ../moo/mooedit/moolangmgr.c\
+    ../moo/mooedit/moolangmgr.cpp\
     ../moo/mooedit/moolangmgr.h\
     ../moo/mooedit/moolangmgr-private.h\
     ../moo/mooedit/moolang-private.h\
@@ -107,7 +106,7 @@ source_files = \
     ../moo/moofileview/moofileentry.h\
     ../moo/moofileview/moofile.h\
     ../moo/moofileview/moofile-private.h\
-    ../moo/moofileview/moofilesystem.c\
+    ../moo/moofileview/moofilesystem.cpp\
     ../moo/moofileview/moofilesystem.h\
     ../moo/moofileview/moofileview-accels.h\
     ../moo/moofileview/moofileview-aux.h\
@@ -119,9 +118,9 @@ source_files = \
     ../moo/moofileview/moofileview-private.h\
     ../moo/moofileview/moofileview-tools.c\
     ../moo/moofileview/moofileview-tools.h\
-    ../moo/moofileview/moofolder.c\
+    ../moo/moofileview/moofolder.cpp\
     ../moo/moofileview/moofolder.h\
-    ../moo/moofileview/moofoldermodel.c\
+    ../moo/moofileview/moofoldermodel.cpp\
     ../moo/moofileview/moofoldermodel.h\
     ../moo/moofileview/moofoldermodel-private.h\
     ../moo/moofileview/moofolder-private.h\
@@ -174,7 +173,7 @@ source_files = \
     ../moo/mooutils/moofiledialog.h\
     ../moo/mooutils/moofileicon.c\
     ../moo/mooutils/moofileicon.h\
-    ../moo/mooutils/moofilewatch.c\
+    ../moo/mooutils/moofilewatch.cpp\
     ../moo/mooutils/moofilewatch.h\
     ../moo/mooutils/moofilewriter.c\
     ../moo/mooutils/moofilewriter.h\
@@ -237,7 +236,7 @@ source_files = \
     ../moo/mooutils/mooutils-debug.h\
     ../moo/mooutils/mooutils-enums.c\
     ../moo/mooutils/mooutils-enums.h\
-    ../moo/mooutils/mooutils-file.c\
+    ../moo/mooutils/mooutils-file.cpp\
     ../moo/mooutils/mooutils-file.h\
     ../moo/mooutils/mooutils-fs.c\
     ../moo/mooutils/mooutils-fs.h\

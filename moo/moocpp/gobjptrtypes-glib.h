@@ -36,8 +36,11 @@ struct gobjref_base
 
     void        set_data                (const char* key, gpointer value) const;
 
-    void        set                     (const gchar *first_prop, ...) G_GNUC_NULL_TERMINATED const;
+    void        set                     (const gchar *first_prop, ...) const G_GNUC_NULL_TERMINATED;
     void        set_property            (const gchar *property_name, const GValue *value) const;
+
+    void        freeze_notify           () const;
+    void        thaw_notify             () const;
 
     GObject*                g           () const;
     const gobjptr<GObject>& self        () const;

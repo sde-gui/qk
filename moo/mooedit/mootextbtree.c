@@ -333,7 +333,7 @@ merge_nodes (BTNode *parent, guint first)
     MOO_ELMCPY (node->u.children + node->n_children,
                 next->u.children, next->n_children);
 
-    for (i = node->n_children; i < node->n_children + next->n_children; ++i)
+    for (i = node->n_children; i < (guint) node->n_children + (guint) next->n_children; ++i)
         node->u.children[i]->parent = node;
 
     node->n_children += next->n_children;

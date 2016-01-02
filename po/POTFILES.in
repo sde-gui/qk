@@ -20,9 +20,9 @@ moo/mooedit/glade/mootextfind.glade
 moo/mooedit/glade/mootextfind-prompt.glade
 moo/mooedit/glade/mootextgotoline.glade
 moo/mooedit/medit.xml
-moo/mooedit/mooeditaction-factory.c
-moo/mooedit/mooeditdialogs.c
-moo/mooedit/mooedit-fileops.c
+moo/mooedit/mooeditaction-factory.cpp
+moo/mooedit/mooeditdialogs.cpp
+moo/mooedit/mooedit-fileops.cpp
 moo/mooedit/mooeditor.c
 moo/mooedit/mooeditprefs.c
 moo/mooedit/mooeditprefspage.c
@@ -54,7 +54,7 @@ moo/mooutils/moofiltermgr.c
 moo/mooutils/moohelp.c
 moo/mooutils/moopane.c
 moo/mooutils/moostock.c
-moo/mooutils/mooutils-file.c
+moo/mooutils/mooutils-file.cpp
 moo/mooutils/mooutils-fs.c
 moo/mooutils/mooutils-misc.c
 moo/mooutils/moowindow.c

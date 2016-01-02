@@ -1,7 +1,7 @@
 /*
- *   mooedit-fileops.c
+ *   mooedit-fileops.cpp
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *   Copyright (C) 2014 by Ulrich Eckhardt <ulrich.eckhardt@base-42.de>
  *
  *   This file is part of medit.  medit is free software; you can
@@ -843,9 +843,9 @@ unblock_buffer_signals (MooEdit *edit)
 
 
 static void
-file_watch_callback (MooFileWatch& watch,
-                     MooFileEvent* event,
-                     gpointer      data)
+file_watch_callback (G_GNUC_UNUSED MooFileWatch& watch,
+                     MooFileEvent*               event,
+                     gpointer                    data)
 {
     MooEdit *edit = MOO_EDIT (data);
 

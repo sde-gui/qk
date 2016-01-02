@@ -2741,23 +2741,23 @@ doc_array_find_norm_name (MooEditArray *docs,
     return NULL;
 }
 
-static MooEdit *
-doc_array_find_norm_name (const std::vector<gobjptr<MooEdit>>& docs,
-                          const char   *norm_name)
-{
-    g_return_val_if_fail (norm_name != NULL, NULL);
-
-    for (const auto& doc: docs)
-    {
-        char *doc_norm_name = _moo_edit_get_normalized_name (doc.get());
-        gboolean this_doc = doc_norm_name != NULL && strcmp (doc_norm_name, norm_name) == 0;
-        g_free (doc_norm_name);
-        if (this_doc)
-            return doc.get();
-    }
-
-    return NULL;
-}
+// static MooEdit *
+// doc_array_find_norm_name (const std::vector<gobjptr<MooEdit>>& docs,
+//                           const char   *norm_name)
+// {
+//     g_return_val_if_fail (norm_name != NULL, NULL);
+//
+//     for (const auto& doc: docs)
+//     {
+//         char *doc_norm_name = _moo_edit_get_normalized_name (doc.get());
+//         gboolean this_doc = doc_norm_name != NULL && strcmp (doc_norm_name, norm_name) == 0;
+//         g_free (doc_norm_name);
+//         if (this_doc)
+//             return doc.get();
+//     }
+//
+//     return NULL;
+// }
 
 
 /**

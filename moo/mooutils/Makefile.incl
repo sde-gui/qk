@@ -54,7 +54,7 @@ moo_sources +=				\
 	mooutils/moofiledialog.c	\
 	mooutils/moofileicon.c		\
 	mooutils/moofileicon.h		\
-	mooutils/moofilewatch.c		\
+	mooutils/moofilewatch.cpp	\
 	mooutils/moofilewatch.h		\
 	mooutils/moofilewriter.c	\
 	mooutils/moofilewriter.h	\
@@ -111,7 +111,7 @@ moo_sources +=				\
 	mooutils/mooutils-debug.h	\
 	mooutils/mooutils-enums.c	\
 	mooutils/mooutils-enums.h	\
-	mooutils/mooutils-file.c	\
+	mooutils/mooutils-file.cpp	\
 	mooutils/mooutils-file.h	\
 	mooutils/mooutils-fs.c		\
 	mooutils/mooutils-fs.h		\

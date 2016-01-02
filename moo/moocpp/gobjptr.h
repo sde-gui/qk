@@ -98,7 +98,12 @@ public:
     // is code which gets a GTypeInstance and then calls g_object_unref()
     // on it. Normally GTypeInstance* is used inside FOO_WIDGET() macros,
     // where this conversion is safe.
-    operator GTypeInstance* () const { return get() ? &G_OBJECT(get())->g_type_instance : nullptr; }
+    operator GTypeInstance* () const { return base::get() ? &G_OBJECT(base::get())->g_type_instance : nullptr; }
+
+    template<typename T>
+    T* get() const { return reinterpret_cast<T*>(base::get()); }
+
+    GObjClass* get() const { return base::get(); }
 
     const objref* operator->() const { return this; }
     const objref& operator*() const { return *static_cast<const objref*>(this); }

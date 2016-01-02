@@ -189,7 +189,7 @@ array_type##_sort (ArrayType *ar, GCompareFunc func)                    \
                                                                         \
     g_qsort_with_data (ar->elms, ar->n_elms, sizeof (*ar->elms),        \
                        array_type##_gcompare_data_func,                 \
-                       func);                                           \
+                       (gpointer) func);                                \
 }                                                                       \
                                                                         \
 gssize array_type##_find (const ArrayType *ar, ElmType *elm)            \

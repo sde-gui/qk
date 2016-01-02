@@ -40,6 +40,9 @@
 #include "mooutils/mooutils-thread.h"
 #include "mooutils/moolist.h"
 
+#include <memory>
+
+using namespace moo;
 
 #if 1
 static void  G_GNUC_PRINTF(1,2) DEBUG_PRINT (G_GNUC_UNUSED const char *format, ...)
@@ -207,7 +210,7 @@ MooFileWatch::Impl::Impl()
 
 MooFileWatch::MooFileWatch()
     : m_ref(1)
-    , m_impl(std::make_unique<Impl>())
+    , m_impl(make_unique<Impl>())
 {
 }
 
@@ -231,50 +234,6 @@ void MooFileWatch::unref()
 {
     if (--m_ref == 0)
         delete this;
-}
-
-
-static MooFileEvent *
-moo_file_event_new (const char      *filename,
-                    guint            monitor_id,
-                    MooFileEventCode code)
-{
-    MooFileEvent *event;
-
-    event = g_new0 (MooFileEvent, 1);
-    event->filename = g_strdup (filename);
-    event->monitor_id = monitor_id;
-    event->code = code;
-    event->error = NULL;
-
-    return event;
-}
-
-static MooFileEvent *
-moo_file_event_copy (MooFileEvent *event)
-{
-    MooFileEvent *copy;
-
-    copy = moo_file_event_new (event->filename,
-                               event->monitor_id,
-                               event->code);
-
-    if (event->error)
-        copy->error = g_error_copy (event->error);
-
-    return copy;
-}
-
-static void
-moo_file_event_free (MooFileEvent *event)
-{
-    if (event)
-    {
-        if (event->error)
-            g_error_free (event->error);
-        g_free (event->filename);
-        g_free (event);
-    }
 }
 
 
@@ -429,8 +388,8 @@ static MooFileWatchError errno_to_file_error    (mgw_errno_t   code);
 static gboolean do_stat                         (MooFileWatch* watch);
 
 static gboolean
-watch_stat_start(MooFileWatch& watch,
-                 GError**      error)
+watch_stat_start(MooFileWatch&          watch,
+                 G_GNUC_UNUSED GError** error)
 {
     watch.ref();
     watch.impl().stat_timeout =
@@ -458,9 +417,9 @@ watch_stat_shutdown (MooFileWatch &watch,
 
 
 static gboolean
-watch_stat_start_monitor (MooFileWatch&   watch,
-                          Monitor*        monitor,
-                          GError**        error)
+watch_stat_start_monitor (G_GNUC_UNUSED MooFileWatch& watch,
+                          Monitor*                    monitor,
+                          GError**                    error)
 {
     MgwStatBuf buf;
     mgw_errno_t err;

@@ -225,7 +225,7 @@ public:
 
     void borrow(const mg_mem_holder& other)
     {
-        if (s.m_ot == ownership_type::literal)
+        if (other.m_ot == ownership_type::literal)
             literal(static_cast<const Buf*>(other));
         else
             borrow(static_cast<const Buf*>(other));

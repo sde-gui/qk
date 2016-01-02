@@ -54,3 +54,13 @@ void gobjref_base::set_property(const gchar *property_name, const GValue *value)
 {
     g_object_set_property(g(), property_name, value);
 }
+
+void gobjref_base::freeze_notify() const
+{
+    g_object_freeze_notify(g());
+}
+
+void gobjref_base::thaw_notify() const
+{
+    g_object_thaw_notify(g());
+}
