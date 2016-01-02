@@ -114,9 +114,27 @@ source_group("generated\\sources" REGULAR_EXPRESSION ".*\\.c(pp)?$")
 source_group("generated\\headers" REGULAR_EXPRESSION ".*\\.h$")
 source_group("moo\\glade" REGULAR_EXPRESSION ".*\\.glade$")
 
+set(MOO_USE_PCH TRUE)
+if(MOO_USE_PCH)
+    set(MEDIT_PCH_SOURCES
+        moo-pch.c
+        moo-pch.cpp
+        moo-pch.h
+    )
+endif()
+
 add_executable(medit WIN32
     ${MEDIT_SOURCES}
+    ${MEDIT_PCH_SOURCES}
 )
+
+if(MOO_USE_PCH)
+    add_precompiled_header(medit
+        moo-pch.h
+        FORCEINCLUDE
+        SOURCE_C moo-pch.c
+        SOURCE_CXX moo-pch.cpp)
+endif()
 
 target_link_libraries(medit
     libmooglib-0
