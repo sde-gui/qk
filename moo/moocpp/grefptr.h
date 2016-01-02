@@ -1,7 +1,7 @@
 /*
- *   moocpp/gobjectptr.h
+ *   moocpp/grefptr.h
  *
- *   Copyright (C) 2004-2015 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -159,70 +159,6 @@ private:
 
 private:
     ObjClass* m_obj;
-};
-
-class mg_gobj_ref_unref
-{
-public:
-    static void ref(gpointer obj) { g_object_ref(obj); }
-    static void unref(gpointer obj) { g_object_unref(obj); }
-};
-
-template<typename GObjClass>
-class gobjptr : public grefptr<GObjClass, mg_gobj_ref_unref>
-{
-    using base = grefptr<GObjClass, mg_gobj_ref_unref>;
-
-public:
-    gobjptr() {}
-    gobjptr(nullptr_t) {}
-
-    gobjptr(GObjClass* obj, ref_transfer policy)
-        : base(obj, policy)
-    {
-    }
-
-    gobjptr(const gobjptr& other)
-        : base(other)
-    {
-    }
-
-    gobjptr(gobjptr&& other)
-        : base(std::move(other))
-    {
-    }
-
-    gobjptr& operator=(const gobjptr& other)
-    {
-        (static_cast<base&>(*this)) = other;
-        return *this;
-    }
-
-    template<typename T>
-    gobjptr& operator=(T* p)
-    {
-        (static_cast<base&>(*this)) = p;
-        return *this;
-    }
-
-    gobjptr& operator=(const nullptr_t&)
-    {
-        (static_cast<base&>(*this)) = nullptr;
-        return *this;
-    }
-
-    gobjptr& operator=(gobjptr&& other)
-    {
-        (static_cast<base&>(*this)) = std::move(other);
-        return *this;
-    }
-
-    // Returning the GTypeInstance pointer is just as unsafe in general
-    // as returning the pointer to the object, but it's unlikely that there
-    // is code which gets a GTypeInstance and then calls g_object_unref()
-    // on it. Normally GTypeInstance* is used inside FOO_WIDGET() macros,
-    // where this conversion is safe.
-    operator GTypeInstance* () const { return get() ? &G_OBJECT(get())->g_type_instance : nullptr; }
 };
 
 } // namespace moo

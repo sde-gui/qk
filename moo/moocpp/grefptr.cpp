@@ -1,7 +1,7 @@
 /*
- *   moocpp/gobjectptr.cpp
+ *   moocpp/grefptr.cpp
  *
- *   Copyright (C) 2004-2015 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -13,6 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "moocpp/gobjectptr.h"
+#include "moocpp/grefptr.h"
 
 using namespace moo;
+

@@ -39,7 +39,7 @@ G_END_DECLS
 
 #ifdef __cplusplus
 
-#include <moocpp/gobjectptr.h>
+#include <moocpp/gobjptrtypes.h>
 
 using MooEditPtr =      moo::gobjptr<MooEdit>;
 using MooEditViewPtr =  moo::gobjptr<MooEditView>;

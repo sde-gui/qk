@@ -20,7 +20,7 @@
 #include "mooedit/mooeditprogress.h"
 #include "moocpp/strutils.h"
 #include "moocpp/utils.h"
-#include "moocpp/gobjectptr.h"
+#include "moocpp/gobjptrtypes.h"
 
 G_BEGIN_DECLS
 

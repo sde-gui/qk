@@ -1,10 +1,10 @@
 SET(moocpp_sources
 	moocpp/moocpp.cmake
 	moocpp/gobjectutils.h
-	moocpp/gobjectptr.h
-	moocpp/gobjectptr.cpp
-	moocpp/gobjectprivate.h
-	moocpp/gobjectprivate.cpp
+	moocpp/gobjptr.h
+	moocpp/gobjptr.cpp
+	moocpp/grefptr.h
+	moocpp/grefptr.cpp
 	moocpp/memutils.h
 	moocpp/strutils.h
 	moocpp/strutils.cpp
