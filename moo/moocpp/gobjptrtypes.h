@@ -15,60 +15,6 @@
 
 #pragma once
 
-#include <glib-object.h>
-#include <gtk/gtk.h>
-#include <mooglib/moo-glib.h>
-
-#include "moocpp/gobjptr.h"
-
-namespace moo {
-
-///////////////////////////////////////////////////////////////////////////////////////////
-//
-// mg_gobj_accessor
-//
-
-template<typename Self, typename GObjClas>
-struct mg_gobj_accessor
-{
-protected:
-    GObject* g() const { void *o = static_cast<const Self&>(*this).get(); return o ? G_OBJECT(o) : nullptr; }
-};
-
-template<typename Self>
-struct mg_gobj_accessor<Self, GtkObject> : public mg_gobj_accessor<Self, GObject>
-{
-};
-
-template<typename Self>
-struct mg_gobj_accessor<Self, GtkWidget> : public mg_gobj_accessor<Self, GtkObject>
-{
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////
-//
-// mg_gobjptr_methods
-//
-
-template<typename Self, typename GObjClas>
-struct mg_gobjptr_methods
-{
-    GObject* g_object() const { return g(); }
-
-protected:
-    GObject* g() const { void *o = static_cast<const Self&>(*this).get(); return o ? G_OBJECT(o) : nullptr; }
-};
-
-template<typename Self>
-struct mg_gobjptr_methods<Self, GtkObject> : public mg_gobjptr_methods<Self, GObject>
-{
-    GtkObject* gtk_object() const { return g() ? GTK_OBJECT(g()) : nullptr; }
-};
-
-template<typename Self>
-struct mg_gobjptr_methods<Self, GtkWidget> : public mg_gobjptr_methods<Self, GtkObject>
-{
-    GtkWidget* gtk_widget() const { return g() ? GTK_WIDGET(g()) : nullptr; }
-};
-
-} // namespace moo
+#include <moocpp/gobjptrtypes-glib.h>
+#include <moocpp/gobjptrtypes-gio.h>
+#include <moocpp/gobjptrtypes-gtk.h>

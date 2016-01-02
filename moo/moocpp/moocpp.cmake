@@ -2,6 +2,13 @@ SET(moocpp_sources
 	moocpp/moocpp.cmake
 	moocpp/gobjectutils.h
 	moocpp/gobjptr.h
+	moocpp/gobjptrtypes.h
+	moocpp/gobjptrtypes-glib.h
+	moocpp/gobjptrtypes-gio.h
+	moocpp/gobjptrtypes-gtk.h
+	moocpp/gobjptrtypes-glib.cpp
+	moocpp/gobjptrtypes-gio.cpp
+	moocpp/gobjptrtypes-gtk.cpp
 	moocpp/gobjptr.cpp
 	moocpp/grefptr.h
 	moocpp/grefptr.cpp

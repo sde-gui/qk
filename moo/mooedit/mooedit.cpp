@@ -319,24 +319,22 @@ moo_edit_constructor (GType                  type,
     _moo_edit_instances = moo_edit_list_prepend (_moo_edit_instances, doc);
 
     doc->priv->changed_handler_id =
-            g_signal_connect (doc->priv->buffer.get(),
-                              "changed",
-                              G_CALLBACK (changed_cb),
-                              doc);
+        doc->priv->buffer->signal_connect("changed",
+                                          G_CALLBACK (changed_cb),
+                                          doc);
     doc->priv->modified_changed_handler_id =
-            g_signal_connect (doc->priv->buffer.get(),
-                              "modified-changed",
-                              G_CALLBACK (modified_changed_cb),
-                              doc);
+        doc->priv->buffer->signal_connect("modified-changed",
+                                          G_CALLBACK (modified_changed_cb),
+                                          doc);
 
     _moo_edit_set_file (doc, NULL, NULL);
 
-    g_signal_connect_swapped (doc->priv->buffer.get(), "line-mark-moved",
-                              G_CALLBACK (_moo_edit_line_mark_moved),
-                              doc);
-    g_signal_connect_swapped (doc->priv->buffer.get(), "line-mark-deleted",
-                              G_CALLBACK (_moo_edit_line_mark_deleted),
-                              doc);
+    doc->priv->buffer->signal_connect_swapped("line-mark-moved",
+                                              G_CALLBACK (_moo_edit_line_mark_moved),
+                                              doc);
+    doc->priv->buffer->signal_connect_swapped("line-mark-deleted",
+                                              G_CALLBACK (_moo_edit_line_mark_deleted),
+                                              doc);
 
     return object;
 }
@@ -780,7 +778,7 @@ GFile *
 moo_edit_get_file (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->file ? g_file_dup (edit->priv->file.get()) : NULL;
+    return edit->priv->file ? edit->priv->file->dup().release() : NULL;
 }
 
 /**
@@ -842,7 +840,7 @@ char *
 moo_edit_get_uri (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->file ? g_file_get_uri (edit->priv->file.get()) : NULL;
+    return edit->priv->file ? edit->priv->file->get_uri() : NULL;
 }
 
 /**

@@ -37,7 +37,7 @@ _moo_edit_open_dialog (GtkWidget *widget,
 {
     MooFileDialog *dialog;
     const char *encoding;
-    GFile *start = NULL;
+    MooGFilePtr start;
     MooFileArray *files = NULL;
     MooOpenInfoArray *info_array = NULL;
     guint i;
@@ -49,14 +49,14 @@ _moo_edit_open_dialog (GtkWidget *widget,
         MooGFilePtr file(moo_edit_get_file(current_doc), ref_transfer::take_ownership);
 
         if (file)
-            start = g_file_get_parent(file.get());
+            start = file->get_parent();
     }
 
     if (!start)
         start = moo_prefs_get_file (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
 
     dialog = moo_file_dialog_new (MOO_FILE_DIALOG_OPEN, widget,
-                                  TRUE, GTK_STOCK_OPEN, start,
+                                  TRUE, GTK_STOCK_OPEN, start.get(),
                                   NULL);
     g_object_set (dialog, "enable-encodings", TRUE, NULL);
     moo_file_dialog_set_help_id (dialog, "dialog-open");
@@ -78,12 +78,10 @@ _moo_edit_open_dialog (GtkWidget *widget,
         for (i = 0; i < files->n_elms; ++i)
             moo_open_info_array_take (info_array, moo_open_info_new_file (files->elms[i], encoding, -1, MOO_OPEN_FLAGS_NONE));
 
-        g_object_unref (start);
-        start = g_file_get_parent (files->elms[0]);
-        moo_prefs_set_file (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), start);
+        start.take(g_file_get_parent (files->elms[0]));
+        moo_prefs_set_file (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), start.get());
     }
 
-    g_object_unref (start);
     g_object_unref (dialog);
     moo_file_array_free (files);
     return info_array;

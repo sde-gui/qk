@@ -27,20 +27,20 @@ public:
     static void unref(gpointer obj) { g_object_unref(obj); }
 };
 
-template<typename Self, typename GObjClas>
-struct mg_gobj_accessor;
-
-template<typename Self, typename GObjClas>
+template<typename GObjClas>
 struct mg_gobjptr_methods;
+
+template<typename GObjClas>
+struct mg_gobjptr_accessor;
 
 template<typename GObjClass>
 class gobjptr
     : public grefptr<GObjClass, mg_gobj_ref_unref>
-    , public mg_gobjptr_methods<gobjptr<GObjClass>, GObjClass>
-    , private mg_gobj_accessor<gobjptr<GObjClass>, GObjClass>
+    , private mg_gobjptr_accessor<GObjClass>
+    , public mg_gobjptr_methods<GObjClass>
 {
     using base = grefptr<GObjClass, mg_gobj_ref_unref>;
-    using accessor = mg_gobj_accessor<gobjptr<GObjClass>, GObjClass>;
+    using accessor = mg_gobjptr_accessor<GObjClass>;
 
 public:
     using object_type = GObjClass;
@@ -51,6 +51,11 @@ public:
     gobjptr(GObjClass* obj, ref_transfer policy)
         : base(obj, policy)
     {
+    }
+
+    static gobjptr wrap_new(GObjClass* obj)
+    {
+        return gobjptr(obj, ref_transfer::take_ownership);
     }
 
     gobjptr(const gobjptr& other)
@@ -96,6 +101,7 @@ public:
     operator GTypeInstance* () const { return get() ? &G_OBJECT(get())->g_type_instance : nullptr; }
 
     const accessor* operator->() const { return this; }
+    static const gobjptr& from_accessor(const accessor& ac) { return static_cast<const gobjptr&>(ac); }
 };
 
 } // namespace moo

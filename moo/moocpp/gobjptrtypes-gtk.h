@@ -1,5 +1,5 @@
 /*
- *   moocpp/gobjptr.cpp
+ *   moocpp/gobjptrtypes-gtk.h
  *
  *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
@@ -13,14 +13,13 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "moocpp/gobjptrtypes.h"
+#pragma once
 
-using namespace moo;
+#include <gtk/gtk.h>
+#include <mooglib/moo-glib.h>
 
-static void test()
-{
-    gobjptr<GFile> x;
-    x.new_for_path("");
-    gobjptr<GFile> f = gobjptr<GFile>::new_for_path("");
-    f->set("foo", 1, nullptr);
-}
+#include "moocpp/gobjptrtypes-glib.h"
+
+namespace moo {
+
+} // namespace moo

@@ -82,7 +82,7 @@ G_END_DECLS
 namespace moo
 {
 
-template<> class mg_ref_unref<MooFileWatch>
+template<> class mg_obj_ref_unref<MooFileWatch>
 {
 public:
     static void ref(MooFileWatch* watch) { moo_file_watch_ref(watch); }
