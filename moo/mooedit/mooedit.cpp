@@ -460,7 +460,7 @@ _moo_edit_add_view (MooEdit     *doc,
     g_return_if_fail (!contains(doc->priv->views, view));
 
     g_object_ref_sink (view);
-    doc->priv->views.emplace_back (view);
+    doc->priv->views.emplace_back (MooEditViewPtr (view, ref_transfer::make_copy));
     g_object_unref (view);
 
     _moo_edit_view_apply_prefs (view);
@@ -683,7 +683,7 @@ gboolean
 moo_edit_is_modified (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return (moo_edit_get_status (edit) & MOO_EDIT_STATUS_MODIFIED) != 0;
+    return (moo_edit_get_status (edit) & MOO_EDIT_STATUS_MODIFIED) != MOO_EDIT_STATUS_NORMAL;
 }
 
 /**
@@ -792,21 +792,21 @@ char *
 moo_edit_get_filename (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->filename.get_copy();
+    return edit->priv->filename.strdup();
 }
 
 char *
 _moo_edit_get_normalized_name (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->norm_name.get_copy();
+    return edit->priv->norm_name.strdup();
 }
 
 char *
 _moo_edit_get_utf8_filename (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->display_filename.get_copy();
+    return edit->priv->display_filename.strdup();
 }
 
 /**

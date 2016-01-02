@@ -1,0 +1,69 @@
+/*
+ *   moocpp/strutils.h
+ *
+ *   Copyright (C) 2004-2015 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *
+ *   This file is part of medit.  medit is free software; you can
+ *   redistribute it and/or modify it under the terms of the
+ *   GNU Lesser General Public License as published by the
+ *   Free Software Foundation; either version 2.1 of the License,
+ *   or (at your option) any later version.
+ *
+ *   You should have received a copy of the GNU Lesser General Public
+ *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include <moocpp/memutils.h>
+
+namespace moo {
+
+struct mg_str_mem_handler
+{
+    static char* dup(const char* p) { return p ? g_strdup (p) : nullptr; }
+    static void free(char* p) { g_free(p); }
+};
+
+template<typename T>
+struct mg_get_string
+{
+    static const char* get_string(const T& obj) { return static_cast<const char*>(obj); }
+};
+
+template<typename Self, typename GetString = mg_get_string<Self>>
+class mg_str_methods_mixin
+{
+public:
+    char *strdup() const { return g_strdup(c_str()); }
+
+    bool empty() const { const char* s = c_str(); return !s || !*s; }
+    bool set() const { return !empty(); }
+
+    // These must not be called, to avoid ambiguity between an empty string and null
+    operator bool() const = delete;
+    bool operator!() const = delete;
+
+private:
+    const char* c_str() const { return GetString::get_string(static_cast<const Self&>(*this)); }
+};
+
+class mg_str
+    : public mg_mem_holder<char, mg_str_mem_handler, mg_str>
+    , public mg_str_methods_mixin<mg_str>
+{
+    using super = mg_mem_holder<char, mg_str_mem_handler, mg_str>;
+
+public:
+    MOO_DECLARE_STANDARD_PTR_METHODS(mg_str, super)
+};
+
+
+bool operator==(const mg_str& s1, const char* s2);
+bool operator==(const char* s1, const mg_str& s2);
+bool operator==(const mg_str& s1, const mg_str& s2);
+bool operator!=(const mg_str& s1, const char* s2);
+bool operator!=(const char* s1, const mg_str& s2);
+bool operator!=(const mg_str& s1, const mg_str& s2);
+
+} // namespace moo

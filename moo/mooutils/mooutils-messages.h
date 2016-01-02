@@ -154,11 +154,17 @@ MOO_STMT_START {                                            \
     }                                                       \
 } MOO_STMT_END
 
+#ifdef __cplusplus
+#define moo_err_retval__ false
+#else
+#define moo_err_retval__ FALSE
+#endif
+
 #define moo_return_error_if_fail(cond)                      \
-    moo_return_error_if_fail_val (cond, FALSE)
+    moo_return_error_if_fail_val (cond, moo_err_retval__)
 
 #define moo_return_error_if_fail_p(cond)                    \
-    moo_return_error_if_fail_val (cond, NULL)
+    moo_return_error_if_fail_val (cond, moo_err_retval__)
 
 /*
  * Suppress warnings when GCC is in -pedantic mode and not -std=c99

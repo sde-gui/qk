@@ -24,29 +24,28 @@
 using namespace moo;
 
 enum MooEditorOptions {
+    MOO_EDITOR_OPTIONS_NONE = 0,
     OPEN_SINGLE         = 1 << 0,
     ALLOW_EMPTY_WINDOW  = 1 << 1,
     SINGLE_WINDOW       = 1 << 2,
     SAVE_BACKUPS        = 1 << 3,
     STRIP_WHITESPACE    = 1 << 4,
-    EMBEDDED            = 1 << 5
 };
 
 MOO_DEFINE_FLAGS(MooEditorOptions);
 
 struct MooEditorPrivate {
-    std::vector<MooEditPtr>     windowless;
     std::vector<MooEditWindow*> windows;
-    GObjRefPtr<MooUiXml>        doc_ui_xml;
-    GObjRefPtr<MooUiXml>        ui_xml;
-    GObjRefPtr<MooHistoryMgr>   history;
-    RefPtr<MooFileWatch>        file_watch;
+    gobjptr<MooUiXml>           doc_ui_xml;
+    gobjptr<MooUiXml>           ui_xml;
+    gobjptr<MooHistoryMgr>      history;
+    grefptr<MooFileWatch>       file_watch;
     MooEditorOptions            opts;
 
     GType                       window_type;
     GType                       doc_type;
 
-    GObjRefPtr<MooLangMgr>      lang_mgr;
+    gobjptr<MooLangMgr>         lang_mgr;
 
     MooEditorPrivate();
     ~MooEditorPrivate();

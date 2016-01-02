@@ -41,8 +41,9 @@ G_END_DECLS
 
 #include <moocpp/gobjectptr.h>
 
-using MooEditPtr = moo::GObjRefPtr<MooEdit>;
-using MooEditViewPtr = moo::GObjRefPtr<MooEditView>;
-using MooEditTabPtr = moo::GObjRefPtr<MooEditTab>;
+using MooEditPtr =      moo::gobjptr<MooEdit>;
+using MooEditViewPtr =  moo::gobjptr<MooEditView>;
+using MooEditTabPtr =   moo::gobjptr<MooEditTab>;
+using MooGFilePtr =     moo::gobjptr<GFile>;
 
 #endif // __cplusplus

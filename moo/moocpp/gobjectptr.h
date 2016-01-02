@@ -21,39 +21,40 @@
 namespace moo {
 
 template<typename ObjClass>
-class ObjRefUnref;
+class mg_ref_unref;
 
-template<typename ObjClass, typename ObjRefUnrefHelper = ObjRefUnref<ObjClass>>
-class RefPtr
+enum class ref_transfer
+{
+    take_ownership,
+    make_copy,
+};
+
+template<typename ObjClass, typename ObjRefUnrefHelper = mg_ref_unref<ObjClass>>
+class grefptr
 {
 public:
-    enum AssignmentPolicy
-    {
-        get_reference,
-        steal_reference,
-    };
+    grefptr() : m_obj(nullptr) {}
+    grefptr(const nullptr_t) : grefptr() {}
 
-    RefPtr() : RefPtr(nullptr) {}
-
-    explicit RefPtr(ObjClass* obj, AssignmentPolicy policy = get_reference)
-        : m_obj(nullptr)
+    grefptr(ObjClass* obj, ref_transfer policy)
+        : grefptr()
     {
         assign(obj, policy);
     }
 
-    ~RefPtr()
+    ~grefptr()
     {
         reset();
     }
 
     void ref(ObjClass* obj)
     {
-        assign(obj, get_reference);
+        assign(obj, ref_transfer::make_copy);
     }
 
     void take(ObjClass* obj)
     {
-        assign(obj, steal_reference);
+        assign(obj, ref_transfer::take_ownership);
     }
 
     void reset()
@@ -71,6 +72,12 @@ public:
     // g_object_unref (tmp);
     operator const ObjClass* () const { return m_obj; }
     ObjClass* get() const { return m_obj; }
+    ObjClass& operator*() const { return *m_obj; }
+
+    // Explicitly forbid other pointer conversions. This way it's still possible to implement
+    // implicit conversions in subclasses, like that to GTypeInstance in gobjptr.
+    template<typename T>
+    operator T*() const = delete;
 
     operator bool() const { return m_obj != nullptr; }
     bool operator!() const { return m_obj == nullptr; }
@@ -82,7 +89,7 @@ public:
     }
 
     template<typename X, typename Y>
-    bool operator==(const RefPtr<X, Y>& other) const
+    bool operator==(const grefptr<X, Y>& other) const
     {
         return get() == other.get();
     }
@@ -93,20 +100,20 @@ public:
         return !(*this == anything);
     }
 
-    RefPtr(const RefPtr& other)
-        : RefPtr(other.get())
+    grefptr(const grefptr& other)
+        : grefptr(other.get())
     {
     }
 
-    RefPtr(RefPtr&& other)
+    grefptr(grefptr&& other)
         : m_obj(other.m_obj)
     {
         other.m_obj = nullptr;
     }
 
-    RefPtr& operator=(const RefPtr& other)
+    grefptr& operator=(const grefptr& other)
     {
-        assign(other.m_obj, get_reference);
+        assign(other.m_obj, ref_transfer::make_copy);
         return *this;
     }
 
@@ -114,22 +121,22 @@ public:
     // a const Foo, which can't be converted to non-const ObjClass*, so one can't
     // steal a reference to a const object with this method.
     template<typename T>
-    RefPtr& operator=(T* p)
+    grefptr& operator=(T* p)
     {
-        assign(p, steal_reference);
+        assign(p, ref_transfer::take_ownership);
     }
 
-    RefPtr& operator=(const nullptr_t&)
+    grefptr& operator=(const nullptr_t&)
     {
         reset();
         return *this;
     }
 
-    RefPtr& operator=(RefPtr&& other)
+    grefptr& operator=(grefptr&& other)
     {
         if (m_obj != other.m_obj)
         {
-            assign(other.m_obj, steal_reference);
+            assign(other.m_obj, ref_transfer::take_ownership);
             other.m_obj = nullptr;
         }
         
@@ -137,13 +144,13 @@ public:
     }
 
 private:
-    void assign(ObjClass* obj, AssignmentPolicy policy)
+    void assign(ObjClass* obj, ref_transfer policy)
     {
         if (m_obj != obj)
         {
             ObjClass* tmp = m_obj;
             m_obj = obj;
-            if (m_obj && (policy == get_reference))
+            if (m_obj && (policy == ref_transfer::make_copy))
                 ObjRefUnrefHelper::ref(m_obj);
             if (tmp)
                 ObjRefUnrefHelper::unref(tmp);
@@ -154,7 +161,7 @@ private:
     ObjClass* m_obj;
 };
 
-class GObjRefUnref
+class mg_gobj_ref_unref
 {
 public:
     static void ref(gpointer obj) { g_object_ref(obj); }
@@ -162,48 +169,49 @@ public:
 };
 
 template<typename GObjClass>
-class GObjRefPtr : public RefPtr<GObjClass, GObjRefUnref>
+class gobjptr : public grefptr<GObjClass, mg_gobj_ref_unref>
 {
-    using base = RefPtr<GObjClass, GObjRefUnref>;
+    using base = grefptr<GObjClass, mg_gobj_ref_unref>;
 
 public:
-    GObjRefPtr() {}
+    gobjptr() {}
+    gobjptr(nullptr_t) {}
 
-    explicit GObjRefPtr(GObjClass* obj, AssignmentPolicy policy = get_reference)
+    gobjptr(GObjClass* obj, ref_transfer policy)
         : base(obj, policy)
     {
     }
 
-    GObjRefPtr(const GObjRefPtr& other)
+    gobjptr(const gobjptr& other)
         : base(other)
     {
     }
 
-    GObjRefPtr(GObjRefPtr&& other)
+    gobjptr(gobjptr&& other)
         : base(std::move(other))
     {
     }
 
-    GObjRefPtr& operator=(const GObjRefPtr& other)
+    gobjptr& operator=(const gobjptr& other)
     {
         (static_cast<base&>(*this)) = other;
         return *this;
     }
 
     template<typename T>
-    GObjRefPtr& operator=(T* p)
+    gobjptr& operator=(T* p)
     {
         (static_cast<base&>(*this)) = p;
         return *this;
     }
 
-    GObjRefPtr& operator=(const nullptr_t&)
+    gobjptr& operator=(const nullptr_t&)
     {
         (static_cast<base&>(*this)) = nullptr;
         return *this;
     }
 
-    GObjRefPtr& operator=(GObjRefPtr&& other)
+    gobjptr& operator=(gobjptr&& other)
     {
         (static_cast<base&>(*this)) = std::move(other);
         return *this;

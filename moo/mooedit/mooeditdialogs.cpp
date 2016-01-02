@@ -29,6 +29,7 @@
 #include <mooglib/moo-glib.h>
 #include <string.h>
 
+using namespace moo;
 
 MooOpenInfoArray *
 _moo_edit_open_dialog (GtkWidget *widget,
@@ -45,12 +46,10 @@ _moo_edit_open_dialog (GtkWidget *widget,
 
     if (current_doc && moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN_FOLLOWS_DOC)))
     {
-        GFile *file = moo_edit_get_file (current_doc);
+        MooGFilePtr file(moo_edit_get_file(current_doc), ref_transfer::take_ownership);
 
         if (file)
-            start = g_file_get_parent (file);
-
-        g_object_unref (file);
+            start = g_file_get_parent(file.get());
     }
 
     if (!start)
@@ -77,7 +76,7 @@ _moo_edit_open_dialog (GtkWidget *widget,
 
         info_array = moo_open_info_array_new ();
         for (i = 0; i < files->n_elms; ++i)
-            moo_open_info_array_take (info_array, moo_open_info_new_file (files->elms[i], encoding, -1, 0));
+            moo_open_info_array_take (info_array, moo_open_info_new_file (files->elms[i], encoding, -1, MOO_OPEN_FLAGS_NONE));
 
         g_object_unref (start);
         start = g_file_get_parent (files->elms[0]);
@@ -213,7 +212,7 @@ save_toggled (GtkCellRendererToggle *cell,
 
     gtk_tree_path_free (tree_path);
 
-    dialog = g_object_get_data (G_OBJECT (model), "moo-dialog");
+    dialog = GTK_DIALOG (g_object_get_data (G_OBJECT (model), "moo-dialog"));
     g_return_if_fail (dialog != NULL);
 
     if (!save)
@@ -326,7 +325,7 @@ find_widget_for_response (GtkDialog *dialog,
 
     for (l = children; ret == NULL && l != NULL; l = l->next)
     {
-        GtkWidget *widget = l->data;
+        GtkWidget *widget = GTK_WIDGET (l->data);
         int response_here = gtk_dialog_get_response_for_widget (dialog, widget);
         if (response_here == response)
             ret = widget;
@@ -501,39 +500,37 @@ _moo_edit_save_error_enc_dialog (MooEdit    *doc,
 
 
 MooEditTryEncodingResponse
-_moo_edit_try_encoding_dialog (G_GNUC_UNUSED GFile *file,
-                               const char  *encoding,
-                               char       **new_encoding)
+_moo_edit_try_encoding_dialog (GFile&          file,
+                               const char*     encoding,
+                               /*out*/ mg_str& new_encoding)
 {
     MooEditWindow *window;
     GtkWidget *dialog;
     TryEncodingDialogXml *xml;
     int dialog_response;
-    char *filename = NULL;
-    char *msg = NULL;
-    char *secondary = NULL;
+    mg_str msg;
+    mg_str secondary;
 
-    filename = moo_file_get_display_name (file);
+    mg_str filename = moo_file_get_display_name(file);
 
-    if (filename)
+    if (filename.set())
     {
         /* Could not open file foo.txt */
-        char *tmp = g_strdup_printf (_("Could not open file\n%s"), filename);
-        msg = g_markup_printf_escaped ("<b><big>%s</big></b>", tmp);
-        g_free (tmp);
+        mg_str tmp = mg_str::new_take(g_strdup_printf(_("Could not open file\n%s"), filename.get()));
+        msg.take(g_markup_printf_escaped("<b><big>%s</big></b>", tmp.get()));
     }
     else
     {
         const char *tmp = _("Could not open file");
-        msg = g_markup_printf_escaped ("<b><big>%s</big></b>", tmp);
+        msg.take(g_markup_printf_escaped("<b><big>%s</big></b>", tmp));
     }
 
-    if (encoding)
-        secondary = g_strdup_printf (_("Could not open file using character encoding %s. "
-                                       "Try to select another encoding below."), encoding);
+    if (encoding != NULL)
+        secondary.take(g_strdup_printf (_("Could not open file using character encoding %s. "
+                                          "Try to select another encoding below."), encoding));
     else
-        secondary = g_strdup_printf (_("Could not detect file character encoding. "
-                                       "Try to select an encoding below."));
+        secondary.take(g_strdup_printf (_("Could not detect file character encoding. "
+                                          "Try to select an encoding below.")));
 
     xml = try_encoding_dialog_xml_new ();
     g_return_val_if_fail (xml && xml->TryEncodingDialog, MOO_EDIT_TRY_ENCODING_RESPONSE_CANCEL);
@@ -561,11 +558,9 @@ _moo_edit_try_encoding_dialog (G_GNUC_UNUSED GFile *file,
 
     dialog_response = gtk_dialog_run (GTK_DIALOG (dialog));
 
-    *new_encoding = g_strdup (_moo_encodings_combo_get_enc (GTK_COMBO_BOX (xml->encoding_combo), MOO_ENCODING_COMBO_OPEN));
+    new_encoding.copy(_moo_encodings_combo_get_enc (GTK_COMBO_BOX (xml->encoding_combo), MOO_ENCODING_COMBO_OPEN));
 
     gtk_widget_destroy (dialog);
-    g_free (secondary);
-    g_free (msg);
 
     return dialog_response == GTK_RESPONSE_OK ?
         MOO_EDIT_TRY_ENCODING_RESPONSE_TRY_ANOTHER :

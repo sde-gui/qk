@@ -5,5 +5,8 @@ SET(moocpp_sources
 	moocpp/gobjectptr.cpp
 	moocpp/gobjectprivate.h
 	moocpp/gobjectprivate.cpp
+	moocpp/memutils.h
+	moocpp/strutils.h
+	moocpp/strutils.cpp
 	moocpp/utils.h
 )

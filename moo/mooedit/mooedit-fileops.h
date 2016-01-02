@@ -1,7 +1,7 @@
 /*
  *   mooedit-fileops.h
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_EDIT_FILE_OPS_H
-#define MOO_EDIT_FILE_OPS_H
+#pragma once
 
 #include "mooedit/mooedit.h"
 #include <gio/gio.h>
@@ -44,11 +43,6 @@ GQuark           _moo_edit_file_error_quark     (void) G_GNUC_CONST;
 gboolean         _moo_is_file_error_cancelled   (GError         *error);
 
 gboolean         _moo_edit_file_is_new          (GFile          *file);
-gboolean         _moo_edit_load_file            (MooEdit        *edit,
-                                                 GFile          *file,
-                                                 const char     *encoding,
-                                                 const char     *cached_encoding,
-                                                 GError        **error);
 gboolean         _moo_edit_reload_file          (MooEdit        *edit,
                                                  const char     *encoding,
                                                  GError        **error);
@@ -69,9 +63,14 @@ G_END_DECLS
 #ifdef __cplusplus
 
 #include "moocpp/utils.h"
+#include "moocpp/strutils.h"
 
 MOO_DEFINE_FLAGS(MooEditSaveFlags)
 
-#endif // __cplusplus
+bool             _moo_edit_load_file            (MooEdit*           edit,
+                                                 GFile&             file,
+                                                 const moo::mg_str& init_encoding,
+                                                 const moo::mg_str& init_cached_encoding,
+                                                 GError**           error);
 
-#endif /* MOO_EDIT_FILE_OPS_H */
+#endif // __cplusplus

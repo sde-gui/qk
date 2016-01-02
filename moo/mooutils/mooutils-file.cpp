@@ -3,6 +3,8 @@
 #include "mooutils.h"
 #include <fnmatch.h>
 
+using namespace moo;
+
 MOO_DEFINE_OBJECT_ARRAY_FULL (MooFileArray, moo_file_array, GFile)
 
 char *
@@ -10,6 +12,12 @@ moo_file_get_display_name (GFile *file)
 {
     g_return_val_if_fail (G_IS_FILE (file), NULL);
     return g_file_get_parse_name (file);
+}
+
+mg_str
+moo_file_get_display_name(GFile& file)
+{
+    return mg_str::new_take(moo_file_get_display_name(&file));
 }
 
 gboolean

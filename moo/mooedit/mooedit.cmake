@@ -36,7 +36,7 @@ SET(mooedit_sources
     mooedit/mooeditbookmark.cpp
     mooedit/mooedit.cpp
     mooedit/mooeditconfig.c	
-    mooedit/mooeditdialogs.c
+    mooedit/mooeditdialogs.cpp
     mooedit/mooedit-enum-types.c
     mooedit/mooedit-enum-types.h
     mooedit/mooedit-enums.h	

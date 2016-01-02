@@ -16,8 +16,7 @@
 /* Files and directory monitor. Uses stat().
    On win32 does FindFirstChangeNotification and ReadDirectoryChangesW. */
 
-#ifndef MOO_FILE_WATCH_H
-#define MOO_FILE_WATCH_H
+#pragma once
 
 #include <glib-object.h>
 
@@ -78,20 +77,18 @@ G_END_DECLS
 
 #ifdef __cplusplus
 
+#include <moocpp/gobjectptr.h>
+
 namespace moo
 {
 
-template<typename ObjClass> class ObjRefUnref;
-
-template<> class ObjRefUnref<MooFileWatch>
+template<> class mg_ref_unref<MooFileWatch>
 {
 public:
     static void ref(MooFileWatch* watch) { moo_file_watch_ref(watch); }
     static void unref(MooFileWatch* watch) { moo_file_watch_unref(watch); }
 };
 
-}
+} // namespace moo
 
 #endif // __cplusplus
-
-#endif /* MOO_FILE_WATCH_H */

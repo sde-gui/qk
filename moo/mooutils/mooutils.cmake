@@ -114,7 +114,7 @@ SET(mooutils_sources
 	mooutils/mooutils-debug.h
 	mooutils/mooutils-enums.c
 	mooutils/mooutils-enums.h
-	mooutils/mooutils-file.c
+	mooutils/mooutils-file.cpp
 	mooutils/mooutils-file.h
 	mooutils/mooutils-fs.c
 	mooutils/mooutils-fs.h

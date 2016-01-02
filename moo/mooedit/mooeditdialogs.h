@@ -1,7 +1,7 @@
 /*
  *   mooeditdialogs.h
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_EDIT_DIALOGS_H
-#define MOO_EDIT_DIALOGS_H
+#pragma once
 
 #include "mooutils/moodialogs.h"
 #include "mooedit/mooedittypes.h"
@@ -50,9 +49,6 @@ void                            _moo_edit_open_error_dialog             (GtkWidg
                                                                          GError         *error);
 void                            _moo_edit_reload_error_dialog           (MooEdit        *doc,
                                                                          GError         *error);
-MooEditTryEncodingResponse      _moo_edit_try_encoding_dialog           (GFile          *file,
-                                                                         const char     *encoding,
-                                                                         char          **new_encoding);
 
 gboolean                        _moo_text_search_from_start_dialog      (GtkWidget      *parent,
                                                                          gboolean        backwards);
@@ -65,4 +61,12 @@ GtkWidget                      *_moo_text_prompt_on_replace_dialog      (GtkWidg
 
 G_END_DECLS
 
-#endif /* MOO_EDIT_DIALOGS_H */
+#ifdef __cplusplus
+
+#include <moocpp/strutils.h>
+
+MooEditTryEncodingResponse      _moo_edit_try_encoding_dialog           (GFile&               file,
+                                                                         const char*          encoding,
+                                                                         /*out*/ moo::mg_str& new_encoding);
+
+#endif // __cplusplus

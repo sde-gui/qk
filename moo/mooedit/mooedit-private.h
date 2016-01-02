@@ -18,6 +18,7 @@
 
 #include "mooedit/mooedit-impl.h"
 #include "mooedit/mooeditprogress.h"
+#include "moocpp/strutils.h"
 #include "moocpp/utils.h"
 #include "moocpp/gobjectptr.h"
 
@@ -31,7 +32,7 @@ struct MooEditPrivate {
 
     MooEditor*                      editor;
 
-    moo::GObjRefPtr<GtkTextBuffer>  buffer;
+    moo::gobjptr<GtkTextBuffer>     buffer;
     std::vector<MooEditViewPtr>     views;
     MooEditView*                    active_view;
     bool                            dead_active_view;
@@ -44,7 +45,7 @@ struct MooEditPrivate {
     /***********************************************************************/
     /* Document
      */
-    moo::GObjRefPtr<GFile>          file;
+    moo::gobjptr<GFile>             file;
     moo::mg_str                     filename;
     moo::mg_str                     norm_name;
     moo::mg_str                     display_filename;
