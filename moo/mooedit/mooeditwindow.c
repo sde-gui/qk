@@ -3401,7 +3401,6 @@ create_tab_label (MooEditWindow *window,
     {
         GtkWidget *frame;
         GtkWidget *button;
-        GtkWidget *icon;
 
         {
             static gboolean been_here;

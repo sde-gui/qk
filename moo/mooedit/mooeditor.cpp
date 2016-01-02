@@ -599,8 +599,8 @@ get_top_window (MooEditor *editor)
         return NULL;
 
     GSList *window_list = nullptr;
-    for (const auto& window: editor->priv->windows)
-        window_list = g_slist_prepend (window_list, window);
+    for (const auto& w: editor->priv->windows)
+        window_list = g_slist_prepend (window_list, w);
     window_list = g_slist_reverse (window_list);
 
     window = _moo_get_top_window (window_list);

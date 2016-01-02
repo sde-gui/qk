@@ -19,6 +19,7 @@ missing
 po-gsv/Makefile.in.in
 po/Makefile.in.in
 build/
+build15/
 autom4te.cache/
 aclocal.m4
 *~
