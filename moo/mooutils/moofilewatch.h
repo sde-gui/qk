@@ -19,76 +19,64 @@
 #pragma once
 
 #include <glib-object.h>
+#include <moocpp/grefptr.h>
 
-G_BEGIN_DECLS
-
-
-#define MOO_TYPE_FILE_WATCH         (moo_file_watch_get_type ())
-#define MOO_TYPE_FILE_EVENT         (moo_file_event_get_type ())
-
-typedef enum {
+enum MooFileEventCode {
     MOO_FILE_EVENT_CHANGED,
     MOO_FILE_EVENT_CREATED,
     MOO_FILE_EVENT_DELETED,
     MOO_FILE_EVENT_ERROR
-} MooFileEventCode;
+};
 
-struct _MooFileEvent {
+struct MooFileEvent {
     MooFileEventCode code;
     guint            monitor_id;
     char            *filename;
     GError          *error;
 };
 
-typedef struct _MooFileWatch          MooFileWatch;
-typedef struct _MooFileEvent          MooFileEvent;
+class MooFileWatch;
 
-typedef void (*MooFileWatchCallback) (MooFileWatch *watch,
-                                      MooFileEvent *event,
+typedef void (*MooFileWatchCallback) (MooFileWatch& watch,
+                                      MooFileEvent* event,
                                       gpointer      user_data);
 
-
-GType           moo_file_watch_get_type             (void) G_GNUC_CONST;
-GType           moo_file_event_get_type             (void) G_GNUC_CONST;
-
-/* FAMOpen */
-MooFileWatch   *moo_file_watch_new                  (GError        **error);
-
-MooFileWatch   *moo_file_watch_ref                  (MooFileWatch   *watch);
-void            moo_file_watch_unref                (MooFileWatch   *watch);
-
-/* FAMClose */
-gboolean        moo_file_watch_close                (MooFileWatch   *watch,
-                                                     GError        **error);
-
-/* FAMMonitorDirectory, FAMMonitorFile */
-guint           moo_file_watch_create_monitor       (MooFileWatch   *watch,
-                                                     const char     *filename,
-                                                     MooFileWatchCallback callback,
-                                                     gpointer        data,
-                                                     GDestroyNotify  notify,
-                                                     GError        **error);
-/* FAMCancelMonitor */
-void            moo_file_watch_cancel_monitor       (MooFileWatch   *watch,
-                                                     guint           monitor_id);
-
-
-G_END_DECLS
-
-#ifdef __cplusplus
-
-#include <moocpp/grefptr.h>
-
-namespace moo
+template<>
+class moo::obj_ref_unref<MooFileWatch> : public moo::obj_class_ref_unref<MooFileWatch>
 {
-
-template<> class mg_obj_ref_unref<MooFileWatch>
-{
-public:
-    static void ref(MooFileWatch* watch) { moo_file_watch_ref(watch); }
-    static void unref(MooFileWatch* watch) { moo_file_watch_unref(watch); }
 };
 
-} // namespace moo
+using MooFileWatchPtr = moo::grefptr<MooFileWatch>;
 
-#endif // __cplusplus
+class MooFileWatch
+{
+public:
+    MooFileWatch();
+
+    static MooFileWatchPtr  create          (GError        **error);
+
+    bool                    close           (GError        **error);
+
+    guint                   create_monitor  (const char     *filename,
+                                             MooFileWatchCallback callback,
+                                             gpointer        data,
+                                             GDestroyNotify  notify,
+                                             GError        **error);
+
+    void                    cancel_monitor  (guint           monitor_id);
+
+    struct Impl;
+    Impl&                   impl            () { return *m_impl; }
+
+    void                    ref             ();
+    void                    unref           ();
+
+    MooFileWatch(const MooFileWatch&) = delete;
+    MooFileWatch& operator=(const MooFileWatch&) = delete;
+
+private:
+    ~MooFileWatch();
+
+    int                   m_ref;
+    std::unique_ptr<Impl> m_impl;
+};

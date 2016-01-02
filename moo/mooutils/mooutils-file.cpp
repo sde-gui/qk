@@ -15,9 +15,9 @@ moo_file_get_display_name (GFile *file)
 }
 
 mg_str
-moo_file_get_display_name(GFile& file)
+moo_file_get_display_name(const gobjref<GFile>& file)
 {
-    return mg_str::new_take(moo_file_get_display_name(&file));
+    return mg_str::wrap_new(moo_file_get_display_name(file.g()));
 }
 
 gboolean

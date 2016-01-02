@@ -20,7 +20,6 @@
 #include "mooutils/moohistorymgr.h"
 #include "mooutils/moofileicon.h"
 #include "mooutils/mooapp-ipc.h"
-#include "mooutils/moofilewatch.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-fs.h"

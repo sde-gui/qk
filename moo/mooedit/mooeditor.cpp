@@ -44,6 +44,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mooencodings.h"
 #include "mooutils/moolist.h"
+#include "mooutils/moofilewatch.h"
 #include <mooglib/moo-glib.h>
 #include <string.h>
 #include <stdlib.h>
@@ -342,7 +343,7 @@ MooEditorPrivate::~MooEditorPrivate()
     {
         GError *error = NULL;
 
-        if (!moo_file_watch_close (file_watch.get(), &error))
+        if (!file_watch->close (&error))
         {
             g_warning ("error in moo_file_watch_close: %s", moo_error_message (error));
             g_error_free (error);
@@ -489,7 +490,7 @@ _moo_editor_get_file_watch (MooEditor *editor)
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
 
     if (!editor->priv->file_watch)
-        editor->priv->file_watch.take(moo_file_watch_new(nullptr));
+        editor->priv->file_watch = MooFileWatch::create(nullptr);
 
     return editor->priv->file_watch.get();
 }
@@ -1024,9 +1025,11 @@ moo_editor_load_file (MooEditor       *editor,
         }
         else
         {
-            success = _moo_edit_load_file (doc, *info->file,
-                                           mg_str::new_borrowed(info->encoding),
-                                           mg_str::new_borrowed(recent_encoding),
+            // XXX
+            gobjptr<GFile> pf(info->file, ref_transfer::make_copy);
+            success = _moo_edit_load_file (doc, *pf,
+                                           mg_str::make_borrowed(info->encoding),
+                                           mg_str::make_borrowed(recent_encoding),
                                            &error_here);
         }
     }

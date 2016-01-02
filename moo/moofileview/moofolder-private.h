@@ -13,12 +13,13 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_FOLDER_PRIVATE_H
-#define MOO_FOLDER_PRIVATE_H
+#pragma once
 
 #include "moofileview/moofolder.h"
 #include "moofileview/moofile-private.h"
 #include "moofileview/moofilesystem.h"
+#include "mooutils/moofilewatch.h"
+#include "moocpp/gobjptr.h"
 
 G_BEGIN_DECLS
 
@@ -57,7 +58,8 @@ typedef struct {
     guint icons_counter;
 } Debug;
 
-typedef enum {
+typedef enum Stage {
+    STAGE_NONE      = 0,
     STAGE_NAMES     = 1,
     STAGE_STAT      = 2,
     STAGE_MIME_TYPE = 3
@@ -79,7 +81,7 @@ struct _MooFolderImpl {
     double populate_timeout;
     Debug debug;
     GTimer *timer;
-    MooFileWatch *fam;
+    moo::grefptr<MooFileWatch> fam;
     guint fam_request;
     guint reload_idle;
 
@@ -106,5 +108,3 @@ gsize        _moo_folder_mem_usage              (MooFolder      *folder);
 
 
 G_END_DECLS
-
-#endif /* MOO_FOLDER_PRIVATE_H */

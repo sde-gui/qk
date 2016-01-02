@@ -21,6 +21,9 @@
 #include "moofileview/moofolder-private.h"
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-misc.h"
+#include "mooutils/moofilewatch.h"
+#include "moocpp/gobjptr.h"
+#include "moocpp/gobjptrtypes-glib.h"
 #include "marshals.h"
 #include <mooglib/moo-glib.h>
 #include <mooglib/moo-stat.h>
@@ -152,8 +155,8 @@ moo_folder_impl_new (MooFileSystem *fs,
 
     impl = g_new0 (MooFolderImpl, 1);
     impl->deleted = FALSE;
-    impl->done = 0;
-    impl->wanted = 0;
+    impl->done = STAGE_NONE;
+    impl->wanted = STAGE_NONE;
     impl->fs = fs;
     impl->dir = dir;
     impl->files_copy = NULL;
@@ -542,7 +545,7 @@ get_stat_a_bit (MooFolderImpl *impl)
     while (!done)
     {
         GSList *changed = impl->files_copy;
-        MooFile *file = changed->data;
+        MooFile *file = (MooFile*) changed->data;
         impl->files_copy = g_slist_remove_link (impl->files_copy, impl->files_copy);
 
         if (!(file->flags & MOO_FILE_HAS_STAT))
@@ -659,7 +662,7 @@ get_icons_a_bit (MooFolderImpl *impl)
     while (!done)
     {
         GSList *changed = impl->files_copy;
-        MooFile *file = changed->data;
+        MooFile *file = (MooFile*) changed->data;
 
         impl->files_copy = g_slist_remove_link (impl->files_copy, changed);
 
@@ -788,13 +791,13 @@ static void file_created    (MooFolderImpl  *folder,
                              const char     *name);
 
 static void
-fam_callback (MooFileWatch *watch,
-              MooFileEvent *event,
+fam_callback (MooFileWatch& watch,
+              MooFileEvent* event,
               gpointer      data)
 {
-    MooFolderImpl *impl = data;
+    MooFolderImpl *impl = (MooFolderImpl*) data;
 
-    g_return_if_fail (watch == impl->fam);
+    g_return_if_fail (&watch == &*impl->fam);
     g_return_if_fail (event->monitor_id == impl->fam_request);
 
     switch (event->code)
@@ -824,12 +827,12 @@ start_monitor (MooFolderImpl *impl)
     g_return_if_fail (!impl->deleted);
     g_return_if_fail (impl->fam_request == 0);
     impl->fam = _moo_file_system_get_file_watch (impl->fs);
-    g_return_if_fail (impl->fam != NULL);
+    g_return_if_fail (impl->fam != nullptr);
 
     impl->fam_request =
-        moo_file_watch_create_monitor (impl->fam, impl->path,
-                                       fam_callback, impl,
-                                       NULL, &error);
+        impl->fam->create_monitor (impl->path,
+                                   fam_callback, impl,
+                                   NULL, &error);
 
     if (!impl->fam_request)
     {
@@ -846,7 +849,7 @@ stop_monitor (MooFolderImpl *impl)
 {
     if (impl->fam_request)
     {
-        moo_file_watch_cancel_monitor (impl->fam, impl->fam_request);
+        impl->fam->cancel_monitor (impl->fam_request);
         impl->fam = NULL;
         impl->fam_request = 0;
     }
@@ -868,7 +871,7 @@ file_deleted (MooFolderImpl *impl,
         return;
     }
 
-    file = g_hash_table_lookup (impl->files, name);
+    file = (MooFile*) g_hash_table_lookup (impl->files, name);
     if (!file) return;
 
     _moo_file_ref (file);
@@ -959,7 +962,7 @@ _moo_folder_check_exists (MooFolder  *folder,
     g_return_if_fail (MOO_IS_FOLDER (folder));
     g_return_if_fail (name != NULL);
 
-    file = g_hash_table_lookup (folder->impl->files, name);
+    file = (MooFile*) g_hash_table_lookup (folder->impl->files, name);
     path = g_build_filename (folder->impl->path, name, NULL);
     exists = g_file_test (path, G_FILE_TEST_EXISTS);
 
@@ -980,7 +983,7 @@ moo_folder_do_reload (MooFolderImpl *impl)
     GDir *dir;
     GError *error = NULL;
     const char *name;
-    GSList *new = NULL, *deleted = NULL, *l;
+    GSList *new_ = NULL, *deleted = NULL, *l;
 
     g_return_val_if_fail (!impl->deleted, FALSE);
     impl->reload_idle = 0;
@@ -1000,17 +1003,17 @@ moo_folder_do_reload (MooFolderImpl *impl)
     while ((name = g_dir_read_name (dir)))
         g_hash_table_insert (files, g_strdup (name), NULL);
 
-    diff_hash_tables (files, impl->files, &new, &deleted);
+    diff_hash_tables (files, impl->files, &new_, &deleted);
 
-    for (l = new; l != NULL; l = l->next)
-        file_created (impl, l->data);
+    for (l = new_; l != NULL; l = l->next)
+        file_created (impl, (const char*) l->data);
 
     for (l = deleted; l != NULL; l = l->next)
-        file_deleted (impl, l->data);
+        file_deleted (impl, (const char*) l->data);
 
-    g_slist_foreach (new, (GFunc) g_free, NULL);
+    g_slist_foreach (new_, (GFunc) g_free, NULL);
     g_slist_foreach (deleted, (GFunc) g_free, NULL);
-    g_slist_free (new);
+    g_slist_free (new_);
     g_slist_free (deleted);
     g_hash_table_destroy (files);
     g_dir_close (dir);
@@ -1197,10 +1200,10 @@ check_unique (const char *key,
               G_GNUC_UNUSED gpointer whatever,
               gpointer user_data)
 {
-    struct {
+    struct Data {
         GSList *list;
         GHashTable *table2;
-    } *data = user_data;
+    } *data = (Data*) user_data;
     gpointer orig_key, value;
 
     if (!g_hash_table_lookup_extended (data->table2, key, &orig_key, &value))

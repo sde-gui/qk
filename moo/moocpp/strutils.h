@@ -45,6 +45,8 @@ public:
     bool operator!() const = delete;
 
 private:
+    Self& self() { return static_cast<Self&>(*this); }
+    const Self& self() const { return static_cast<const Self&>(*this); }
     const char* c_str() const { return GetString::get_string(static_cast<const Self&>(*this)); }
 };
 

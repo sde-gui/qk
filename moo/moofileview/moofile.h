@@ -13,10 +13,13 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_FILE_H
-#define MOO_FILE_H
+#pragma once
 
 #include <gtk/gtk.h>
+
+#ifdef __cplusplus
+#include "moocpp/utils.h"
+#endif // __cplusplus
 
 G_BEGIN_DECLS
 
@@ -25,14 +28,14 @@ typedef struct _MooFile   MooFile;
 typedef struct _MooFolder MooFolder;
 
 /* should be ordered TODO why? */
-typedef enum {
+typedef enum MooFileFlags {
     MOO_FILE_HAS_STAT       = 1 << 1,
     MOO_FILE_HAS_MIME_TYPE  = 1 << 2,
     MOO_FILE_HAS_ICON       = 1 << 3,
     MOO_FILE_ALL_FLAGS      = (1 << 4) - 1
 } MooFileFlags;
 
-typedef enum {
+typedef enum MooFileInfo {
     MOO_FILE_INFO_EXISTS         = 1 << 0,
     MOO_FILE_INFO_IS_DIR         = 1 << 1,
     MOO_FILE_INFO_IS_HIDDEN      = 1 << 2,
@@ -65,4 +68,9 @@ const char  *_moo_file_display_name     (const MooFile  *file);
 
 G_END_DECLS
 
-#endif /* MOO_FILE_H */
+#ifdef __cplusplus
+
+MOO_DEFINE_FLAGS(MooFileFlags)
+MOO_DEFINE_FLAGS(MooFileInfo)
+
+#endif // __cplusplus

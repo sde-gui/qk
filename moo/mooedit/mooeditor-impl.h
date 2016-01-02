@@ -3,7 +3,6 @@
 
 #include "mooedit/mooeditor.h"
 #include "mooutils/moohistorymgr.h"
-#include "mooutils/moofilewatch.h"
 
 G_BEGIN_DECLS
 
@@ -15,7 +14,12 @@ void             _moo_editor_move_doc           (MooEditor      *editor,
                                                  MooEditView    *dest_view,
                                                  gboolean        focus);
 
+#ifdef __cplusplus
+
+class MooFileWatch;
 MooFileWatch    *_moo_editor_get_file_watch     (MooEditor      *editor);
+
+#endif // __cplusplus
 
 void             _moo_editor_apply_prefs        (MooEditor      *editor);
 

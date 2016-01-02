@@ -57,7 +57,7 @@ SET(mooutils_sources
 	mooutils/moofiledialog.c
 	mooutils/moofileicon.c
 	mooutils/moofileicon.h
-	mooutils/moofilewatch.c
+	mooutils/moofilewatch.cpp
 	mooutils/moofilewatch.h
 	mooutils/moofilewriter.c
 	mooutils/moofilewriter.h

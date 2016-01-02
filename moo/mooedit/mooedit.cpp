@@ -426,16 +426,16 @@ _moo_edit_set_active_view (MooEdit     *doc,
 
     buffer = moo_edit_get_buffer (doc);
 
-    if (doc->priv->active_view != NULL && doc->priv->active_view != view)
+    if (doc->priv->active_view != nullptr && doc->priv->active_view != view)
     {
         GtkTextIter iter;
-        GtkTextMark *mark = _moo_edit_view_get_fake_cursor_mark (doc->priv->active_view);
+        GtkTextMark *mark = _moo_edit_view_get_fake_cursor_mark (doc->priv->active_view.get());
         gtk_text_buffer_get_iter_at_mark (buffer, &iter, gtk_text_buffer_get_insert (buffer));
         gtk_text_buffer_move_mark (buffer, mark, &iter);
     }
 
     if (doc->priv->dead_active_view ||
-        (doc->priv->active_view != NULL && doc->priv->active_view != view))
+        (doc->priv->active_view != nullptr && doc->priv->active_view != view))
     {
         GtkTextIter iter;
         GtkTextBuffer *buffer = moo_edit_get_buffer (doc);
@@ -474,7 +474,7 @@ _moo_edit_remove_view (MooEdit     *doc,
 
     g_return_if_fail (contains (doc->priv->views, view));
 
-    if (view == doc->priv->active_view)
+    if (doc->priv->active_view == view)
     {
         doc->priv->active_view = NULL;
         doc->priv->dead_active_view = TRUE;
@@ -840,7 +840,7 @@ char *
 moo_edit_get_uri (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return edit->priv->file ? edit->priv->file->get_uri() : NULL;
+    return edit->priv->file ? edit->priv->file->get_uri().release_owned() : NULL;
 }
 
 /**
@@ -908,9 +908,9 @@ moo_edit_get_view (MooEdit *doc)
 
     if (!doc->priv->active_view)
         if (!doc->priv->views.empty())
-            doc->priv->active_view = doc->priv->views.back().get();
+            doc->priv->active_view = doc->priv->views.back();
 
-    return doc->priv->active_view;
+    return doc->priv->active_view.get();
 }
 
 /**
@@ -1272,7 +1272,7 @@ update_lang_config_from_lang_globs (MooEdit *doc)
     if (doc->priv->file)
     {
         MooLangMgr *mgr = moo_lang_mgr_default ();
-        MooLang *lang = moo_lang_mgr_get_lang_for_file (mgr, doc->priv->file.get());
+        MooLang *lang = moo_lang_mgr_get_lang_for_file (mgr, *doc->priv->file);
         lang_id = lang ? _moo_lang_id (lang) : NULL;
     }
 

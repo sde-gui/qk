@@ -209,6 +209,15 @@ public:
             assign(m_p, memory_type::allocated, mem_transfer::make_copy);
     }
 
+    Buf* release_owned()
+    {
+        ensure_owned();
+        Buf* ret = m_p;
+        m_p = nullptr;
+        m_ot = ownership_type::literal;
+        return ret;
+    }
+
     void borrow(const Buf* p)
     {
         assign(p, memory_type::allocated, mem_transfer::borrow);
@@ -251,7 +260,7 @@ public:
     }
 
     template<typename Arg>
-    static Self new_borrowed(const Arg& arg)
+    static Self make_borrowed(const Arg& arg)
     {
         Self s;
         s.borrow(arg);
@@ -259,7 +268,7 @@ public:
     }
 
     template<typename Arg>
-    static Self new_literal(const Arg& arg)
+    static Self wrap_literal(const Arg& arg)
     {
         Self s;
         s.literal(arg);
@@ -267,7 +276,7 @@ public:
     }
 
     template<typename Arg>
-    static Self new_copy(const Arg& arg)
+    static Self make_copy(const Arg& arg)
     {
         Self s;
         s.copy(arg);
@@ -275,7 +284,7 @@ public:
     }
 
     template<typename Arg>
-    static Self new_take(const Arg& arg)
+    static Self wrap_new(const Arg& arg)
     {
         Self s;
         s.take(arg);

@@ -17,32 +17,32 @@
 
 using namespace moo;
 
-const gobjptr<GObject>& mg_gobjptr_accessor_base::self() const
+const gobjptr<GObject>& gobjref_base::self() const
 {
-    return gobjptr<GObject>::from_accessor(static_cast<const mg_gobjptr_accessor<GObject>&>(*this));
+    return gobjptr<GObject>::from_gobjref(static_cast<const gobjref<GObject>&>(*this));
 }
 
-GObject* mg_gobjptr_accessor_base::g() const
+GObject* gobjref_base::g() const
 {
     return self().get();
 }
 
-gulong mg_gobjptr_accessor_base::signal_connect(const char *detailed_signal, GCallback c_handler, void *data) const
+gulong gobjref_base::signal_connect(const char *detailed_signal, GCallback c_handler, void *data) const
 {
     return g_signal_connect(g(), detailed_signal, c_handler, data);
 }
 
-gulong mg_gobjptr_accessor_base::signal_connect_swapped(const char *detailed_signal, GCallback c_handler, void *data) const
+gulong gobjref_base::signal_connect_swapped(const char *detailed_signal, GCallback c_handler, void *data) const
 {
     return g_signal_connect_swapped(g(), detailed_signal, c_handler, data);
 }
 
-void mg_gobjptr_accessor_base::set_data(const char* key, gpointer value) const
+void gobjref_base::set_data(const char* key, gpointer value) const
 {
     g_object_set_data(g(), key, value);
 }
 
-void mg_gobjptr_accessor_base::set(const gchar *first_prop, ...) const
+void gobjref_base::set(const gchar *first_prop, ...) const
 {
     va_list args;
     va_start(args, first_prop);
@@ -50,7 +50,7 @@ void mg_gobjptr_accessor_base::set(const gchar *first_prop, ...) const
     va_end(args);
 }
 
-void mg_gobjptr_accessor_base::set_property(const gchar *property_name, const GValue *value) const
+void gobjref_base::set_property(const gchar *property_name, const GValue *value) const
 {
     g_object_set_property(g(), property_name, value);
 }

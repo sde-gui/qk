@@ -34,7 +34,7 @@ struct MooEditPrivate {
 
     moo::gobjptr<GtkTextBuffer>     buffer;
     std::vector<MooEditViewPtr>     views;
-    MooEditView*                    active_view;
+    MooEditViewPtr                  active_view;
     bool                            dead_active_view;
 
     gulong                          changed_handler_id;

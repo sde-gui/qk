@@ -65,7 +65,7 @@ SET(mooedit_sources
     mooedit/mooindenter.h	
     mooedit/moolang.c	
     mooedit/moolang.h	
-    mooedit/moolangmgr.c	
+    mooedit/moolangmgr.cpp	
     mooedit/moolangmgr.h	
     mooedit/moolangmgr-private.h
     mooedit/moolang-private.h

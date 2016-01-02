@@ -31,16 +31,16 @@ template<typename GObjClas>
 struct mg_gobjptr_methods;
 
 template<typename GObjClas>
-struct mg_gobjptr_accessor;
+struct gobjref;
 
 template<typename GObjClass>
 class gobjptr
     : public grefptr<GObjClass, mg_gobj_ref_unref>
-    , private mg_gobjptr_accessor<GObjClass>
+    , private gobjref<GObjClass>
     , public mg_gobjptr_methods<GObjClass>
 {
     using base = grefptr<GObjClass, mg_gobj_ref_unref>;
-    using accessor = mg_gobjptr_accessor<GObjClass>;
+    using objref = gobjref<GObjClass>;
 
 public:
     using object_type = GObjClass;
@@ -100,8 +100,10 @@ public:
     // where this conversion is safe.
     operator GTypeInstance* () const { return get() ? &G_OBJECT(get())->g_type_instance : nullptr; }
 
-    const accessor* operator->() const { return this; }
-    static const gobjptr& from_accessor(const accessor& ac) { return static_cast<const gobjptr&>(ac); }
+    const objref* operator->() const { return this; }
+    const objref& operator*() const { return *static_cast<const objref*>(this); }
+
+    static const gobjptr& from_gobjref(const objref& ac) { return static_cast<const gobjptr&>(ac); }
 };
 
 } // namespace moo

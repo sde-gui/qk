@@ -20,7 +20,9 @@
 #include "mooutils/mooutils-fs.h"
 #include "mooutils/mooutils-mem.h"
 #include "mooutils/mooutils.h"
+#include "mooutils/moofilewatch.h"
 #include "marshals.h"
+#include "moocpp/gobjectutils.h"
 #include <gio/gio.h>
 #include <stdio.h>
 #ifndef __WIN32__
@@ -30,6 +32,8 @@
 #include <io.h>
 #include <shellapi.h>
 #endif
+
+using namespace moo;
 
 #if 0 && MOO_DEBUG
 #define DEBUG_MESSAGE g_message
@@ -49,7 +53,7 @@ typedef struct {
 
 struct _MooFileSystemPrivate {
     GHashTable *folders;
-    MooFileWatch *fam;
+    moo::grefptr<MooFileWatch> fam;
     FoldersCache cache;
     guint debug_timeout;
 };
@@ -180,7 +184,7 @@ add_folder_cache (MooFileSystem *fs,
 
     if (cache->queue->length > FOLDERS_CACHE_SIZE)
     {
-        MooFolderImpl *old = g_queue_pop_tail (cache->queue);
+        MooFolderImpl *old = (MooFolderImpl*) g_queue_pop_tail (cache->queue);
         g_hash_table_remove (cache->paths, old->path);
         DEBUG_MESSAGE ("%s: removing folder %s from cache", G_STRFUNC, old->path);
         _moo_folder_impl_free (old);
@@ -261,8 +265,8 @@ moo_file_system_dispose (GObject *object)
 
         if (fs->priv->fam)
         {
-            moo_file_watch_close (fs->priv->fam, NULL);
-            moo_file_watch_unref (fs->priv->fam);
+            fs->priv->fam->close(nullptr);
+            fs->priv->fam.reset();
         }
 
         if (fs->priv->debug_timeout)
@@ -288,7 +292,7 @@ _moo_file_system_create (void)
     }
     else
     {
-        return g_object_ref (fs_instance);
+        return object_ref (fs_instance);
     }
 }
 
@@ -410,7 +414,7 @@ _moo_file_system_get_absolute_path (MooFileSystem  *fs,
 }
 
 
-MooFileWatch *
+moo::grefptr<MooFileWatch>
 _moo_file_system_get_file_watch (MooFileSystem *fs)
 {
     g_return_val_if_fail (MOO_IS_FILE_SYSTEM (fs), NULL);
@@ -418,7 +422,7 @@ _moo_file_system_get_file_watch (MooFileSystem *fs)
     if (!fs->priv->fam)
     {
         GError *error = NULL;
-        fs->priv->fam = moo_file_watch_new (&error);
+        fs->priv->fam = MooFileWatch::create(&error);
         if (!fs->priv->fam)
         {
             g_warning ("moo_fam_open failed: %s", moo_error_message (error));
@@ -482,7 +486,7 @@ get_folder (MooFileSystem  *fs,
     if (!norm_path)
         return NULL;
 
-    folder = g_hash_table_lookup (fs->priv->folders, norm_path);
+    folder = (MooFolder*) g_hash_table_lookup (fs->priv->folders, norm_path);
 
     if (folder)
     {
@@ -491,7 +495,7 @@ get_folder (MooFileSystem  *fs,
         goto out;
     }
 
-    impl = g_hash_table_lookup (fs->priv->cache.paths, norm_path);
+    impl = (MooFolderImpl*) g_hash_table_lookup (fs->priv->cache.paths, norm_path);
 
     if (impl)
     {

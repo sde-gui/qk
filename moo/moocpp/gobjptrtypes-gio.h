@@ -22,32 +22,34 @@
 
 namespace moo {
 
+class mg_str;
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 //
 // mg_gobj_handle
 //
 
 template<>
-struct mg_gobjptr_accessor<GFile> : public mg_gobjptr_accessor<GObject>
+struct gobjref<GFile> : public gobjref<GObject>
 {
     gobjptr<GFile>          dup                         () const;
 
     bool                    equal                       (GFile*                 file2) const;
-    char*                   get_basename                () const;
-    char*                   get_path                    () const;
-    char*                   get_uri                     () const;
-    char*                   get_parse_name              () const;
+    mg_str                  get_basename                () const;
+    mg_str                  get_path                    () const;
+    mg_str                  get_uri                     () const;
+    mg_str                  get_parse_name              () const;
     gobjptr<GFile>          get_parent                  () const;
     bool                    has_parent                  (GFile*                 parent) const;
     gobjptr<GFile>          get_child                   (const char*            name) const;
     gobjptr<GFile>          get_child_for_display_name  (const char*            display_name,
                                                          GError**               error) const;
     bool                    has_prefix                  (GFile*                 prefix) const;
-    char*                   get_relative_path           (GFile*                 descendant) const;
+    mg_str                  get_relative_path           (GFile*                 descendant) const;
     gobjptr<GFile>          resolve_relative_path       (const char            *relative_path) const;
     bool                    is_native                   () const;
     bool                    has_uri_scheme              (const char            *uri_scheme) const;
-    char*                   get_uri_scheme              () const;
+    mg_str                  get_uri_scheme              () const;
     GFileInputStream*       read                        (GCancellable*          cancellable,
                                                          GError**               error) const;
     GFileOutputStream*      append_to                   (GFileCreateFlags       flags,
@@ -126,9 +128,8 @@ struct mg_gobjptr_accessor<GFile> : public mg_gobjptr_accessor<GObject>
                                                          GCancellable*          cancellable,
                                                          GError**               error) const;
 
-protected:
-    const gobjptr<GFile>&   self() const;
     GFile*                  g() const;
+    const gobjptr<GFile>&   self() const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////

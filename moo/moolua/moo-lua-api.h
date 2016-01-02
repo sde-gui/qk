@@ -15,7 +15,6 @@
 #include "mooutils/moohelp.h"
 #include "mooutils/moofileicon.h"
 #include "mooutils/moodialogs.h"
-#include "mooutils/moofilewatch.h"
 #include "mooutils/moomenuaction.h"
 #include "mooutils/moomenutoolbutton.h"
 #include "mooutils/moonotebook.h"

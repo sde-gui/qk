@@ -24,7 +24,10 @@
 #include "mooutils/mooprefs.h"
 #include "marshals.h"
 #include "mooutils/moo-mime.h"
+#include "moocpp/gobjectutils.h"
 #include <string.h>
+
+using namespace moo;
 
 #define LANGUAGE_DIR            "language-specs"
 #define ELEMENT_LANG_CONFIG     MOO_EDIT_PREFS_PREFIX "/langs"
@@ -45,17 +48,17 @@ typedef struct {
 } LangInfo;
 
 static LangInfo *lang_info_new          (void);
-static void     lang_info_free          (LangInfo   *info);
+static void     lang_info_free          (LangInfo*      info);
 
-static void     string_list_free        (GSList     *list);
-static GSList  *string_list_copy        (GSList     *list);
-static void     read_langs              (MooLangMgr *mgr);
-static void     read_schemes            (MooLangMgr *mgr);
-static void     load_config             (MooLangMgr *mgr);
-static MooLang *get_lang_for_filename   (MooLangMgr *mgr,
-                                         const char *filename);
-static MooLang *get_lang_for_mime_type  (MooLangMgr *mgr,
-                                         const char *mime_type);
+static void     string_list_free        (GSList*        list);
+static GSList  *string_list_copy        (GSList*        list);
+static void     read_langs              (MooLangMgr*    mgr);
+static void     read_schemes            (MooLangMgr*    mgr);
+static void     load_config             (MooLangMgr*    mgr);
+static MooLang *get_lang_for_filename   (MooLangMgr*    mgr,
+                                         const mg_str&  filename);
+static MooLang *get_lang_for_mime_type  (MooLangMgr*    mgr,
+                                         const char*    mime_type);
 
 
 G_DEFINE_TYPE (MooLangMgr, moo_lang_mgr, G_TYPE_OBJECT)
@@ -168,9 +171,7 @@ get_lang_info (MooLangMgr *mgr,
                const char *lang_id,
                gboolean    create)
 {
-    LangInfo *info;
-
-    info = g_hash_table_lookup (mgr->langs, lang_id);
+    LangInfo *info = (LangInfo*) g_hash_table_lookup (mgr->langs, lang_id);
 
     if (!info && create)
     {
@@ -189,7 +190,7 @@ string_list_copy (GSList *list)
 
     while (list)
     {
-        copy = g_slist_prepend (copy, g_strdup (list->data));
+        copy = g_slist_prepend (copy, g_strdup ((const char*) list->data));
         list = list->next;
     }
 
@@ -274,7 +275,7 @@ get_lang_by_extension (MooLangMgr *mgr,
     {
         GSList *g, *globs;
 
-        lang = l->data;
+        lang = (MooLang*) l->data;
         globs = _moo_lang_mgr_get_globs (mgr, _moo_lang_id (lang));
 
         for (g = globs; !found && g != NULL; g = g->next)
@@ -326,7 +327,7 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
     }
 
     if (base)
-        lang = get_lang_for_filename (mgr, base);
+        lang = get_lang_for_filename (mgr, mg_str::make_borrowed(base));
 
     g_free (base);
     return lang;
@@ -334,8 +335,8 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
 
 
 static gboolean
-filename_blacklisted (MooLangMgr *mgr,
-                      const char *filename)
+filename_blacklisted (MooLangMgr*   mgr,
+                      const mg_str& filename)
 {
     /* XXX bak files */
     char *basename;
@@ -360,8 +361,8 @@ filename_blacklisted (MooLangMgr *mgr,
 }
 
 static gboolean
-file_blacklisted (MooLangMgr *mgr,
-                  const char *filename)
+file_blacklisted (MooLangMgr*   mgr,
+                  const mg_str& filename)
 {
     /* XXX mime type */
     return filename_blacklisted (mgr, filename);
@@ -369,56 +370,49 @@ file_blacklisted (MooLangMgr *mgr,
 
 
 MooLang *
-moo_lang_mgr_get_lang_for_file (MooLangMgr *mgr,
-                                GFile      *file)
+moo_lang_mgr_get_lang_for_file (MooLangMgr*                mgr,
+                                const moo::gobjref<GFile>& file)
 {
     MooLang *lang = NULL;
     const char *mime_type;
-    char *filename;
 
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
-    g_return_val_if_fail (G_IS_FILE (file), NULL);
 
     read_langs (mgr);
 
-    filename = g_file_get_parse_name (file);
+    mg_str filename = file.get_parse_name();
 
     if (file_blacklisted (mgr, filename))
-        goto out;
+        return lang;
 
     lang = get_lang_by_extension (mgr, filename);
 
     if (lang)
-        goto out;
+        return lang;
 
     lang = lang_mgr_get_lang_for_bak_filename (mgr, filename);
 
     if (lang)
-        goto out;
+        return lang;
 
     mime_type = moo_get_mime_type_for_file (filename, NULL);
 
     if (mime_type != MOO_MIME_TYPE_UNKNOWN)
         lang = get_lang_for_mime_type (mgr, mime_type);
 
-    if (lang)
-        goto out;
-
-out:
-    g_free (filename);
     return lang;
 }
 
 
 static MooLang *
-get_lang_for_filename (MooLangMgr *mgr,
-                       const char *filename)
+get_lang_for_filename (MooLangMgr*   mgr,
+                       const mg_str& filename)
 {
     MooLang *lang = NULL;
     const char *mime_type;
 
     g_return_val_if_fail (MOO_IS_LANG_MGR (mgr), NULL);
-    g_return_val_if_fail (filename != NULL, NULL);
+    g_return_val_if_fail (filename.set(), NULL);
 
     read_langs (mgr);
 
@@ -472,7 +466,7 @@ get_lang_for_mime_type (MooLangMgr *mgr,
     {
         GSList *mimetypes;
 
-        lang = l->data;
+        lang = (MooLang*) l->data;
         mimetypes = _moo_lang_mgr_get_mime_types (mgr, _moo_lang_id (lang));
 
         if (g_slist_find_custom (mimetypes, mime, (GCompareFunc) strcmp))
@@ -485,7 +479,7 @@ get_lang_for_mime_type (MooLangMgr *mgr,
     {
         GSList *mimetypes;
 
-        lang = l->data;
+        lang = (MooLang*) l->data;
         mimetypes = _moo_lang_mgr_get_mime_types (mgr, _moo_lang_id (lang));
 
         if (g_slist_find_custom (mimetypes, mime, (GCompareFunc) check_mime_subclass))
@@ -526,7 +520,7 @@ read_langs (MooLangMgr *mgr)
         lang = gtk_source_language_manager_get_language (mgr->lang_mgr, id);
 
         info = get_lang_info (mgr, id, TRUE);
-        info->lang = g_object_ref (lang);
+        info->lang = (MooLang*) g_object_ref (lang);
 
         if (!info->globs_modified)
             info->globs = _moo_lang_get_globs (info->lang);
@@ -666,9 +660,9 @@ _moo_lang_mgr_set_active_scheme (MooLangMgr *mgr,
     read_schemes (mgr);
 
     if (name)
-        scheme = g_hash_table_lookup (mgr->schemes, name);
+        scheme = (MooTextStyleScheme*) g_hash_table_lookup (mgr->schemes, name);
     if (!scheme)
-        scheme = g_hash_table_lookup (mgr->schemes, SCHEME_DEFAULT);
+        scheme = (MooTextStyleScheme*) g_hash_table_lookup (mgr->schemes, SCHEME_DEFAULT);
 
     if (!scheme)
         g_message ("could not find style scheme '%s'", name ? name : "<NULL>");
@@ -836,7 +830,7 @@ string_list_equal (GSList *list1,
 {
     while (list1 && list2)
     {
-        if (strcmp (list1->data, list2->data) != 0)
+        if (strcmp ((const char*) list1->data, (const char*) list2->data) != 0)
             return FALSE;
 
         list1 = list1->next;
@@ -854,7 +848,7 @@ set_globs_or_mime_types (MooLangMgr *mgr,
                          gboolean    globs)
 {
     LangInfo *info;
-    GSList *new;
+    GSList *new_;
     GSList *old = NULL;
     GSList **ptr;
     char *id = NULL;
@@ -867,15 +861,15 @@ set_globs_or_mime_types (MooLangMgr *mgr,
 
     g_return_if_fail (info != NULL);
 
-    new = _moo_lang_parse_string_list (string);
+    new_ = _moo_lang_parse_string_list (string);
     old = globs ? _moo_lang_mgr_get_globs (mgr, id) :
                   _moo_lang_mgr_get_mime_types (mgr, id);
 
-    if (string_list_equal (new, old))
+    if (string_list_equal (new_, old))
     {
         g_free (id);
         string_list_free (old);
-        string_list_free (new);
+        string_list_free (new_);
         return;
     }
 
@@ -886,7 +880,7 @@ set_globs_or_mime_types (MooLangMgr *mgr,
     {
         GSList *builtin = globs ? _moo_lang_get_globs (info->lang) :
                                   _moo_lang_get_mime_types (info->lang);
-        modified = !string_list_equal (builtin, new);
+        modified = !string_list_equal (builtin, new_);
 
         if (modified)
         {
@@ -894,14 +888,14 @@ set_globs_or_mime_types (MooLangMgr *mgr,
         }
         else
         {
-            string_list_free (new);
-            new = builtin;
+            string_list_free (new_);
+            new_ = builtin;
         }
     }
 
     ptr = globs ? &info->globs : &info->mime_types;
     string_list_free (*ptr);
-    *ptr = new;
+    *ptr = new_;
 
     if (globs)
         info->globs_modified = modified;
@@ -942,7 +936,7 @@ _moo_lang_mgr_get_config (MooLangMgr *mgr,
     read_langs (mgr);
 
     id = _moo_lang_id_from_name (lang_id);
-    config = g_hash_table_lookup (mgr->config, id);
+    config = (const char*)g_hash_table_lookup (mgr->config, id);
 
     g_free (id);
     return config;
@@ -974,7 +968,7 @@ _moo_lang_mgr_set_config (MooLangMgr *mgr,
     }
 
     id = _moo_lang_id_from_name (lang_id);
-    old = g_hash_table_lookup (mgr->config, id);
+    old = (const char*)g_hash_table_lookup (mgr->config, id);
 
     if (!moo_str_equal (old, norm))
         mgr->modified = TRUE;
@@ -1016,7 +1010,7 @@ list_to_string (GSList *list)
 
     while (list)
     {
-        g_string_append (string, list->data);
+        g_string_append (string, (const char*) list->data);
 
         if ((list = list->next))
             g_string_append_c (string, ';');
@@ -1033,14 +1027,14 @@ save_one (const char *lang_id,
     const char *config;
     MooMarkupNode *lang_node;
 
-    struct {
+    struct Data {
         MooLangMgr *mgr;
         MooMarkupNode *xml;
         MooMarkupNode *root;
-    } *data;
+    };
 
-    data = user_data;
-    config = g_hash_table_lookup (data->mgr->config, lang_id);
+    Data* data = (Data*) user_data;
+    config = (const char*)g_hash_table_lookup (data->mgr->config, lang_id);
 
     if (!config && !info->globs_modified && !info->mime_types_modified)
         return;

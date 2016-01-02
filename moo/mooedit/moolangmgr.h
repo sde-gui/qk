@@ -20,6 +20,10 @@
 #include <mooedit/mootextstylescheme.h>
 #include <mooedit/mooeditconfig.h>
 
+#ifdef __cplusplus
+#include <moocpp/gobjptrtypes-gio.h>
+#endif // __cplusplus
+
 G_BEGIN_DECLS
 
 
@@ -37,8 +41,10 @@ MooLangMgr     *moo_lang_mgr_default                (void);
 
 MooLang        *moo_lang_mgr_get_lang               (MooLangMgr     *mgr,
                                                      const char     *lang_id);
-MooLang        *moo_lang_mgr_get_lang_for_file      (MooLangMgr     *mgr,
-                                                     GFile          *file);
+#ifdef __cplusplus
+MooLang        *moo_lang_mgr_get_lang_for_file      (MooLangMgr*                mgr,
+                                                     const moo::gobjref<GFile>& file);
+#endif // __cplusplus
 
 /* list must be freed, content unref'ed */
 GSList         *moo_lang_mgr_get_available_langs    (MooLangMgr     *mgr);

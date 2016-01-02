@@ -29,7 +29,7 @@ namespace moo {
 //
 //
 
-struct mg_gobjptr_accessor_base
+struct gobjref_base
 {
     gulong      signal_connect          (const char *detailed_signal, GCallback c_handler, void *data) const;
     gulong      signal_connect_swapped  (const char *detailed_signal, GCallback c_handler, void *data) const;
@@ -39,13 +39,12 @@ struct mg_gobjptr_accessor_base
     void        set                     (const gchar *first_prop, ...) G_GNUC_NULL_TERMINATED const;
     void        set_property            (const gchar *property_name, const GValue *value) const;
 
-protected:
-    const gobjptr<GObject>& self() const;//    { return static_cast<const gobjptr<GObject>&>(*this); }
-    GObject*                g() const;//       { return self().get(); }
+    GObject*                g           () const;
+    const gobjptr<GObject>& self        () const;
 };
 
 template<typename GObjClass>
-struct mg_gobjptr_accessor : public mg_gobjptr_accessor_base
+struct gobjref : public gobjref_base
 {
 };
 

@@ -19,16 +19,17 @@
  *  from gtk/gtkfilesystem.h).
  */
 
-#ifndef MOO_FILE_SYSTEM_H
-#define MOO_FILE_SYSTEM_H
+#pragma once
 
 #include "moofileview/moofolder.h"
-#include <mooutils/moofilewatch.h>
 #include <gtk/gtk.h>
 
+#ifdef __cplusplus
+#include "moocpp/grefptr.h"
+#include "mooutils/moofilewatch.h"
+#endif // __cplusplus
 
 G_BEGIN_DECLS
-
 
 #define MOO_TYPE_FILE_SYSTEM              (_moo_file_system_get_type ())
 #define MOO_FILE_SYSTEM(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_SYSTEM, MooFileSystem))
@@ -140,9 +141,10 @@ char        *_moo_file_system_get_absolute_path (MooFileSystem  *fs,
 
 MooFileSystem *_moo_folder_get_file_system      (MooFolder      *folder);
 
-MooFileWatch *_moo_file_system_get_file_watch   (MooFileSystem  *fs);
-
-
 G_END_DECLS
 
-#endif /* MOO_FILE_SYSTEM_H */
+#ifdef __cplusplus
+
+moo::grefptr<MooFileWatch> _moo_file_system_get_file_watch (MooFileSystem  *fs);
+
+#endif // __cplusplus

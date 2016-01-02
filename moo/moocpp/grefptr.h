@@ -21,13 +21,13 @@
 namespace moo {
 
 template<typename ObjClass>
-class mg_obj_handle
+class obj_handle
 {
 public:
-    mg_obj_handle() : m_p(nullptr) {}
+    obj_handle() : m_p(nullptr) {}
 
-    mg_obj_handle(const mg_obj_handle&) = delete;
-    mg_obj_handle& operator=(const mg_obj_handle&) = delete;
+    obj_handle(const obj_handle&) = delete;
+    obj_handle& operator=(const obj_handle&) = delete;
 
 protected:
     ObjClass* _get_pointer() const      { return m_p; }
@@ -38,7 +38,14 @@ private:
 };
 
 template<typename ObjClass>
-class mg_obj_ref_unref;
+class obj_ref_unref;
+
+template<typename ObjClass>
+struct obj_class_ref_unref
+{
+    static void ref(ObjClass* obj)   { obj->ref(); }
+    static void unref(ObjClass* obj) { obj->unref(); }
+};
 
 enum class ref_transfer
 {
@@ -47,17 +54,24 @@ enum class ref_transfer
 };
 
 template<typename ObjClass,
-    typename ObjRefUnref = mg_obj_ref_unref<ObjClass>,
-    typename ObjHandle = mg_obj_handle<ObjClass>>
-class grefptr : private ObjHandle
+    typename ObjRefUnref = obj_ref_unref<ObjClass>,
+    typename ObjHandle = obj_handle<ObjClass>>
+class grefptr
+    : private ObjHandle
 {
 public:
     grefptr() {}
-    grefptr(const nullptr_t) {}
+    grefptr(const nullptr_t&) {}
 
     grefptr(ObjClass* obj, ref_transfer policy)
     {
         assign(obj, policy);
+    }
+
+    template<typename ...Args>
+    static grefptr create(Args&& ...args)
+    {
+        return wrap_new(new ObjClass(std::forward<Args>(args)...));
     }
 
     static grefptr wrap_new(ObjClass* obj)
@@ -103,6 +117,7 @@ public:
     operator const ObjClass* () const { return get(); }
     ObjClass* get() const { return ObjHandle::_get_pointer(); }
     ObjClass& operator*() const { return *get(); }
+    ObjClass* operator->() const { return get(); }
 
     // Explicitly forbid other pointer conversions. This way it's still possible to implement
     // implicit conversions in subclasses, like that to GTypeInstance in gobjptr.
@@ -131,7 +146,7 @@ public:
     }
 
     grefptr(const grefptr& other)
-        : grefptr(other.get())
+        : grefptr(other.get(), ref_transfer::make_copy)
     {
     }
 
@@ -189,6 +204,7 @@ private:
         }
     }
 };
+
 
 //template<typename ObjClass, typename ObjRefUnrefHelper = mg_ref_unref<ObjClass>>
 //class grefptr

@@ -74,7 +74,7 @@ _moo_folder_model_get_type (void)
 
         type = g_type_register_static (G_TYPE_OBJECT,
                                        "MooFolderModel",
-                                       &info, 0);
+                                       &info, GTypeFlags(0));
         g_type_add_interface_static (type, GTK_TYPE_TREE_MODEL,
                                      &tree_model_info);
     }
@@ -182,7 +182,7 @@ moo_folder_model_set_property (GObject *object,
     {
         case PROP_FOLDER:
             _moo_folder_model_set_folder (model,
-                                          g_value_get_object (value));
+                                          (MooFolder*) g_value_get_object (value));
             break;
 
         default:
@@ -227,7 +227,7 @@ _moo_folder_model_set_folder (MooFolderModel *model,
 
     if (folder)
     {
-        model->priv->folder = g_object_ref (folder);
+        model->priv->folder = (MooFolder*) g_object_ref (folder);
 
         g_signal_connect_swapped (folder, "files_added",
                                   G_CALLBACK (moo_folder_model_add_files),
@@ -533,7 +533,7 @@ G_STMT_START {                              \
 static GtkTreeModelFlags
 moo_folder_model_get_flags (G_GNUC_UNUSED GtkTreeModel *tree_model)
 {
-    return GTK_TREE_MODEL_ITERS_PERSIST | GTK_TREE_MODEL_LIST_ONLY;
+    return GtkTreeModelFlags(GTK_TREE_MODEL_ITERS_PERSIST | GTK_TREE_MODEL_LIST_ONLY);
 }
 
 
@@ -607,7 +607,7 @@ moo_folder_model_get_path (GtkTreeModel *tree_model,
     g_return_val_if_fail (ITER_MODEL (iter) == model, NULL);
     g_return_val_if_fail (ITER_FILE (iter) != NULL, NULL);
 
-    index = file_list_position (model->priv->files, ITER_FILE (iter));
+    index = file_list_position (model->priv->files, (MooFile*) ITER_FILE (iter));
     g_return_val_if_fail (index >= 0, NULL);
 
     return gtk_tree_path_new_from_indices (index, -1);
@@ -645,7 +645,7 @@ moo_folder_model_iter_next (GtkTreeModel *tree_model,
     g_return_val_if_fail (ITER_MODEL (iter) == model, FALSE);
     g_return_val_if_fail (ITER_FILE (iter) != NULL, FALSE);
 
-    next = file_list_next (model->priv->files, ITER_FILE (iter));
+    next = file_list_next (model->priv->files, (MooFile*) ITER_FILE (iter));
 
     if (next)
     {

@@ -498,9 +498,9 @@ _moo_edit_save_error_enc_dialog (MooEdit    *doc,
 
 
 MooEditTryEncodingResponse
-_moo_edit_try_encoding_dialog (GFile&          file,
-                               const char*     encoding,
-                               /*out*/ mg_str& new_encoding)
+_moo_edit_try_encoding_dialog (const gobjref<GFile>& file,
+                               const char*           encoding,
+                               /*out*/ mg_str&       new_encoding)
 {
     MooEditWindow *window;
     GtkWidget *dialog;
@@ -514,7 +514,7 @@ _moo_edit_try_encoding_dialog (GFile&          file,
     if (filename.set())
     {
         /* Could not open file foo.txt */
-        mg_str tmp = mg_str::new_take(g_strdup_printf(_("Could not open file\n%s"), filename.get()));
+        mg_str tmp = mg_str::wrap_new(g_strdup_printf(_("Could not open file\n%s"), filename.get()));
         msg.take(g_markup_printf_escaped("<b><big>%s</big></b>", tmp.get()));
     }
     else
