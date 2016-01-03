@@ -24,50 +24,6 @@
 
 namespace moo {
 
-///////////////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
 
-struct gobjref_base
-{
-    gulong      signal_connect          (const char *detailed_signal, GCallback c_handler, void *data) const;
-    gulong      signal_connect_swapped  (const char *detailed_signal, GCallback c_handler, void *data) const;
-
-    void        set_data                (const char* key, gpointer value) const;
-
-    void        set                     (const gchar *first_prop, ...) const G_GNUC_NULL_TERMINATED;
-    void        set_property            (const gchar *property_name, const GValue *value) const;
-
-    void        freeze_notify           () const;
-    void        thaw_notify             () const;
-
-    GObject*                g           () const;
-    const gobjptr<GObject>& self        () const;
-};
-
-template<typename GObjClass>
-struct gobjref : public gobjref_base
-{
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
-
-struct mg_gobjptr_methods_base
-{
-    GObject*                g_object() const { return g(); }
-
-protected:
-    const gobjptr<GObject>& self() const;//    { return static_cast<const gobjptr<GObject>&>(*this); }
-    GObject*                g() const;//       { return self().get(); }
-};
-
-template<typename GObjClass>
-struct mg_gobjptr_methods : public mg_gobjptr_methods_base
-{
-};
 
 } // namespace moo

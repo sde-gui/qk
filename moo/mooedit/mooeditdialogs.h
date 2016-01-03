@@ -67,6 +67,6 @@ G_END_DECLS
 
 MooEditTryEncodingResponse      _moo_edit_try_encoding_dialog           (const moo::gobjref<GFile>& file,
                                                                          const char*                encoding,
-                                                                         /*out*/ moo::mg_str&       new_encoding);
+                                                                         /*out*/ moo::gstr&         new_encoding);
 
 #endif // __cplusplus

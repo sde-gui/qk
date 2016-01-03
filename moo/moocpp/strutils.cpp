@@ -18,9 +18,11 @@
 
 using namespace moo;
 
-MOO_DEFINE_STANDARD_PTR_METHODS(mg_str, super)
+MOO_DEFINE_STANDARD_PTR_METHODS(gstr, super)
 
-//static void compile_errors(const mg_str& constref, mg_str& ref, mg_str val)
+const gstr gstr::null;
+
+//static void compile_errors(const gstr& constref, gstr& ref, gstr val)
 //{
 //    if (constref)
 //        return;
@@ -42,32 +44,32 @@ static bool str_equal(const char* s1, const char* s2)
         return strcmp(s1, s2) == 0;
 }
 
-bool moo::operator==(const mg_str& s1, const char* s2)
+bool moo::operator==(const gstr& s1, const char* s2)
 {
     return str_equal(s1, s2);
 }
 
-bool moo::operator==(const char* s1, const mg_str& s2)
+bool moo::operator==(const char* s1, const gstr& s2)
 {
     return str_equal(s1, s2);
 }
 
-bool moo::operator==(const mg_str& s1, const mg_str& s2)
+bool moo::operator==(const gstr& s1, const gstr& s2)
 {
     return str_equal(s1, s2);
 }
 
-bool moo::operator!=(const mg_str& s1, const mg_str& s2)
+bool moo::operator!=(const gstr& s1, const gstr& s2)
 {
     return !(s1 == s2);
 }
 
-bool moo::operator!=(const mg_str& s1, const char* s2)
+bool moo::operator!=(const gstr& s1, const char* s2)
 {
     return !(s1 == s2);
 }
 
-bool moo::operator!=(const char* s1, const mg_str& s2)
+bool moo::operator!=(const char* s1, const gstr& s2)
 {
     return !(s1 == s2);
 }

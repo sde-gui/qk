@@ -16,3 +16,45 @@
 #include "moocpp/gobjptrtypes-gtk.h"
 
 using namespace moo;
+
+void test()
+{
+    {
+        gobjptr<GtkObject> p;
+        const gobjref<GtkObject>& r = *p;
+        GtkObject* o1 = r.gobj();
+        GtkObject* o2 = p->gobj();
+        g_assert(o1 == o2);
+        GObject* o = p.get<GObject>();
+        g_assert(o == nullptr);
+        GtkObject* x = p.get<GtkObject>();
+        GObject* y = p.get<GObject>();
+        g_assert((void*) x == (void*) y);
+        const GObject* c1 = p;
+        const GtkObject* c2 = p;
+        g_assert((void*) c1 == (void*) c2);
+    }
+
+    {
+        gobjptr<GtkWidget> p = wrap_new(gtk_widget_new(0, "blah", nullptr, nullptr));
+        const gobjref<GtkWidget>& r = *p;
+        GtkWidget* o1 = r.gobj();
+        GtkWidget* o2 = p->gobj();
+        g_assert(o1 == o2);
+        GtkWidget* x = p.get<GtkWidget>();
+        GtkWidget* y = p.get();
+        GtkObject* z = p.get<GtkObject>();
+        GObject* t = p.get<GObject>();
+        g_assert((void*) x == (void*) y);
+        g_assert((void*) z == (void*) t);
+        const GObject* c1 = p;
+        const GtkObject* c2 = p;
+        const GtkWidget* c3 = p;
+        g_assert((void*) c1 == (void*) c2);
+        g_assert((void*) c1 == (void*) c3);
+
+        gobjref<GtkWidget> or(p.get());
+        or.freeze_notify();
+        p->freeze_notify();
+    }
+}

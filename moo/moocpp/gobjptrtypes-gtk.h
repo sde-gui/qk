@@ -20,6 +20,11 @@
 
 #include "moocpp/gobjptrtypes-glib.h"
 
-namespace moo {
+namespace moo
+{
+
+MOO_DEFINE_GOBJ_CHILD_TYPE(GtkObject, GTK_TYPE_OBJECT)
+MOO_DEFINE_GOBJ_TYPE(GtkWidget, GtkObject, GTK_TYPE_WIDGET)
+MOO_DEFINE_GOBJ_TYPE(GtkTextView, GtkWidget, GTK_TYPE_TEXT_VIEW)
 
 } // namespace moo

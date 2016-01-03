@@ -21,7 +21,6 @@
 
 G_BEGIN_DECLS
 
-#define MOO_TYPE_EDIT_VIEW                       (moo_edit_view_get_type ())
 #define MOO_EDIT_VIEW(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT_VIEW, MooEditView))
 #define MOO_EDIT_VIEW_CLASS(klass)               (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EDIT_VIEW, MooEditViewClass))
 #define MOO_IS_EDIT_VIEW(object)                 (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_EDIT_VIEW))
@@ -41,8 +40,6 @@ struct MooEditViewClass
 {
     MooTextViewClass parent_class;
 };
-
-GType            moo_edit_view_get_type     (void) G_GNUC_CONST;
 
 MooEdit         *moo_edit_view_get_doc      (MooEditView    *view);
 MooEditTab      *moo_edit_view_get_tab      (MooEditView    *view);

@@ -16,35 +16,17 @@
 #pragma once
 
 #include "moocpp/utils.h"
-#include <glib-object.h>
 
 namespace moo {
 
-template<typename ObjClass>
-class obj_handle
-{
-public:
-    obj_handle() : m_p(nullptr) {}
-
-    obj_handle(const obj_handle&) = delete;
-    obj_handle& operator=(const obj_handle&) = delete;
-
-protected:
-    ObjClass* _get_pointer() const      { return m_p; }
-    void      _set_pointer(ObjClass* p) { m_p = p; }
-
-private:
-    ObjClass* m_p;
-};
-
-template<typename ObjClass>
+template<typename Object>
 class obj_ref_unref;
 
-template<typename ObjClass>
+template<typename Object>
 struct obj_class_ref_unref
 {
-    static void ref(ObjClass* obj)   { obj->ref(); }
-    static void unref(ObjClass* obj) { obj->unref(); }
+    static void ref(Object* obj)   { obj->ref(); }
+    static void unref(Object* obj) { obj->unref(); }
 };
 
 enum class ref_transfer
@@ -53,17 +35,16 @@ enum class ref_transfer
     make_copy,
 };
 
-template<typename ObjClass,
-    typename ObjRefUnref = obj_ref_unref<ObjClass>,
-    typename ObjHandle = obj_handle<ObjClass>>
+template<typename Object,
+    typename ObjRefUnref = obj_ref_unref<Object>>
 class grefptr
-    : private ObjHandle
 {
 public:
-    grefptr() {}
-    grefptr(const nullptr_t&) {}
+    grefptr() : m_p(nullptr) {}
+    grefptr(const nullptr_t&) : grefptr() {}
 
-    grefptr(ObjClass* obj, ref_transfer policy)
+    grefptr(Object* obj, ref_transfer policy)
+        : grefptr()
     {
         assign(obj, policy);
     }
@@ -71,10 +52,10 @@ public:
     template<typename ...Args>
     static grefptr create(Args&& ...args)
     {
-        return wrap_new(new ObjClass(std::forward<Args>(args)...));
+        return wrap_new(new Object(std::forward<Args>(args)...));
     }
 
-    static grefptr wrap_new(ObjClass* obj)
+    static grefptr wrap_new(Object* obj)
     {
         return grefptr(obj, ref_transfer::take_ownership);
     }
@@ -84,40 +65,40 @@ public:
         reset();
     }
 
-    void ref(ObjClass* obj)
+    void ref(Object* obj)
     {
         assign(obj, ref_transfer::make_copy);
     }
 
-    void take(ObjClass* obj)
+    void take(Object* obj)
     {
         assign(obj, ref_transfer::take_ownership);
     }
 
-    ObjClass* release()
+    Object* release()
     {
-        auto* tmp = ObjHandle::_get_pointer();
-        ObjHandle::_set_pointer(nullptr);
+        auto* tmp = m_p;
+        m_p = nullptr;
         return tmp;
     }
 
     void reset()
     {
-        auto* tmp = ObjHandle::_get_pointer();
-        ObjHandle::_set_pointer(nullptr);
+        auto* tmp = m_p;
+        m_p = nullptr;
         if (tmp)
             ObjRefUnref::unref(tmp);
     }
 
-    // Implicit conversion to ObjClass* is dangerous because there is a lot
+    // Implicit conversion to Object* is dangerous because there is a lot
     // of code still which frees/steals objects directly. For example:
     // FooObject* tmp = x->s;
     // x->s = NULL;
     // g_object_unref (tmp);
-    operator const ObjClass* () const { return get(); }
-    ObjClass* get() const { return ObjHandle::_get_pointer(); }
-    ObjClass& operator*() const { return *get(); }
-    ObjClass* operator->() const { return get(); }
+    operator const Object* () const { return get(); }
+    Object* get() const { return m_p; }
+    Object& operator*() const { return *get(); }
+    Object* operator->() const { return get(); }
 
     // Explicitly forbid other pointer conversions. This way it's still possible to implement
     // implicit conversions in subclasses, like that to GTypeInstance in gobjptr.
@@ -153,8 +134,8 @@ public:
     grefptr(grefptr&& other)
         : grefptr()
     {
-        this->ObjHandle::_set_pointer(other.get());
-        (&other)->ObjHandle::_set_pointer(nullptr);
+        this->m_p = other.m_p;
+        other.m_p = nullptr;
     }
 
     grefptr& operator=(const grefptr& other)
@@ -164,7 +145,7 @@ public:
     }
 
     // Note that when T is const Foo, then assign(p) inside will be called with
-    // a const Foo, which can't be converted to non-const ObjClass*, so one can't
+    // a const Foo, which can't be converted to non-const Object*, so one can't
     // steal a reference to a const object with this method.
     template<typename T>
     grefptr& operator=(T* p)
@@ -183,159 +164,29 @@ public:
     {
         if (get() != other.get())
         {
-            assign(other.get(), ref_transfer::take_ownership);
-            (&other)->ObjHandle::_set_pointer(nullptr);
+            assign(other.m_p, ref_transfer::take_ownership);
+            other.m_p = nullptr;
         }
         
         return *this;
     }
 
 private:
-    void assign(ObjClass* obj, ref_transfer policy)
+    void assign(Object* obj, ref_transfer policy)
     {
         if (get() != obj)
         {
-            ObjClass* tmp = get();
-            ObjHandle::_set_pointer(obj);
+            Object* tmp = get();
+            m_p = obj;
             if (obj && (policy == ref_transfer::make_copy))
                 ObjRefUnref::ref(obj);
             if (tmp)
                 ObjRefUnref::unref(tmp);
         }
     }
+
+private:
+    Object* m_p;
 };
-
-
-//template<typename ObjClass, typename ObjRefUnrefHelper = mg_ref_unref<ObjClass>>
-//class grefptr
-//{
-//public:
-//    grefptr() : m_obj(nullptr) {}
-//    grefptr(const nullptr_t) : grefptr() {}
-//
-//    grefptr(ObjClass* obj, ref_transfer policy)
-//        : grefptr()
-//    {
-//        assign(obj, policy);
-//    }
-//
-//    ~grefptr()
-//    {
-//        reset();
-//    }
-//
-//    void ref(ObjClass* obj)
-//    {
-//        assign(obj, ref_transfer::make_copy);
-//    }
-//
-//    void take(ObjClass* obj)
-//    {
-//        assign(obj, ref_transfer::take_ownership);
-//    }
-//
-//    void reset()
-//    {
-//        auto* tmp = m_obj;
-//        m_obj = nullptr;
-//        if (tmp)
-//            ObjRefUnrefHelper::unref(tmp);
-//    }
-//
-//    // Implicit conversion to ObjClass* is dangerous because there is a lot
-//    // of code still which frees/steals objects directly. For example:
-//    // FooObject* tmp = x->s;
-//    // x->s = NULL;
-//    // g_object_unref (tmp);
-//    operator const ObjClass* () const { return m_obj; }
-//    ObjClass* get() const { return m_obj; }
-//    ObjClass& operator*() const { return *m_obj; }
-//
-//    // Explicitly forbid other pointer conversions. This way it's still possible to implement
-//    // implicit conversions in subclasses, like that to GTypeInstance in gobjptr.
-//    template<typename T>
-//    operator T*() const = delete;
-//
-//    operator bool() const { return m_obj != nullptr; }
-//    bool operator!() const { return m_obj == nullptr; }
-//
-//    template<typename X>
-//    bool operator==(X* other) const
-//    {
-//        return get() == other;
-//    }
-//
-//    template<typename X, typename Y>
-//    bool operator==(const grefptr<X, Y>& other) const
-//    {
-//        return get() == other.get();
-//    }
-//
-//    template<typename X>
-//    bool operator!=(const X& anything) const
-//    {
-//        return !(*this == anything);
-//    }
-//
-//    grefptr(const grefptr& other)
-//        : grefptr(other.get())
-//    {
-//    }
-//
-//    grefptr(grefptr&& other)
-//        : m_obj(other.m_obj)
-//    {
-//        other.m_obj = nullptr;
-//    }
-//
-//    grefptr& operator=(const grefptr& other)
-//    {
-//        assign(other.m_obj, ref_transfer::make_copy);
-//        return *this;
-//    }
-//
-//    // Note that when T is const Foo, then assign(p) inside will be called with
-//    // a const Foo, which can't be converted to non-const ObjClass*, so one can't
-//    // steal a reference to a const object with this method.
-//    template<typename T>
-//    grefptr& operator=(T* p)
-//    {
-//        assign(p, ref_transfer::take_ownership);
-//    }
-//
-//    grefptr& operator=(const nullptr_t&)
-//    {
-//        reset();
-//        return *this;
-//    }
-//
-//    grefptr& operator=(grefptr&& other)
-//    {
-//        if (m_obj != other.m_obj)
-//        {
-//            assign(other.m_obj, ref_transfer::take_ownership);
-//            other.m_obj = nullptr;
-//        }
-//        
-//        return *this;
-//    }
-//
-//private:
-//    void assign(ObjClass* obj, ref_transfer policy)
-//    {
-//        if (m_obj != obj)
-//        {
-//            ObjClass* tmp = m_obj;
-//            m_obj = obj;
-//            if (m_obj && (policy == ref_transfer::make_copy))
-//                ObjRefUnrefHelper::ref(m_obj);
-//            if (tmp)
-//                ObjRefUnrefHelper::unref(tmp);
-//        }
-//    }
-//
-//private:
-//    ObjClass* m_obj;
-//};
 
 } // namespace moo

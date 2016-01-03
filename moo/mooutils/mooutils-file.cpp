@@ -14,10 +14,10 @@ moo_file_get_display_name (GFile *file)
     return g_file_get_parse_name (file);
 }
 
-mg_str
+gstr
 moo_file_get_display_name(const gobjref<GFile>& file)
 {
-    return mg_str::wrap_new(moo_file_get_display_name(file.g()));
+    return gstr::wrap_new(moo_file_get_display_name(file.gobj()));
 }
 
 gboolean

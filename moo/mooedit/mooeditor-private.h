@@ -21,8 +21,6 @@
 #include "moocpp/gobjptrtypes.h"
 #include "moocpp/utils.h"
 
-using namespace moo;
-
 enum MooEditorOptions {
     MOO_EDITOR_OPTIONS_NONE = 0,
     OPEN_SINGLE         = 1 << 0,
@@ -36,16 +34,16 @@ MOO_DEFINE_FLAGS(MooEditorOptions);
 
 struct MooEditorPrivate {
     std::vector<MooEditWindow*> windows;
-    gobjptr<MooUiXml>           doc_ui_xml;
-    gobjptr<MooUiXml>           ui_xml;
-    gobjptr<MooHistoryMgr>      history;
-    grefptr<MooFileWatch>       file_watch;
+    moo::gobjptr<MooUiXml>      doc_ui_xml;
+    moo::gobjptr<MooUiXml>      ui_xml;
+    moo::gobjptr<MooHistoryMgr> history;
+    moo::grefptr<MooFileWatch>  file_watch;
     MooEditorOptions            opts;
 
     GType                       window_type;
     GType                       doc_type;
 
-    gobjptr<MooLangMgr>         lang_mgr;
+    moo::gobjptr<MooLangMgr>    lang_mgr;
 
     MooEditorPrivate();
     ~MooEditorPrivate();

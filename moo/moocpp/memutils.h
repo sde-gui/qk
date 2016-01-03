@@ -48,11 +48,13 @@ public:
         reset();
     }
 
-    mg_mem_holder(const mg_mem_holder& other)
-        : mg_mem_holder()
-    {
-        *this = other;
-    }
+    mg_mem_holder(const mg_mem_holder& other) = delete;
+
+    //mg_mem_holder(const mg_mem_holder& other)
+    //    : mg_mem_holder()
+    //{
+    //    *this = other;
+    //}
 
     mg_mem_holder(mg_mem_holder&& other)
         : mg_mem_holder()
@@ -60,33 +62,35 @@ public:
         *this = std::move(other);
     }
 
-    mg_mem_holder& operator=(const mg_mem_holder& other)
-    {
-        if (this == &other)
-            return *this;
+    mg_mem_holder& operator=(const mg_mem_holder& other) = delete;
 
-        if (other.m_p == nullptr)
-        {
-            reset();
-            return *this;
-        }
+    //mg_mem_holder& operator=(const mg_mem_holder& other)
+    //{
+    //    if (this == &other)
+    //        return *this;
 
-        switch (other.m_ot)
-        {
-        case ownership_type::borrowed:
-        case ownership_type::owned:
-            assign(other.m_p, memory_type::allocated, mem_transfer::borrow);
-            break;
-        case ownership_type::literal:
-            assign(other.m_p, memory_type::literal, mem_transfer::borrow);
-            break;
-        default:
-            g_assert_not_reached();
-            break;
-        }
+    //    if (other.m_p == nullptr)
+    //    {
+    //        reset();
+    //        return *this;
+    //    }
 
-        return *this;
-    }
+    //    switch (other.m_ot)
+    //    {
+    //    case ownership_type::borrowed:
+    //    case ownership_type::owned:
+    //        assign(other.m_p, memory_type::allocated, mem_transfer::borrow);
+    //        break;
+    //    case ownership_type::literal:
+    //        assign(other.m_p, memory_type::literal, mem_transfer::borrow);
+    //        break;
+    //    default:
+    //        g_assert_not_reached();
+    //        break;
+    //    }
+
+    //    return *this;
+    //}
 
     mg_mem_holder& operator=(mg_mem_holder&& other)
     {
@@ -197,10 +201,11 @@ public:
         return m_p;
     }
 
-    void ensure_not_borrowed()
+    Self& ensure_not_borrowed()
     {
         if (m_p != nullptr && m_ot == ownership_type::borrowed)
             assign(m_p, memory_type::allocated, mem_transfer::make_copy);
+        return static_cast<Self&>(*this);
     }
 
     void ensure_owned()
@@ -229,6 +234,11 @@ public:
             literal(static_cast<const Buf*>(other));
         else
             borrow(static_cast<const Buf*>(other));
+    }
+
+    Self borrow() const
+    {
+        return make_borrowed(*this);
     }
 
     void literal(const Buf* p)
@@ -264,6 +274,13 @@ public:
     {
         Self s;
         s.borrow(arg);
+        return std::move(s);
+    }
+
+    static Self make_borrowed(const mg_mem_holder& other)
+    {
+        Self s;
+        s.borrow(other);
         return std::move(s);
     }
 
@@ -318,14 +335,10 @@ inline void swap(mg_mem_holder<Buf, MemHandler, Self>& p1, mg_mem_holder<Buf, Me
 #define MOO_DEFINE_STANDARD_PTR_METHODS_INLINE(Self, Super)                     \
     Self() : Super() {}                                                         \
     Self(const nullptr_t&) : Super(nullptr) {}                                  \
-    Self(const Self& other) : Super(other) {}                                   \
+    Self(const Self& other) = delete;                                           \
     Self(Self&& other) : Super(std::move(other)) {}                             \
                                                                                 \
-    Self& operator=(const Self& other)                                          \
-    {                                                                           \
-        static_cast<Super&>(*this) = static_cast<const Super&>(other);          \
-        return *this;                                                           \
-    }                                                                           \
+    Self& operator=(const Self& other) = delete;                                \
                                                                                 \
     Self& operator=(Self&& other)                                               \
     {                                                                           \
@@ -342,23 +355,16 @@ inline void swap(mg_mem_holder<Buf, MemHandler, Self>& p1, mg_mem_holder<Buf, Me
 #define MOO_DECLARE_STANDARD_PTR_METHODS(Self, Super)                           \
     Self();                                                                     \
     Self(const nullptr_t&);                                                     \
-    Self(const Self& other);                                                    \
+    Self(const Self& other) = delete;                                           \
     Self(Self&& other);                                                         \
-    Self& operator=(const Self& other);                                         \
+    Self& operator=(const Self& other) = delete;                                \
     Self& operator=(Self&& other);                                              \
     Self& operator=(const nullptr_t&);
 
 #define MOO_DEFINE_STANDARD_PTR_METHODS(Self, Super)                            \
     Self::Self() : Super() {}                                                   \
     Self::Self(const nullptr_t&) : Super(nullptr) {}                            \
-    Self::Self(const Self& other) : Super(other) {}                             \
     Self::Self(Self&& other) : Super(std::move(other)) {}                       \
-                                                                                \
-    Self& Self::operator=(const Self& other)                                    \
-    {                                                                           \
-        static_cast<Super&>(*this) = static_cast<const Super&>(other);          \
-        return *this;                                                           \
-    }                                                                           \
                                                                                 \
     Self& Self::operator=(Self&& other)                                         \
     {                                                                           \

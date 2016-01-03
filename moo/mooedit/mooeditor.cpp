@@ -1,7 +1,7 @@
 /*
- *   mooeditor.c
+ *   mooeditor.cpp
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *   Copyright (C) 2014 by Ulrich Eckhardt <ulrich.eckhardt@base-42.de>
  *
  *   This file is part of medit.  medit is free software; you can
@@ -48,6 +48,8 @@
 #include <mooglib/moo-glib.h>
 #include <string.h>
 #include <stdlib.h>
+
+using namespace moo;
 
 #define RECENT_ACTION_ID "OpenRecent"
 #define RECENT_DIALOG_ACTION_ID "OpenRecentDialog"
@@ -1028,8 +1030,8 @@ moo_editor_load_file (MooEditor       *editor,
             // XXX
             gobjptr<GFile> pf(info->file, ref_transfer::make_copy);
             success = _moo_edit_load_file (doc, *pf,
-                                           mg_str::make_borrowed(info->encoding),
-                                           mg_str::make_borrowed(recent_encoding),
+                                           gstr::make_borrowed(info->encoding),
+                                           gstr::make_borrowed(recent_encoding),
                                            &error_here);
         }
     }
@@ -2731,10 +2733,8 @@ doc_array_find_norm_name (MooEditArray *docs,
     for (i = 0; i < docs->n_elms; ++i)
     {
         MooEdit *doc = docs->elms[i];
-        char *doc_norm_name = _moo_edit_get_normalized_name (doc);
-        gboolean this_doc = doc_norm_name != NULL && strcmp (doc_norm_name, norm_name) == 0;
-        g_free (doc_norm_name);
-        if (this_doc)
+        const gstr& doc_norm_name = _moo_edit_get_normalized_name(doc);
+        if (doc_norm_name == norm_name)
             return doc;
     }
 
@@ -2769,14 +2769,13 @@ MooEdit *
 moo_editor_get_doc_for_file (MooEditor *editor,
                              GFile     *file)
 {
-    char *norm_name = NULL;
     MooEdit *doc = NULL;
 
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     g_return_val_if_fail (G_IS_FILE (file), NULL);
 
-    norm_name = _moo_file_get_normalized_name (file);
-    g_return_val_if_fail (norm_name != NULL, NULL);
+    gstr norm_name = _moo_file_get_normalized_name (file);
+    g_return_val_if_fail (norm_name.set(), NULL);
 
     for (const auto& window: editor->priv->windows)
     {
@@ -2788,7 +2787,6 @@ moo_editor_get_doc_for_file (MooEditor *editor,
             break;
     }
 
-    g_free (norm_name);
     return doc;
 }
 

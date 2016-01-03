@@ -19,7 +19,7 @@
 
 namespace moo {
 
-struct mg_str_mem_handler
+struct gstr_mem_handler
 {
     static char* dup(const char* p) { return p ? g_strdup (p) : nullptr; }
     static void free(char* p) { g_free(p); }
@@ -32,7 +32,7 @@ struct mg_get_string
 };
 
 template<typename Self, typename GetString = mg_get_string<Self>>
-class mg_str_methods_mixin
+class gstr_methods_mixin
 {
 public:
     char *strdup() const { return g_strdup(c_str()); }
@@ -50,22 +50,24 @@ private:
     const char* c_str() const { return GetString::get_string(static_cast<const Self&>(*this)); }
 };
 
-class mg_str
-    : public mg_mem_holder<char, mg_str_mem_handler, mg_str>
-    , public mg_str_methods_mixin<mg_str>
+class gstr
+    : public mg_mem_holder<char, gstr_mem_handler, gstr>
+    , public gstr_methods_mixin<gstr>
 {
-    using super = mg_mem_holder<char, mg_str_mem_handler, mg_str>;
+    using super = mg_mem_holder<char, gstr_mem_handler, gstr>;
 
 public:
-    MOO_DECLARE_STANDARD_PTR_METHODS(mg_str, super)
+    MOO_DECLARE_STANDARD_PTR_METHODS(gstr, super)
+
+    static const gstr null;
 };
 
 
-bool operator==(const mg_str& s1, const char* s2);
-bool operator==(const char* s1, const mg_str& s2);
-bool operator==(const mg_str& s1, const mg_str& s2);
-bool operator!=(const mg_str& s1, const char* s2);
-bool operator!=(const char* s1, const mg_str& s2);
-bool operator!=(const mg_str& s1, const mg_str& s2);
+bool operator==(const gstr& s1, const char* s2);
+bool operator==(const char* s1, const gstr& s2);
+bool operator==(const gstr& s1, const gstr& s2);
+bool operator!=(const gstr& s1, const char* s2);
+bool operator!=(const char* s1, const gstr& s2);
+bool operator!=(const gstr& s1, const gstr& s2);
 
 } // namespace moo

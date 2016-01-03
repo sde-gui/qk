@@ -17,50 +17,43 @@
 
 using namespace moo;
 
-const gobjptr<GObject>& gobjref_base::self() const
+using GObjPtr = gobjptr<GObject>;
+using GObjRef = gobjref<GObject>;
+
+gulong GObjRef::signal_connect(const char *detailed_signal, GCallback c_handler, void *data) const
 {
-    return gobjptr<GObject>::from_gobjref(static_cast<const gobjref<GObject>&>(*this));
+    return g_signal_connect(gobj(), detailed_signal, c_handler, data);
 }
 
-GObject* gobjref_base::g() const
+gulong GObjRef::signal_connect_swapped(const char *detailed_signal, GCallback c_handler, void *data) const
 {
-    return self().get();
+    return g_signal_connect_swapped(gobj(), detailed_signal, c_handler, data);
 }
 
-gulong gobjref_base::signal_connect(const char *detailed_signal, GCallback c_handler, void *data) const
+void GObjRef::set_data(const char* key, gpointer value) const
 {
-    return g_signal_connect(g(), detailed_signal, c_handler, data);
+    g_object_set_data(gobj(), key, value);
 }
 
-gulong gobjref_base::signal_connect_swapped(const char *detailed_signal, GCallback c_handler, void *data) const
-{
-    return g_signal_connect_swapped(g(), detailed_signal, c_handler, data);
-}
-
-void gobjref_base::set_data(const char* key, gpointer value) const
-{
-    g_object_set_data(g(), key, value);
-}
-
-void gobjref_base::set(const gchar *first_prop, ...) const
+void GObjRef::set(const gchar *first_prop, ...) const
 {
     va_list args;
     va_start(args, first_prop);
-    g_object_set_valist(g(), first_prop, args);
+    g_object_set_valist(gobj(), first_prop, args);
     va_end(args);
 }
 
-void gobjref_base::set_property(const gchar *property_name, const GValue *value) const
+void GObjRef::set_property(const gchar *property_name, const GValue *value) const
 {
-    g_object_set_property(g(), property_name, value);
+    g_object_set_property(gobj(), property_name, value);
 }
 
-void gobjref_base::freeze_notify() const
+void GObjRef::freeze_notify() const
 {
-    g_object_freeze_notify(g());
+    g_object_freeze_notify(gobj());
 }
 
-void gobjref_base::thaw_notify() const
+void GObjRef::thaw_notify() const
 {
-    g_object_thaw_notify(g());
+    g_object_thaw_notify(gobj());
 }

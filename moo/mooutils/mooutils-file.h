@@ -25,6 +25,6 @@ G_END_DECLS
 #include <moocpp/strutils.h>
 #include <moocpp/gobjptrtypes-gio.h>
 
-moo::mg_str  moo_file_get_display_name  (const moo::gobjref<GFile>& file);
+moo::gstr  moo_file_get_display_name  (const moo::gobjref<GFile>& file);
 
 #endif // __cplusplus

@@ -69,8 +69,8 @@ MOO_DEFINE_FLAGS(MooEditSaveFlags)
 
 bool             _moo_edit_load_file            (MooEdit*                   edit,
                                                  const moo::gobjref<GFile>& file,
-                                                 const moo::mg_str&         init_encoding,
-                                                 const moo::mg_str&         init_cached_encoding,
+                                                 const moo::gstr&           init_encoding,
+                                                 const moo::gstr&           init_cached_encoding,
                                                  GError**                   error);
 
 #endif // __cplusplus

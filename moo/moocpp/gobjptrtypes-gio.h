@@ -22,34 +22,37 @@
 
 namespace moo {
 
-class mg_str;
+class gstr;
 
-///////////////////////////////////////////////////////////////////////////////////////////
-//
-// mg_gobj_handle
-//
+MOO_DEFINE_GOBJ_CHILD_TYPE(GFile, G_TYPE_FILE)
+
+//template<typename ObjRef>
+//class gobjptr<GFile, ObjRef>;
 
 template<>
-struct gobjref<GFile> : public gobjref<GObject>
+class gobjref<GFile> : public gobjref<GObject>
 {
+public:
+    MOO_DEFINE_GOBJREF_METHODS(GFile, gobjref<GObject>)
+
     gobjptr<GFile>          dup                         () const;
 
     bool                    equal                       (GFile*                 file2) const;
-    mg_str                  get_basename                () const;
-    mg_str                  get_path                    () const;
-    mg_str                  get_uri                     () const;
-    mg_str                  get_parse_name              () const;
+    gstr                    get_basename                () const;
+    gstr                    get_path                    () const;
+    gstr                    get_uri                     () const;
+    gstr                    get_parse_name              () const;
     gobjptr<GFile>          get_parent                  () const;
     bool                    has_parent                  (GFile*                 parent) const;
     gobjptr<GFile>          get_child                   (const char*            name) const;
     gobjptr<GFile>          get_child_for_display_name  (const char*            display_name,
                                                          GError**               error) const;
     bool                    has_prefix                  (GFile*                 prefix) const;
-    mg_str                  get_relative_path           (GFile*                 descendant) const;
+    gstr                    get_relative_path           (GFile*                 descendant) const;
     gobjptr<GFile>          resolve_relative_path       (const char            *relative_path) const;
     bool                    is_native                   () const;
     bool                    has_uri_scheme              (const char            *uri_scheme) const;
-    mg_str                  get_uri_scheme              () const;
+    gstr                    get_uri_scheme              () const;
     GFileInputStream*       read                        (GCancellable*          cancellable,
                                                          GError**               error) const;
     GFileOutputStream*      append_to                   (GFileCreateFlags       flags,
@@ -128,47 +131,22 @@ struct gobjref<GFile> : public gobjref<GObject>
                                                          GCancellable*          cancellable,
                                                          GError**               error) const;
 
-    GFile*                  g() const;
-    const gobjptr<GFile>&   self() const;
-};
-
-///////////////////////////////////////////////////////////////////////////////////////////
-//
-// mg_gobjptr_methods
-//
-
-template<>
-struct mg_gobjptr_methods<GFile> : public mg_gobjptr_methods<GObject>
-{
-    GFile*  g_file() const;
-
     static gobjptr<GFile>   new_for_path                (const char* path);
     static gobjptr<GFile>   new_for_uri                 (const char* uri);
     static gobjptr<GFile>   new_for_commandline_arg     (const char* arg);
-    static gobjptr<GFile>   parse_name                  (const char* parse_name);
-
-private:
-    const gobjptr<GFile>& self() const; //{ return static_cast<const gobjptr<GFile>&>(*this); }
+    static gobjptr<GFile>   new_for_parse_name          (const char* parse_name);
 };
 
-//template<typename Self>
-//struct mg_gobjptr_handle<Self, GFile>
-//    : public mg_gobjptr_handle<Self, GObject>
-//{
-//    gobjptr<GFile>  dup() const                                         { return Self(self_impl().dup(), ref_transfer::take_ownership); }
-//
-//    void blah_instance() const;
-//    static void blah_static();
-//
-//    static Self     new_for_path            (const char* path)          { return Self(impl::new_for_path(path), ref_transfer::take_ownership); }
-//    static Self     new_for_uri             (const char* uri)           { return Self(impl::new_for_uri(path), ref_transfer::take_ownership); }
-//    static Self     new_for_commandline_arg (const char* arg)           { return Self(impl::new_for_commandline_arg(path), ref_transfer::take_ownership); }
-//
-//    static Self     parse_name              (const char* parse_name)    { return Self(impl::parse_name(parse_name)); }
-//
-//protected:
-//    using impl = mg_gobj_handle<GFile>;
-//    const impl& self_impl() const { return static_cast<const impl&>(self()); }
-//};
+template<>
+class gobjptr<GFile> : public gobjptr_impl<GFile>
+{
+public:
+    MOO_DEFINE_GOBJPTR_METHODS(GFile)
+
+    static gobjptr  new_for_path(const char* path) { return ref_type::new_for_path(path); }
+    static gobjptr  new_for_uri(const char* uri) { return ref_type::new_for_uri(uri); }
+    static gobjptr  new_for_commandline_arg(const char* arg) { return ref_type::new_for_commandline_arg(arg); }
+    static gobjptr  parse_name(const char* parse_name) { return ref_type::new_for_parse_name(parse_name); }
+};
 
 } // namespace moo

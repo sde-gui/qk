@@ -1,7 +1,7 @@
 /*
  *   mooedit-impl.h
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_EDIT_IMPL_H
-#define MOO_EDIT_IMPL_H
+#pragma once
 
 #include "mooedit/moolinemark.h"
 #include "mooedit/mooeditor.h"
@@ -22,11 +21,15 @@
 #include "mooutils/moohistorymgr.h"
 #include <gio/gio.h>
 
-G_BEGIN_DECLS
+#ifdef __cplusplus
+#include <moocpp/strutils.h>
+#endif
 
 #define MOO_EDIT_IS_BUSY(doc) (_moo_edit_is_busy (doc))
 
 extern MooEditList *_moo_edit_instances;
+
+G_BEGIN_DECLS
 
 void             _moo_edit_add_view                 (MooEdit        *doc,
                                                      MooEditView    *view);
@@ -44,11 +47,6 @@ void             _moo_edit_set_state                (MooEdit        *doc,
                                                      const char     *text,
                                                      GDestroyNotify  cancel,
                                                      gpointer        data);
-
-char            *_moo_file_get_normalized_name      (GFile          *file);
-char            *_moo_edit_get_normalized_name      (MooEdit        *edit);
-
-char            *_moo_edit_get_utf8_filename        (MooEdit        *edit);
 
 void             _moo_edit_add_class_actions        (MooEdit        *edit);
 void             _moo_edit_check_actions            (MooEdit        *edit,
@@ -118,11 +116,16 @@ GdkPixbuf   *_moo_edit_get_icon                 (MooEdit        *edit,
 
 MooActionCollection *_moo_edit_get_actions      (MooEdit        *edit);
 
-char *_moo_edit_normalize_filename_for_comparison (const char *filename);
-char *_moo_edit_normalize_uri_for_comparison (const char *uri);
-
 void         _moo_edit_strip_whitespace         (MooEdit        *edit);
 
 G_END_DECLS
 
-#endif /* MOO_EDIT_IMPL_H */
+#ifdef __cplusplus
+
+moo::gstr           _moo_edit_normalize_filename_for_comparison    (const char *filename);
+moo::gstr           _moo_edit_normalize_uri_for_comparison         (const char *uri);
+
+moo::gstr           _moo_file_get_normalized_name                  (GFile          *file);
+const moo::gstr&    _moo_edit_get_normalized_name                  (MooEdit        *edit);
+
+#endif // __cplusplus

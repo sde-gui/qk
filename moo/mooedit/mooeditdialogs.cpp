@@ -53,7 +53,7 @@ _moo_edit_open_dialog (GtkWidget *widget,
     }
 
     if (!start)
-        start = moo_prefs_get_file (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
+        start.take(moo_prefs_get_file(moo_edit_setting(MOO_EDIT_PREFS_LAST_DIR)));
 
     dialog = moo_file_dialog_new (MOO_FILE_DIALOG_OPEN, widget,
                                   TRUE, GTK_STOCK_OPEN, start.get(),
@@ -500,21 +500,21 @@ _moo_edit_save_error_enc_dialog (MooEdit    *doc,
 MooEditTryEncodingResponse
 _moo_edit_try_encoding_dialog (const gobjref<GFile>& file,
                                const char*           encoding,
-                               /*out*/ mg_str&       new_encoding)
+                               /*out*/ gstr&         new_encoding)
 {
     MooEditWindow *window;
     GtkWidget *dialog;
     TryEncodingDialogXml *xml;
     int dialog_response;
-    mg_str msg;
-    mg_str secondary;
+    gstr msg;
+    gstr secondary;
 
-    mg_str filename = moo_file_get_display_name(file);
+    gstr filename = moo_file_get_display_name(file);
 
     if (filename.set())
     {
         /* Could not open file foo.txt */
-        mg_str tmp = mg_str::wrap_new(g_strdup_printf(_("Could not open file\n%s"), filename.get()));
+        gstr tmp = gstr::wrap_new(g_strdup_printf(_("Could not open file\n%s"), filename.get()));
         msg.take(g_markup_printf_escaped("<b><big>%s</big></b>", tmp.get()));
     }
     else

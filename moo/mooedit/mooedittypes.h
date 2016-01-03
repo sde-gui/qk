@@ -35,6 +35,9 @@ GType   moo_type_line_end   (void) G_GNUC_CONST;
 MOO_DECLARE_QUARK (moo-edit-reload-error, moo_edit_reload_error_quark)
 MOO_DECLARE_QUARK (moo-edit-save-error, moo_edit_save_error_quark)
 
+#define MOO_TYPE_EDIT_VIEW  (moo_edit_view_get_type ())
+GType moo_edit_view_get_type(void) G_GNUC_CONST;
+
 G_END_DECLS
 
 #ifdef __cplusplus
@@ -45,5 +48,10 @@ using MooEditPtr =      moo::gobjptr<MooEdit>;
 using MooEditViewPtr =  moo::gobjptr<MooEditView>;
 using MooEditTabPtr =   moo::gobjptr<MooEditTab>;
 using MooGFilePtr =     moo::gobjptr<GFile>;
+
+namespace moo 
+{
+MOO_DEFINE_GOBJ_TYPE(MooEditView, GtkTextView, MOO_TYPE_EDIT_VIEW)
+}
 
 #endif // __cplusplus

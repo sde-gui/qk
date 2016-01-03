@@ -84,7 +84,7 @@ static char    *moo_convert_file_data_to_utf8   (const char     *data,
                                                  gsize           len,
                                                  const char     *encoding,
                                                  const char     *cached_encoding,
-                                                 mg_str& /*out*/ used_enc);
+                                                 gstr& /*out*/   used_enc);
 static gboolean encoding_needs_bom_save         (const char     *enc,
                                                  const char    **enc_no_bom,
                                                  const char    **bom,
@@ -111,14 +111,14 @@ normalize_encoding (const char *encoding,
     return encoding;
 }
 
-static mg_str
-normalize_encoding (const mg_str& encoding,
-                    bool          for_save)
+static gstr
+normalize_encoding (const gstr& encoding,
+                    bool        for_save)
 {
     if (!encoding.set() || encoding == MOO_ENCODING_AUTO)
-        return for_save ? mg_str::wrap_literal(MOO_ENCODING_UTF8) : mg_str();
+        return for_save ? gstr::wrap_literal(MOO_ENCODING_UTF8) : gstr();
     else
-        return encoding;
+        return encoding.borrow();
 }
 
 
@@ -164,7 +164,7 @@ convert_file_data_to_utf8_with_prompt (const char*           data,
                                        const gobjref<GFile>& file,
                                        const char*           encoding,
                                        const char*           cached_encoding,
-                                       /*out*/ mg_str&       used_encoding)
+                                       /*out*/ gstr&         used_encoding)
 {
     char *text_utf8 = NULL;
 
@@ -208,8 +208,8 @@ convert_file_data_to_utf8_with_prompt (const char*           data,
 bool
 _moo_edit_load_file (MooEdit*              edit,
                      const gobjref<GFile>& file,
-                     const mg_str&         init_encoding,
-                     const mg_str&         init_cached_encoding,
+                     const gstr&           init_encoding,
+                     const gstr&           init_cached_encoding,
                      GError**              error)
 {
     bool result = false;
@@ -217,13 +217,13 @@ _moo_edit_load_file (MooEdit*              edit,
     char *data = NULL;
     gsize data_len = 0;
     char *data_utf8 = NULL;
-    mg_str used_encoding;
+    gstr used_encoding;
 
     moo_return_error_if_fail (MOO_IS_EDIT (edit));
     moo_return_error_if_fail (!MOO_EDIT_IS_BUSY (edit));
 
-    mg_str encoding = normalize_encoding (init_encoding, false);
-    mg_str cached_encoding;
+    gstr encoding = normalize_encoding (init_encoding, false);
+    gstr cached_encoding;
     if (init_cached_encoding.set())
         cached_encoding = normalize_encoding (init_cached_encoding, false);
 
@@ -383,7 +383,7 @@ moo_edit_set_line_end_type (MooEdit        *edit,
 static void do_load_text    (MooEdit    *edit,
                              const char *text);
 
-static std::list<mg_str>
+static std::list<gstr>
 get_encodings (void)
 {
     const char *encodings;
@@ -394,7 +394,7 @@ get_encodings (void)
     if (!encodings || !encodings[0])
         encodings = _moo_get_default_encodings ();
 
-    std::list<mg_str> result;
+    std::list<gstr> result;
     raw = g_strsplit (encodings, ",", 0);
 
     for (p = raw; p && *p; ++p)
@@ -412,13 +412,13 @@ get_encodings (void)
         }
 
         if (!any_of(result, [enc](const char* s) { return g_ascii_strcasecmp(s, enc) == 0; }))
-            result.emplace_back(mg_str::make_copy(enc));
+            result.emplace_back(gstr::make_copy(enc));
     }
 
     if (result.empty())
     {
         g_critical ("oops");
-        result.emplace_back(mg_str::wrap_literal("UTF-8"));
+        result.emplace_back(gstr::wrap_literal("UTF-8"));
     }
 
     g_strfreev (raw);
@@ -506,7 +506,7 @@ moo_edit_load_text (MooEdit*                   edit,
     gtk_text_buffer_place_cursor (buffer, &start);
     edit->priv->status = (MooEditStatus) 0;
     moo_edit_set_modified (edit, FALSE);
-    _moo_edit_set_file (edit, file.g(), encoding);
+    _moo_edit_set_file (edit, file.gobj(), encoding);
     if (edit->priv->line_end_type != saved_le)
         g_object_notify (G_OBJECT (edit), "line-end-type");
     _moo_edit_start_file_watch (edit);
@@ -602,11 +602,11 @@ moo_edit_reload_local (MooEdit    *edit,
                        GError    **error)
 {
     gobjptr<GFile> file;
-    file.take(moo_edit_get_file(edit));
-    moo_return_error_if_fail(G_IS_FILE(file));
+    file.take (moo_edit_get_file (edit));
+    moo_return_error_if_fail (file != nullptr);
 
     gboolean result = _moo_edit_load_file (edit, *file,
-                                           encoding ? mg_str::make_borrowed(encoding) : edit->priv->encoding,
+                                           encoding ? gstr::make_borrowed(encoding) : edit->priv->encoding.borrow(),
                                            NULL,
                                            error);
 
@@ -1046,55 +1046,43 @@ moo_file_get_display_basename (GFile *file)
     return name;
 }
 
-char *
+gstr
 _moo_edit_normalize_filename_for_comparison (const char *filename)
 {
+    g_return_val_if_fail(filename != NULL, NULL);
+
 #ifdef __WIN32__
     /* XXX */
-    char *tmp;
-    char *ret;
-    g_return_val_if_fail (filename != NULL, NULL);
-    tmp = g_utf8_normalize (filename, -1, G_NORMALIZE_ALL_COMPOSE);
-    ret = g_utf8_strdown (tmp, -1);
-    g_free (tmp);
-    return ret;
+    gstr tmp = gstr::wrap_new(g_utf8_normalize(filename, -1, G_NORMALIZE_ALL_COMPOSE));
+    return gstr::wrap_new(g_utf8_strdown(tmp, -1));
 #else
-    g_return_val_if_fail (filename != NULL, NULL);
-    return g_strdup (filename);
+    return gstr::wrap_new(g_strdup(filename));
 #endif
 }
 
-char *_moo_edit_normalize_uri_for_comparison (const char *uri)
+gstr _moo_edit_normalize_uri_for_comparison (const char *uri)
 {
-    return _moo_edit_normalize_filename_for_comparison (uri);
+    return _moo_edit_normalize_filename_for_comparison(uri);
 }
 
-char *
+gstr
 _moo_file_get_normalized_name (GFile *file)
 {
-    char *ret;
-    char *tmp = NULL;
-    char *tmp2 = NULL;
+    g_return_val_if_fail(G_IS_FILE(file), nullptr);
 
-    g_return_val_if_fail (G_IS_FILE (file), NULL);
+    gstr tmp = gstr::wrap_new(g_file_get_path(file));
 
-    tmp = g_file_get_path (file);
-
-    if (tmp)
+    if (tmp.set())
     {
-        tmp2 = _moo_normalize_file_path (tmp);
-        ret = _moo_edit_normalize_filename_for_comparison (tmp2);
+        const auto& tmp2 = gstr::wrap_new(_moo_normalize_file_path(tmp));
+        return _moo_edit_normalize_filename_for_comparison(tmp2);
     }
     else
     {
-        tmp = g_file_get_uri (file);
-        g_return_val_if_fail (tmp != NULL, NULL);
-        ret = _moo_edit_normalize_uri_for_comparison (tmp);
+        tmp.take(g_file_get_uri(file));
+        g_return_val_if_fail(tmp.set(), nullptr);
+        return _moo_edit_normalize_uri_for_comparison(tmp);
     }
-
-    g_free (tmp2);
-    g_free (tmp);
-    return ret;
 }
 
 void
@@ -1125,7 +1113,7 @@ _moo_edit_set_file (MooEdit    *edit,
         _moo_edit_remove_untitled (edit);
         edit->priv->file.take (g_file_dup (file));
         edit->priv->filename.take(g_file_get_path(file));
-        edit->priv->norm_name.take(_moo_file_get_normalized_name(file));
+        edit->priv->norm_name = _moo_file_get_normalized_name(file);
         edit->priv->display_filename.take(moo_file_get_display_name(file));
         edit->priv->display_basename.take(moo_file_get_display_basename(file));
     }
@@ -1393,7 +1381,7 @@ moo_convert_file_data_to_utf8 (const char  *data,
                                gsize        len,
                                const char  *encoding,
                                const char  *cached_encoding,
-                               mg_str&      used_enc)
+                               gstr&        used_enc)
 {
     char *result = NULL;
     const char *bom_enc = NULL;
@@ -1409,10 +1397,10 @@ moo_convert_file_data_to_utf8 (const char  *data,
     }
     else if (!encoding)
     {
-        std::list<mg_str> encodings = get_encodings ();
+        std::list<gstr> encodings = get_encodings ();
 
         if (cached_encoding)
-            encodings.push_front(mg_str::make_borrowed(cached_encoding));
+            encodings.push_front(gstr::make_borrowed(cached_encoding));
 
         for (auto& enc: encodings)
         {
@@ -1428,7 +1416,7 @@ moo_convert_file_data_to_utf8 (const char  *data,
     else
     {
         result = try_convert_to_utf8_from_encoding (data, len, encoding);
-        used_enc = mg_str::make_borrowed(encoding);
+        used_enc = gstr::make_borrowed(encoding);
     }
 
     return result;

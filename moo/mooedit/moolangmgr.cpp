@@ -56,7 +56,7 @@ static void     read_langs              (MooLangMgr*    mgr);
 static void     read_schemes            (MooLangMgr*    mgr);
 static void     load_config             (MooLangMgr*    mgr);
 static MooLang *get_lang_for_filename   (MooLangMgr*    mgr,
-                                         const mg_str&  filename);
+                                         const gstr&    filename);
 static MooLang *get_lang_for_mime_type  (MooLangMgr*    mgr,
                                          const char*    mime_type);
 
@@ -327,7 +327,7 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
     }
 
     if (base)
-        lang = get_lang_for_filename (mgr, mg_str::make_borrowed(base));
+        lang = get_lang_for_filename (mgr, gstr::make_borrowed(base));
 
     g_free (base);
     return lang;
@@ -335,8 +335,8 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
 
 
 static gboolean
-filename_blacklisted (MooLangMgr*   mgr,
-                      const mg_str& filename)
+filename_blacklisted (MooLangMgr* mgr,
+                      const gstr& filename)
 {
     /* XXX bak files */
     char *basename;
@@ -361,8 +361,8 @@ filename_blacklisted (MooLangMgr*   mgr,
 }
 
 static gboolean
-file_blacklisted (MooLangMgr*   mgr,
-                  const mg_str& filename)
+file_blacklisted (MooLangMgr* mgr,
+                  const gstr& filename)
 {
     /* XXX mime type */
     return filename_blacklisted (mgr, filename);
@@ -380,7 +380,7 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr*                mgr,
 
     read_langs (mgr);
 
-    mg_str filename = file.get_parse_name();
+    gstr filename = file.get_parse_name();
 
     if (file_blacklisted (mgr, filename))
         return lang;
@@ -405,8 +405,8 @@ moo_lang_mgr_get_lang_for_file (MooLangMgr*                mgr,
 
 
 static MooLang *
-get_lang_for_filename (MooLangMgr*   mgr,
-                       const mg_str& filename)
+get_lang_for_filename (MooLangMgr* mgr,
+                       const gstr& filename)
 {
     MooLang *lang = NULL;
     const char *mime_type;
