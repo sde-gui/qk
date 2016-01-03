@@ -1030,8 +1030,6 @@ info_equal (MooUserToolInfo *info1,
         return FALSE;
 
     return info1->position == info2->position &&
-           info1->position == info2->position &&
-           info1->position == info2->position &&
            info1->cmd_factory == info2->cmd_factory &&
            moo_str_equal (info1->name, info2->name) &&
            moo_str_equal (info1->accel, info2->accel) &&
