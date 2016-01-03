@@ -17,6 +17,7 @@
 
 #include "mooedit/mooedit-impl.h"
 #include "mooedit/mooeditprogress.h"
+#include "mooedit/mooeditbookmark.h"
 #include "moocpp/strutils.h"
 #include "moocpp/utils.h"
 #include "moocpp/gobjptrtypes.h"
@@ -60,7 +61,7 @@ struct MooEditPrivate {
     guint                                   sync_timeout_id;
 
     MooEditState                            state;
-    MooEditProgress*                        progress;
+    moo::gobjptr<MooEditProgress>           progress;
 
     /***********************************************************************/
     /* Bookmarks
@@ -72,7 +73,7 @@ struct MooEditPrivate {
     /***********************************************************************/
     /* Actions
      */
-    MooActionCollection*                    actions;
+    moo::gobjptr<MooActionCollection>       actions;
 };
 
 void    _moo_edit_remove_untitled   (MooEdit    *doc);

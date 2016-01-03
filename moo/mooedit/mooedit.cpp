@@ -278,7 +278,7 @@ MooEditPrivate::MooEditPrivate()
     : line_end_type(MOO_LE_NONE)
 {
     buffer.take(GTK_TEXT_BUFFER(g_object_new(MOO_TYPE_TEXT_BUFFER, NULL)));
-    actions = moo_action_collection_new ("MooEdit", "MooEdit");
+    actions = wrap_new (moo_action_collection_new ("MooEdit", "MooEdit"));
 }
 
 MooEditPrivate::~MooEditPrivate()
@@ -398,11 +398,7 @@ _moo_edit_closed (MooEdit *doc)
 
     _moo_edit_delete_bookmarks (doc, TRUE);
 
-    if (doc->priv->actions)
-    {
-        g_object_unref (doc->priv->actions);
-        doc->priv->actions = NULL;
-    }
+    doc->priv->actions.reset();
 }
 
 static void
@@ -488,11 +484,10 @@ _moo_edit_remove_view (MooEdit     *doc,
 }
 
 
-MooActionCollection *
-_moo_edit_get_actions (MooEdit *doc)
+MooActionCollection&
+_moo_edit_get_actions(MooEdit& doc)
 {
-    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
-    return doc->priv->actions;
+    return *doc.priv->actions;
 }
 
 
@@ -1513,8 +1508,8 @@ _moo_edit_set_progress_text (MooEdit    *doc,
 {
     g_return_if_fail (MOO_IS_EDIT (doc));
     g_return_if_fail (doc->priv->state != MOO_EDIT_STATE_NORMAL);
-    g_return_if_fail (doc->priv->progress != NULL);
-    _moo_edit_progress_set_text (doc->priv->progress, text);
+    g_return_if_fail (doc->priv->progress != nullptr);
+    _moo_edit_progress_set_text (*doc->priv->progress, text);
 }
 
 void
@@ -1531,7 +1526,7 @@ _moo_edit_set_state (MooEdit        *doc,
                       doc->priv->state == MOO_EDIT_STATE_NORMAL);
 
     if (doc->priv->progress)
-        _moo_edit_progress_set_cancel_func (doc->priv->progress, cancel, data);
+        _moo_edit_progress_set_cancel_func (*doc->priv->progress, cancel, data);
 
     if (state == doc->priv->state)
         return;
@@ -1549,14 +1544,12 @@ _moo_edit_set_state (MooEdit        *doc,
     if (!state)
     {
         _moo_edit_tab_destroy_progress (tab);
-        g_object_unref (doc->priv->progress);
-        doc->priv->progress = NULL;
+        doc->priv->progress = nullptr;
     }
     else
     {
-        doc->priv->progress = _moo_edit_tab_create_progress (tab);
-        _moo_edit_progress_start (doc->priv->progress, text, cancel, data);
-        g_object_ref (doc->priv->progress);
+        doc->priv->progress = wrap_new (_moo_edit_tab_create_progress (tab));
+        _moo_edit_progress_start (*doc->priv->progress, text, cancel, data);
     }
 }
 

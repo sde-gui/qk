@@ -101,7 +101,7 @@ _moo_edit_view_new (MooEdit *doc)
 
     g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
 
-    view = g_object_new (MOO_TYPE_EDIT_VIEW, "buffer", moo_edit_get_buffer (doc), NULL);
+    view = MOO_EDIT_VIEW (g_object_new (MOO_TYPE_EDIT_VIEW, "buffer", moo_edit_get_buffer (doc), NULL));
     view->priv->doc = doc;
     view->priv->editor = moo_edit_get_editor (doc);
 
@@ -398,7 +398,7 @@ _moo_edit_view_do_popup (MooEditView    *view,
     _moo_edit_check_actions (view->priv->doc, view);
 
     menu = (GtkMenu*) moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup",
-                                                _moo_edit_get_actions (view->priv->doc),
+                                                &_moo_edit_get_actions (*view->priv->doc),
                                                 window ? MOO_WINDOW(window)->accel_group : NULL);
     g_return_if_fail (menu != NULL);
     g_object_ref_sink (menu);

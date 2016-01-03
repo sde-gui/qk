@@ -114,18 +114,18 @@ GdkPixbuf   *_moo_edit_get_icon                 (MooEdit        *edit,
                                                  GtkWidget      *widget,
                                                  GtkIconSize     size);
 
-MooActionCollection *_moo_edit_get_actions      (MooEdit        *edit);
-
 void         _moo_edit_strip_whitespace         (MooEdit        *edit);
 
 G_END_DECLS
 
 #ifdef __cplusplus
 
-moo::gstr           _moo_edit_normalize_filename_for_comparison    (const char *filename);
-moo::gstr           _moo_edit_normalize_uri_for_comparison         (const char *uri);
+MooActionCollection&    _moo_edit_get_actions                       (MooEdit&       edit);
 
-moo::gstr           _moo_file_get_normalized_name                  (GFile          *file);
-const moo::gstr&    _moo_edit_get_normalized_name                  (MooEdit        *edit);
+moo::gstr               _moo_edit_normalize_filename_for_comparison (const char*    filename);
+moo::gstr               _moo_edit_normalize_uri_for_comparison      (const char*    uri);
+
+moo::gstr               _moo_file_get_normalized_name               (GFile*         file);
+const moo::gstr&        _moo_edit_get_normalized_name               (MooEdit*       edit);
 
 #endif // __cplusplus

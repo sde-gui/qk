@@ -187,6 +187,7 @@ class gobjref<GObject>; // : public gobjref_base
     }                                                                           \
                                                                                 \
     operator object_type*() const { return gobj(); }                            \
+    operator object_type&() const { return *gobj(); }                           \
                                                                                 \
     gobjref(const gobjref&) = default;                                          \
     gobjref& operator=(const gobjref&) = default;                               \

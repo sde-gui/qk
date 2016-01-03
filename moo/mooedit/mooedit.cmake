@@ -24,7 +24,7 @@ SET(mooedit_sources
     mooedit/mootextiter.h
     mooedit/mootextsearch.h
     mooedit/mootextstylescheme.h
-    mooedit/mooeditview.c
+    mooedit/mooeditview.cpp
     mooedit/mooeditview-priv.h
     mooedit/mooeditview-impl.h
     mooedit/mooeditview-script.c
@@ -51,8 +51,8 @@ SET(mooedit_sources
     mooedit/mooeditprefspage.c
     mooedit/mooedit-private.h
     mooedit/mooeditprogress.h
-    mooedit/mooeditprogress.c
-    mooedit/mooedittab.c	
+    mooedit/mooeditprogress.cpp
+    mooedit/mooedittab.cpp
     mooedit/mooedittab.h	
     mooedit/mooedittab-impl.h
     mooedit/mooeditwindow.c

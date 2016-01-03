@@ -541,7 +541,7 @@ GtkActionGroup *
 moo_edit_get_actions (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return moo_action_collection_get_group (edit->priv->actions, NULL);
+    return moo_action_collection_get_group (edit->priv->actions.get(), NULL);
 }
 
 

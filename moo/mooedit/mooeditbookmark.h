@@ -19,6 +19,10 @@
 #include <mooedit/mooedit.h>
 #include <mooedit/moolinemark.h>
 
+#ifdef __cplusplus
+#include <moocpp/gobjptrtypes.h>
+#endif
+
 G_BEGIN_DECLS
 
 
@@ -43,6 +47,10 @@ struct MooEditBookmarkClass
     MooLineMarkClass mark_class;
 };
 
+#ifdef __cplusplus
+using MooEditBookmarkPtr = moo::gobjptr<MooEditBookmark>;
+using MooEditBookmarkRef = moo::gobjref<MooEditBookmark>;
+#endif
 
 GType            moo_edit_bookmark_get_type     (void) G_GNUC_CONST;
 

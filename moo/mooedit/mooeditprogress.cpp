@@ -21,9 +21,11 @@ struct MooEditProgress
     ProgressWidgetXml *xml;
 
     guint timeout;
-    char *text;
+    moo::gstr text;
     GDestroyNotify cancel_op;
     gpointer cancel_data;
+
+    void update();
 };
 
 struct MooEditProgressClass
@@ -38,6 +40,7 @@ MOO_DEFINE_TYPE_STATIC (MooEditProgress, moo_edit_progress, GTK_TYPE_ALIGNMENT)
 static void
 moo_edit_progress_init (MooEditProgress *pr)
 {
+    new(pr)(MooEditProgress);
     pr->xml = progress_widget_xml_new_with_root (GTK_WIDGET (pr));
     g_signal_connect_swapped (pr->xml->cancel, "clicked", G_CALLBACK (cancel_clicked), pr);
 }
@@ -53,46 +56,42 @@ moo_edit_progress_dispose (GObject *object)
         pr->timeout = 0;
     }
 
-    g_free (pr->text);
-    pr->text = NULL;
-
     G_OBJECT_CLASS (moo_edit_progress_parent_class)->dispose (object);
+}
+
+static void
+moo_edit_progress_finalize(GObject* object)
+{
+    MooEditProgress* pr = MOO_EDIT_PROGRESS(object);
+    pr->~MooEditProgress();
+    G_OBJECT_CLASS(moo_edit_progress_parent_class)->finalize(object);
 }
 
 static void
 moo_edit_progress_class_init (MooEditProgressClass *klass)
 {
-    G_OBJECT_CLASS (klass)->dispose = moo_edit_progress_dispose;
+    G_OBJECT_CLASS(klass)->finalize = moo_edit_progress_finalize;
+    G_OBJECT_CLASS(klass)->dispose = moo_edit_progress_dispose;
 }
 
-MooEditProgress *
+MooEditProgressPtr
 _moo_edit_progress_new (void)
 {
-    return g_object_new (MOO_TYPE_EDIT_PROGRESS, NULL);
+    return moo::wrap_new(MOO_EDIT_PROGRESS(g_object_new(MOO_TYPE_EDIT_PROGRESS, NULL)));
 }
 
-static void
-update_progress (MooEditProgress *progress)
+void MooEditProgress::update()
 {
-    g_return_if_fail (MOO_IS_EDIT_PROGRESS (progress));
-    g_return_if_fail (progress->text != NULL);
-    gtk_progress_bar_set_text (progress->xml->progressbar,
-                               progress->text);
+    g_return_if_fail (text.set());
+    gtk_progress_bar_set_text(xml->progressbar, text);
 }
 
 void
-_moo_edit_progress_set_text (MooEditProgress *progress,
-                             const char      *text)
+_moo_edit_progress_set_text (MooEditProgress& progress,
+                             const char*      text)
 {
-    char *tmp;
-
-    g_return_if_fail (MOO_IS_EDIT_PROGRESS (progress));
-
-    tmp = progress->text;
-    progress->text = g_strdup (text);
-    g_free (tmp);
-
-    update_progress (progress);
+    progress.text.take(g_strdup(text));
+    progress.update();
 }
 
 static gboolean
@@ -101,7 +100,7 @@ pulse_progress (MooEditProgress *progress)
     g_return_val_if_fail (MOO_IS_EDIT_PROGRESS (progress), FALSE);
     g_return_val_if_fail (GTK_IS_WIDGET (progress->xml->progressbar), FALSE);
     gtk_progress_bar_pulse (GTK_PROGRESS_BAR (progress->xml->progressbar));
-    update_progress (progress);
+    progress->update();
     return TRUE;
 }
 
@@ -122,7 +121,7 @@ show_progress (MooEditProgress *progress)
         gdk_threads_add_timeout (PROGRESS_TIMEOUT,
                                  (GSourceFunc) pulse_progress,
                                  progress);
-    update_progress (progress);
+    progress->update();
 
     gtk_widget_show (GTK_WIDGET (progress));
 
@@ -130,32 +129,30 @@ show_progress (MooEditProgress *progress)
 }
 
 void
-_moo_edit_progress_set_cancel_func (MooEditProgress *progress,
-                                    GDestroyNotify   cancel_func,
-                                    gpointer         cancel_func_data)
+_moo_edit_progress_set_cancel_func (MooEditProgress& progress,
+                                    GDestroyNotify  cancel_func,
+                                    gpointer        cancel_func_data)
 {
-    g_return_if_fail (MOO_IS_EDIT_PROGRESS (progress));
-    progress->cancel_op = cancel_func;
-    progress->cancel_data = cancel_func_data;
-    gtk_widget_set_sensitive (GTK_WIDGET (progress->xml->cancel),
+    progress.cancel_op = cancel_func;
+    progress.cancel_data = cancel_func_data;
+    gtk_widget_set_sensitive (GTK_WIDGET (progress.xml->cancel),
                               cancel_func != NULL);
 }
 
 void
-_moo_edit_progress_start (MooEditProgress *progress,
-                          const char      *text,
+_moo_edit_progress_start (MooEditProgress& progress,
+                          const char*      text,
                           GDestroyNotify   cancel_func,
                           gpointer         cancel_func_data)
 {
-    g_return_if_fail (MOO_IS_EDIT_PROGRESS (progress));
-    g_return_if_fail (progress->timeout == 0);
+    g_return_if_fail(progress.timeout == 0);
 
-    progress->text = g_strdup (text);
+    progress.text.take(g_strdup(text));
 
-    _moo_edit_progress_set_cancel_func (progress, cancel_func, cancel_func_data);
+    _moo_edit_progress_set_cancel_func(progress, cancel_func, cancel_func_data);
 
-    progress->timeout =
-        gdk_threads_add_timeout (INITIAL_TIMEOUT,
-                                 (GSourceFunc) show_progress,
-                                 progress);
+    progress.timeout =
+        gdk_threads_add_timeout(INITIAL_TIMEOUT,
+                                (GSourceFunc) show_progress,
+                                &progress);
 }

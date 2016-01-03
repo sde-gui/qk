@@ -104,8 +104,8 @@ _moo_edit_tab_new (MooEdit *doc)
 
     g_return_val_if_fail (moo_edit_get_n_views (doc) == 1, NULL);
 
-    tab = g_object_new (MOO_TYPE_EDIT_TAB, NULL);
-    tab->doc = g_object_ref (doc);
+    tab = MOO_EDIT_TAB (g_object_new (MOO_TYPE_EDIT_TAB, NULL));
+    tab->doc = MOO_EDIT (g_object_ref (doc));
 
     view = moo_edit_get_view (doc);
     _moo_edit_view_set_tab (view, tab);
@@ -148,7 +148,7 @@ moo_edit_tab_get_views (MooEditTab *tab)
         GList *children = gtk_container_get_children (GTK_CONTAINER (i == 0 ? tab->vpaned1 : tab->vpaned2));
         while (children)
         {
-            MooEditView *view = MOO_EDIT_VIEW (gtk_bin_get_child (children->data));
+            MooEditView *view = MOO_EDIT_VIEW (gtk_bin_get_child (GTK_BIN (children->data)));
             moo_edit_view_array_append (views, view);
             children = g_list_delete_link (children, children);
         }
@@ -172,7 +172,7 @@ moo_edit_tab_get_active_view (MooEditTab *tab)
         {
             GList *children = gtk_container_get_children (GTK_CONTAINER (i == 0 ? tab->vpaned1 : tab->vpaned2));
             if (children)
-                tab->active_view = MOO_EDIT_VIEW (gtk_bin_get_child (children->data));
+                tab->active_view = MOO_EDIT_VIEW (gtk_bin_get_child (GTK_BIN (children->data)));
             g_list_free (children);
         }
     }
@@ -439,10 +439,12 @@ _moo_edit_tab_create_progress (MooEditTab *tab)
     g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), NULL);
     g_return_val_if_fail (!tab->progress, tab->progress);
 
-    tab->progress = _moo_edit_progress_new ();
+    MooEditProgressPtr progress = _moo_edit_progress_new();
+    tab->progress = progress.get();
     gtk_box_pack_start (GTK_BOX (tab), GTK_WIDGET (tab->progress), FALSE, FALSE, 0);
     gtk_box_reorder_child (GTK_BOX (tab), GTK_WIDGET (tab->progress), 0);
 
+    // progress object is owned by gtk now
     return tab->progress;
 }
 
