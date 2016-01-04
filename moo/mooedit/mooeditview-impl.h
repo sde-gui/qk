@@ -8,38 +8,9 @@
 namespace moo {
 
 MOO_DEFINE_GOBJ_TYPE(MooEditView, MooTextView, moo_edit_view_get_type())
-//template<>                                                                                  
-//struct gobjinfo<MooEditView>
-//{                                                                                           
-//using object_type = MooEditView;
-//using parent_type = MooTextView;
-//static GType object_g_type() { return moo_edit_view_get_type(); }
-//static GType parent_g_type() { return gobjinfo<MooTextView>::object_g_type(); }
-//};                                                                                          
-//
-//template<>                                                                                  
-//struct gobj_is_subclass<MooEditView, MooEditView>
-//{                                                                                           
-//static const bool value = true;                                                         
-//static MooEditView* down_cast(MooEditView* o) { return o; }
-//};                                                                                          
-//
-//template<typename Super>                                                                    
-//struct gobj_is_subclass<MooEditView, Super>
-//{                                                                                           
-//static const bool value = true;                                                         
-//static Super* down_cast(MooEditView *o)
-//{                                                                                       
-//static_assert(gobj_is_subclass<MooEditView, Super>::value,
-//              "In " __FUNCTION__ ": Super is not a superclass of MooEditView");
-//MooTextView* p = reinterpret_cast<MooTextView*>(o);
-//    Super* s = gobj_is_subclass<MooTextView, Super>::down_cast(p);
-//    return s;                                                                           
-//}                                                                                       
-//};
 
 template<>
-class gobjref<MooEditView> : public gobjref_parent<MooEditView>
+class gobj_ref<MooEditView> : public gobj_ref_parent<MooEditView>
 {
 public:
     MOO_DEFINE_GOBJREF_METHODS(MooEditView);
@@ -56,12 +27,12 @@ public:
 };
 
 template<>
-class gobjptr<MooEditView> : public gobjptr_impl<MooEditView>
+class gobj_ptr<MooEditView> : public gobj_ptr_impl<MooEditView>
 {
 public:
     MOO_DEFINE_GOBJPTR_METHODS(MooEditView);
 
-    static gobjptr  _create (MooEditRef doc);
+    static gobj_ptr _create (Edit doc);
 };
 
 } // namespace moo

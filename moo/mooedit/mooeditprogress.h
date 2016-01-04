@@ -9,8 +9,8 @@ typedef struct MooEditProgress MooEditProgress;
 
 #include <moocpp/gobjptrtypes.h>
 
-using MooEditProgressPtr = moo::gobjptr<MooEditProgress>;
-using MooEditProgressRef = moo::gobjref<MooEditProgress>;
+using MooEditProgressPtr = moo::gobj_ptr<MooEditProgress>;
+using MooEditProgressRef = moo::gobj_ref<MooEditProgress>;
 
 MooEditProgressPtr  _moo_edit_progress_new             (void);
 void                _moo_edit_progress_start           (MooEditProgress& progress,

@@ -20,10 +20,10 @@
 #include "mooedit/mootextview.h"
 #include "mooedit/mooedittypes.h"
 #include "mooutils/moohistorymgr.h"
-#include <gio/gio.h>
 
 #ifdef __cplusplus
 #include <moocpp/strutils.h>
+#include <moocpp/gobjptrtypes-gio.h>
 #endif
 
 extern MooEditList *_moo_edit_instances;
@@ -33,48 +33,48 @@ extern MooEditList *_moo_edit_instances;
 namespace moo {
 
 template<>
-class gobjref<MooEdit> : public gobjref_parent<MooEdit>
+class gobj_ref<MooEdit> : public gobj_ref_parent<MooEdit>
 {
 public:
     MOO_DEFINE_GOBJREF_METHODS(MooEdit)
 
-    void                    _add_view                           (MooEditViewRef         view);
-    void                    _remove_view                        (MooEditViewRef         view);
-    void                    _set_active_view                    (MooEditViewRef         view);
+    void                    _add_view                           (EditView           view);
+    void                    _remove_view                        (EditView           view);
+    void                    _set_active_view                    (EditView           view);
 
     bool                    _is_busy                            () const;
 
     void                    _add_class_actions                  ();
-    static void             _class_init_actions                 (MooEditClass*          klass);
+    static void             _class_init_actions                 (MooEditClass*      klass);
 
     void                    _status_changed                     ();
 
-    void                    _delete_bookmarks                   (bool                   in_destroy);
-    static void             _line_mark_moved                    (MooEdit*               doc,
-                                                                 MooLineMark*           mark);
-    static void             _line_mark_deleted                  (MooEdit*               doc,
-                                                                 MooLineMark*           mark);
+    void                    _delete_bookmarks                   (bool               in_destroy);
+    static void             _line_mark_moved                    (MooEdit*           doc,
+                                                                 MooLineMark*       mark);
+    static void             _line_mark_deleted                  (MooEdit*           doc,
+                                                                 MooLineMark*       mark);
     void                    _update_bookmarks_style             ();
 
     void                    _queue_recheck_config               ();
 
     void                    _closed                             ();
 
-    void                    _set_file                           (gobj_raw_ptr<const GFile>  file,
-                                                                 const char*                encoding);
-    void                    _remove_untitled                    (const MooEditRef&          doc);
+    void                    _set_file                           (g::ConstFilePtr    file,
+                                                                 const char*        encoding);
+    void                    _remove_untitled                    (const Edit&        doc);
 
     void                    _ensure_newline                     ();
 
     void                    _stop_file_watch                    ();
 
-    void                    _set_status                         (MooEditStatus          status);
+    void                    _set_status                         (MooEditStatus      status);
 
     void                    _strip_whitespace                   ();
 
     MooActionCollection&    _get_actions                        ();
 
-    static moo::gstr        _get_normalized_name                (const gobjref<GFile>&  file);
+    static moo::gstr        _get_normalized_name                (const g::File&     file);
     const moo::gstr&        _get_normalized_name                () const;
 
     MooEditPrivate&         get_priv                            ()                      { return *gobj()->priv; }

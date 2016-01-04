@@ -15,13 +15,14 @@
 
 #include "moocpp/gobjptrtypes-gtk.h"
 
-using namespace moo;
+namespace moo {
+namespace _test {
 
 void test()
 {
     {
-        gobjptr<GtkObject> p;
-        gobjref<GtkObject>& r = *p;
+        gobj_ptr<GtkObject> p;
+        gobj_ref<GtkObject>& r = *p;
         GtkObject* o1 = r.gobj();
         GtkObject* o2 = p->gobj();
         g_assert(o1 == o2);
@@ -36,8 +37,8 @@ void test()
     }
 
     {
-        gobjptr<GtkWidget> p = wrap_new(gtk_widget_new(0, "blah", nullptr, nullptr));
-        gobjref<GtkWidget>& r = *p;
+        gobj_ptr<GtkWidget> p = wrap_new(gtk_widget_new(0, "blah", nullptr, nullptr));
+        gobj_ref<GtkWidget>& r = *p;
         GtkWidget* o1 = r.gobj();
         GtkWidget* o2 = p->gobj();
         g_assert(o1 == o2);
@@ -53,10 +54,13 @@ void test()
         g_assert((void*) c1 == (void*) c2);
         g_assert((void*) c1 == (void*) c3);
 
-        gobjref<GtkWidget> or(*p.get());
+        gobj_ref<GtkWidget> or(*p.get());
         or.freeze_notify();
         p->freeze_notify();
 
         gobj_raw_ptr<GtkWidget> rp = p.get();
     }
 }
+
+} // namespace _test
+} // namespace moo

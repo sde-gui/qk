@@ -18,7 +18,7 @@ struct MooEditTab
     GtkWidget *vpaned1;
     GtkWidget *vpaned2;
 
-    MooEditPtr doc;
+    EditPtr doc;
     MooEditView *active_view;
 };
 
@@ -100,7 +100,7 @@ static GtkWidget *
 create_view_in_scrolled_window (MooEditTab *tab)
 {
     g_return_val_if_fail (tab->doc != nullptr, nullptr);
-    MooEditViewPtr view = MooEditViewPtr::_create(*tab->doc);
+    auto view = EditViewPtr::_create(*tab->doc);
     view->_set_tab(tab);
     return create_view_scrolled_window(*view);
 }
@@ -118,7 +118,7 @@ _moo_edit_tab_new (MooEdit *doc)
     tab->doc.ref (doc);
 
     view = moo_edit_get_view (doc);
-    MooEditViewRef(*view)._set_tab(tab);
+    EditView(*view)._set_tab(tab);
 
     swin = create_view_scrolled_window (*view);
     gtk_paned_pack1 (GTK_PANED (tab->vpaned1), swin, TRUE, FALSE);

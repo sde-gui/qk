@@ -27,4 +27,12 @@ MOO_DEFINE_GOBJ_TYPE(GtkObject, GObject, GTK_TYPE_OBJECT)
 MOO_DEFINE_GOBJ_TYPE(GtkWidget, GtkObject, GTK_TYPE_WIDGET)
 MOO_DEFINE_GOBJ_TYPE(GtkTextView, GtkWidget, GTK_TYPE_TEXT_VIEW)
 
+namespace gtk {
+
+MOO_GOBJ_TYPEDEFS(Object, GtkObject);
+MOO_GOBJ_TYPEDEFS(Widget, GtkWidget);
+MOO_GOBJ_TYPEDEFS(TextView, GtkTextView);
+
+} // namespace g
+
 } // namespace moo

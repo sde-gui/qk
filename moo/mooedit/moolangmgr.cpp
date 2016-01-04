@@ -370,8 +370,8 @@ file_blacklisted (MooLangMgr* mgr,
 
 
 MooLang *
-moo_lang_mgr_get_lang_for_file (MooLangMgr*                mgr,
-                                const moo::gobjref<GFile>& file)
+moo_lang_mgr_get_lang_for_file (MooLangMgr*                 mgr,
+                                const moo::gobj_ref<GFile>& file)
 {
     MooLang *lang = NULL;
     const char *mime_type;

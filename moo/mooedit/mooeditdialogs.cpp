@@ -38,7 +38,7 @@ _moo_edit_open_dialog (GtkWidget *widget,
 {
     MooFileDialog *dialog;
     const char *encoding;
-    MooGFilePtr start;
+    g::FilePtr start;
     MooFileArray *files = NULL;
     MooOpenInfoArray *info_array = NULL;
     guint i;
@@ -47,7 +47,7 @@ _moo_edit_open_dialog (GtkWidget *widget,
 
     if (current_doc && moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN_FOLLOWS_DOC)))
     {
-        MooGFilePtr file(moo_edit_get_file(current_doc), ref_transfer::take_ownership);
+        g::FilePtr file(moo_edit_get_file(current_doc), ref_transfer::take_ownership);
 
         if (file)
             start = file->get_parent();
@@ -412,7 +412,7 @@ _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
 /* Error dialogs
  */
 
-void _moo_edit_save_error_dialog(MooEditRef& doc, const MooGFileRef& file, GError *error)
+void _moo_edit_save_error_dialog(Edit& doc, const g::File& file, GError *error)
 {
     gstr filename = moo_file_get_display_name (file);
     gstr msg = gstr::wrap_new(g_strdup_printf(_("Could not save file\n%s"), filename));
@@ -460,9 +460,9 @@ moo_edit_question_dialog (MooEdit    *doc,
     return res == GTK_RESPONSE_YES;
 }
 
-bool _moo_edit_save_error_enc_dialog(MooEditRef&        doc,
-                                     const MooGFileRef& file,
-                                     const char*        encoding)
+bool _moo_edit_save_error_enc_dialog(Edit&          doc,
+                                     const g::File& file,
+                                     const char*    encoding)
 {
     g_return_val_if_fail (encoding != NULL, FALSE);
 
@@ -479,9 +479,9 @@ bool _moo_edit_save_error_enc_dialog(MooEditRef&        doc,
 
 
 MooEditTryEncodingResponse
-_moo_edit_try_encoding_dialog (const gobjref<GFile>& file,
-                               const char*           encoding,
-                               /*out*/ gstr&         new_encoding)
+_moo_edit_try_encoding_dialog (const gobj_ref<GFile>& file,
+                               const char*            encoding,
+                               /*out*/ gstr&          new_encoding)
 {
     MooEditWindow *window;
     GtkWidget *dialog;

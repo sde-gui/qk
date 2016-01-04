@@ -6,7 +6,7 @@
 
 struct MooEditViewPrivate
 {
-    MooEditRawPtr doc;
+    EditRawPtr doc;
     MooEditor *editor;
     MooEditTab *tab;
     GtkTextMark *fake_cursor_mark;

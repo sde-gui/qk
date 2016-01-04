@@ -63,7 +63,7 @@ moo_edit_view_init (MooEditView *view)
     view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_EDIT_VIEW, MooEditViewPrivate);
 }
 
-void MooEditViewRef::_unset_doc()
+void EditView::_unset_doc()
 {
     get_priv().doc = nullptr;
 }
@@ -91,7 +91,7 @@ moo_edit_view_dispose (GObject *object)
 }
 
 
-MooEditViewPtr MooEditViewPtr::_create(MooEditRef doc)
+EditViewPtr EditViewPtr::_create(Edit doc)
 {
     MooEditView *view = MOO_EDIT_VIEW (g_object_new (MOO_TYPE_EDIT_VIEW,
                                                      "buffer", moo_edit_get_buffer (doc.gobj()),
@@ -123,7 +123,7 @@ moo_edit_view_apply_style_scheme (MooTextView        *view,
                                   MooTextStyleScheme *scheme)
 {
     MOO_TEXT_VIEW_CLASS (moo_edit_view_parent_class)->apply_style_scheme (view, scheme);
-    MooEditRef(*moo_edit_view_get_doc(MOO_EDIT_VIEW(view)))._update_bookmarks_style();
+    Edit(*moo_edit_view_get_doc(MOO_EDIT_VIEW(view)))._update_bookmarks_style();
 }
 
 
@@ -176,7 +176,7 @@ moo_edit_view_get_tab (MooEditView *view)
     return view->priv->tab;
 }
 
-void MooEditViewRef::_set_tab(MooEditTab *tab)
+void EditView::_set_tab(MooEditTab *tab)
 {
     g_return_if_fail (MOO_IS_EDIT_TAB (tab));
     g_return_if_fail (get_priv().tab == NULL);
@@ -202,7 +202,7 @@ moo_edit_view_get_window (MooEditView *view)
 }
 
 
-GtkTextMark *MooEditViewRef::_get_fake_cursor_mark()
+GtkTextMark *EditView::_get_fake_cursor_mark()
 {
     auto& priv = get_priv();
 
@@ -218,7 +218,7 @@ GtkTextMark *MooEditViewRef::_get_fake_cursor_mark()
 }
 
 
-void MooEditViewRef::_apply_config()
+void EditView::_apply_config()
 {
     GtkWrapMode wrap_mode;
     gboolean line_numbers;
@@ -384,7 +384,7 @@ _moo_edit_view_do_popup (MooEditView    *view,
     xml = moo_editor_get_doc_ui_xml (view->priv->editor);
     g_return_if_fail (xml != NULL);
 
-    MooEditRef doc = *view->priv->doc;
+    Edit doc = *view->priv->doc;
     _moo_edit_check_actions (&doc, view);
 
     menu = (GtkMenu*) moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup",

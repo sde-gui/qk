@@ -22,19 +22,19 @@ namespace moo {
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 //
-// gobjptr
+// gobj_ptr
 //
 
 template<typename Object>
-class gobjptr_impl
+class gobj_ptr_impl
 {
-    using ptr_type = gobjptr<Object>;
-    using ref_type = gobjref<Object>;
+    using ptr_type = gobj_ptr<Object>;
+    using ref_type = gobj_ref<Object>;
 
 public:
-    gobjptr_impl() {}
+    gobj_ptr_impl() {}
 
-    gobjptr_impl(Object* obj, ref_transfer policy)
+    gobj_ptr_impl(Object* obj, ref_transfer policy)
     {
         assign(obj, policy);
     }
@@ -49,7 +49,7 @@ public:
         return ptr_type(obj, ref_transfer::make_copy);
     }
 
-    ~gobjptr_impl()
+    ~gobj_ptr_impl()
     {
         reset();
     }
@@ -105,11 +105,11 @@ public:
     operator bool() const { return get() != nullptr; }
     bool operator!() const { return get() == nullptr; }
 
-    gobjptr_impl(const gobjptr_impl& other) = delete;
-    gobjptr_impl& operator=(const gobjptr_impl& other) = delete;
+    gobj_ptr_impl(const gobj_ptr_impl& other) = delete;
+    gobj_ptr_impl& operator=(const gobj_ptr_impl& other) = delete;
 
-    gobjptr_impl(gobjptr_impl&& other)
-        : gobjptr_impl()
+    gobj_ptr_impl(gobj_ptr_impl&& other)
+        : gobj_ptr_impl()
     {
         m_ref._set_gobj(other.get());
         other.m_ref._set_gobj(nullptr);
@@ -119,19 +119,19 @@ public:
     // a const Foo, which can't be converted to non-const Object*, so one can't
     // steal a reference to a const object with this method.
     template<typename T>
-    gobjptr_impl& operator=(T* p)
+    gobj_ptr_impl& operator=(T* p)
     {
         assign(p, ref_transfer::take_ownership);
         return *this;
     }
 
-    gobjptr_impl& operator=(const nullptr_t&)
+    gobj_ptr_impl& operator=(const nullptr_t&)
     {
         reset();
         return *this;
     }
 
-    gobjptr_impl& operator=(gobjptr_impl&& other)
+    gobj_ptr_impl& operator=(gobj_ptr_impl&& other)
     {
         if (get() != other.get())
         {
@@ -164,54 +164,54 @@ private:
     }
 
 private:
-    mutable gobjref<Object> m_ref;
+    mutable gobj_ref<Object> m_ref;
 };
 
 template<typename Object>
-inline gobjptr<Object> wrap_new(Object *obj)
+inline gobj_ptr<Object> wrap_new(Object *obj)
 {
-    return gobjptr<Object>::wrap_new(obj);
+    return gobj_ptr<Object>::wrap_new(obj);
 }
 
 template<typename Object>
-inline gobjptr<Object> wrap(Object* obj)
+inline gobj_ptr<Object> wrap(Object* obj)
 {
-    return gobjptr<Object>::wrap(obj);
+    return gobj_ptr<Object>::wrap(obj);
 }
 
 template<typename Object>
-inline gobjptr<Object> wrap(gobjref<Object>& obj)
+inline gobj_ptr<Object> wrap(const gobj_raw_ptr<Object>& obj)
 {
-    return gobjptr<Object>::wrap(obj.gobj());
+    return gobj_ptr<Object>::wrap(obj);
 }
 
 #define MOO_DEFINE_GOBJPTR_METHODS(Object)                                  \
-    using ref_type = gobjref<Object>;                                       \
-    using impl_type = gobjptr_impl<Object>;                                 \
+    using ref_type = gobj_ref<Object>;                                      \
+    using impl_type = gobj_ptr_impl<Object>;                                \
                                                                             \
-    gobjptr() {}                                                            \
-    gobjptr(const nullptr_t) {}                                             \
+    gobj_ptr() {}                                                           \
+    gobj_ptr(const nullptr_t) {}                                            \
                                                                             \
-    gobjptr(Object* obj, ref_transfer policy)                               \
+    gobj_ptr(Object* obj, ref_transfer policy)                              \
         : impl_type(obj, policy)                                            \
     {                                                                       \
     }                                                                       \
                                                                             \
-    gobjptr(const gobjptr& other) = delete;                                 \
-    gobjptr& operator=(const gobjptr& other) = delete;                      \
+    gobj_ptr(const gobj_ptr& other) = delete;                               \
+    gobj_ptr& operator=(const gobj_ptr& other) = delete;                    \
                                                                             \
-    gobjptr(gobjptr&& other)                                                \
+    gobj_ptr(gobj_ptr&& other)                                              \
         : impl_type(std::move(static_cast<impl_type&&>(other)))             \
     {                                                                       \
     }                                                                       \
                                                                             \
-    gobjptr& operator=(gobjptr&& other)                                     \
+    gobj_ptr& operator=(gobj_ptr&& other)                                   \
     {                                                                       \
         impl_type::operator=(std::move(static_cast<impl_type&&>(other)));   \
         return *this;                                                       \
     }                                                                       \
                                                                             \
-    gobjptr& operator=(const nullptr_t&)                                    \
+    gobj_ptr& operator=(const nullptr_t&)                                   \
     {                                                                       \
         reset();                                                            \
         return *this;                                                       \
@@ -220,78 +220,78 @@ inline gobjptr<Object> wrap(gobjref<Object>& obj)
 
 // Generic implementation.
 template<typename Object>
-class gobjptr : public gobjptr_impl<Object>
+class gobj_ptr : public gobj_ptr_impl<Object>
 {
 public:
     MOO_DEFINE_GOBJPTR_METHODS(Object)
 };
 
-template<> class gobjref<GObject>;
+template<> class gobj_ref<GObject>;
 
 
 template<typename X>
-void g_object_unref(const moo::gobjptr<X>&);
+void g_object_unref(const gobj_ptr<X>&);
 template<typename X>
-void g_free(const moo::gobjptr<X>&);
+void g_free(const gobj_ptr<X>&);
 
 } // namespace moo
 
 template<typename X>
-inline bool operator==(const moo::gobjptr<X>& p, const nullptr_t&)
+inline bool operator==(const moo::gobj_ptr<X>& p, const nullptr_t&)
 {
     return p.get() == nullptr;
 }
 
 template<typename X>
-inline bool operator==(const nullptr_t&, const moo::gobjptr<X>& p)
+inline bool operator==(const nullptr_t&, const moo::gobj_ptr<X>& p)
 {
     return p.get() == nullptr;
 }
 
 template<typename X, typename Y>
-inline bool operator==(const moo::gobjptr<X>& p1, const moo::gobjptr<Y>& p2)
+inline bool operator==(const moo::gobj_ptr<X>& p1, const moo::gobj_ptr<Y>& p2)
 {
     return p1.get() == p2.get();
 }
 
 template<typename X, typename Y>
-inline bool operator==(const moo::gobjptr<X>& p1, const Y* p2)
+inline bool operator==(const moo::gobj_ptr<X>& p1, const Y* p2)
 {
     return p1.get() == p2;
 }
 
 template<typename X, typename Y>
-inline bool operator==(const X* p1, const moo::gobjptr<Y>& p2)
+inline bool operator==(const X* p1, const moo::gobj_ptr<Y>& p2)
 {
     return p1 == p2.get();
 }
 
 template<typename X, typename Y>
-inline bool operator==(const moo::gobjptr<X>& p1, const moo::gobj_raw_ptr<Y>& p2)
+inline bool operator==(const moo::gobj_ptr<X>& p1, const moo::gobj_raw_ptr<Y>& p2)
 {
     return p1.get() == p2.get();
 }
 
 template<typename X, typename Y>
-inline bool operator==(const moo::gobj_raw_ptr<Y>& p1, const moo::gobjptr<X>& p2)
+inline bool operator==(const moo::gobj_raw_ptr<Y>& p1, const moo::gobj_ptr<X>& p2)
 {
     return p1.get() == p2.get();
 }
 
 template<typename X, typename Y>
-bool operator!=(const moo::gobjptr<X>& p1, const moo::gobjptr<Y>& p2)
+bool operator!=(const moo::gobj_ptr<X>& p1, const moo::gobj_ptr<Y>& p2)
 {
     return !(p1 == p2);
 }
 
 template<typename X, typename Y>
-bool operator!=(const moo::gobjptr<X>& p1, const Y& p2)
+bool operator!=(const moo::gobj_ptr<X>& p1, const Y& p2)
 {
     return !(p1 == p2);
 }
 
 template<typename X, typename Y>
-bool operator!=(const X& p1, const moo::gobjptr<Y>& p2)
+bool operator!=(const X& p1, const moo::gobj_ptr<Y>& p2)
 {
     return !(p1 == p2);
 }

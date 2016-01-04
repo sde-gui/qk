@@ -31,9 +31,9 @@ struct MooEditPrivate {
 
     MooEditor*                              editor;
 
-    moo::gobjptr<GtkTextBuffer>             buffer;
-    std::vector<MooEditViewPtr>             views;
-    MooEditViewRawPtr                       active_view;
+    moo::gobj_ptr<GtkTextBuffer>            buffer;
+    std::vector<EditViewPtr>                views;
+    EditViewRawPtr                          active_view;
     bool                                    dead_active_view;
 
     gulong                                  changed_handler_id;
@@ -44,7 +44,7 @@ struct MooEditPrivate {
     /***********************************************************************/
     /* Document
      */
-    moo::gobjptr<GFile>                     file;
+    moo::gobj_ptr<GFile>                    file;
     moo::gstr                               filename;
     moo::gstr                               norm_name;
     moo::gstr                               display_filename;
@@ -62,7 +62,7 @@ struct MooEditPrivate {
     guint                                   sync_timeout_id;
 
     MooEditState                            state;
-    moo::gobjptr<MooEditProgress>           progress;
+    moo::gobj_ptr<MooEditProgress>          progress;
 
     /***********************************************************************/
     /* Bookmarks
@@ -74,5 +74,5 @@ struct MooEditPrivate {
     /***********************************************************************/
     /* Actions
      */
-    moo::gobjptr<MooActionCollection>       actions;
+    moo::gobj_ptr<MooActionCollection>      actions;
 };

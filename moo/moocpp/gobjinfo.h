@@ -33,7 +33,7 @@ struct gobj_is_subclass
 
 // Generic implementation, all we know it's a subclass of GObject; we don't
 // even know its GType. This implementation is needed so that it's possible
-// to have gobjptr<GAnything> without having to define gobjinfo for it.
+// to have gobj_ptr<GAnything> without having to define gobjinfo for it.
 template<typename Object>
 struct gobjinfo
 {

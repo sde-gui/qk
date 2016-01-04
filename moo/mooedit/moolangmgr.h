@@ -43,7 +43,7 @@ MooLang        *moo_lang_mgr_get_lang               (MooLangMgr     *mgr,
                                                      const char     *lang_id);
 #ifdef __cplusplus
 MooLang        *moo_lang_mgr_get_lang_for_file      (MooLangMgr*                mgr,
-                                                     const moo::gobjref<GFile>& file);
+                                                     const moo::gobj_ref<GFile>& file);
 #endif // __cplusplus
 
 /* list must be freed, content unref'ed */

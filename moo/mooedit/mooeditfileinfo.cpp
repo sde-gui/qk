@@ -311,7 +311,7 @@ MooSaveInfo *
 moo_save_info_new(const char *path,
                   const char *encoding)
 {
-    auto file = gobjptr<GFile>::new_for_path(path);
+    auto file = gobj_ptr<GFile>::new_for_path(path);
     MooSaveInfo *info = moo_save_info_new_file(file.get(), encoding);
     return info;
 }

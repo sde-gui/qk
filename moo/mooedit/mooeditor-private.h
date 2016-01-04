@@ -33,17 +33,17 @@ enum MooEditorOptions {
 MOO_DEFINE_FLAGS(MooEditorOptions);
 
 struct MooEditorPrivate {
-    std::vector<MooEditWindow*> windows;
-    moo::gobjptr<MooUiXml>      doc_ui_xml;
-    moo::gobjptr<MooUiXml>      ui_xml;
-    moo::gobjptr<MooHistoryMgr> history;
-    moo::grefptr<MooFileWatch>  file_watch;
-    MooEditorOptions            opts;
+    std::vector<MooEditWindow*>  windows;
+    moo::gobj_ptr<MooUiXml>      doc_ui_xml;
+    moo::gobj_ptr<MooUiXml>      ui_xml;
+    moo::gobj_ptr<MooHistoryMgr> history;
+    moo::grefptr<MooFileWatch>   file_watch;
+    MooEditorOptions             opts;
 
-    GType                       window_type;
-    GType                       doc_type;
+    GType                        window_type;
+    GType                        doc_type;
 
-    moo::gobjptr<MooLangMgr>    lang_mgr;
+    moo::gobj_ptr<MooLangMgr>    lang_mgr;
 
     MooEditorPrivate();
     ~MooEditorPrivate();

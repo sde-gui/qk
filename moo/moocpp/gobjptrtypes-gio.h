@@ -27,26 +27,26 @@ class gstr;
 MOO_DEFINE_GOBJ_TYPE(GFile, GObject, G_TYPE_FILE)
 
 template<>
-class gobjref<GFile> : public gobjref_parent<GFile>
+class gobj_ref<GFile> : public gobj_ref_parent<GFile>
 {
 public:
     MOO_DEFINE_GOBJREF_METHODS(GFile)
 
-    gobjptr<GFile>          dup                         () const;
+    gobj_ptr<GFile>         dup                         () const;
 
     bool                    equal                       (GFile*                 file2) const;
     gstr                    get_basename                () const;
     gstr                    get_path                    () const;
     gstr                    get_uri                     () const;
     gstr                    get_parse_name              () const;
-    gobjptr<GFile>          get_parent                  () const;
+    gobj_ptr<GFile>         get_parent                  () const;
     bool                    has_parent                  (GFile*                 parent) const;
-    gobjptr<GFile>          get_child                   (const char*            name) const;
-    gobjptr<GFile>          get_child_for_display_name  (const char*            display_name,
+    gobj_ptr<GFile>         get_child                   (const char*            name) const;
+    gobj_ptr<GFile>         get_child_for_display_name  (const char*            display_name,
                                                          GError**               error) const;
     bool                    has_prefix                  (GFile*                 prefix) const;
     gstr                    get_relative_path           (GFile*                 descendant) const;
-    gobjptr<GFile>          resolve_relative_path       (const char            *relative_path) const;
+    gobj_ptr<GFile>         resolve_relative_path       (const char            *relative_path) const;
     bool                    is_native                   () const;
     bool                    has_uri_scheme              (const char            *uri_scheme) const;
     gstr                    get_uri_scheme              () const;
@@ -87,7 +87,7 @@ public:
                                                          GFileQueryInfoFlags    flags,
                                                          GCancellable*          cancellable,
                                                          GError**               error) const;
-    gobjptr<GFile>          set_display_name            (const char*            display_name,
+    gobj_ptr<GFile>         set_display_name            (const char*            display_name,
                                                          GCancellable*          cancellable,
                                                          GError**               error) const;
     bool                    delete_                     (GCancellable*          cancellable,
@@ -128,22 +128,28 @@ public:
                                                          GCancellable*          cancellable,
                                                          GError**               error) const;
 
-    static gobjptr<GFile>   new_for_path                (const char* path);
-    static gobjptr<GFile>   new_for_uri                 (const char* uri);
-    static gobjptr<GFile>   new_for_commandline_arg     (const char* arg);
-    static gobjptr<GFile>   parse_name                  (const char* parse_name);
+    static gobj_ptr<GFile>  new_for_path                (const char* path);
+    static gobj_ptr<GFile>  new_for_uri                 (const char* uri);
+    static gobj_ptr<GFile>  new_for_commandline_arg     (const char* arg);
+    static gobj_ptr<GFile>  parse_name                  (const char* parse_name);
 };
 
 template<>
-class gobjptr<GFile> : public gobjptr_impl<GFile>
+class gobj_ptr<GFile> : public gobj_ptr_impl<GFile>
 {
 public:
     MOO_DEFINE_GOBJPTR_METHODS(GFile)
 
-    static gobjptr  new_for_path(const char* path) { return ref_type::new_for_path(path); }
-    static gobjptr  new_for_uri(const char* uri) { return ref_type::new_for_uri(uri); }
-    static gobjptr  new_for_commandline_arg(const char* arg) { return ref_type::new_for_commandline_arg(arg); }
-    static gobjptr  parse_name(const char* parse_name) { return ref_type::parse_name(parse_name); }
+    static gobj_ptr new_for_path(const char* path) { return ref_type::new_for_path(path); }
+    static gobj_ptr new_for_uri(const char* uri) { return ref_type::new_for_uri(uri); }
+    static gobj_ptr new_for_commandline_arg(const char* arg) { return ref_type::new_for_commandline_arg(arg); }
+    static gobj_ptr parse_name(const char* parse_name) { return ref_type::parse_name(parse_name); }
 };
+
+namespace g {
+
+MOO_GOBJ_TYPEDEFS(File, GFile);
+
+} // namespace g
 
 } // namespace moo

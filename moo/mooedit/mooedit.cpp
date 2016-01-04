@@ -270,7 +270,7 @@ moo_edit_class_init (MooEditClass *klass)
                           G_TYPE_NONE, 0);
 
     _moo_edit_init_config ();
-    MooEditRef::_class_init_actions (klass);
+    Edit::_class_init_actions (klass);
 }
 
 
@@ -306,10 +306,10 @@ moo_edit_constructor (GType                  type,
     GObject *object = G_OBJECT_CLASS (moo_edit_parent_class)->constructor (
         type, n_construct_properties, construct_param);
 
-    MooEditRef doc = *MOO_EDIT (object);
+    Edit doc = *MOO_EDIT (object);
     MooEditPrivate& priv = doc.get_priv();
 
-    MooEditViewPtr view = MooEditViewPtr::_create(doc);
+    auto view = EditViewPtr::_create(doc);
     g_assert(priv.views.size() == 1 && priv.views[0] == view);
 
     doc._add_class_actions();
@@ -327,10 +327,10 @@ moo_edit_constructor (GType                  type,
     doc._set_file(nullptr, nullptr);
 
     priv.buffer->signal_connect_swapped("line-mark-moved",
-                                        G_CALLBACK (MooEditRef::_line_mark_moved),
+                                        G_CALLBACK (Edit::_line_mark_moved),
                                         &doc);
     priv.buffer->signal_connect_swapped("line-mark-deleted",
-                                        G_CALLBACK (MooEditRef::_line_mark_deleted),
+                                        G_CALLBACK (Edit::_line_mark_deleted),
                                         &doc);
 
     return object;
@@ -347,7 +347,7 @@ moo_edit_finalize (GObject *object)
     G_OBJECT_CLASS (moo_edit_parent_class)->finalize (object);
 }
 
-void MooEditRef::_closed()
+void Edit::_closed()
 {
     MooEditPrivate& priv = get_priv();
     moo_assert(priv.state == MOO_EDIT_STATE_NORMAL);
@@ -399,12 +399,12 @@ void MooEditRef::_closed()
 static void
 moo_edit_dispose (GObject *object)
 {
-    MooEditRef(*MOO_EDIT(object))._closed();
+    Edit(*MOO_EDIT(object))._closed();
     G_OBJECT_CLASS(moo_edit_parent_class)->dispose(object);
 }
 
 
-void MooEditRef::_set_active_view(MooEditViewRef view)
+void Edit::_set_active_view(EditView view)
 {
     MooEditPrivate& priv = get_priv();
 
@@ -433,19 +433,19 @@ void MooEditRef::_set_active_view(MooEditViewRef view)
     priv.dead_active_view = false;
 }
 
-void MooEditRef::_add_view(MooEditViewRef view)
+void Edit::_add_view(EditView view)
 {
     auto& priv = get_priv();
 
     g_return_if_fail(!contains(priv.views, &view));
 
-    priv.views.emplace_back(wrap(view));
+    priv.views.emplace_back(wrap(&view));
 
     _moo_edit_view_apply_prefs(view.gobj());
     view._apply_config();
 }
 
-void MooEditRef::_remove_view(MooEditViewRef view)
+void Edit::_remove_view(EditView view)
 {
     auto& priv = get_priv();
 
@@ -466,7 +466,7 @@ void MooEditRef::_remove_view(MooEditViewRef view)
 }
 
 
-MooActionCollection& MooEditRef::_get_actions()
+MooActionCollection& Edit::_get_actions()
 {
     return *get_priv().actions;
 }
@@ -569,7 +569,7 @@ moo_edit_set_modified (MooEdit            *edit,
 
     modify_status (edit, MOO_EDIT_STATUS_MODIFIED, modified);
 
-    MooEditRef(*edit)._status_changed ();
+    Edit(*edit)._status_changed ();
 }
 
 
@@ -582,7 +582,7 @@ moo_edit_set_clean (MooEdit  *edit,
 {
     g_return_if_fail (MOO_IS_EDIT (edit));
     modify_status (edit, MOO_EDIT_STATUS_CLEAN, clean);
-    MooEditRef(*edit)._status_changed();
+    Edit(*edit)._status_changed();
 }
 
 /**
@@ -596,13 +596,13 @@ moo_edit_get_clean (MooEdit *edit)
 }
 
 
-void MooEditRef::_status_changed()
+void Edit::_status_changed()
 {
     signal_emit(signals[DOC_STATUS_CHANGED], 0, NULL);
 }
 
 
-void MooEditRef::_set_status(MooEditStatus status)
+void Edit::_set_status(MooEditStatus status)
 {
     if (get_priv().status != status)
     {
@@ -625,7 +625,7 @@ moo_edit_is_empty (MooEdit *edit)
 
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
 
-    MooEditRef r = *edit;
+    Edit r = *edit;
 
     if (r._is_busy () || moo_edit_is_modified (edit) || !MOO_EDIT_IS_UNTITLED (edit))
         return FALSE;
@@ -764,7 +764,7 @@ moo_edit_get_filename (MooEdit *edit)
     return edit->priv->filename.strdup();
 }
 
-const gstr& MooEditRef::_get_normalized_name() const
+const gstr& Edit::_get_normalized_name() const
 {
     return get_priv().norm_name;
 }
@@ -1326,7 +1326,7 @@ moo_edit_recheck_config_in_idle (MooEdit *edit)
     return FALSE;
 }
 
-void MooEditRef::_queue_recheck_config()
+void Edit::_queue_recheck_config()
 {
     auto& priv = get_priv();
     g_return_if_fail(!priv.in_recheck_config);
@@ -1341,7 +1341,7 @@ static void
 config_changed (MooEdit *doc)
 {
     if (!doc->priv->in_recheck_config)
-        MooEditRef(*doc)._queue_recheck_config();
+        Edit(*doc)._queue_recheck_config();
 }
 
 
@@ -1463,7 +1463,7 @@ moo_edit_save_copy (MooEdit     *doc,
 }
 
 
-bool MooEditRef::_is_busy() const
+bool Edit::_is_busy() const
 {
     return _moo_edit_get_state(g()) != MOO_EDIT_STATE_NORMAL;
 }
@@ -1833,7 +1833,7 @@ moo_edit_uncomment_selection (MooEdit *edit)
 }
 
 
-void MooEditRef::_ensure_newline()
+void Edit::_ensure_newline()
 {
     GtkTextBuffer *buffer;
     GtkTextIter iter;
@@ -1845,7 +1845,7 @@ void MooEditRef::_ensure_newline()
         gtk_text_buffer_insert (buffer, &iter, "\n", -1);
 }
 
-void MooEditRef::_strip_whitespace()
+void Edit::_strip_whitespace()
 {
     GtkTextBuffer *buffer;
     GtkTextIter iter;

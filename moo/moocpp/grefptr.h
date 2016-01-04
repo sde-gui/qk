@@ -101,7 +101,7 @@ public:
     Object* operator->() const { return get(); }
 
     // Explicitly forbid other pointer conversions. This way it's still possible to implement
-    // implicit conversions in subclasses, like that to GTypeInstance in gobjptr.
+    // implicit conversions in subclasses, like that to GTypeInstance in gobj_ptr.
     template<typename T>
     operator T*() const = delete;
 

@@ -68,7 +68,7 @@ get_line_count (MooEdit *edit)
 }
 
 
-void MooEditBookmark::set_enable_bookmarks(MooEditRef edit, bool enable)
+void MooEditBookmark::set_enable_bookmarks(Edit edit, bool enable)
 {
     if (enable != edit.get_priv().enable_bookmarks)
     {
@@ -300,7 +300,7 @@ disconnect_bookmark (MooEditBookmark *bk)
 }
 
 
-void MooEditRef::_line_mark_moved(MooEdit* edit, MooLineMark* mark)
+void Edit::_line_mark_moved(MooEdit* edit, MooLineMark* mark)
 {
     if (MOO_IS_EDIT_BOOKMARK (mark) &&
         g_object_get_data (G_OBJECT (mark), "moo-edit-bookmark") &&
@@ -313,7 +313,7 @@ void MooEditRef::_line_mark_moved(MooEdit* edit, MooLineMark* mark)
 }
 
 
-void MooEditRef::_line_mark_deleted(MooEdit* edit, MooLineMark* mark)
+void Edit::_line_mark_deleted(MooEdit* edit, MooLineMark* mark)
 {
     if (MOO_IS_EDIT_BOOKMARK (mark) &&
         g_object_get_data (G_OBJECT (mark), "moo-edit-bookmark") &&
@@ -361,7 +361,7 @@ moo_edit_get_bookmarks_in_range (MooEdit *edit,
 }
 
 
-void MooEditRef::_delete_bookmarks(bool in_destroy)
+void Edit::_delete_bookmarks(bool in_destroy)
 {
     auto& priv = get_priv();
 
@@ -478,7 +478,7 @@ get_bookmark_color (MooEdit *doc)
     return style ? _moo_text_style_get_bg_color (style) : NULL;
 }
 
-void MooEditRef::_update_bookmarks_style()
+void Edit::_update_bookmarks_style()
 {
     const GSList *bookmarks;
     const char *color;

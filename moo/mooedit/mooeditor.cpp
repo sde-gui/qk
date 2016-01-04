@@ -945,7 +945,7 @@ update_history_item_for_doc (MooEditor *editor,
 }
 
 
-static MooEditPtr
+static EditPtr
 moo_editor_load_file(MooEditor       *editor,
                      MooOpenInfo     *info,
                      MooEditWindow   *window,
@@ -967,7 +967,7 @@ moo_editor_load_file(MooEditor       *editor,
     gstr uri = info->file->get_uri();
     gstr filename = info->file->get_path();
     int line = info->line;
-    MooEditPtr doc = wrap(moo_editor_get_doc_for_file(editor, info->file.get()));
+    EditPtr doc = wrap(moo_editor_get_doc_for_file(editor, info->file.get()));
 
     if (filename.empty())
     {
@@ -1230,8 +1230,8 @@ _moo_editor_open_files (MooEditor         *editor,
         if (!window)
             window = moo_editor_get_active_window (editor);
 
-        MooEditPtr doc = moo_editor_load_file(editor, info, window, parent,
-                                              FALSE, TRUE, error);
+        EditPtr doc = moo_editor_load_file(editor, info, window, parent,
+                                           FALSE, TRUE, error);
 
         if (doc)
         {
@@ -1358,7 +1358,7 @@ find_busy (MooEditArray *docs)
 {
     guint i;
     for (i = 0; i < docs->n_elms; ++i)
-        if (MooEditRef(*docs->elms[i])._is_busy())
+        if (Edit(*docs->elms[i])._is_busy())
             return docs->elms[i];
     return NULL;
 }
@@ -1516,7 +1516,7 @@ do_close_doc (MooEditor *editor,
 {
     MooEditWindow *window;
 
-    MooEditPtr docp = wrap(doc); // get a reference so it doesn't get destroyed below
+    EditPtr docp = wrap(doc); // get a reference so it doesn't get destroyed below
 
     g_signal_emit(editor, signals[WILL_CLOSE_DOC], 0, doc);
     g_signal_emit_by_name(doc, "will-close");
@@ -1574,7 +1574,7 @@ moo_editor_close_docs (MooEditor    *editor,
 
         g_return_val_if_fail (MOO_IS_EDIT (doc), FALSE);
 
-        if (MooEditRef(*doc)._is_busy())
+        if (Edit(*doc)._is_busy())
         {
             moo_editor_set_active_doc (editor, doc);
             return FALSE;
@@ -1724,7 +1724,7 @@ _moo_editor_close_all (MooEditor *editor)
 }
 
 
-static MooEditPtr
+static EditPtr
 load_doc_session (MooEditor     *editor,
                   MooEditWindow *window,
                   MooMarkupNode *elm,
@@ -1744,10 +1744,10 @@ load_doc_session (MooEditor     *editor,
     }
 
     if (uri.empty())
-        return MooEditPtr::wrap(moo_editor_new_doc(editor, window));
+        return EditPtr::wrap(moo_editor_new_doc(editor, window));
 
     const char *encoding = moo_markup_get_prop (elm, "encoding");
-    gobjptr<MooOpenInfo> info = wrap_new(moo_open_info_new_uri(uri, encoding, -1, MOO_OPEN_FLAGS_NONE));
+    gobj_ptr<MooOpenInfo> info = wrap_new(moo_open_info_new_uri(uri, encoding, -1, MOO_OPEN_FLAGS_NONE));
 
     return moo_editor_load_file(editor, info.get(), window, GTK_WIDGET(window), TRUE, FALSE, NULL);
 }
@@ -1794,7 +1794,7 @@ load_window_session (MooEditor     *editor,
     {
         if (MOO_MARKUP_IS_ELEMENT (node))
         {
-            MooEditPtr doc = load_doc_session (editor, window, node, file_is_uri);
+            EditPtr doc = load_doc_session (editor, window, node, file_is_uri);
 
             if (doc && moo_markup_bool_prop (node, "active", FALSE))
                 active_doc = doc.get();
@@ -2348,7 +2348,7 @@ moo_editor_reload (MooEditor     *editor,
 
     moo_return_error_if_fail (MOO_IS_EDITOR (editor));
 
-    if (MooEditRef(*doc)._is_busy())
+    if (Edit(*doc)._is_busy())
     {
         g_set_error (error,
                      MOO_EDIT_RELOAD_ERROR,
@@ -2456,17 +2456,17 @@ moo_editor_will_save (G_GNUC_UNUSED MooEditor *editor,
 {
     g_return_if_fail(doc != nullptr);
     if (moo_edit_config_get_bool (doc->config, "strip"))
-        MooEditRef(*doc)._strip_whitespace();
+        Edit(*doc)._strip_whitespace();
     if (moo_edit_config_get_bool (doc->config, "add-newline"))
-        MooEditRef(*doc)._ensure_newline();
+        Edit(*doc)._ensure_newline();
 }
 
 static bool
-do_save(MooEditor&         editor,
-        MooEditRef         doc,
-        const MooGFileRef& file,
-        const char*        encoding,
-        GError**           error)
+do_save(MooEditor&     editor,
+        Edit           doc,
+        const g::File& file,
+        const char*    encoding,
+        GError**       error)
 {
     int response = MOO_SAVE_RESPONSE_CONTINUE;
     GError *error_here = NULL;
@@ -2542,7 +2542,7 @@ moo_editor_save (MooEditor  *editor,
     moo_return_error_if_fail (MOO_IS_EDITOR (editor));
     moo_return_error_if_fail (MOO_IS_EDIT (doc));
 
-    if (MooEditRef(*doc)._is_busy())
+    if (Edit(*doc)._is_busy())
     {
         g_set_error (error,
                      MOO_EDIT_SAVE_ERROR,
@@ -2554,7 +2554,7 @@ moo_editor_save (MooEditor  *editor,
     if (moo_edit_is_untitled (doc))
         return moo_editor_save_as (editor, doc, NULL, error);
 
-    MooGFilePtr file = wrap_new(moo_edit_get_file(doc));
+    g::FilePtr file = wrap_new(moo_edit_get_file(doc));
     gstr encoding = gstr::make_copy(moo_edit_get_encoding(doc));
 
     if ((moo_edit_get_status (doc) & MOO_EDIT_STATUS_MODIFIED_ON_DISK) &&
@@ -2595,7 +2595,7 @@ moo_editor_save_as (MooEditor   *editor,
     moo_return_error_if_fail (MOO_IS_EDIT (doc));
     moo_return_error_if_fail (!info_init || !info_init->file);
 
-    if (MooEditRef(*doc)._is_busy())
+    if (Edit(*doc)._is_busy())
     {
         g_set_error (error,
                      MOO_EDIT_SAVE_ERROR,
@@ -2604,7 +2604,7 @@ moo_editor_save_as (MooEditor   *editor,
         return false;
     }
 
-    gobjptr<MooSaveInfo> info = wrap(info_init);
+    gobj_ptr<MooSaveInfo> info = wrap(info_init);
 
     if (!info)
     {
@@ -2664,7 +2664,7 @@ doc_array_find_norm_name (MooEditArray *docs,
 
     for (i = 0; i < docs->n_elms; ++i)
     {
-        MooEditRef doc = *docs->elms[i];
+        Edit doc = *docs->elms[i];
         const gstr& doc_norm_name = doc._get_normalized_name();
         if (doc_norm_name == norm_name)
             return &doc;
@@ -2674,7 +2674,7 @@ doc_array_find_norm_name (MooEditArray *docs,
 }
 
 // static MooEdit *
-// doc_array_find_norm_name (const std::vector<gobjptr<MooEdit>>& docs,
+// doc_array_find_norm_name (const std::vector<gobj_ptr<MooEdit>>& docs,
 //                           const char   *norm_name)
 // {
 //     g_return_val_if_fail (norm_name != NULL, NULL);
@@ -2706,7 +2706,7 @@ moo_editor_get_doc_for_file (MooEditor *editor,
     g_return_val_if_fail (MOO_IS_EDITOR (editor), NULL);
     g_return_val_if_fail (G_IS_FILE (file), NULL);
 
-    gstr norm_name = MooEditRef::_get_normalized_name (*file);
+    gstr norm_name = Edit::_get_normalized_name (*file);
     g_return_val_if_fail (!norm_name.empty(), NULL);
 
     for (const auto& window: editor->priv->windows)

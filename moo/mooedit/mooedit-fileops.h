@@ -46,24 +46,24 @@ MOO_DEFINE_FLAGS(MooEditSaveFlags)
 
 GQuark           _moo_edit_file_error_quark     (void) G_GNUC_CONST;
 
-bool             _moo_is_file_error_cancelled   (GError*                    error);
+bool             _moo_is_file_error_cancelled   (GError*                     error);
 
-bool             _moo_edit_file_is_new          (const moo::gobjref<GFile>& file);
-bool             _moo_edit_load_file            (MooEditRef&                edit,
-                                                 const moo::gobjref<GFile>& file,
-                                                 const moo::gstr&           init_encoding,
-                                                 const moo::gstr&           init_cached_encoding,
-                                                 GError**                   error);
-bool             _moo_edit_reload_file          (MooEditRef                 edit,
-                                                 const char*                encoding,
-                                                 GError**                   error);
-bool             _moo_edit_save_file            (MooEditRef&                edit,
-                                                 const moo::gobjref<GFile>& floc,
-                                                 const char*                encoding,
-                                                 MooEditSaveFlags flags,
-                                                 GError**                   error);
-bool             _moo_edit_save_file_copy       (MooEditRef                 edit,
-                                                 const moo::gobjref<GFile>& file,
-                                                 const char*                encoding,
-                                                 MooEditSaveFlags           flags,
-                                                 GError**                   error);
+bool             _moo_edit_file_is_new          (const moo::gobj_ref<GFile>& file);
+bool             _moo_edit_load_file            (Edit&                       edit,
+                                                 const moo::gobj_ref<GFile>& file,
+                                                 const moo::gstr&            init_encoding,
+                                                 const moo::gstr&            init_cached_encoding,
+                                                 GError**                    error);
+bool             _moo_edit_reload_file          (Edit                        edit,
+                                                 const char*                 encoding,
+                                                 GError**                    error);
+bool             _moo_edit_save_file            (Edit&                       edit,
+                                                 const moo::gobj_ref<GFile>& floc,
+                                                 const char*                 encoding,
+                                                 MooEditSaveFlags            flags,
+                                                 GError**                    error);
+bool             _moo_edit_save_file_copy       (Edit                        edit,
+                                                 const moo::gobj_ref<GFile>& file,
+                                                 const char*                 encoding,
+                                                 MooEditSaveFlags            flags,
+                                                 GError**                    error);

@@ -59,14 +59,14 @@ G_END_DECLS
 
 #include <moocpp/strutils.h>
 
-MooEditTryEncodingResponse      _moo_edit_try_encoding_dialog           (const moo::gobjref<GFile>& file,
-                                                                         const char*                encoding,
-                                                                         /*out*/ moo::gstr&         new_encoding);
-bool                            _moo_edit_save_error_enc_dialog         (MooEditRef&                doc,
-                                                                         const MooGFileRef&         file,
-                                                                         const char*                encoding);
-void                            _moo_edit_save_error_dialog             (MooEditRef&                doc,
-                                                                         const MooGFileRef&         file,
-                                                                         GError*                    error);
+MooEditTryEncodingResponse      _moo_edit_try_encoding_dialog           (const moo::g::File& file,
+                                                                         const char*         encoding,
+                                                                         /*out*/ moo::gstr&  new_encoding);
+bool                            _moo_edit_save_error_enc_dialog         (Edit&               doc,
+                                                                         const moo::g::File& file,
+                                                                         const char*         encoding);
+void                            _moo_edit_save_error_dialog             (Edit&               doc,
+                                                                         const moo::g::File& file,
+                                                                         GError*             error);
 
 #endif // __cplusplus

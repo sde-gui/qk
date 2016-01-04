@@ -42,9 +42,9 @@ struct MooEditBookmark
     guint no;
 
 #ifdef __cplusplus
-    static void set_enable_bookmarks    (MooEditRef         edit,
-                                         bool               enable);
-    static bool get_enable_bookmarks    (const MooEditRef&  edit);
+    static void set_enable_bookmarks    (Edit           edit,
+                                         bool           enable);
+    static bool get_enable_bookmarks    (const Edit&    edit);
 #endif __cplusplus
 };
 
@@ -54,8 +54,8 @@ struct MooEditBookmarkClass
 };
 
 #ifdef __cplusplus
-using MooEditBookmarkPtr = moo::gobjptr<MooEditBookmark>;
-using MooEditBookmarkRef = moo::gobjref<MooEditBookmark>;
+using MooEditBookmarkPtr = moo::gobj_ptr<MooEditBookmark>;
+using MooEditBookmarkRef = moo::gobj_ref<MooEditBookmark>;
 #endif
 
 GType            moo_edit_bookmark_get_type     (void) G_GNUC_CONST;

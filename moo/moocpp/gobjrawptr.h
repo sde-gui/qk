@@ -27,7 +27,7 @@ namespace moo {
 template<typename Object>
 class gobj_raw_ptr
 {
-    using ref_type = gobjref<Object>;
+    using ref_type = gobj_ref<Object>;
 
 public:
     gobj_raw_ptr(Object* obj = nullptr) { m_ref._set_gobj(obj); }
@@ -35,7 +35,7 @@ public:
     operator Object*() const { return get(); }
     operator GTypeInstance*() const { return reinterpret_cast<GTypeInstance*>(get()); }
     operator gpointer() const { return get(); }
-    operator gobjref<Object>*() const { return m_ref.self(); }
+    operator gobj_ref<Object>*() const { return m_ref.self(); }
 
     ref_type* operator->() const { return m_ref.self(); }
     ref_type& operator*() const { return m_ref; }
@@ -82,13 +82,13 @@ public:
     }
 
 private:
-    mutable gobjref<Object> m_ref;
+    mutable gobj_ref<Object> m_ref;
 };
 
 template<typename Object>
 class gobj_raw_ptr<const Object>
 {
-    using ref_type = gobjref<Object>;
+    using ref_type = gobj_ref<Object>;
 
 public:
     gobj_raw_ptr(const Object* obj = nullptr) { m_ref._set_gobj(const_cast<Object*>(obj)); }
@@ -96,7 +96,7 @@ public:
     operator const Object*() const { return get(); }
     operator const GTypeInstance*() const { return reinterpret_cast<GTypeInstance*>(get()); }
     operator const void*() const { return get(); }
-    operator const gobjref<Object>*() const { return m_ref.self(); }
+    operator const gobj_ref<Object>*() const { return m_ref.self(); }
 
     const ref_type* operator->() const { return m_ref.self(); }
     const ref_type& operator*() const { return m_ref; }
@@ -143,7 +143,7 @@ public:
     }
 
 private:
-    mutable gobjref<Object> m_ref;
+    mutable gobj_ref<Object> m_ref;
 };
 
 } // namespace moo

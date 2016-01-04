@@ -29,10 +29,10 @@ namespace moo {
 //
 
 template<>
-class gobjref<GObject> : public gobjref_base
+class gobj_ref<GObject> : public gobj_ref_base
 {
 public:
-    MOO_DEFINE_GOBJREF_METHODS_IMPL(GObject, gobjref_base)
+    MOO_DEFINE_GOBJREF_METHODS_IMPL(GObject, gobj_ref_base)
 
     gulong  signal_connect          (const char* detailed_signal, GCallback c_handler, void* data);
     gulong  signal_connect_swapped  (const char* detailed_signal, GCallback c_handler, void* data);
@@ -50,9 +50,21 @@ public:
 };
 
 template<>
-class gobjptr<GObject> : public gobjptr_impl<GObject>
+class gobj_ptr<GObject> : public gobj_ptr_impl<GObject>
 {
-    static gobjptr<GObject> wrap_new(GObject*);
+    static gobj_ptr<GObject> wrap_new(GObject*);
 };
+
+namespace g {
+
+#define MOO_GOBJ_TYPEDEFS(CppObject, CObject)                       \
+    using CppObject             = moo::gobj_ref<CObject>;           \
+    using CppObject##Ptr        = moo::gobj_ptr<CObject>;           \
+    using CppObject##RawPtr     = moo::gobj_raw_ptr<CObject>;       \
+    using Const##CppObject##Ptr = moo::gobj_raw_ptr<const CObject>;
+
+MOO_GOBJ_TYPEDEFS(Object, GObject);
+
+} // namespace g
 
 } // namespace moo

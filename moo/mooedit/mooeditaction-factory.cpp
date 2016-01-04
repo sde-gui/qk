@@ -573,7 +573,7 @@ add_action (const char *id,
     }
 }
 
-void MooEditRef::_add_class_actions()
+void Edit::_add_class_actions()
 {
     GType type = G_OBJECT_TYPE (g());
 
@@ -644,7 +644,7 @@ create_special_chars_menu_item (GtkAction *action)
     return item;
 }
 
-void MooEditRef::_class_init_actions(MooEditClass *klass)
+void Edit::_class_init_actions(MooEditClass *klass)
 {
     moo_edit_class_new_action (klass, "Undo",
                                "display-name", GTK_STOCK_UNDO,

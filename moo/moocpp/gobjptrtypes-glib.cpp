@@ -16,21 +16,19 @@
 #include "moocpp/gobjptrtypes-glib.h"
 
 using namespace moo;
+using namespace g;
 
-using GObjPtr = gobjptr<GObject>;
-using GObjRef = gobjref<GObject>;
-
-gulong GObjRef::signal_connect(const char *detailed_signal, GCallback c_handler, void *data)
+gulong Object::signal_connect(const char *detailed_signal, GCallback c_handler, void *data)
 {
     return g_signal_connect(gobj(), detailed_signal, c_handler, data);
 }
 
-gulong GObjRef::signal_connect_swapped(const char *detailed_signal, GCallback c_handler, void *data)
+gulong Object::signal_connect_swapped(const char *detailed_signal, GCallback c_handler, void *data)
 {
     return g_signal_connect_swapped(gobj(), detailed_signal, c_handler, data);
 }
 
-void GObjRef::signal_emit_by_name(const char* detailed_signal, ...)
+void Object::signal_emit_by_name(const char* detailed_signal, ...)
 {
     guint signal_id;
     GQuark detail;
@@ -45,7 +43,7 @@ void GObjRef::signal_emit_by_name(const char* detailed_signal, ...)
     va_end(args);
 }
 
-void GObjRef::signal_emit(guint signal_id, GQuark detail, ...)
+void Object::signal_emit(guint signal_id, GQuark detail, ...)
 {
     va_list args;
     va_start(args, detail);
@@ -53,12 +51,12 @@ void GObjRef::signal_emit(guint signal_id, GQuark detail, ...)
     va_end(args);
 }
 
-void GObjRef::set_data(const char* key, gpointer value)
+void Object::set_data(const char* key, gpointer value)
 {
     g_object_set_data(gobj(), key, value);
 }
 
-void GObjRef::set(const gchar *first_prop, ...)
+void Object::set(const gchar *first_prop, ...)
 {
     va_list args;
     va_start(args, first_prop);
@@ -66,22 +64,22 @@ void GObjRef::set(const gchar *first_prop, ...)
     va_end(args);
 }
 
-void GObjRef::set_property(const gchar *property_name, const GValue *value)
+void Object::set_property(const gchar *property_name, const GValue *value)
 {
     g_object_set_property(gobj(), property_name, value);
 }
 
-void GObjRef::notify(const char* property_name)
+void Object::notify(const char* property_name)
 {
     g_object_notify(gobj(), property_name);
 }
 
-void GObjRef::freeze_notify()
+void Object::freeze_notify()
 {
     g_object_freeze_notify(gobj());
 }
 
-void GObjRef::thaw_notify()
+void Object::thaw_notify()
 {
     g_object_thaw_notify(gobj());
 }

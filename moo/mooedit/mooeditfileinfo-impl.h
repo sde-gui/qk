@@ -6,7 +6,7 @@
 
 struct MooOpenInfo : public GObject
 {
-    moo::gobjptr<GFile> file;
+    moo::gobj_ptr<GFile> file;
     moo::gstr encoding;
     int line;
     MooOpenFlags flags;
@@ -30,7 +30,7 @@ struct MooReloadInfoClass
 
 struct MooSaveInfo : public GObject
 {
-    moo::gobjptr<GFile> file;
+    moo::gobj_ptr<GFile> file;
     moo::gstr encoding;
 };
 
