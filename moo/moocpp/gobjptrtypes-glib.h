@@ -49,12 +49,6 @@ public:
     void    thaw_notify             ();
 };
 
-template<>
-class gobj_ptr<GObject> : public gobj_ptr_impl<GObject>
-{
-    static gobj_ptr<GObject> wrap_new(GObject*);
-};
-
 namespace g {
 
 #define MOO_GOBJ_TYPEDEFS(CppObject, CObject)                       \

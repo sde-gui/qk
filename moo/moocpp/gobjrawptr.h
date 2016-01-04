@@ -32,19 +32,19 @@ class gobj_raw_ptr
 public:
     gobj_raw_ptr(Object* obj = nullptr) { m_ref._set_gobj(obj); }
 
-    operator Object*() const { return get(); }
-    operator GTypeInstance*() const { return reinterpret_cast<GTypeInstance*>(get()); }
-    operator gpointer() const { return get(); }
+    operator Object*() const { return gobj(); }
+    operator GTypeInstance*() const { return reinterpret_cast<GTypeInstance*>(gobj()); }
+    operator gpointer() const { return gobj(); }
     operator gobj_ref<Object>*() const { return m_ref.self(); }
 
     ref_type* operator->() const { return m_ref.self(); }
     ref_type& operator*() const { return m_ref; }
 
-    Object* get() const { return m_ref.gobj(); }
+    Object* gobj() const { return m_ref.gobj(); }
     void set(Object* p) { m_ref._set_gobj(p); }
 
     template<typename Super>
-    Super* get() const
+    Super* gobj() const
     {
         return gobj_is_subclass<Object, Super>::down_cast(m_ref.gobj());
     }
@@ -55,21 +55,21 @@ public:
         set(gobj_is_subclass<Subclass, Object>::down_cast(p));
     }
 
-    operator bool() const { return get() != nullptr; }
-    bool operator!() const { return get() == nullptr; }
+    operator bool() const { return gobj() != nullptr; }
+    bool operator!() const { return gobj() == nullptr; }
 
     gobj_raw_ptr(const gobj_raw_ptr& other) = default;
     gobj_raw_ptr& operator=(const gobj_raw_ptr& other) = default;
 
     gobj_raw_ptr(gobj_raw_ptr&& other)
-        : m_ref(other.get())
+        : m_ref(other.gobj())
     {
         other = nullptr;
     }
 
     gobj_raw_ptr& operator=(gobj_raw_ptr&& other)
     {
-        m_ref._set_gobj(other.get());
+        m_ref._set_gobj(other.gobj());
         other.m_ref._set_gobj(nullptr);
         return *this;
     }
@@ -93,19 +93,19 @@ class gobj_raw_ptr<const Object>
 public:
     gobj_raw_ptr(const Object* obj = nullptr) { m_ref._set_gobj(const_cast<Object*>(obj)); }
 
-    operator const Object*() const { return get(); }
-    operator const GTypeInstance*() const { return reinterpret_cast<GTypeInstance*>(get()); }
-    operator const void*() const { return get(); }
+    operator const Object*() const { return gobj(); }
+    operator const GTypeInstance*() const { return reinterpret_cast<GTypeInstance*>(gobj()); }
+    operator const void*() const { return gobj(); }
     operator const gobj_ref<Object>*() const { return m_ref.self(); }
 
     const ref_type* operator->() const { return m_ref.self(); }
     const ref_type& operator*() const { return m_ref; }
 
-    const Object* get() const { return m_ref.gobj(); }
+    const Object* gobj() const { return m_ref.gobj(); }
     void set(const Object* p) { m_ref._set_gobj(p); }
 
     template<typename Super>
-    const Super* get() const
+    const Super* gobj() const
     {
         return gobj_is_subclass<Object, Super>::down_cast(m_ref.gobj());
     }
@@ -116,21 +116,21 @@ public:
         set(gobj_is_subclass<Subclass, Object>::down_cast(p));
     }
 
-    operator bool() const { return get() != nullptr; }
-    bool operator!() const { return get() == nullptr; }
+    operator bool() const { return gobj() != nullptr; }
+    bool operator!() const { return gobj() == nullptr; }
 
     gobj_raw_ptr(const gobj_raw_ptr& other) = default;
     gobj_raw_ptr& operator=(const gobj_raw_ptr& other) = default;
 
     gobj_raw_ptr(gobj_raw_ptr&& other)
-        : m_ref(other.get())
+        : m_ref(other.gobj())
     {
         other = nullptr;
     }
 
     gobj_raw_ptr& operator=(gobj_raw_ptr&& other)
     {
-        m_ref._set_gobj(other.get());
+        m_ref._set_gobj(other.gobj());
         other.m_ref._set_gobj(nullptr);
         return *this;
     }
@@ -151,31 +151,31 @@ private:
 template<typename X>
 inline bool operator==(const moo::gobj_raw_ptr<X>& p, const nullptr_t&)
 {
-    return p.get() == nullptr;
+    return p.gobj() == nullptr;
 }
 
 template<typename X>
 inline bool operator==(const nullptr_t&, const moo::gobj_raw_ptr<X>& p)
 {
-    return p.get() == nullptr;
+    return p.gobj() == nullptr;
 }
 
 template<typename X, typename Y>
 inline bool operator==(const moo::gobj_raw_ptr<X>& p1, const moo::gobj_raw_ptr<Y>& p2)
 {
-    return p1.get() == p2.get();
+    return p1.gobj() == p2.gobj();
 }
 
 template<typename X, typename Y>
 inline bool operator==(const moo::gobj_raw_ptr<X>& p1, const Y* p2)
 {
-    return p1.get() == p2;
+    return p1.gobj() == p2;
 }
 
 template<typename X, typename Y>
 inline bool operator==(const X* p1, const moo::gobj_raw_ptr<Y>& p2)
 {
-    return p1 == p2.get();
+    return p1 == p2.gobj();
 }
 
 template<typename X, typename Y>

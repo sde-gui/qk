@@ -356,7 +356,7 @@ void Edit::_closed()
     _moo_edit_instances = moo_edit_list_remove (_moo_edit_instances, gobj());
 
     while (!priv.views.empty())
-        gtk_widget_destroy (priv.views[0].get<GtkWidget>());
+        gtk_widget_destroy (priv.views[0].gobj<GtkWidget>());
 
     if (get_config())
     {
@@ -870,7 +870,7 @@ moo_edit_get_view (MooEdit *doc)
 
     if (!doc->priv->active_view)
         if (!doc->priv->views.empty())
-            doc->priv->active_view = doc->priv->views.back().get();
+            doc->priv->active_view = doc->priv->views.back().gobj();
 
     return doc->priv->active_view;
 }
@@ -888,7 +888,7 @@ moo_edit_get_views (MooEdit *doc)
     MooEditViewArray *ret = moo_edit_view_array_new ();
     moo_edit_view_array_reserve (ret, doc->priv->views.size ());
     for (const auto& view: doc->priv->views)
-        moo_edit_view_array_append (ret, view.get());
+        moo_edit_view_array_append (ret, view.gobj());
 
     return ret;
 }
@@ -922,7 +922,7 @@ GtkTextBuffer *
 moo_edit_get_buffer (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
-    return doc->priv->buffer.get();
+    return doc->priv->buffer.gobj();
 }
 
 
@@ -1174,7 +1174,7 @@ moo_edit_get_lang (MooEdit *doc)
 {
     g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
     moo_assert (!doc->priv->in_recheck_config);
-    return moo_text_buffer_get_lang (MOO_TEXT_BUFFER (doc->priv->buffer.get()));
+    return moo_text_buffer_get_lang (MOO_TEXT_BUFFER (doc->priv->buffer.gobj()));
 }
 
 /**
@@ -1270,7 +1270,7 @@ moo_edit_apply_config (MooEdit *doc)
     MooLangMgr *mgr = moo_lang_mgr_default ();
     MooLang *lang = lang_id ? _moo_lang_mgr_find_lang (mgr, lang_id) : NULL;
 
-    moo_text_buffer_set_lang (MOO_TEXT_BUFFER (doc->priv->buffer.get()), lang);
+    moo_text_buffer_set_lang (MOO_TEXT_BUFFER (doc->priv->buffer.gobj()), lang);
 
     g_object_notify (G_OBJECT (doc), "has-comments");
     g_object_notify (G_OBJECT (doc), "lang");
@@ -1353,7 +1353,7 @@ moo_edit_apply_prefs (MooEdit *edit)
     moo_edit_freeze_notify (edit);
 
     for (const auto& view: edit->priv->views)
-        _moo_edit_view_apply_prefs (view.get());
+        _moo_edit_view_apply_prefs (view.gobj());
 
     moo_edit_thaw_notify (edit);
 }
@@ -1465,7 +1465,7 @@ moo_edit_save_copy (MooEdit     *doc,
 
 bool Edit::_is_busy() const
 {
-    return _moo_edit_get_state(g()) != MOO_EDIT_STATE_NORMAL;
+    return _moo_edit_get_state(nc_gobj()) != MOO_EDIT_STATE_NORMAL;
 }
 
 MooEditState
@@ -1507,7 +1507,7 @@ _moo_edit_set_state (MooEdit        *doc,
     doc->priv->state = state;
 
     for (const auto& view: doc->priv->views)
-        gtk_text_view_set_editable (view.get<GtkTextView>(), !state);
+        gtk_text_view_set_editable (view.gobj<GtkTextView>(), !state);
 
     tab = moo_edit_get_tab (doc);
 
@@ -1838,7 +1838,7 @@ void Edit::_ensure_newline()
     GtkTextBuffer *buffer;
     GtkTextIter iter;
 
-    buffer = moo_edit_get_buffer (g());
+    buffer = moo_edit_get_buffer (gobj());
     gtk_text_buffer_get_end_iter (buffer, &iter);
 
     if (!gtk_text_iter_starts_line (&iter))
@@ -1850,7 +1850,7 @@ void Edit::_strip_whitespace()
     GtkTextBuffer *buffer;
     GtkTextIter iter;
 
-    buffer = moo_edit_get_buffer (g());
+    buffer = moo_edit_get_buffer (gobj());
     gtk_text_buffer_begin_user_action (buffer);
 
     for (gtk_text_buffer_get_start_iter (buffer, &iter);

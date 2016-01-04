@@ -190,7 +190,8 @@ save_input_file (MooEdit *doc)
         file = NULL;
     }
 
-    moo_save_info_free (info);
+    if (info)
+        g_object_unref (info);
     return file;
 }
 

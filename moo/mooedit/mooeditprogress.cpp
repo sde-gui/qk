@@ -74,7 +74,7 @@ moo_edit_progress_class_init (MooEditProgressClass *klass)
     G_OBJECT_CLASS(klass)->dispose = moo_edit_progress_dispose;
 }
 
-MooEditProgressPtr
+EditProgressPtr
 _moo_edit_progress_new (void)
 {
     return moo::wrap_new(MOO_EDIT_PROGRESS(g_object_new(MOO_TYPE_EDIT_PROGRESS, NULL)));

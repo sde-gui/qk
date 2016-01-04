@@ -54,8 +54,8 @@ struct MooEditBookmarkClass
 };
 
 #ifdef __cplusplus
-using MooEditBookmarkPtr = moo::gobj_ptr<MooEditBookmark>;
-using MooEditBookmarkRef = moo::gobj_ref<MooEditBookmark>;
+using EditBookmarkPtr = moo::gobj_ptr<MooEditBookmark>;
+using EditBookmark    = moo::gobj_ref<MooEditBookmark>;
 #endif
 
 GType            moo_edit_bookmark_get_type     (void) G_GNUC_CONST;

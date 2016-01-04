@@ -53,15 +53,15 @@ moo_open_info_new_file (GFile       *file,
 {
     g_return_val_if_fail (G_IS_FILE (file), nullptr);
 
-    MooOpenInfo *info = MOO_OPEN_INFO (g_object_new (MOO_TYPE_OPEN_INFO, nullptr));
+    OpenInfoPtr info = wrap_new(MOO_OPEN_INFO(g_object_new(MOO_TYPE_OPEN_INFO, nullptr)));
     new(info)(MooOpenInfo);
 
-    info->file = wrap_new(g_file_dup(file));
-    info->encoding = gstr::make_copy(encoding);
-    info->line = line;
-    info->flags = flags;
+    info->gobj()->file = wrap_new(g_file_dup(file));
+    info->gobj()->encoding = gstr::make_copy(encoding);
+    info->gobj()->line = line;
+    info->gobj()->flags = flags;
 
-    return info;
+    return info.release();
 }
 
 /**
@@ -80,10 +80,8 @@ moo_open_info_new (const char  *path,
                    int          line,
                    MooOpenFlags flags)
 {
-    GFile *file = g_file_new_for_path (path);
-    MooOpenInfo *info = moo_open_info_new_file (file, encoding, line, flags);
-    g_object_unref (file);
-    return info;
+    g::FilePtr file = g::File::new_for_path(path);
+    return moo_open_info_new_file (file.gobj(), encoding, line, flags);
 }
 
 /**
@@ -102,10 +100,8 @@ moo_open_info_new_uri (const char  *uri,
                        int          line,
                        MooOpenFlags flags)
 {
-    GFile *file = g_file_new_for_uri (uri);
-    MooOpenInfo *info = moo_open_info_new_file (file, encoding, line, flags);
-    g_object_unref (file);
-    return info;
+    g::FilePtr file = g::File::new_for_uri(uri);
+    return moo_open_info_new_file (file.gobj(), encoding, line, flags);
 }
 
 /**
@@ -116,21 +112,10 @@ moo_open_info_new_uri (const char  *uri,
 MooOpenInfo *
 moo_open_info_dup (MooOpenInfo *info)
 {
-    MooOpenInfo *copy;
-
-    g_return_val_if_fail (info != NULL, NULL);
-
-    copy = moo_open_info_new_file (info->file.get(), info->encoding, info->line, info->flags);
-    g_return_val_if_fail (copy != NULL, NULL);
-
+    g_return_val_if_fail(info != nullptr, nullptr);
+    MooOpenInfo *copy = moo_open_info_new_file(info->file.gobj(), info->encoding, info->line, info->flags);
+    g_return_val_if_fail(copy != nullptr, nullptr);
     return copy;
-}
-
-void
-moo_open_info_free (MooOpenInfo *info)
-{
-    if (info)
-        g_object_unref (info);
 }
 
 
@@ -288,15 +273,15 @@ MooSaveInfo *
 moo_save_info_new_file(GFile      *file,
                        const char *encoding)
 {
-    g_return_val_if_fail(G_IS_FILE(file), NULL);
+    g_return_val_if_fail(G_IS_FILE(file), nullptr);
 
-    MooSaveInfo *info = MOO_SAVE_INFO(g_object_new(MOO_TYPE_SAVE_INFO, NULL));
+    SaveInfoPtr info = wrap_new(MOO_SAVE_INFO(g_object_new(MOO_TYPE_SAVE_INFO, nullptr)));
     new(info)(MooSaveInfo);
 
-    info->file.wrap_new(g_file_dup(file));
-    info->encoding.copy(encoding);
+    info.gobj()->file.wrap_new(g_file_dup(file));
+    info.gobj()->encoding.copy(encoding);
 
-    return info;
+    return info.release();
 }
 
 /**
@@ -311,8 +296,8 @@ MooSaveInfo *
 moo_save_info_new(const char *path,
                   const char *encoding)
 {
-    auto file = gobj_ptr<GFile>::new_for_path(path);
-    MooSaveInfo *info = moo_save_info_new_file(file.get(), encoding);
+    auto file = g::File::new_for_path(path);
+    MooSaveInfo *info = moo_save_info_new_file(file.gobj(), encoding);
     return info;
 }
 
@@ -328,9 +313,8 @@ MooSaveInfo *
 moo_save_info_new_uri (const char *uri,
                        const char *encoding)
 {
-    GFile *file = g_file_new_for_uri (uri);
-    MooSaveInfo *info = moo_save_info_new_file (file, encoding);
-    g_object_unref (file);
+    auto file = g::File::new_for_uri(uri);
+    MooSaveInfo *info = moo_save_info_new_file(file.gobj(), encoding);
     return info;
 }
 
@@ -342,21 +326,10 @@ moo_save_info_new_uri (const char *uri,
 MooSaveInfo *
 moo_save_info_dup (MooSaveInfo *info)
 {
-    MooSaveInfo *copy;
-
-    g_return_val_if_fail (info != NULL, NULL);
-
-    copy = moo_save_info_new_file (info->file.get(), info->encoding);
-    g_return_val_if_fail (copy != NULL, NULL);
-
+    g_return_val_if_fail(info != nullptr, nullptr);
+    MooSaveInfo *copy = moo_save_info_new_file(info->file.gobj(), info->encoding);
+    g_return_val_if_fail(copy != nullptr, nullptr);
     return copy;
-}
-
-void
-moo_save_info_free (MooSaveInfo *info)
-{
-    if (info)
-        g_object_unref (info);
 }
 
 static void
@@ -389,13 +362,13 @@ MooReloadInfo *
 moo_reload_info_new (const char *encoding,
                      int         line)
 {
-    MooReloadInfo *info = MOO_RELOAD_INFO (g_object_new (MOO_TYPE_RELOAD_INFO, NULL));
+    ReloadInfoPtr info = wrap_new(MOO_RELOAD_INFO(g_object_new(MOO_TYPE_RELOAD_INFO, nullptr)));
     new(info)(MooReloadInfo);
 
-    info->encoding.copy(encoding);
-    info->line = line;
+    info.gobj()->encoding.copy(encoding);
+    info.gobj()->line = line;
 
-    return info;
+    return info.release();
 }
 
 /**
@@ -406,23 +379,11 @@ moo_reload_info_new (const char *encoding,
 MooReloadInfo *
 moo_reload_info_dup (MooReloadInfo *info)
 {
-    MooReloadInfo *copy;
-
-    g_return_val_if_fail (info != NULL, NULL);
-
-    copy = moo_reload_info_new (info->encoding, info->line);
-    g_return_val_if_fail (copy != NULL, NULL);
-
+    g_return_val_if_fail (info != nullptr, nullptr);
+    MooReloadInfo *copy = moo_reload_info_new (info->encoding, info->line);
+    g_return_val_if_fail (copy != nullptr, nullptr);
     return copy;
 }
-
-void
-moo_reload_info_free (MooReloadInfo *info)
-{
-    if (info)
-        g_object_unref (info);
-}
-
 
 /**
  * moo_reload_info_get_line:

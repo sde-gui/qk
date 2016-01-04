@@ -102,7 +102,7 @@ EditViewPtr EditViewPtr::_create(Edit doc)
     g_assert (gtk_text_view_get_buffer (GTK_TEXT_VIEW (view)) == moo_edit_get_buffer (&doc));
 
     auto indent = moo::wrap_new (moo_indenter_new (&doc));
-    moo_text_view_set_indenter (MOO_TEXT_VIEW (view), indent.get());
+    moo_text_view_set_indenter (MOO_TEXT_VIEW (view), indent.gobj());
 
     doc._add_view (*view);
 

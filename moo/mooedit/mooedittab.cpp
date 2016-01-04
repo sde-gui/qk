@@ -135,7 +135,7 @@ MooEdit *
 moo_edit_tab_get_doc (MooEditTab *tab)
 {
     g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), NULL);
-    return tab->doc.get();
+    return tab->doc.gobj();
 }
 
 /**
@@ -449,8 +449,8 @@ _moo_edit_tab_create_progress (MooEditTab *tab)
     g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), NULL);
     g_return_val_if_fail (!tab->progress, tab->progress);
 
-    MooEditProgressPtr progress = _moo_edit_progress_new();
-    tab->progress = progress.get();
+    EditProgressPtr progress = _moo_edit_progress_new();
+    tab->progress = progress.gobj();
     gtk_box_pack_start (GTK_BOX (tab), GTK_WIDGET (tab->progress), FALSE, FALSE, 0);
     gtk_box_reorder_child (GTK_BOX (tab), GTK_WIDGET (tab->progress), 0);
 

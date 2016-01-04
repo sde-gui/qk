@@ -375,7 +375,7 @@ void Edit::_delete_bookmarks(bool in_destroy)
             disconnect_bookmark (MOO_EDIT_BOOKMARK (bookmarks->data));
 
             if (!in_destroy)
-                moo_text_buffer_delete_line_mark (get_moo_buffer (g()),
+                moo_text_buffer_delete_line_mark (get_moo_buffer (gobj()),
                                                   MOO_LINE_MARK (bookmarks->data));
 
             ::g_object_unref (bookmarks->data);
@@ -383,7 +383,7 @@ void Edit::_delete_bookmarks(bool in_destroy)
         }
 
         if (!in_destroy)
-            bookmarks_changed(g());
+            bookmarks_changed(gobj());
     }
 }
 
@@ -483,9 +483,9 @@ void Edit::_update_bookmarks_style()
     const GSList *bookmarks;
     const char *color;
 
-    color = get_bookmark_color (g());
+    color = get_bookmark_color (gobj());
 
-    bookmarks = moo_edit_list_bookmarks (g());
+    bookmarks = moo_edit_list_bookmarks (gobj());
     while (bookmarks)
     {
         moo_line_mark_set_background (MOO_LINE_MARK (bookmarks->data), color);

@@ -39,48 +39,48 @@ GType           moo_lang_mgr_get_type               (void) G_GNUC_CONST;
 MooLangMgr     *moo_lang_mgr_new                    (void);
 MooLangMgr     *moo_lang_mgr_default                (void);
 
-MooLang        *moo_lang_mgr_get_lang               (MooLangMgr     *mgr,
-                                                     const char     *lang_id);
+MooLang        *moo_lang_mgr_get_lang               (MooLangMgr*            mgr,
+                                                     const char*            lang_id);
 #ifdef __cplusplus
-MooLang        *moo_lang_mgr_get_lang_for_file      (MooLangMgr*                mgr,
-                                                     const moo::gobj_ref<GFile>& file);
+MooLang        *moo_lang_mgr_get_lang_for_file      (MooLangMgr*            mgr,
+                                                     const moo::g::File&    file);
 #endif // __cplusplus
 
 /* list must be freed, content unref'ed */
-GSList         *moo_lang_mgr_get_available_langs    (MooLangMgr     *mgr);
+GSList         *moo_lang_mgr_get_available_langs    (MooLangMgr*            mgr);
 /* list must be freed together with content */
-GSList         *moo_lang_mgr_get_sections           (MooLangMgr     *mgr);
+GSList         *moo_lang_mgr_get_sections           (MooLangMgr*            mgr);
 
-MooLang        *_moo_lang_mgr_find_lang             (MooLangMgr     *mgr,
-                                                     const char     *name);
+MooLang        *_moo_lang_mgr_find_lang             (MooLangMgr*            mgr,
+                                                     const char*            name);
 
-MooTextStyleScheme *moo_lang_mgr_get_active_scheme  (MooLangMgr     *mgr);
-void            _moo_lang_mgr_set_active_scheme     (MooLangMgr     *mgr,
-                                                     const char     *scheme_name);
+MooTextStyleScheme *moo_lang_mgr_get_active_scheme  (MooLangMgr*            mgr);
+void            _moo_lang_mgr_set_active_scheme     (MooLangMgr*            mgr,
+                                                     const char*            scheme_name);
 /* list must be freed, content unref'ed */
-GSList         *moo_lang_mgr_list_schemes           (MooLangMgr     *mgr);
+GSList         *moo_lang_mgr_list_schemes           (MooLangMgr*            mgr);
 
 /* list must be freed together with content */
-GSList         *_moo_lang_mgr_get_globs             (MooLangMgr     *mgr,
-                                                     const char     *lang_id);
+GSList         *_moo_lang_mgr_get_globs             (MooLangMgr*            mgr,
+                                                     const char*            lang_id);
 /* list must be freed together with content */
-GSList         *_moo_lang_mgr_get_mime_types        (MooLangMgr     *mgr,
-                                                     const char     *lang_id);
-void            _moo_lang_mgr_set_mime_types        (MooLangMgr     *mgr,
-                                                     const char     *lang_id,
-                                                     const char     *mime);
-void            _moo_lang_mgr_set_globs             (MooLangMgr     *mgr,
-                                                     const char     *lang_id,
-                                                     const char     *globs);
-const char     *_moo_lang_mgr_get_config            (MooLangMgr     *mgr,
-                                                     const char     *lang_id);
-void            _moo_lang_mgr_set_config            (MooLangMgr     *mgr,
-                                                     const char     *lang_id,
-                                                     const char     *config);
-void            _moo_lang_mgr_update_config         (MooLangMgr     *mgr,
-                                                     MooEditConfig  *config,
-                                                     const char     *lang_id);
-void            _moo_lang_mgr_save_config           (MooLangMgr     *mgr);
+GSList         *_moo_lang_mgr_get_mime_types        (MooLangMgr*            mgr,
+                                                     const char*            lang_id);
+void            _moo_lang_mgr_set_mime_types        (MooLangMgr*            mgr,
+                                                     const char*            lang_id,
+                                                     const char*            mime);
+void            _moo_lang_mgr_set_globs             (MooLangMgr*            mgr,
+                                                     const char*            lang_id,
+                                                     const char*            globs);
+const char     *_moo_lang_mgr_get_config            (MooLangMgr*            mgr,
+                                                     const char*            lang_id);
+void            _moo_lang_mgr_set_config            (MooLangMgr*            mgr,
+                                                     const char*            lang_id,
+                                                     const char*            config);
+void            _moo_lang_mgr_update_config         (MooLangMgr*            mgr,
+                                                     MooEditConfig*         config,
+                                                     const char*            lang_id);
+void            _moo_lang_mgr_save_config           (MooLangMgr*            mgr);
 
 
 G_END_DECLS

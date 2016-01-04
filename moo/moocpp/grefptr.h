@@ -95,29 +95,29 @@ public:
     // FooObject* tmp = x->s;
     // x->s = NULL;
     // g_object_unref (tmp);
-    operator const Object* () const { return get(); }
-    Object* get() const { return m_p; }
-    Object& operator*() const { return *get(); }
-    Object* operator->() const { return get(); }
+    operator const Object* () const { return gobj(); }
+    Object* gobj() const { return m_p; }
+    Object& operator*() const { return *gobj(); }
+    Object* operator->() const { return gobj(); }
 
     // Explicitly forbid other pointer conversions. This way it's still possible to implement
     // implicit conversions in subclasses, like that to GTypeInstance in gobj_ptr.
     template<typename T>
     operator T*() const = delete;
 
-    operator bool() const { return get() != nullptr; }
-    bool operator!() const { return get() == nullptr; }
+    operator bool() const { return gobj() != nullptr; }
+    bool operator!() const { return gobj() == nullptr; }
 
     template<typename X>
     bool operator==(X* other) const
     {
-        return get() == other;
+        return gobj() == other;
     }
 
     template<typename X, typename Y>
     bool operator==(const grefptr<X, Y>& other) const
     {
-        return get() == other.get();
+        return gobj() == other.gobj();
     }
 
     template<typename X>
@@ -127,7 +127,7 @@ public:
     }
 
     grefptr(const grefptr& other)
-        : grefptr(other.get(), ref_transfer::make_copy)
+        : grefptr(other.gobj(), ref_transfer::make_copy)
     {
     }
 
@@ -140,7 +140,7 @@ public:
 
     grefptr& operator=(const grefptr& other)
     {
-        assign(other.get(), ref_transfer::make_copy);
+        assign(other.gobj(), ref_transfer::make_copy);
         return *this;
     }
 
@@ -162,7 +162,7 @@ public:
 
     grefptr& operator=(grefptr&& other)
     {
-        if (get() != other.get())
+        if (gobj() != other.gobj())
         {
             assign(other.m_p, ref_transfer::take_ownership);
             other.m_p = nullptr;
@@ -174,9 +174,9 @@ public:
 private:
     void assign(Object* obj, ref_transfer policy)
     {
-        if (get() != obj)
+        if (gobj() != obj)
         {
-            Object* tmp = get();
+            Object* tmp = gobj();
             m_p = obj;
             if (obj && (policy == ref_transfer::make_copy))
                 ObjRefUnref::ref(obj);

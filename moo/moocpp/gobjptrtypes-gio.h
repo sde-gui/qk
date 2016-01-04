@@ -32,6 +32,11 @@ class gobj_ref<GFile> : public gobj_ref_parent<GFile>
 public:
     MOO_DEFINE_GOBJREF_METHODS(GFile)
 
+    static gobj_ptr<GFile>  new_for_path                (const char* path);
+    static gobj_ptr<GFile>  new_for_uri                 (const char* uri);
+    static gobj_ptr<GFile>  new_for_commandline_arg     (const char* arg);
+    static gobj_ptr<GFile>  parse_name                  (const char* parse_name);
+
     gobj_ptr<GFile>         dup                         () const;
 
     bool                    equal                       (GFile*                 file2) const;
@@ -127,23 +132,6 @@ public:
                                                          char**                 new_etag,
                                                          GCancellable*          cancellable,
                                                          GError**               error) const;
-
-    static gobj_ptr<GFile>  new_for_path                (const char* path);
-    static gobj_ptr<GFile>  new_for_uri                 (const char* uri);
-    static gobj_ptr<GFile>  new_for_commandline_arg     (const char* arg);
-    static gobj_ptr<GFile>  parse_name                  (const char* parse_name);
-};
-
-template<>
-class gobj_ptr<GFile> : public gobj_ptr_impl<GFile>
-{
-public:
-    MOO_DEFINE_GOBJPTR_METHODS(GFile)
-
-    static gobj_ptr new_for_path(const char* path) { return ref_type::new_for_path(path); }
-    static gobj_ptr new_for_uri(const char* uri) { return ref_type::new_for_uri(uri); }
-    static gobj_ptr new_for_commandline_arg(const char* arg) { return ref_type::new_for_commandline_arg(arg); }
-    static gobj_ptr parse_name(const char* parse_name) { return ref_type::parse_name(parse_name); }
 };
 
 namespace g {

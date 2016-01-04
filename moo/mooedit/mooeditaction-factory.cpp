@@ -541,7 +541,7 @@ GtkActionGroup *
 moo_edit_get_actions (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), NULL);
-    return moo_action_collection_get_group (edit->priv->actions.get(), NULL);
+    return moo_action_collection_get_group (edit->priv->actions.gobj(), NULL);
 }
 
 
@@ -575,7 +575,7 @@ add_action (const char *id,
 
 void Edit::_add_class_actions()
 {
-    GType type = G_OBJECT_TYPE (g());
+    GType type = G_OBJECT_TYPE (gobj());
 
     while (true)
     {
@@ -584,7 +584,7 @@ void Edit::_add_class_actions()
         actions = get_actions_hash (type);
 
         if (actions)
-            g_hash_table_foreach (actions, (GHFunc) add_action, g());
+            g_hash_table_foreach (actions, (GHFunc) add_action, gobj());
 
         if (type == MOO_TYPE_EDIT)
             break;

@@ -38,3 +38,7 @@ struct MooSaveInfoClass
 {
     GObjectClass parent_class;
 };
+
+MOO_GOBJ_TYPEDEFS(OpenInfo, MooOpenInfo);
+MOO_GOBJ_TYPEDEFS(ReloadInfo, MooReloadInfo);
+MOO_GOBJ_TYPEDEFS(SaveInfo, MooSaveInfo);

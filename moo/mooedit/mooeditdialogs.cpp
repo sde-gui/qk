@@ -57,7 +57,7 @@ _moo_edit_open_dialog (GtkWidget *widget,
         start.take(moo_prefs_get_file(moo_edit_setting(MOO_EDIT_PREFS_LAST_DIR)));
 
     dialog = moo_file_dialog_new (MOO_FILE_DIALOG_OPEN, widget,
-                                  TRUE, GTK_STOCK_OPEN, start.get(),
+                                  TRUE, GTK_STOCK_OPEN, start.gobj(),
                                   NULL);
     g_object_set (dialog, "enable-encodings", TRUE, NULL);
     moo_file_dialog_set_help_id (dialog, "dialog-open");
@@ -80,7 +80,7 @@ _moo_edit_open_dialog (GtkWidget *widget,
             moo_open_info_array_take (info_array, moo_open_info_new_file (files->elms[i], encoding, -1, MOO_OPEN_FLAGS_NONE));
 
         start.take(g_file_get_parent (files->elms[0]));
-        moo_prefs_set_file (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), start.get());
+        moo_prefs_set_file (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), start.gobj());
     }
 
     g_object_unref (dialog);
@@ -479,9 +479,9 @@ bool _moo_edit_save_error_enc_dialog(Edit&          doc,
 
 
 MooEditTryEncodingResponse
-_moo_edit_try_encoding_dialog (const gobj_ref<GFile>& file,
-                               const char*            encoding,
-                               /*out*/ gstr&          new_encoding)
+_moo_edit_try_encoding_dialog (const g::File& file,
+                               const char*    encoding,
+                               /*out*/ gstr&  new_encoding)
 {
     MooEditWindow *window;
     GtkWidget *dialog;

@@ -25,6 +25,7 @@
 #include "marshals.h"
 #include "mooutils/moo-mime.h"
 #include "moocpp/gobjectutils.h"
+#include "moocpp/gobjptrtypes-gio.h"
 #include <string.h>
 
 using namespace moo;
@@ -370,8 +371,8 @@ file_blacklisted (MooLangMgr* mgr,
 
 
 MooLang *
-moo_lang_mgr_get_lang_for_file (MooLangMgr*                 mgr,
-                                const moo::gobj_ref<GFile>& file)
+moo_lang_mgr_get_lang_for_file (MooLangMgr*    mgr,
+                                const g::File& file)
 {
     MooLang *lang = NULL;
     const char *mime_type;

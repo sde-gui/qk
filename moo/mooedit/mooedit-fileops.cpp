@@ -656,7 +656,7 @@ static bool do_write(const g::File&   file,
 
     writer_flags = (flags & MOO_EDIT_SAVE_BACKUP) ? MOO_FILE_WRITER_SAVE_BACKUP : (MooFileWriterFlags) 0;
 
-    if ((writer = moo_file_writer_new_for_file (file.g(), writer_flags, error)))
+    if ((writer = moo_file_writer_new_for_file (file.nc_gobj(), writer_flags, error)))
     {
         success = TRUE;
         if (success && len1 > 0)

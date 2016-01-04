@@ -46,155 +46,155 @@ FilePtr File::parse_name(const char* parse_name)
 
 FilePtr File::dup() const
 {
-    return FilePtr::wrap_new(g_file_dup(g()));
+    return FilePtr::wrap_new(g_file_dup(nc_gobj()));
 }
 
 bool File::equal(GFile* file2) const
 {
-    return g_file_equal(g(), file2);
+    return g_file_equal(nc_gobj(), file2);
 }
 
 gstr File::get_basename() const
 {
-    return gstr::wrap_new(g_file_get_basename(g()));
+    return gstr::wrap_new(g_file_get_basename(nc_gobj()));
 }
 
 gstr File::get_path() const
 {
-    return gstr::wrap_new(g_file_get_path(g()));
+    return gstr::wrap_new(g_file_get_path(nc_gobj()));
 }
 
 gstr File::get_uri() const
 {
-    return gstr::wrap_new(g_file_get_uri(g()));
+    return gstr::wrap_new(g_file_get_uri(nc_gobj()));
 }
 
 gstr File::get_parse_name() const
 {
-    return gstr::wrap_new(g_file_get_parse_name(g()));
+    return gstr::wrap_new(g_file_get_parse_name(nc_gobj()));
 }
 
 FilePtr File::get_parent() const
 {
-    return FilePtr::wrap_new(g_file_get_parent(g()));
+    return FilePtr::wrap_new(g_file_get_parent(nc_gobj()));
 }
 
 bool File::has_parent(GFile* parent) const
 {
-    return g_file_has_parent(g(), parent);
+    return g_file_has_parent(nc_gobj(), parent);
 }
 
 FilePtr File::get_child(const char* name) const
 {
-    return FilePtr::wrap_new(g_file_get_child(g(), name));
+    return FilePtr::wrap_new(g_file_get_child(nc_gobj(), name));
 }
 
 FilePtr File::get_child_for_display_name(const char* display_name, GError** error) const
 {
-    return FilePtr::wrap_new(g_file_get_child_for_display_name(g(), display_name, error));
+    return FilePtr::wrap_new(g_file_get_child_for_display_name(nc_gobj(), display_name, error));
 }
 
 bool File::has_prefix(GFile* prefix) const
 {
-    return g_file_has_prefix(g(), prefix);
+    return g_file_has_prefix(nc_gobj(), prefix);
 }
 
 gstr File::get_relative_path(GFile* descendant) const
 {
-    return gstr::wrap_new(g_file_get_relative_path(g(), descendant));
+    return gstr::wrap_new(g_file_get_relative_path(nc_gobj(), descendant));
 }
 
 FilePtr File::resolve_relative_path(const char *relative_path) const
 {
-    return FilePtr::wrap_new(g_file_resolve_relative_path(g(), relative_path));
+    return FilePtr::wrap_new(g_file_resolve_relative_path(nc_gobj(), relative_path));
 }
 
 bool File::is_native() const
 {
-    return g_file_is_native(g());
+    return g_file_is_native(nc_gobj());
 }
 
 bool File::has_uri_scheme(const char *uri_scheme) const
 {
-    return g_file_has_uri_scheme(g(), uri_scheme);
+    return g_file_has_uri_scheme(nc_gobj(), uri_scheme);
 }
 
 gstr File::get_uri_scheme() const
 {
-    return gstr::wrap_new(g_file_get_uri_scheme(g()));
+    return gstr::wrap_new(g_file_get_uri_scheme(nc_gobj()));
 }
 
 bool File::query_exists(GCancellable* cancellable) const
 {
-    return g_file_query_exists(g(), cancellable);
+    return g_file_query_exists(nc_gobj(), cancellable);
 }
 
 GFileType File::query_file_type(GFileQueryInfoFlags flags, GCancellable* cancellable) const
 {
-    return g_file_query_file_type(g(), flags, cancellable);
+    return g_file_query_file_type(nc_gobj(), flags, cancellable);
 }
 
 GFileInfo* File::query_info(const char *attributes, GFileQueryInfoFlags flags, GCancellable* cancellable, GError** error) const
 {
-    return g_file_query_info(g(), attributes, flags, cancellable, error);
+    return g_file_query_info(nc_gobj(), attributes, flags, cancellable, error);
 }
 
 GFileInfo* File::query_filesystem_info(const char *attributes, GCancellable* cancellable, GError** error) const
 {
-    return g_file_query_filesystem_info(g(), attributes, cancellable, error);
+    return g_file_query_filesystem_info(nc_gobj(), attributes, cancellable, error);
 }
 
 GFileEnumerator* File::enumerate_children(const char *attributes, GFileQueryInfoFlags flags, GCancellable* cancellable, GError** error) const
 {
-    return g_file_enumerate_children(g(), attributes, flags, cancellable, error);
+    return g_file_enumerate_children(nc_gobj(), attributes, flags, cancellable, error);
 }
 
 FilePtr File::set_display_name(const char* display_name, GCancellable* cancellable, GError** error) const
 {
-    return FilePtr::wrap_new(g_file_set_display_name(g(), display_name, cancellable, error));
+    return FilePtr::wrap_new(g_file_set_display_name(nc_gobj(), display_name, cancellable, error));
 }
 
 bool File::delete_(GCancellable* cancellable, GError** error) const
 {
-    return g_file_delete(g(), cancellable, error);
+    return g_file_delete(nc_gobj(), cancellable, error);
 }
 
 bool File::trash(GCancellable* cancellable, GError** error) const
 {
-    return g_file_trash(g(), cancellable, error);
+    return g_file_trash(nc_gobj(), cancellable, error);
 }
 
 bool File::copy(GFile* destination, GFileCopyFlags flags, GCancellable* cancellable, GFileProgressCallback progress_callback, gpointer progress_callback_data, GError** error) const
 {
-    return g_file_copy(g(), destination, flags, cancellable, progress_callback, progress_callback_data, error);
+    return g_file_copy(nc_gobj(), destination, flags, cancellable, progress_callback, progress_callback_data, error);
 }
 
 bool File::move(GFile* destination, GFileCopyFlags flags, GCancellable* cancellable, GFileProgressCallback progress_callback, gpointer progress_callback_data, GError** error) const
 {
-    return g_file_move(g(), destination, flags, cancellable, progress_callback, progress_callback_data, error);
+    return g_file_move(nc_gobj(), destination, flags, cancellable, progress_callback, progress_callback_data, error);
 }
 
 bool File::make_directory(GCancellable* cancellable, GError** error) const
 {
-    return g_file_make_directory(g(), cancellable, error);
+    return g_file_make_directory(nc_gobj(), cancellable, error);
 }
 
 bool File::make_directory_with_parents(GCancellable* cancellable, GError** error) const
 {
-    return g_file_make_directory_with_parents(g(), cancellable, error);
+    return g_file_make_directory_with_parents(nc_gobj(), cancellable, error);
 }
 
 bool File::make_symbolic_link(const char *symlink_value, GCancellable* cancellable, GError** error) const
 {
-    return g_file_make_symbolic_link(g(), symlink_value, cancellable, error);
+    return g_file_make_symbolic_link(nc_gobj(), symlink_value, cancellable, error);
 }
 
 bool File::load_contents(GCancellable* cancellable, char** contents, gsize* length, char** etag_out, GError** error) const
 {
-    return g_file_load_contents(g(), cancellable, contents, length, etag_out, error);
+    return g_file_load_contents(nc_gobj(), cancellable, contents, length, etag_out, error);
 }
 
 bool File::replace_contents(const char* contents, gsize length, const char* etag, gboolean make_backup, GFileCreateFlags flags, char** new_etag, GCancellable* cancellable, GError** error) const
 {
-    return g_file_replace_contents(g(), contents, length, etag, make_backup, flags, new_etag, cancellable, error);
+    return g_file_replace_contents(nc_gobj(), contents, length, etag, make_backup, flags, new_etag, cancellable, error);
 }

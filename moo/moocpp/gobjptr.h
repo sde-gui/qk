@@ -66,14 +66,14 @@ public:
 
     Object* release()
     {
-        auto* tmp = get();
+        auto* tmp = gobj();
         m_ref._set_gobj(nullptr);
         return tmp;
     }
 
     void reset()
     {
-        auto* tmp = get();
+        auto* tmp = gobj();
         if (tmp)
         {
             m_ref._set_gobj(nullptr);
@@ -86,24 +86,24 @@ public:
     // FooObject* tmp = x->s;
     // x->s = NULL;
     // g_object_unref (tmp);
-    operator const Object* () const { return get(); }
+    operator const Object* () const { return gobj(); }
     operator ref_type*() const { return m_ref.self(); }
     ref_type* operator->() const { return m_ref.self(); }
     ref_type& operator*() const { return m_ref; }
 
-    Object* get() const { return m_ref.gobj(); }
+    Object* gobj() const { return m_ref.gobj(); }
 
     template<typename Super>
-    Super* get() const
+    Super* gobj() const
     {
         return gobj_is_subclass<Object, Super>::down_cast(m_ref.gobj());
     }
 
     template<typename Super>
-    operator const Super* () const { return get<Super>(); }
+    operator const Super* () const { return gobj<Super>(); }
 
-    operator bool() const { return get() != nullptr; }
-    bool operator!() const { return get() == nullptr; }
+    operator bool() const { return gobj() != nullptr; }
+    bool operator!() const { return gobj() == nullptr; }
 
     gobj_ptr_impl(const gobj_ptr_impl& other) = delete;
     gobj_ptr_impl& operator=(const gobj_ptr_impl& other) = delete;
@@ -111,7 +111,7 @@ public:
     gobj_ptr_impl(gobj_ptr_impl&& other)
         : gobj_ptr_impl()
     {
-        m_ref._set_gobj(other.get());
+        m_ref._set_gobj(other.gobj());
         other.m_ref._set_gobj(nullptr);
     }
 
@@ -133,9 +133,9 @@ public:
 
     gobj_ptr_impl& operator=(gobj_ptr_impl&& other)
     {
-        if (get() != other.get())
+        if (gobj() != other.gobj())
         {
-            assign(other.get(), ref_transfer::take_ownership);
+            assign(other.gobj(), ref_transfer::take_ownership);
             other.m_ref._set_gobj(nullptr);
         }
 
@@ -145,9 +145,9 @@ public:
 private:
     void assign(Object* obj, ref_transfer policy)
     {
-        if (get() != obj)
+        if (gobj() != obj)
         {
-            Object* tmp = get();
+            Object* tmp = gobj();
             m_ref._set_gobj(obj);
 
             if (obj)
@@ -239,43 +239,43 @@ void g_free(const gobj_ptr<X>&);
 template<typename X>
 inline bool operator==(const moo::gobj_ptr<X>& p, const nullptr_t&)
 {
-    return p.get() == nullptr;
+    return p.gobj() == nullptr;
 }
 
 template<typename X>
 inline bool operator==(const nullptr_t&, const moo::gobj_ptr<X>& p)
 {
-    return p.get() == nullptr;
+    return p.gobj() == nullptr;
 }
 
 template<typename X, typename Y>
 inline bool operator==(const moo::gobj_ptr<X>& p1, const moo::gobj_ptr<Y>& p2)
 {
-    return p1.get() == p2.get();
+    return p1.gobj() == p2.gobj();
 }
 
 template<typename X, typename Y>
 inline bool operator==(const moo::gobj_ptr<X>& p1, const Y* p2)
 {
-    return p1.get() == p2;
+    return p1.gobj() == p2;
 }
 
 template<typename X, typename Y>
 inline bool operator==(const X* p1, const moo::gobj_ptr<Y>& p2)
 {
-    return p1 == p2.get();
+    return p1 == p2.gobj();
 }
 
 template<typename X, typename Y>
 inline bool operator==(const moo::gobj_ptr<X>& p1, const moo::gobj_raw_ptr<Y>& p2)
 {
-    return p1.get() == p2.get();
+    return p1.gobj() == p2.gobj();
 }
 
 template<typename X, typename Y>
 inline bool operator==(const moo::gobj_raw_ptr<Y>& p1, const moo::gobj_ptr<X>& p2)
 {
-    return p1.get() == p2.get();
+    return p1.gobj() == p2.gobj();
 }
 
 template<typename X, typename Y>

@@ -112,22 +112,22 @@ public:                                                                         
     template<typename X>                                                        \
     X* gobj()                                                                   \
     {                                                                           \
-        return g<X>();                                                          \
+        return nc_gobj<X>();                                                    \
     }                                                                           \
                                                                                 \
     template<typename X>                                                        \
     const X* gobj() const                                                       \
     {                                                                           \
-        return g<X>();                                                          \
+        return nc_gobj<X>();                                                    \
     }                                                                           \
                                                                                 \
-    object_type* g() const                                                      \
+    object_type* nc_gobj() const                                                \
     {                                                                           \
         return const_cast<object_type*>(gobj());                                \
     }                                                                           \
                                                                                 \
     template<typename X>                                                        \
-    X* g() const                                                                \
+    X* nc_gobj() const                                                          \
     {                                                                           \
         object_type* o = const_cast<object_type*>(gobj());                      \
         return gobj_is_subclass<Object, X>::down_cast(o);                       \
@@ -138,8 +138,8 @@ public:                                                                         
                                                                                 \
     operator object_type&() { return *gobj(); }                                 \
     operator const object_type&() const { return *gobj(); }                     \
-    gobj_raw_ptr<object_type> operator&() { return g(); }                       \
-    gobj_raw_ptr<const object_type> operator&() const { return g(); }           \
+    gobj_raw_ptr<object_type> operator&() { return nc_gobj(); }                 \
+    gobj_raw_ptr<const object_type> operator&() const { return nc_gobj(); }     \
                                                                                 \
     gobj_ref(const gobj_ref&) = default;                                        \
     gobj_ref& operator=(const gobj_ref&) = default;                             \
