@@ -24,6 +24,11 @@ const gstr gstr::null;
 
 //static void compile_errors(const gstr& constref, gstr& ref, gstr val)
 //{
+//    //ref.borrow(g_strdup("zzz"));
+//    //gstr::make_borrowed(g_strdup("zzz"));
+//    gstr::make_borrowed(ref);
+//    gstr::make_borrowed(constref);
+//
 //    if (constref)
 //        return;
 //

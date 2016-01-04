@@ -173,8 +173,8 @@ public:
 
 // Make sure these aren't called in code ported from pure glib C
 template<typename X>
-void g_object_unref(const gobj_ref<X>*);
+void g_object_unref(const gobj_ref<X>*) = delete;
 template<typename X>
-void g_free(const gobj_ref<X>*);
+void g_free(const gobj_ref<X>*) = delete;
 
 } // namespace moo

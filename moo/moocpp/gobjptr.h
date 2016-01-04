@@ -230,9 +230,9 @@ template<> class gobj_ref<GObject>;
 
 
 template<typename X>
-void g_object_unref(const gobj_ptr<X>&);
+void g_object_unref(const gobj_ptr<X>&) = delete;
 template<typename X>
-void g_free(const gobj_ptr<X>&);
+void g_free(const gobj_ptr<X>&) = delete;
 
 } // namespace moo
 

@@ -189,4 +189,10 @@ private:
     Object* m_p;
 };
 
+// Make sure these aren't called in code ported from pure glib C
+template<typename X>
+void g_object_unref(const grefptr<X>&) = delete;
+template<typename X>
+void g_free(const grefptr<X>&) = delete;
+
 } // namespace moo

@@ -49,48 +49,13 @@ public:
     }
 
     mg_mem_holder(const mg_mem_holder& other) = delete;
-
-    //mg_mem_holder(const mg_mem_holder& other)
-    //    : mg_mem_holder()
-    //{
-    //    *this = other;
-    //}
+    mg_mem_holder& operator=(const mg_mem_holder& other) = delete;
 
     mg_mem_holder(mg_mem_holder&& other)
         : mg_mem_holder()
     {
         *this = std::move(other);
     }
-
-    mg_mem_holder& operator=(const mg_mem_holder& other) = delete;
-
-    //mg_mem_holder& operator=(const mg_mem_holder& other)
-    //{
-    //    if (this == &other)
-    //        return *this;
-
-    //    if (other.m_p == nullptr)
-    //    {
-    //        reset();
-    //        return *this;
-    //    }
-
-    //    switch (other.m_ot)
-    //    {
-    //    case ownership_type::borrowed:
-    //    case ownership_type::owned:
-    //        assign(other.m_p, memory_type::allocated, mem_transfer::borrow);
-    //        break;
-    //    case ownership_type::literal:
-    //        assign(other.m_p, memory_type::literal, mem_transfer::borrow);
-    //        break;
-    //    default:
-    //        g_assert_not_reached();
-    //        break;
-    //    }
-
-    //    return *this;
-    //}
 
     mg_mem_holder& operator=(mg_mem_holder&& other)
     {
@@ -225,10 +190,18 @@ public:
         return ret;
     }
 
+    Self borrow() const
+    {
+        return make_borrowed(*this);
+    }
+
     void borrow(const Buf* p)
     {
         assign(p, memory_type::allocated, mem_transfer::borrow);
     }
+
+    // Borrowing a temporary is not a good idea
+    void borrow(Buf*&& p) = delete;
 
     void borrow(const mg_mem_holder& other)
     {
@@ -238,14 +211,14 @@ public:
             borrow(static_cast<const Buf*>(other));
     }
 
-    Self borrow() const
-    {
-        return make_borrowed(*this);
-    }
-
     void literal(const Buf* p)
     {
         assign(p, memory_type::literal, mem_transfer::borrow);
+    }
+
+    Self copy() const
+    {
+        return make_copy(*this);
     }
 
     void copy(const Buf* p)
@@ -272,6 +245,11 @@ public:
     }
 
     template<typename Arg>
+    static Self make_borrowed(Self&& arg) = delete;
+
+    static Self make_borrowed(Buf*&& p) = delete;
+
+    template<typename Arg>
     static Self make_borrowed(const Arg& arg)
     {
         Self s;
@@ -279,34 +257,27 @@ public:
         return std::move(s);
     }
 
-    static Self make_borrowed(const mg_mem_holder& other)
+    template<typename Arg>
+    static Self wrap_literal(Arg&& arg)
     {
         Self s;
-        s.borrow(other);
+        s.literal(std::forward<Arg>(arg));
         return std::move(s);
     }
 
     template<typename Arg>
-    static Self wrap_literal(const Arg& arg)
+    static Self make_copy(Arg&& arg)
     {
         Self s;
-        s.literal(arg);
+        s.copy(std::forward<Arg>(arg));
         return std::move(s);
     }
 
     template<typename Arg>
-    static Self make_copy(const Arg& arg)
+    static Self wrap_new(Arg&& arg)
     {
         Self s;
-        s.copy(arg);
-        return std::move(s);
-    }
-
-    template<typename Arg>
-    static Self wrap_new(const Arg& arg)
-    {
-        Self s;
-        s.take(arg);
+        s.take(std::forward<Arg>(arg));
         return std::move(s);
     }
 
