@@ -16,7 +16,6 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooedit-impl.h"
 #include "mooedit/mooeditview-impl.h"
-#include "mooedit/mooedit-fileops.h"
 #include "mooedit/mootextview-private.h"
 #include "mooedit/mooedit-enums.h"
 #include "mooedit/mootextbuffer.h"
@@ -33,9 +32,7 @@
 
 static void _moo_edit_init_prefs (void);
 
-
-static guint settings[MOO_EDIT_LAST_SETTING];
-guint *_moo_edit_settings = settings;
+static guint _moo_edit_settings[MOO_EDIT_LAST_SETTING];
 
 
 const char *

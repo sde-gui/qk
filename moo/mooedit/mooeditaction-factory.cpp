@@ -573,23 +573,18 @@ add_action (const char *id,
     }
 }
 
-void
-_moo_edit_add_class_actions (MooEdit *edit)
+void MooEditRef::_add_class_actions()
 {
-    GType type;
+    GType type = G_OBJECT_TYPE (g());
 
-    g_return_if_fail (MOO_IS_EDIT (edit));
-
-    type = G_OBJECT_TYPE (edit);
-
-    while (TRUE)
+    while (true)
     {
         GHashTable *actions;
 
         actions = get_actions_hash (type);
 
         if (actions)
-            g_hash_table_foreach (actions, (GHFunc) add_action, edit);
+            g_hash_table_foreach (actions, (GHFunc) add_action, g());
 
         if (type == MOO_TYPE_EDIT)
             break;
@@ -649,8 +644,7 @@ create_special_chars_menu_item (GtkAction *action)
     return item;
 }
 
-void
-_moo_edit_class_init_actions (MooEditClass *klass)
+void MooEditRef::_class_init_actions(MooEditClass *klass)
 {
     moo_edit_class_new_action (klass, "Undo",
                                "display-name", GTK_STOCK_UNDO,

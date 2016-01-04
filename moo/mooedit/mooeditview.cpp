@@ -63,11 +63,9 @@ moo_edit_view_init (MooEditView *view)
     view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_EDIT_VIEW, MooEditViewPrivate);
 }
 
-void
-_moo_edit_view_unset_doc (MooEditView *view)
+void MooEditViewRef::_unset_doc()
 {
-    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
-    view->priv->doc = NULL;
+    get_priv().doc = nullptr;
 }
 
 static void
@@ -79,41 +77,36 @@ moo_edit_view_dispose (GObject *object)
     {
         GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
         gtk_text_buffer_delete_mark (buffer, view->priv->fake_cursor_mark);
-        view->priv->fake_cursor_mark = NULL;
+        view->priv->fake_cursor_mark = nullptr;
     }
 
     if (view->priv->doc)
     {
-        _moo_edit_remove_view (view->priv->doc, view);
-        g_assert (view->priv->doc == NULL);
-        view->priv->doc = NULL;
+        view->priv->doc->_remove_view(*view);
+        g_assert (view->priv->doc == nullptr);
+        view->priv->doc = nullptr;
     }
 
     G_OBJECT_CLASS (moo_edit_view_parent_class)->dispose (object);
 }
 
 
-MooEditView *
-_moo_edit_view_new (MooEdit *doc)
+MooEditViewPtr MooEditViewPtr::_create(MooEditRef doc)
 {
-    MooEditView *view;
-    MooIndenter *indent;
+    MooEditView *view = MOO_EDIT_VIEW (g_object_new (MOO_TYPE_EDIT_VIEW,
+                                                     "buffer", moo_edit_get_buffer (doc.gobj()),
+                                                     nullptr));
+    view->priv->doc = doc.gobj();
+    view->priv->editor = moo_edit_get_editor (&doc);
 
-    g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
+    g_assert (gtk_text_view_get_buffer (GTK_TEXT_VIEW (view)) == moo_edit_get_buffer (&doc));
 
-    view = MOO_EDIT_VIEW (g_object_new (MOO_TYPE_EDIT_VIEW, "buffer", moo_edit_get_buffer (doc), NULL));
-    view->priv->doc = doc;
-    view->priv->editor = moo_edit_get_editor (doc);
+    auto indent = moo::wrap_new (moo_indenter_new (&doc));
+    moo_text_view_set_indenter (MOO_TEXT_VIEW (view), indent.get());
 
-    g_assert (gtk_text_view_get_buffer (GTK_TEXT_VIEW (view)) == moo_edit_get_buffer (doc));
+    doc._add_view (*view);
 
-    indent = moo_indenter_new (doc);
-    moo_text_view_set_indenter (MOO_TEXT_VIEW (view), indent);
-    g_object_unref (indent);
-
-    _moo_edit_add_view (doc, view);
-
-    return view;
+    return wrap_new (view);
 }
 
 
@@ -130,7 +123,7 @@ moo_edit_view_apply_style_scheme (MooTextView        *view,
                                   MooTextStyleScheme *scheme)
 {
     MOO_TEXT_VIEW_CLASS (moo_edit_view_parent_class)->apply_style_scheme (view, scheme);
-    _moo_edit_update_bookmarks_style (moo_edit_view_get_doc (MOO_EDIT_VIEW (view)));
+    MooEditRef(*moo_edit_view_get_doc(MOO_EDIT_VIEW(view)))._update_bookmarks_style();
 }
 
 
@@ -144,7 +137,7 @@ moo_edit_view_focus_in (GtkWidget     *widget,
     if (GTK_WIDGET_CLASS (moo_edit_view_parent_class)->focus_in_event)
         retval = GTK_WIDGET_CLASS (moo_edit_view_parent_class)->focus_in_event (widget, event);
 
-    _moo_edit_set_active_view (view->priv->doc, view);
+    view->priv->doc->_set_active_view (*view);
 
     if (view->priv->tab)
         _moo_edit_tab_set_focused_view (view->priv->tab, view);
@@ -183,14 +176,11 @@ moo_edit_view_get_tab (MooEditView *view)
     return view->priv->tab;
 }
 
-void
-_moo_edit_view_set_tab (MooEditView *view,
-                        MooEditTab  *tab)
+void MooEditViewRef::_set_tab(MooEditTab *tab)
 {
-    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
     g_return_if_fail (MOO_IS_EDIT_TAB (tab));
-    g_return_if_fail (view->priv->tab == NULL);
-    view->priv->tab = tab;
+    g_return_if_fail (get_priv().tab == NULL);
+    get_priv().tab = tab;
 }
 
 /**
@@ -212,49 +202,48 @@ moo_edit_view_get_window (MooEditView *view)
 }
 
 
-GtkTextMark *
-_moo_edit_view_get_fake_cursor_mark (MooEditView *view)
+GtkTextMark *MooEditViewRef::_get_fake_cursor_mark()
 {
-    g_return_val_if_fail (MOO_IS_EDIT_VIEW (view), NULL);
+    auto& priv = get_priv();
 
-    if (!view->priv->fake_cursor_mark)
+    if (!priv.fake_cursor_mark)
     {
         GtkTextIter iter;
-        GtkTextBuffer *buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer (gobj<GtkTextView>());
         gtk_text_buffer_get_start_iter (buffer, &iter);
-        view->priv->fake_cursor_mark = gtk_text_buffer_create_mark (buffer, NULL, &iter, FALSE);
+        priv.fake_cursor_mark = gtk_text_buffer_create_mark (buffer, NULL, &iter, FALSE);
     }
 
-    return view->priv->fake_cursor_mark;
+    return priv.fake_cursor_mark;
 }
 
 
-void
-_moo_edit_view_apply_config (MooEditView *view)
+void MooEditViewRef::_apply_config()
 {
     GtkWrapMode wrap_mode;
     gboolean line_numbers;
     guint tab_width;
     char *word_chars;
 
-    g_return_if_fail (MOO_IS_EDIT_VIEW (view));
-    g_return_if_fail (view->priv->doc && view->priv->doc->config);
+    auto& priv = get_priv();
 
-    moo_edit_config_get (view->priv->doc->config,
+    g_return_if_fail (priv.doc);
+
+    moo_edit_config_get (priv.doc->get_config(),
                          "wrap-mode", &wrap_mode,
                          "show-line-numbers", &line_numbers,
                          "tab-width", &tab_width,
                          "word-chars", &word_chars,
                          (char*) 0);
 
-    gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (view), wrap_mode);
-    moo_text_view_set_show_line_numbers (MOO_TEXT_VIEW (view), line_numbers);
-    moo_text_view_set_tab_width (MOO_TEXT_VIEW (view), tab_width);
-    moo_text_view_set_word_chars (MOO_TEXT_VIEW (view), word_chars);
+    gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (gobj()), wrap_mode);
+    moo_text_view_set_show_line_numbers (MOO_TEXT_VIEW (gobj()), line_numbers);
+    moo_text_view_set_tab_width (MOO_TEXT_VIEW (gobj()), tab_width);
+    moo_text_view_set_word_chars (MOO_TEXT_VIEW (gobj()), word_chars);
 
-    gtk_widget_queue_draw (GTK_WIDGET (view));
+    gtk_widget_queue_draw (GTK_WIDGET (gobj()));
 
-    g_free (word_chars);
+    ::g_free (word_chars);
 }
 
 
@@ -395,10 +384,11 @@ _moo_edit_view_do_popup (MooEditView    *view,
     xml = moo_editor_get_doc_ui_xml (view->priv->editor);
     g_return_if_fail (xml != NULL);
 
-    _moo_edit_check_actions (view->priv->doc, view);
+    MooEditRef doc = *view->priv->doc;
+    _moo_edit_check_actions (&doc, view);
 
     menu = (GtkMenu*) moo_ui_xml_create_widget (xml, MOO_UI_MENU, "Editor/Popup",
-                                                &_moo_edit_get_actions (*view->priv->doc),
+                                                &doc._get_actions(),
                                                 window ? MOO_WINDOW(window)->accel_group : NULL);
     g_return_if_fail (menu != NULL);
     g_object_ref_sink (menu);
@@ -435,7 +425,7 @@ _moo_edit_view_ui_set_line_wrap (MooEditView *view,
     gboolean old_enabled;
 
     g_return_if_fail (MOO_IS_EDIT_VIEW (view));
-    g_return_if_fail (view->priv->doc && view->priv->doc->config);
+    g_return_if_fail (view->priv->doc);
 
     g_object_get (view, "wrap-mode", &mode, NULL);
 
@@ -452,7 +442,7 @@ _moo_edit_view_ui_set_line_wrap (MooEditView *view,
     else
         mode = GTK_WRAP_CHAR;
 
-    moo_edit_config_set (view->priv->doc->config,
+    moo_edit_config_set (view->priv->doc->get_config(),
                          MOO_EDIT_CONFIG_SOURCE_USER,
                          "wrap-mode", mode, NULL);
 }
@@ -464,14 +454,14 @@ _moo_edit_view_ui_set_show_line_numbers (MooEditView *view,
     gboolean old_show;
 
     g_return_if_fail (MOO_IS_EDIT_VIEW (view));
-    g_return_if_fail (view->priv->doc && view->priv->doc->config);
+    g_return_if_fail (view->priv->doc);
 
     g_object_get (view, "show-line-numbers", &old_show, NULL);
 
     if (!old_show == !show)
         return;
 
-    moo_edit_config_set (view->priv->doc->config,
+    moo_edit_config_set (view->priv->doc->get_config(),
                          MOO_EDIT_CONFIG_SOURCE_USER,
                          "show-line-numbers", show,
                          (char*) NULL);

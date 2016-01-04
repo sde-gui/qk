@@ -40,6 +40,12 @@ struct MooEditBookmark
 {
     MooLineMark mark;
     guint no;
+
+#ifdef __cplusplus
+    static void set_enable_bookmarks    (MooEditRef         edit,
+                                         bool               enable);
+    static bool get_enable_bookmarks    (const MooEditRef&  edit);
+#endif __cplusplus
 };
 
 struct MooEditBookmarkClass
@@ -54,9 +60,6 @@ using MooEditBookmarkRef = moo::gobjref<MooEditBookmark>;
 
 GType            moo_edit_bookmark_get_type     (void) G_GNUC_CONST;
 
-void             moo_edit_set_enable_bookmarks  (MooEdit        *edit,
-                                                 gboolean        enable);
-gboolean         moo_edit_get_enable_bookmarks  (MooEdit        *edit);
 /* list must not be modified */
 const GSList    *moo_edit_list_bookmarks        (MooEdit        *edit);
 void             moo_edit_toggle_bookmark       (MooEdit        *edit,

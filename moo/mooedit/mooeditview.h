@@ -1,7 +1,7 @@
 /*
  *   mooeditview.h
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -21,11 +21,12 @@
 
 G_BEGIN_DECLS
 
-#define MOO_EDIT_VIEW(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT_VIEW, MooEditView))
-#define MOO_EDIT_VIEW_CLASS(klass)               (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EDIT_VIEW, MooEditViewClass))
-#define MOO_IS_EDIT_VIEW(object)                 (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_EDIT_VIEW))
-#define MOO_IS_EDIT_VIEW_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_VIEW))
-#define MOO_EDIT_VIEW_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_VIEW, MooEditViewClass))
+#define MOO_TYPE_EDIT_VIEW              (moo_edit_view_get_type ())
+#define MOO_EDIT_VIEW(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_EDIT_VIEW, MooEditView))
+#define MOO_EDIT_VIEW_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_EDIT_VIEW, MooEditViewClass))
+#define MOO_IS_EDIT_VIEW(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_EDIT_VIEW))
+#define MOO_IS_EDIT_VIEW_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_EDIT_VIEW))
+#define MOO_EDIT_VIEW_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_EDIT_VIEW, MooEditViewClass))
 
 typedef struct MooEditViewPrivate MooEditViewPrivate;
 typedef struct MooEditViewClass   MooEditViewClass;

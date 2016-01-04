@@ -51,14 +51,13 @@ moo_open_info_new_file (GFile       *file,
                         int          line,
                         MooOpenFlags flags)
 {
-    MooOpenInfo *info;
+    g_return_val_if_fail (G_IS_FILE (file), nullptr);
 
-    g_return_val_if_fail (G_IS_FILE (file), NULL);
+    MooOpenInfo *info = MOO_OPEN_INFO (g_object_new (MOO_TYPE_OPEN_INFO, nullptr));
+    new(info)(MooOpenInfo);
 
-    info = MOO_OPEN_INFO (g_object_new (MOO_TYPE_OPEN_INFO, NULL));
-
-    info->file = g_file_dup (file);
-    info->encoding = g_strdup (encoding);
+    info->file = wrap_new(g_file_dup(file));
+    info->encoding = gstr::make_copy(encoding);
     info->line = line;
     info->flags = flags;
 
@@ -121,7 +120,7 @@ moo_open_info_dup (MooOpenInfo *info)
 
     g_return_val_if_fail (info != NULL, NULL);
 
-    copy = moo_open_info_new_file (info->file, info->encoding, info->line, info->flags);
+    copy = moo_open_info_new_file (info->file.get(), info->encoding, info->line, info->flags);
     g_return_val_if_fail (copy != NULL, NULL);
 
     return copy;
@@ -143,8 +142,8 @@ moo_open_info_free (MooOpenInfo *info)
 char *
 moo_open_info_get_filename (MooOpenInfo *info)
 {
-    g_return_val_if_fail (MOO_IS_OPEN_INFO (info), NULL);
-    return g_file_get_path (info->file);
+    g_return_val_if_fail(MOO_IS_OPEN_INFO(info), NULL);
+    return info->file->get_path().release_owned();
 }
 
 /**
@@ -155,8 +154,8 @@ moo_open_info_get_filename (MooOpenInfo *info)
 char *
 moo_open_info_get_uri (MooOpenInfo *info)
 {
-    g_return_val_if_fail (MOO_IS_OPEN_INFO (info), NULL);
-    return g_file_get_uri (info->file);
+    g_return_val_if_fail(MOO_IS_OPEN_INFO(info), NULL);
+    return info->file->get_uri().release_owned();
 }
 
 /**
@@ -167,8 +166,8 @@ moo_open_info_get_uri (MooOpenInfo *info)
 GFile *
 moo_open_info_get_file (MooOpenInfo *info)
 {
-    g_return_val_if_fail (MOO_IS_OPEN_INFO (info), NULL);
-    return g_file_dup (info->file);
+    g_return_val_if_fail(MOO_IS_OPEN_INFO(info), NULL);
+    return info->file->dup().release();
 }
 
 /**
@@ -179,7 +178,7 @@ moo_open_info_get_file (MooOpenInfo *info)
 const char *
 moo_open_info_get_encoding (MooOpenInfo *info)
 {
-    g_return_val_if_fail (MOO_IS_OPEN_INFO (info), NULL);
+    g_return_val_if_fail(MOO_IS_OPEN_INFO(info), NULL);
     return info->encoding;
 }
 
@@ -193,8 +192,8 @@ void
 moo_open_info_set_encoding (MooOpenInfo *info,
                             const char  *encoding)
 {
-    g_return_if_fail (MOO_IS_OPEN_INFO (info));
-    MOO_ASSIGN_STRING (info->encoding, encoding);
+    g_return_if_fail(MOO_IS_OPEN_INFO(info));
+    info->encoding.copy(encoding);
 }
 
 /**
@@ -205,7 +204,7 @@ moo_open_info_set_encoding (MooOpenInfo *info,
 int
 moo_open_info_get_line (MooOpenInfo *info)
 {
-    g_return_val_if_fail (MOO_IS_OPEN_INFO (info), -1);
+    g_return_val_if_fail(MOO_IS_OPEN_INFO(info), -1);
     return info->line;
 }
 
@@ -219,7 +218,7 @@ void
 moo_open_info_set_line (MooOpenInfo *info,
                         int          line)
 {
-    g_return_if_fail (MOO_IS_OPEN_INFO (info));
+    g_return_if_fail(MOO_IS_OPEN_INFO(info));
     info->line = line;
 }
 
@@ -229,7 +228,7 @@ moo_open_info_set_line (MooOpenInfo *info,
 MooOpenFlags
 moo_open_info_get_flags (MooOpenInfo *info)
 {
-    g_return_val_if_fail (MOO_IS_OPEN_INFO (info), MOO_OPEN_FLAGS_NONE);
+    g_return_val_if_fail(MOO_IS_OPEN_INFO(info), MOO_OPEN_FLAGS_NONE);
     return info->flags;
 }
 
@@ -237,10 +236,10 @@ moo_open_info_get_flags (MooOpenInfo *info)
  * moo_open_info_set_flags:
  **/
 void
-moo_open_info_set_flags (MooOpenInfo  *info,
-                         MooOpenFlags  flags)
+moo_open_info_set_flags(MooOpenInfo  *info,
+                        MooOpenFlags  flags)
 {
-    g_return_if_fail (MOO_IS_OPEN_INFO (info));
+    g_return_if_fail(MOO_IS_OPEN_INFO(info));
     info->flags = flags;
 }
 
@@ -248,33 +247,30 @@ moo_open_info_set_flags (MooOpenInfo  *info,
  * moo_open_info_add_flags:
  **/
 void
-moo_open_info_add_flags (MooOpenInfo  *info,
-                         MooOpenFlags  flags)
+moo_open_info_add_flags(MooOpenInfo  *info,
+                        MooOpenFlags  flags)
 {
-    g_return_if_fail (MOO_IS_OPEN_INFO (info));
+    g_return_if_fail(MOO_IS_OPEN_INFO(info));
     info->flags |= flags;
 }
 
 
 static void
-moo_open_info_finalize (GObject *object)
+moo_open_info_finalize(GObject *object)
 {
     MooOpenInfo *info = (MooOpenInfo*) object;
-
-    g_object_unref (info->file);
-    g_free (info->encoding);
-
-    G_OBJECT_CLASS (moo_open_info_parent_class)->finalize (object);
+    info->~MooOpenInfo();
+    G_OBJECT_CLASS(moo_open_info_parent_class)->finalize(object);
 }
 
 static void
-moo_open_info_class_init (MooOpenInfoClass *klass)
+moo_open_info_class_init(MooOpenInfoClass *klass)
 {
-    G_OBJECT_CLASS (klass)->finalize = moo_open_info_finalize;
+    G_OBJECT_CLASS(klass)->finalize = moo_open_info_finalize;
 }
 
 static void
-moo_open_info_init (MooOpenInfo *info)
+moo_open_info_init(MooOpenInfo *info)
 {
     info->line = -1;
 }
@@ -289,17 +285,16 @@ moo_open_info_init (MooOpenInfo *info)
  * Returns: (transfer full)
  **/
 MooSaveInfo *
-moo_save_info_new_file (GFile      *file,
-                        const char *encoding)
+moo_save_info_new_file(GFile      *file,
+                       const char *encoding)
 {
-    MooSaveInfo *info;
+    g_return_val_if_fail(G_IS_FILE(file), NULL);
 
-    g_return_val_if_fail (G_IS_FILE (file), NULL);
+    MooSaveInfo *info = MOO_SAVE_INFO(g_object_new(MOO_TYPE_SAVE_INFO, NULL));
+    new(info)(MooSaveInfo);
 
-    info = MOO_SAVE_INFO (g_object_new (MOO_TYPE_SAVE_INFO, NULL));
-
-    info->file = g_file_dup (file);
-    info->encoding = g_strdup (encoding);
+    info->file.wrap_new(g_file_dup(file));
+    info->encoding.copy(encoding);
 
     return info;
 }
@@ -313,12 +308,11 @@ moo_save_info_new_file (GFile      *file,
  * Returns: (transfer full)
  **/
 MooSaveInfo *
-moo_save_info_new (const char *path,
-                   const char *encoding)
+moo_save_info_new(const char *path,
+                  const char *encoding)
 {
-    GFile *file = g_file_new_for_path (path);
-    MooSaveInfo *info = moo_save_info_new_file (file, encoding);
-    g_object_unref (file);
+    auto file = gobjptr<GFile>::new_for_path(path);
+    MooSaveInfo *info = moo_save_info_new_file(file.get(), encoding);
     return info;
 }
 
@@ -352,7 +346,7 @@ moo_save_info_dup (MooSaveInfo *info)
 
     g_return_val_if_fail (info != NULL, NULL);
 
-    copy = moo_save_info_new_file (info->file, info->encoding);
+    copy = moo_save_info_new_file (info->file.get(), info->encoding);
     g_return_val_if_fail (copy != NULL, NULL);
 
     return copy;
@@ -369,10 +363,7 @@ static void
 moo_save_info_finalize (GObject *object)
 {
     MooSaveInfo *info = (MooSaveInfo*) object;
-
-    g_object_unref (info->file);
-    g_free (info->encoding);
-
+    info->~MooSaveInfo();
     G_OBJECT_CLASS (moo_save_info_parent_class)->finalize (object);
 }
 
@@ -398,11 +389,10 @@ MooReloadInfo *
 moo_reload_info_new (const char *encoding,
                      int         line)
 {
-    MooReloadInfo *info;
+    MooReloadInfo *info = MOO_RELOAD_INFO (g_object_new (MOO_TYPE_RELOAD_INFO, NULL));
+    new(info)(MooReloadInfo);
 
-    info = MOO_RELOAD_INFO (g_object_new (MOO_TYPE_RELOAD_INFO, NULL));
-
-    info->encoding = g_strdup (encoding);
+    info->encoding.copy(encoding);
     info->line = line;
 
     return info;
@@ -465,9 +455,7 @@ static void
 moo_reload_info_finalize (GObject *object)
 {
     MooReloadInfo *info = (MooReloadInfo*) object;
-
-    g_free (info->encoding);
-
+    info->~MooReloadInfo();
     G_OBJECT_CLASS (moo_reload_info_parent_class)->finalize (object);
 }
 

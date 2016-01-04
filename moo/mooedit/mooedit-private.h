@@ -18,6 +18,7 @@
 #include "mooedit/mooedit-impl.h"
 #include "mooedit/mooeditprogress.h"
 #include "mooedit/mooeditbookmark.h"
+#include "mooedit/mooeditview-impl.h"
 #include "moocpp/strutils.h"
 #include "moocpp/utils.h"
 #include "moocpp/gobjptrtypes.h"
@@ -31,8 +32,8 @@ struct MooEditPrivate {
     MooEditor*                              editor;
 
     moo::gobjptr<GtkTextBuffer>             buffer;
-    std::vector<moo::gobjptr<MooEditView>>  views;
-    MooEditView*                            active_view;
+    std::vector<MooEditViewPtr>             views;
+    MooEditViewRawPtr                       active_view;
     bool                                    dead_active_view;
 
     gulong                                  changed_handler_id;
@@ -75,5 +76,3 @@ struct MooEditPrivate {
      */
     moo::gobjptr<MooActionCollection>       actions;
 };
-
-void    _moo_edit_remove_untitled   (MooEdit    *doc);

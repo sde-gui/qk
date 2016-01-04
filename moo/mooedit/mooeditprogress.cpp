@@ -82,7 +82,7 @@ _moo_edit_progress_new (void)
 
 void MooEditProgress::update()
 {
-    g_return_if_fail (text.set());
+    g_return_if_fail (!text.empty());
     gtk_progress_bar_set_text(xml->progressbar, text);
 }
 
@@ -90,7 +90,7 @@ void
 _moo_edit_progress_set_text (MooEditProgress& progress,
                              const char*      text)
 {
-    progress.text.take(g_strdup(text));
+    progress.text.copy(text);
     progress.update();
 }
 

@@ -68,22 +68,16 @@ get_line_count (MooEdit *edit)
 }
 
 
-void
-moo_edit_set_enable_bookmarks (MooEdit  *edit,
-                               gboolean  enable)
+void MooEditBookmark::set_enable_bookmarks(MooEditRef edit, bool enable)
 {
-    g_return_if_fail (MOO_IS_EDIT (edit));
-
-    enable = enable != 0;
-
-    if ((bool)enable != edit->priv->enable_bookmarks)
+    if (enable != edit.get_priv().enable_bookmarks)
     {
-        edit->priv->enable_bookmarks = enable;
+        edit.get_priv().enable_bookmarks = enable;
 
         if (!enable)
-            _moo_edit_delete_bookmarks (edit, FALSE);
+            edit._delete_bookmarks(false);
 
-        g_object_notify (G_OBJECT (edit), "enable-bookmarks");
+        edit.notify("enable-bookmarks");
     }
 }
 
@@ -306,9 +300,7 @@ disconnect_bookmark (MooEditBookmark *bk)
 }
 
 
-void
-_moo_edit_line_mark_moved (MooEdit     *edit,
-                           MooLineMark *mark)
+void MooEditRef::_line_mark_moved(MooEdit* edit, MooLineMark* mark)
 {
     if (MOO_IS_EDIT_BOOKMARK (mark) &&
         g_object_get_data (G_OBJECT (mark), "moo-edit-bookmark") &&
@@ -321,9 +313,7 @@ _moo_edit_line_mark_moved (MooEdit     *edit,
 }
 
 
-void
-_moo_edit_line_mark_deleted (MooEdit     *edit,
-                             MooLineMark *mark)
+void MooEditRef::_line_mark_deleted(MooEdit* edit, MooLineMark* mark)
 {
     if (MOO_IS_EDIT_BOOKMARK (mark) &&
         g_object_get_data (G_OBJECT (mark), "moo-edit-bookmark") &&
@@ -371,14 +361,12 @@ moo_edit_get_bookmarks_in_range (MooEdit *edit,
 }
 
 
-void
-_moo_edit_delete_bookmarks (MooEdit *edit,
-                            gboolean in_destroy)
+void MooEditRef::_delete_bookmarks(bool in_destroy)
 {
-    GSList *bookmarks;
+    auto& priv = get_priv();
 
-    bookmarks = edit->priv->bookmarks;
-    edit->priv->bookmarks = NULL;
+    GSList *bookmarks = priv.bookmarks;
+    priv.bookmarks = NULL;
 
     if (bookmarks)
     {
@@ -387,15 +375,15 @@ _moo_edit_delete_bookmarks (MooEdit *edit,
             disconnect_bookmark (MOO_EDIT_BOOKMARK (bookmarks->data));
 
             if (!in_destroy)
-                moo_text_buffer_delete_line_mark (get_moo_buffer (edit),
+                moo_text_buffer_delete_line_mark (get_moo_buffer (g()),
                                                   MOO_LINE_MARK (bookmarks->data));
 
-            g_object_unref (bookmarks->data);
+            ::g_object_unref (bookmarks->data);
             bookmarks = g_slist_delete_link (bookmarks, bookmarks);
         }
 
         if (!in_destroy)
-            bookmarks_changed (edit);
+            bookmarks_changed(g());
     }
 }
 
@@ -490,15 +478,14 @@ get_bookmark_color (MooEdit *doc)
     return style ? _moo_text_style_get_bg_color (style) : NULL;
 }
 
-void
-_moo_edit_update_bookmarks_style (MooEdit *edit)
+void MooEditRef::_update_bookmarks_style()
 {
     const GSList *bookmarks;
     const char *color;
 
-    color = get_bookmark_color (edit);
+    color = get_bookmark_color (g());
 
-    bookmarks = moo_edit_list_bookmarks (edit);
+    bookmarks = moo_edit_list_bookmarks (g());
     while (bookmarks)
     {
         moo_line_mark_set_background (MOO_LINE_MARK (bookmarks->data), color);

@@ -18,6 +18,7 @@
 #include "mooedit/moolinemark.h"
 #include "mooedit/mooeditor.h"
 #include "mooedit/mootextview.h"
+#include "mooedit/mooedittypes.h"
 #include "mooutils/moohistorymgr.h"
 #include <gio/gio.h>
 
@@ -25,54 +26,71 @@
 #include <moocpp/strutils.h>
 #endif
 
-#define MOO_EDIT_IS_BUSY(doc) (_moo_edit_is_busy (doc))
-
 extern MooEditList *_moo_edit_instances;
+
+#ifdef __cplusplus
+
+namespace moo {
+
+template<>
+class gobjref<MooEdit> : public gobjref_parent<MooEdit>
+{
+public:
+    MOO_DEFINE_GOBJREF_METHODS(MooEdit)
+
+    void                    _add_view                           (MooEditViewRef         view);
+    void                    _remove_view                        (MooEditViewRef         view);
+    void                    _set_active_view                    (MooEditViewRef         view);
+
+    bool                    _is_busy                            () const;
+
+    void                    _add_class_actions                  ();
+    static void             _class_init_actions                 (MooEditClass*          klass);
+
+    void                    _status_changed                     ();
+
+    void                    _delete_bookmarks                   (bool                   in_destroy);
+    static void             _line_mark_moved                    (MooEdit*               doc,
+                                                                 MooLineMark*           mark);
+    static void             _line_mark_deleted                  (MooEdit*               doc,
+                                                                 MooLineMark*           mark);
+    void                    _update_bookmarks_style             ();
+
+    void                    _queue_recheck_config               ();
+
+    void                    _closed                             ();
+
+    void                    _set_file                           (gobj_raw_ptr<const GFile>  file,
+                                                                 const char*                encoding);
+    void                    _remove_untitled                    (const MooEditRef&          doc);
+
+    void                    _ensure_newline                     ();
+
+    void                    _stop_file_watch                    ();
+
+    void                    _set_status                         (MooEditStatus          status);
+
+    void                    _strip_whitespace                   ();
+
+    MooActionCollection&    _get_actions                        ();
+
+    static moo::gstr        _get_normalized_name                (const gobjref<GFile>&  file);
+    const moo::gstr&        _get_normalized_name                () const;
+
+    MooEditPrivate&         get_priv                            ()                      { return *gobj()->priv; }
+    const MooEditPrivate&   get_priv                            () const                { return *gobj()->priv; }
+    MooEditConfig*          get_config                          () const                { return gobj()->config; }
+    void                    set_config                          (MooEditConfig* cfg)    { gobj()->config = cfg; }
+};
+
+} // namespace moo
+
+#endif // __cplusplus
 
 G_BEGIN_DECLS
 
-void             _moo_edit_add_view                 (MooEdit        *doc,
-                                                     MooEditView    *view);
-void             _moo_edit_remove_view              (MooEdit        *doc,
-                                                     MooEditView    *view);
-void             _moo_edit_set_active_view          (MooEdit        *doc,
-                                                     MooEditView    *view);
-
-gboolean         _moo_edit_is_busy                  (MooEdit        *doc);
-MooEditState     _moo_edit_get_state                (MooEdit        *doc);
-void             _moo_edit_set_progress_text        (MooEdit        *doc,
-                                                     const char     *text);
-void             _moo_edit_set_state                (MooEdit        *doc,
-                                                     MooEditState    state,
-                                                     const char     *text,
-                                                     GDestroyNotify  cancel,
-                                                     gpointer        data);
-
-void             _moo_edit_add_class_actions        (MooEdit        *edit);
-void             _moo_edit_check_actions            (MooEdit        *edit,
-                                                     MooEditView    *view);
-void             _moo_edit_class_init_actions       (MooEditClass   *klass);
-
-void             _moo_edit_status_changed           (MooEdit        *edit);
-
-gboolean         _moo_edit_has_comments             (MooEdit        *edit,
-                                                     gboolean       *single_line,
-                                                     gboolean       *multi_line);
-
 #define MOO_EDIT_GOTO_BOOKMARK_ACTION "GoToBookmark"
-void             _moo_edit_delete_bookmarks         (MooEdit        *edit,
-                                                     gboolean        in_destroy);
-void             _moo_edit_line_mark_moved          (MooEdit        *edit,
-                                                     MooLineMark    *mark);
-void             _moo_edit_line_mark_deleted        (MooEdit        *edit,
-                                                     MooLineMark    *mark);
-gboolean         _moo_edit_line_mark_clicked        (MooTextView    *view,
-                                                     int             line);
-void             _moo_edit_update_bookmarks_style   (MooEdit        *edit);
 
-/***********************************************************************/
-/* Preferences
- */
 enum {
     MOO_EDIT_SETTING_LANG,
     MOO_EDIT_SETTING_INDENT,
@@ -85,47 +103,30 @@ enum {
     MOO_EDIT_LAST_SETTING
 };
 
-extern guint *_moo_edit_settings;
+void            _moo_edit_init_config               (void);
+gboolean        _moo_edit_has_comments              (MooEdit        *edit,
+                                                     gboolean       *single_line,
+                                                     gboolean       *multi_line);
 
-void        _moo_edit_update_global_config      (void);
-void        _moo_edit_init_config               (void);
+void            _moo_edit_queue_recheck_config_all  (void);
+void            _moo_edit_update_global_config      (void);
 
-void        _moo_edit_queue_recheck_config_all  (void);
-void        _moo_edit_queue_recheck_config      (MooEdit        *edit);
+void            _moo_edit_check_actions             (MooEdit*       edit,
+                                                     MooEditView*   view);
 
-void        _moo_edit_closed                    (MooEdit        *edit);
+MooEditState    _moo_edit_get_state                 (MooEdit        *doc);
+void            _moo_edit_set_progress_text         (MooEdit        *doc,
+                                                     const char     *text);
+void            _moo_edit_set_state                 (MooEdit        *doc,
+                                                     MooEditState    state,
+                                                     const char     *text,
+                                                     GDestroyNotify  cancel,
+                                                     gpointer        data);
 
-/***********************************************************************/
-/* File operations
- */
+GdkPixbuf*      _moo_edit_get_icon                  (MooEdit        *edit,
+                                                     GtkWidget      *widget,
+                                                     GtkIconSize     size);
 
-void         _moo_edit_set_file                 (MooEdit        *edit,
-                                                 GFile          *file,
-                                                 const char     *encoding);
-const char  *_moo_edit_get_default_encoding     (void);
-void         _moo_edit_ensure_newline           (MooEdit        *edit);
-
-void         _moo_edit_stop_file_watch          (MooEdit        *edit);
-
-void         _moo_edit_set_status               (MooEdit        *edit,
-                                                 MooEditStatus   status);
-
-GdkPixbuf   *_moo_edit_get_icon                 (MooEdit        *edit,
-                                                 GtkWidget      *widget,
-                                                 GtkIconSize     size);
-
-void         _moo_edit_strip_whitespace         (MooEdit        *edit);
+const char*     _moo_edit_get_default_encoding      (void);
 
 G_END_DECLS
-
-#ifdef __cplusplus
-
-MooActionCollection&    _moo_edit_get_actions                       (MooEdit&       edit);
-
-moo::gstr               _moo_edit_normalize_filename_for_comparison (const char*    filename);
-moo::gstr               _moo_edit_normalize_uri_for_comparison      (const char*    uri);
-
-moo::gstr               _moo_file_get_normalized_name               (GFile*         file);
-const moo::gstr&        _moo_edit_get_normalized_name               (MooEdit*       edit);
-
-#endif // __cplusplus

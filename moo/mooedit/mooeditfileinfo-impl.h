@@ -1,14 +1,13 @@
-#ifndef MOO_EDIT_FILE_INFO_IMPL_H
-#define MOO_EDIT_FILE_INFO_IMPL_H
+#pragma once
 
 #include "mooeditfileinfo.h"
-
-G_BEGIN_DECLS
+#include "moocpp/strutils.h"
+#include "moocpp/gobjptrtypes.h"
 
 struct MooOpenInfo : public GObject
 {
-    GFile *file;
-    char *encoding;
+    moo::gobjptr<GFile> file;
+    moo::gstr encoding;
     int line;
     MooOpenFlags flags;
 };
@@ -18,8 +17,9 @@ struct MooOpenInfoClass
     GObjectClass parent_class;
 };
 
-struct MooReloadInfo : public GObject {
-    char *encoding;
+struct MooReloadInfo : public GObject
+{
+    moo::gstr encoding;
     int line;
 };
 
@@ -28,16 +28,13 @@ struct MooReloadInfoClass
     GObjectClass parent_class;
 };
 
-struct MooSaveInfo : public GObject {
-    GFile *file;
-    char *encoding;
+struct MooSaveInfo : public GObject
+{
+    moo::gobjptr<GFile> file;
+    moo::gstr encoding;
 };
 
 struct MooSaveInfoClass
 {
     GObjectClass parent_class;
 };
-
-G_END_DECLS
-
-#endif /* MOO_EDIT_FILE_INFO_IMPL_H */

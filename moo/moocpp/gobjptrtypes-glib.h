@@ -17,13 +17,42 @@
 
 #include <glib-object.h>
 #include <mooglib/moo-glib.h>
-
 #include "moocpp/gobjptr.h"
 
 #include <stdarg.h>
 
 namespace moo {
 
+///////////////////////////////////////////////////////////////////////////////////////////
+//
+// GObject
+//
 
+template<>
+class gobjref<GObject> : public gobjref_base
+{
+public:
+    MOO_DEFINE_GOBJREF_METHODS_IMPL(GObject, gobjref_base)
+
+    gulong  signal_connect          (const char* detailed_signal, GCallback c_handler, void* data);
+    gulong  signal_connect_swapped  (const char* detailed_signal, GCallback c_handler, void* data);
+    void    signal_emit_by_name     (const char* detailed_signal, ...);
+    void    signal_emit             (guint signal_id, GQuark detail, ...);
+
+    void    set_data                (const char* key, gpointer value);
+
+    void    set                     (const char* first_prop, ...) G_GNUC_NULL_TERMINATED;
+    void    set_property            (const char* property_name, const GValue* value);
+
+    void    notify                  (const char* property_name);
+    void    freeze_notify           ();
+    void    thaw_notify             ();
+};
+
+template<>
+class gobjptr<GObject> : public gobjptr_impl<GObject>
+{
+    static gobjptr<GObject> wrap_new(GObject*);
+};
 
 } // namespace moo

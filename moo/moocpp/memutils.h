@@ -201,6 +201,8 @@ public:
         return m_p;
     }
 
+    bool is_null() const { return m_p == nullptr; }
+
     Self& ensure_not_borrowed()
     {
         if (m_p != nullptr && m_ot == ownership_type::borrowed)

@@ -22,7 +22,7 @@ namespace moo {
 struct gstr_mem_handler
 {
     static char* dup(const char* p) { return p ? g_strdup (p) : nullptr; }
-    static void free(char* p) { g_free(p); }
+    static void free(char* p) { ::g_free(p); }
 };
 
 template<typename T>
@@ -38,7 +38,6 @@ public:
     char *strdup() const { return g_strdup(c_str()); }
 
     bool empty() const { const char* s = c_str(); return !s || !*s; }
-    bool set() const { return !empty(); }
 
     // These must not be called, to avoid ambiguity between an empty string and null
     operator bool() const = delete;

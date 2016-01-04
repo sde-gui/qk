@@ -17,6 +17,7 @@
 #include "mooedit/mooeditprefs.h"
 #include "mooedit/mooedit-fileops.h"
 #include "mooedit/mooeditfileinfo.h"
+#include "mooedit/mooedit-impl.h"
 #include "mooutils/moodialogs.h"
 #include "mooutils/moostock.h"
 #include "mooutils/mooi18n.h"
@@ -411,24 +412,13 @@ _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
 /* Error dialogs
  */
 
-void
-_moo_edit_save_error_dialog (MooEdit *doc,
-                             GFile   *file,
-                             GError  *error)
+void _moo_edit_save_error_dialog(MooEditRef& doc, const MooGFileRef& file, GError *error)
 {
-    char *filename, *msg = NULL;
+    gstr filename = moo_file_get_display_name (file);
+    gstr msg = gstr::wrap_new(g_strdup_printf(_("Could not save file\n%s"), filename));
 
-    g_return_if_fail (G_IS_FILE (file));
-
-    filename = moo_file_get_display_name (file);
-
-    msg = g_strdup_printf (_("Could not save file\n%s"), filename);
-
-    moo_error_dialog (msg, moo_error_message (error),
-                      GTK_WIDGET (moo_edit_get_view (doc)));
-
-    g_free (msg);
-    g_free (filename);
+    moo_error_dialog(msg, moo_error_message(error),
+                     GTK_WIDGET(moo_edit_get_view(doc.gobj())));
 }
 
 static gboolean
@@ -470,30 +460,21 @@ moo_edit_question_dialog (MooEdit    *doc,
     return res == GTK_RESPONSE_YES;
 }
 
-gboolean
-_moo_edit_save_error_enc_dialog (MooEdit    *doc,
-                                 GFile      *file,
-                                 const char *encoding)
+bool _moo_edit_save_error_enc_dialog(MooEditRef&        doc,
+                                     const MooGFileRef& file,
+                                     const char*        encoding)
 {
-    char *filename;
-    char *secondary;
-    gboolean result;
-
-    g_return_val_if_fail (G_IS_FILE (file), FALSE);
     g_return_val_if_fail (encoding != NULL, FALSE);
 
-    filename = moo_file_get_display_name (file);
+    gstr filename = moo_file_get_display_name (file);
 
-    secondary = g_strdup_printf (_("Could not save file %s in encoding %s. "
-                                   "Do you want to save it in UTF-8 encoding instead?"),
-                                 filename, encoding);
+    auto secondary = gstr::wrap_new (
+        g_strdup_printf (_("Could not save file %s in encoding %s. "
+                           "Do you want to save it in UTF-8 encoding instead?"),
+                         filename, encoding));
 
-    result = moo_edit_question_dialog (doc, _("Save file in UTF-8 encoding?"),
-                                       secondary, GTK_STOCK_OK, GTK_RESPONSE_YES);
-
-    g_free (secondary);
-    g_free (filename);
-    return result;
+    return moo_edit_question_dialog (&doc, _("Save file in UTF-8 encoding?"),
+                                     secondary, GTK_STOCK_OK, GTK_RESPONSE_YES);
 }
 
 
@@ -511,7 +492,7 @@ _moo_edit_try_encoding_dialog (const gobjref<GFile>& file,
 
     gstr filename = moo_file_get_display_name(file);
 
-    if (filename.set())
+    if (!filename.empty())
     {
         /* Could not open file foo.txt */
         gstr tmp = gstr::wrap_new(g_strdup_printf(_("Could not open file\n%s"), filename.get()));

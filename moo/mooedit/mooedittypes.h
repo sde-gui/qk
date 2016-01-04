@@ -12,11 +12,16 @@ typedef struct MooOpenInfo MooOpenInfo;
 typedef struct MooSaveInfo MooSaveInfo;
 typedef struct MooReloadInfo MooReloadInfo;
 
-typedef struct MooEdit MooEdit;
-typedef struct MooEditView MooEditView;
-typedef struct MooEditWindow MooEditWindow;
-typedef struct MooEditor MooEditor;
-typedef struct MooEditTab MooEditTab;
+#define MOO_DECLARE_C_CLASS(Object, object)             \
+    typedef struct Object Object;                       \
+    GType object##_get_type(void) G_GNUC_CONST;
+
+MOO_DECLARE_C_CLASS(MooEdit, moo_edit);
+MOO_DECLARE_C_CLASS(MooEditView, moo_edit_view);
+MOO_DECLARE_C_CLASS(MooEditWindow, moo_edit_window);
+MOO_DECLARE_C_CLASS(MooEditor, moo_editor);
+MOO_DECLARE_C_CLASS(MooEditTab, moo_edit_tab);
+MOO_DECLARE_C_CLASS(MooTextView, moo_text_view);
 
 MOO_DECLARE_OBJECT_ARRAY (MooEdit, moo_edit)
 MOO_DECLARE_OBJECT_ARRAY (MooEditView, moo_edit_view)
@@ -35,23 +40,40 @@ GType   moo_type_line_end   (void) G_GNUC_CONST;
 MOO_DECLARE_QUARK (moo-edit-reload-error, moo_edit_reload_error_quark)
 MOO_DECLARE_QUARK (moo-edit-save-error, moo_edit_save_error_quark)
 
-#define MOO_TYPE_EDIT_VIEW  (moo_edit_view_get_type ())
-GType moo_edit_view_get_type(void) G_GNUC_CONST;
-
 G_END_DECLS
 
 #ifdef __cplusplus
 
 #include <moocpp/gobjptrtypes.h>
 
-using MooEditPtr =      moo::gobjptr<MooEdit>;
-using MooEditViewPtr =  moo::gobjptr<MooEditView>;
-using MooEditTabPtr =   moo::gobjptr<MooEditTab>;
-using MooGFilePtr =     moo::gobjptr<GFile>;
-
-namespace moo 
-{
-MOO_DEFINE_GOBJ_TYPE(MooEditView, GtkTextView, MOO_TYPE_EDIT_VIEW)
+namespace moo {
+template<> class gobjref<MooEdit>;
+template<> class gobjref<MooEditView>;
+template<> class gobjptr<MooEditView>;
 }
+
+#define MOO_CPP_CLASS_TYPEDEFS(Object)                  \
+    using Object##Ptr    = moo::gobjptr<Object>;        \
+    using Object##Ref    = moo::gobjref<Object>;        \
+    using Object##RawPtr = moo::gobj_raw_ptr<Object>;   \
+
+MOO_CPP_CLASS_TYPEDEFS(MooEditView);
+MOO_CPP_CLASS_TYPEDEFS(MooEditTab);
+MOO_CPP_CLASS_TYPEDEFS(MooEditWindow);
+MOO_CPP_CLASS_TYPEDEFS(MooEdit);
+MOO_CPP_CLASS_TYPEDEFS(MooTextView);
+
+#undef MOO_CPP_CLASS_TYPEDEFS
+
+namespace moo {
+
+MOO_DEFINE_GOBJ_TYPE(MooTextView, GtkTextView, moo_text_view_get_type())
+MOO_DEFINE_GOBJ_TYPE(MooEditTab, GtkWidget, moo_edit_tab_get_type());
+MOO_DEFINE_GOBJ_TYPE(MooEditWindow, GtkWindow, moo_edit_window_get_type());
+
+} // namespace moo
+
+using MooGFilePtr       = moo::gobjptr<GFile>;
+using MooGFileRef       = moo::gobjref<GFile>;
 
 #endif // __cplusplus

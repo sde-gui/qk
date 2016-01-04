@@ -15,13 +15,18 @@
 
 #pragma once
 
+#ifndef __cplusplus
+#error "This is a C++ header"
+#endif
+
 #include "mooedit/mooedit.h"
 #include <gio/gio.h>
+#include "moocpp/utils.h"
+#include "moocpp/strutils.h"
 
 G_BEGIN_DECLS
-
-
 const char *_moo_get_default_encodings (void);
+G_END_DECLS
 
 typedef enum {
     MOO_EDIT_SAVE_FLAGS_NONE = 0,
@@ -37,40 +42,28 @@ enum {
     MOO_EDIT_FILE_ERROR_NOENT,
     MOO_EDIT_FILE_ERROR_CANCELLED
 };
+MOO_DEFINE_FLAGS(MooEditSaveFlags)
 
 GQuark           _moo_edit_file_error_quark     (void) G_GNUC_CONST;
 
-gboolean         _moo_is_file_error_cancelled   (GError         *error);
+bool             _moo_is_file_error_cancelled   (GError*                    error);
 
-gboolean         _moo_edit_file_is_new          (GFile          *file);
-gboolean         _moo_edit_reload_file          (MooEdit        *edit,
-                                                 const char     *encoding,
-                                                 GError        **error);
-gboolean         _moo_edit_save_file            (MooEdit        *edit,
-                                                 GFile          *floc,
-                                                 const char     *encoding,
-                                                 MooEditSaveFlags flags,
-                                                 GError        **error);
-gboolean         _moo_edit_save_file_copy       (MooEdit        *edit,
-                                                 GFile          *file,
-                                                 const char     *encoding,
-                                                 MooEditSaveFlags flags,
-                                                 GError        **error);
-
-
-G_END_DECLS
-
-#ifdef __cplusplus
-
-#include "moocpp/utils.h"
-#include "moocpp/strutils.h"
-
-MOO_DEFINE_FLAGS(MooEditSaveFlags)
-
-bool             _moo_edit_load_file            (MooEdit*                   edit,
+bool             _moo_edit_file_is_new          (const moo::gobjref<GFile>& file);
+bool             _moo_edit_load_file            (MooEditRef&                edit,
                                                  const moo::gobjref<GFile>& file,
                                                  const moo::gstr&           init_encoding,
                                                  const moo::gstr&           init_cached_encoding,
                                                  GError**                   error);
-
-#endif // __cplusplus
+bool             _moo_edit_reload_file          (MooEditRef                 edit,
+                                                 const char*                encoding,
+                                                 GError**                   error);
+bool             _moo_edit_save_file            (MooEditRef&                edit,
+                                                 const moo::gobjref<GFile>& floc,
+                                                 const char*                encoding,
+                                                 MooEditSaveFlags flags,
+                                                 GError**                   error);
+bool             _moo_edit_save_file_copy       (MooEditRef                 edit,
+                                                 const moo::gobjref<GFile>& file,
+                                                 const char*                encoding,
+                                                 MooEditSaveFlags           flags,
+                                                 GError**                   error);

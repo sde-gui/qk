@@ -1,18 +1,13 @@
-#ifndef MOO_EDIT_VIEW_PRIV_H
-#define MOO_EDIT_VIEW_PRIV_H
+#pragma once
 
 #include "mooedit/mooeditview-impl.h"
-
-G_BEGIN_DECLS
+#include "mooedit/mooedit-impl.h"
+#include "mooedit/mooedittypes.h"
 
 struct MooEditViewPrivate
 {
-    MooEdit *doc;
+    MooEditRawPtr doc;
     MooEditor *editor;
     MooEditTab *tab;
     GtkTextMark *fake_cursor_mark;
 };
-
-G_END_DECLS
-
-#endif /* MOO_EDIT_VIEW_PRIV_H */

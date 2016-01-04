@@ -18,7 +18,7 @@ struct MooEditTab
     GtkWidget *vpaned1;
     GtkWidget *vpaned2;
 
-    MooEdit *doc;
+    MooEditPtr doc;
     MooEditView *active_view;
 };
 
@@ -40,6 +40,8 @@ G_DEFINE_TYPE (MooEditTab, moo_edit_tab, GTK_TYPE_VBOX)
 static void
 moo_edit_tab_init (MooEditTab *tab)
 {
+    new(tab) (MooEditTab);
+
     gtk_box_set_homogeneous (GTK_BOX (tab), FALSE);
     tab->hpaned = gtk_hpaned_new ();
     tab->vpaned1 = gtk_vpaned_new ();
@@ -55,13 +57,19 @@ moo_edit_tab_dispose (GObject *object)
 {
     MooEditTab *tab = MOO_EDIT_TAB (object);
 
-    if (tab->doc)
-    {
-        g_object_unref (tab->doc);
-        tab->doc = NULL;
-    }
+    tab->doc.reset();
 
     G_OBJECT_CLASS (moo_edit_tab_parent_class)->dispose (object);
+}
+
+static void
+moo_edit_tab_finalize (GObject *object)
+{
+    MooEditTab *tab = MOO_EDIT_TAB (object);
+
+    tab->~MooEditTab();
+
+    G_OBJECT_CLASS (moo_edit_tab_parent_class)->finalize (object);
 }
 
 static void
@@ -70,10 +78,11 @@ moo_edit_tab_class_init (MooEditTabClass *klass)
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
     object_class->dispose = moo_edit_tab_dispose;
+    object_class->finalize = moo_edit_tab_finalize;
 }
 
 static GtkWidget *
-create_view_scrolled_window (MooEditView *view)
+create_view_scrolled_window(MooEditView& view)
 {
     GtkWidget *swin = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (swin),
@@ -82,7 +91,7 @@ create_view_scrolled_window (MooEditView *view)
     gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (swin),
                                          GTK_SHADOW_ETCHED_IN);
 
-    gtk_container_add (GTK_CONTAINER (swin), GTK_WIDGET (view));
+    gtk_container_add (GTK_CONTAINER (swin), GTK_WIDGET (&view));
     gtk_widget_show_all (swin);
     return swin;
 }
@@ -90,9 +99,10 @@ create_view_scrolled_window (MooEditView *view)
 static GtkWidget *
 create_view_in_scrolled_window (MooEditTab *tab)
 {
-    MooEditView *view = _moo_edit_view_new (tab->doc);
-    _moo_edit_view_set_tab (view, tab);
-    return create_view_scrolled_window (view);
+    g_return_val_if_fail (tab->doc != nullptr, nullptr);
+    MooEditViewPtr view = MooEditViewPtr::_create(*tab->doc);
+    view->_set_tab(tab);
+    return create_view_scrolled_window(*view);
 }
 
 MooEditTab *
@@ -105,12 +115,12 @@ _moo_edit_tab_new (MooEdit *doc)
     g_return_val_if_fail (moo_edit_get_n_views (doc) == 1, NULL);
 
     tab = MOO_EDIT_TAB (g_object_new (MOO_TYPE_EDIT_TAB, NULL));
-    tab->doc = MOO_EDIT (g_object_ref (doc));
+    tab->doc.ref (doc);
 
     view = moo_edit_get_view (doc);
-    _moo_edit_view_set_tab (view, tab);
+    MooEditViewRef(*view)._set_tab(tab);
 
-    swin = create_view_scrolled_window (view);
+    swin = create_view_scrolled_window (*view);
     gtk_paned_pack1 (GTK_PANED (tab->vpaned1), swin, TRUE, FALSE);
     gtk_widget_show (tab->vpaned1);
     gtk_widget_show (GTK_WIDGET (tab));
@@ -125,7 +135,7 @@ MooEdit *
 moo_edit_tab_get_doc (MooEditTab *tab)
 {
     g_return_val_if_fail (MOO_IS_EDIT_TAB (tab), NULL);
-    return tab->doc;
+    return tab->doc.get();
 }
 
 /**
@@ -307,13 +317,13 @@ _moo_edit_tab_set_split_horizontal (MooEditTab *tab,
 
         if (view1)
         {
-            _moo_edit_remove_view (tab->doc, view1);
+            tab->doc->_remove_view (*view1);
             gtk_container_remove (GTK_CONTAINER (tab->vpaned2), GTK_WIDGET (view1)->parent);
         }
 
         if (view2)
         {
-            _moo_edit_remove_view (tab->doc, view2);
+            tab->doc->_remove_view (*view2);
             gtk_container_remove (GTK_CONTAINER (tab->vpaned2), GTK_WIDGET (view2)->parent);
         }
 
@@ -401,13 +411,13 @@ _moo_edit_tab_set_split_vertical (MooEditTab *tab,
 
         if (view1)
         {
-            _moo_edit_remove_view (tab->doc, view1);
+            tab->doc->_remove_view (*view1);
             gtk_container_remove (GTK_CONTAINER (tab->vpaned1), GTK_WIDGET (view1)->parent);
         }
 
         if (view2)
         {
-            _moo_edit_remove_view (tab->doc, view2);
+            tab->doc->_remove_view (*view2);
             gtk_container_remove (GTK_CONTAINER (tab->vpaned2), GTK_WIDGET (view2)->parent);
         }
 

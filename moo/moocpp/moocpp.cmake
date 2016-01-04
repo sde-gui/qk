@@ -2,6 +2,9 @@ SET(moocpp_sources
 	moocpp/moocpp.cmake
 	moocpp/gobjectutils.h
 	moocpp/gobjptr.h
+	moocpp/gobjref.h
+	moocpp/gobjinfo.h
+	moocpp/gobjrawptr.h
 	moocpp/gobjptrtypes.h
 	moocpp/gobjptrtypes-glib.h
 	moocpp/gobjptrtypes-gio.h

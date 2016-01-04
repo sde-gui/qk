@@ -24,16 +24,13 @@ namespace moo {
 
 class gstr;
 
-MOO_DEFINE_GOBJ_CHILD_TYPE(GFile, G_TYPE_FILE)
-
-//template<typename ObjRef>
-//class gobjptr<GFile, ObjRef>;
+MOO_DEFINE_GOBJ_TYPE(GFile, GObject, G_TYPE_FILE)
 
 template<>
-class gobjref<GFile> : public gobjref<GObject>
+class gobjref<GFile> : public gobjref_parent<GFile>
 {
 public:
-    MOO_DEFINE_GOBJREF_METHODS(GFile, gobjref<GObject>)
+    MOO_DEFINE_GOBJREF_METHODS(GFile)
 
     gobjptr<GFile>          dup                         () const;
 
@@ -134,7 +131,7 @@ public:
     static gobjptr<GFile>   new_for_path                (const char* path);
     static gobjptr<GFile>   new_for_uri                 (const char* uri);
     static gobjptr<GFile>   new_for_commandline_arg     (const char* arg);
-    static gobjptr<GFile>   new_for_parse_name          (const char* parse_name);
+    static gobjptr<GFile>   parse_name                  (const char* parse_name);
 };
 
 template<>
@@ -146,7 +143,7 @@ public:
     static gobjptr  new_for_path(const char* path) { return ref_type::new_for_path(path); }
     static gobjptr  new_for_uri(const char* uri) { return ref_type::new_for_uri(uri); }
     static gobjptr  new_for_commandline_arg(const char* arg) { return ref_type::new_for_commandline_arg(arg); }
-    static gobjptr  parse_name(const char* parse_name) { return ref_type::new_for_parse_name(parse_name); }
+    static gobjptr  parse_name(const char* parse_name) { return ref_type::parse_name(parse_name); }
 };
 
 } // namespace moo
