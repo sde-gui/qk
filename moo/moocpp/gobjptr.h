@@ -175,8 +175,17 @@ class gobjref<GObject>; // : public gobjref_base
     using parent_object_type = typename super::object_type;                     \
     using ptrtype = gobjptr<object_type>;                                       \
                                                                                 \
+protected:                                                                      \
+    friend class gobjptr_impl<object_type>;                                     \
+                                                                                \
     gobjref(object_type* gobj = nullptr)                                        \
         : super(reinterpret_cast<parent_object_type*>(gobj))                    \
+    {                                                                           \
+    }                                                                           \
+                                                                                \
+public:                                                                         \
+    gobjref(object_type& gobj)                                                  \
+        : gobjref(&gobj)                                                        \
     {                                                                           \
     }                                                                           \
                                                                                 \

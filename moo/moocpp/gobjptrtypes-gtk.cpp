@@ -53,7 +53,7 @@ void test()
         g_assert((void*) c1 == (void*) c2);
         g_assert((void*) c1 == (void*) c3);
 
-        gobjref<GtkWidget> or(p.get());
+        gobjref<GtkWidget> or(*p.get());
         or.freeze_notify();
         p->freeze_notify();
     }
