@@ -66,7 +66,7 @@ using namespace moo;
 
 MOO_DEFINE_OBJECT_ARRAY (MooEdit, moo_edit)
 
-MooEditList *_moo_edit_instances = NULL;
+std::vector<EditRawPtr> Edit::_moo_edit_instances;
 static guint moo_edit_apply_config_all_idle;
 
 static GObject *moo_edit_constructor            (GType           type,
@@ -313,7 +313,7 @@ moo_edit_constructor (GType                  type,
     g_assert(priv.views.size() == 1 && priv.views[0] == view);
 
     doc._add_class_actions();
-    _moo_edit_instances = moo_edit_list_prepend(_moo_edit_instances, &doc);
+    Edit::_moo_edit_instances.push_back(&doc);
 
     priv.changed_handler_id =
         priv.buffer->signal_connect("changed",
@@ -353,7 +353,7 @@ void Edit::_closed()
     moo_assert(priv.state == MOO_EDIT_STATE_NORMAL);
 
     _remove_untitled(*this);
-    _moo_edit_instances = moo_edit_list_remove (_moo_edit_instances, gobj());
+    remove(_moo_edit_instances, gobj());
 
     while (!priv.views.empty())
         gtk_widget_destroy (priv.views[0].gobj<GtkWidget>());
@@ -627,7 +627,7 @@ moo_edit_is_empty (MooEdit *edit)
 
     Edit r = *edit;
 
-    if (r._is_busy () || moo_edit_is_modified (edit) || !MOO_EDIT_IS_UNTITLED (edit))
+    if (r._is_busy () || moo_edit_is_modified (edit) || !moo_edit_is_untitled (edit))
         return FALSE;
 
     gtk_text_buffer_get_bounds (moo_edit_get_buffer (edit), &start, &end);
@@ -642,7 +642,7 @@ gboolean
 moo_edit_is_untitled (MooEdit *edit)
 {
     g_return_val_if_fail (MOO_IS_EDIT (edit), FALSE);
-    return MOO_EDIT_IS_UNTITLED (edit);
+    return !edit->priv->file;
 }
 
 /**
@@ -1206,12 +1206,10 @@ moo_edit_get_lang_id (MooEdit *doc)
 static gboolean
 moo_edit_apply_config_all_in_idle (void)
 {
-    MooEditList *l;
-
     moo_edit_apply_config_all_idle = 0;
 
-    for (l = _moo_edit_instances; l != NULL; l = l->next)
-        moo_edit_recheck_config (l->data);
+    for (const auto& doc: Edit::_moo_edit_instances)
+        moo_edit_recheck_config (doc);
 
     return FALSE;
 }

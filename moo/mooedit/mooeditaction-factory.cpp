@@ -206,7 +206,6 @@ moo_edit_class_install_action (MooEditClass      *klass,
     GHashTable *actions;
     ActionInfo *info;
     GType type;
-    MooEditList *l;
 
     g_return_if_fail (MOO_IS_EDIT_CLASS (klass));
     g_return_if_fail (MOO_IS_ACTION_FACTORY (factory));
@@ -228,15 +227,15 @@ moo_edit_class_install_action (MooEditClass      *klass,
     info = action_info_new (factory, doc_conditions, view_conditions);
     g_hash_table_insert (actions, g_strdup (action_id), info);
 
-    for (l = _moo_edit_instances; l != NULL; l = l->next)
+    for (const auto& doc: Edit::_moo_edit_instances)
     {
-        if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
+        if (g_type_is_a (G_OBJECT_TYPE (doc), type))
         {
-            GtkAction *action = create_action (action_id, info, l->data);
+            GtkAction *action = create_action (action_id, info, doc);
 
             if (action)
             {
-                moo_edit_add_action (l->data, action);
+                moo_edit_add_action (doc, action);
                 g_object_unref (action);
             }
         }
@@ -521,7 +520,6 @@ moo_edit_class_remove_action (MooEditClass *klass,
 {
     GHashTable *actions;
     GType type;
-    MooEditList *l;
 
     g_return_if_fail (MOO_IS_EDIT_CLASS (klass));
 
@@ -531,9 +529,11 @@ moo_edit_class_remove_action (MooEditClass *klass,
     if (actions)
         g_hash_table_remove (actions, action_id);
 
-    for (l = _moo_edit_instances; l != NULL; l = l->next)
-        if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
-            moo_edit_remove_action (l->data, action_id);
+    for (const auto& doc: Edit::_moo_edit_instances)
+    {
+        if (g_type_is_a(G_OBJECT_TYPE(doc), type))
+            moo_edit_remove_action(doc, action_id);
+    }
 }
 
 

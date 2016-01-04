@@ -62,15 +62,14 @@ public:
     gobj_raw_ptr& operator=(const gobj_raw_ptr& other) = default;
 
     gobj_raw_ptr(gobj_raw_ptr&& other)
-        : m_ref(other.gobj())
+        : m_ref(std::move(other.m_ref))
     {
         other = nullptr;
     }
 
     gobj_raw_ptr& operator=(gobj_raw_ptr&& other)
     {
-        m_ref._set_gobj(other.gobj());
-        other.m_ref._set_gobj(nullptr);
+        m_ref = std::move(other.m_ref);
         return *this;
     }
 
@@ -160,26 +159,38 @@ inline bool operator==(const nullptr_t&, const moo::gobj_raw_ptr<X>& p)
     return p.gobj() == nullptr;
 }
 
-template<typename X, typename Y>
-inline bool operator==(const moo::gobj_raw_ptr<X>& p1, const moo::gobj_raw_ptr<Y>& p2)
+template<typename X>
+inline bool operator==(const moo::gobj_raw_ptr<X>& p1, const moo::gobj_raw_ptr<X>& p2)
 {
     return p1.gobj() == p2.gobj();
 }
 
-template<typename X, typename Y>
-inline bool operator==(const moo::gobj_raw_ptr<X>& p1, const Y* p2)
+template<typename X>
+inline bool operator==(const moo::gobj_raw_ptr<X>& p1, const X* p2)
 {
     return p1.gobj() == p2;
 }
 
-template<typename X, typename Y>
-inline bool operator==(const X* p1, const moo::gobj_raw_ptr<Y>& p2)
+template<typename X>
+inline bool operator==(const moo::gobj_raw_ptr<X>& p1, X* p2)
+{
+    return p1.gobj() == p2;
+}
+
+template<typename X>
+inline bool operator==(const X* p1, const moo::gobj_raw_ptr<X>& p2)
 {
     return p1 == p2.gobj();
 }
 
-template<typename X, typename Y>
-bool operator!=(const moo::gobj_raw_ptr<X>& p1, const moo::gobj_raw_ptr<Y>& p2)
+template<typename X>
+inline bool operator==(X* p1, const moo::gobj_raw_ptr<X>& p2)
+{
+    return p1 == p2.gobj();
+}
+
+template<typename X>
+bool operator!=(const moo::gobj_raw_ptr<X>& p1, const moo::gobj_raw_ptr<X>& p2)
 {
     return !(p1 == p2);
 }

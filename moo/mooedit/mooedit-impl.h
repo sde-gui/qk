@@ -24,11 +24,7 @@
 #ifdef __cplusplus
 #include <moocpp/strutils.h>
 #include <moocpp/gobjptrtypes-gio.h>
-#endif
-
-extern MooEditList *_moo_edit_instances;
-
-#ifdef __cplusplus
+#include <vector>
 
 namespace moo {
 
@@ -37,6 +33,8 @@ class gobj_ref<MooEdit> : public gobj_ref_parent<MooEdit>
 {
 public:
     MOO_DEFINE_GOBJREF_METHODS(MooEdit)
+
+    static std::vector<gobj_raw_ptr<MooEdit>> _moo_edit_instances;
 
     void                    _add_view                           (EditView           view);
     void                    _remove_view                        (EditView           view);

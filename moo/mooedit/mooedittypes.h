@@ -27,7 +27,6 @@ MOO_DECLARE_OBJECT_ARRAY (MooEdit, moo_edit)
 MOO_DECLARE_OBJECT_ARRAY (MooEditView, moo_edit_view)
 MOO_DECLARE_OBJECT_ARRAY (MooEditTab, moo_edit_tab)
 MOO_DECLARE_OBJECT_ARRAY (MooEditWindow, moo_edit_window)
-MOO_DEFINE_SLIST (MooEditList, moo_edit_list, MooEdit)
 
 MOO_DECLARE_OBJECT_ARRAY (MooOpenInfo, moo_open_info)
 

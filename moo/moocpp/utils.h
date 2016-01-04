@@ -65,7 +65,7 @@ template<typename Container, typename U>
 void remove(Container& vec, const U& elm)
 {
     auto itr = find(vec, elm);
-    g_assert (itr != vec.end());
+    g_return_if_fail(itr != vec.end());
     vec.erase(itr);
 }
 

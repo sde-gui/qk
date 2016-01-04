@@ -23,8 +23,6 @@
 #include "moocpp/utils.h"
 #include "moocpp/gobjptrtypes.h"
 
-#define MOO_EDIT_IS_UNTITLED(edit) (!(edit)->priv->file)
-
 struct MooEditPrivate {
     MooEditPrivate();
     ~MooEditPrivate();
