@@ -53,8 +53,7 @@ moo_open_info_new_file (GFile       *file,
 {
     g_return_val_if_fail (G_IS_FILE (file), nullptr);
 
-    OpenInfoPtr info = wrap_new(MOO_OPEN_INFO(g_object_new(MOO_TYPE_OPEN_INFO, nullptr)));
-    new(info)(MooOpenInfo);
+    OpenInfoPtr info = create_gobj<MooOpenInfo>();
 
     info->gobj()->file = wrap_new(g_file_dup(file));
     info->gobj()->encoding = gstr::make_copy(encoding);
@@ -243,8 +242,7 @@ moo_open_info_add_flags(MooOpenInfo  *info,
 static void
 moo_open_info_finalize(GObject *object)
 {
-    MooOpenInfo *info = (MooOpenInfo*) object;
-    info->~MooOpenInfo();
+    finalize_cpp_gobj(MOO_OPEN_INFO(object));
     G_OBJECT_CLASS(moo_open_info_parent_class)->finalize(object);
 }
 
@@ -257,7 +255,7 @@ moo_open_info_class_init(MooOpenInfoClass *klass)
 static void
 moo_open_info_init(MooOpenInfo *info)
 {
-    info->line = -1;
+    init_cpp_gobj(info);
 }
 
 
@@ -275,8 +273,7 @@ moo_save_info_new_file(GFile      *file,
 {
     g_return_val_if_fail(G_IS_FILE(file), nullptr);
 
-    SaveInfoPtr info = wrap_new(MOO_SAVE_INFO(g_object_new(MOO_TYPE_SAVE_INFO, nullptr)));
-    new(info)(MooSaveInfo);
+    SaveInfoPtr info = create_gobj<MooSaveInfo>();
 
     info.gobj()->file.wrap_new(g_file_dup(file));
     info.gobj()->encoding.copy(encoding);
@@ -335,8 +332,7 @@ moo_save_info_dup (MooSaveInfo *info)
 static void
 moo_save_info_finalize (GObject *object)
 {
-    MooSaveInfo *info = (MooSaveInfo*) object;
-    info->~MooSaveInfo();
+    finalize_cpp_gobj(MOO_SAVE_INFO(object));
     G_OBJECT_CLASS (moo_save_info_parent_class)->finalize (object);
 }
 
@@ -347,8 +343,9 @@ moo_save_info_class_init (MooSaveInfoClass *klass)
 }
 
 static void
-moo_save_info_init (G_GNUC_UNUSED MooSaveInfo *info)
+moo_save_info_init (MooSaveInfo *info)
 {
+    init_cpp_gobj(info);
 }
 
 
@@ -362,8 +359,7 @@ MooReloadInfo *
 moo_reload_info_new (const char *encoding,
                      int         line)
 {
-    ReloadInfoPtr info = wrap_new(MOO_RELOAD_INFO(g_object_new(MOO_TYPE_RELOAD_INFO, nullptr)));
-    new(info)(MooReloadInfo);
+    ReloadInfoPtr info = create_gobj<MooReloadInfo>();
 
     info.gobj()->encoding.copy(encoding);
     info.gobj()->line = line;
@@ -415,8 +411,7 @@ moo_reload_info_set_line (MooReloadInfo *info,
 static void
 moo_reload_info_finalize (GObject *object)
 {
-    MooReloadInfo *info = (MooReloadInfo*) object;
-    info->~MooReloadInfo();
+    finalize_cpp_gobj(MOO_RELOAD_INFO(object));
     G_OBJECT_CLASS (moo_reload_info_parent_class)->finalize (object);
 }
 
@@ -429,5 +424,5 @@ moo_reload_info_class_init (MooReloadInfoClass *klass)
 static void
 moo_reload_info_init (MooReloadInfo *info)
 {
-    info->line = -1;
+    init_cpp_gobj(info);
 }

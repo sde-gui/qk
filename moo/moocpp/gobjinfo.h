@@ -39,8 +39,7 @@ struct gobjinfo
 {
     using object_type = Object;
     using parent_type = GObject;
-    static GType object_g_type() { return G_TYPE_OBJECT; }
-    static GType parent_g_type() { return G_TYPE_OBJECT; }
+    // object_g_type() is not defined
 };
 
 template<>
@@ -48,7 +47,6 @@ struct gobjinfo<GObject>
 {
     using object_type = GObject;
     static GType object_g_type() { return G_TYPE_OBJECT; }
-    static GType parent_g_type() { return G_TYPE_NONE; }
 };
 
 template<>
@@ -65,7 +63,6 @@ struct gobj_is_subclass<GObject, GObject>
         using object_type = Object;                                                             \
         using parent_type = Parent;                                                             \
         static GType object_g_type() { return g_type; }                                         \
-        static GType parent_g_type() { return gobjinfo<Parent>::object_g_type(); }              \
     };                                                                                          \
                                                                                                 \
     template<>                                                                                  \

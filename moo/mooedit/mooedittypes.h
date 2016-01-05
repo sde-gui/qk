@@ -8,20 +8,20 @@
 
 G_BEGIN_DECLS
 
-typedef struct MooOpenInfo MooOpenInfo;
-typedef struct MooSaveInfo MooSaveInfo;
-typedef struct MooReloadInfo MooReloadInfo;
-
 #define MOO_DECLARE_C_CLASS(Object, object)             \
     typedef struct Object Object;                       \
     GType object##_get_type(void) G_GNUC_CONST;
 
 MOO_DECLARE_C_CLASS(MooEdit, moo_edit);
+MOO_DECLARE_C_CLASS(MooEditor, moo_editor);
 MOO_DECLARE_C_CLASS(MooEditView, moo_edit_view);
 MOO_DECLARE_C_CLASS(MooEditWindow, moo_edit_window);
 MOO_DECLARE_C_CLASS(MooEditor, moo_editor);
 MOO_DECLARE_C_CLASS(MooEditTab, moo_edit_tab);
 MOO_DECLARE_C_CLASS(MooTextView, moo_text_view);
+MOO_DECLARE_C_CLASS(MooOpenInfo, moo_open_info);
+MOO_DECLARE_C_CLASS(MooSaveInfo, moo_save_info);
+MOO_DECLARE_C_CLASS(MooReloadInfo, moo_reload_info);
 
 MOO_DECLARE_OBJECT_ARRAY (MooEdit, moo_edit)
 MOO_DECLARE_OBJECT_ARRAY (MooEditView, moo_edit_view)
@@ -50,10 +50,17 @@ namespace moo {
 template<> class gobj_ref<MooEdit>;
 template<> class gobj_ref<MooEditView>;
 template<> class gobj_ptr<MooEditView>;
+//template<> class gobj_ptr<MooOpenInfo>;
+//template<> class gobj_ptr<MooReloadInfo>;
+//template<> class gobj_ptr<MooSaveInfo>;
 
 MOO_DEFINE_GOBJ_TYPE(MooTextView, GtkTextView, moo_text_view_get_type())
 MOO_DEFINE_GOBJ_TYPE(MooEditTab, GtkWidget, moo_edit_tab_get_type());
 MOO_DEFINE_GOBJ_TYPE(MooEditWindow, GtkWindow, moo_edit_window_get_type());
+MOO_DEFINE_GOBJ_TYPE(MooOpenInfo, GObject, moo_open_info_get_type());
+MOO_DEFINE_GOBJ_TYPE(MooReloadInfo, GObject, moo_reload_info_get_type());
+MOO_DEFINE_GOBJ_TYPE(MooSaveInfo, GObject, moo_save_info_get_type());
+//MOO_DEFINE_GOBJ_TYPE(MooEditor, GObject, moo_editor_get_type());
 
 } // namespace moo
 
@@ -62,5 +69,9 @@ MOO_GOBJ_TYPEDEFS(Edit, MooEdit);
 MOO_GOBJ_TYPEDEFS(EditTab, MooEditTab);
 MOO_GOBJ_TYPEDEFS(EditView, MooEditView);
 MOO_GOBJ_TYPEDEFS(EditWindow, MooEditWindow);
+
+MOO_GOBJ_TYPEDEFS(OpenInfo, MooOpenInfo);
+MOO_GOBJ_TYPEDEFS(ReloadInfo, MooReloadInfo);
+MOO_GOBJ_TYPEDEFS(SaveInfo, MooSaveInfo);
 
 #endif // __cplusplus

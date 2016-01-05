@@ -2,10 +2,15 @@
 
 #include "mooeditfileinfo.h"
 #include "moocpp/strutils.h"
-#include "moocpp/gobjptrtypes.h"
+#include "moocpp/gobjectutils.h"
 
 struct MooOpenInfo : public GObject
 {
+    MooOpenInfo()
+        : line(- 1)
+    {
+    }
+
     moo::gobj_ptr<GFile> file;
     moo::gstr encoding;
     int line;
@@ -19,6 +24,11 @@ struct MooOpenInfoClass
 
 struct MooReloadInfo : public GObject
 {
+    MooReloadInfo()
+        : line(-1)
+    {
+    }
+
     moo::gstr encoding;
     int line;
 };
@@ -38,7 +48,3 @@ struct MooSaveInfoClass
 {
     GObjectClass parent_class;
 };
-
-MOO_GOBJ_TYPEDEFS(OpenInfo, MooOpenInfo);
-MOO_GOBJ_TYPEDEFS(ReloadInfo, MooReloadInfo);
-MOO_GOBJ_TYPEDEFS(SaveInfo, MooSaveInfo);

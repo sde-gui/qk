@@ -15,11 +15,24 @@
 
 #include "moocpp/gobjptrtypes-gtk.h"
 
+struct A {};
+
 namespace moo {
+
+//MOO_DEFINE_GOBJ_TYPE(GtkToolbar, GtkWidget, GTK_TYPE_TOOLBAR)
+
 namespace _test {
 
 void test()
 {
+    //create_cpp_gobj<A>();
+    //init_cpp_gobj(a);
+
+    GtkObject* xyz = nullptr;
+    init_cpp_gobj(xyz);
+
+    //create_cpp_gobj<GtkToolbar>(GTK_TYPE_TOOLBAR);
+
     {
         gobj_ptr<GtkObject> p;
         gobj_ref<GtkObject>& r = *p;

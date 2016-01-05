@@ -363,7 +363,7 @@ MooEditorPrivate::~MooEditorPrivate()
 static void
 moo_editor_init (MooEditor *editor)
 {
-    init_private(editor->priv, editor, MOO_TYPE_EDITOR);
+    init_cpp_private(editor, editor->priv, MOO_TYPE_EDITOR);
 }
 
 static GObject *
@@ -480,7 +480,7 @@ moo_editor_finalize (GObject *object)
     if (editor_instance == editor)
         editor_instance = NULL;
 
-    finalize_private(editor->priv);
+    finalize_cpp_private(editor, editor->priv);
 
     G_OBJECT_CLASS (moo_editor_parent_class)->finalize (object);
 }

@@ -17,24 +17,86 @@
 
 #include <memory>
 #include <utility>
+#include "moocpp/gobjinfo.h"
 
 namespace moo {
 
-template<typename T, typename TPriv, typename ...Args>
-inline void init_private(TPriv*& p, T* owner, GType owner_type, Args&& ...args)
+template<typename T, typename ...Args>
+inline void init_cpp_gobj(T* o, Args&& ...args)
 {
-    p = G_TYPE_INSTANCE_GET_PRIVATE(owner, owner_type, TPriv);
-    new(p) TPriv(std::forward<Args>(args)...);
+#ifdef MOO_DEBUG
+    g_assert(g_object_get_data(G_OBJECT(o), "__moo_cpp_object_init__") == nullptr);
+#endif
+
+    new(o) T(std::forward<Args>(args)...);
+
+#ifdef MOO_DEBUG
+    g_object_set_data(G_OBJECT(o), "__moo_cpp_object_init__", GINT_TO_POINTER(true));
+#endif
 }
 
-template<typename TPriv>
-inline void finalize_private(TPriv*& p)
+template<typename T>
+inline void finalize_cpp_gobj(T* o)
 {
+#ifdef MOO_DEBUG
+    g_assert(g_object_get_data(G_OBJECT(o), "__moo_cpp_object_init__") == GINT_TO_POINTER(true));
+#endif
+
+    o->~T();
+
+#ifdef MOO_DEBUG
+    g_object_set_data(G_OBJECT(o), "__moo_cpp_object_init__", nullptr);
+#endif
+}
+
+
+template<typename T, typename TPriv, typename ...Args>
+inline void init_cpp_private(T* owner, TPriv*& p, GType owner_type, Args&& ...args)
+{
+#ifdef MOO_DEBUG
+    g_assert(g_object_get_data(G_OBJECT(owner), "__moo_cpp_private_init__") == nullptr);
+#endif
+
+    p = G_TYPE_INSTANCE_GET_PRIVATE(owner, owner_type, TPriv);
+    new(p) TPriv(std::forward<Args>(args)...);
+
+#ifdef MOO_DEBUG
+    g_object_set_data(G_OBJECT(owner), "__moo_cpp_private_init__", GINT_TO_POINTER(true));
+#endif
+}
+
+template<typename T, typename TPriv, typename ...Args>
+inline void init_cpp_private(T* owner, TPriv*& p, Args&& ...args)
+{
+#ifdef MOO_DEBUG
+    g_assert(g_object_get_data(G_OBJECT(owner), "__moo_cpp_private_init__") == nullptr);
+#endif
+
+    // object_g_type() will produce a compiler error if the type wasn't registered
+    p = G_TYPE_INSTANCE_GET_PRIVATE(owner, gobjinfo<T>::object_g_type(), TPriv);
+    new(p) TPriv(std::forward<Args>(args)...);
+
+#ifdef MOO_DEBUG
+    g_object_set_data(G_OBJECT(owner), "__moo_cpp_private_init__", GINT_TO_POINTER(true));
+#endif
+}
+
+template<typename T, typename TPriv>
+inline void finalize_cpp_private(T* owner, TPriv*& p)
+{
+#ifdef MOO_DEBUG
+    g_assert(g_object_get_data(G_OBJECT(owner), "__moo_cpp_private_init__") == GINT_TO_POINTER(true));
+#endif
+
     if (p != nullptr)
     {
         p->~TPriv();
         p = nullptr;
     }
+
+#ifdef MOO_DEBUG
+    g_object_set_data(G_OBJECT(owner), "__moo_cpp_private_init__", nullptr);
+#endif
 }
 
 template<typename T>

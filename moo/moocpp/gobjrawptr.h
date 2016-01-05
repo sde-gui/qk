@@ -64,7 +64,7 @@ public:
     gobj_raw_ptr(gobj_raw_ptr&& other)
         : m_ref(std::move(other.m_ref))
     {
-        other = nullptr;
+        other.set(nullptr);
     }
 
     gobj_raw_ptr& operator=(gobj_raw_ptr&& other)

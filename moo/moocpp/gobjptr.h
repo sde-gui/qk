@@ -17,6 +17,7 @@
 
 #include "moocpp/gobjrawptr.h"
 #include "moocpp/grefptr.h"
+#include "moocpp/gobjectutils.h"
 
 namespace moo {
 
@@ -90,6 +91,11 @@ public:
     operator ref_type*() const { return m_ref.self(); }
     ref_type* operator->() const { return m_ref.self(); }
     ref_type& operator*() const { return m_ref; }
+
+    // These are nasty. Because of ref_type* conversion this can be converted to void*,
+    // which in turn can be passed to g_object_ref or g_free, etc.
+    operator void*() const = delete;
+    operator const void*() const = delete;
 
     Object* gobj() const { return m_ref.gobj(); }
 
@@ -233,6 +239,28 @@ template<typename X>
 void g_object_unref(const gobj_ptr<X>&) = delete;
 template<typename X>
 void g_free(const gobj_ptr<X>&) = delete;
+
+
+template<typename T, typename ...Args>
+inline gobj_ptr<T> create_gobj(GType obj_type, Args&& ...args)
+{
+    return wrap_new(reinterpret_cast<T*>(g_object_new(obj_type, std::forward<Args>(args)...)));
+}
+
+template<typename T, typename ...Args>
+inline gobj_ptr<T> create_gobj(Args&& ...args)
+{
+    // object_g_type() will produce a compiler error if the type wasn't registered
+    return create_gobj(gobjinfo<T>::object_g_type(), std::forward<Args>(args)...);
+}
+
+template<typename T>
+inline gobj_ptr<T> create_gobj()
+{
+    // object_g_type() will produce a compiler error if the type wasn't registered
+    return create_gobj<T>(gobjinfo<T>::object_g_type(), nullptr);
+}
+
 
 } // namespace moo
 

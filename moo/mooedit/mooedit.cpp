@@ -289,7 +289,7 @@ MooEditPrivate::~MooEditPrivate()
 static void
 moo_edit_init (MooEdit *edit)
 {
-    init_private(edit->priv, edit, MOO_TYPE_EDIT);
+    init_cpp_private(edit, edit->priv, MOO_TYPE_EDIT);
 
     edit->config = moo_edit_config_new ();
     g_signal_connect_swapped (edit->config, "notify",
@@ -342,7 +342,7 @@ moo_edit_finalize (GObject *object)
 {
     MooEdit *edit = MOO_EDIT (object);
 
-    finalize_private(edit->priv);
+    finalize_cpp_private(edit, edit->priv);
 
     G_OBJECT_CLASS (moo_edit_parent_class)->finalize (object);
 }
