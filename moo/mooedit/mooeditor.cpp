@@ -328,10 +328,6 @@ moo_editor_class_init (MooEditorClass *klass)
     g_type_class_unref (edit_window_class);
 
     add_new_window_action ();
-
-    class_helper::verify_g_object_subclass_alignment<GObject, MooOpenInfo>();
-    class_helper::verify_g_object_subclass_alignment<GObject, MooSaveInfo>();
-    class_helper::verify_g_object_subclass_alignment<GObject, MooReloadInfo>();
 }
 
 MooEditorPrivate::MooEditorPrivate()
@@ -1747,9 +1743,9 @@ load_doc_session (MooEditor     *editor,
         return EditPtr::wrap(moo_editor_new_doc(editor, window));
 
     const char *encoding = moo_markup_get_prop (elm, "encoding");
-    gobj_ptr<MooOpenInfo> info = wrap_new(moo_open_info_new_uri(uri, encoding, -1, MOO_OPEN_FLAGS_NONE));
+    std::unique_ptr<MooOpenInfo> info(moo_open_info_new_uri(uri, encoding, -1, MOO_OPEN_FLAGS_NONE));
 
-    return moo_editor_load_file(editor, info.gobj(), window, GTK_WIDGET(window), TRUE, FALSE, NULL);
+    return moo_editor_load_file(editor, info.get(), window, GTK_WIDGET(window), TRUE, FALSE, NULL);
 }
 
 static MooMarkupNode *
@@ -2005,19 +2001,15 @@ moo_editor_new_file (MooEditor    *editor,
                      GError      **error)
 {
     MooEdit *doc;
-    MooOpenInfo *info_copy;
 
     moo_return_error_if_fail_p (MOO_IS_EDITOR (editor));
-    moo_return_error_if_fail_p (info != NULL);
+    moo_return_error_if_fail_p (info != nullptr);
 
-    info_copy = moo_open_info_dup (info);
-    moo_return_error_if_fail_p (info_copy != NULL);
-
+    std::unique_ptr<MooOpenInfo> info_copy (moo_open_info_dup (info));
     info_copy->flags |= MOO_OPEN_FLAG_CREATE_NEW;
 
-    doc = moo_editor_open_file (editor, info_copy, parent, error);
+    doc = moo_editor_open_file (editor, info_copy.get (), parent, error);
 
-    g_object_unref (info_copy);
     return doc;
 }
 
@@ -2074,16 +2066,8 @@ moo_editor_open_uri (MooEditor     *editor,
                      int            line,
                      MooEditWindow *window)
 {
-    MooEdit *ret;
-    MooOpenInfo *info;
-
-    info = moo_open_info_new_uri (uri, encoding, line, MOO_OPEN_FLAGS_NONE);
-    g_return_val_if_fail (info != NULL, NULL);
-
-    ret = moo_editor_open_file (editor, info, window ? GTK_WIDGET (window) : NULL, NULL);
-
-    g_object_unref (info);
-    return ret;
+    std::unique_ptr<MooOpenInfo> info (moo_open_info_new_uri (uri, encoding, line, MOO_OPEN_FLAGS_NONE));
+    return moo_editor_open_file (editor, info.get(), window ? GTK_WIDGET (window) : NULL, NULL);
 }
 
 /**
@@ -2102,16 +2086,8 @@ moo_editor_open_path (MooEditor     *editor,
                       int            line,
                       MooEditWindow *window)
 {
-    MooEdit *ret;
-    MooOpenInfo *info;
-
-    info = moo_open_info_new (path, encoding, line, MOO_OPEN_FLAGS_NONE);
-    g_return_val_if_fail (info != NULL, NULL);
-
-    ret = moo_editor_open_file (editor, info, window ? GTK_WIDGET (window) : NULL, NULL);
-
-    g_object_unref (info);
-    return ret;
+    std::unique_ptr<MooOpenInfo> info (moo_open_info_new (path, encoding, line, MOO_OPEN_FLAGS_NONE));
+    return moo_editor_open_file (editor, info.get(), window ? GTK_WIDGET (window) : NULL, NULL);
 }
 
 
@@ -2604,11 +2580,11 @@ moo_editor_save_as (MooEditor   *editor,
         return false;
     }
 
-    gobj_ptr<MooSaveInfo> info = wrap(info_init);
+    std::unique_ptr<MooSaveInfo> info (info_init ? moo_save_info_dup (info_init) : nullptr);
 
     if (!info)
     {
-        info = wrap_new(_moo_edit_save_as_dialog(doc, moo_edit_get_display_basename(doc)));
+        info.reset(_moo_edit_save_as_dialog(doc, moo_edit_get_display_basename(doc)));
 
         if (!info)
         {
@@ -2619,14 +2595,14 @@ moo_editor_save_as (MooEditor   *editor,
             return false;
         }
     }
-    else if (info.gobj()->encoding.empty())
+    else if (info->encoding.empty())
     {
-        info = wrap_new(moo_save_info_new_file(info.gobj()->file.gobj(), moo_edit_get_encoding(doc)));
+        info.reset(moo_save_info_new_file(info->file.gobj(), moo_edit_get_encoding(doc)));
     }
 
     update_history_item_for_doc(editor, doc, FALSE);
 
-    return do_save(*editor, *doc, *info.gobj()->file, info.gobj()->encoding, error);
+    return do_save(*editor, *doc, *info->file, info->encoding, error);
 }
 
 /**

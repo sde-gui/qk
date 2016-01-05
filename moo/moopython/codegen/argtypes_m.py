@@ -85,11 +85,10 @@ class ObjectArrayArg(ArgType):
             info.codeafter.append('    return _moo_object_array_to_pyobject ((MooObjectArray*) ret);')
 
 class BoxedArrayArg(ArgType):
-    def __init__(self, elm_c_type, elm_c_prefix, elm_g_type):
-        self.elm_c_type = elm_c_type
-        self.elm_c_prefix = elm_c_prefix
-        self.elm_g_type = elm_g_type
-        self.c_type = elm_c_type + 'Array'
+    def __init__(self, c_type, c_prefix, g_type):
+        self.c_type = c_type
+        self.c_prefix = c_prefix
+        self.g_type = g_type
 
     def write_param(self, ptype, pname, pdflt, pnull, info):
         if pdflt:
@@ -99,22 +98,22 @@ class BoxedArrayArg(ArgType):
             info.varlist.add(self.c_type, '*' + pname)
         info.arglist.append(pname)
         if pnull:
-            info.add_parselist('O&', ['_moo_pyobject_to_boxed_array', self.elm_g_type + ', (MooPtrArray**) &' + pname], [pname])
+            info.add_parselist('O&', ['_moo_pyobject_to_boxed_array', '(MooPtrArray**) &' + pname], [pname])
         else:
-            info.add_parselist('O&', ['_moo_pyobject_to_boxed_array_no_null', self.elm_g_type + ', (MooPtrArray**) &' + pname], [pname])
-        info.codeafter.append('    _moo_boxed_array_free (%s, (MooPtrArray*) %s);' % (self.elm_g_type, pname))
+            info.add_parselist('O&', ['_moo_pyobject_to_boxed_array_no_null', '(MooPtrArray**) &' + pname], [pname])
+        info.codeafter.append('    %s_free (%s);' % (self.c_prefix, pname))
 
     def write_return(self, ptype, ownsreturn, info):
         if ownsreturn:
             # have to free result ...
             info.varlist.add(self.c_type, '*ret')
             info.varlist.add('PyObject', '*py_ret')
-            info.codeafter.append(('    py_ret = _moo_boxed_array_to_pyobject (%s, (MooPtrArray*) ret);\n' +
-                                   '    _moo_boxed_array_free (%s, ret);\n' +
-                                   '    return py_ret;') % (self.elm_g_type, self.elm_g_type))
+            info.codeafter.append(('    py_ret = _moo_boxed_array_to_pyobject ((MooPtrArray*) ret, %s);\n' +
+                                   '    %s_free (ret);\n' +
+                                   '    return py_ret;') % (self.g_type, self.c_prefix,))
         else:
             info.varlist.add(self.c_type, '*ret')
-            info.codeafter.append('    return _moo_boxed_array_to_pyobject (%s, (MooPtrArray*) ret);' % (self.elm_g_type,))
+            info.codeafter.append('    return _moo_boxed_array_to_pyobject ((MooPtrArray*) ret, %s);' % (self.g_type,))
 
 class NoRefObjectSListArg(ArgType):
     def write_return(self, ptype, ownsreturn, info):
@@ -144,7 +143,11 @@ for typ, prefix in (('MooFileArray', 'moo_file_array'),
                     ('MooEditViewArray', 'moo_edit_view_array'),
                     ('MooEditTabArray', 'moo_edit_tab_array'),
                     ('MooEditWindowArray', 'moo_edit_window_array'),
-                    ('MooOpenInfoArray', 'moo_open_info_array'),
                     ):
     arg = ObjectArrayArg(typ, prefix)
+    matcher.register(typ + '*', arg)
+
+for typ, prefix, gtyp in (('MooOpenInfoArray', 'moo_open_info_array', 'MOO_TYPE_OPEN_INFO'),
+                    ):
+    arg = BoxedArrayArg(typ, prefix, gtyp)
     matcher.register(typ + '*', arg)

@@ -97,6 +97,22 @@ moo_get_pygobject_type (void)
     return type;
 }
 
+static PyTypeObject *
+moo_get_pygboxed_type(void)
+{
+    static PyTypeObject *type;
+
+    if (G_UNLIKELY(!type))
+    {
+        PyObject *module = PyImport_ImportModule("gobject");
+        g_return_val_if_fail(module != NULL, NULL);
+        type = (PyTypeObject*) PyObject_GetAttrString(module, "GBoxed");
+        g_return_val_if_fail(type != NULL, NULL);
+    }
+
+    return type;
+}
+
 PyObject *
 _moo_strv_to_pyobject (char **strv)
 {
@@ -264,6 +280,7 @@ _moo_pyobject_to_object_array (PyObject        *obj,
 
         g_return_val_if_fail (item != NULL, FALSE);
 
+        // TODO: this doesn't check element types
         if (!pygobject_check (item, type))
         {
             PyErr_SetString (PyExc_TypeError,
@@ -289,6 +306,93 @@ _moo_pyobject_to_object_array_no_null (PyObject        *obj,
     }
 
     return _moo_pyobject_to_object_array (obj, dest);
+}
+
+
+static MooPtrArray *
+_moo_pyobject_to_boxed_array_no_check(PyObject *seq,
+                                      int       len)
+{
+    int i;
+    MooPtrArray *ar;
+
+    ar = moo_ptr_array_new();
+    moo_ptr_array_reserve(ar, len);
+
+    for (i = 0; i < len; ++i)
+    {
+        PyObject *item = PySequence_ITEM(seq, i);
+        gpointer elm = g_boxed_copy(((PyGBoxed*)item)->gtype, pyg_boxed_get(item, void));
+        moo_ptr_array_append(ar, elm);
+    }
+
+    return ar;
+}
+
+int
+_moo_pyobject_to_boxed_array (PyObject       *obj,
+                              MooPtrArray   **dest)
+{
+    int len, i;
+    PyTypeObject *type;
+
+    type = moo_get_pygboxed_type();
+    g_return_val_if_fail(type != NULL, FALSE);
+
+    if (obj == Py_None)
+    {
+        *dest = NULL;
+        return TRUE;
+    }
+
+    if (!PySequence_Check(obj))
+    {
+        PyErr_SetString(PyExc_TypeError,
+                        "argument must be a sequence");
+        return FALSE;
+    }
+
+    len = PySequence_Size(obj);
+
+    if (len < 0)
+    {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "got negative length of a sequence");
+        return FALSE;
+    }
+
+    for (i = 0; i < len; ++i)
+    {
+        PyObject *item = PySequence_ITEM(obj, i);
+
+        g_return_val_if_fail(item != NULL, FALSE);
+
+        // TODO: doesn't check types, will crash
+        if (!PyObject_TypeCheck(item, &PyGBoxed_Type))
+        {
+            PyErr_SetString(PyExc_TypeError,
+                            "argument must be a sequence of boxed objects");
+            return FALSE;
+        }
+    }
+
+    *dest = _moo_pyobject_to_boxed_array_no_check(obj, len);
+
+    return TRUE;
+}
+
+int
+_moo_pyobject_to_boxed_array_no_null(PyObject*     obj,
+                                     MooPtrArray **dest)
+{
+    if (obj == Py_None)
+    {
+        PyErr_SetString (PyExc_TypeError,
+                         "argument must be a sequence, not None");
+        return FALSE;
+    }
+
+    return _moo_pyobject_to_boxed_array (obj, dest);
 }
 
 

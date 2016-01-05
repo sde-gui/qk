@@ -78,6 +78,10 @@ MooObjectArray *moo_lua_get_arg_object_array    (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,
                                                  GType               type);
+MooPtrArray    *moo_lua_get_arg_boxed_array     (lua_State          *L,
+                                                 int                 narg,
+                                                 const char         *param_name,
+                                                 GType               type);
 gboolean        moo_lua_get_arg_bool_opt        (lua_State          *L,
                                                  int                 narg,
                                                  const char         *param_name,

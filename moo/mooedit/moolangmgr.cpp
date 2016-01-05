@@ -201,7 +201,7 @@ string_list_copy (GSList *list)
 static void
 string_list_free (GSList *list)
 {
-    g_slist_foreach (list, (GFunc) ::g_free, NULL);
+    g_slist_foreach (list, (GFunc) extern_g_free, NULL);
     g_slist_free (list);
 }
 
@@ -294,7 +294,7 @@ get_lang_by_extension (MooLangMgr *mgr,
     if (!found)
         lang = NULL;
 
-    g_slist_foreach (langs, (GFunc) ::g_object_unref, NULL);
+    g_slist_foreach (langs, (GFunc) extern_g_object_unref, NULL);
     g_slist_free (langs);
     g_free (basename);
     return lang;
@@ -489,7 +489,7 @@ get_lang_for_mime_type (MooLangMgr *mgr,
         string_list_free (mimetypes);
     }
 
-    g_slist_foreach (langs, (GFunc) ::g_object_unref, NULL);
+    g_slist_foreach (langs, (GFunc) extern_g_object_unref, NULL);
     g_slist_free (langs);
     return found ? lang : NULL;
 }

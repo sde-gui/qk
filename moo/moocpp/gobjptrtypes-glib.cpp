@@ -18,6 +18,16 @@
 using namespace moo;
 using namespace g;
 
+void ::extern_g_free(gpointer p)
+{
+    g_free(p);
+}
+
+void ::extern_g_object_unref(gpointer o)
+{
+    g_object_unref(o);
+}
+
 gulong Object::signal_connect(const char *detailed_signal, GCallback c_handler, void *data)
 {
     return g_signal_connect(gobj(), detailed_signal, c_handler, data);

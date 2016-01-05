@@ -53,8 +53,27 @@
 #include <shlobj.h>
 #endif
 
-MOO_DEFINE_OBJECT_ARRAY_FULL (MooObjectArray, moo_object_array, GObject)
-MOO_DEFINE_QUARK (moo-error, moo_error_quark)
+MOO_DEFINE_QUARK(moo - error, moo_error_quark)
+
+static gpointer copy_pointer(gpointer p)
+{
+    return p;
+}
+
+static void free_pointer(gpointer p)
+{
+}
+
+MOO_DEFINE_OBJECT_ARRAY_FULL(MooObjectArray, moo_object_array, GObject)
+MOO_DEFINE_PTR_ARRAY_FULL(MooPtrArray, moo_ptr_array, void, copy_pointer, free_pointer)
+
+void moo_boxed_array_free(MooPtrArray* ar, GType elm_type)
+{
+    gsize i;
+    for (i = 0; i < ar->n_elms; ++i)
+        g_boxed_free (elm_type, ar->elms[i]);
+    moo_ptr_array_free (ar);
+}
 
 G_LOCK_DEFINE_STATIC (moo_user_data_dir);
 G_LOCK_DEFINE_STATIC (moo_user_cache_dir);

@@ -37,6 +37,7 @@ struct gobj_is_subclass
 template<typename Object>
 struct gobjinfo
 {
+    static const bool is_gobject = true;
     using object_type = Object;
     using parent_type = GObject;
     // object_g_type() is not defined
@@ -45,6 +46,7 @@ struct gobjinfo
 template<>
 struct gobjinfo<GObject>
 {
+    static const bool is_gobject = true;
     using object_type = GObject;
     static GType object_g_type() { return G_TYPE_OBJECT; }
 };
@@ -60,6 +62,7 @@ struct gobj_is_subclass<GObject, GObject>
     template<>                                                                                  \
     struct gobjinfo<Object>                                                                     \
     {                                                                                           \
+        static const bool is_gobject = true;                                                    \
         using object_type = Object;                                                             \
         using parent_type = Parent;                                                             \
         static GType object_g_type() { return g_type; }                                         \

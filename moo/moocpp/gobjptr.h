@@ -32,6 +32,8 @@ class gobj_ptr_impl
     using ptr_type = gobj_ptr<Object>;
     using ref_type = gobj_ref<Object>;
 
+    static_assert(gobjinfo<Object>::is_gobject, "Not a GObject");
+
 public:
     gobj_ptr_impl() {}
 
@@ -151,6 +153,8 @@ public:
 private:
     void assign(Object* obj, ref_transfer policy)
     {
+        g_assert(!obj || G_IS_OBJECT(obj));
+
         if (gobj() != obj)
         {
             Object* tmp = gobj();
@@ -235,11 +239,6 @@ public:
 template<> class gobj_ref<GObject>;
 
 
-template<typename X>
-void g_object_unref(const gobj_ptr<X>&) = delete;
-template<typename X>
-void g_free(const gobj_ptr<X>&) = delete;
-
 
 template<typename T, typename ...Args>
 inline gobj_ptr<T> create_gobj(GType obj_type, Args&& ...args)
@@ -323,3 +322,8 @@ bool operator!=(const X& p1, const moo::gobj_ptr<Y>& p2)
 {
     return !(p1 == p2);
 }
+
+template<typename X>
+void g_object_unref(const moo::gobj_ptr<X>&) = delete;
+template<typename X>
+void g_free(const moo::gobj_ptr<X>&) = delete;

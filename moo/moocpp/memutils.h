@@ -48,6 +48,9 @@ public:
         reset();
     }
 
+    // There is nothing wrong with copying, but it's not clear whether it should borrow
+    // or duplicate the object: borrowing is cheap but dangerous, copying is safe but
+    // expensive. Let the caller decide instead.
     mg_mem_holder(const mg_mem_holder& other) = delete;
     mg_mem_holder& operator=(const mg_mem_holder& other) = delete;
 

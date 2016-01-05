@@ -234,7 +234,9 @@ gssize array_type##_find (const ArrayType *ar, ElmType *elm)            \
 G_BEGIN_DECLS
 
 MOO_DECLARE_OBJECT_ARRAY_FULL (MooObjectArray, moo_object_array, GObject)
-MOO_DECLARE_PTR_ARRAY_FULL (MooPtrArray, moo_ptr_array, gpointer)
+MOO_DECLARE_PTR_ARRAY_FULL (MooPtrArray, moo_ptr_array, void)
+
+void moo_boxed_array_free(MooPtrArray* ar, GType elm_type);
 
 G_END_DECLS
 

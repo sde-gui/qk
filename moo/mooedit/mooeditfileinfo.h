@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_EDIT_FILE_INFO_H
-#define MOO_EDIT_FILE_INFO_H
+#pragma once
 
 #include <gio/gio.h>
 #include <mooedit/mooedittypes.h>
@@ -22,33 +21,8 @@
 G_BEGIN_DECLS
 
 #define MOO_TYPE_OPEN_INFO                       (moo_open_info_get_type ())
-#define MOO_OPEN_INFO(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_OPEN_INFO, MooOpenInfo))
-#define MOO_OPEN_INFO_CLASS(klass)               (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_OPEN_INFO, MooOpenInfoClass))
-#define MOO_IS_OPEN_INFO(object)                 (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_OPEN_INFO))
-#define MOO_IS_OPEN_INFO_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_OPEN_INFO))
-#define MOO_OPEN_INFO_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_OPEN_INFO, MooOpenInfoClass))
-
 #define MOO_TYPE_SAVE_INFO                       (moo_save_info_get_type ())
-#define MOO_SAVE_INFO(object)                    (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_SAVE_INFO, MooSaveInfo))
-#define MOO_SAVE_INFO_CLASS(klass)               (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_SAVE_INFO, MooSaveInfoClass))
-#define MOO_IS_SAVE_INFO(object)                 (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_SAVE_INFO))
-#define MOO_IS_SAVE_INFO_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_SAVE_INFO))
-#define MOO_SAVE_INFO_GET_CLASS(obj)             (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_SAVE_INFO, MooSaveInfoClass))
-
 #define MOO_TYPE_RELOAD_INFO                     (moo_reload_info_get_type ())
-#define MOO_RELOAD_INFO(object)                  (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_RELOAD_INFO, MooReloadInfo))
-#define MOO_RELOAD_INFO_CLASS(klass)             (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_RELOAD_INFO, MooReloadInfoClass))
-#define MOO_IS_RELOAD_INFO(object)               (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_RELOAD_INFO))
-#define MOO_IS_RELOAD_INFO_CLASS(klass)          (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_RELOAD_INFO))
-#define MOO_RELOAD_INFO_GET_CLASS(obj)           (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_RELOAD_INFO, MooReloadInfoClass))
-
-typedef struct MooOpenInfoClass MooOpenInfoClass;
-typedef struct MooSaveInfoClass MooSaveInfoClass;
-typedef struct MooReloadInfoClass MooReloadInfoClass;
-
-GType                moo_open_info_get_type     (void) G_GNUC_CONST;
-GType                moo_reload_info_get_type   (void) G_GNUC_CONST;
-GType                moo_save_info_get_type     (void) G_GNUC_CONST;
 
 MooOpenInfo         *moo_open_info_new          (const char         *path,
                                                  const char         *encoding,
@@ -97,5 +71,3 @@ MooSaveInfo         *moo_save_info_new_uri      (const char         *uri,
 MooSaveInfo         *moo_save_info_dup          (MooSaveInfo        *info);
 
 G_END_DECLS
-
-#endif /* MOO_EDIT_FILE_INFO_H */

@@ -420,13 +420,13 @@ error:
 
     if (doc_conditions)
     {
-        g_ptr_array_foreach (doc_conditions, (GFunc) g_free, NULL);
+        g_ptr_array_foreach (doc_conditions, (GFunc) extern_g_free, NULL);
         g_ptr_array_free (doc_conditions, TRUE);
     }
 
     if (view_conditions)
     {
-        g_ptr_array_foreach (view_conditions, (GFunc) g_free, NULL);
+        g_ptr_array_foreach (view_conditions, (GFunc) extern_g_free, NULL);
         g_ptr_array_free (view_conditions, TRUE);
     }
 

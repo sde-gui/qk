@@ -171,10 +171,13 @@ public:
     MOO_DEFINE_GOBJREF_METHODS(Object)
 };
 
+} // namespace moo
+
 // Make sure these aren't called in code ported from pure glib C
 template<typename X>
-void g_object_unref(const gobj_ref<X>*) = delete;
+void g_object_unref(const moo::gobj_ref<X>*) = delete;
 template<typename X>
-void g_free(const gobj_ref<X>*) = delete;
+void g_free(const moo::gobj_ref<X>*) = delete;
 
-} // namespace moo
+void extern_g_free(gpointer);
+void extern_g_object_unref(gpointer);

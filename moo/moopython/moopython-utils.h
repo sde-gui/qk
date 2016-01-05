@@ -41,6 +41,11 @@ int          _moo_pyobject_to_object_array  (PyObject       *obj,
 int          _moo_pyobject_to_object_array_no_null (PyObject *obj,
                                              MooObjectArray **dest);
 
+int          _moo_pyobject_to_boxed_array   (PyObject       *obj,
+                                             MooPtrArray   **dest);
+int          _moo_pyobject_to_boxed_array_no_null (PyObject *obj,
+                                             MooPtrArray   **dest);
+
 PyObject    *_moo_object_slist_to_pyobject  (GSList         *list);
 PyObject    *_moo_string_slist_to_pyobject  (GSList         *list);
 PyObject    *_moo_boxed_slist_to_pyobject   (GSList         *list,

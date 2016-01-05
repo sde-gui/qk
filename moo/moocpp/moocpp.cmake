@@ -1,5 +1,6 @@
 SET(moocpp_sources
 	moocpp/moocpp.cmake
+	moocpp/gboxed.h
 	moocpp/gobjectutils.h
 	moocpp/gobjptr.h
 	moocpp/gobjref.h

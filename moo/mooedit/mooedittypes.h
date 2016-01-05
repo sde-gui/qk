@@ -28,7 +28,7 @@ MOO_DECLARE_OBJECT_ARRAY (MooEditView, moo_edit_view)
 MOO_DECLARE_OBJECT_ARRAY (MooEditTab, moo_edit_tab)
 MOO_DECLARE_OBJECT_ARRAY (MooEditWindow, moo_edit_window)
 
-MOO_DECLARE_OBJECT_ARRAY (MooOpenInfo, moo_open_info)
+MOO_DECLARE_PTR_ARRAY(MooOpenInfo, moo_open_info)
 
 #define MOO_TYPE_LINE_END (moo_type_line_end ())
 GType   moo_type_line_end   (void) G_GNUC_CONST;
@@ -57,10 +57,9 @@ template<> class gobj_ptr<MooEditView>;
 MOO_DEFINE_GOBJ_TYPE(MooTextView, GtkTextView, moo_text_view_get_type())
 MOO_DEFINE_GOBJ_TYPE(MooEditTab, GtkWidget, moo_edit_tab_get_type());
 MOO_DEFINE_GOBJ_TYPE(MooEditWindow, GtkWindow, moo_edit_window_get_type());
-MOO_DEFINE_GOBJ_TYPE(MooOpenInfo, GObject, moo_open_info_get_type());
-MOO_DEFINE_GOBJ_TYPE(MooReloadInfo, GObject, moo_reload_info_get_type());
-MOO_DEFINE_GOBJ_TYPE(MooSaveInfo, GObject, moo_save_info_get_type());
-//MOO_DEFINE_GOBJ_TYPE(MooEditor, GObject, moo_editor_get_type());
+//MOO_DEFINE_GOBJ_TYPE(MooOpenInfo, GObject, moo_open_info_get_type());
+//MOO_DEFINE_GOBJ_TYPE(MooReloadInfo, GObject, moo_reload_info_get_type());
+//MOO_DEFINE_GOBJ_TYPE(MooSaveInfo, GObject, moo_save_info_get_type());
 
 } // namespace moo
 
@@ -70,8 +69,24 @@ MOO_GOBJ_TYPEDEFS(EditTab, MooEditTab);
 MOO_GOBJ_TYPEDEFS(EditView, MooEditView);
 MOO_GOBJ_TYPEDEFS(EditWindow, MooEditWindow);
 
-MOO_GOBJ_TYPEDEFS(OpenInfo, MooOpenInfo);
-MOO_GOBJ_TYPEDEFS(ReloadInfo, MooReloadInfo);
-MOO_GOBJ_TYPEDEFS(SaveInfo, MooSaveInfo);
+//MOO_GOBJ_TYPEDEFS(OpenInfo, MooOpenInfo);
+//MOO_GOBJ_TYPEDEFS(ReloadInfo, MooReloadInfo);
+//MOO_GOBJ_TYPEDEFS(SaveInfo, MooSaveInfo);
+
+void g_object_unref(MooOpenInfo*) = delete;
+void g_object_unref(MooReloadInfo*) = delete;
+void g_object_unref(MooSaveInfo*) = delete;
+
+void g_free(MooOpenInfo*) = delete;
+void g_free(MooReloadInfo*) = delete;
+void g_free(MooSaveInfo*) = delete;
+
+namespace moo {
+
+template<> struct gobjinfo<MooOpenInfo> { static const bool is_gobject = false; };
+template<> struct gobjinfo<MooReloadInfo> { static const bool is_gobject = false; };
+template<> struct gobjinfo<MooSaveInfo> { static const bool is_gobject = false; };
+
+} // namespace moo
 
 #endif // __cplusplus

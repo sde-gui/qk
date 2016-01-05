@@ -1306,18 +1306,18 @@ moo_lua_get_arg_instance (lua_State  *L,
     return moo_lua_get_arg_instance_opt (L, narg, param_name, type, null_ok);
 }
 
-MooObjectArray *
-moo_lua_get_arg_object_array (lua_State  *L,
-                              int         narg,
-                              const char *param_name,
-                              GType       type)
+static std::vector<gpointer>
+moo_lua_get_arg_instance_array(lua_State  *L,
+                               int         narg,
+                               const char *param_name,
+                               GType       type)
 {
-    CHECK_STACK (L);
+    CHECK_STACK(L);
 
-    if (!lua_istable (L, narg))
-        moo_lua_arg_error (L, narg, param_name,
-                           "table expected, got %s",
-                           luaL_typename (L, narg));
+    if (!lua_istable(L, narg))
+        moo_lua_arg_error(L, narg, param_name,
+                          "table expected, got %s",
+                          luaL_typename(L, narg));
 
     std::vector<gpointer> vec;
     size_t len = lua_objlen(L, narg);
@@ -1325,28 +1325,56 @@ moo_lua_get_arg_object_array (lua_State  *L,
     lua_pushnil(L);
     while (lua_next(L, narg) != 0)
     {
-        if (!lua_isnumber (L, -2))
-            moo_lua_arg_error (L, narg, param_name,
-                               "list expected, got dict");
+        if (!lua_isnumber(L, -2))
+            moo_lua_arg_error(L, narg, param_name,
+                              "list expected, got dict");
 
-        gpointer instance = moo_lua_get_arg_instance (L, -1, NULL, type, FALSE);
+        gpointer instance = moo_lua_get_arg_instance(L, -1, NULL, type, FALSE);
 
-        int idx = luaL_checkint (L, -2);
+        int idx = luaL_checkint(L, -2);
         if (idx <= 0 || idx > (int) len)
-            moo_lua_arg_error (L, narg, param_name,
-                               "list expected, got dict");
+            moo_lua_arg_error(L, narg, param_name,
+                              "list expected, got dict");
 
-        if ((int) vec.size () < idx)
-            vec.resize (idx);
+        if ((int) vec.size() < idx)
+            vec.resize(idx);
 
         vec[idx - 1] = instance;
 
-        lua_pop (L, 1);
+        lua_pop(L, 1);
     }
 
+    return vec;
+}
+
+MooObjectArray *
+moo_lua_get_arg_object_array (lua_State  *L,
+                              int         narg,
+                              const char *param_name,
+                              GType       type)
+{
+    static std::vector<gpointer> vec = moo_lua_get_arg_instance_array(L, narg, param_name, type);
+
     MooObjectArray *array = moo_object_array_new ();
+    moo_object_array_reserve (array, vec.size());
     for (int i = 0, c = vec.size(); i < c; ++i)
         moo_object_array_append (array, G_OBJECT (vec[i]));
+
+    return array;
+}
+
+MooPtrArray*
+moo_lua_get_arg_boxed_array(lua_State          *L,
+                            int                 narg,
+                            const char         *param_name,
+                            GType               type)
+{
+    static std::vector<gpointer> vec = moo_lua_get_arg_instance_array(L, narg, param_name, type);
+
+    MooPtrArray *array = moo_ptr_array_new ();
+    moo_ptr_array_reserve (array, vec.size());
+    for (int i = 0, c = vec.size(); i < c; ++i)
+        moo_ptr_array_append (array, g_boxed_copy (type, vec[i]));
 
     return array;
 }
