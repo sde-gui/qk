@@ -15,3 +15,7 @@
 #include <windows.h>
 
 #endif // __WIN32__
+
+#ifdef MOO_ENABLE_PYTHON 
+#include <Python.h>
+#endif

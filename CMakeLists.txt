@@ -161,8 +161,11 @@ else()
 
         set(${var}_RELEASE "${${var}_RELEASE} /Zi")
         string(REPLACE "/Ob1" "/Ob2" ${var}_RELWITHDEBINFO "${${var}_RELWITHDEBINFO}")
+
+		# /MDd means link with the debug crt library, which we don't want; and /D_DEBUG forces
+		# that as well because of some includes; turn them off.
         string(REPLACE "/MDd" "/MD" ${var}_DEBUG "${${var}_DEBUG}")
-        string(REPLACE "/D_DEBUG" "" ${var}_DEBUG "${${var}_DEBUG}")
+        string(REPLACE "/D_DEBUG" "/DENABLE_DEBUG=1 /DDEBUG=1 /DMOO_DEBUG=1" ${var}_DEBUG "${${var}_DEBUG}")
     endforeach()
 
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /INCREMENTAL")
