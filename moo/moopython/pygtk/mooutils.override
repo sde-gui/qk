@@ -105,7 +105,7 @@ _wrap_moo_window_class_add_action (G_GNUC_UNUSED PyObject *self, PyObject *args)
     if (!PyCallable_Check (py_factory_func))
         return_TypeError ("factory_func must be callable");
 
-    klass = g_type_class_ref (type);
+    klass = MOO_WINDOW_CLASS (g_type_class_ref (type));
 
     func_n_args = PyTuple_New (2);
     PyTuple_SET_ITEM (func_n_args, 0, py_factory_func);
@@ -151,7 +151,7 @@ _wrap_moo_window_class_find_action (G_GNUC_UNUSED PyObject *self, PyObject *args
     if (!g_type_is_a (type, MOO_TYPE_WINDOW))
         return_TypeError ("type must be derived from MooWindow");
 
-    klass = g_type_class_ref (type);
+    klass = MOO_WINDOW_CLASS (g_type_class_ref (type));
     ret = moo_window_class_find_action (klass, action_id);
     g_type_class_unref (klass);
 
@@ -179,7 +179,7 @@ _wrap_moo_window_class_remove_action (G_GNUC_UNUSED PyObject *self, PyObject *ar
     if (!g_type_is_a (type, MOO_TYPE_WINDOW))
         return_TypeError ("type must be derived from MooWindow");
 
-    klass = g_type_class_ref (type);
+    klass = MOO_WINDOW_CLASS (g_type_class_ref (type));
     moo_window_class_remove_action (klass, action_id);
     g_type_class_unref (klass);
 

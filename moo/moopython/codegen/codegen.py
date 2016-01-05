@@ -1438,13 +1438,13 @@ typedef intobjargproc ssizeobjargproc;
         self.fp.write('/* ---------- forward type declarations ---------- */\n')
         for obj in self.parser.boxes:
             if not self.overrides.is_type_ignored(obj.c_name):
-                self.fp.write('PyTypeObject G_GNUC_INTERNAL Py' + obj.c_name + '_Type;\n')
+                self.fp.write('extern PyTypeObject G_GNUC_INTERNAL Py' + obj.c_name + '_Type;\n')
         for obj in self.parser.objects:
             if not self.overrides.is_type_ignored(obj.c_name):
-                self.fp.write('PyTypeObject G_GNUC_INTERNAL Py' + obj.c_name + '_Type;\n')
+                self.fp.write('extern PyTypeObject G_GNUC_INTERNAL Py' + obj.c_name + '_Type;\n')
         for interface in self.parser.interfaces:
             if not self.overrides.is_type_ignored(interface.c_name):
-                self.fp.write('PyTypeObject G_GNUC_INTERNAL Py' + interface.c_name + '_Type;\n')
+                self.fp.write('extern PyTypeObject G_GNUC_INTERNAL Py' + interface.c_name + '_Type;\n')
         self.fp.write('\n')
 
     def write_body(self):

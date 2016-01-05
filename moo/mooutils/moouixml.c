@@ -2337,7 +2337,7 @@ create_toolbar (MooUiXml       *xml,
  *
  * Returns: (type GtkWidget*)
  */
-gpointer
+GtkWidget*
 moo_ui_xml_create_widget (MooUiXml            *xml,
                           MooUiWidgetType      type,
                           const char          *path,

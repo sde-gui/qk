@@ -1484,11 +1484,12 @@ create_toolbar (MooFileView *fileview)
 {
     GtkToolbar *toolbar;
 
-    toolbar = moo_ui_xml_create_widget (fileview->priv->ui_xml,
-                                        MOO_UI_TOOLBAR,
-                                        "MooFileView/Toolbar",
-                                        fileview->priv->actions,
-                                        NULL);
+    toolbar = GTK_TOOLBAR (
+        moo_ui_xml_create_widget (fileview->priv->ui_xml,
+                                  MOO_UI_TOOLBAR,
+                                  "MooFileView/Toolbar",
+                                  fileview->priv->actions,
+                                  NULL));
     g_return_val_if_fail (toolbar != NULL, NULL);
     fileview->toolbar = GTK_WIDGET (toolbar);
 

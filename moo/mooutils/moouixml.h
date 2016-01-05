@@ -125,7 +125,7 @@ char       *moo_ui_node_get_path            (MooUiNode      *node);
 MooUiNode  *moo_ui_node_get_child           (MooUiNode      *node,
                                              const char     *path);
 
-gpointer    moo_ui_xml_create_widget        (MooUiXml       *xml,
+GtkWidget  *moo_ui_xml_create_widget        (MooUiXml       *xml,
                                              MooUiWidgetType type,
                                              const char     *path,
                                              MooActionCollection *actions,

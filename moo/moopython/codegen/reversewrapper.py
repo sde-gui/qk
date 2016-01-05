@@ -187,7 +187,7 @@ class ReverseWrapper(object):
             self.post_return_code.writeln("/* begin post-return code */")
 
         self.add_declaration("PyGILState_STATE __py_state;")
-        self.write_code(code="__py_state = pyg_gil_state_ensure();",
+        self.write_code(code="__py_state = (PyGILState_STATE) pyg_gil_state_ensure();",
                         cleanup="pyg_gil_state_release(__py_state);")
 
         for param in self.parameters:

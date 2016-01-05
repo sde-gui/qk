@@ -412,14 +412,14 @@ class FileArg(ArgType):
                               '    return Py_None;')
 
 class EnumArg(ArgType):
-    enum = ('    if (pyg_enum_get_value(%(typecode)s, py_%(name)s, (gpointer)&%(name)s))\n'
+    enum = ('    if (pyg_enum_get_value(%(typecode)s, py_%(name)s, (int*)&%(name)s))\n'
             '        return NULL;\n')
     def __init__(self, enumname, typecode):
         self.enumname = enumname
         self.typecode = typecode
     def write_param(self, ptype, pname, pdflt, pnull, info):
         if pdflt:
-            info.varlist.add(self.enumname, pname + ' = ' + pdflt)
+            info.varlist.add(self.enumname, pname + ' = (' + self.enumname + ')' + pdflt)
         else:
             info.varlist.add(self.enumname, pname)
         info.varlist.add('PyObject', '*py_' + pname + ' = NULL')
@@ -432,14 +432,14 @@ class EnumArg(ArgType):
         info.codeafter.append('    return pyg_enum_from_gtype(%s, ret);' % self.typecode)
 
 class FlagsArg(ArgType):
-    flag = ('    if (%(default)spyg_flags_get_value(%(typecode)s, py_%(name)s, (gpointer)&%(name)s))\n'
+    flag = ('    if (%(default)spyg_flags_get_value(%(typecode)s, py_%(name)s, (int*)&%(name)s))\n'
             '        return NULL;\n')
     def __init__(self, flagname, typecode):
         self.flagname = flagname
         self.typecode = typecode
     def write_param(self, ptype, pname, pdflt, pnull, info):
         if pdflt:
-            info.varlist.add(self.flagname, pname + ' = ' + pdflt)
+            info.varlist.add(self.flagname, pname + ' = (' + self.flagname + ')' + pdflt)
             default = "py_%s && " % (pname,)
         else:
             info.varlist.add(self.flagname, pname)
@@ -452,7 +452,7 @@ class FlagsArg(ArgType):
         info.add_parselist('O', ['&py_' + pname], [pname])
     def write_return(self, ptype, ownsreturn, info):
         info.varlist.add('guint', 'ret')
-        info.codeafter.append('    return pyg_flags_from_gtype(%s, ret);' % self.typecode)
+        info.codeafter.append('    return pyg_enum_from_gtype(%s, ret);' % self.typecode)
 
 class ObjectArg(ArgType):
     # should change these checks to more typesafe versions that check
