@@ -24,6 +24,7 @@ AC_DEFUN([MOO_INTL],[
   AC_SUBST([ENABLE_NLS])
   if test "$ENABLE_NLS" = "yes"; then
     _MOO_INTLTOOL
+    AC_DEFINE(ENABLE_NLS, 1)
   else
     _MOO_INTLTOOL_NO_NLS
   fi

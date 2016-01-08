@@ -36,11 +36,8 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-
-#ifdef MOO_COMPILATION
-# include "mooutils-misc.h"
-# include "moocompat.h"
-#endif
+#include "mooutils-misc.h"
+#include "moocompat.h"
 
 
 #define MIN_PANE_SIZE 10

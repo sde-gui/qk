@@ -17,11 +17,8 @@
  * class:MooApp: (parent GObject): application object
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
-#define WANT_MOO_APP_CMD_CHARS
 #include "mooapp-private.h"
 #include "eggsmclient/eggsmclient.h"
 #include "mooapp-accels.h"
@@ -57,12 +54,6 @@
 
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
-#endif
-
-#ifdef VERSION
-#define APP_VERSION VERSION
-#else
-#define APP_VERSION "<uknown version>"
 #endif
 
 #define MOO_UI_XML_FILE     "ui.xml"

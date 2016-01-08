@@ -190,19 +190,23 @@ set(MOO_PYTHON "${PYTHON_EXECUTABLE}")
 
 set(MOO_ENABLE_PYTHON TRUE CACHE BOOL "Use python")
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config-cmake.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-add_definitions(-DMOO_COMPILATION=1 -DHAVE_CONFIG_H=1 -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\"Moo\")
+add_definitions(-DHAVE_CONFIG_H=1 -DXDG_PREFIX=_moo_edit_xdg -DG_LOG_DOMAIN=\"Moo\")
 
 if(WIN32)
     add_definitions(-DUNICODE=1 -D_UNICODE=1 -D__WIN32__=1 -DSTRICT=1 -D_CRT_SECURE_NO_WARNINGS=1 -D_CRT_NONSTDC_NO_WARNINGS=1)
-    add_definitions(-DMOO_NEED_GETTIMEOFDAY=1)
-    add_definitions(-DHAVE_UNISTD_H=1 -DENABLE_NLS=1 -DHAVE_BIND_TEXTDOMAIN_CODESET=1)
+    set(MOO_NEED_GETTIMEOFDAY TRUE)
+    set(HAVE_UNISTD_H TRUE)
+    set(HAVE_BIND_TEXTDOMAIN_CODESET TRUE)
 endif(WIN32)
 
 # zzz SUBDIRS = po po-gsv api doc moo
 add_subdirectory(api)
 # add_subdirectory(doc)
+
+#set(ENABLE_NLS TRUE)
 #add_subdirectory(po)
 #add_subdirectory(po-gsv)
 
 add_subdirectory(moo)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config-cmake.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)

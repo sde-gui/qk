@@ -27,10 +27,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef MOO_COMPILATION
 #include "mooutils-misc.h"
 #include "moocompat.h"
-#endif
 
 typedef struct {
     GSList *order; /* ids */

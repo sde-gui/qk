@@ -32,64 +32,11 @@
 #define SPACING_IN_BUTTON 4
 #define OPEN_PANE_TIMEOUT 200
 
-#ifdef MOO_COMPILATION
-
 #include "mooutils-misc.h"
 #include "moocompat.h"
 #include "moohelp.h"
 #include "mooutils-gobject.h"
 #include "mooi18n.h"
-
-#else
-
-#define _(s) s
-
-static void
-_moo_widget_set_tooltip (GtkWidget  *widget,
-                         const char *tip)
-{
-    static GtkTooltips *tooltips;
-
-    g_return_if_fail (GTK_IS_WIDGET (widget));
-
-    if (!tooltips)
-        tooltips = gtk_tooltips_new ();
-
-    if (GTK_IS_TOOL_ITEM (widget))
-        gtk_tool_item_set_tooltip (GTK_TOOL_ITEM (widget), tooltips, tip, NULL);
-    else
-        gtk_tooltips_set_tip (tooltips, widget, tip, tip);
-}
-
-void
-_moo_window_set_icon_from_stock (GtkWindow  *window,
-                                 const char *name)
-{
-    GdkPixbuf *icon;
-    GtkStockItem dummy;
-
-    g_return_if_fail (GTK_IS_WINDOW (window));
-    g_return_if_fail (name != NULL);
-
-    if (gtk_stock_lookup (name, &dummy))
-    {
-        icon = gtk_widget_render_icon (GTK_WIDGET (window), name,
-                                       GTK_ICON_SIZE_BUTTON, 0);
-
-        if (icon)
-        {
-            gtk_window_set_icon (GTK_WINDOW (window), icon);
-            g_object_unref (icon);
-        }
-    }
-    else
-    {
-        gtk_window_set_icon_name (GTK_WINDOW (window), name);
-    }
-}
-
-#endif
-
 
 struct _MooPane {
     GtkObject base;
@@ -1373,9 +1320,7 @@ create_pane_window (MooPane *pane)
     pane->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     window = GTK_WINDOW (pane->window);
 
-#ifdef MOO_COMPILATION
     moo_help_connect_keys (pane->window);
-#endif
 
     set_pane_window_icon_and_title (pane);
     gtk_window_set_type_hint (GTK_WINDOW (pane->window),

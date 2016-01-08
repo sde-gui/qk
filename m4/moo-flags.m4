@@ -194,8 +194,6 @@ AC_DEFUN_ONCE([MOO_AC_FLAGS],[
 
   AC_CHECK_FUNCS(mmap)
 
-  AC_DEFINE(MOO_COMPILATION, 1, [must be 1])
-
   moo_top_src_dir=`cd $srcdir && pwd`
   MOO_CFLAGS="$MOO_CFLAGS $GTK_CFLAGS"
   MOO_CXXFLAGS="$MOO_CXXFLAGS $GTK_CFLAGS"
