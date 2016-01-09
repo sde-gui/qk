@@ -15,9 +15,12 @@
 
 #pragma once
 
+#ifdef __cplusplus
+
 #include <memory>
 #include <utility>
-#include "moocpp/gobjinfo.h"
+#include <moocpp/gobjinfo.h>
+#include <moocpp/utils.h>
 
 namespace moo {
 
@@ -105,6 +108,12 @@ inline T* object_ref(T *obj)
     return static_cast<T*>(g_object_ref(obj));
 }
 
+template<typename T>
+inline T* object_ref_opt(gpointer obj, GType obj_g_type)
+{
+    return obj ? reinterpret_cast<T*>(G_TYPE_CHECK_INSTANCE_CAST(g_object_ref(obj), obj_g_type, T)) : nullptr;
+}
+
 struct class_helper
 {
     template<typename X>
@@ -123,3 +132,13 @@ struct class_helper
 };
 
 } // namespace moo
+
+MOO_DEFINE_FLAGS(GSignalFlags);
+MOO_DEFINE_FLAGS(GdkEventMask);
+MOO_DEFINE_FLAGS(GdkModifierType);
+MOO_DEFINE_FLAGS(GtkCellRendererState);
+MOO_DEFINE_FLAGS(GtkAttachOptions);
+MOO_DEFINE_FLAGS(GdkDragAction);
+MOO_DEFINE_FLAGS(GConnectFlags);
+
+#endif // __cplusplus

@@ -220,7 +220,7 @@ moo_combo_class_init (MooComboClass *klass)
     signals[POPUP] =
             g_signal_new ("popup",
                           G_OBJECT_CLASS_TYPE (klass),
-                          (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                           G_STRUCT_OFFSET (MooComboClass, popup),
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,
@@ -229,7 +229,7 @@ moo_combo_class_init (MooComboClass *klass)
     signals[POPDOWN] =
             g_signal_new ("popdown",
                           G_OBJECT_CLASS_TYPE (klass),
-                          (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+                          G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                           G_STRUCT_OFFSET (MooComboClass, popdown),
                           NULL, NULL,
                           _moo_marshal_VOID__VOID,

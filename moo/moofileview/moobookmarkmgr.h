@@ -18,12 +18,14 @@
 
 #include <gtk/gtk.h>
 #include <mooutils/moouixml.h>
+#include <moocpp/gobjectutils.h>
 
 G_BEGIN_DECLS
 
 
 #define MOO_TYPE_BOOKMARK_MGR                (_moo_bookmark_mgr_get_type ())
 #define MOO_BOOKMARK_MGR(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_BOOKMARK_MGR, MooBookmarkMgr))
+#define MOO_BOOKMARK_MGR_OPT(object)         (moo::object_ref_opt<MooBookmarkMgr> ((object), MOO_TYPE_BOOKMARK_MGR))
 #define MOO_BOOKMARK_MGR_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_BOOKMARK_MGR, MooBookmarkMgrClass))
 #define MOO_IS_BOOKMARK_MGR(object)          (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_BOOKMARK_MGR))
 #define MOO_IS_BOOKMARK_MGR_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_BOOKMARK_MGR))

@@ -116,7 +116,7 @@ moo_prefs_page_class_init (MooPrefsPageClass *klass)
     signals[INIT] =
         g_signal_new ("init",
                       G_OBJECT_CLASS_TYPE (klass),
-                      (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                       G_STRUCT_OFFSET (MooPrefsPageClass, init),
                       NULL, NULL,
                       _moo_marshal_VOID__VOID,

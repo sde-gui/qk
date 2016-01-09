@@ -344,7 +344,7 @@ _moo_file_stat (MooFile    *file,
                 _moo_message ("file '%s' does not exist", display_name);
                 g_free (display_name);
             });
-            file->info = 0;
+            file->info = MOO_FILE_INFO_FLAGS_NONE;
         }
         else
         {
@@ -355,7 +355,7 @@ _moo_file_stat (MooFile    *file,
                 g_free (display_name);
             });
             file->info = MOO_FILE_INFO_IS_LOCKED | MOO_FILE_INFO_EXISTS;
-            file->flags = 0;
+            file->flags = MOO_FILE_FLAGS_NONE;
         }
     }
     else
@@ -509,7 +509,7 @@ _moo_file_get_icon (const MooFile  *file,
     g_return_val_if_fail (GTK_IS_WIDGET (widget), NULL);
 
     icon.mime_type = file->mime_type;
-    icon.type = file->icon;
+    icon.type = MooIconType (file->icon);
     icon.emblem = get_icon_flags (file);
     return moo_file_icon_get_pixbuf (&icon, widget, size);
 }
@@ -638,5 +638,5 @@ get_icon_flags (const MooFile *file)
 #if 0
         (MOO_FILE_IS_LOCKED (file) ? MOO_ICON_EMBLEM_LOCK : 0) |
 #endif
-        (MOO_FILE_IS_LINK (file) ? MOO_ICON_EMBLEM_LINK : 0);
+        (MOO_FILE_IS_LINK (file) ? MOO_ICON_EMBLEM_LINK : MOO_ICON_EMBLEM_NONE);
 }

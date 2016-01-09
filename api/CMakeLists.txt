@@ -343,7 +343,7 @@ LIST(APPEND built_moo_sources moo.xml.stamp)
 
 FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/gengtkxml.cmake
 "EXECUTE_PROCESS(COMMAND ${MOO_PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/parsedocs.py 
-		--source-file ${CMAKE_SOURCE_DIR}/moo/moolua/gtk-api.c 
+		--source-file ${CMAKE_SOURCE_DIR}/moo/moolua/gtk-api.c
 		--source-file ${CMAKE_SOURCE_DIR}/moo/moolua/gtk-api.h 
 		--module Gtk 
 		--output ${CMAKE_CURRENT_SOURCE_DIR}/gtk.xml

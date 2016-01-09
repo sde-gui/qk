@@ -231,7 +231,7 @@ moo_entry_class_init (MooEntryClass *klass)
         signals[UNDO] =
                 g_signal_new ("undo",
                               G_OBJECT_CLASS_TYPE (klass),
-                              (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+                              G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                               G_STRUCT_OFFSET (MooEntryClass, undo),
                               NULL, NULL,
                               _moo_marshal_VOID__VOID,
@@ -243,7 +243,7 @@ moo_entry_class_init (MooEntryClass *klass)
         signals[REDO] =
                 g_signal_new ("redo",
                               G_OBJECT_CLASS_TYPE (klass),
-                              (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+                              G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                               G_STRUCT_OFFSET (MooEntryClass, redo),
                               NULL, NULL,
                               _moo_marshal_VOID__VOID,
@@ -252,7 +252,7 @@ moo_entry_class_init (MooEntryClass *klass)
     signals[DELETE_TO_START] =
             _moo_signal_new_cb ("delete-to-start",
                                 G_OBJECT_CLASS_TYPE (klass),
-                                (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+                                G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                                 G_CALLBACK (moo_entry_delete_to_start),
                                 NULL, NULL,
                                 _moo_marshal_VOID__VOID,

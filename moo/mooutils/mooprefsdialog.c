@@ -107,7 +107,7 @@ moo_prefs_dialog_class_init (MooPrefsDialogClass *klass)
     prefs_dialog_signals[APPLY] =
         g_signal_new ("apply",
                       G_OBJECT_CLASS_TYPE (klass),
-                      (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                       G_STRUCT_OFFSET (MooPrefsDialogClass, apply),
                       NULL, NULL,
                       _moo_marshal_VOID__VOID,
@@ -116,7 +116,7 @@ moo_prefs_dialog_class_init (MooPrefsDialogClass *klass)
     prefs_dialog_signals[INIT] =
         g_signal_new ("init",
                       G_OBJECT_CLASS_TYPE (klass),
-                      (GSignalFlags) (G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+                      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
                       G_STRUCT_OFFSET (MooPrefsDialogClass, init),
                       NULL, NULL,
                       _moo_marshal_VOID__VOID,

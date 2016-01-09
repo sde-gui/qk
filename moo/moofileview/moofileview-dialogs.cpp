@@ -24,6 +24,7 @@
 #include "moofileview/moofileprops-gxml.h"
 #include "moofileview/moocreatefolder-gxml.h"
 #include "moofileview/moofileview-drop-gxml.h"
+#include "moocpp/gobjectutils.h"
 #include <time.h>
 #include <string.h>
 #include <gtk/gtk.h>
@@ -197,7 +198,7 @@ container_cleanup (GtkContainer *container)
     g_list_foreach (children, (GFunc) g_object_ref, NULL);
     while (children)
     {
-        gtk_container_remove (container, children->data);
+        gtk_container_remove (container, GTK_WIDGET (children->data));
         g_object_unref (children->data);
         children = g_list_delete_link (children, children);
     }
@@ -249,13 +250,13 @@ _moo_file_props_dialog_set_file (MooFilePropsDialog *dialog,
         g_free (text);
         gtk_misc_set_alignment (GTK_MISC (label), 1.0, 0.5);
         gtk_table_attach (GTK_TABLE (dialog->table), label, 0, 1, i, i+1,
-                          GTK_EXPAND | GTK_FILL, 0, 0, 0);
+                          GTK_EXPAND | GTK_FILL, GtkAttachOptions (0), 0, 0);
 
         label = gtk_label_new (*(p++));
         gtk_label_set_selectable (GTK_LABEL (label), TRUE);
         gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
         gtk_table_attach (GTK_TABLE (dialog->table), label, 1, 2, i, i+1,
-                          GTK_EXPAND | GTK_FILL, 0, 0, 0);
+                          GTK_EXPAND | GTK_FILL, GtkAttachOptions (0), 0, 0);
     }
 
     gtk_widget_show_all (dialog->table);

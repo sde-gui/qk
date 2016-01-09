@@ -42,6 +42,7 @@
 #include "mooutils/mooatom.h"
 #include "mooutils/moolist.h"
 #include "mooutils/moocompat.h"
+#include "moocpp/gobjectutils.h"
 #include "marshals.h"
 #include "mooutils/mooi18n.h"
 #include <gdk/gdkkeysyms.h>
@@ -146,7 +147,7 @@ struct MooFileViewPrivate {
     MooUiXml        *ui_xml;
     gboolean         has_selection;
 
-    gpointer         props_dialog;
+    GtkWidget       *props_dialog;
 
     GtkTargetList   *targets;
     GSList          *drag_dest_widgets;
@@ -395,7 +396,7 @@ static gboolean moo_file_view_drop_text     (MooFileView    *fileview,
                                              int             x,
                                              int             y,
                                              guint           time,
-                                             gboolean       *delete);
+                                             gboolean       *delete_);
 
 
 static void     file_list_selection_changed (MooFileView    *file_view,
@@ -895,7 +896,7 @@ moo_file_view_init (MooFileView *fileview)
 
     history_init (fileview);
 
-    fileview->priv->model = g_object_new (MOO_TYPE_FOLDER_MODEL, (const char*) NULL);
+    fileview->priv->model = GTK_TREE_MODEL (g_object_new (MOO_TYPE_FOLDER_MODEL, nullptr));
     g_signal_connect_swapped (fileview->priv->model, "row-inserted",
                               G_CALLBACK (file_added), fileview);
     fileview->priv->filter_model =
@@ -1033,7 +1034,7 @@ moo_file_view_set_current_dir (MooFileView  *fileview,
     if (fileview->priv->current_dir)
         g_object_unref (fileview->priv->current_dir);
 
-    fileview->priv->current_dir = g_object_ref (folder);
+    fileview->priv->current_dir = MOO_FOLDER (g_object_ref (folder));
     _moo_folder_model_set_folder (MOO_FOLDER_MODEL (fileview->priv->model),
                                   folder);
 
@@ -1467,7 +1468,7 @@ _moo_file_view_setup_button_drag_dest (MooFileView *fileview,
     g_object_set_data_full (G_OBJECT (button), "moo-fileview-signal",
                             g_strdup (sig_name), g_free);
 
-    gtk_drag_dest_set (button, 0, NULL, 0,
+    gtk_drag_dest_set (button, GtkDestDefaults (0), NULL, 0,
                        GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
     gtk_drag_dest_set_target_list (button, fileview->priv->targets);
     fileview->priv->drag_dest_widgets =
@@ -1779,7 +1780,7 @@ create_bookmark_view (MooFileView *fileview)
 //                                       GDK_ACTION_ASK | GDK_ACTION_COPY |
 //                                               GDK_ACTION_MOVE | GDK_ACTION_LINK);
 #endif
-    gtk_drag_dest_set (bkview, 0, NULL, 0,
+    gtk_drag_dest_set (bkview, GtkDestDefaults (0), NULL, 0,
                        GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK);
     gtk_drag_dest_set_target_list (bkview, fileview->priv->targets);
 
@@ -2095,8 +2096,8 @@ history_init (MooFileView *fileview)
 static void
 history_clear (MooFileView *fileview)
 {
-    g_slist_foreach (fileview->priv->history->back, (GFunc) g_free, NULL);
-    g_slist_foreach (fileview->priv->history->fwd, (GFunc) g_free, NULL);
+    g_slist_foreach (fileview->priv->history->back, (GFunc) extern_g_free, NULL);
+    g_slist_foreach (fileview->priv->history->fwd, (GFunc) extern_g_free, NULL);
     g_slist_free (fileview->priv->history->back);
     g_slist_free (fileview->priv->history->fwd);
     fileview->priv->history->back = NULL;
@@ -2128,14 +2129,14 @@ history_get (MooFileView *fileview,
         if (!hist->fwd)
             return NULL;
         else
-            return hist->fwd->data;
+            return reinterpret_cast<char*> (hist->fwd->data);
     }
     else
     {
         if (!hist->back)
             return NULL;
         else
-            return hist->back->data;
+            return reinterpret_cast<char*> (hist->back->data);
     }
 }
 
@@ -2171,7 +2172,7 @@ history_go (MooFileView *fileview,
         push_to = &hist->fwd;
     }
 
-    tmp = (*pop_from)->data;
+    tmp = reinterpret_cast<char*> ((*pop_from)->data);
     *pop_from = g_slist_delete_link (*pop_from, *pop_from);
     *push_to = g_slist_prepend (*push_to, hist->current);
     hist->current = tmp;
@@ -2207,7 +2208,7 @@ history_add (MooFileView    *fileview,
     if (hist->fwd)
     {
         could_go_forward = TRUE;
-        g_slist_foreach (hist->fwd, (GFunc) g_free, NULL);
+        g_slist_foreach (hist->fwd, (GFunc) extern_g_free, NULL);
         g_slist_free (hist->fwd);
         hist->fwd = NULL;
     }
@@ -2308,7 +2309,7 @@ moo_file_view_set_property (GObject        *object,
             break;
 
         case PROP_BOOKMARK_MGR:
-            moo_file_view_set_bookmark_mgr (fileview, g_value_get_object (value));
+            moo_file_view_set_bookmark_mgr (fileview, reinterpret_cast<MooBookmarkMgr*> (g_value_get_object (value)));
             break;
 
         case PROP_SORT_CASE_SENSITIVE:
@@ -2338,7 +2339,7 @@ moo_file_view_set_property (GObject        *object,
             break;
 
         case PROP_VIEW_TYPE:
-            _moo_file_view_set_view_type (fileview, g_value_get_enum (value));
+            _moo_file_view_set_view_type (fileview, MooFileViewType (g_value_get_enum (value)));
             break;
 
         default:
@@ -2545,7 +2546,7 @@ clipboard_new (MooFolder *folder,
     g_return_val_if_fail (MOO_IS_FOLDER (folder), NULL);
 
     cb = g_new0 (Clipboard, 1);
-    cb->folder = g_object_ref (folder);
+    cb->folder = MOO_FOLDER (g_object_ref (folder));
     cb->files = file_list_copy (files);
     cb->cut = cut != 0;
 
@@ -2774,7 +2775,7 @@ file_view_paste_clipboard (MooFileView *fileview)
         GList *filenames;
         const char *destdir;
 
-        remote = moo_selection_data_get_pointer (data, CLIPBOARD_ATOM);
+        remote = MOO_FILE_VIEW (moo_selection_data_get_pointer (data, CLIPBOARD_ATOM));
         g_return_if_fail (remote != NULL);
 
         cb = remote->priv->clipboard;
@@ -2808,7 +2809,7 @@ file_view_paste_clipboard (MooFileView *fileview)
             copy_files (fileview, filenames, destdir);
         }
 
-        g_list_foreach (filenames, (GFunc) g_free, NULL);
+        g_list_foreach (filenames, (GFunc) extern_g_free, NULL);
         g_list_free (filenames);
 
         goto out;
@@ -2838,7 +2839,7 @@ file_view_paste_clipboard (MooFileView *fileview)
             copy_files (fileview, filenames, destdir);
 
         g_strfreev (uris);
-        g_list_foreach (filenames, (GFunc) g_free, NULL);
+        g_list_foreach (filenames, (GFunc) extern_g_free, NULL);
         g_list_free (filenames);
 
         goto out;
@@ -2868,7 +2869,7 @@ _moo_file_view_set_sort_case_sensitive (MooFileView    *fileview,
             fileview->priv->sort_flags &= ~MOO_FOLDER_MODEL_SORT_CASE_SENSITIVE;
 
         _moo_folder_model_set_sort_flags (MOO_FOLDER_MODEL (fileview->priv->model),
-                                          fileview->priv->sort_flags);
+                                          MooFolderModelSortFlags (fileview->priv->sort_flags));
         g_object_notify (G_OBJECT (fileview), "sort-case-sensitive");
     }
 }
@@ -2887,7 +2888,7 @@ _moo_file_view_set_sort_folders_first (MooFileView *fileview,
             fileview->priv->sort_flags &= ~MOO_FOLDER_MODEL_SORT_FOLDERS_FIRST;
 
         _moo_folder_model_set_sort_flags (MOO_FOLDER_MODEL (fileview->priv->model),
-                                          fileview->priv->sort_flags);
+                                          MooFolderModelSortFlags (fileview->priv->sort_flags));
         g_object_notify (G_OBJECT (fileview), "sort-folders-first");
     }
 }
@@ -2933,7 +2934,7 @@ init_filter_combo (MooFileView *fileview)
     GtkFileFilter *filter;
 
     mgr = moo_filter_mgr_default ();
-    fileview->priv->filter_mgr = g_object_ref (mgr);
+    fileview->priv->filter_mgr = MOO_FILTER_MGR (g_object_ref (mgr));
 
     block_filter_signals (fileview);
 
@@ -3154,7 +3155,7 @@ prepend_file (GtkTreeModel       *model,
               GtkTreeIter        *iter,
               gpointer            user_data)
 {
-    FileList **list = user_data;
+    FileList **list = reinterpret_cast<FileList**> (user_data);
     MooFile *file = NULL;
 
     gtk_tree_model_get (model, iter, COLUMN_FILE, &file, -1);
@@ -3445,7 +3446,7 @@ file_view_properties_dialog (MooFileView *fileview)
                           G_CALLBACK (props_dialog_destroyed), fileview);
     }
 
-    _moo_file_props_dialog_set_file (fileview->priv->props_dialog,
+    _moo_file_props_dialog_set_file (MOO_FILE_PROPS_DIALOG (fileview->priv->props_dialog),
                                      files->data,
                                      fileview->priv->current_dir);
     gtk_window_present (GTK_WINDOW (fileview->priv->props_dialog));
@@ -3458,6 +3459,16 @@ file_view_properties_dialog (MooFileView *fileview)
 /* Popup menu
  */
 
+namespace {
+
+struct Data
+{
+    MooFileView *fileview;
+    GList *rows;
+};
+
+} // anonymous namespace
+
 /* TODO */
 static void
 menu_position_func (G_GNUC_UNUSED GtkMenu *menu,
@@ -3467,11 +3478,7 @@ menu_position_func (G_GNUC_UNUSED GtkMenu *menu,
                     gpointer    user_data)
 {
     GdkWindow *window;
-
-    struct {
-        MooFileView *fileview;
-        GList *rows;
-    } *data = user_data;
+    Data *data = reinterpret_cast<Data*> (user_data);
 
     window = GTK_WIDGET(data->fileview)->window;
     gdk_window_get_origin (window, x, y);
@@ -3487,16 +3494,13 @@ do_popup (MooFileView    *fileview,
     GtkWidget *menu;
     FileList *files = NULL;
     GList *l;
-    struct {
-        MooFileView *fileview;
-        GList *rows;
-    } position_data;
+    Data position_data;
 
     for (l = selected; l != NULL; l = l->next)
     {
         GtkTreeIter iter;
         MooFile *file = NULL;
-        gtk_tree_model_get_iter (fileview->priv->filter_model, &iter, l->data);
+        gtk_tree_model_get_iter (fileview->priv->filter_model, &iter, reinterpret_cast<GtkTreePath*> (l->data));
         gtk_tree_model_get (fileview->priv->filter_model, &iter,
                             COLUMN_FILE, &file, -1);
         if (file)
@@ -3674,7 +3678,7 @@ moo_file_view_set_bookmark_mgr  (MooFileView    *fileview,
         g_object_unref (fileview->priv->bookmark_mgr);
     }
 
-    fileview->priv->bookmark_mgr = g_object_ref (mgr);
+    fileview->priv->bookmark_mgr = MOO_BOOKMARK_MGR (g_object_ref (mgr));
     _moo_bookmark_mgr_add_user (fileview->priv->bookmark_mgr, fileview,
                                 fileview->priv->actions, fileview->priv->ui_xml,
                                 "MooFileView/Toolbar/BookmarksMenu/Bookmarks");
@@ -3744,8 +3748,8 @@ edit_bookmarks (MooFileView *fileview)
 {
     GtkWidget *dialog;
 
-    dialog = g_object_get_data (G_OBJECT (fileview),
-                                "moo-file-view-bookmarks-editor");
+    dialog = GTK_WIDGET (g_object_get_data (G_OBJECT (fileview),
+                                            "moo-file-view-bookmarks-editor"));
 
     if (!dialog)
     {
@@ -4518,7 +4522,7 @@ moo_file_view_key_press (MooFileView    *fileview,
 
         copy = gdk_event_copy ((GdkEvent*) event);
         g_object_unref (copy->key.window);
-        copy->key.window = g_object_ref (entry->window);
+        copy->key.window = GDK_WINDOW (g_object_ref (entry->window));
 
         gtk_widget_grab_focus (entry);
 
@@ -5043,7 +5047,7 @@ icon_drag_data_get (MooFileView    *fileview,
 {
     char **uris;
 
-    uris = g_object_get_data (G_OBJECT (fileview), "moo-file-view-source-uris");
+    uris = reinterpret_cast<char**> (g_object_get_data (G_OBJECT (fileview), "moo-file-view-source-uris"));
     g_return_if_fail (uris && *uris);
 
     gtk_selection_data_set_uris (data, uris);
@@ -5343,7 +5347,7 @@ moo_file_view_drop_data_received (MooFileView    *fileview,
                                   guint           time)
 {
     gboolean success = FALSE;
-    gboolean delete = FALSE;
+    gboolean delete_ = FALSE;
 
     if (data->target == moo_atom_uri_list ())
     {
@@ -5368,18 +5372,18 @@ moo_file_view_drop_data_received (MooFileView    *fileview,
     {
         char *text = (char*) gtk_selection_data_get_text (data);
 
-        delete = context->suggested_action & GDK_ACTION_MOVE;
+        delete_ = context->suggested_action & GDK_ACTION_MOVE;
 
         if (text)
             success = moo_file_view_drop_text (fileview, text, path, widget,
-                                               context, x, y, time, &delete);
+                                               context, x, y, time, &delete_);
         else
             g_critical ("oops");
 
         g_free (text);
     }
 
-    _moo_file_view_drag_finish (fileview, context, success, delete, time);
+    _moo_file_view_drag_finish (fileview, context, success, delete_, time);
     return TRUE;
 }
 
@@ -5481,7 +5485,7 @@ drag_motion (GtkWidget      *widget,
     if (MOO_IS_ICON_VIEW (widget))
     {
         current_dir = fileview->priv->current_dir;
-        source_dir = g_object_get_data (G_OBJECT (fileview), "moo-file-view-source-dir");
+        source_dir = MOO_FOLDER (g_object_get_data (G_OBJECT (fileview), "moo-file-view-source-dir"));
 
         if (!current_dir)
             goto out;
@@ -5517,7 +5521,7 @@ drag_motion (GtkWidget      *widget,
         gdk_drag_status (context, context->actions & GDK_ACTION_MOVE ?
                 GDK_ACTION_MOVE : context->suggested_action, time);
     else
-        gdk_drag_status (context, 0, time);
+        gdk_drag_status (context, GdkDragAction (0), time);
 
     if (highlight_target)
     {
@@ -5644,7 +5648,7 @@ sync_dest_targets (MooFileView *fileview)
                                    fileview->priv->targets);
 
     for (l = fileview->priv->drag_dest_widgets; l != NULL; l = l->next)
-        gtk_drag_dest_set_target_list (l->data, fileview->priv->targets);
+        gtk_drag_dest_set_target_list (GTK_WIDGET (l->data), fileview->priv->targets);
 }
 
 
@@ -5771,7 +5775,7 @@ copy_or_move_files (MooFileView *fileview,
         fileview->priv->current_dir &&
         strcmp (destdir, _moo_folder_get_path (fileview->priv->current_dir)) == 0)
     {
-        char *basename = g_path_get_basename (filenames->data);
+        char *basename = g_path_get_basename(reinterpret_cast<char*> (filenames->data));
 
         if (basename)
             _moo_file_view_select_name (fileview, basename);
@@ -5811,7 +5815,7 @@ link_files (G_GNUC_UNUSED MooFileView *fileview,
 static void
 free_string_list (GList *list)
 {
-    g_list_foreach (list, (GFunc) g_free, NULL);
+    g_list_foreach (list, (GFunc) extern_g_free, NULL);
     g_list_free (list);
 }
 
@@ -5826,11 +5830,11 @@ drop_item_activated (GObject     *item,
     char *destdir;
 
     data = g_object_get_data (item, "moo-file-view-drop-action");
-    filenames = g_object_get_data (item, "moo-file-view-drop-files");
-    destdir = g_object_get_data (item, "moo-file-view-drop-dir");
+    filenames = reinterpret_cast<GList*> (g_object_get_data (item, "moo-file-view-drop-files"));
+    destdir = reinterpret_cast<char*> (g_object_get_data (item, "moo-file-view-drop-dir"));
     g_return_if_fail (filenames != NULL && destdir != NULL);
 
-    action = GPOINTER_TO_INT (data);
+    action = GdkDragAction (GPOINTER_TO_INT (data));
 
     switch (action)
     {
@@ -6078,7 +6082,7 @@ moo_file_view_drop_text (G_GNUC_UNUSED MooFileView *fileview,
                          G_GNUC_UNUSED int x,
                          G_GNUC_UNUSED int y,
                          G_GNUC_UNUSED guint time,
-                         G_GNUC_UNUSED gboolean *delete)
+                         G_GNUC_UNUSED gboolean *delete_)
 {
     char *name = NULL;
     gboolean result = FALSE;

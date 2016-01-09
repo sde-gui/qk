@@ -1,16 +1,16 @@
 SET(mooapp_sources 
     mooapp/mooapp.cmake
-    mooapp/mooappabout.c
+    mooapp/mooappabout.cpp
     mooapp/mooappabout.h
-    mooapp/mooapp.c
+    mooapp/mooapp.cpp
     mooapp/mooapp.h
     mooapp/mooapp-accels.h
     mooapp/mooapp-info.h
     mooapp/mooapp-private.h
     mooapp/moohtml.h
-    mooapp/moohtml.c
+    mooapp/moohtml.cpp
     mooapp/moolinklabel.h
-    mooapp/moolinklabel.c
+    mooapp/moolinklabel.cpp
 )
 
 foreach(input_file

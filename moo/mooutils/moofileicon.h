@@ -22,6 +22,7 @@
 G_BEGIN_DECLS
 
 typedef enum {
+    MOO_ICON_EMBLEM_NONE = 0,
     MOO_ICON_EMBLEM_LINK = 1 << 0
 } MooIconEmblem;
 

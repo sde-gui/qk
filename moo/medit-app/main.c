@@ -805,7 +805,7 @@ medit_main (int argc, char *argv[])
                                  "instance-name", medit_opts.instance_name,
                                  (const char*) NULL));
 
-    if (!moo_app_init (app))
+    if (!moo_app_initialize (app))
     {
         gdk_notify_startup_complete ();
         g_object_unref (app);

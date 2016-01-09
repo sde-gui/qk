@@ -26,6 +26,7 @@
 
 #ifdef __cplusplus
 #include "moocpp/grefptr.h"
+#include "moocpp/gobjectutils.h"
 #include "mooutils/moofilewatch.h"
 #endif // __cplusplus
 
@@ -33,6 +34,7 @@ G_BEGIN_DECLS
 
 #define MOO_TYPE_FILE_SYSTEM              (_moo_file_system_get_type ())
 #define MOO_FILE_SYSTEM(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_SYSTEM, MooFileSystem))
+#define MOO_FILE_SYSTEM_OPT(object)       (moo::object_ref_opt<MooFileSystem> ((object), MOO_TYPE_FILE_SYSTEM))
 #define MOO_FILE_SYSTEM_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_SYSTEM, MooFileSystemClass))
 #define MOO_IS_FILE_SYSTEM(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FILE_SYSTEM))
 #define MOO_IS_FILE_SYSTEM_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_SYSTEM))
@@ -46,6 +48,10 @@ typedef enum {
     MOO_DELETE_RECURSIVE = 1 << 0,
     MOO_DELETE_TO_TRASH  = 1 << 1
 } MooDeleteFileFlags;
+
+#ifdef __cplusplus
+MOO_DEFINE_FLAGS (MooDeleteFileFlags);
+#endif // __cplusplus
 
 struct _MooFileSystem
 {

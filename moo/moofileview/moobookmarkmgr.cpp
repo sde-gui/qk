@@ -140,7 +140,7 @@ moo_bookmark_mgr_finalize (GObject *object)
 
     users = g_slist_copy (mgr->priv->users);
     for (l = users; l != NULL; l = l->next)
-        mgr_remove_user (mgr, l->data);
+        mgr_remove_user (mgr, reinterpret_cast<UserInfo*> (l->data));
     g_assert (mgr->priv->users == NULL);
     g_slist_free (users);
 
@@ -243,7 +243,7 @@ _moo_bookmark_copy (MooBookmark *bookmark)
     copy->label = g_strdup (bookmark->label);
     copy->icon_stock_id = g_strdup (bookmark->icon_stock_id);
     if (bookmark->pixbuf)
-        copy->pixbuf = g_object_ref (bookmark->pixbuf);
+        copy->pixbuf = GDK_PIXBUF (g_object_ref (bookmark->pixbuf));
 
     return copy;
 }
@@ -486,7 +486,7 @@ item_activated (GtkAction      *action,
     g_return_if_fail (GTK_IS_ACTION (action));
     g_return_if_fail (MOO_IS_BOOKMARK_MGR (mgr));
 
-    bookmark = g_object_get_data (G_OBJECT (action), "moo-bookmark");
+    bookmark = reinterpret_cast<MooBookmark*> (g_object_get_data (G_OBJECT (action), "moo-bookmark"));
     user = g_object_get_data (G_OBJECT (action), "moo-bookmark-user");
 
     g_return_if_fail (bookmark != NULL && user != NULL);
@@ -561,7 +561,7 @@ destroy_menu (UserInfo *info)
 
     for (l = info->bm_actions; l != NULL; l = l->next)
     {
-        GtkAction *action = l->data;
+        GtkAction *action = GTK_ACTION (l->data);
         moo_action_collection_remove_action (info->actions, action);
         g_object_unref (action);
     }
@@ -591,7 +591,7 @@ mgr_update_menus (MooBookmarkMgr *mgr)
 
     for (l = mgr->priv->users; l != NULL; l = l->next)
     {
-        UserInfo *info = l->data;
+        UserInfo *info = reinterpret_cast<UserInfo*> (l->data);
 
         destroy_menu (info);
 
@@ -618,7 +618,7 @@ _moo_bookmark_mgr_add_user (MooBookmarkMgr *mgr,
     g_return_if_fail (MOO_IS_UI_XML (xml));
     g_return_if_fail (path != NULL);
 
-    info = user_info_new (user, actions, xml, path,
+    info = user_info_new (G_OBJECT (user), actions, xml, path,
                           ++mgr->priv->last_user_id);
     mgr->priv->users = g_slist_prepend (mgr->priv->users, info);
 
@@ -646,7 +646,7 @@ _moo_bookmark_mgr_remove_user (MooBookmarkMgr *mgr,
 
     for (l = mgr->priv->users; l != NULL; l = l->next)
     {
-        UserInfo *info = l->data;
+        UserInfo *info = reinterpret_cast<UserInfo*> (l->data);
 
         if (info->user == user)
             infos = g_slist_prepend (infos, info);
@@ -654,7 +654,7 @@ _moo_bookmark_mgr_remove_user (MooBookmarkMgr *mgr,
 
     for (l = infos; l != NULL; l = l->next)
     {
-        UserInfo *info = l->data;
+        UserInfo *info = reinterpret_cast<UserInfo*> (l->data);
         mgr_remove_user (mgr, info);
     }
 
@@ -1117,7 +1117,7 @@ selection_changed (GtkTreeSelection *selection,
         MooBookmark *bookmark;
         GList *rows = gtk_tree_selection_get_selected_rows (selection, &model);
         g_return_if_fail (rows != NULL);
-        gtk_tree_model_get_iter (model, &iter, rows->data);
+        gtk_tree_model_get_iter (model, &iter, reinterpret_cast<GtkTreePath*> (rows->data));
         bookmark = get_bookmark (model, &iter);
         if (bookmark)
         {
@@ -1153,8 +1153,8 @@ new_clicked (BkEditorXml *xml)
     gtk_list_store_append (store, &iter);
     set_bookmark (store, &iter, bookmark);
 
-    column = g_object_get_data (G_OBJECT (xml->treeview),
-                                "moo-bookmarks-label-column");
+    column = GTK_TREE_VIEW_COLUMN (g_object_get_data (G_OBJECT (xml->treeview),
+                                                      "moo-bookmarks-label-column"));
     path = gtk_tree_model_get_path (GTK_TREE_MODEL (store), &iter);
     gtk_tree_view_set_cursor (xml->treeview, path, column, TRUE);
 
@@ -1187,13 +1187,13 @@ delete_clicked (BkEditorXml *xml)
     for (l = paths; l != NULL; l = l->next)
         rows = g_list_prepend (rows,
                                gtk_tree_row_reference_new (GTK_TREE_MODEL (store),
-                                                           l->data));
+                                                           reinterpret_cast<GtkTreePath*> (l->data)));
 
     for (l = rows; l != NULL; l = l->next)
     {
-        if (gtk_tree_row_reference_valid (l->data))
+        if (gtk_tree_row_reference_valid (reinterpret_cast<GtkTreeRowReference*> (l->data)))
         {
-            path = gtk_tree_row_reference_get_path (l->data);
+            path = gtk_tree_row_reference_get_path (reinterpret_cast<GtkTreeRowReference*> (l->data));
             gtk_tree_model_get_iter (GTK_TREE_MODEL (store), &iter, path);
             gtk_list_store_remove (store, &iter);
             gtk_tree_path_free (path);
@@ -1297,7 +1297,7 @@ path_edited (G_GNUC_UNUSED GtkCellRenderer *cell,
     _moo_bookmark_free (bookmark);
     gtk_tree_path_free (path);
 
-    cmpl = g_object_get_data (G_OBJECT (cell), "moo-file-entry-completion");
+    cmpl = MOO_FILE_ENTRY_COMPLETION (g_object_get_data (G_OBJECT (cell), "moo-file-entry-completion"));
     g_return_if_fail (cmpl != NULL);
     g_object_set (cmpl, "entry", NULL, NULL);
 }
@@ -1308,7 +1308,7 @@ path_editing_started (GtkCellRenderer    *cell,
                       GtkCellEditable    *editable)
 {
     MooFileEntryCompletion *cmpl =
-            g_object_get_data (G_OBJECT (cell), "moo-file-entry-completion");
+            MOO_FILE_ENTRY_COMPLETION (g_object_get_data (G_OBJECT (cell), "moo-file-entry-completion"));
 
     g_return_if_fail (cmpl != NULL);
     g_return_if_fail (GTK_IS_ENTRY (editable));
@@ -1455,7 +1455,7 @@ combo_update_icon (GtkComboBox *combo,
     rows = gtk_tree_selection_get_selected_rows (selection, &model);
     g_return_if_fail (rows != NULL && rows->next == NULL);
 
-    gtk_tree_model_get_iter (model, &iter, rows->data);
+    gtk_tree_model_get_iter (model, &iter, reinterpret_cast<GtkTreePath*> (rows->data));
     bookmark = get_bookmark (model, &iter);
     g_return_if_fail (bookmark != NULL);
 
@@ -1473,7 +1473,7 @@ combo_update_icon (GtkComboBox *combo,
     g_signal_handlers_unblock_by_func (combo, (gpointer) icon_combo_changed, xml);
 
     _moo_bookmark_free (bookmark);
-    gtk_tree_path_free (rows->data);
+    gtk_tree_path_free (reinterpret_cast<GtkTreePath*> (rows->data));
     g_list_free (rows);
 }
 
@@ -1534,14 +1534,14 @@ fill_icon_store (GtkListStore       *store,
     {
         GtkStockItem item;
 
-        if (!gtk_style_lookup_icon_set (style, l->data))
+        if (!gtk_style_lookup_icon_set (style, reinterpret_cast<char*> (l->data)))
             continue;
 
         gtk_list_store_append (store, &iter);
         gtk_list_store_set (store, &iter, ICON_COLUMN_STOCK,
                             l->data, -1);
 
-        if (gtk_stock_lookup (l->data, &item))
+        if (gtk_stock_lookup (reinterpret_cast<char*> (l->data), &item))
         {
             char *label = g_strdup (item.label);
             char *und = strchr (label, '_');
@@ -1575,7 +1575,7 @@ fill_icon_store (GtkListStore       *store,
     gtk_list_store_append (store, &iter);
     gtk_list_store_set (store, &iter, ICON_COLUMN_LABEL, "None", -1);
 
-    g_slist_foreach (stock_ids, (GFunc) g_free, NULL);
+    g_slist_foreach (stock_ids, (GFunc) extern_g_free, NULL);
     g_slist_free (stock_ids);
 }
 
@@ -1597,7 +1597,7 @@ icon_combo_changed (GtkComboBox *combo,
     rows = gtk_tree_selection_get_selected_rows (selection, &model);
     g_return_if_fail (rows != NULL && rows->next == NULL);
 
-    gtk_tree_model_get_iter (model, &iter, rows->data);
+    gtk_tree_model_get_iter (model, &iter, reinterpret_cast<GtkTreePath*> (rows->data));
     bookmark = get_bookmark (model, &iter);
     g_return_if_fail (bookmark != NULL);
 
@@ -1626,7 +1626,7 @@ icon_combo_changed (GtkComboBox *combo,
     set_bookmark (GTK_LIST_STORE (model), &iter, bookmark);
 
     _moo_bookmark_free (bookmark);
-    gtk_tree_path_free (rows->data);
+    gtk_tree_path_free (reinterpret_cast<GtkTreePath*> (rows->data));
     g_list_free (rows);
 }
 

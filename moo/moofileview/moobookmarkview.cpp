@@ -151,7 +151,7 @@ moo_bookmark_view_set_property (GObject        *object,
     switch (prop_id)
     {
         case PROP_MGR:
-            _moo_bookmark_view_set_mgr (view, g_value_get_object (value));
+            _moo_bookmark_view_set_mgr (view, MOO_BOOKMARK_MGR_OPT (g_value_get_object (value)));
             break;
 
         default:

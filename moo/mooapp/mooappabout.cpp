@@ -36,8 +36,8 @@
 #include <string.h>
 #include <libxml/xmlversion.h>
 
-static gpointer about_dialog;
-static gpointer credits_dialog;
+static GtkDialog* about_dialog;
+static GtkDialog* credits_dialog;
 
 #undef MOO_USE_HTML
 #define MOO_USE_HTML 1
@@ -90,7 +90,7 @@ show_credits (void)
     if (credits_dialog)
     {
         if (about_dialog)
-            moo_window_set_parent (credits_dialog, about_dialog);
+            moo_window_set_parent (GTK_WIDGET (credits_dialog), GTK_WIDGET (about_dialog));
         gtk_window_present (GTK_WINDOW (credits_dialog));
         return;
     }
@@ -106,7 +106,7 @@ show_credits (void)
 
     credits_dialog = gxml->CreditsDialog;
     g_return_if_fail (credits_dialog != NULL);
-    g_object_add_weak_pointer (G_OBJECT (credits_dialog), &credits_dialog);
+    g_object_add_weak_pointer (G_OBJECT (credits_dialog), (void**)&credits_dialog);
     g_signal_connect (credits_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
 
 #ifdef MOO_USE_HTML
@@ -126,7 +126,7 @@ show_credits (void)
     gtk_text_buffer_insert_at_cursor (buffer, MOO_APP_CREDITS, -1);
 
     if (about_dialog)
-        moo_window_set_parent (credits_dialog, about_dialog);
+        moo_window_set_parent (GTK_WIDGET (credits_dialog), GTK_WIDGET (about_dialog));
     gtk_window_present (GTK_WINDOW (credits_dialog));
 }
 
@@ -162,21 +162,21 @@ about_dialog_key_press (GtkWidget   *dialog,
 }
 
 
-static GtkWidget *
+static GtkDialog*
 create_about_dialog (void)
 {
     AboutDialogXml *gxml;
-    GtkWidget *dialog;
+    GtkDialog *dialog;
     char *markup;
     GtkStockItem dummy;
 
     moo_glade_xml_register_type (MOO_TYPE_LINK_LABEL);
     gxml = about_dialog_xml_new ();
 
-    dialog = GTK_WIDGET (gxml->AboutDialog);
+    dialog = gxml->AboutDialog;
     g_signal_connect (dialog, "key-press-event", G_CALLBACK (about_dialog_key_press), NULL);
 
-    g_object_add_weak_pointer (G_OBJECT (dialog), &about_dialog);
+    g_object_add_weak_pointer (G_OBJECT (dialog), (void**)&about_dialog);
     g_signal_connect (dialog, "delete-event", G_CALLBACK (gtk_widget_hide_on_delete), NULL);
 
     markup = g_markup_printf_escaped ("<span size=\"xx-large\"><b>%s %s</b></span>",
@@ -218,7 +218,7 @@ moo_app_about_dialog (GtkWidget *parent)
         parent = gtk_widget_get_toplevel (parent);
 
     if (parent && GTK_IS_WINDOW (parent))
-        moo_window_set_parent (about_dialog, parent);
+        moo_window_set_parent (GTK_WIDGET (about_dialog), parent);
 
     gtk_window_present (GTK_WINDOW (about_dialog));
 }

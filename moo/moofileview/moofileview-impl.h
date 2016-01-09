@@ -13,12 +13,12 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include <moofileview/moofileview.h>
 #include <gtk/gtk.h>
 
-#ifndef MOO_FILE_VIEW_IMPL_H
-#define MOO_FILE_VIEW_IMPL_H
-
+G_BEGIN_DECLS
 
 typedef struct MooFileViewPrivate MooFileViewPrivate;
 
@@ -82,5 +82,4 @@ void        _moo_file_view_drag_finish                  (MooFileView    *filevie
 /* returns list of absolute paths, must be freed together with content */
 GList      *_moo_file_view_get_filenames                (MooFileView    *fileview);
 
-
-#endif /* MOO_FILE_VIEW_IMPL_H */
+G_END_DECLS

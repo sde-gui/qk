@@ -25,6 +25,7 @@
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooaccel.h"
 #include "mooutils/moocompat.h"
+#include "moocpp/gobjectutils.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
@@ -307,7 +308,7 @@ moo_file_entry_completion_set_property (GObject        *object,
     switch (prop_id)
     {
         case PROP_ENTRY:
-            _moo_file_entry_completion_set_entry (cmpl, g_value_get_object (value));
+            _moo_file_entry_completion_set_entry (cmpl, reinterpret_cast<GtkEntry*> (g_value_get_object (value)));
             break;
 
         case PROP_ENABLE_COMPLETION:
@@ -332,7 +333,7 @@ moo_file_entry_completion_set_property (GObject        *object,
             break;
 
         case PROP_FILE_SYSTEM:
-            completion_set_file_system (cmpl, g_value_get_object (value));
+            completion_set_file_system (cmpl, MOO_FILE_SYSTEM_OPT (g_value_get_object (value)));
             break;
 
         case PROP_CASE_SENSITIVE:
@@ -1163,7 +1164,7 @@ completion_connect_folder (MooFileEntryCompletion *cmpl,
 
     completion_disconnect_folder (cmpl);
 
-    cmpl->priv->folder = g_object_ref (folder);
+    cmpl->priv->folder = MOO_FOLDER (g_object_ref (folder));
     _moo_folder_filter_set_folder (MOO_FOLDER_FILTER (cmpl->priv->model), folder);
 
     g_signal_connect_swapped (folder, "files-added",
@@ -1419,7 +1420,7 @@ completion_set_file_system (MooFileEntryCompletion *cmpl,
         g_object_unref (cmpl->priv->fs);
 
     if (fs)
-        cmpl->priv->fs = g_object_ref (fs);
+        cmpl->priv->fs = MOO_FILE_SYSTEM (g_object_ref (fs));
     else
         cmpl->priv->fs = _moo_file_system_create ();
 
@@ -1490,7 +1491,7 @@ completion_entry_key_press (GtkEntry               *entry,
     g_return_val_if_fail (entry == cmpl->priv->entry, FALSE);
 
     if (cmpl->priv->enabled &&
-        moo_accel_check_event (GTK_WIDGET (entry), event, GDK_Tab, 0))
+        moo_accel_check_event (GTK_WIDGET (entry), event, GDK_Tab, GdkModifierType (0)))
     {
         completion_tab_key (cmpl);
         return TRUE;
@@ -1638,12 +1639,7 @@ moo_file_entry_set_property (GObject        *object,
                              G_GNUC_UNUSED const GValue *value,
                              GParamSpec     *pspec)
 {
-    switch (prop_id)
-    {
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-            break;
-    }
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 }
 
 

@@ -105,8 +105,6 @@ struct _MooAppPrivate {
 };
 
 
-static void     moo_app_class_init      (MooAppClass        *klass);
-static void     moo_app_instance_init   (MooApp             *app);
 static GObject *moo_app_constructor     (GType               type,
                                          guint               n_params,
                                          GObjectConstructParam *params);
@@ -151,34 +149,7 @@ static void     moo_app_cmd_open_files  (MooApp             *app,
                                          const char         *data);
 
 
-static GObjectClass *moo_app_parent_class;
-
-GType
-moo_app_get_type (void)
-{
-    static GType type = 0;
-
-    if (G_UNLIKELY (!type))
-    {
-        static const GTypeInfo type_info = {
-            sizeof (MooAppClass),
-            (GBaseInitFunc) NULL,
-            (GBaseFinalizeFunc) NULL,
-            (GClassInitFunc) moo_app_class_init,
-            (GClassFinalizeFunc) NULL,
-            NULL,   /* class_data */
-            sizeof (MooApp),
-            0,      /* n_preallocs */
-            (GInstanceInitFunc) moo_app_instance_init,
-            NULL    /* value_table */
-        };
-
-        type = g_type_register_static (G_TYPE_OBJECT, "MooApp",
-                                       &type_info, 0);
-    }
-
-    return type;
-}
+G_DEFINE_TYPE (MooApp, moo_app, G_TYPE_OBJECT);
 
 
 enum {
@@ -205,8 +176,6 @@ static void
 moo_app_class_init (MooAppClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-
-    moo_app_parent_class = g_type_class_peek_parent (klass);
 
     gobject_class->constructor = moo_app_constructor;
     gobject_class->finalize = moo_app_finalize;
@@ -312,7 +281,7 @@ moo_app_class_init (MooAppClass *klass)
 
 
 static void
-moo_app_instance_init (MooApp *app)
+moo_app_init (MooApp *app)
 {
     g_return_if_fail (moo_app_data.instance == NULL);
 
@@ -358,7 +327,7 @@ moo_app_constructor (GType           type,
         return NULL;
     }
 
-    object = moo_app_parent_class->constructor (type, n_params, params);
+    object = G_OBJECT_CLASS (moo_app_parent_class)->constructor (type, n_params, params);
 
 #if defined(HAVE_SIGNAL) && defined(SIGINT)
     setup_signals (sigint_handler);
@@ -424,7 +393,7 @@ moo_app_set_property (GObject        *object,
             break;
 
         case PROP_DEFAULT_UI:
-            app->priv->default_ui = g_value_get_pointer (value);
+            app->priv->default_ui = reinterpret_cast<const char*> (g_value_get_pointer (value));
             break;
 
         default:
@@ -693,7 +662,7 @@ input_callback (char        cmd,
                 gsize       len,
                 gpointer    cb_data)
 {
-    MooApp *app = cb_data;
+    MooApp *app = MOO_APP (cb_data);
 
     g_return_if_fail (MOO_IS_APP (app));
     g_return_if_fail (data != NULL);
@@ -848,7 +817,7 @@ moo_app_do_quit (MooApp *app)
 
 
 gboolean
-moo_app_init (MooApp *app)
+moo_app_initialize (MooApp *app)
 {
     g_return_val_if_fail (MOO_IS_APP (app), FALSE);
 
@@ -964,7 +933,7 @@ moo_app_quit (MooApp *app)
 static void
 install_common_actions (void)
 {
-    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_WINDOW);
+    MooWindowClass *klass = MOO_WINDOW_CLASS (g_type_class_ref (MOO_TYPE_WINDOW));
 
     g_return_if_fail (klass != NULL);
 
@@ -1012,9 +981,6 @@ install_common_actions (void)
 static void
 install_editor_actions (void)
 {
-    MooWindowClass *klass = g_type_class_ref (MOO_TYPE_EDIT_WINDOW);
-    g_return_if_fail (klass != NULL);
-    g_type_class_unref (klass);
 }
 
 
@@ -1296,9 +1262,9 @@ get_cmd_code (char cmd)
 
     for (i = 1; i < CMD_LAST; ++i)
         if (cmd == moo_app_cmd_chars[i])
-            return i;
+            return MooAppCmdCode (i);
 
-    g_return_val_if_reached (0);
+    g_return_val_if_reached (MooAppCmdCode (0));
 }
 
 static void

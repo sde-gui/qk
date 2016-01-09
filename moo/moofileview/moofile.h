@@ -29,6 +29,7 @@ typedef struct _MooFolder MooFolder;
 
 /* should be ordered TODO why? */
 typedef enum MooFileFlags {
+    MOO_FILE_FLAGS_NONE     = 0,
     MOO_FILE_HAS_STAT       = 1 << 1,
     MOO_FILE_HAS_MIME_TYPE  = 1 << 2,
     MOO_FILE_HAS_ICON       = 1 << 3,
@@ -36,6 +37,7 @@ typedef enum MooFileFlags {
 } MooFileFlags;
 
 typedef enum MooFileInfo {
+    MOO_FILE_INFO_FLAGS_NONE     = 0,
     MOO_FILE_INFO_EXISTS         = 1 << 0,
     MOO_FILE_INFO_IS_DIR         = 1 << 1,
     MOO_FILE_INFO_IS_HIDDEN      = 1 << 2,

@@ -60,9 +60,9 @@ moo_file_view_tool_action_finalize (GObject *object)
 {
     ToolAction *action = (ToolAction*) object;
 
-    g_slist_foreach (action->extensions, (GFunc) g_free, NULL);
+    g_slist_foreach (action->extensions, (GFunc) extern_g_free, NULL);
     g_slist_free (action->extensions);
-    g_slist_foreach (action->mimetypes, (GFunc) g_free, NULL);
+    g_slist_foreach (action->mimetypes, (GFunc) extern_g_free, NULL);
     g_slist_free (action->mimetypes);
     g_free (action->command);
 
@@ -78,10 +78,10 @@ run_command (const char *command_template,
     GError *error = NULL;
     GRegex *regex;
 
-    regex = g_regex_new ("%[fF]", 0, 0, NULL);
+    regex = g_regex_new ("%[fF]", GRegexCompileFlags (0), GRegexMatchFlags (0), NULL);
     g_return_if_fail (regex != NULL);
 
-    command = g_regex_replace_literal (regex, command_template, -1, 0, files, 0, &error);
+    command = g_regex_replace_literal (regex, command_template, -1, 0, files, GRegexMatchFlags (0), &error);
 
     if (!command)
     {
@@ -163,7 +163,7 @@ tools_info_free (ToolsInfo *info)
 {
     if (info)
     {
-        g_slist_foreach (info->actions, (GFunc) g_object_unref, NULL);
+        g_slist_foreach (info->actions, (GFunc) extern_g_object_unref, NULL);
         g_slist_free (info->actions);
         g_free (info);
     }
@@ -177,7 +177,7 @@ remove_old_tools (MooFileView    *fileview,
 {
     ToolsInfo *info;
 
-    info = g_object_get_data (G_OBJECT (fileview), "moo-file-view-tools-info");
+    info = reinterpret_cast<ToolsInfo*> (g_object_get_data (G_OBJECT (fileview), "moo-file-view-tools-info"));
 
     if (info)
     {
@@ -185,7 +185,7 @@ remove_old_tools (MooFileView    *fileview,
 
         while (info->actions)
         {
-            GtkAction *action = info->actions->data;
+            GtkAction *action = GTK_ACTION (info->actions->data);
             gtk_action_group_remove_action (group, action);
             g_object_unref (action);
             info->actions = g_slist_delete_link (info->actions, info->actions);
@@ -346,7 +346,7 @@ _moo_file_view_tools_load (MooFileView *fileview)
 
     for (l = info->actions; l != NULL; l = l->next)
     {
-        GtkAction *action = l->data;
+        GtkAction *action = GTK_ACTION (l->data);
         char *markup;
 
         gtk_action_group_add_action (group, action);
@@ -372,7 +372,7 @@ action_check_one (ToolAction *action,
         return TRUE;
 
     for (l = action->extensions; l != NULL; l = l->next)
-        if (_moo_glob_match_simple (l->data, _moo_file_display_name (file)))
+        if (_moo_glob_match_simple (reinterpret_cast<char*> (l->data), _moo_file_display_name (file)))
             return TRUE;
 
     mime = _moo_file_get_mime_type (file);
@@ -382,7 +382,7 @@ action_check_one (ToolAction *action,
         return FALSE;
 
     for (l = action->mimetypes; l != NULL; l = l->next)
-        if (moo_mime_type_is_subclass (mime, l->data))
+        if (moo_mime_type_is_subclass (mime, reinterpret_cast<char*> (l->data)))
             return TRUE;
 
     return FALSE;
@@ -397,7 +397,7 @@ action_check (ToolAction *action,
 
     while (files)
     {
-        MooFile *f = files->data;
+        MooFile *f = reinterpret_cast<MooFile*> (files->data);
 
         if (!MOO_FILE_EXISTS (f) || MOO_FILE_IS_DIR (f) || !action_check_one (action, f))
         {
@@ -419,7 +419,7 @@ _moo_file_view_tools_check (MooFileView *fileview)
     ToolsInfo *info;
     GSList *l;
 
-    info = g_object_get_data (G_OBJECT (fileview), "moo-file-view-tools-info");
+    info = reinterpret_cast<ToolsInfo*> (g_object_get_data (G_OBJECT (fileview), "moo-file-view-tools-info"));
 
     if (!info)
         return;
@@ -434,7 +434,7 @@ _moo_file_view_tools_check (MooFileView *fileview)
     }
 
     for (l = info->actions; l != NULL; l = l->next)
-        action_check (l->data, files);
+        action_check (reinterpret_cast<ToolAction*> (l->data), files);
 
     g_list_foreach (files, (GFunc) _moo_file_unref, NULL);
     g_list_free (files);
