@@ -114,9 +114,9 @@ ignore-glob
 %%
 include mooutils.override
 %%
-include moopaned.override
-%%
-include mooedit.override
-%%
+//include moopaned.override
+//%%
+//include mooedit.override
+//%%
 // include mooapp.override
 // %%

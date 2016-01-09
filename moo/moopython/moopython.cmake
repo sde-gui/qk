@@ -23,8 +23,6 @@ set(gendefs_files
 
 set(moo_override_files
     moopython/pygtk/mooutils.override
-    moopython/pygtk/moopaned.override
-    moopython/pygtk/mooedit.override
     moopython/pygtk/moo.override
 )
 
