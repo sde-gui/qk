@@ -45,21 +45,15 @@ G_END_DECLS
 
 #include <moocpp/gobjptrtypes.h>
 
+MOO_DEFINE_GOBJ_TYPE(MooTextView, GtkTextView, moo_text_view_get_type())
+MOO_DEFINE_GOBJ_TYPE(MooEditTab, GtkWidget, moo_edit_tab_get_type());
+MOO_DEFINE_GOBJ_TYPE(MooEditWindow, GtkWindow, moo_edit_window_get_type());
+
 namespace moo {
 
 template<> class gobj_ref<MooEdit>;
 template<> class gobj_ref<MooEditView>;
 template<> class gobj_ptr<MooEditView>;
-//template<> class gobj_ptr<MooOpenInfo>;
-//template<> class gobj_ptr<MooReloadInfo>;
-//template<> class gobj_ptr<MooSaveInfo>;
-
-MOO_DEFINE_GOBJ_TYPE(MooTextView, GtkTextView, moo_text_view_get_type())
-MOO_DEFINE_GOBJ_TYPE(MooEditTab, GtkWidget, moo_edit_tab_get_type());
-MOO_DEFINE_GOBJ_TYPE(MooEditWindow, GtkWindow, moo_edit_window_get_type());
-//MOO_DEFINE_GOBJ_TYPE(MooOpenInfo, GObject, moo_open_info_get_type());
-//MOO_DEFINE_GOBJ_TYPE(MooReloadInfo, GObject, moo_reload_info_get_type());
-//MOO_DEFINE_GOBJ_TYPE(MooSaveInfo, GObject, moo_save_info_get_type());
 
 } // namespace moo
 
@@ -68,10 +62,6 @@ MOO_GOBJ_TYPEDEFS(Edit, MooEdit);
 MOO_GOBJ_TYPEDEFS(EditTab, MooEditTab);
 MOO_GOBJ_TYPEDEFS(EditView, MooEditView);
 MOO_GOBJ_TYPEDEFS(EditWindow, MooEditWindow);
-
-//MOO_GOBJ_TYPEDEFS(OpenInfo, MooOpenInfo);
-//MOO_GOBJ_TYPEDEFS(ReloadInfo, MooReloadInfo);
-//MOO_GOBJ_TYPEDEFS(SaveInfo, MooSaveInfo);
 
 void g_object_unref(MooOpenInfo*) = delete;
 void g_object_unref(MooReloadInfo*) = delete;

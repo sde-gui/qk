@@ -448,7 +448,7 @@ moo_keymap_translate_keyboard_state (GdkKeymap           *keymap,
                                      GdkModifierType     *consumed_modifiers_p)
 {
     guint keyval = 0;
-    GdkModifierType consumed_modifiers = 0;
+    GdkModifierType consumed_modifiers = GdkModifierType (0);
     gboolean retval = 
         gdk_keymap_translate_keyboard_state (keymap, hardware_keycode, state, group,
                                              &keyval, effective_group, level,
@@ -706,7 +706,7 @@ _moo_accel_parse (const char      *accel,
     guint key = 0;
     gsize len;
     GdkModifierType mods = (GdkModifierType) 0;
-    char *p;
+    const char *p;
 
     g_return_val_if_fail (accel && accel[0], FALSE);
 
@@ -1009,7 +1009,7 @@ delete_prefs_keys (void)
     GSList *keys = moo_prefs_list_keys (MOO_PREFS_RC);
     while (keys)
     {
-        char *key = keys->data;
+        char *key = reinterpret_cast<char*> (keys->data);
 
         if (g_str_has_prefix (key, "Shortcuts/Foobar/"))
             moo_prefs_delete_key (key);

@@ -204,7 +204,7 @@ moo_file_dialog_get_property (GObject        *object,
 static void
 string_slist_free (GSList *list)
 {
-    g_slist_foreach (list, (GFunc) g_free, NULL);
+    g_slist_foreach (list, (GFunc) extern_g_free, NULL);
     g_slist_free (list);
 }
 
@@ -466,7 +466,7 @@ uri_list_to_files (GSList *list)
 
     while (list)
     {
-        moo_file_array_take (flocs, g_file_new_for_uri (list->data));
+        moo_file_array_take (flocs, g_file_new_for_uri (reinterpret_cast<char*> (list->data)));
         list = list->next;
     }
 
@@ -514,10 +514,13 @@ uri_is_valid (G_GNUC_UNUSED const char *uri,
 #ifndef __WIN32__
     return TRUE;
 #else
-    struct name {
+    struct name_and_len
+    {
         const char *name;
         guint len;
-    } names[] = {
+    };
+
+    name_and_len names[] = {
         { "con", 3 }, { "aux", 3 }, { "prn", 3 }, { "nul", 3 },
         { "com1", 4 }, { "com2", 4 }, { "com3", 4 }, { "com4", 4 },
         { "lpt1", 4 }, { "lpt2", 4 }, { "lpt3", 4 }

@@ -34,7 +34,7 @@ G_BEGIN_DECLS
 
 #define MOO_TYPE_FILE_SYSTEM              (_moo_file_system_get_type ())
 #define MOO_FILE_SYSTEM(object)           (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_FILE_SYSTEM, MooFileSystem))
-#define MOO_FILE_SYSTEM_OPT(object)       (moo::object_ref_opt<MooFileSystem> ((object), MOO_TYPE_FILE_SYSTEM))
+#define MOO_FILE_SYSTEM_OPT(object)       (moo::object_cast_opt<MooFileSystem> (object))
 #define MOO_FILE_SYSTEM_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_FILE_SYSTEM, MooFileSystemClass))
 #define MOO_IS_FILE_SYSTEM(object)        (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_FILE_SYSTEM))
 #define MOO_IS_FILE_SYSTEM_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_FILE_SYSTEM))
@@ -150,6 +150,8 @@ MooFileSystem *_moo_folder_get_file_system      (MooFolder      *folder);
 G_END_DECLS
 
 #ifdef __cplusplus
+
+MOO_DEFINE_GOBJ_TYPE(MooFileSystem, GObject, MOO_TYPE_FILE_SYSTEM)
 
 moo::grefptr<MooFileWatch> _moo_file_system_get_file_watch (MooFileSystem  *fs);
 

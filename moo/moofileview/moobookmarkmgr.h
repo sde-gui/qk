@@ -1,7 +1,7 @@
 /*
  *   moobookmarkmgr.h
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_BOOKMARK_MGR_H
-#define MOO_BOOKMARK_MGR_H
+#pragma once
 
 #include <gtk/gtk.h>
 #include <mooutils/moouixml.h>
@@ -25,7 +24,7 @@ G_BEGIN_DECLS
 
 #define MOO_TYPE_BOOKMARK_MGR                (_moo_bookmark_mgr_get_type ())
 #define MOO_BOOKMARK_MGR(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_BOOKMARK_MGR, MooBookmarkMgr))
-#define MOO_BOOKMARK_MGR_OPT(object)         (moo::object_ref_opt<MooBookmarkMgr> ((object), MOO_TYPE_BOOKMARK_MGR))
+#define MOO_BOOKMARK_MGR_OPT(object)         (moo::object_cast_opt<MooBookmarkMgr> (object))
 #define MOO_BOOKMARK_MGR_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), MOO_TYPE_BOOKMARK_MGR, MooBookmarkMgrClass))
 #define MOO_IS_BOOKMARK_MGR(object)          (G_TYPE_CHECK_INSTANCE_TYPE ((object), MOO_TYPE_BOOKMARK_MGR))
 #define MOO_IS_BOOKMARK_MGR_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), MOO_TYPE_BOOKMARK_MGR))
@@ -96,4 +95,6 @@ void            _moo_bookmark_mgr_remove_user(MooBookmarkMgr *mgr,
 
 G_END_DECLS
 
-#endif /* MOO_BOOKMARK_MGR_H */
+#ifdef __cplusplus
+MOO_DEFINE_GOBJ_TYPE(MooBookmarkMgr, GObject, MOO_TYPE_BOOKMARK_MGR)
+#endif // __cplusplus

@@ -137,7 +137,7 @@ moo_test_suite_free (MooTestSuite *ts)
         GSList *l;
         for (l = ts->tests; l != NULL; l = l->next)
         {
-            MooTest *test = l->data;
+            MooTest *test = reinterpret_cast<MooTest*> (l->data);
             g_slist_foreach (test->failed_asserts,
                              (GFunc) test_assert_info_free,
                              NULL);
@@ -193,7 +193,7 @@ run_test (MooTest        *test,
 
         for (l = test->failed_asserts, count = 1; l != NULL; l = l->next, count++)
         {
-            TestAssertInfo *ai = l->data;
+            TestAssertInfo *ai = reinterpret_cast<TestAssertInfo*> (l->data);
             fprintf (stdout, "    %d. %s", count, ai->file ? ai->file : "<unknown>");
             if (ai->line > -1)
                 fprintf (stdout, ":%d", ai->line);
@@ -228,7 +228,7 @@ run_suite (MooTestSuite   *ts,
         passed = run_test (single_test, ts, opts) && passed;
     else
         for (l = ts->tests; l != NULL; l = l->next)
-            passed = run_test (l->data, ts, opts) && passed;
+            passed = run_test (reinterpret_cast<MooTest*> (l->data), ts, opts) && passed;
 
     if (run && ts->cleanup_func)
         ts->cleanup_func (ts->data);
@@ -260,7 +260,7 @@ find_test (const char    *name,
 
     for (l = registry.test_suites; l != NULL; l = l->next)
     {
-        MooTestSuite *ts = l->data;
+        MooTestSuite *ts = reinterpret_cast<MooTestSuite*> (l->data);
         GSList *tl;
 
         if (strcmp (ts->name, suite_name) != 0)
@@ -276,7 +276,7 @@ find_test (const char    *name,
 
         for (tl = ts->tests; tl != NULL; tl = tl->next)
         {
-            MooTest *test = tl->data;
+            MooTest *test = reinterpret_cast<MooTest*> (tl->data);
             if (strcmp (test->name, test_name) == 0)
             {
                 *ts_p = ts;
@@ -325,7 +325,7 @@ moo_test_run_tests (char          **tests,
     {
         GSList *l;
         for (l = registry.test_suites; l != NULL; l = l->next)
-            run_suite (l->data, NULL, opts);
+            run_suite (reinterpret_cast<MooTestSuite*> (l->data), NULL, opts);
     }
 
     fprintf (stdout, "\n");
@@ -358,7 +358,7 @@ moo_test_cleanup (void)
     GError *error = NULL;
 
     for (l = registry.test_suites; l != NULL; l = l->next)
-        moo_test_suite_free (l->data);
+        moo_test_suite_free (reinterpret_cast<MooTestSuite*> (l->data));
 
     g_free (registry.data_dir);
     registry.data_dir = NULL;
@@ -560,7 +560,7 @@ add_func (gpointer key,
           G_GNUC_UNUSED gpointer value,
           GString *string)
 {
-    g_string_append (string, key);
+    g_string_append (string, reinterpret_cast<char*> (key));
     g_string_append (string, "\n");
 }
 

@@ -13,10 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_ENTRY_H
-#define MOO_ENTRY_H
+#pragma once
 
 #include <gtk/gtk.h>
+#include <moocpp/gobjptrtypes.h>
 
 G_BEGIN_DECLS
 
@@ -64,4 +64,6 @@ void        moo_entry_set_use_special_chars_menu(MooEntry   *entry,
 
 G_END_DECLS
 
-#endif /* MOO_ENTRY_H */
+#ifdef __cplusplus
+MOO_DEFINE_GOBJ_TYPE(MooEntry, GtkEntry, MOO_TYPE_ENTRY)
+#endif // __cplusplus

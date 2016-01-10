@@ -100,7 +100,7 @@ moo_file_reader_new_real (const char  *filename,
         return NULL;
     }
 
-    reader = g_object_new (MOO_TYPE_FILE_READER, (const char*) NULL);
+    reader = MOO_FILE_READER (g_object_new (MOO_TYPE_FILE_READER, nullptr));
     reader->file = file;
 
     return reader;
@@ -304,7 +304,7 @@ moo_local_file_writer_new (GFile               *file,
     if (!stream)
         goto error;
 
-    writer = g_object_new (MOO_TYPE_LOCAL_FILE_WRITER, (const char*) NULL);
+    writer = MOO_LOCAL_FILE_WRITER (g_object_new (MOO_TYPE_LOCAL_FILE_WRITER, nullptr));
     writer->file = file_copy;
     writer->stream = G_OUTPUT_STREAM (stream);
     writer->flags = flags;
@@ -556,7 +556,7 @@ moo_string_writer_init (MooStringWriter *writer)
 MooFileWriter *
 moo_string_writer_new (void)
 {
-    return g_object_new (MOO_TYPE_STRING_WRITER, (const char*) NULL);
+    return MOO_FILE_WRITER (g_object_new (MOO_TYPE_STRING_WRITER, nullptr));
 }
 
 const char *

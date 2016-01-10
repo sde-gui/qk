@@ -33,6 +33,8 @@ set(moopython_extra_dist
     moopython/pygtk/moo.py
 )
 
+list(APPEND moopython_sources ${moo_override_files} moopython/pygtk/moo.py)
+
 list(APPEND built_moopython_sources
     moopython/pygtk/moo-mod.cpp
     moopython/pygtk/moo-mod.h
@@ -87,7 +89,6 @@ set(moo_python_plugins
 
 list(APPEND moopython_sources ${codegen_files})
 set(moopython_codegen_group ${codegen_files})
-list(APPEND moopython_sources ${moopython_extra_dist})
 set(moopython_pygtk_group ${moopython_extra_dist} moopython/pygtk/moo-mod.h)
 list(APPEND moopython_sources ${gendefs_files})
 set(moopython_api_group ${gendefs_files})

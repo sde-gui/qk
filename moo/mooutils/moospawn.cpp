@@ -16,6 +16,7 @@
 #include "mooutils/moospawn.h"
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
+#include "moocpp/gobjectutils.h"
 #include <string.h>
 
 #ifndef __WIN32__
@@ -27,6 +28,7 @@
 #include <windows.h>
 #endif
 
+using namespace moo;
 
 typedef struct {
     MooCmd *cmd;
@@ -204,7 +206,7 @@ _moo_cmd_new (const char *working_dir,
 
     g_return_val_if_fail (argv && *argv, NULL);
 
-    cmd = g_object_new (MOO_TYPE_CMD, (const char*) NULL);
+    cmd = new_object<MooCmd>();
 
     result = moo_cmd_run_command (cmd, working_dir, argv, envp,
                                   flags, cmd_flags, child_setup,
@@ -351,7 +353,7 @@ command_out_or_err (MooCmd         *cmd,
 
     while (lines)
     {
-        process_line (cmd, !out, lines->data, -1);
+        process_line (cmd, !out, reinterpret_cast<char*> (lines->data), -1);
         g_free (lines->data);
         lines = g_slist_delete_link (lines, lines);
     }

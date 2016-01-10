@@ -127,7 +127,7 @@ filename_list_to_double_null_terminated_string (GList *filenames)
         long len;
         gunichar2 *wstr;
 
-        wstr = g_utf8_to_utf16 (filenames->data, -1, NULL, &len, NULL);
+        wstr = g_utf8_to_utf16 (reinterpret_cast<char*> (filenames->data), -1, NULL, &len, NULL);
         filenames = filenames->next;
 
         if (!wstr)
@@ -167,7 +167,7 @@ move_or_copy_files_ui (GList      *filenames,
         return FALSE;
     }
 
-    shop.hwnd = parent && parent->window ? GDK_WINDOW_HWND (parent->window) : NULL;
+    shop.hwnd = parent && parent->window ? ((HWND) GDK_WINDOW_HWND (parent->window)) : nullptr;
     shop.wFunc = copy ? FO_COPY : FO_MOVE;
     shop.pFrom = from;
     shop.pTo = to;
@@ -997,7 +997,8 @@ test_normalize_file_path (void)
 
     for (i = 0; i < paths->len; i += 2)
     {
-        test_normalize_path_one (paths->pdata[i], paths->pdata[i+1],
+        test_normalize_path_one (reinterpret_cast<char*> (paths->pdata[i]),
+                                 reinterpret_cast<char*> (paths->pdata[i+1]),
                                  _moo_normalize_file_path,
                                  "_moo_normalize_file_path");
         g_free (paths->pdata[i]);
@@ -1173,7 +1174,7 @@ _moo_glob_new (const char *pattern)
     MooGlob *gl;
     GRegex *re;
     char *re_pattern;
-    GRegexCompileFlags flags = 0;
+    GRegexCompileFlags flags = GRegexCompileFlags (0);
     GError *error = NULL;
 
     g_return_val_if_fail (pattern != NULL, NULL);
@@ -1185,7 +1186,7 @@ _moo_glob_new (const char *pattern)
     if (!(re_pattern = glob_to_re (pattern)))
         return NULL;
 
-    re = g_regex_new (re_pattern, flags, 0, &error);
+    re = g_regex_new (re_pattern, flags, GRegexMatchFlags (0), &error);
 
     g_free (re_pattern);
 
@@ -1211,7 +1212,7 @@ _moo_glob_match (MooGlob    *glob,
     g_return_val_if_fail (filename_utf8 != NULL, FALSE);
     g_return_val_if_fail (g_utf8_validate (filename_utf8, -1, NULL), FALSE);
 
-    return g_regex_match (glob->re, filename_utf8, 0, NULL);
+    return g_regex_match (glob->re, filename_utf8, GRegexMatchFlags (0), NULL);
 }
 #endif
 

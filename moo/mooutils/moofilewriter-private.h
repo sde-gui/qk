@@ -61,7 +61,8 @@ struct _MooFileWriterClass {
 };
 
 
-#define MOO_TYPE_LOCAL_FILE_WRITER (moo_local_file_writer_get_type ())
+#define MOO_TYPE_LOCAL_FILE_WRITER      (moo_local_file_writer_get_type ())
+#define MOO_LOCAL_FILE_WRITER(object)   (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_LOCAL_FILE_WRITER, MooLocalFileWriter))
 
 typedef struct _MooLocalFileWriter MooLocalFileWriter;
 typedef struct _MooLocalFileWriterClass MooLocalFileWriterClass;

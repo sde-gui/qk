@@ -5,9 +5,9 @@
 
 #ifdef __cplusplus
 
-namespace moo {
-
 MOO_DEFINE_GOBJ_TYPE(MooEditView, MooTextView, moo_edit_view_get_type())
+
+namespace moo {
 
 template<>
 class gobj_ref<MooEditView> : public gobj_ref_parent<MooEditView>

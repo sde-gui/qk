@@ -158,140 +158,140 @@ SET(source_files
     ../moo/moofileview/mooiconview.h
     ../moo/moofileview/mootreeview.c
     ../moo/moofileview/mootreeview.h
-    ../moo/mooutils/mooaccelbutton.c
+    ../moo/mooutils/mooaccelbutton.cpp
     ../moo/mooutils/mooaccelbutton.h
-    ../moo/mooutils/mooaccel.c
+    ../moo/mooutils/mooaccel.cpp
     ../moo/mooutils/mooaccel.h
-    ../moo/mooutils/mooaccelprefs.c
+    ../moo/mooutils/mooaccelprefs.cpp
     ../moo/mooutils/mooaccelprefs.h
-    ../moo/mooutils/mooactionbase.c
+    ../moo/mooutils/mooactionbase.cpp
     ../moo/mooutils/mooactionbase.h
     ../moo/mooutils/mooactionbase-private.h
-    ../moo/mooutils/mooaction.c
-    ../moo/mooutils/mooactioncollection.c
+    ../moo/mooutils/mooaction.cpp
+    ../moo/mooutils/mooactioncollection.cpp
     ../moo/mooutils/mooactioncollection.h
-    ../moo/mooutils/mooactionfactory.c
+    ../moo/mooutils/mooactionfactory.cpp
     ../moo/mooutils/mooactionfactory.h
-    ../moo/mooutils/mooactiongroup.c
+    ../moo/mooutils/mooactiongroup.cpp
     ../moo/mooutils/mooactiongroup.h
     ../moo/mooutils/mooaction.h
     ../moo/mooutils/mooaction-private.h
-    ../moo/mooutils/mooappinput-common.c
+    ../moo/mooutils/mooappinput-common.cpp
     ../moo/mooutils/mooappinput.h
-    ../moo/mooutils/mooapp-ipc.c
+    ../moo/mooutils/mooapp-ipc.cpp
     ../moo/mooutils/mooapp-ipc.h
     ../moo/mooutils/mooarray.h
     ../moo/mooutils/mooatom.h
-    ../moo/mooutils/moobigpaned.c
+    ../moo/mooutils/moobigpaned.cpp
     ../moo/mooutils/moobigpaned.h
-    ../moo/mooutils/mooclosure.c
+    ../moo/mooutils/mooclosure.cpp
     ../moo/mooutils/mooclosure.h
-    ../moo/mooutils/moocombo.c
+    ../moo/mooutils/moocombo.cpp
     ../moo/mooutils/moocombo.h
     ../moo/mooutils/moocompat.h
-    ../moo/mooutils/moodialogs.c
+    ../moo/mooutils/moodialogs.cpp
     ../moo/mooutils/moodialogs.h
-    ../moo/mooutils/mooeditops.c
+    ../moo/mooutils/mooeditops.cpp
     ../moo/mooutils/mooeditops.h
-    ../moo/mooutils/mooencodings.c
+    ../moo/mooutils/mooencodings.cpp
     ../moo/mooutils/mooencodings-data.h
     ../moo/mooutils/mooencodings.h
-    ../moo/mooutils/mooentry.c
+    ../moo/mooutils/mooentry.cpp
     ../moo/mooutils/mooentry.h
     ../moo/mooutils/moo-environ.h
-    ../moo/mooutils/moofiledialog.c
+    ../moo/mooutils/moofiledialog.cpp
     ../moo/mooutils/moofiledialog.h
-    ../moo/mooutils/moofileicon.c
+    ../moo/mooutils/moofileicon.cpp
     ../moo/mooutils/moofileicon.h
     ../moo/mooutils/moofilewatch.cpp
     ../moo/mooutils/moofilewatch.h
-    ../moo/mooutils/moofilewriter.c
+    ../moo/mooutils/moofilewriter.cpp
     ../moo/mooutils/moofilewriter.h
     ../moo/mooutils/moofilewriter-private.h
-    ../moo/mooutils/moofiltermgr.c
+    ../moo/mooutils/moofiltermgr.cpp
     ../moo/mooutils/moofiltermgr.h
     ../moo/mooutils/moofontsel.c
     ../moo/mooutils/moofontsel.h
-    ../moo/mooutils/mooglade.c
+    ../moo/mooutils/mooglade.cpp
     ../moo/mooutils/mooglade.h
-    ../moo/mooutils/moohelp.c
+    ../moo/mooutils/moohelp.cpp
     ../moo/mooutils/moohelp.h
-    ../moo/mooutils/moohistorycombo.c
+    ../moo/mooutils/moohistorycombo.cpp
     ../moo/mooutils/moohistorycombo.h
-    ../moo/mooutils/moohistorylist.c
+    ../moo/mooutils/moohistorylist.cpp
     ../moo/mooutils/moohistorylist.h
-    ../moo/mooutils/moohistorymgr.c
+    ../moo/mooutils/moohistorymgr.cpp
     ../moo/mooutils/moohistorymgr.h
-    ../moo/mooutils/mooi18n.c
+    ../moo/mooutils/mooi18n.cpp
     ../moo/mooutils/mooi18n.h
     ../moo/mooutils/moolist.h
-    ../moo/mooutils/moomarkup.c
+    ../moo/mooutils/moomarkup.cpp
     ../moo/mooutils/moomarkup.h
-    ../moo/mooutils/moomenuaction.c
+    ../moo/mooutils/moomenuaction.cpp
     ../moo/mooutils/moomenuaction.h
-    ../moo/mooutils/moomenu.c
+    ../moo/mooutils/moomenu.cpp
     ../moo/mooutils/moomenu.h
-    ../moo/mooutils/moomenumgr.c
+    ../moo/mooutils/moomenumgr.cpp
     ../moo/mooutils/moomenumgr.h
-    ../moo/mooutils/moomenutoolbutton.c
+    ../moo/mooutils/moomenutoolbutton.cpp
     ../moo/mooutils/moomenutoolbutton.h
-    ../moo/mooutils/moo-mime.c
+    ../moo/mooutils/moo-mime.cpp
     ../moo/mooutils/moo-mime.h
-    ../moo/mooutils/moonotebook.c
+    ../moo/mooutils/moonotebook.cpp
     ../moo/mooutils/moonotebook.h
     ../moo/mooutils/mooonce.h
-    ../moo/mooutils/moopane.c
-    ../moo/mooutils/moopaned.c
+    ../moo/mooutils/moopane.cpp
+    ../moo/mooutils/moopaned.cpp
     ../moo/mooutils/moopaned.h
     ../moo/mooutils/moopane.h
-    ../moo/mooutils/mooprefs.c
-    ../moo/mooutils/mooprefsdialog.c
+    ../moo/mooutils/mooprefs.cpp
+    ../moo/mooutils/mooprefsdialog.cpp
     ../moo/mooutils/mooprefsdialog.h
     ../moo/mooutils/mooprefs.h
-    ../moo/mooutils/mooprefspage.c
+    ../moo/mooutils/mooprefspage.cpp
     ../moo/mooutils/mooprefspage.h
-    ../moo/mooutils/moospawn.c
+    ../moo/mooutils/moospawn.cpp
     ../moo/mooutils/moospawn.h
-    ../moo/mooutils/moostock.c
+    ../moo/mooutils/moostock.cpp
     ../moo/mooutils/moostock.h
     ../moo/mooutils/moo-test-macros.h
-    ../moo/mooutils/moo-test-utils.c
+    ../moo/mooutils/moo-test-utils.cpp
     ../moo/mooutils/moo-test-utils.h
     ../moo/mooutils/mootypedecl-macros.h
     ../moo/mooutils/mootype-macros.h
-    ../moo/mooutils/moouixml.c
+    ../moo/mooutils/moouixml.cpp
     ../moo/mooutils/moouixml.h
-    ../moo/mooutils/mooundo.c
+    ../moo/mooutils/mooundo.cpp
     ../moo/mooutils/mooundo.h
     ../moo/mooutils/mooutils-debug.h
     ../moo/mooutils/mooutils-enums.c
     ../moo/mooutils/mooutils-enums.h
     ../moo/mooutils/mooutils-file.cpp
     ../moo/mooutils/mooutils-file.h
-    ../moo/mooutils/mooutils-fs.c
+    ../moo/mooutils/mooutils-fs.cpp
     ../moo/mooutils/mooutils-fs.h
-    ../moo/mooutils/mooutils-gobject.c
+    ../moo/mooutils/mooutils-gobject.cpp
     ../moo/mooutils/mooutils-gobject.h
     ../moo/mooutils/mooutils-gobject-private.h
     ../moo/mooutils/mooutils.h
     ../moo/mooutils/mooutils-macros.h
     ../moo/mooutils/mooutils-mem.h
     ../moo/mooutils/mooutils-messages.h
-    ../moo/mooutils/mooutils-misc.c
+    ../moo/mooutils/mooutils-misc.cpp
     ../moo/mooutils/mooutils-misc.h
-    ../moo/mooutils/mooutils-script.c
+    ../moo/mooutils/mooutils-script.cpp
     ../moo/mooutils/mooutils-script.h
     ../moo/mooutils/mooutils-tests.h
-    ../moo/mooutils/mooutils-thread.c
+    ../moo/mooutils/mooutils-thread.cpp
     ../moo/mooutils/mooutils-thread.h
-    ../moo/mooutils/mooutils-treeview.c
+    ../moo/mooutils/mooutils-treeview.cpp
     ../moo/mooutils/mooutils-treeview.h
-    ../moo/mooutils/mooutils-win32.c
+    ../moo/mooutils/mooutils-win32.cpp
     ../moo/mooutils/moowin32/mingw/fnmatch.h
     ../moo/mooutils/moowin32/mingw/netinet/in.h
     ../moo/mooutils/moowin32/ms/sys/time.h
     ../moo/mooutils/moowin32/ms/unistd.h
-    ../moo/mooutils/moowindow.c
+    ../moo/mooutils/moowindow.cpp
     ../moo/mooutils/moowindow.h
     ../moo/plugins/support/moocmdview.c
     ../moo/plugins/support/moocmdview.h

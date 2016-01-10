@@ -144,7 +144,7 @@ G_STMT_START {                                                  \
     GSList *l__;                                                \
     for (l__ = nb->priv->pages; l__ != NULL; l__ = l__->next)   \
     {                                                           \
-        Page *page = l__->data;                                 \
+        Page *page = reinterpret_cast<Page*> (l__->data);       \
         if (GTK_WIDGET_VISIBLE (page->child))                   \
 
 #define VISIBLE_FOREACH_END                                     \
@@ -538,7 +538,7 @@ moo_notebook_destroy (GtkObject *object)
 
     for (l = nb->priv->pages; l != NULL; l = l->next)
     {
-        Page *page = l->data;
+        Page *page = reinterpret_cast<Page*> (l->data);
 
         g_signal_handlers_disconnect_by_func (page->child,
                                               (gpointer) child_visible_notify,
@@ -679,7 +679,7 @@ moo_notebook_finalize (GObject *object)
 GtkWidget *
 moo_notebook_new (void)
 {
-    return g_object_new (MOO_TYPE_NOTEBOOK, (const char*) NULL);
+    return GTK_WIDGET (g_object_new (MOO_TYPE_NOTEBOOK, nullptr));
 }
 
 
@@ -1062,7 +1062,7 @@ moo_notebook_realize (GtkWidget *widget)
 
     for (l = nb->priv->pages; l != NULL; l = l->next)
     {
-        Page *page = l->data;
+        Page *page = reinterpret_cast<Page*> (l->data);
         gtk_widget_set_parent_window (page->label->widget, nb->priv->tab_window);
     }
 }
@@ -1182,7 +1182,7 @@ moo_notebook_forall (GtkContainer *container,
 
     for (l = nb->priv->pages; l != NULL; l = l->next)
     {
-        Page *page = l->data;
+        Page *page = reinterpret_cast<Page*> (l->data);
         callback (page->child, callback_data);
         if (include_internals && page != nb->priv->drag_page)
             callback (page->label->widget, callback_data);
@@ -1613,7 +1613,7 @@ find_child (MooNotebook *nb,
 
     for (l = nb->priv->pages; l != NULL; l = l->next)
     {
-        Page *page = l->data;
+        Page *page = reinterpret_cast<Page*> (l->data);
         if (page->child == child)
             return page;
     }
@@ -1632,7 +1632,7 @@ find_grand_child (MooNotebook *nb,
 
     for (l = nb->priv->pages; l != NULL; l = l->next)
     {
-        Page *page = l->data;
+        Page *page = reinterpret_cast<Page*> (l->data);
         if (page->child == child || gtk_widget_is_ancestor (child, page->child))
             return page;
     }
@@ -1649,7 +1649,7 @@ find_label (MooNotebook *nb,
 
     for (l = nb->priv->pages; l != NULL; l = l->next)
     {
-        Page *page = l->data;
+        Page *page = reinterpret_cast<Page*> (l->data);
         if (page->label->widget == label)
             return page;
     }
@@ -1665,7 +1665,7 @@ get_nth_page (MooNotebook *nb,
     if (n < 0)
         return NULL;
     else
-        return g_slist_nth_data (nb->priv->pages, n);
+        return reinterpret_cast<Page*> (g_slist_nth_data (nb->priv->pages, n));
 }
 
 
@@ -2055,7 +2055,7 @@ labels_size_allocate (MooNotebook   *nb,
 
         for (l = list; l != NULL; l = l->next)
         {
-            Page *page = l->data;
+            Page *page = reinterpret_cast<Page*> (l->data);
             GtkWidget *label = page->label->widget;
 
             gtk_widget_get_child_requisition (label, &child_req);
@@ -2065,7 +2065,7 @@ labels_size_allocate (MooNotebook   *nb,
 
         for (l = list, width = 0; l != NULL; l = l->next)
         {
-            Page *page = l->data;
+            Page *page = reinterpret_cast<Page*> (l->data);
 
             if (max_width != page->label->width)
                 invalidate = TRUE;
@@ -2089,7 +2089,7 @@ labels_size_allocate (MooNotebook   *nb,
     {
         for (l = list, width = 0; l != NULL; l = l->next)
         {
-            Page *page = l->data;
+            Page *page = reinterpret_cast<Page*> (l->data);
             GtkWidget *label = page->label->widget;
             int new_width;
 
@@ -2156,7 +2156,7 @@ labels_size_allocate (MooNotebook   *nb,
 
     for (l = list; l != NULL; l = l->next)
     {
-        Page *page = l->data;
+        Page *page = reinterpret_cast<Page*> (l->data);
         GtkWidget *label = page->label->widget;
 
         gtk_widget_get_child_requisition (label, &child_req);
@@ -2871,7 +2871,7 @@ tab_drag_motion (MooNotebook    *nb,
         Page *page;
         int min_width;
 
-        page = l->data;
+        page = reinterpret_cast<Page*> (l->data);
         min_width = MIN (page->label->width, width);
 
         if (i == new_index)
@@ -3166,6 +3166,17 @@ moo_notebook_enable_reordering (MooNotebook *notebook,
 /* Popup menu
  */
 
+namespace {
+
+struct Data
+{
+    MooNotebook *nb;
+    Page *page;
+    GdkEventButton *event;
+};
+
+} // anonymous namespace
+
 static void
 popup_position_func (G_GNUC_UNUSED GtkMenu *menu,
                      gint           *x,
@@ -3173,11 +3184,7 @@ popup_position_func (G_GNUC_UNUSED GtkMenu *menu,
                      gboolean       *push_in,
                      gpointer        user_data)
 {
-    struct {
-        MooNotebook *nb;
-        Page *page;
-        GdkEventButton *event;
-    } *data = user_data;
+    Data *data = reinterpret_cast<Data*> (user_data);
 
     g_return_if_fail (data != NULL);
     g_return_if_fail (data->nb != NULL && data->nb->priv->tab_window != NULL);
@@ -3211,11 +3218,7 @@ moo_notebook_do_popup (MooNotebook    *nb,
 {
     GtkWidget *menu;
     gboolean dont = FALSE;
-    struct {
-        MooNotebook *nb;
-        Page *page;
-        GdkEventButton *event;
-    } data;
+    Data data;
 
     g_return_val_if_fail (page != NULL, FALSE);
 
@@ -3344,14 +3347,14 @@ focus_to_next_label (MooNotebook      *nb,
         if (page == g_slist_last(visible)->data)
             return FALSE;
         else
-            next = g_slist_nth_data (visible, g_slist_index (visible, page) + 1);
+            next = reinterpret_cast<Page*> (g_slist_nth_data (visible, g_slist_index (visible, page) + 1));
     }
     else
     {
         if (page == visible->data)
             return FALSE;
         else
-            next = g_slist_nth_data (visible, g_slist_index (visible, page) - 1);
+            next = reinterpret_cast<Page*> (g_slist_nth_data (visible, g_slist_index (visible, page) - 1));
     }
 
     g_return_val_if_fail (next != NULL, FALSE);

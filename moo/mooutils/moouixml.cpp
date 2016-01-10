@@ -37,6 +37,8 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
+#include "moocpp/gobjptrtypes.h"
+using namespace moo;
 
 #define REPORT_UNKNOWN_ACTIONS 0
 
@@ -254,7 +256,7 @@ node_new (NodeType type, const char *name)
             break;
     }
 
-    node = g_malloc0 (size);
+    node = reinterpret_cast<Node*> (g_malloc0 (size));
     node->type = type;
     node->name = name ? g_strdup (name) : g_strdup ("");
     return node;
@@ -272,7 +274,7 @@ moo_ui_xml_init (MooUiXml *xml)
 MooUiXml*
 moo_ui_xml_new (void)
 {
-    return g_object_new (MOO_TYPE_UI_XML, (const char*) NULL);
+    return new_object<MooUiXml>();
 }
 
 
@@ -689,7 +691,7 @@ placeholder_check (Node *node)
 
     SLIST_FOREACH (node->children, l)
     {
-        Node *child = l->data;
+        Node *child = reinterpret_cast<Node*> (l->data);
 
         switch (child->type)
         {
@@ -721,7 +723,7 @@ item_check (Node *node)
 
     SLIST_FOREACH (node->children, l)
     {
-        Node *child = l->data;
+        Node *child = reinterpret_cast<Node*> (l->data);
 
         switch (child->type)
         {
@@ -753,7 +755,7 @@ widget_check (Node *node)
 
     SLIST_FOREACH (node->children, l)
     {
-        Node *child = l->data;
+        Node *child = reinterpret_cast<Node*> (l->data);
 
         switch (child->type)
         {
@@ -785,7 +787,7 @@ container_check (Node *node)
 
     SLIST_FOREACH (node->children, l)
     {
-        Node *child = l->data;
+        Node *child = reinterpret_cast<Node*> (l->data);
 
         switch (child->type)
         {
@@ -884,7 +886,7 @@ lookup_merge (MooUiXml *xml,
 
     for (l = xml->priv->merged_ui; l != NULL; l = l->next)
     {
-        Merge *merge = l->data;
+        Merge *merge = reinterpret_cast<Merge*> (l->data);
         if (merge->id == merge_id)
             return merge;
     }
@@ -1281,7 +1283,7 @@ moo_ui_xml_remove_ui (MooUiXml       *xml,
     nodes = g_slist_copy (merge->nodes);
     while (nodes)
     {
-        moo_ui_xml_remove_node (xml, nodes->data);
+        moo_ui_xml_remove_node (xml, reinterpret_cast<MooUiNode*> (nodes->data));
         nodes = g_slist_delete_link (nodes, nodes);
     }
 
@@ -1306,12 +1308,12 @@ moo_ui_xml_remove_node (MooUiXml       *xml,
 
     SLIST_FOREACH (xml->priv->merged_ui, l)
     {
-        Merge *merge = l->data;
+        Merge *merge = reinterpret_cast<Merge*> (l->data);
         GSList *merge_nodes = g_slist_copy (merge->nodes);
 
         SLIST_FOREACH (merge_nodes, n)
         {
-            Node *merge_node = n->data;
+            Node *merge_node = reinterpret_cast<Node*> (n->data);
             if (node_is_ancestor (merge_node, node))
                 merge_remove_node (merge, merge_node);
         }
@@ -1332,7 +1334,7 @@ moo_ui_xml_remove_node (MooUiXml       *xml,
 
     SLIST_FOREACH (xml->priv->toplevels, l)
     {
-        Toplevel *toplevel = l->data;
+        Toplevel *toplevel = reinterpret_cast<Toplevel*> (l->data);
         if (node_is_ancestor (parent, toplevel->node))
             check_separators (parent, toplevel);
     }
@@ -1351,7 +1353,7 @@ merge_add_node (Merge *merge,
 
     SLIST_FOREACH (merge->nodes, l)
     {
-        Node *node = l->data;
+        Node *node = reinterpret_cast<Node*> (l->data);
 
         if (node_is_ancestor (added, node))
             return;
@@ -1407,15 +1409,20 @@ moo_ui_xml_find_node (MooUiXml       *xml,
     return node;
 }
 
+namespace {
+
+struct Data {
+    Node *found;
+    const char *name;
+};
+
+} // anonymous namespace
 
 static gboolean
 find_placeholder_func (Node    *node,
                        gpointer user_data)
 {
-    struct {
-        Node *found;
-        const char *name;
-    } *data = user_data;
+    Data *data = reinterpret_cast<Data*> (user_data);
 
     if (node->type != PLACEHOLDER)
         return FALSE;
@@ -1439,10 +1446,7 @@ MooUiNode*
 moo_ui_xml_find_placeholder (MooUiXml       *xml,
                              const char     *name)
 {
-    struct {
-        Node *found;
-        const char *name;
-    } data;
+    Data data;
 
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
     g_return_val_if_fail (name != NULL, NULL);
@@ -1510,7 +1514,7 @@ moo_ui_node_get_child (MooUiNode      *node,
 
         SLIST_FOREACH (node->children, l)
         {
-            child = l->data;
+            child = reinterpret_cast<Node*> (l->data);
             if (!strcmp (child->name, *p))
                 break;
             else
@@ -1592,13 +1596,13 @@ visibility_notify (GtkWidget *widget,
     g_return_if_fail (GTK_IS_WIDGET (widget));
     g_return_if_fail (MOO_IS_UI_XML (xml));
 
-    toplevel = g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK);
+    toplevel = reinterpret_cast<Toplevel*> (g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK));
     g_return_if_fail (toplevel != NULL);
 
     if (toplevel->in_creation)
         return;
 
-    node = g_object_get_qdata (G_OBJECT (widget), NODE_QUARK);
+    node = reinterpret_cast<Node*> (g_object_get_qdata (G_OBJECT (widget), NODE_QUARK));
     g_return_if_fail (node != NULL && node->parent != NULL);
     g_return_if_fail (node->type == ITEM);
 
@@ -1634,11 +1638,11 @@ xml_remove_widget (MooUiXml  *xml,
     g_return_if_fail (GTK_IS_WIDGET (widget));
     g_return_if_fail (MOO_IS_UI_XML (xml));
 
-    toplevel = g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK);
+    toplevel = reinterpret_cast<Toplevel*> (g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK));
     g_return_if_fail (toplevel != NULL);
     g_return_if_fail (toplevel->widget != widget);
 
-    node = g_object_get_qdata (G_OBJECT (widget), NODE_QUARK);
+    node = reinterpret_cast<Node*> (g_object_get_qdata (G_OBJECT (widget), NODE_QUARK));
     g_hash_table_remove (toplevel->children, node);
 
     g_object_set_qdata (G_OBJECT (widget), NODE_QUARK, NULL);
@@ -1692,7 +1696,7 @@ toplevel_destroyed (GtkWidget *widget,
     g_return_if_fail (GTK_IS_WIDGET (widget));
     g_return_if_fail (MOO_IS_UI_XML (xml));
 
-    toplevel = g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK);
+    toplevel = reinterpret_cast<Toplevel*> (g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK));
     g_return_if_fail (toplevel != NULL);
     g_return_if_fail (toplevel->widget == widget);
 
@@ -1757,7 +1761,7 @@ static gboolean node_is_empty (Node *node)
 {
     SLIST_FOREACH (node->children, l)
     {
-        Node *child = l->data;
+        Node *child = reinterpret_cast<Node*> (l->data);
 
         if (child->type == SEPARATOR)
             return FALSE;
@@ -1875,7 +1879,7 @@ node_list_children (Node *parent)
     for (l = parent->children; l != NULL; l = l->next)
     {
         GSList *tmp, *t;
-        Node *node = l->data;
+        Node *node = reinterpret_cast<Node*> (l->data);
 
         switch (node->type)
         {
@@ -1897,17 +1901,23 @@ node_list_children (Node *parent)
     return g_slist_reverse (list);
 }
 
+namespace {
+
+struct ForeachData
+{
+    NodeForeachFunc func;
+    gpointer func_data;
+    gboolean stop;
+};
+
+} // anonymous namespace
 
 static void
 real_foreach (Node    *node,
               gpointer data)
 {
     GSList *l;
-    struct {
-        NodeForeachFunc func;
-        gpointer func_data;
-        gboolean stop;
-    } *foreach_data = data;
+    ForeachData *foreach_data = reinterpret_cast<ForeachData*> (data);
 
     if (foreach_data->stop)
         return;
@@ -1920,7 +1930,7 @@ real_foreach (Node    *node,
 
     for (l = node->children; l != NULL; l = l->next)
     {
-        Node *child = l->data;
+        Node *child = reinterpret_cast<Node*> (l->data);
 
         real_foreach (child, data);
 
@@ -1934,11 +1944,7 @@ node_foreach (Node           *node,
               NodeForeachFunc func,
               gpointer        data)
 {
-    struct {
-        NodeForeachFunc func;
-        gpointer func_data;
-        gboolean stop;
-    } foreach_data;
+    ForeachData foreach_data;
 
     g_return_if_fail (node != NULL);
     g_return_if_fail (func != NULL);
@@ -1954,7 +1960,7 @@ static GtkWidget*
 toplevel_get_widget (Toplevel  *toplevel,
                      Node      *node)
 {
-    return g_hash_table_lookup (toplevel->children, node);
+    return object_cast_opt<GtkWidget> (g_hash_table_lookup (toplevel->children, node));
 }
 
 
@@ -1970,7 +1976,7 @@ check_empty (Node           *parent,
 
     for (l = children; l != NULL; l = l->next)
     {
-        Node *node = l->data;
+        Node *node = reinterpret_cast<Node*> (l->data);
 
         if (node->type == MOO_UI_NODE_ITEM)
         {
@@ -2011,7 +2017,7 @@ check_separators (Node           *parent,
 
     for (l = children; l != NULL; l = l->next)
     {
-        Node *node = l->data;
+        Node *node = reinterpret_cast<Node*> (l->data);
 
         switch (node->type)
         {
@@ -2071,7 +2077,7 @@ fill_menu_shell (MooUiXml       *xml,
 
     SLIST_FOREACH (children, l)
     {
-        Node *node = l->data;
+        Node *node = reinterpret_cast<Node*> (l->data);
 
         switch (node->type)
         {
@@ -2279,7 +2285,7 @@ fill_toolbar (MooUiXml       *xml,
 
     SLIST_FOREACH (children, l)
     {
-        Node *node = l->data;
+        Node *node = reinterpret_cast<Node*> (l->data);
 
         switch (node->type)
         {
@@ -2420,7 +2426,7 @@ moo_ui_xml_get_widget (MooUiXml       *xml,
     node = moo_ui_xml_get_node (xml, path);
     g_return_val_if_fail (node != NULL, NULL);
 
-    toplevel = g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK);
+    toplevel = reinterpret_cast<Toplevel*> (g_object_get_qdata (G_OBJECT (widget), TOPLEVEL_QUARK));
     g_return_val_if_fail (toplevel != NULL, NULL);
 
     return toplevel_get_widget (toplevel, node);
@@ -2584,7 +2590,7 @@ toplevel_remove_node (G_GNUC_UNUSED MooUiXml *xml,
     g_return_if_fail (node != toplevel->node);
     g_return_if_fail (node_is_ancestor (node, toplevel->node));
 
-    widget = g_hash_table_lookup (toplevel->children, node);
+    widget = object_cast_opt<GtkWidget> (g_hash_table_lookup (toplevel->children, node));
 
     if (widget)
         gtk_widget_destroy (widget);
@@ -2601,7 +2607,7 @@ update_widgets (MooUiXml       *xml,
         case UPDATE_ADD_NODE:
             SLIST_FOREACH (xml->priv->toplevels, l)
             {
-                Toplevel *toplevel = l->data;
+                Toplevel *toplevel = reinterpret_cast<Toplevel*> (l->data);
 
                 if (node_is_ancestor (node, toplevel->node))
                     toplevel_add_node (xml, toplevel, node);
@@ -2612,7 +2618,7 @@ update_widgets (MooUiXml       *xml,
         case UPDATE_REMOVE_NODE:
             SLIST_FOREACH (xml->priv->toplevels, l)
             {
-                Toplevel *toplevel = l->data;
+                Toplevel *toplevel = reinterpret_cast<Toplevel*> (l->data);
 
                 if (node_is_ancestor (toplevel->node, node))
                     xml_delete_toplevel (xml, toplevel);
@@ -2639,7 +2645,7 @@ moo_ui_xml_finalize (GObject *object)
 
     SLIST_FOREACH (xml->priv->toplevels, t)
     {
-        Toplevel *toplevel = t->data;
+        Toplevel *toplevel = reinterpret_cast<Toplevel*> (t->data);
         GSList *widgets = hash_table_list_values (toplevel->children);
 
         SLIST_FOREACH (widgets, w)
@@ -2660,7 +2666,7 @@ moo_ui_xml_finalize (GObject *object)
 
     SLIST_FOREACH (xml->priv->merged_ui, m)
     {
-        Merge *merge = m->data;
+        Merge *merge = reinterpret_cast<Merge*> (m->data);
         g_slist_free (merge->nodes);
         g_free (merge);
     }

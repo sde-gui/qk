@@ -24,6 +24,45 @@
 
 namespace moo {
 
+template<typename T>
+inline GType get_g_type();
+
+template<typename T>
+inline T* object_ref(T *obj)
+{
+    return static_cast<T*>(g_object_ref(obj));
+}
+
+template<typename T>
+inline T* object_cast(gpointer obj)
+{
+    return obj ? reinterpret_cast<T*>(G_TYPE_CHECK_INSTANCE_CAST(g_object_ref(obj), get_g_type<T>(), T)) : nullptr;
+}
+
+template<typename T>
+inline T* object_ref_opt(T *obj)
+{
+    return obj ? object_cast<T>(g_object_ref(obj)) : nullptr;
+}
+
+template<typename T>
+inline T* object_cast_opt(gpointer obj)
+{
+    return obj ? object_cast<T>(obj) : nullptr;
+}
+
+template<typename T>
+inline T* object_ref_cast_opt(gpointer obj)
+{
+    return obj ? object_ref(object_cast<T>(obj)) : nullptr;
+}
+
+template<typename T>
+inline T* new_object()
+{
+    return object_cast<T>(g_object_new(get_g_type<T>(), nullptr));
+}
+
 template<typename T, typename ...Args>
 inline void init_cpp_gobj(T* o, Args&& ...args)
 {
@@ -102,18 +141,6 @@ inline void finalize_cpp_private(T* owner, TPriv*& p)
 #endif
 }
 
-template<typename T>
-inline T* object_ref(T *obj)
-{
-    return static_cast<T*>(g_object_ref(obj));
-}
-
-template<typename T>
-inline T* object_ref_opt(gpointer obj, GType obj_g_type)
-{
-    return obj ? reinterpret_cast<T*>(G_TYPE_CHECK_INSTANCE_CAST(g_object_ref(obj), obj_g_type, T)) : nullptr;
-}
-
 struct class_helper
 {
     template<typename X>
@@ -140,5 +167,8 @@ MOO_DEFINE_FLAGS(GtkCellRendererState);
 MOO_DEFINE_FLAGS(GtkAttachOptions);
 MOO_DEFINE_FLAGS(GdkDragAction);
 MOO_DEFINE_FLAGS(GConnectFlags);
+MOO_DEFINE_FLAGS(GSpawnFlags);
+MOO_DEFINE_FLAGS(GIOCondition);
+MOO_DEFINE_FLAGS(GLogLevelFlags);
 
 #endif // __cplusplus

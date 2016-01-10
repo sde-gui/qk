@@ -201,7 +201,7 @@ moo_win32_get_dll_dir (const char *dll)
     {
     	GError *error = NULL;
 
-    	dll_utf16 = g_utf8_to_utf16 (dll, -1, NULL, NULL, &error);
+    	dll_utf16 = reinterpret_cast<wchar_t*> (g_utf8_to_utf16 (dll, -1, NULL, NULL, &error));
 
     	if (!dll_utf16)
     	{
@@ -216,7 +216,7 @@ moo_win32_get_dll_dir (const char *dll)
     g_return_val_if_fail (handle != NULL, g_strdup ("."));
 
     if (GetModuleFileNameW (handle, buf, G_N_ELEMENTS (buf)) > 0)
-        dllname = g_utf16_to_utf8 (buf, -1, NULL, NULL, NULL);
+        dllname = g_utf16_to_utf8 (reinterpret_cast<gunichar2*> (buf), -1, NULL, NULL, NULL);
 
     if (dllname)
         dir = g_path_get_dirname (dllname);
@@ -297,12 +297,12 @@ _moo_win32_message_box(GtkWidget      *parent,
     if (parent)
         parent = gtk_widget_get_toplevel (parent);
     if (parent)
-        parenthwnd = GDK_WINDOW_HWND (parent->window);
+        parenthwnd = (HWND) GDK_WINDOW_HWND (parent->window);
 
     if (title)
-        wtitle = g_utf8_to_utf16 (title, -1, NULL, NULL, NULL);
+        wtitle = reinterpret_cast<wchar_t*> (g_utf8_to_utf16 (title, -1, NULL, NULL, NULL));
     if (text)
-        wtext = g_utf8_to_utf16 (text, -1, NULL, NULL, NULL);
+        wtext = reinterpret_cast<wchar_t*> (g_utf8_to_utf16 (text, -1, NULL, NULL, NULL));
 
     ret = MessageBox(parenthwnd, wtext, wtitle, type);
 

@@ -13,11 +13,11 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_UI_XML_H
-#define MOO_UI_XML_H
+#pragma once
 
 #include <mooutils/moomarkup.h>
 #include <mooutils/mooactioncollection.h>
+#include <moocpp/gobjinfo.h>
 
 G_BEGIN_DECLS
 
@@ -184,4 +184,8 @@ void        moo_ui_xml_remove_node          (MooUiXml       *xml,
 
 G_END_DECLS
 
-#endif /* MOO_UI_XML_H */
+#ifdef __cplusplus
+
+MOO_DEFINE_GOBJ_TYPE(MooUiXml, GObject, MOO_TYPE_UI_XML);
+
+#endif // __cplusplus

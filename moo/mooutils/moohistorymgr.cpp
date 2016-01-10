@@ -207,7 +207,7 @@ moo_history_mgr_dispose (GObject *object)
 
         if (mgr->priv->files)
         {
-            moo_history_item_queue_foreach (mgr->priv->files, (MooHistoryItemListFunc) moo_history_item_free, NULL);
+            moo_history_item_queue_foreach (mgr->priv->files, moo_history_item_free, NULL);
             moo_history_item_queue_free_links (mgr->priv->files);
             g_hash_table_destroy (mgr->priv->hash);
         }

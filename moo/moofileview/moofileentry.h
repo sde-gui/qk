@@ -13,11 +13,11 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_FILE_ENTRY_H
-#define MOO_FILE_ENTRY_H
+#pragma once
 
 #include <mooutils/mooentry.h>
 #include <moofileview/moofile.h>
+#include <moocpp/gobjinfo.h>
 
 G_BEGIN_DECLS
 
@@ -86,4 +86,6 @@ char       *_moo_file_entry_completion_get_path         (MooFileEntryCompletion 
 
 G_END_DECLS
 
-#endif /* MOO_FILE_ENTRY_H */
+#ifdef __cplusplus
+MOO_DEFINE_GOBJ_TYPE(MooFileEntry, MooEntry, MOO_TYPE_FILE_ENTRY)
+#endif // __cplusplus

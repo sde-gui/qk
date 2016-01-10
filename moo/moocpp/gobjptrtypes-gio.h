@@ -15,16 +15,18 @@
 
 #pragma once
 
+#ifdef __cplusplus
+
 #include <gio/gio.h>
 #include <mooglib/moo-glib.h>
 
 #include "moocpp/gobjptrtypes-glib.h"
 
+MOO_DEFINE_GOBJ_TYPE(GFile, GObject, G_TYPE_FILE)
+
 namespace moo {
 
 class gstr;
-
-MOO_DEFINE_GOBJ_TYPE(GFile, GObject, G_TYPE_FILE)
 
 template<>
 class gobj_ref<GFile> : public gobj_ref_parent<GFile>
@@ -141,3 +143,5 @@ MOO_GOBJ_TYPEDEFS(File, GFile);
 } // namespace g
 
 } // namespace moo
+
+#endif // __cplusplus

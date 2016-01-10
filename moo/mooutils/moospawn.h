@@ -13,10 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_SPAWN_H
-#define MOO_SPAWN_H
+#pragma once
 
 #include <glib-object.h>
+#include <moocpp/gobjptrtypes-glib.h>
 
 G_BEGIN_DECLS
 
@@ -94,4 +94,6 @@ gboolean     moo_spawn_command_line_async_with_flags    (const gchar *command_li
 
 G_END_DECLS
 
-#endif /* MOO_SPAWN_H */
+#ifdef __cplusplus
+MOO_DEFINE_GOBJ_TYPE(MooCmd, GObject, MOO_TYPE_CMD)
+#endif // __cplusplus

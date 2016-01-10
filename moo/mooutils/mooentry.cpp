@@ -24,6 +24,7 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooeditops.h"
 #include "mooutils/mooi18n.h"
+#include "moocpp/gobjectutils.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>
@@ -183,7 +184,7 @@ moo_entry_class_init (MooEntryClass *klass)
     klass->redo = moo_entry_redo;
 
     moo_entry_parent_class = g_type_class_peek_parent (klass);
-    parent_editable_iface = g_type_interface_peek (moo_entry_parent_class, GTK_TYPE_EDITABLE);
+    parent_editable_iface = GTK_EDITABLE_CLASS (g_type_interface_peek (moo_entry_parent_class, GTK_TYPE_EDITABLE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_UNDO,

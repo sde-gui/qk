@@ -37,6 +37,7 @@
 #include <gtk/gtk.h>
 #include <gobject/gvaluecollector.h>
 
+using namespace moo;
 
 #define PREFS_REMEMBER_SIZE  "window/remember_size"
 #define PREFS_X              "window/x"
@@ -467,7 +468,7 @@ moo_window_constructor (GType                  type,
 
     window = MOO_WINDOW (object);
 
-    klass = g_type_class_ref (type);
+    klass = MOO_WINDOW_CLASS (g_type_class_ref (type));
     moo_window_set_id (window, moo_window_class_get_id (klass));
     window->priv->name = g_strdup (moo_window_class_get_name (klass));
 
@@ -588,20 +589,23 @@ moo_window_init (MooWindow *window)
     parse_shadow_style ();
 
     window->status_area = gtk_hbox_new (FALSE, 0);
-    window->statusbar = g_object_new (GTK_TYPE_STATUSBAR,
-                                      "has-resize-grip", FALSE,
-                                      (const char*) NULL);
+    window->statusbar = GTK_STATUSBAR (g_object_new (GTK_TYPE_STATUSBAR,
+                                                     "has-resize-grip", FALSE,
+                                                     nullptr));
     gtk_widget_set_name (GTK_WIDGET (window->statusbar), "no-shadow");
     gtk_box_pack_start (GTK_BOX (window->status_area),
                         GTK_WIDGET (window->statusbar),
                         TRUE, TRUE, 0);
-    rg = g_object_new (GTK_TYPE_STATUSBAR,
+
 #ifdef GDK_WINDOWING_QUARTZ
-                       "has-resize-grip", FALSE,
+    const gboolean has_resize_grip = FALSE;
 #else
-                       "has-resize-grip", TRUE,
+    const gboolean has_resize_grip = TRUE;
 #endif
-                       (const char*) NULL);
+
+    rg = GTK_WIDGET (g_object_new (GTK_TYPE_STATUSBAR,
+                                   "has-resize-grip", has_resize_grip,
+                                   nullptr));
     gtk_widget_set_name (rg, "no-shadow");
     gtk_box_pack_end (GTK_BOX (window->status_area),
                       rg, FALSE, FALSE, 0);
@@ -673,7 +677,7 @@ static gboolean
 moo_window_delete_event (GtkWidget      *widget,
                          G_GNUC_UNUSED GdkEventAny *event)
 {
-    MooCloseResponse result = FALSE;
+    MooCloseResponse result = MooCloseResponse (0);
     g_signal_emit_by_name (widget, "close", &result);
     return TRUE;
 }
@@ -687,7 +691,7 @@ accel_entry_new (guint            key,
     AccelEntry *entry = g_slice_new0 (AccelEntry);
     entry->keyval = key;
     entry->modifiers = mods;
-    entry->action = g_object_ref (action);
+    entry->action = object_ref (action);
     return entry;
 }
 
@@ -714,14 +718,14 @@ update_accels (MooWindow *window)
 
     for (l = moo_action_collection_get_groups (window->priv->actions); l != NULL; l = l->next)
     {
-        GtkActionGroup *group = l->data;
+        GtkActionGroup *group = GTK_ACTION_GROUP (l->data);
         GList *actions;
 
         actions = gtk_action_group_list_actions (group);
 
         while (actions != NULL)
         {
-            GtkAction *action = actions->data;
+            GtkAction *action = GTK_ACTION (actions->data);
             const char *accel_path = NULL;
 
             if (MOO_IS_ACTION (action) &&
@@ -774,7 +778,7 @@ activate_global_accel (MooWindow   *window,
 
     for (l = window->priv->global_accels; l != NULL; l = l->next)
     {
-        AccelEntry *entry = l->data;
+        AccelEntry *entry = reinterpret_cast<AccelEntry*> (l->data);
 
         if (entry->keyval == keyval && entry->modifiers == mods)
         {
@@ -926,7 +930,7 @@ moo_window_set_property (GObject      *object,
             break;
 
         case PROP_UI_XML:
-            moo_window_set_ui_xml (window, g_value_get_object (value));
+            moo_window_set_ui_xml (window, object_cast_opt<MooUiXml> (g_value_get_object (value)));
             break;
 
         case PROP_TOOLBAR_VISIBLE:
@@ -1077,8 +1081,8 @@ moo_window_update_toolbar (MooWindow *window)
         MooUiXml *old_xml;
         char *old_name;
 
-        old_xml = g_object_get_data (G_OBJECT (window->toolbar), "moo-window-ui-xml");
-        old_name = g_object_get_data (G_OBJECT (window->toolbar), "moo-window-ui-name");
+        old_xml = object_cast_opt<MooUiXml> (g_object_get_data (G_OBJECT (window->toolbar), "moo-window-ui-xml"));
+        old_name = reinterpret_cast<char*> (g_object_get_data (G_OBJECT (window->toolbar), "moo-window-ui-name"));
 
         if (!old_xml || old_xml != xml || !ui_name || strcmp (ui_name, old_name))
         {
@@ -1129,8 +1133,8 @@ moo_window_update_menubar (MooWindow *window)
         MooUiXml *old_xml;
         char *old_name;
 
-        old_xml = g_object_get_data (G_OBJECT (window->menubar), "moo-window-ui-xml");
-        old_name = g_object_get_data (G_OBJECT (window->menubar), "moo-window-ui-name");
+        old_xml = object_cast_opt<MooUiXml> (g_object_get_data (G_OBJECT (window->menubar), "moo-window-ui-xml"));
+        old_name = reinterpret_cast<char*> (g_object_get_data (G_OBJECT (window->menubar), "moo-window-ui-name"));
 
         if (!old_xml || old_xml != xml || !ui_name || strcmp (ui_name, old_name))
         {
@@ -1228,7 +1232,7 @@ static void
 toolbar_style_toggled (MooWindow            *window,
                        gpointer              data)
 {
-    GtkToolbarStyle style = GPOINTER_TO_INT (data);
+    GtkToolbarStyle style = GtkToolbarStyle (GPOINTER_TO_INT (data));
     if (window->toolbar)
         gtk_toolbar_set_style (GTK_TOOLBAR (window->toolbar), style);
     moo_prefs_set_int (setting (window, PREFS_TOOLBAR_STYLE), style);
@@ -1297,7 +1301,7 @@ get_toolbar_style_gtk (MooWindow *window)
     g_object_get (settings, "gtk-toolbar-style", &style, NULL);
     g_type_class_unref (toolbar_class);
 
-    g_return_val_if_fail (style < N_STYLES, 0);
+    g_return_val_if_fail (style < N_STYLES, GtkToolbarStyle (0));
     return style;
 }
 
@@ -1321,7 +1325,7 @@ init_prefs (MooWindow *window)
 static GtkToolbarStyle
 get_toolbar_style (MooWindow *window)
 {
-    GtkToolbarStyle s = moo_prefs_get_int (setting (window, PREFS_TOOLBAR_STYLE));
+    GtkToolbarStyle s = GtkToolbarStyle (moo_prefs_get_int (setting (window, PREFS_TOOLBAR_STYLE)));
     g_return_val_if_fail (s < N_STYLES, GTK_TOOLBAR_ICONS);
     return s;
 }
@@ -1372,7 +1376,7 @@ action_info_new (MooActionFactory *action,
     g_return_val_if_fail (MOO_IS_ACTION_FACTORY (action), NULL);
 
     info = g_new0 (ActionInfo, 1);
-    info->action = g_object_ref (action);
+    info->action = object_ref (action);
     info->group = g_strdup (group);
     info->conditions = g_strdupv (conditions);
     info->closure = closure;
@@ -1416,14 +1420,14 @@ action_store_new (void)
 static ActionStore *
 type_get_store (GType type)
 {
-    return g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK);
+    return reinterpret_cast<ActionStore*> (g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK));
 }
 
 
 static ActionStore *
 type_ensure_store (GType type)
 {
-    ActionStore *store = g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK);
+    ActionStore *store = reinterpret_cast<ActionStore*> (g_type_get_qdata (type, MOO_WINDOW_ACTIONS_QUARK));
 
     if (!store)
     {
@@ -1444,7 +1448,7 @@ action_activated (GtkAction   *action,
     GValue *retval_ptr = NULL;
     GValue *instance_and_params;
 
-    closure = g_object_get_data (G_OBJECT (action), "moo-window-action-closure");
+    closure = reinterpret_cast<GClosure*> (g_object_get_data (G_OBJECT (action), "moo-window-action-closure"));
     g_return_if_fail (closure != NULL);
 
     instance_and_params = g_new (GValue, info->n_args + 1);
@@ -1561,7 +1565,7 @@ moo_window_class_get_id (MooWindowClass *klass)
     g_return_val_if_fail (MOO_IS_WINDOW_CLASS (klass), NULL);
 
     type = G_OBJECT_CLASS_TYPE (klass);
-    return g_type_get_qdata (type, MOO_WINDOW_ID_QUARK);
+    return reinterpret_cast<char*> (g_type_get_qdata (type, MOO_WINDOW_ID_QUARK));
 }
 
 
@@ -1573,7 +1577,7 @@ moo_window_class_get_name (MooWindowClass     *klass)
     g_return_val_if_fail (MOO_IS_WINDOW_CLASS (klass), NULL);
 
     type = G_OBJECT_CLASS_TYPE (klass);
-    return g_type_get_qdata (type, MOO_WINDOW_NAME_QUARK);
+    return reinterpret_cast<char*> (g_type_get_qdata (type, MOO_WINDOW_NAME_QUARK));
 }
 
 
@@ -1607,11 +1611,11 @@ moo_window_class_install_action (MooWindowClass     *klass,
     {
         if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
         {
-            GtkAction *action = create_action (action_id, info, l->data);
+            GtkAction *action = create_action (action_id, info, MOO_WINDOW (l->data));
 
             if (action)
             {
-                moo_window_add_action (l->data, group, action);
+                moo_window_add_action (MOO_WINDOW (l->data), group, action);
                 g_object_unref (action);
             }
         }
@@ -1628,7 +1632,7 @@ custom_action_factory_func (MooWindow        *window,
 
     g_return_val_if_fail (MOO_IS_WINDOW (window), NULL);
 
-    func = g_object_get_data (G_OBJECT (factory), "moo-window-class-action-func");
+    func = reinterpret_cast<MooWindowActionFunc> (g_object_get_data (G_OBJECT (factory), "moo-window-class-action-func"));
     func_data = g_object_get_data (G_OBJECT (factory), "moo-window-class-action-func-data");
 
     g_return_val_if_fail (func != NULL, NULL);
@@ -1709,7 +1713,7 @@ moo_window_class_remove_action (MooWindowClass     *klass,
 
     for (l = window_instances; l != NULL; l = l->next)
         if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
-            moo_window_remove_action (l->data, action_id);
+            moo_window_remove_action (MOO_WINDOW (l->data), action_id);
 }
 
 
@@ -1735,7 +1739,7 @@ moo_window_class_new_group (MooWindowClass *klass,
     {
         if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
         {
-            MooWindow *window = l->data;
+            MooWindow *window = MOO_WINDOW (l->data);
             moo_action_collection_add_group (window->priv->actions, name, display_name);
         }
     }
@@ -1780,7 +1784,7 @@ moo_window_class_remove_group (MooWindowClass *klass,
     {
         if (g_type_is_a (G_OBJECT_TYPE (l->data), type))
         {
-            MooWindow *window = l->data;
+            MooWindow *window = MOO_WINDOW (l->data);
             GtkActionGroup *group = moo_action_collection_get_group (window->priv->actions, name);
             if (group)
                 moo_action_collection_remove_group (window->priv->actions, group);
@@ -1810,7 +1814,7 @@ moo_window_set_ui_xml (MooWindow          *window,
     if (window->priv->ui_xml)
         g_object_unref (window->priv->ui_xml);
 
-    window->priv->ui_xml = xml ? g_object_ref (xml) : moo_ui_xml_new ();
+    window->priv->ui_xml = xml ? object_ref (xml) : moo_ui_xml_new ();
 
     g_object_notify (G_OBJECT (window), "ui-xml");
 }
@@ -2036,7 +2040,7 @@ G_STMT_START {                                                                  
                 break;                                                                                          \
             }                                                                                                   \
                                                                                                                 \
-            *(action_class__) = g_type_class_ref (*(action_type__));                                            \
+            *(action_class__) = G_OBJECT_CLASS (g_type_class_ref (*(action_type__)));                           \
         }                                                                                                       \
         else if (!strncmp ((prop_name__), "condition::", strlen ("condition::")))                               \
         {                                                                                                       \
@@ -2071,7 +2075,7 @@ G_STMT_START {                                                                  
             {                                                                                                   \
                 if (!*(action_type__))                                                                          \
                     *(action_type__) = MOO_TYPE_ACTION;                                                         \
-                *(action_class__) = g_type_class_ref (*(action_type__));                                        \
+                *(action_class__) = G_OBJECT_CLASS (g_type_class_ref (*(action_type__)));                       \
             }                                                                                                   \
                                                                                                                 \
             pspec__ = g_object_class_find_property (*(action_class__), (prop_name__));                          \
@@ -2404,7 +2408,7 @@ moo_window_connect_eo_widget (MooWindow *window,
 {
     g_return_if_fail (_moo_edit_ops_check (G_OBJECT (widget)));
 
-    window->priv->eo_widget = g_object_ref (widget);
+    window->priv->eo_widget = object_ref (widget);
 
     _moo_edit_ops_connect (G_OBJECT (widget));
     g_signal_connect_swapped (widget, "moo-edit-ops-can-do-op-changed",
@@ -2461,7 +2465,7 @@ check_edit_ops_widget (MooWindow *window)
             moo_window_connect_eo_widget (window, widget);
 
         for (i = 0; i < MOO_N_EDIT_OPS; i++)
-            emit_can_do_op_changed (window, i);
+            emit_can_do_op_changed (window, MooEditOpType (i));
     }
 }
 
@@ -2484,7 +2488,7 @@ moo_window_connect_uo_widget (MooWindow *window,
 {
     g_return_if_fail (_moo_undo_ops_check (G_OBJECT (widget)));
 
-    window->priv->uo_widget = g_object_ref (widget);
+    window->priv->uo_widget = object_ref (widget);
 
     g_signal_connect_swapped (widget, "moo-undo-ops-can-undo-changed",
                               G_CALLBACK (emit_can_undo_changed), window);

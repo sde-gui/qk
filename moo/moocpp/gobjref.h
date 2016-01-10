@@ -80,79 +80,79 @@ private:
 template<>
 class gobj_ref<GObject>; // : public gobj_ref_base
 
-#define MOO_DEFINE_GOBJREF_METHODS_IMPL(Object, Super)                          \
-    using super = Super;                                                        \
-    using object_type = Object;                                                 \
-    using parent_object_type = typename super::object_type;                     \
-    using ptrtype = gobj_ptr<object_type>;                                      \
-                                                                                \
-protected:                                                                      \
-    friend class gobj_ptr_impl<object_type>;                                    \
-    friend class gobj_raw_ptr<object_type>;                                     \
-    friend class gobj_raw_ptr<const object_type>;                               \
-                                                                                \
-    gobj_ref() {}                                                               \
-                                                                                \
-public:                                                                         \
-    gobj_ref(object_type& gobj)                                                 \
-    {                                                                           \
-        _set_gobj(&gobj);                                                       \
-    }                                                                           \
-                                                                                \
-    object_type* gobj()                                                         \
-    {                                                                           \
-        return reinterpret_cast<object_type*>(raw_gobj());                      \
-    }                                                                           \
-                                                                                \
-    const object_type* gobj() const                                             \
-    {                                                                           \
-        return reinterpret_cast<const object_type*>(raw_gobj());                \
-    }                                                                           \
-                                                                                \
-    template<typename X>                                                        \
-    X* gobj()                                                                   \
-    {                                                                           \
-        return nc_gobj<X>();                                                    \
-    }                                                                           \
-                                                                                \
-    template<typename X>                                                        \
-    const X* gobj() const                                                       \
-    {                                                                           \
-        return nc_gobj<X>();                                                    \
-    }                                                                           \
-                                                                                \
-    object_type* nc_gobj() const                                                \
-    {                                                                           \
-        return const_cast<object_type*>(gobj());                                \
-    }                                                                           \
-                                                                                \
-    template<typename X>                                                        \
-    X* nc_gobj() const                                                          \
-    {                                                                           \
-        object_type* o = const_cast<object_type*>(gobj());                      \
-        return gobj_is_subclass<Object, X>::down_cast(o);                       \
-    }                                                                           \
-                                                                                \
-    gobj_ref* self() { return this; }                                           \
-    const gobj_ref* self() const { return this; }                               \
-                                                                                \
-    operator object_type&() { return *gobj(); }                                 \
-    operator const object_type&() const { return *gobj(); }                     \
-    gobj_raw_ptr<object_type> operator&() { return nc_gobj(); }                 \
-    gobj_raw_ptr<const object_type> operator&() const { return nc_gobj(); }     \
-                                                                                \
-    gobj_ref(const gobj_ref&) = default;                                        \
-    gobj_ref& operator=(const gobj_ref&) = default;                             \
-                                                                                \
-    gobj_ref(gobj_ref&& other)                                                  \
-        : super(std::move(static_cast<super&&>(other)))                         \
-    {                                                                           \
-    }                                                                           \
-                                                                                \
-    gobj_ref& operator=(gobj_ref&& other)                                       \
-    {                                                                           \
-        super::operator=(std::move(static_cast<super&&>(other)));               \
-        return *this;                                                           \
+#define MOO_DEFINE_GOBJREF_METHODS_IMPL(Object, Super)                                  \
+    using super = Super;                                                                \
+    using object_type = Object;                                                         \
+    using parent_object_type = typename super::object_type;                             \
+    using ptrtype = gobj_ptr<object_type>;                                              \
+                                                                                        \
+protected:                                                                              \
+    friend class gobj_ptr_impl<object_type>;                                            \
+    friend class gobj_raw_ptr<object_type>;                                             \
+    friend class gobj_raw_ptr<const object_type>;                                       \
+                                                                                        \
+    gobj_ref() {}                                                                       \
+                                                                                        \
+public:                                                                                 \
+    gobj_ref(object_type& gobj)                                                         \
+    {                                                                                   \
+        _set_gobj(&gobj);                                                               \
+    }                                                                                   \
+                                                                                        \
+    object_type* gobj()                                                                 \
+    {                                                                                   \
+        return reinterpret_cast<object_type*>(raw_gobj());                              \
+    }                                                                                   \
+                                                                                        \
+    const object_type* gobj() const                                                     \
+    {                                                                                   \
+        return reinterpret_cast<const object_type*>(raw_gobj());                        \
+    }                                                                                   \
+                                                                                        \
+    template<typename X>                                                                \
+    X* gobj()                                                                           \
+    {                                                                                   \
+        return nc_gobj<X>();                                                            \
+    }                                                                                   \
+                                                                                        \
+    template<typename X>                                                                \
+    const X* gobj() const                                                               \
+    {                                                                                   \
+        return nc_gobj<X>();                                                            \
+    }                                                                                   \
+                                                                                        \
+    object_type* nc_gobj() const                                                        \
+    {                                                                                   \
+        return const_cast<object_type*>(gobj());                                        \
+    }                                                                                   \
+                                                                                        \
+    template<typename X>                                                                \
+    X* nc_gobj() const                                                                  \
+    {                                                                                   \
+        object_type* o = const_cast<object_type*>(gobj());                              \
+        return gobj_is_subclass<Object, X>::down_cast(o);                               \
+    }                                                                                   \
+                                                                                        \
+    gobj_ref* self() { return this; }                                                   \
+    const gobj_ref* self() const { return this; }                                       \
+                                                                                        \
+    operator object_type&() { return *gobj(); }                                         \
+    operator const object_type&() const { return *gobj(); }                             \
+    gobj_raw_ptr<object_type> operator&() { return nc_gobj(); }                         \
+    gobj_raw_ptr<const object_type> operator&() const { return nc_gobj(); }             \
+                                                                                        \
+    gobj_ref(const gobj_ref&) = default;                                                \
+    gobj_ref& operator=(const gobj_ref&) = default;                                     \
+                                                                                        \
+    gobj_ref(gobj_ref&& other)                                                          \
+        : super(std::move(static_cast<super&&>(other)))                                 \
+    {                                                                                   \
+    }                                                                                   \
+                                                                                        \
+    gobj_ref& operator=(gobj_ref&& other)                                               \
+    {                                                                                   \
+        super::operator=(std::move(static_cast<super&&>(other)));                       \
+        return *this;                                                                   \
     }
 
 #define MOO_DEFINE_GOBJREF_METHODS(Object)                                      \

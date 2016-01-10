@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_FILE_WRITER_H
-#define MOO_FILE_WRITER_H
+#pragma once
 
 #include <gio/gio.h>
 
@@ -72,4 +71,7 @@ const char     *moo_string_writer_get_string    (MooFileWriter  *writer,
 
 G_END_DECLS
 
-#endif /* MOO_FILE_WRITER_H */
+#ifdef __cplusplus
+#include <moocpp/gobjectutils.h>
+MOO_DEFINE_FLAGS(MooFileWriterFlags);
+#endif

@@ -43,7 +43,8 @@ typedef struct _MooPanedClass    MooPanedClass;
  * @MOO_PANE_POS_BOTTOM:
  */
 typedef enum {
-    MOO_PANE_POS_LEFT = 0,
+    MOO_PANE_POS_INVALID = -1,
+    MOO_PANE_POS_LEFT,
     MOO_PANE_POS_RIGHT,
     MOO_PANE_POS_TOP,
     MOO_PANE_POS_BOTTOM

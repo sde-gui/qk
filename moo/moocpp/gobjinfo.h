@@ -15,6 +15,8 @@
 
 #pragma once
 
+#ifdef __cplusplus
+
 #include <glib-object.h>
 #include <type_traits>
 
@@ -51,6 +53,12 @@ struct gobjinfo<GObject>
     static GType object_g_type() { return G_TYPE_OBJECT; }
 };
 
+template<typename T>
+inline GType get_g_type()
+{
+    return gobjinfo<T>::object_g_type();
+}
+
 template<>
 struct gobj_is_subclass<GObject, GObject>
 {
@@ -59,6 +67,8 @@ struct gobj_is_subclass<GObject, GObject>
 };
 
 #define MOO_DEFINE_GOBJ_TYPE(Object, Parent, g_type)                                            \
+namespace moo {                                                                                 \
+                                                                                                \
     template<>                                                                                  \
     struct gobjinfo<Object>                                                                     \
     {                                                                                           \
@@ -87,9 +97,12 @@ struct gobj_is_subclass<GObject, GObject>
             Super* s = gobj_is_subclass<Parent, Super>::down_cast(p);                           \
             return s;                                                                           \
         }                                                                                       \
-    };
+    };                                                                                          \
+}                                                                                               \
 
 template<typename Object>
 using gobj_parent_type = typename gobjinfo<Object>::parent_type;
 
 } // namespace moo
+
+#endif // __cplusplus
