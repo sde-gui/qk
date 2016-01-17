@@ -72,8 +72,12 @@ private:
     void _set_gobj(gpointer gobj) { m_gobj = reinterpret_cast<GObject*>(gobj); }
 
 private:
+    // MUST be bit-compatible with a raw pointer
     GObject* m_gobj;
 };
+
+static_assert(sizeof(gobj_ref_base) == sizeof(void*),
+              "gobj_ref must be bit-compatible with a raw pointer, otherwise operator& will break");
 
 template<>
 class gobj_ref<GObject>; // : public gobj_ref_base

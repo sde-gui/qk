@@ -176,6 +176,8 @@ static guint signals[LAST_SIGNAL];
 static void
 moo_app_class_init (MooAppClass *klass)
 {
+    moo::init_gobj_system ();
+
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
     gobject_class->constructor = moo_app_constructor;
@@ -541,12 +543,12 @@ moo_app_init_editor (MooApp *app)
 {
     app->priv->editor.take (moo_editor_create_instance ());
 
-    app->priv->editor->signal_connect_swapped("will-close-window",
-                                              G_CALLBACK(editor_will_close_window),
-                                              app);
-    app->priv->editor->signal_connect_swapped("after-close-window",
-                                              G_CALLBACK(editor_after_close_window),
-                                              app);
+    app->priv->editor->connect_swapped ("will-close-window",
+                                        G_CALLBACK(editor_will_close_window),
+                                        app);
+    app->priv->editor->connect_swapped ("after-close-window",
+                                        G_CALLBACK(editor_after_close_window),
+                                        app);
 
     /* if ui_xml wasn't set yet, then moo_app_get_ui_xml()
        will get editor's xml */

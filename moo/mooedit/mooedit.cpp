@@ -316,22 +316,22 @@ moo_edit_constructor (GType                  type,
     Edit::_moo_edit_instances.push_back(&doc);
 
     priv.changed_handler_id =
-        priv.buffer->signal_connect("changed",
-                                    G_CALLBACK (changed_cb),
-                                    &doc);
+        priv.buffer->connect ("changed",
+                              G_CALLBACK (changed_cb),
+                              &doc);
     priv.modified_changed_handler_id =
-        priv.buffer->signal_connect("modified-changed",
-                                    G_CALLBACK (modified_changed_cb),
-                                    &doc);
+        priv.buffer->connect ("modified-changed",
+                              G_CALLBACK (modified_changed_cb),
+                              &doc);
 
     doc._set_file(nullptr, nullptr);
 
-    priv.buffer->signal_connect_swapped("line-mark-moved",
-                                        G_CALLBACK (Edit::_line_mark_moved),
-                                        &doc);
-    priv.buffer->signal_connect_swapped("line-mark-deleted",
-                                        G_CALLBACK (Edit::_line_mark_deleted),
-                                        &doc);
+    priv.buffer->connect_swapped ("line-mark-moved",
+                                  G_CALLBACK (Edit::_line_mark_moved),
+                                  &doc);
+    priv.buffer->connect_swapped ("line-mark-deleted",
+                                  G_CALLBACK (Edit::_line_mark_deleted),
+                                  &doc);
 
     return object;
 }

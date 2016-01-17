@@ -49,12 +49,8 @@ MOO_DEFINE_GOBJ_TYPE(MooTextView, GtkTextView, moo_text_view_get_type())
 MOO_DEFINE_GOBJ_TYPE(MooEditTab, GtkWidget, moo_edit_tab_get_type());
 MOO_DEFINE_GOBJ_TYPE(MooEditWindow, GtkWindow, moo_edit_window_get_type());
 
-namespace moo {
-
-template<> class gobj_ref<MooEdit>;
-template<> class gobj_ref<MooEditView>;
-
-} // namespace moo
+MOO_DECLARE_CUSTOM_GOBJ_TYPE(MooEdit);
+MOO_DECLARE_CUSTOM_GOBJ_TYPE(MooEditView);
 
 MOO_GOBJ_TYPEDEFS(TextView, MooTextView);
 MOO_GOBJ_TYPEDEFS(Edit, MooEdit);
@@ -70,12 +66,8 @@ void g_free(MooOpenInfo*) = delete;
 void g_free(MooReloadInfo*) = delete;
 void g_free(MooSaveInfo*) = delete;
 
-namespace moo {
-
-template<> struct gobjinfo<MooOpenInfo> { static const bool is_gobject = false; };
-template<> struct gobjinfo<MooReloadInfo> { static const bool is_gobject = false; };
-template<> struct gobjinfo<MooSaveInfo> { static const bool is_gobject = false; };
-
-} // namespace moo
+MOO_DEFINE_NON_GOBJ_TYPE(MooOpenInfo);
+MOO_DEFINE_NON_GOBJ_TYPE(MooReloadInfo);
+MOO_DEFINE_NON_GOBJ_TYPE(MooSaveInfo);
 
 #endif // __cplusplus

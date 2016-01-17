@@ -23,6 +23,17 @@
 
 #include <stdarg.h>
 
+#define MOO_GOBJ_TYPEDEFS(CppObject, CObject)                               \
+    using CppObject             = moo::gobj_ref<CObject>;                   \
+    using CppObject##Ptr        = moo::gobj_ptr<CObject>;                   \
+    using CppObject##RawPtr     = moo::gobj_raw_ptr<CObject>;               \
+    using Const##CppObject##Ptr = moo::gobj_raw_ptr<const CObject>;         \
+
+#define MOO_DECLARE_CUSTOM_GOBJ_TYPE(CObject)                               \
+namespace moo {                                                             \
+template<> class gobj_ref<CObject>;                                         \
+}
+
 namespace moo {
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -36,10 +47,11 @@ class gobj_ref<GObject> : public gobj_ref_base
 public:
     MOO_DEFINE_GOBJREF_METHODS_IMPL(GObject, gobj_ref_base)
 
-    gulong  signal_connect          (const char* detailed_signal, GCallback c_handler, void* data);
-    gulong  signal_connect_swapped  (const char* detailed_signal, GCallback c_handler, void* data);
-    void    signal_emit_by_name     (const char* detailed_signal, ...);
-    void    signal_emit             (guint signal_id, GQuark detail, ...);
+    gulong  connect                             (const char* detailed_signal, GCallback c_handler, void* data);
+    gulong  connect_swapped                     (const char* detailed_signal, GCallback c_handler, void* data);
+
+    void    signal_emit_by_name                 (const char* detailed_signal, ...);
+    void    signal_emit                         (guint signal_id, GQuark detail, ...);
 
     bool    signal_has_handler_pending          (guint signal_id, GQuark detail, bool may_be_blocked);
     gulong  signal_connect_closure_by_id        (guint signal_id, GQuark detail, GClosure* closure, bool after);
@@ -67,12 +79,6 @@ public:
 };
 
 namespace g {
-
-#define MOO_GOBJ_TYPEDEFS(CppObject, CObject)                       \
-    using CppObject             = moo::gobj_ref<CObject>;           \
-    using CppObject##Ptr        = moo::gobj_ptr<CObject>;           \
-    using CppObject##RawPtr     = moo::gobj_raw_ptr<CObject>;       \
-    using Const##CppObject##Ptr = moo::gobj_raw_ptr<const CObject>;
 
 MOO_GOBJ_TYPEDEFS(Object, GObject);
 

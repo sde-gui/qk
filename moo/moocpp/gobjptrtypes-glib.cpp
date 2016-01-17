@@ -28,12 +28,16 @@ void ::extern_g_object_unref(gpointer o)
     g_object_unref(o);
 }
 
-gulong Object::signal_connect(const char *detailed_signal, GCallback c_handler, void *data)
+void moo::init_gobj_system ()
+{
+}
+
+gulong Object::connect(const char *detailed_signal, GCallback c_handler, void *data)
 {
     return g_signal_connect(gobj(), detailed_signal, c_handler, data);
 }
 
-gulong Object::signal_connect_swapped(const char *detailed_signal, GCallback c_handler, void *data)
+gulong Object::connect_swapped(const char *detailed_signal, GCallback c_handler, void *data)
 {
     return g_signal_connect_swapped(gobj(), detailed_signal, c_handler, data);
 }

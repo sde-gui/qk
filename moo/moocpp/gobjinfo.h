@@ -22,6 +22,8 @@
 
 namespace moo {
 
+void init_gobj_system ();
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 //
 // gobjinfo
@@ -99,6 +101,11 @@ namespace moo {                                                                 
         }                                                                                       \
     };                                                                                          \
 }                                                                                               \
+
+#define MOO_DEFINE_NON_GOBJ_TYPE(Object)                                                        \
+namespace moo {                                                                                 \
+    template<> struct gobjinfo<Object> { static const bool is_gobject = false; };               \
+}
 
 template<typename Object>
 using gobj_parent_type = typename gobjinfo<Object>::parent_type;

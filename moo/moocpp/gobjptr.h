@@ -198,8 +198,6 @@ inline gobj_ptr<Object> wrap(const gobj_raw_ptr<Object>& obj)
     return gobj_ptr<Object>::wrap(obj);
 }
 
-template<> class gobj_ref<GObject>;
-
 template<typename T, typename ...Args>
 inline gobj_ptr<T> create_gobj(GType obj_type, Args&& ...args)
 {

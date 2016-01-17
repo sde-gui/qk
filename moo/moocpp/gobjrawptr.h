@@ -24,6 +24,7 @@ namespace moo {
 // gobj_raw_ptr
 //
 
+// Bit-compatible with a raw pointer
 template<typename Object>
 class gobj_raw_ptr
 {
