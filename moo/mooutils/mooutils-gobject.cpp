@@ -1575,7 +1575,7 @@ watch_alloc (gsize          size,
 
     w = reinterpret_cast<Watch*> (g_malloc0 (size));
     w->source = _moo_object_ptr_new (G_OBJECT (source), (GWeakNotify) watch_source_died, w);
-    w->target = _moo_object_ptr_new (G_OBJECT (source), (GWeakNotify) watch_target_died, w);
+    w->target = _moo_object_ptr_new (G_OBJECT (target), (GWeakNotify) watch_target_died, w);
     w->klass = klass;
     w->notify = notify;
     w->notify_data = notify_data;
