@@ -23,7 +23,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moofilewatch.h"
 #include "moocpp/gobjptr.h"
-#include "moocpp/gobjptrtypes-glib.h"
+#include "moocpp/gobjtypes-glib.h"
 #include "marshals.h"
 #include <mooglib/moo-glib.h>
 #include <mooglib/moo-stat.h>

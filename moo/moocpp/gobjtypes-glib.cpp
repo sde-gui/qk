@@ -1,5 +1,5 @@
 /*
- *   moocpp/gobjptrtypes-glib.cpp
+ *   moocpp/gobjtypes-glib.cpp
  *
  *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
@@ -13,7 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "moocpp/gobjptrtypes-glib.h"
+#include "moocpp/gobjtypes-glib.h"
 
 using namespace moo;
 using namespace g;

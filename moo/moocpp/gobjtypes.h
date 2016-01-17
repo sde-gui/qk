@@ -1,5 +1,5 @@
 /*
- *   moocpp/gobjptrtypes.h
+ *   moocpp/gobjtypes.h
  *
  *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
@@ -15,6 +15,6 @@
 
 #pragma once
 
-#include <moocpp/gobjptrtypes-glib.h>
-#include <moocpp/gobjptrtypes-gio.h>
-#include <moocpp/gobjptrtypes-gtk.h>
+#include <moocpp/gobjtypes-glib.h>
+#include <moocpp/gobjtypes-gio.h>
+#include <moocpp/gobjtypes-gtk.h>

@@ -23,7 +23,7 @@ G_END_DECLS
 #ifdef __cplusplus
 
 #include <moocpp/strutils.h>
-#include <moocpp/gobjptrtypes-gio.h>
+#include <moocpp/gobjtypes-gio.h>
 
 moo::gstr   moo_file_get_display_name   (const moo::g::File& file);
 

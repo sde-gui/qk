@@ -6,13 +6,13 @@ SET(moocpp_sources
 	moocpp/gobjref.h
 	moocpp/gobjinfo.h
 	moocpp/gobjrawptr.h
-	moocpp/gobjptrtypes.h
-	moocpp/gobjptrtypes-glib.h
-	moocpp/gobjptrtypes-gio.h
-	moocpp/gobjptrtypes-gtk.h
-	moocpp/gobjptrtypes-glib.cpp
-	moocpp/gobjptrtypes-gio.cpp
-	moocpp/gobjptrtypes-gtk.cpp
+	moocpp/gobjtypes.h
+	moocpp/gobjtypes-glib.h
+	moocpp/gobjtypes-gio.h
+	moocpp/gobjtypes-gtk.h
+	moocpp/gobjtypes-glib.cpp
+	moocpp/gobjtypes-gio.cpp
+	moocpp/gobjtypes-gtk.cpp
 	moocpp/gparam.h
 	moocpp/grefptr.h
 	moocpp/memutils.h

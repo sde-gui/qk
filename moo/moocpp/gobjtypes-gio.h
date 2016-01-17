@@ -1,5 +1,5 @@
 /*
- *   moocpp/gobjptrtypes-gio.h
+ *   moocpp/gobjtypes-gio.h
  *
  *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
@@ -20,7 +20,7 @@
 #include <gio/gio.h>
 #include <mooglib/moo-glib.h>
 
-#include "moocpp/gobjptrtypes-glib.h"
+#include "moocpp/gobjtypes-glib.h"
 
 MOO_DEFINE_GOBJ_TYPE(GFile, GObject, G_TYPE_FILE)
 

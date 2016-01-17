@@ -16,7 +16,7 @@
 #pragma once
 
 #include <glib-object.h>
-#include <moocpp/gobjptrtypes-glib.h>
+#include <moocpp/gobjtypes-glib.h>
 
 G_BEGIN_DECLS
 

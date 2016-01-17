@@ -1,5 +1,5 @@
 /*
- *   moocpp/gobjptrtypes-gtk.h
+ *   moocpp/gobjtypes-gtk.h
  *
  *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
@@ -20,7 +20,7 @@
 #include <gtk/gtk.h>
 #include <mooglib/moo-glib.h>
 
-#include "moocpp/gobjptrtypes-glib.h"
+#include "moocpp/gobjtypes-glib.h"
 
 #define MOO_DEFINE_GTK_TYPE(Object, Parent, obj_g_type)         \
     MOO_DEFINE_GOBJ_TYPE(Gtk##Object, Parent, obj_g_type)       \

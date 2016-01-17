@@ -18,7 +18,7 @@
 #include <vector>
 #include "mooedit/mooeditor-impl.h"
 #include "mooedit/moolangmgr.h"
-#include "moocpp/gobjptrtypes.h"
+#include "moocpp/gobjtypes.h"
 #include "moocpp/utils.h"
 
 enum MooEditorOptions {

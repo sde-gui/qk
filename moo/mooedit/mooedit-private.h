@@ -21,7 +21,7 @@
 #include "mooedit/mooeditview-impl.h"
 #include "moocpp/strutils.h"
 #include "moocpp/utils.h"
-#include "moocpp/gobjptrtypes.h"
+#include "moocpp/gobjtypes.h"
 
 struct MooEditPrivate {
     MooEditPrivate();

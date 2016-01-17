@@ -37,7 +37,7 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
-#include "moocpp/gobjptrtypes.h"
+#include "moocpp/gobjtypes.h"
 using namespace moo;
 
 #define REPORT_UNKNOWN_ACTIONS 0

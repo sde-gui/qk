@@ -1,5 +1,5 @@
 /*
- *   moocpp/gobjptrtypes-gio.cpp
+ *   moocpp/gobjtypes-gio.cpp
  *
  *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
@@ -13,7 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "moocpp/gobjptrtypes-gio.h"
+#include "moocpp/gobjtypes-gio.h"
 #include "moocpp/strutils.h"
 
 using namespace moo;

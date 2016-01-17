@@ -16,7 +16,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
-#include <moocpp/gobjptrtypes.h>
+#include <moocpp/gobjtypes.h>
 
 G_BEGIN_DECLS
 

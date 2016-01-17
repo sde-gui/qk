@@ -21,7 +21,7 @@
 #include <mooedit/mooeditconfig.h>
 
 #ifdef __cplusplus
-#include <moocpp/gobjptrtypes-gio.h>
+#include <moocpp/gobjtypes-gio.h>
 #endif // __cplusplus
 
 G_BEGIN_DECLS

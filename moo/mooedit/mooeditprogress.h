@@ -7,7 +7,7 @@ typedef struct MooEditProgress MooEditProgress;
 
 #ifdef __cplusplus
 
-#include <moocpp/gobjptrtypes.h>
+#include <moocpp/gobjtypes.h>
 
 using EditProgressPtr = moo::gobj_ptr<MooEditProgress>;
 using EditProgress    = moo::gobj_ref<MooEditProgress>;

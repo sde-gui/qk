@@ -23,7 +23,7 @@
 
 #ifdef __cplusplus
 #include <moocpp/strutils.h>
-#include <moocpp/gobjptrtypes-gio.h>
+#include <moocpp/gobjtypes-gio.h>
 #include <vector>
 
 namespace moo {

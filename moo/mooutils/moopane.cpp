@@ -39,7 +39,7 @@
 #include "mooi18n.h"
 
 #include "moocpp/gobjectutils.h"
-#include "moocpp/gobjptrtypes.h"
+#include "moocpp/gobjtypes.h"
 using namespace moo;
 
 struct _MooPane {

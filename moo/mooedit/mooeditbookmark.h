@@ -20,7 +20,7 @@
 #include <mooedit/moolinemark.h>
 
 #ifdef __cplusplus
-#include <moocpp/gobjptrtypes.h>
+#include <moocpp/gobjtypes.h>
 #endif
 
 G_BEGIN_DECLS
