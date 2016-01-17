@@ -30,10 +30,27 @@
     }                                                           \
     }
 
+MOO_DECLARE_CUSTOM_GOBJ_TYPE(GtkTextView);
+
 MOO_DEFINE_GTK_TYPE(Object, GObject, GTK_TYPE_OBJECT)
 MOO_DEFINE_GTK_TYPE(Widget, GtkObject, GTK_TYPE_WIDGET)
-MOO_DEFINE_GTK_TYPE(TextView, GtkWidget, GTK_TYPE_TEXT_VIEW)
 MOO_DEFINE_GTK_TYPE(Entry, GtkWidget, GTK_TYPE_ENTRY)
 MOO_DEFINE_GTK_TYPE(Action, GObject, GTK_TYPE_ACTION)
+MOO_DEFINE_GTK_TYPE(TextView, GtkWidget, GTK_TYPE_TEXT_VIEW)
+MOO_DEFINE_GTK_TYPE(TextBuffer, GObject, GTK_TYPE_TEXT_BUFFER)
+MOO_DEFINE_GTK_TYPE(TextMark, GObject, GTK_TYPE_TEXT_MARK)
+MOO_DEFINE_GTK_TYPE(MenuShell, GtkWidget, GTK_TYPE_MENU_SHELL)
+MOO_DEFINE_GTK_TYPE(Menu, GtkMenuShell, GTK_TYPE_MENU)
+
+template<>
+class moo::gobj_ref<GtkTextView> : public moo::gobj_ref_parent<GtkTextView>
+{
+public:
+    MOO_DEFINE_GOBJREF_METHODS(GtkTextView);
+
+    gtk::TextBuffer get_buffer  ();
+};
+
+MOO_REGISTER_CUSTOM_GOBJ_TYPE(GtkTextView);
 
 #endif // __cplusplus

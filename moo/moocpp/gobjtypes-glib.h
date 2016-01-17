@@ -24,10 +24,10 @@
 #include <stdarg.h>
 
 #define MOO_GOBJ_TYPEDEFS(CppObject, CObject)                               \
-    using CppObject             = moo::gobj_ref<CObject>;                   \
-    using CppObject##Ptr        = moo::gobj_ptr<CObject>;                   \
-    using CppObject##RawPtr     = moo::gobj_raw_ptr<CObject>;               \
-    using Const##CppObject##Ptr = moo::gobj_raw_ptr<const CObject>;         \
+    using CppObject             = ::moo::gobj_ref<CObject>;                 \
+    using CppObject##Ptr        = ::moo::gobj_ptr<CObject>;                 \
+    using CppObject##RawPtr     = ::moo::gobj_raw_ptr<CObject>;             \
+    using Const##CppObject##Ptr = ::moo::gobj_raw_ptr<const CObject>;       \
 
 #define MOO_DECLARE_CUSTOM_GOBJ_TYPE(CObject)                               \
 namespace moo {                                                             \

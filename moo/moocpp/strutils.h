@@ -35,7 +35,11 @@ public:
 
     char* release() { char *p = m_p; m_p = nullptr; return p; }
     const char* get() { return m_p; }
+
     char*& p() { return m_p; }
+    char** pp() { return &m_p; }
+    operator char*() = delete;
+    char** operator&() = delete;
 
     operator bool() const { return m_p != nullptr; }
     bool operator !() const { return m_p == nullptr; }
