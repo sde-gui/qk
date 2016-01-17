@@ -81,6 +81,8 @@ public:
     void                    set_config                          (MooEditConfig* cfg)    { gobj()->config = cfg; }
 };
 
+MOO_REGISTER_CUSTOM_GOBJ_TYPE(MooEdit);
+
 } // namespace moo
 
 #endif // __cplusplus

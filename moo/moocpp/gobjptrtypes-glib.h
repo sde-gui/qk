@@ -34,6 +34,11 @@ namespace moo {                                                             \
 template<> class gobj_ref<CObject>;                                         \
 }
 
+#define MOO_REGISTER_CUSTOM_GOBJ_TYPE(CObject)                              \
+    static_assert(sizeof(moo::gobj_ref<CObject>) == sizeof(void*),          \
+                  "gobj_ref must be bit-compatible with a raw pointer, "    \
+                      "otherwise operator& will break");                    \
+
 namespace moo {
 
 ///////////////////////////////////////////////////////////////////////////////////////////

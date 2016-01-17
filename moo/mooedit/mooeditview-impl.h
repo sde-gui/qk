@@ -28,6 +28,8 @@ public:
     const MooEditViewPrivate&   get_priv() const    { return *gobj()->priv; }
 };
 
+MOO_REGISTER_CUSTOM_GOBJ_TYPE(MooEditView);
+
 } // namespace moo
 
 #endif // __cplusplus
