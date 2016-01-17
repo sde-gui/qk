@@ -53,7 +53,6 @@ namespace moo {
 
 template<> class gobj_ref<MooEdit>;
 template<> class gobj_ref<MooEditView>;
-template<> class gobj_ptr<MooEditView>;
 
 } // namespace moo
 

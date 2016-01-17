@@ -309,7 +309,7 @@ moo_edit_constructor (GType                  type,
     Edit doc = *MOO_EDIT (object);
     MooEditPrivate& priv = doc.get_priv();
 
-    auto view = EditViewPtr::_create(doc);
+    auto view = EditView::_create(doc);
     g_assert(priv.views.size() == 1 && priv.views[0] == view);
 
     doc._add_class_actions();

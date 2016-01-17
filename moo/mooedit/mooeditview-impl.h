@@ -22,17 +22,10 @@ public:
 
     void            _apply_config           ();
 
+    static gobj_ptr<MooEditView> _create (Edit doc);
+
     MooEditViewPrivate&         get_priv()          { return *gobj()->priv; }
     const MooEditViewPrivate&   get_priv() const    { return *gobj()->priv; }
-};
-
-template<>
-class gobj_ptr<MooEditView> : public gobj_ptr_impl<MooEditView>
-{
-public:
-    MOO_DEFINE_GOBJPTR_METHODS(MooEditView);
-
-    static gobj_ptr _create (Edit doc);
 };
 
 } // namespace moo

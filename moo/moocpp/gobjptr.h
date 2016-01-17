@@ -27,32 +27,36 @@ namespace moo {
 //
 
 template<typename Object>
-class gobj_ptr_impl
+class gobj_ptr
 {
-    using ptr_type = gobj_ptr<Object>;
     using ref_type = gobj_ref<Object>;
 
     static_assert(gobjinfo<Object>::is_gobject, "Not a GObject");
 
 public:
-    gobj_ptr_impl() {}
+    gobj_ptr() {}
 
-    gobj_ptr_impl(Object* obj, ref_transfer policy)
+    gobj_ptr(Object* obj, ref_transfer policy)
     {
         assign(obj, policy);
     }
 
-    static ptr_type wrap_new(Object* obj)
+    gobj_ptr(const nullptr_t&)
+        : gobj_ptr()
     {
-        return ptr_type(obj, ref_transfer::take_ownership);
     }
 
-    static ptr_type wrap(Object* obj)
+    static gobj_ptr wrap_new(Object* obj)
     {
-        return ptr_type(obj, ref_transfer::make_copy);
+        return gobj_ptr(obj, ref_transfer::take_ownership);
     }
 
-    ~gobj_ptr_impl()
+    static gobj_ptr wrap(Object* obj)
+    {
+        return gobj_ptr(obj, ref_transfer::make_copy);
+    }
+
+    ~gobj_ptr()
     {
         reset();
     }
@@ -113,42 +117,32 @@ public:
     operator bool() const { return gobj() != nullptr; }
     bool operator!() const { return gobj() == nullptr; }
 
-    gobj_ptr_impl(const gobj_ptr_impl& other)
-        : gobj_ptr_impl()
+    gobj_ptr(const gobj_ptr& other)
+        : gobj_ptr()
     {
         ref(other.gobj());
     }
 
-    gobj_ptr_impl& operator=(const gobj_ptr_impl& other)
+    gobj_ptr& operator=(const gobj_ptr& other)
     {
         ref(other.gobj());
         return *this;
     }
 
-    gobj_ptr_impl(gobj_ptr_impl&& other)
-        : gobj_ptr_impl()
+    gobj_ptr(gobj_ptr&& other)
+        : gobj_ptr()
     {
         m_ref._set_gobj(other.gobj());
         other.m_ref._set_gobj(nullptr);
     }
 
-    // Note that when T is const Foo, then assign(p) inside will be called with
-    // a const Foo, which can't be converted to non-const Object*, so one can't
-    // steal a reference to a const object with this method.
-    template<typename T>
-    gobj_ptr_impl& operator=(T* p)
-    {
-        assign(p, ref_transfer::take_ownership);
-        return *this;
-    }
-
-    gobj_ptr_impl& operator=(const nullptr_t&)
+    gobj_ptr& operator=(const nullptr_t&)
     {
         reset();
         return *this;
     }
 
-    gobj_ptr_impl& operator=(gobj_ptr_impl&& other)
+    gobj_ptr& operator=(gobj_ptr&& other)
     {
         if (gobj() != other.gobj())
         {
@@ -204,58 +198,7 @@ inline gobj_ptr<Object> wrap(const gobj_raw_ptr<Object>& obj)
     return gobj_ptr<Object>::wrap(obj);
 }
 
-#define MOO_DEFINE_GOBJPTR_METHODS(Object)                                  \
-    using ref_type = gobj_ref<Object>;                                      \
-    using impl_type = gobj_ptr_impl<Object>;                                \
-                                                                            \
-    gobj_ptr() {}                                                           \
-    gobj_ptr(const nullptr_t) {}                                            \
-                                                                            \
-    gobj_ptr(Object* obj, ref_transfer policy)                              \
-        : impl_type(obj, policy)                                            \
-    {                                                                       \
-    }                                                                       \
-                                                                            \
-    gobj_ptr(const gobj_ptr& other)                                         \
-        : impl_type(other)                                                  \
-    {                                                                       \
-    }                                                                       \
-                                                                            \
-    gobj_ptr& operator=(const gobj_ptr& other)                              \
-    {                                                                       \
-        impl_type::operator=(static_cast<const gobj_ptr&>(other));          \
-        return *this;                                                       \
-    }                                                                       \
-                                                                            \
-    gobj_ptr(gobj_ptr&& other)                                              \
-        : impl_type(std::move(static_cast<impl_type&&>(other)))             \
-    {                                                                       \
-    }                                                                       \
-                                                                            \
-    gobj_ptr& operator=(gobj_ptr&& other)                                   \
-    {                                                                       \
-        impl_type::operator=(std::move(static_cast<impl_type&&>(other)));   \
-        return *this;                                                       \
-    }                                                                       \
-                                                                            \
-    gobj_ptr& operator=(const nullptr_t&)                                   \
-    {                                                                       \
-        reset();                                                            \
-        return *this;                                                       \
-    }
-
-
-// Generic implementation.
-template<typename Object>
-class gobj_ptr : public gobj_ptr_impl<Object>
-{
-public:
-    MOO_DEFINE_GOBJPTR_METHODS(Object)
-};
-
 template<> class gobj_ref<GObject>;
-
-
 
 template<typename T, typename ...Args>
 inline gobj_ptr<T> create_gobj(GType obj_type, Args&& ...args)

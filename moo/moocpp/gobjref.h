@@ -24,8 +24,6 @@ class gobj_ref;
 template<typename Object>
 class gobj_ptr;
 template<typename Object>
-class gobj_ptr_impl;
-template<typename Object>
 class gobj_raw_ptr;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -67,7 +65,7 @@ protected:
     GObject* raw_gobj() const { return const_cast<GObject*>(m_gobj); }
 
 private:
-    template<typename Object> friend class gobj_ptr_impl;
+    template<typename Object> friend class gobj_ptr;
     template<typename Object> friend class gobj_raw_ptr;
     template<typename Object> friend class gobj_ref;
 
@@ -87,7 +85,7 @@ class gobj_ref<GObject>; // : public gobj_ref_base
     using ptrtype = gobj_ptr<object_type>;                                              \
                                                                                         \
 protected:                                                                              \
-    friend class gobj_ptr_impl<object_type>;                                            \
+    friend class gobj_ptr<object_type>;                                                 \
     friend class gobj_raw_ptr<object_type>;                                             \
     friend class gobj_raw_ptr<const object_type>;                                       \
                                                                                         \

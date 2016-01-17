@@ -91,7 +91,7 @@ moo_edit_view_dispose (GObject *object)
 }
 
 
-EditViewPtr EditViewPtr::_create(Edit doc)
+EditViewPtr EditView::_create(Edit doc)
 {
     MooEditView *view = MOO_EDIT_VIEW (g_object_new (MOO_TYPE_EDIT_VIEW,
                                                      "buffer", moo_edit_get_buffer (doc.gobj()),

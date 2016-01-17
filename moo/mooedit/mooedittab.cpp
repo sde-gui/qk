@@ -100,7 +100,7 @@ static GtkWidget *
 create_view_in_scrolled_window (MooEditTab *tab)
 {
     g_return_val_if_fail (tab->doc != nullptr, nullptr);
-    auto view = EditViewPtr::_create(*tab->doc);
+    auto view = EditView::_create(*tab->doc);
     view->_set_tab(tab);
     return create_view_scrolled_window(*view);
 }
