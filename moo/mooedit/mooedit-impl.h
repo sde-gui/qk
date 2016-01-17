@@ -26,10 +26,8 @@
 #include <moocpp/gobjtypes-gio.h>
 #include <vector>
 
-namespace moo {
-
 template<>
-class gobj_ref<MooEdit> : public gobj_ref_parent<MooEdit>
+class moo::gobj_ref<MooEdit> : public moo::gobj_ref_parent<MooEdit>
 {
 public:
     MOO_DEFINE_GOBJREF_METHODS(MooEdit)
@@ -82,8 +80,6 @@ public:
 };
 
 MOO_REGISTER_CUSTOM_GOBJ_TYPE(MooEdit);
-
-} // namespace moo
 
 #endif // __cplusplus
 

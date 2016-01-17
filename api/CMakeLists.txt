@@ -73,7 +73,7 @@ SET(source_files
     ../moo/mooedit/mooeditor-private.h
     ../moo/mooedit/mooeditor-tests.c
     ../moo/mooedit/mooeditor-tests.h
-    ../moo/mooedit/mooeditprefs.c
+    ../moo/mooedit/mooeditprefs.cpp
     ../moo/mooedit/mooeditprefs.h
     ../moo/mooedit/mooeditprefspage.c
     ../moo/mooedit/mooedit-private.h

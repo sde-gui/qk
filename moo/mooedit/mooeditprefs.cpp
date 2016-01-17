@@ -217,7 +217,7 @@ _moo_edit_view_apply_prefs (MooEditView *view)
 {
     MooLangMgr *mgr;
     MooTextStyleScheme *scheme;
-    MooDrawWsFlags ws_flags = 0;
+    MooDrawWsFlags ws_flags = MOO_DRAW_WS_NONE;
 
     g_return_if_fail (MOO_IS_EDIT_VIEW (view));
 

@@ -47,7 +47,7 @@ SET(mooedit_sources
     mooedit/mooedit-impl.h	
     mooedit/mooedit-script.c
     mooedit/mooedit-script.h
-    mooedit/mooeditprefs.c	
+    mooedit/mooeditprefs.cpp
     mooedit/mooeditprefspage.c
     mooedit/mooedit-private.h
     mooedit/mooeditprogress.h

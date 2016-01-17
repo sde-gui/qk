@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_EDIT_VIEW_H
-#define MOO_EDIT_VIEW_H
+#pragma once
 
 #include <mooedit/mootextview.h>
 #include <mooedit/mooedit.h>
@@ -48,5 +47,3 @@ MooEditWindow   *moo_edit_view_get_window   (MooEditView    *view);
 MooEditor       *moo_edit_view_get_editor   (MooEditView    *view);
 
 G_END_DECLS
-
-#endif /* MOO_EDIT_VIEW_H */
