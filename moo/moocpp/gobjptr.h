@@ -113,8 +113,17 @@ public:
     operator bool() const { return gobj() != nullptr; }
     bool operator!() const { return gobj() == nullptr; }
 
-    gobj_ptr_impl(const gobj_ptr_impl& other) = delete;
-    gobj_ptr_impl& operator=(const gobj_ptr_impl& other) = delete;
+    gobj_ptr_impl(const gobj_ptr_impl& other)
+        : gobj_ptr_impl()
+    {
+        ref(other.gobj());
+    }
+
+    gobj_ptr_impl& operator=(const gobj_ptr_impl& other)
+    {
+        ref(other.gobj());
+        return *this;
+    }
 
     gobj_ptr_impl(gobj_ptr_impl&& other)
         : gobj_ptr_impl()
@@ -207,8 +216,16 @@ inline gobj_ptr<Object> wrap(const gobj_raw_ptr<Object>& obj)
     {                                                                       \
     }                                                                       \
                                                                             \
-    gobj_ptr(const gobj_ptr& other) = delete;                               \
-    gobj_ptr& operator=(const gobj_ptr& other) = delete;                    \
+    gobj_ptr(const gobj_ptr& other)                                         \
+        : impl_type(other)                                                  \
+    {                                                                       \
+    }                                                                       \
+                                                                            \
+    gobj_ptr& operator=(const gobj_ptr& other)                              \
+    {                                                                       \
+        impl_type::operator=(static_cast<const gobj_ptr&>(other));          \
+        return *this;                                                       \
+    }                                                                       \
                                                                             \
     gobj_ptr(gobj_ptr&& other)                                              \
         : impl_type(std::move(static_cast<impl_type&&>(other)))             \

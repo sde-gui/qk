@@ -53,7 +53,7 @@ typedef struct {
 
 struct _MooFileSystemPrivate {
     GHashTable *folders;
-    moo::grefptr<MooFileWatch> fam;
+    MooFileWatchPtr fam;
     FoldersCache cache;
     guint debug_timeout;
 };
@@ -414,7 +414,7 @@ _moo_file_system_get_absolute_path (MooFileSystem  *fs,
 }
 
 
-moo::grefptr<MooFileWatch>
+MooFileWatchPtr
 _moo_file_system_get_file_watch (MooFileSystem *fs)
 {
     g_return_val_if_fail (MOO_IS_FILE_SYSTEM (fs), NULL);

@@ -254,8 +254,6 @@ void
 _moo_win32_show_fatal_error (const char *domain,
                              const char *logmsg)
 {
-    char *msg = NULL;
-
 #define PLEASE_REPORT \
     "Please report it to " PACKAGE_BUGREPORT " and provide "\
     "steps needed to reproduce this error."
@@ -268,8 +266,6 @@ _moo_win32_show_fatal_error (const char *domain,
                                "Error", "Fatal error:\n---\n%s\n---\n"
                                PLEASE_REPORT, logmsg);
 #undef PLEASE_REPORT
-
-    g_free (msg);
 }
 
 

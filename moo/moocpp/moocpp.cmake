@@ -13,6 +13,7 @@ SET(moocpp_sources
 	moocpp/gobjptrtypes-glib.cpp
 	moocpp/gobjptrtypes-gio.cpp
 	moocpp/gobjptrtypes-gtk.cpp
+	moocpp/gparam.h
 	moocpp/grefptr.h
 	moocpp/memutils.h
 	moocpp/strutils.h

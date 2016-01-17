@@ -15,9 +15,34 @@
 
 #pragma once
 
+#include <mooglib/moo-glib.h>
 #include <moocpp/memutils.h>
 
 namespace moo {
+
+// Replacement for raw char*
+class strp
+{
+public:
+    strp() : m_p(nullptr) {}
+    ~strp() { ::g_free(m_p); }
+
+    strp(strp&& s) : strp() { std::swap(m_p, s.m_p); }
+    strp& operator=(strp&& s) { std::swap(m_p, s.m_p); }
+
+    strp(const strp&) = delete;
+    strp& operator=(const strp&) = delete;
+
+    char* release() { char *p = m_p; m_p = nullptr; return p; }
+    const char* get() { return m_p; }
+    char*& p() { return m_p; }
+
+    operator bool() const { return m_p != nullptr; }
+    bool operator !() const { return m_p == nullptr; }
+
+private:
+    char* m_p;
+};
 
 struct gstr_mem_handler
 {
@@ -42,6 +67,8 @@ public:
     // These must not be called, to avoid ambiguity between an empty string and null
     operator bool() const = delete;
     bool operator!() const = delete;
+
+    char* operator*() const = delete;
 
 private:
     Self& self() { return static_cast<Self&>(*this); }
@@ -70,3 +97,13 @@ bool operator!=(const char* s1, const gstr& s2);
 bool operator!=(const gstr& s1, const gstr& s2);
 
 } // namespace moo
+
+namespace std {
+
+template<>
+struct hash<moo::gstr>
+{
+    const size_t operator()(const moo::gstr& s) const;
+};
+
+}

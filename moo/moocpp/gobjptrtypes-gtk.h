@@ -22,21 +22,18 @@
 
 #include "moocpp/gobjptrtypes-glib.h"
 
-MOO_DEFINE_GOBJ_TYPE(GtkObject, GObject, GTK_TYPE_OBJECT)
-MOO_DEFINE_GOBJ_TYPE(GtkWidget, GtkObject, GTK_TYPE_WIDGET)
-MOO_DEFINE_GOBJ_TYPE(GtkTextView, GtkWidget, GTK_TYPE_TEXT_VIEW)
-MOO_DEFINE_GOBJ_TYPE(GtkEntry, GtkWidget, GTK_TYPE_ENTRY)
+#define MOO_DEFINE_GTK_TYPE(Object, Parent, obj_g_type)         \
+    MOO_DEFINE_GOBJ_TYPE(Gtk##Object, Parent, obj_g_type)       \
+    namespace moo {                                             \
+    namespace gtk {                                             \
+    MOO_GOBJ_TYPEDEFS(Object, Gtk##Object)                      \
+    }                                                           \
+    }
 
-namespace moo {
-
-namespace gtk {
-
-MOO_GOBJ_TYPEDEFS(Object, GtkObject);
-MOO_GOBJ_TYPEDEFS(Widget, GtkWidget);
-MOO_GOBJ_TYPEDEFS(TextView, GtkTextView);
-
-} // namespace g
-
-} // namespace moo
+MOO_DEFINE_GTK_TYPE(Object, GObject, GTK_TYPE_OBJECT)
+MOO_DEFINE_GTK_TYPE(Widget, GtkObject, GTK_TYPE_WIDGET)
+MOO_DEFINE_GTK_TYPE(TextView, GtkWidget, GTK_TYPE_TEXT_VIEW)
+MOO_DEFINE_GTK_TYPE(Entry, GtkWidget, GTK_TYPE_ENTRY)
+MOO_DEFINE_GTK_TYPE(Action, GObject, GTK_TYPE_ACTION)
 
 #endif // __cplusplus

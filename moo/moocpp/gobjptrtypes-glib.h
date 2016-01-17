@@ -41,7 +41,22 @@ public:
     void    signal_emit_by_name     (const char* detailed_signal, ...);
     void    signal_emit             (guint signal_id, GQuark detail, ...);
 
+    bool    signal_has_handler_pending          (guint signal_id, GQuark detail, bool may_be_blocked);
+    gulong  signal_connect_closure_by_id        (guint signal_id, GQuark detail, GClosure* closure, bool after);
+    gulong  signal_connect_closure              (const char* detailed_signal, GClosure* closure, bool after);
+    gulong  signal_connect_data                 (const char* detailed_signal, GCallback c_handler, gpointer data, GClosureNotify destroy_data, GConnectFlags connect_flags);
+    void    signal_handler_block                (gulong handler_id);
+    void    signal_handler_unblock              (gulong handler_id);
+    void    signal_handler_disconnect           (gulong handler_id);
+    bool    signal_handler_is_connected         (gulong handler_id);
+    gulong  signal_handler_find                 (GSignalMatchType mask, guint signal_id, GQuark detail, GClosure* closure, gpointer func, gpointer data);
+    guint   signal_handlers_block_matched       (GSignalMatchType mask, guint signal_id, GQuark detail, GClosure* closure, gpointer func, gpointer data);
+    guint   signal_handlers_unblock_matched     (GSignalMatchType mask, guint signal_id, GQuark detail, GClosure* closure, gpointer func, gpointer data);
+    guint   signal_handlers_disconnect_matched  (GSignalMatchType mask, guint signal_id, GQuark detail, GClosure* closure, gpointer func, gpointer data);
+
+
     void    set_data                (const char* key, gpointer value);
+    void    set_data_full           (const char* key, gpointer data, GDestroyNotify destroy);
 
     void    set                     (const char* first_prop, ...) G_GNUC_NULL_TERMINATED;
     void    set_property            (const char* property_name, const GValue* value);

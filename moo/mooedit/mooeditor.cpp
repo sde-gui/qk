@@ -2621,7 +2621,7 @@ moo_editor_save_copy (MooEditor   *editor,
     moo_return_error_if_fail (info != nullptr && info->file != nullptr);
 
     retval = _moo_edit_save_file_copy (*doc, *info->file,
-                                       *info->encoding ? info->encoding : moo_edit_get_encoding (doc),
+                                       !info->encoding.empty() ? info->encoding : moo_edit_get_encoding (doc),
                                        moo_editor_get_save_flags (editor),
                                        error);
 

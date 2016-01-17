@@ -61,9 +61,69 @@ void Object::signal_emit(guint signal_id, GQuark detail, ...)
     va_end(args);
 }
 
+bool Object::signal_has_handler_pending(guint signal_id, GQuark detail, bool may_be_blocked)
+{
+    return g_signal_has_handler_pending(gobj(), signal_id, detail, may_be_blocked);
+}
+
+gulong Object::signal_connect_closure_by_id(guint signal_id, GQuark detail, GClosure* closure, bool after)
+{
+    return g_signal_connect_closure_by_id(gobj(), signal_id, detail, closure, after);
+}
+
+gulong Object::signal_connect_closure(const char* detailed_signal, GClosure* closure, bool after)
+{
+    return g_signal_connect_closure(gobj(), detailed_signal, closure, after);
+}
+
+gulong Object::signal_connect_data(const char* detailed_signal, GCallback c_handler, gpointer data, GClosureNotify destroy_data, GConnectFlags connect_flags)
+{
+    return g_signal_connect_data(gobj(), detailed_signal, c_handler, data, destroy_data, connect_flags);
+}
+
+void Object::signal_handler_block(gulong handler_id)
+{
+    g_signal_handler_block(gobj(), handler_id);
+}
+
+void Object::signal_handler_unblock(gulong handler_id)
+{
+    g_signal_handler_unblock(gobj(), handler_id);
+}
+
+void Object::signal_handler_disconnect(gulong handler_id)
+{
+    g_signal_handler_disconnect(gobj(), handler_id);
+}
+
+gulong Object::signal_handler_find(GSignalMatchType mask, guint signal_id, GQuark detail, GClosure* closure, gpointer func, gpointer data)
+{
+    return g_signal_handler_find(gobj(), mask, signal_id, detail, closure, func, data);
+}
+
+guint Object::signal_handlers_block_matched(GSignalMatchType mask, guint signal_id, GQuark detail, GClosure* closure, gpointer func, gpointer data)
+{
+    return g_signal_handlers_block_matched(gobj(), mask, signal_id, detail, closure, func, data);
+}
+
+guint Object::signal_handlers_unblock_matched(GSignalMatchType mask, guint signal_id, GQuark detail, GClosure* closure, gpointer func, gpointer data)
+{
+    return g_signal_handlers_unblock_matched(gobj(), mask, signal_id, detail, closure, func, data);
+}
+
+guint Object::signal_handlers_disconnect_matched(GSignalMatchType mask, guint signal_id, GQuark detail, GClosure* closure, gpointer func, gpointer data)
+{
+    return g_signal_handlers_disconnect_matched(gobj(), mask, signal_id, detail, closure, func, data);
+}
+
 void Object::set_data(const char* key, gpointer value)
 {
     g_object_set_data(gobj(), key, value);
+}
+
+void Object::set_data_full(const char *key, gpointer data, GDestroyNotify destroy)
+{
+    g_object_set_data_full(gobj(), key, data, destroy);
 }
 
 void Object::set(const gchar *first_prop, ...)

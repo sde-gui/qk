@@ -15,6 +15,8 @@
 
 #pragma once
 
+#ifdef __cplusplus
+
 #include "moocpp/utils.h"
 
 namespace moo {
@@ -37,30 +39,30 @@ enum class ref_transfer
 
 template<typename Object,
     typename ObjRefUnref = obj_ref_unref<Object>>
-class grefptr
+class gref_ptr
 {
 public:
-    grefptr() : m_p(nullptr) {}
-    grefptr(const nullptr_t&) : grefptr() {}
+    gref_ptr() : m_p(nullptr) {}
+    gref_ptr(const nullptr_t&) : gref_ptr() {}
 
-    grefptr(Object* obj, ref_transfer policy)
-        : grefptr()
+    gref_ptr(Object* obj, ref_transfer policy)
+        : gref_ptr()
     {
         assign(obj, policy);
     }
 
     template<typename ...Args>
-    static grefptr create(Args&& ...args)
+    static gref_ptr create(Args&& ...args)
     {
         return wrap_new(new Object(std::forward<Args>(args)...));
     }
 
-    static grefptr wrap_new(Object* obj)
+    static gref_ptr wrap_new(Object* obj)
     {
-        return grefptr(obj, ref_transfer::take_ownership);
+        return gref_ptr(obj, ref_transfer::take_ownership);
     }
 
-    ~grefptr()
+    ~gref_ptr()
     {
         reset();
     }
@@ -115,7 +117,7 @@ public:
     }
 
     template<typename X, typename Y>
-    bool operator==(const grefptr<X, Y>& other) const
+    bool operator==(const gref_ptr<X, Y>& other) const
     {
         return gobj() == other.gobj();
     }
@@ -126,19 +128,19 @@ public:
         return !(*this == anything);
     }
 
-    grefptr(const grefptr& other)
-        : grefptr(other.gobj(), ref_transfer::make_copy)
+    gref_ptr(const gref_ptr& other)
+        : gref_ptr(other.gobj(), ref_transfer::make_copy)
     {
     }
 
-    grefptr(grefptr&& other)
-        : grefptr()
+    gref_ptr(gref_ptr&& other)
+        : gref_ptr()
     {
         this->m_p = other.m_p;
         other.m_p = nullptr;
     }
 
-    grefptr& operator=(const grefptr& other)
+    gref_ptr& operator=(const gref_ptr& other)
     {
         assign(other.gobj(), ref_transfer::make_copy);
         return *this;
@@ -148,19 +150,19 @@ public:
     // a const Foo, which can't be converted to non-const Object*, so one can't
     // steal a reference to a const object with this method.
     template<typename T>
-    grefptr& operator=(T* p)
+    gref_ptr& operator=(T* p)
     {
         assign(p, ref_transfer::take_ownership);
         return *this;
     }
 
-    grefptr& operator=(const nullptr_t&)
+    gref_ptr& operator=(const nullptr_t&)
     {
         reset();
         return *this;
     }
 
-    grefptr& operator=(grefptr&& other)
+    gref_ptr& operator=(gref_ptr&& other)
     {
         if (gobj() != other.gobj())
         {
@@ -191,8 +193,10 @@ private:
 
 // Make sure these aren't called in code ported from pure glib C
 template<typename X>
-void g_object_unref(const grefptr<X>&) = delete;
+void g_object_unref(const gref_ptr<X>&) = delete;
 template<typename X>
-void g_free(const grefptr<X>&) = delete;
+void g_free(const gref_ptr<X>&) = delete;
 
 } // namespace moo
+
+#endif // __cplusplus

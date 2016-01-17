@@ -19,10 +19,15 @@
 #include <memory>
 #include <list>
 #include <vector>
+#include <functional>
 #include <mooutils/mooutils-misc.h>
 #include <mooglib/moo-glib.h>
 
 namespace moo {
+
+#define MOO_DISABLE_COPY_OPS(Object)            \
+    Object(const Object&) = delete;             \
+    Object& operator=(const Object&) = delete;
 
 #define MOO_DEFINE_FLAGS(Flags)                                                                                 \
     inline Flags operator | (Flags f1, Flags f2) { return static_cast<Flags>(static_cast<int>(f1) | f2); }      \
@@ -55,6 +60,12 @@ bool contains(const Container& vec, const U& elm)
     return find(vec, elm) != vec.end();
 }
 
+template<typename Container, typename U>
+bool contains_key(const Container& map, const U& elm)
+{
+    return map.find(elm) != map.end();
+}
+
 template<typename Container, typename UnPr>
 bool any_of(const Container& cont, const UnPr& pred)
 {
@@ -75,5 +86,19 @@ std::unique_ptr<T> make_unique(Args&&... args)
 {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
+
+class raii
+{
+public:
+    using func_type = std::function<void()>;
+
+    raii(func_type f) : m_f(std::move(f)) {}
+    ~raii() { m_f(); }
+
+    MOO_DISABLE_COPY_OPS(raii);
+
+private:
+    func_type m_f;
+};
 
 } // namespace moo

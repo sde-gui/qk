@@ -21,6 +21,8 @@
 #include "mooutils/moofilewatch.h"
 #include "moocpp/gobjptr.h"
 
+using namespace moo;
+
 G_BEGIN_DECLS
 
 
@@ -81,7 +83,7 @@ struct _MooFolderImpl {
     double populate_timeout;
     Debug debug;
     GTimer *timer;
-    moo::grefptr<MooFileWatch> fam;
+    MooFileWatchPtr fam;
     guint fam_request;
     guint reload_idle;
 

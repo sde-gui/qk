@@ -42,11 +42,11 @@ typedef enum {
     MOO_CLOSE_RESPONSE_CANCEL
 } MooCloseResponse;
 
-typedef struct _MooWindow        MooWindow;
-typedef struct _MooWindowPrivate MooWindowPrivate;
-typedef struct _MooWindowClass   MooWindowClass;
+typedef struct MooWindow        MooWindow;
+typedef struct MooWindowPrivate MooWindowPrivate;
+typedef struct MooWindowClass   MooWindowClass;
 
-struct _MooWindow
+struct MooWindow
 {
     GtkWindow            gtkwindow;
 
@@ -60,7 +60,7 @@ struct _MooWindow
     GtkStatusbar        *statusbar;
 };
 
-struct _MooWindowClass
+struct MooWindowClass
 {
     GtkWindowClass      parent_class;
 

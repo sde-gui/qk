@@ -153,6 +153,6 @@ G_END_DECLS
 
 MOO_DEFINE_GOBJ_TYPE(MooFileSystem, GObject, MOO_TYPE_FILE_SYSTEM)
 
-moo::grefptr<MooFileWatch> _moo_file_system_get_file_watch (MooFileSystem  *fs);
+MooFileWatchPtr _moo_file_system_get_file_watch(MooFileSystem  *fs);
 
 #endif // __cplusplus

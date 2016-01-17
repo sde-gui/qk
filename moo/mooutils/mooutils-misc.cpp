@@ -770,6 +770,7 @@ win32_filter_fatal_errors (const gchar    *log_domain,
     if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
     {
         _moo_win32_show_fatal_error (log_domain, message);
+        __debugbreak();
         return;
     }
 }
@@ -1801,6 +1802,7 @@ _moo_widget_set_tooltip (GtkWidget  *widget,
 NORETURN void
 _moo_assert_message (MooCodeLoc loc, const char *message)
 {
+    __debugbreak();
     g_error ("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
 }
 

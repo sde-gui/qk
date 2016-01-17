@@ -1,7 +1,7 @@
 /*
  *   mooapp/mooapp.h
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -13,10 +13,10 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_APP_H
-#define MOO_APP_H
+#pragma once
 
 #include <mooedit/mooeditor.h>
+#include <moocpp/gobjinfo.h>
 
 G_BEGIN_DECLS
 
@@ -29,17 +29,17 @@ G_BEGIN_DECLS
 #define MOO_APP_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), MOO_TYPE_APP, MooAppClass))
 
 
-typedef struct _MooApp        MooApp;
-typedef struct _MooAppPrivate MooAppPrivate;
-typedef struct _MooAppClass   MooAppClass;
+typedef struct MooApp        MooApp;
+typedef struct MooAppPrivate MooAppPrivate;
+typedef struct MooAppClass   MooAppClass;
 
-struct _MooApp
+struct MooApp
 {
     GObject          parent;
     MooAppPrivate   *priv;
 };
 
-struct _MooAppClass
+struct MooAppClass
 {
     GObjectClass parent_class;
 
@@ -97,4 +97,8 @@ void             moo_app_run_script             (MooApp                 *app,
 
 G_END_DECLS
 
-#endif /* MOO_APP_H */
+#ifdef __cplusplus
+
+MOO_DEFINE_GOBJ_TYPE(MooApp, GObject, MOO_TYPE_APP)
+
+#endif __cplusplus

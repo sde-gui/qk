@@ -20,6 +20,7 @@
 #include "mooutils/mooaction-private.h"
 #include "mooutils/mooactionbase-private.h"
 #include "mooutils/mooutils-gobject.h"
+#include "mooutils/mooutils-messages.h"
 #include "mooutils/mooactiongroup.h"
 #include <string.h>
 
@@ -731,7 +732,7 @@ static void
 prop_changed (ToggleWatch *watch)
 {
     gboolean value, active, equal;
-    gpointer action;
+    GObject* action;
 
     g_object_get (MOO_OBJECT_PTR_GET (watch->parent.source),
                   watch->pspec->name, &value, NULL);
@@ -754,7 +755,7 @@ static void
 action_toggled (ToggleWatch *watch)
 {
     gboolean value, active, equal;
-    gpointer action;
+    GObject* action;
 
     g_object_get (MOO_OBJECT_PTR_GET (watch->parent.source),
                   watch->pspec->name, &value, NULL);

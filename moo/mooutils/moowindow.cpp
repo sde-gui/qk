@@ -59,7 +59,7 @@ static char *default_geometry = NULL;
 
 static GSList *window_instances = NULL;
 
-struct _MooWindowPrivate {
+struct MooWindowPrivate {
     guint save_size_id;
 
     char *toolbar_ui_name;

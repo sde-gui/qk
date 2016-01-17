@@ -37,7 +37,7 @@ struct MooEditorPrivate {
     moo::gobj_ptr<MooUiXml>      doc_ui_xml;
     moo::gobj_ptr<MooUiXml>      ui_xml;
     moo::gobj_ptr<MooHistoryMgr> history;
-    moo::grefptr<MooFileWatch>   file_watch;
+    moo::gref_ptr<MooFileWatch>  file_watch;
     MooEditorOptions             opts;
 
     GType                        window_type;

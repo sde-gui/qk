@@ -217,7 +217,7 @@ MooFileWatch::MooFileWatch()
 
 MooFileWatchPtr MooFileWatch::create(GError **error)
 {
-    MooFileWatchPtr watch = MooFileWatchPtr::create();
+    MooFileWatchPtr watch(new MooFileWatch, ref_transfer::take_ownership);
 
     if (!watch_funcs.start(*watch, error))
         return nullptr;

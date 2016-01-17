@@ -1,7 +1,7 @@
 /*
  *   moofilewatch.h
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -18,8 +18,13 @@
 
 #pragma once
 
+#ifndef __cplusplus
+#error "This is a C++ header"
+#endif // __cplusplus
+
 #include <glib-object.h>
 #include <moocpp/grefptr.h>
+#include <memory>
 
 enum MooFileEventCode {
     MOO_FILE_EVENT_CHANGED,
@@ -41,24 +46,14 @@ typedef void (*MooFileWatchCallback) (MooFileWatch& watch,
                                       MooFileEvent* event,
                                       gpointer      user_data);
 
-namespace moo
-{
-
-template<>
-class obj_ref_unref<MooFileWatch> : public obj_class_ref_unref<MooFileWatch>
-{
-};
-
-using MooFileWatchPtr = grefptr<MooFileWatch>;
-
-} // namespace moo
+using MooFileWatchPtr = moo::gref_ptr<MooFileWatch>;
 
 class MooFileWatch
 {
 public:
-    MooFileWatch();
+    ~MooFileWatch();
 
-    static moo::MooFileWatchPtr create          (GError        **error);
+    static MooFileWatchPtr      create          (GError        **error);
 
     bool                        close           (GError        **error);
 
@@ -80,8 +75,20 @@ public:
     MooFileWatch& operator=(const MooFileWatch&) = delete;
 
 private:
-    ~MooFileWatch();
+    MooFileWatch();
 
-    int                   m_ref;
+    int m_ref;
     std::unique_ptr<Impl> m_impl;
 };
+
+namespace moo {
+
+template<>
+class obj_ref_unref<MooFileWatch>
+{
+public:
+    static void ref(MooFileWatch* w) { w->ref(); }
+    static void unref(MooFileWatch* w) { w->unref(); }
+};
+
+} // namespace moo

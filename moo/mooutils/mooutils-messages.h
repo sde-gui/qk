@@ -43,7 +43,7 @@ G_BEGIN_DECLS
 
 #define _MOO_ASSERT_CHECK_MSG(cond, msg)    \
 MOO_STMT_START {                            \
-    if (cond)                               \
+    if (G_LIKELY (cond))                    \
         ;                                   \
     else                                    \
         _MOO_ASSERT_MESSAGE (msg);          \
@@ -106,8 +106,6 @@ void MOO_NORETURN _moo_error (MooCodeLoc loc, const char *format, ...) G_GNUC_PR
 void MOO_NORETURN _moo_errorv (MooCodeLoc loc, const char *format, va_list args) G_GNUC_PRINTF(2, 0);
 
 void MOO_NORETURN _moo_assert_message (MooCodeLoc loc, const char *message);
-
-void _moo_abort_debug_ignore (MooCodeLoc loc, const char *message);
 
 #define moo_return_val_if_fail(cond, val)               \
 MOO_STMT_START {                                        \
@@ -245,11 +243,13 @@ _MOO_DEFINE_LOG_FUNC (debug, DEBUG)
 #undef g_warning
 #undef g_message
 #undef g_debug
+#undef g_assert
 #define g_critical moo_critical
 #define g_error moo_error
 #define g_warning moo_warning
 #define g_message moo_message
 #define g_debug moo_debug
+#define g_assert moo_assert
 
 #undef g_return_if_fail
 #undef g_return_if_reached
