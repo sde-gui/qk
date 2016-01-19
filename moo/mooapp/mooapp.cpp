@@ -566,7 +566,7 @@ gboolean App::Private::check_signal ()
 static gboolean
 emit_started (App *app)
 {
-    g_signal_emit_by_name (app, "started");
+    app->signal_emit_by_name ("started");
     return FALSE;
 }
 
@@ -853,36 +853,30 @@ void App::Private::save_session ()
 
 void App::Private::write_session ()
 {
-    char *filename;
-    GError *error = NULL;
     MooFileWriter *writer;
 
     if (session_file.empty())
         return;
 
-    filename = moo_get_user_cache_file (session_file);
+    gstr filename = gstr::wrap_new (moo_get_user_cache_file (session_file));
 
     if (!session)
     {
         mgw_errno_t err;
         mgw_unlink (filename, &err);
-        g_free (filename);
         return;
     }
 
-    if ((writer = moo_config_writer_new (filename, FALSE, &error)))
+    gerrp error;
+
+    if ((writer = moo_config_writer_new (filename, FALSE, error)))
     {
         moo_markup_write_pretty (session.gobj(), writer, 1);
-        moo_file_writer_close (writer, &error);
+        moo_file_writer_close (writer, error);
     }
 
     if (error)
-    {
         g_critical ("could not save session file %s: %s", filename, error->message);
-        g_error_free (error);
-    }
-
-    g_free (filename);
 }
 
 void App::load_session ()
@@ -1122,14 +1116,13 @@ void App::Private::report_bug (GtkWidget *window)
 
 void App::Private::save_prefs ()
 {
-    GError *error = NULL;
+    gerrp error;
 
     if (!moo_prefs_save (rc_files[MOO_PREFS_RC],
                          rc_files[MOO_PREFS_STATE],
-                         &error))
+                         error))
     {
         g_warning ("could not save config files: %s", moo_error_message (error));
-        g_error_free (error);
     }
 }
 
@@ -1172,7 +1165,7 @@ void App::Private::prefs_dialog (GtkWidget *parent)
 
 void App::Private::load_prefs ()
 {
-    GError *error = NULL;
+    gerrp error;
     char **sys_files;
 
     rc_files[MOO_PREFS_RC].take(moo_get_user_data_file (MOO_PREFS_XML_FILE_NAME));
@@ -1183,10 +1176,9 @@ void App::Private::load_prefs ()
     if (!moo_prefs_load (sys_files,
                          rc_files[MOO_PREFS_RC],
                          rc_files[MOO_PREFS_STATE],
-                         &error))
+                         error))
     {
         g_warning ("could not read config files: %s", moo_error_message (error));
-        g_error_free (error);
     }
 
     g_strfreev (sys_files);

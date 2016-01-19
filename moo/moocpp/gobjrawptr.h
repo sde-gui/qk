@@ -85,67 +85,6 @@ private:
     mutable gobj_ref<Object> m_ref;
 };
 
-template<typename Object>
-class gobj_raw_ptr<const Object>
-{
-    using ref_type = gobj_ref<Object>;
-
-public:
-    gobj_raw_ptr(const Object* obj = nullptr) { m_ref._set_gobj(const_cast<Object*>(obj)); }
-
-    operator const Object*() const { return gobj(); }
-    operator const GTypeInstance*() const { return reinterpret_cast<GTypeInstance*>(gobj()); }
-    operator const void*() const { return gobj(); }
-    operator const gobj_ref<Object>*() const { return m_ref.self(); }
-
-    const ref_type* operator->() const { return m_ref.self(); }
-    const ref_type& operator*() const { return m_ref; }
-
-    const Object* gobj() const { return m_ref.gobj(); }
-    void set(const Object* p) { m_ref._set_gobj(p); }
-
-    template<typename Super>
-    const Super* gobj() const
-    {
-        return gobj_is_subclass<Object, Super>::down_cast(m_ref.gobj());
-    }
-
-    template<typename Subclass>
-    void set(const Subclass* p)
-    {
-        set(gobj_is_subclass<Subclass, Object>::down_cast(p));
-    }
-
-    operator bool() const { return gobj() != nullptr; }
-    bool operator!() const { return gobj() == nullptr; }
-
-    gobj_raw_ptr(const gobj_raw_ptr& other) = default;
-    gobj_raw_ptr& operator=(const gobj_raw_ptr& other) = default;
-
-    gobj_raw_ptr(gobj_raw_ptr&& other)
-        : m_ref(other.gobj())
-    {
-        other = nullptr;
-    }
-
-    gobj_raw_ptr& operator=(gobj_raw_ptr&& other)
-    {
-        m_ref._set_gobj(other.gobj());
-        other.m_ref._set_gobj(nullptr);
-        return *this;
-    }
-
-    template<typename T>
-    gobj_raw_ptr& operator=(const T* p)
-    {
-        set(p);
-        return *this;
-    }
-
-private:
-    mutable gobj_ref<Object> m_ref;
-};
-
 } // namespace moo
 
 template<typename X>

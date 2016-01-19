@@ -20,6 +20,7 @@
 #include <glib-object.h>
 #include <mooglib/moo-glib.h>
 #include "moocpp/gobjptr.h"
+#include "moocpp/gobjectutils.h"
 
 #include <stdarg.h>
 
@@ -27,7 +28,7 @@
     using CppObject             = ::moo::gobj_ref<CObject>;                 \
     using CppObject##Ptr        = ::moo::gobj_ptr<CObject>;                 \
     using CppObject##RawPtr     = ::moo::gobj_raw_ptr<CObject>;             \
-    using Const##CppObject##Ptr = ::moo::gobj_raw_ptr<const CObject>;       \
+
 
 #define MOO_DECLARE_CUSTOM_GOBJ_TYPE(CObject)                               \
 namespace moo {                                                             \
@@ -38,6 +39,13 @@ template<> class gobj_ref<CObject>;                                         \
     static_assert(sizeof(moo::gobj_ref<CObject>) == sizeof(void*),          \
                   "gobj_ref must be bit-compatible with a raw pointer, "    \
                       "otherwise operator& will break");                    \
+
+MOO_DEFINE_FLAGS(GSignalFlags);
+MOO_DEFINE_FLAGS(GConnectFlags);
+MOO_DEFINE_FLAGS(GSpawnFlags);
+MOO_DEFINE_FLAGS(GLogLevelFlags);
+MOO_DEFINE_FLAGS(GRegexCompileFlags);
+MOO_DEFINE_FLAGS(GIOCondition);
 
 namespace moo {
 

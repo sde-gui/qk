@@ -20,7 +20,6 @@
 #include <list>
 #include <vector>
 #include <functional>
-#include <mooutils/mooutils-misc.h>
 #include <mooglib/moo-glib.h>
 
 namespace moo {

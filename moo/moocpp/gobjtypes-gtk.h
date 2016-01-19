@@ -53,4 +53,10 @@ public:
 
 MOO_REGISTER_CUSTOM_GOBJ_TYPE(GtkTextView);
 
+MOO_DEFINE_FLAGS(GdkEventMask);
+MOO_DEFINE_FLAGS(GdkModifierType);
+MOO_DEFINE_FLAGS(GtkCellRendererState);
+MOO_DEFINE_FLAGS(GtkAttachOptions);
+MOO_DEFINE_FLAGS(GdkDragAction);
+
 #endif // __cplusplus

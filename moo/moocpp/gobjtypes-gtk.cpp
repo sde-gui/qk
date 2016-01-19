@@ -35,7 +35,7 @@ void test()
 
     {
         gobj_ptr<GtkObject> p;
-        gobj_ref<GtkObject>& r = *p;
+        gobj_ref<GtkObject> r = *p;
         GtkObject* o1 = r.gobj();
         GtkObject* o2 = p->gobj();
         g_assert(o1 == o2);
@@ -51,7 +51,7 @@ void test()
 
     {
         gobj_ptr<GtkWidget> p = wrap_new(gtk_widget_new(0, "blah", nullptr, nullptr));
-        gobj_ref<GtkWidget>& r = *p;
+        gobj_ref<GtkWidget> r = *p;
         GtkWidget* o1 = r.gobj();
         GtkWidget* o2 = p->gobj();
         g_assert(o1 == o2);

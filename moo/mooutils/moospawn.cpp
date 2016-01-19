@@ -16,7 +16,7 @@
 #include "mooutils/moospawn.h"
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
-#include "moocpp/gobjectutils.h"
+#include "moocpp/gobjtypes.h"
 #include <string.h>
 
 #ifndef __WIN32__

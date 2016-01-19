@@ -16,7 +16,6 @@ moo_file_free (GFile *file)
 
 gboolean     moo_file_fnmatch           (GFile*       file,
                                          const char*  glob);
-char        *moo_file_get_display_name  (GFile*       file);
 
 G_END_DECLS
 
@@ -25,6 +24,6 @@ G_END_DECLS
 #include <moocpp/strutils.h>
 #include <moocpp/gobjtypes-gio.h>
 
-moo::gstr   moo_file_get_display_name   (const moo::g::File& file);
+moo::gstr   moo_file_get_display_name   (moo::g::File file);
 
 #endif // __cplusplus

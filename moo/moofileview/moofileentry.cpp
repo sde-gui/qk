@@ -25,7 +25,7 @@
 #include "mooutils/mooutils-debug.h"
 #include "mooutils/mooaccel.h"
 #include "mooutils/moocompat.h"
-#include "moocpp/gobjectutils.h"
+#include <moocpp/gobjtypes.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 

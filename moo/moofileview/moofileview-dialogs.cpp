@@ -24,7 +24,7 @@
 #include "moofileview/moofileprops-gxml.h"
 #include "moofileview/moocreatefolder-gxml.h"
 #include "moofileview/moofileview-drop-gxml.h"
-#include "moocpp/gobjectutils.h"
+#include <moocpp/gobjtypes.h>
 #include <time.h>
 #include <string.h>
 #include <gtk/gtk.h>

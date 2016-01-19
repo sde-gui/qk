@@ -24,6 +24,8 @@
 #include <gobject/gvaluecollector.h>
 #include <mooglib/moo-glib.h>
 
+using namespace moo;
+
 #define MOO_PREFS_ELEMENT "moo-prefs"
 #define PROP_VERSION "version"
 #define MOO_PREFS_VERSION "1.0"
@@ -597,7 +599,7 @@ process_item (MooMarkupElement *elm,
 static gboolean
 load_file (const char  *file,
            int          prefs_kind,
-           GError     **error)
+           moo::gerrp&  error)
 {
     MooMarkupDoc *xml;
     MooMarkupNode *root;
@@ -625,7 +627,7 @@ load_file (const char  *file,
     if (!g_file_test (file, G_FILE_TEST_EXISTS))
         return TRUE;
 
-    xml = moo_markup_parse_file (file, error);
+    xml = moo_markup_parse_file (file, &error);
 
     if (!xml)
         return FALSE;
@@ -679,11 +681,11 @@ load_file (const char  *file,
 }
 
 
-gboolean
+bool
 moo_prefs_load (char          **sys_files,
                 const char     *file_rc,
                 const char     *file_state,
-                GError        **error)
+                moo::gerrp&     error)
 {
     moo_prefs_set_modified (FALSE);
 
@@ -846,9 +848,9 @@ check_modified (MooPrefsKind prefs_kind)
 }
 
 static gboolean
-save_file (const char    *file,
-           MooPrefsKind   prefs_kind,
-           GError       **error)
+save_file (const char*  file,
+           MooPrefsKind prefs_kind,
+           gerrp&       error)
 {
     MooMarkupDoc *xml = NULL;
     MooMarkupNode *node;
@@ -899,10 +901,10 @@ save_file (const char    *file,
 }
 
 
-gboolean
-moo_prefs_save (const char  *file_rc,
-                const char  *file_state,
-                GError     **error)
+bool
+moo_prefs_save (const char* file_rc,
+                const char* file_state,
+                gerrp&      error)
 {
     PrefsStore *prefs = prefs_instance ();
 

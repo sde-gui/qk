@@ -18,7 +18,7 @@
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
-#include "moocpp/gobjectutils.h"
+#include "moocpp/gobjtypes.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <mooglib/moo-glib.h>

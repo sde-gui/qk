@@ -160,16 +160,4 @@ struct class_helper
 
 } // namespace moo
 
-MOO_DEFINE_FLAGS(GSignalFlags);
-MOO_DEFINE_FLAGS(GdkEventMask);
-MOO_DEFINE_FLAGS(GdkModifierType);
-MOO_DEFINE_FLAGS(GtkCellRendererState);
-MOO_DEFINE_FLAGS(GtkAttachOptions);
-MOO_DEFINE_FLAGS(GdkDragAction);
-MOO_DEFINE_FLAGS(GConnectFlags);
-MOO_DEFINE_FLAGS(GSpawnFlags);
-MOO_DEFINE_FLAGS(GIOCondition);
-MOO_DEFINE_FLAGS(GLogLevelFlags);
-MOO_DEFINE_FLAGS(GRegexCompileFlags);
-
 #endif // __cplusplus

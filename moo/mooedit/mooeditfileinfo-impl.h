@@ -2,7 +2,7 @@
 
 #include "mooeditfileinfo.h"
 #include "moocpp/strutils.h"
-#include "moocpp/gobjectutils.h"
+#include "moocpp/gobjtypes.h"
 
 using namespace moo;
 

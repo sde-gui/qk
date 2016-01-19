@@ -21,7 +21,7 @@
 #include "mooutils/moocombo.h"
 #include "mooutils/mooentry.h"
 #include "mooutils/moocompat.h"
-#include "moocpp/gobjectutils.h"
+#include <moocpp/gobjtypes.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>

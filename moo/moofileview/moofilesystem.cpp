@@ -22,7 +22,6 @@
 #include "mooutils/mooutils.h"
 #include "mooutils/moofilewatch.h"
 #include "marshals.h"
-#include "moocpp/gobjectutils.h"
 #include <gio/gio.h>
 #include <stdio.h>
 #ifndef __WIN32__

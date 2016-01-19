@@ -38,9 +38,6 @@ MooSaveChangesResponse          _moo_edit_save_multiple_changes_dialog  (MooEdit
 gboolean                        _moo_edit_reload_modified_dialog        (MooEdit        *doc);
 gboolean                        _moo_edit_overwrite_modified_dialog     (MooEdit        *doc);
 
-void                            _moo_edit_open_error_dialog             (GtkWidget      *widget,
-                                                                         GFile          *file,
-                                                                         GError         *error);
 void                            _moo_edit_reload_error_dialog           (MooEdit        *doc,
                                                                          GError         *error);
 
@@ -59,14 +56,17 @@ G_END_DECLS
 
 #include <moocpp/strutils.h>
 
-MooEditTryEncodingResponse      _moo_edit_try_encoding_dialog           (const moo::g::File& file,
+MooEditTryEncodingResponse      _moo_edit_try_encoding_dialog           (moo::g::File        file,
                                                                          const char*         encoding,
                                                                          /*out*/ moo::gstr&  new_encoding);
 bool                            _moo_edit_save_error_enc_dialog         (Edit&               doc,
-                                                                         const moo::g::File& file,
+                                                                         moo::g::File        file,
                                                                          const char*         encoding);
 void                            _moo_edit_save_error_dialog             (Edit&               doc,
-                                                                         const moo::g::File& file,
+                                                                         moo::g::File        file,
+                                                                         GError*             error);
+void                            _moo_edit_open_error_dialog             (GtkWidget*          widget,
+                                                                         moo::g::File*       file,
                                                                          GError*             error);
 
 #endif // __cplusplus

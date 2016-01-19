@@ -29,59 +29,41 @@
 #include <unistd.h>
 #endif
 
+using namespace moo;
+
 /************************************************************************/
 /* MooFileReader
  */
 
-struct _MooFileReader {
-    GObject base;
-    MGW_FILE *file;
-};
-
-MOO_DEFINE_TYPE_STATIC (MooFileReader, moo_file_reader, G_TYPE_OBJECT)
-
-static void
-moo_file_reader_init (MooFileReader *reader)
+MooFileReader::MooFileReader()
+    : file(nullptr)
 {
-    reader->file = NULL;
 }
 
-static void
-moo_file_reader_close_file (MooFileReader *reader)
+void MooFileReader::close_file ()
 {
-    if (reader->file)
+    if (file)
     {
-        mgw_fclose (reader->file);
-        reader->file = NULL;
+        mgw_fclose (file);
+        file = nullptr;
     }
 }
 
-static void
-moo_file_reader_dispose (GObject *object)
+MooFileReader::~MooFileReader()
 {
-    MooFileReader *reader = MOO_FILE_READER (object);
-    moo_file_reader_close_file (reader);
-    G_OBJECT_CLASS (moo_file_reader_parent_class)->dispose (object);
-}
-
-static void
-moo_file_reader_class_init (MooFileReaderClass *klass)
-{
-    G_OBJECT_CLASS (klass)->dispose = moo_file_reader_dispose;
+    close_file();
 }
 
 void
 moo_file_reader_close (MooFileReader *reader)
 {
-    g_return_if_fail (MOO_IS_FILE_READER (reader));
-    moo_file_reader_close_file (reader);
-    g_object_unref (reader);
+    delete reader;
 }
 
 static MooFileReader *
 moo_file_reader_new_real (const char  *filename,
                           gboolean     binary,
-                          GError     **error)
+                          gerrp&       error)
 {
     const char *mode = binary ? "rb" : "r";
     MGW_FILE *file;
@@ -89,33 +71,33 @@ moo_file_reader_new_real (const char  *filename,
     mgw_errno_t err;
 
     g_return_val_if_fail (filename != NULL, NULL);
-    g_return_val_if_fail (!error || !*error, NULL);
+    g_return_val_if_fail (!error, NULL);
 
     if (!(file = mgw_fopen (filename, mode, &err)))
     {
-        g_set_error (error, MOO_FILE_ERROR,
+        g_set_error (&error, MOO_FILE_ERROR,
                      _moo_file_error_from_errno (err),
                      _("Could not open %s: %s"), filename,
                      mgw_strerror (err));
         return NULL;
     }
 
-    reader = MOO_FILE_READER (g_object_new (MOO_TYPE_FILE_READER, nullptr));
+    reader = new MooFileReader();
     reader->file = file;
 
     return reader;
 }
 
 MooFileReader *
-moo_file_reader_new (const char  *filename,
-                     GError     **error)
+moo_file_reader_new (const char* filename,
+                     gerrp&      error)
 {
     return moo_file_reader_new_real (filename, TRUE, error);
 }
 
 MooFileReader *
-moo_text_reader_new (const char  *filename,
-                     GError     **error)
+moo_text_reader_new (const char* filename,
+                     gerrp&      error)
 {
     return moo_file_reader_new_real (filename, FALSE, error);
 }
@@ -125,14 +107,14 @@ moo_file_reader_read (MooFileReader  *reader,
                       char           *buf,
                       gsize           buf_size,
                       gsize          *size_read_p,
-                      GError        **error)
+                      gerrp&          error)
 {
     gsize size_read;
     mgw_errno_t err;
 
-    g_return_val_if_fail (MOO_IS_FILE_READER (reader), FALSE);
+    g_return_val_if_fail (reader != nullptr, FALSE);
     g_return_val_if_fail (size_read_p != NULL, FALSE);
-    g_return_val_if_fail (!error || !*error, FALSE);
+    g_return_val_if_fail (!error, FALSE);
     g_return_val_if_fail (reader->file != NULL, FALSE);
     g_return_val_if_fail (buf_size == 0 || buf != NULL, FALSE);
 
@@ -143,7 +125,7 @@ moo_file_reader_read (MooFileReader  *reader,
 
     if (size_read != buf_size && mgw_ferror (reader->file))
     {
-        g_set_error (error, MOO_FILE_ERROR,
+        g_set_error (&error, MOO_FILE_ERROR,
                      _moo_file_error_from_errno (err),
                      "error reading file: %s",
                      mgw_strerror (err));
@@ -159,24 +141,12 @@ moo_file_reader_read (MooFileReader  *reader,
 /* MooFileWriter
  */
 
-MOO_DEFINE_TYPE_STATIC (MooFileWriter, moo_file_writer, G_TYPE_OBJECT)
-
-static void
-moo_file_writer_init (G_GNUC_UNUSED MooFileWriter *writer)
-{
-}
-
-static void
-moo_file_writer_class_init (G_GNUC_UNUSED MooFileWriterClass *klass)
-{
-}
-
 gboolean
 moo_file_writer_write (MooFileWriter *writer,
                        const char    *data,
                        gssize         len)
 {
-    g_return_val_if_fail (MOO_IS_FILE_WRITER (writer), FALSE);
+    g_return_val_if_fail (writer != nullptr, FALSE);
     g_return_val_if_fail (data != NULL, FALSE);
 
     if (len < 0)
@@ -184,7 +154,7 @@ moo_file_writer_write (MooFileWriter *writer,
     if (!len)
         return TRUE;
 
-    return MOO_FILE_WRITER_GET_CLASS (writer)->meth_write (writer, data, len);
+    return writer->write (data, len);
 }
 
 gboolean
@@ -195,11 +165,11 @@ moo_file_writer_printf (MooFileWriter  *writer,
     va_list args;
     gboolean ret;
 
-    g_return_val_if_fail (MOO_IS_FILE_WRITER (writer), FALSE);
+    g_return_val_if_fail (writer != nullptr, FALSE);
     g_return_val_if_fail (fmt != NULL, FALSE);
 
     va_start (args, fmt);
-    ret = MOO_FILE_WRITER_GET_CLASS (writer)->meth_printf (writer, fmt, args);
+    ret = writer->printf (fmt, args);
     va_end (args);
 
     return ret;
@@ -210,38 +180,40 @@ moo_file_writer_printf_markup (MooFileWriter  *writer,
                                const char     *fmt,
                                ...)
 {
-    va_list args;
-    gboolean ret;
-    char *string;
-
-    g_return_val_if_fail (MOO_IS_FILE_WRITER (writer), FALSE);
+    g_return_val_if_fail (writer != nullptr, FALSE);
     g_return_val_if_fail (fmt != NULL, FALSE);
 
+    va_list args;
     va_start (args, fmt);
-    string = g_markup_vprintf_escaped (fmt, args);
+    gstr string = gstr::wrap_new (g_markup_vprintf_escaped (fmt, args));
     va_end (args);
 
-    g_return_val_if_fail (string != NULL, FALSE);
+    g_return_val_if_fail (!string.is_null(), FALSE);
 
-    ret = moo_file_writer_write (writer, string, -1);
+    return moo_file_writer_write (writer, string, -1);
+}
 
-    g_free (string);
+gboolean
+moo_file_writer_close (MooFileWriter* writer,
+                       gerrp&         error)
+{
+    gboolean ret;
+
+    g_return_val_if_fail (writer != nullptr, FALSE);
+    g_return_val_if_fail (!error, FALSE);
+
+    ret = writer->close (error);
+
+    delete writer;
     return ret;
 }
 
 gboolean
 moo_file_writer_close (MooFileWriter  *writer,
-                       GError        **error)
+                       GError        **errorp)
 {
-    gboolean ret;
-
-    g_return_val_if_fail (MOO_IS_FILE_WRITER (writer), FALSE);
-    g_return_val_if_fail (!error || !*error, FALSE);
-
-    ret = MOO_FILE_WRITER_GET_CLASS (writer)->meth_close (writer, error);
-
-    g_object_unref (writer);
-    return ret;
+    gerrp error(errorp);
+    return moo_file_writer_close (writer, error);
 }
 
 
@@ -249,113 +221,88 @@ moo_file_writer_close (MooFileWriter  *writer,
 /* MooLocalFileWriter
  */
 
-struct _MooLocalFileWriter {
-    MooFileWriter base;
-    GFile *file;
-    GOutputStream *stream;
-    MooFileWriterFlags flags;
-    GError *error;
-};
+MooLocalFileWriter::MooLocalFileWriter()
+    : flags(MOO_FILE_WRITER_FLAGS_NONE)
+{
+}
 
-MOO_DEFINE_TYPE_STATIC (MooLocalFileWriter, moo_local_file_writer, MOO_TYPE_FILE_WRITER)
+MooLocalFileWriter::~MooLocalFileWriter()
+{
+}
 
 static MooFileWriter *
-moo_local_file_writer_new (GFile               *file,
-                           MooFileWriterFlags   flags,
-                           GError             **error)
+moo_local_file_writer_new (g::File            file,
+                           MooFileWriterFlags flags,
+                           gerrp&             error)
 {
-    MooLocalFileWriter *writer = NULL;
-    GFileOutputStream *stream = NULL;
-    GFile *file_copy = NULL;
-
-    g_return_val_if_fail (G_IS_FILE (file), NULL);
-
     if (flags & MOO_FILE_WRITER_CONFIG_MODE)
     {
-        char *dirname;
-        char *filename;
         mgw_errno_t err;
 
-        filename = g_file_get_path (file);
-        dirname = filename ? g_path_get_dirname (filename) : NULL;
+        gstr filename = file.get_path ();
+        gstr dirname = !filename.empty() ? gstr::wrap_new (g_path_get_dirname (filename)) : gstr();
 
-        if (dirname && _moo_mkdir_with_parents (dirname, &err) != 0)
+        if (!dirname.empty() && _moo_mkdir_with_parents (dirname, &err) != 0)
         {
-            char *display_name = g_filename_display_name (dirname);
-            g_set_error (error, G_FILE_ERROR,
+            gstr display_name = gstr::wrap_new (g_filename_display_name (dirname));
+            g_set_error (&error, G_FILE_ERROR,
                          mgw_file_error_from_errno (err),
                          _("Could not create folder %s: %s"),
                          display_name, mgw_strerror (err));
-            g_free (display_name);
-            g_free (dirname);
-            goto error;
+            return nullptr;
         }
-
-        g_free (dirname);
-        g_free (filename);
     }
 
-    file_copy = g_file_dup (file);
-    stream = g_file_replace (file_copy, NULL,
-                             (flags & MOO_FILE_WRITER_SAVE_BACKUP) != 0,
-                             G_FILE_CREATE_NONE,
-                             NULL, error);
+    g::FilePtr file_copy = file.dup ();
+    g::FileOutputStreamPtr stream = file_copy->replace (NULL,
+                                                        (flags & MOO_FILE_WRITER_SAVE_BACKUP) != 0,
+                                                        G_FILE_CREATE_NONE,
+                                                        NULL, error);
 
     if (!stream)
-        goto error;
+        return nullptr;
 
-    writer = MOO_LOCAL_FILE_WRITER (g_object_new (MOO_TYPE_LOCAL_FILE_WRITER, nullptr));
+    auto writer = make_unique<MooLocalFileWriter>();
+
     writer->file = file_copy;
-    writer->stream = G_OUTPUT_STREAM (stream);
+    writer->stream = stream;
     writer->flags = flags;
 
-    return MOO_FILE_WRITER (writer);
-
-error:
-    if (file_copy)
-        g_object_unref (file_copy);
-    if (stream)
-        g_object_unref (stream);
-    return NULL;
+    return writer.release ();
 }
 
 MooFileWriter *
-moo_file_writer_new (const char          *filename,
-                     MooFileWriterFlags   flags,
-                     GError             **error)
+moo_file_writer_new (const char*        filename,
+                     MooFileWriterFlags flags,
+                     gerrp&             error)
 {
-    GFile *file;
-    MooFileWriter *writer;
+    g_return_val_if_fail (filename != nullptr, nullptr);
+    g_return_val_if_fail (!error, nullptr);
 
-    g_return_val_if_fail (filename != NULL, NULL);
-    g_return_val_if_fail (!error || !*error, NULL);
+    g::FilePtr file = g::File::new_for_path (filename);
+    g_return_val_if_fail (file != nullptr, nullptr);
 
-    file = g_file_new_for_path (filename);
-    writer = moo_local_file_writer_new (file, flags, error);
-
-    g_object_unref (file);
-    return writer;
+    return moo_local_file_writer_new (*file, flags, error);
 }
 
 MooFileWriter *
-moo_file_writer_new_for_file (GFile               *file,
-                              MooFileWriterFlags   flags,
-                              GError             **error)
+moo_file_writer_new_for_file (g::File            file,
+                              MooFileWriterFlags flags,
+                              gerrp&             error)
 {
-    g_return_val_if_fail (G_IS_FILE (file), NULL);
-    g_return_val_if_fail (!error || !*error, NULL);
+    g_return_val_if_fail (!error, NULL);
     return moo_local_file_writer_new (file, flags, error);
 }
 
 MooFileWriter *
 moo_config_writer_new (const char  *filename,
                        gboolean     save_backup,
-                       GError     **error)
+                       gerrp&       error)
 {
     MooFileWriterFlags flags;
 
     g_return_val_if_fail (filename != NULL, NULL);
-    g_return_val_if_fail (!error || !*error, NULL);
+    g_return_val_if_fail (!error, NULL);
 
     flags = MOO_FILE_WRITER_CONFIG_MODE | MOO_FILE_WRITER_TEXT_MODE;
     if (save_backup)
@@ -364,15 +311,19 @@ moo_config_writer_new (const char  *filename,
     return moo_file_writer_new (filename, flags, error);
 }
 
-
-static gboolean
-moo_local_file_writer_write (MooFileWriter *fwriter,
-                             const char    *data,
-                             gsize          len)
+MooFileWriter *
+moo_config_writer_new (const char  *filename,
+                       gboolean     save_backup,
+                       GError     **errorp)
 {
-    MooLocalFileWriter *writer = (MooLocalFileWriter*) fwriter;
+    gerrp error(errorp);
+    return moo_config_writer_new(filename, save_backup, error);
+}
 
-    if (writer->error)
+
+bool MooLocalFileWriter::write (const char* data, gsize len)
+{
+    if (error)
         return FALSE;
 
     while (len > 0)
@@ -385,7 +336,7 @@ moo_local_file_writer_write (MooFileWriter *fwriter,
 #endif
 
 #ifdef __WIN32__
-        if (writer->flags & MOO_FILE_WRITER_TEXT_MODE)
+        if (flags & MOO_FILE_WRITER_TEXT_MODE)
         {
             gsize le_start, le_len;
             if (moo_find_line_end (data, len, &le_start, &le_len))
@@ -397,20 +348,18 @@ moo_local_file_writer_write (MooFileWriter *fwriter,
         }
 #endif
 
-        if (!g_output_stream_write_all (writer->stream,
-                                        data, chunk_len,
-                                        &bytes_written, NULL,
-                                        &writer->error))
+        if (!stream->write_all (data, chunk_len,
+                                &bytes_written, NULL,
+                                error))
             return FALSE;
 
         data += next_chunk;
         len -= next_chunk;
 
 #ifdef __WIN32__
-        if (need_le && !g_output_stream_write_all (writer->stream,
-                                                   "\r\n", 2,
-                                                   &bytes_written, NULL,
-                                                   &writer->error))
+        if (need_le && !stream->write_all ("\r\n", 2,
+                                           &bytes_written, NULL,
+                                           error))
             return FALSE;
 #endif
     }
@@ -418,71 +367,30 @@ moo_local_file_writer_write (MooFileWriter *fwriter,
     return TRUE;
 }
 
-G_GNUC_PRINTF (2, 0)
-static gboolean
-moo_local_file_writer_printf (MooFileWriter *fwriter,
-                              const char    *fmt,
-                              va_list        args)
+bool MooLocalFileWriter::printf (const char* fmt, va_list args)
 {
-    MooLocalFileWriter *writer = (MooLocalFileWriter*) fwriter;
-    char *text;
-    gboolean retval;
-
-    if (writer->error)
+    if (error)
         return FALSE;
 
-    text = g_strdup_vprintf (fmt, args);
-    retval = moo_local_file_writer_write (fwriter, text, strlen (text));
-    g_free (text);
-
-    return retval;
+    gstr text = gstr::wrap_new (g_strdup_vprintf (fmt, args));
+    return write (text, strlen (text));
 }
 
-static gboolean
-moo_local_file_writer_close (MooFileWriter *fwriter,
-                             GError       **error)
+bool MooLocalFileWriter::close (gerrp& out_error)
 {
-    MooLocalFileWriter *writer = (MooLocalFileWriter*) fwriter;
-    gboolean retval;
+    g_return_val_if_fail (stream != nullptr, FALSE);
 
-    g_return_val_if_fail (writer->stream != NULL, FALSE);
-
-    if (!writer->error)
+    if (!error)
     {
-        g_output_stream_flush (writer->stream, NULL, &writer->error);
-        g_output_stream_close (writer->stream, NULL,
-                               writer->error ? NULL : &writer->error);
-        g_object_unref (writer->stream);
-        g_object_unref (writer->file);
-        writer->stream = NULL;
-        writer->file = NULL;
+        stream->flush (NULL, error);
+        gerrp second;
+        stream->close (NULL, error ? second : error);
+        stream.reset ();
+        file.reset ();
     }
 
-    retval = writer->error == NULL;
-
-    if (writer->error)
-        g_propagate_error (error, writer->error);
-
-    writer->error = NULL;
-    return retval;
-}
-
-
-static void
-moo_local_file_writer_class_init (MooLocalFileWriterClass *klass)
-{
-    MooFileWriterClass *writer_class = MOO_FILE_WRITER_CLASS (klass);
-    writer_class->meth_write = moo_local_file_writer_write;
-    writer_class->meth_printf = moo_local_file_writer_printf;
-    writer_class->meth_close = moo_local_file_writer_close;
-}
-
-static void
-moo_local_file_writer_init (MooLocalFileWriter *writer)
-{
-    writer->file = NULL;
-    writer->stream = NULL;
-    writer->error = NULL;
+    out_error = std::move (error);
+    return !out_error;
 }
 
 
@@ -490,88 +398,44 @@ moo_local_file_writer_init (MooLocalFileWriter *writer)
 /* MooStringWriter
  */
 
-struct _MooStringWriter {
-    MooFileWriter base;
-    GString *string;
-};
-
-MOO_DEFINE_TYPE_STATIC (MooStringWriter, moo_string_writer, MOO_TYPE_FILE_WRITER)
-
-static gboolean
-moo_string_writer_write (MooFileWriter *fwriter,
-                         const char    *data,
-                         gsize          len)
+bool MooStringWriter::write (const char* data, gsize len)
 {
-    MooStringWriter *writer = (MooStringWriter*) fwriter;
-    g_string_append_len (writer->string, data, len);
+    g_string_append_len (string, data, len);
     return TRUE;
 }
 
-G_GNUC_PRINTF (2, 0)
-static gboolean
-moo_string_writer_printf (MooFileWriter *fwriter,
-                          const char    *fmt,
-                          va_list        args)
+bool MooStringWriter::printf (const char* fmt, va_list args)
 {
-    char *buf;
-    gint len;
-    MooStringWriter *writer = (MooStringWriter*) fwriter;
-
-    len = g_vasprintf (&buf, fmt, args);
+    strp buf;
+    gint len = g_vasprintf (buf.pp(), fmt, args);
 
     if (len >= 0)
-    {
-        g_string_append_len (writer->string, buf, len);
-        g_free (buf);
-    }
+        g_string_append_len (string, buf.get(), len);
 
     return TRUE;
 }
 
-static gboolean
-moo_string_writer_close (MooFileWriter *fwriter,
-                         G_GNUC_UNUSED GError **error)
+bool MooStringWriter::close (G_GNUC_UNUSED gerrp& error)
 {
-    MooStringWriter *writer = (MooStringWriter*) fwriter;
-    g_string_free (writer->string, TRUE);
-    writer->string = NULL;
+    g_string_free (string, TRUE);
+    string = NULL;
     return TRUE;
 }
 
-static void
-moo_string_writer_class_init (MooStringWriterClass *klass)
+MooStringWriter::MooStringWriter()
+    : string (g_string_new (NULL))
 {
-    MooFileWriterClass *writer_class = MOO_FILE_WRITER_CLASS (klass);
-    writer_class->meth_write = moo_string_writer_write;
-    writer_class->meth_printf = moo_string_writer_printf;
-    writer_class->meth_close = moo_string_writer_close;
 }
 
-static void
-moo_string_writer_init (MooStringWriter *writer)
+MooStringWriter::~MooStringWriter()
 {
-    writer->string = g_string_new (NULL);
+    g_assert (!string);
 }
 
 MooFileWriter *
 moo_string_writer_new (void)
 {
-    return MOO_FILE_WRITER (g_object_new (MOO_TYPE_STRING_WRITER, nullptr));
-}
-
-const char *
-moo_string_writer_get_string (MooFileWriter *fwriter,
-                              gsize         *len)
-{
-    MooStringWriter *writer = (MooStringWriter*) fwriter;
-
-    g_return_val_if_fail (G_TYPE_CHECK_INSTANCE_TYPE ((writer), MOO_TYPE_STRING_WRITER), NULL);
-    g_return_val_if_fail (writer->string != NULL, NULL);
-
-    if (len)
-        *len = writer->string->len;
-
-    return writer->string->str;
+    return new MooStringWriter();
 }
 
 
@@ -628,7 +492,7 @@ test_moo_file_writer (void)
     const char *dir;
     char *my_dir, *filename, *bak_filename;
     MooFileWriter *writer;
-    GError *error = NULL;
+    gerrp error;
 
     dir = moo_test_get_working_dir ();
     my_dir = g_build_filename (dir, "cfg-writer", NULL);
@@ -639,11 +503,7 @@ test_moo_file_writer (void)
     TEST_ASSERT_MSG (writer != NULL,
                      "moo_cfg_writer_new failed: %s",
                      moo_error_message (error));
-    if (error)
-    {
-        g_error_free (error);
-        error = NULL;
-    }
+    error.clear ();
 
     if (writer)
     {
@@ -653,11 +513,7 @@ test_moo_file_writer (void)
         TEST_ASSERT_MSG (moo_file_writer_close (writer, &error),
                          "moo_file_writer_close failed: %s",
                          moo_error_message (error));
-        if (error)
-        {
-            g_error_free (error);
-            error = NULL;
-        }
+        error.clear ();
 
 #ifdef __WIN32__
 #define LE "\r\n"
@@ -682,11 +538,7 @@ test_moo_file_writer (void)
         TEST_ASSERT_MSG (moo_file_writer_close (writer, &error),
                          "moo_file_writer_close failed: %s",
                          moo_error_message (error));
-        if (error)
-        {
-            g_error_free (error);
-            error = NULL;
-        }
+        error.clear ();
 
         TEST_ASSERT (g_file_test (filename, G_FILE_TEST_EXISTS));
         TEST_ASSERT (g_file_test (bak_filename, G_FILE_TEST_EXISTS));
@@ -703,11 +555,7 @@ test_moo_file_writer (void)
     writer = moo_config_writer_new ("K:\\nowayyouhaveit\\file.ini", TRUE, &error);
 #endif
     TEST_ASSERT (writer == NULL);
-    TEST_ASSERT (error != NULL);
-
-    if (error)
-        g_error_free (error);
-    error = NULL;
+    TEST_ASSERT (error);
 
     g_free (bak_filename);
     g_free (filename);

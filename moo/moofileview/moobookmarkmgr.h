@@ -17,7 +17,7 @@
 
 #include <gtk/gtk.h>
 #include <mooutils/moouixml.h>
-#include <moocpp/gobjectutils.h>
+#include <moocpp/gobjtypes.h>
 
 G_BEGIN_DECLS
 

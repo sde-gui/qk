@@ -412,7 +412,7 @@ _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
 /* Error dialogs
  */
 
-void _moo_edit_save_error_dialog(Edit& doc, const g::File& file, GError *error)
+void _moo_edit_save_error_dialog(Edit& doc, g::File file, GError *error)
 {
     gstr filename = moo_file_get_display_name (file);
     gstr msg = gstr::wrap_new(g_strdup_printf(_("Could not save file\n%s"), filename));
@@ -460,9 +460,9 @@ moo_edit_question_dialog (MooEdit    *doc,
     return res == GTK_RESPONSE_YES;
 }
 
-bool _moo_edit_save_error_enc_dialog(Edit&          doc,
-                                     const g::File& file,
-                                     const char*    encoding)
+bool _moo_edit_save_error_enc_dialog(Edit&       doc,
+                                     g::File     file,
+                                     const char* encoding)
 {
     g_return_val_if_fail (encoding != NULL, FALSE);
 
@@ -479,9 +479,9 @@ bool _moo_edit_save_error_enc_dialog(Edit&          doc,
 
 
 MooEditTryEncodingResponse
-_moo_edit_try_encoding_dialog (const g::File& file,
-                               const char*    encoding,
-                               /*out*/ gstr&  new_encoding)
+_moo_edit_try_encoding_dialog (g::File       file,
+                               const char*   encoding,
+                               /*out*/ gstr& new_encoding)
 {
     MooEditWindow *window;
     GtkWidget *dialog;
@@ -548,28 +548,26 @@ _moo_edit_try_encoding_dialog (const g::File& file,
 
 
 void
-_moo_edit_open_error_dialog (GtkWidget  *widget,
-                             GFile      *file,
-                             GError     *error)
+_moo_edit_open_error_dialog (GtkWidget* widget,
+                             g::File*   file,
+                             GError*    error)
 {
-    char *filename, *msg = NULL;
-    char *secondary;
+    gstr msg;
+    gstr secondary;
 
-    filename = moo_file_get_display_name (file);
+    g_warn_if_fail (file != nullptr);
+    gstr filename = file ? moo_file_get_display_name (*file) : gstr ();
 
-    if (filename)
+    if (!filename.empty())
         /* Could not open file foo.txt */
-        msg = g_strdup_printf (_("Could not open file\n%s"), filename);
+        msg.take (g_strdup_printf (_("Could not open file\n%s"), filename.get()));
     else
-        msg = g_strdup (_("Could not open file"));
+        msg.literal (_("Could not open file"));
 
-    secondary = error ? g_strdup (error->message) : NULL;
+    if (error)
+        secondary.borrow (error->message);
 
     moo_error_dialog (msg, secondary, widget);
-
-    g_free (msg);
-    g_free (secondary);
-    g_free (filename);
 }
 
 

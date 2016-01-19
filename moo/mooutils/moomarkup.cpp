@@ -21,6 +21,7 @@
 #include <string.h>
 #include <mooglib/moo-glib.h>
 
+using namespace moo;
 
 typedef struct {
     MooMarkupDoc   *doc;
@@ -1297,7 +1298,7 @@ gboolean
 moo_parse_markup_file (const char         *filename,
                        const GMarkupParser *parser,
                        gpointer            data,
-                       GError            **error)
+                       GError            **errorp)
 {
     GMarkupParseContext *ctx;
     MooFileReader *reader;
@@ -1307,7 +1308,9 @@ moo_parse_markup_file (const char         *filename,
 
     g_return_val_if_fail (filename != NULL, FALSE);
     g_return_val_if_fail (parser != NULL, FALSE);
-    g_return_val_if_fail (!error || !*error, FALSE);
+    g_return_val_if_fail (!errorp || !*errorp, FALSE);
+
+    gerrp error(errorp);
 
     if (!(reader = moo_text_reader_new (filename, error)))
         return FALSE;
@@ -1325,14 +1328,14 @@ moo_parse_markup_file (const char         *filename,
         if (!size)
             break;
 
-        if (!g_markup_parse_context_parse (ctx, buf, size, error))
+        if (!g_markup_parse_context_parse (ctx, buf, size, &error))
         {
             seen_error = TRUE;
             break;
         }
     }
 
-    if (!seen_error && !g_markup_parse_context_end_parse (ctx, error))
+    if (!seen_error && !g_markup_parse_context_end_parse (ctx, &error))
         seen_error = TRUE;
 
     g_markup_parse_context_free (ctx);

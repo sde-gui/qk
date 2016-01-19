@@ -15,7 +15,7 @@
 
 #include "mooutils/mooundo.h"
 #include "marshals.h"
-#include "moocpp/gobjectutils.h"
+#include "moocpp/gobjtypes.h"
 #include <string.h>
 
 

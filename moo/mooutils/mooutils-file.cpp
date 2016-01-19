@@ -7,17 +7,10 @@ using namespace moo;
 
 MOO_DEFINE_OBJECT_ARRAY_FULL (MooFileArray, moo_file_array, GFile)
 
-char *
-moo_file_get_display_name (GFile *file)
-{
-    g_return_val_if_fail (G_IS_FILE (file), NULL);
-    return g_file_get_parse_name (file);
-}
-
 gstr
-moo_file_get_display_name(const g::File& file)
+moo_file_get_display_name(g::File file)
 {
-    return gstr::wrap_new(moo_file_get_display_name(file.nc_gobj()));
+    return file.get_parse_name();
 }
 
 gboolean

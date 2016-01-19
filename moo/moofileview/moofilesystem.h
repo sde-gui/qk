@@ -26,7 +26,7 @@
 
 #ifdef __cplusplus
 #include "moocpp/grefptr.h"
-#include "moocpp/gobjectutils.h"
+#include "moocpp/gobjtypes.h"
 #include "mooutils/moofilewatch.h"
 #endif // __cplusplus
 

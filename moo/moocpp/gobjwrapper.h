@@ -102,4 +102,8 @@ protected:
 
 } // namespace moo
 
+void g_signal_emit_valist(const moo::gobj_wrapper_base*, guint, GQuark, va_list) = delete;
+void g_signal_emit(const moo::gobj_wrapper_base*, guint, GQuark, ...) = delete;
+void g_signal_emit_by_name(const moo::gobj_wrapper_base*, const gchar*, ...) = delete;
+
 #endif // __cplusplus

@@ -53,6 +53,8 @@
 #include <shlobj.h>
 #endif
 
+using namespace moo;
+
 MOO_DEFINE_QUARK(moo - error, moo_error_quark)
 
 static gpointer copy_pointer(gpointer p)
@@ -1703,24 +1705,23 @@ moo_get_user_cache_file (const char *basename)
 
 
 static gboolean
-save_config_file (const char     *filename,
-                  const char     *content,
-                  gssize          len,
-                  GError        **error)
+save_config_file (const char *filename,
+                  const char *content,
+                  gssize      len,
+                  GError    **error)
 {
     MooFileWriter *writer;
-    gboolean retval;
 
     g_return_val_if_fail (filename != NULL, FALSE);
     g_return_val_if_fail (content != NULL, FALSE);
 
-    if (!(writer = moo_config_writer_new (filename, TRUE, error)))
+    gerrp error_here(error);
+
+    if (!(writer = moo_config_writer_new (filename, TRUE, error_here)))
         return FALSE;
 
     moo_file_writer_write (writer, content, len);
-    retval = moo_file_writer_close (writer, error);
-
-    return retval;
+    return moo_file_writer_close (writer, error_here);
 }
 
 static gboolean
@@ -1730,21 +1731,17 @@ save_user_data_file (const char     *basename,
                      gssize          len,
                      GError        **error)
 {
-    char *file;
-    gboolean result;
-
     g_return_val_if_fail (basename != NULL, FALSE);
     g_return_val_if_fail (content != NULL, FALSE);
 
+    gstr file;
+
     if (cache)
-        file = moo_get_user_cache_file (basename);
+        file.take (moo_get_user_cache_file (basename));
     else
-        file = moo_get_user_data_file (basename);
+        file.take (moo_get_user_data_file (basename));
 
-    result = save_config_file (file, content, len, error);
-
-    g_free (file);
-    return result;
+    return save_config_file (file, content, len, error);
 }
 
 gboolean
@@ -2229,6 +2226,12 @@ moo_error_message (GError *error)
        useful information obviously */
     g_return_val_if_fail (error != NULL, _("Unknown error"));
     return error->message;
+}
+
+moo::gstr
+moo_error_message(const moo::gerrp& err)
+{
+    return gstr::make_borrowed (moo_error_message (err.get ()));
 }
 
 

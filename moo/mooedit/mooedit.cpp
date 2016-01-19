@@ -55,7 +55,7 @@
 #include "mooutils/mooatom.h"
 #include "mooutils/moocompat.h"
 #include "mooedit/mooeditprogress-gxml.h"
-#include "moocpp/gobjectutils.h"
+#include "moocpp/gobjtypes.h"
 #include <string.h>
 #include <stdlib.h>
 

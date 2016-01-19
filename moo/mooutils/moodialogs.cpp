@@ -39,7 +39,7 @@ create_message_dialog (GtkWindow  *parent,
                                                  type,
                                                  message_dialog_buttons,
                                                  "<span weight=\"bold\" size=\"larger\">%s</span>", text);
-    if (secondary_text)
+    if (secondary_text && *secondary_text)
         gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
                                                   "%s", secondary_text);
 

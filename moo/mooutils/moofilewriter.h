@@ -15,44 +15,65 @@
 
 #pragma once
 
-#include <gio/gio.h>
+#include <mooutils/mooutils-misc.h>
 
-G_BEGIN_DECLS
+#ifdef __cplusplus
 
+#include <moocpp/gobjtypes-gio.h>
 
-typedef struct _MooFileReader MooFileReader;
+struct MooFileReader;
+struct MooFileWriter;
+
+void g_object_ref(MooFileReader*) = delete;
+void g_object_unref(MooFileReader*) = delete;
+void g_object_ref(MooFileWriter*) = delete;
+void g_object_unref(MooFileWriter*) = delete;
 
 MooFileReader  *moo_file_reader_new             (const char     *filename,
-                                                 GError        **error);
+                                                 moo::gerrp&     error);
 MooFileReader  *moo_text_reader_new             (const char     *filename,
-                                                 GError        **error);
+                                                 moo::gerrp&     error);
 gboolean        moo_file_reader_read            (MooFileReader  *reader,
                                                  char           *buf,
                                                  gsize           buf_size,
                                                  gsize          *size_read,
-                                                 GError        **error);
+                                                 moo::gerrp&     error);
 void            moo_file_reader_close           (MooFileReader  *reader);
-
-typedef struct _MooFileWriter MooFileWriter;
 
 typedef enum /*< flags >*/
 {
+    MOO_FILE_WRITER_FLAGS_NONE  = 0,
     MOO_FILE_WRITER_SAVE_BACKUP = 1 << 0,
     MOO_FILE_WRITER_CONFIG_MODE = 1 << 1,
     MOO_FILE_WRITER_TEXT_MODE   = 1 << 2
 } MooFileWriterFlags;
 
+MOO_DEFINE_FLAGS(MooFileWriterFlags);
+
 MooFileWriter  *moo_file_writer_new             (const char     *filename,
                                                  MooFileWriterFlags flags,
-                                                 GError        **error);
-MooFileWriter  *moo_file_writer_new_for_file    (GFile          *file,
+                                                 moo::gerrp&     error);
+MooFileWriter  *moo_file_writer_new_for_file    (moo::g::File    file,
                                                  MooFileWriterFlags flags,
-                                                 GError        **error);
+                                                 moo::gerrp&     error);
+MooFileWriter  *moo_config_writer_new           (const char     *filename,
+                                                 gboolean        save_backup,
+                                                 moo::gerrp&     error);
+MooFileWriter  *moo_string_writer_new           (void);
+
+gboolean        moo_file_writer_close           (MooFileWriter  *writer,
+                                                 moo::gerrp&     error);
+
+
+#endif // __cplusplus
+
+G_BEGIN_DECLS
+
+typedef struct MooFileWriter MooFileWriter;
+
 MooFileWriter  *moo_config_writer_new           (const char     *filename,
                                                  gboolean        save_backup,
                                                  GError        **error);
-MooFileWriter  *moo_string_writer_new           (void);
-
 gboolean        moo_file_writer_write           (MooFileWriter  *writer,
                                                  const char     *data,
                                                  gssize          len);
@@ -65,13 +86,4 @@ gboolean        moo_file_writer_printf_markup   (MooFileWriter  *writer,
 gboolean        moo_file_writer_close           (MooFileWriter  *writer,
                                                  GError        **error);
 
-const char     *moo_string_writer_get_string    (MooFileWriter  *writer,
-                                                 gsize          *len);
-
-
 G_END_DECLS
-
-#ifdef __cplusplus
-#include <moocpp/gobjectutils.h>
-MOO_DEFINE_FLAGS(MooFileWriterFlags);
-#endif

@@ -38,7 +38,6 @@
 #include "mooutils-gobject.h"
 #include "mooi18n.h"
 
-#include "moocpp/gobjectutils.h"
 #include "moocpp/gobjtypes.h"
 using namespace moo;
 

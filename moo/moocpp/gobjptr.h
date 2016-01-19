@@ -96,7 +96,7 @@ public:
     operator const Object* () const { return gobj(); }
     operator ref_type*() const { return m_ref.self(); }
     ref_type* operator->() const { return m_ref.self(); }
-    ref_type& operator*() const { return m_ref; }
+    ref_type operator*() const { return m_ref; }
 
     // These are nasty. Because of ref_type* conversion this can be converted to void*,
     // which in turn can be passed to g_object_ref or g_free, etc.

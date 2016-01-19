@@ -53,32 +53,32 @@ MOO_DEFINE_QUARK (MooEditFileErrorQuark, _moo_edit_file_error_quark)
 static GSList *UNTITLED = NULL;
 static GHashTable *UNTITLED_NO = NULL;
 
-static void     block_buffer_signals        (Edit&          edit);
-static void     unblock_buffer_signals      (Edit&          edit);
-static void     check_file_status           (Edit&          edit);
-static void     file_modified_on_disk       (Edit&          edit);
-static void     file_deleted                (Edit&          edit);
-static void     add_status                  (Edit&          edit,
+static void     block_buffer_signals        (Edit           edit);
+static void     unblock_buffer_signals      (Edit           edit);
+static void     check_file_status           (Edit           edit);
+static void     file_modified_on_disk       (Edit           edit);
+static void     file_deleted                (Edit           edit);
+static void     add_status                  (Edit           edit,
                                              MooEditStatus  s);
 
-static void     moo_edit_load_text          (Edit&              edit,
-                                             const g::File&     file,
+static void     moo_edit_load_text          (Edit               edit,
+                                             g::File            file,
                                              const char*        encoding,
                                              const char*        text);
-static bool     moo_edit_reload_local       (Edit&              edit,
+static bool     moo_edit_reload_local       (Edit               edit,
                                              const char*        encoding,
-                                             GError**           error);
-static bool     moo_edit_save_local         (Edit&              edit,
-                                             const g::File&     file,
-                                             const char*        encoding,
-                                             MooEditSaveFlags   flags,
-                                             GError**           error);
-static bool     moo_edit_save_copy_local    (Edit&              edit,
-                                             const g::File&     file,
+                                             gerrp&             error);
+static bool     moo_edit_save_local         (Edit               edit,
+                                             g::File            file,
                                              const char*        encoding,
                                              MooEditSaveFlags   flags,
-                                             GError**           error);
-static void     _moo_edit_start_file_watch  (Edit&              edit);
+                                             gerrp&             error);
+static bool     moo_edit_save_copy_local    (Edit               edit,
+                                             g::File            file,
+                                             const char*        encoding,
+                                             MooEditSaveFlags   flags,
+                                             gerrp&             error);
+static void     _moo_edit_start_file_watch  (Edit               edit);
 
 static char    *moo_convert_file_data_to_utf8   (const char     *data,
                                                  gsize           len,
@@ -91,11 +91,11 @@ static bool     encoding_needs_bom_save         (const char     *enc,
                                                  gsize          *bom_len);
 static bool     encoding_is_utf8                (const char     *encoding);
 
-static bool     check_regular                   (const g::File&  file,
-                                                 GError**        error);
+static bool     check_regular                   (g::File         file,
+                                                 gerrp&          error);
 
 
-bool _moo_is_file_error_cancelled(GError *error)
+bool _moo_is_file_error_cancelled(const gerrp& error)
 {
     return error && error->domain == MOO_EDIT_FILE_ERROR &&
            error->code == MOO_EDIT_FILE_ERROR_CANCELLED;
@@ -122,7 +122,7 @@ normalize_encoding (const gstr& encoding,
 }
 
 
-bool _moo_edit_file_is_new(const g::File& file)
+bool _moo_edit_file_is_new(g::File file)
 {
     gstr filename = file.get_path();
     g_return_val_if_fail(!filename.empty(), FALSE);
@@ -131,10 +131,10 @@ bool _moo_edit_file_is_new(const g::File& file)
 
 
 static gboolean
-load_file_contents (const g::File& file,
-                    char**         data,
-                    gsize*         data_len,
-                    GError**       error)
+load_file_contents (g::File file,
+                    char**  data,
+                    gsize*  data_len,
+                    gerrp&  error)
 {
     if (!check_regular (file, error))
         return FALSE;
@@ -143,19 +143,19 @@ load_file_contents (const g::File& file,
 
     if (path.empty())
     {
-        g_set_error (error, MOO_EDIT_FILE_ERROR,
+        g_set_error (&error, MOO_EDIT_FILE_ERROR,
                      MOO_EDIT_FILE_ERROR_NOT_IMPLEMENTED,
                      "Loading remote files is not implemented");
         return FALSE;
     }
 
-    return g_file_get_contents (path, data, data_len, error);
+    return g_file_get_contents (path, data, data_len, &error);
 }
 
 static char *
 convert_file_data_to_utf8_with_prompt (const char*    data,
                                        gsize          data_len,
-                                       const g::File& file,
+                                       g::File        file,
                                        const char*    encoding,
                                        const char*    cached_encoding,
                                        /*out*/ gstr&  used_encoding)
@@ -200,14 +200,13 @@ convert_file_data_to_utf8_with_prompt (const char*    data,
 }
 
 bool
-_moo_edit_load_file (Edit&          edit,
-                     const g::File& file,
-                     const gstr&    init_encoding,
-                     const gstr&    init_cached_encoding,
-                     GError**       error)
+_moo_edit_load_file (Edit        edit,
+                     g::File     file,
+                     const gstr& init_encoding,
+                     const gstr& init_cached_encoding,
+                     gerrp&      error)
 {
     bool result = false;
-    GError *error_here = NULL;
     char *data = NULL;
     gsize data_len = 0;
     char *data_utf8 = NULL;
@@ -220,16 +219,14 @@ _moo_edit_load_file (Edit&          edit,
     if (!init_cached_encoding.empty())
         cached_encoding = normalize_encoding(init_cached_encoding, false);
 
-    if (!load_file_contents(file, &data, &data_len, &error_here))
+    if (!load_file_contents(file, &data, &data_len, error))
         goto done;
 
     data_utf8 = convert_file_data_to_utf8_with_prompt(data, data_len, file, encoding, cached_encoding, /*out*/ used_encoding);
 
     if (data_utf8 == NULL)
     {
-        error_here = g_error_new(MOO_EDIT_FILE_ERROR,
-                                 MOO_EDIT_FILE_ERROR_CANCELLED,
-                                 "Cancelled");
+        g_set_error (&error, MOO_EDIT_FILE_ERROR, MOO_EDIT_FILE_ERROR_CANCELLED, "Cancelled");
         goto done;
     }
 
@@ -240,9 +237,6 @@ done:
     if (!result)
         edit._stop_file_watch();
 
-    if (error_here)
-        g_propagate_error(error, error_here);
-
     g_free(data_utf8);
     g_free(data);
     return result;
@@ -252,41 +246,28 @@ done:
 bool
 _moo_edit_reload_file(Edit        edit,
                       const char* encoding,
-                      GError**    error)
+                      gerrp&      error)
 {
-    GError *error_here = NULL;
-    bool result = moo_edit_reload_local(edit, encoding, &error_here);
-
-    if (error_here)
-        g_propagate_error(error, error_here);
-
-    return result;
+    return moo_edit_reload_local(edit, encoding, error);
 }
 
 
-bool _moo_edit_save_file(Edit&            edit,
-                         const g::File&   file,
+bool _moo_edit_save_file(Edit             edit,
+                         g::File          file,
                          const char*      encoding,
                          MooEditSaveFlags flags,
-                         GError**         error)
+                         gerrp&           error)
 {
     gstr encoding_copy = gstr::make_copy(normalize_encoding(encoding, true));
-
-    GError *error_here = NULL;
-    bool result = moo_edit_save_local(edit, file, encoding_copy, flags, &error_here);
-
-    if (error_here)
-        g_propagate_error(error, error_here);
-
-    return result;
+    return moo_edit_save_local(edit, file, encoding_copy, flags, error);
 }
 
 
 bool _moo_edit_save_file_copy(Edit             edit,
-                              const g::File&   file,
+                              g::File          file,
                               const char*      encoding,
                               MooEditSaveFlags flags,
-                              GError**         error)
+                              gerrp&           error)
 {
     gstr encoding_copy = gstr::make_copy(normalize_encoding(encoding, true));
     return moo_edit_save_copy_local(edit, file, encoding_copy, flags, error);
@@ -294,14 +275,13 @@ bool _moo_edit_save_file_copy(Edit             edit,
 
 
 static void
-set_encoding_error (GError **error)
+set_encoding_error (gerrp& error)
 {
-    GError *tmp_error = NULL;
+    gerrp tmp_error;
     g_set_error (&tmp_error, MOO_EDIT_FILE_ERROR,
                  MOO_EDIT_FILE_ERROR_ENCODING,
-                 "%s", *error ? (*error)->message : "ERROR");
-    g_clear_error (error);
-    g_propagate_error (error, tmp_error);
+                 "%s", error ? error->message : "ERROR");
+    error = std::move(tmp_error);
 }
 
 
@@ -349,7 +329,7 @@ moo_edit_set_line_end_type (MooEdit        *edit,
 /* File loading
  */
 
-static void do_load_text(Edit&       edit,
+static void do_load_text(Edit        edit,
                          const char* text);
 
 static std::list<gstr>
@@ -395,37 +375,33 @@ get_encodings (void)
 }
 
 
-static bool check_regular (const g::File& file,
-                           GError**       error)
+static bool check_regular (g::File file, gerrp& error)
 {
-    GFileInfo *info;
-    GFileType type;
-    gboolean retval = TRUE;
-
     if (!file.is_native())
-        return TRUE;
+        return true;
 
-    if (!(info = file.query_info(G_FILE_ATTRIBUTE_STANDARD_TYPE, G_FILE_QUERY_INFO_NONE, nullptr, nullptr)))
-        return TRUE;
+    gerrp ignored;
+    g::FileInfoPtr info;
+    if (!(info = file.query_info(G_FILE_ATTRIBUTE_STANDARD_TYPE, G_FILE_QUERY_INFO_NONE, nullptr, ignored)))
+        return true;
 
-    type = g_file_info_get_file_type (info);
+    GFileType type = g_file_info_get_file_type (info.gobj());
     if (type != G_FILE_TYPE_REGULAR && type != G_FILE_TYPE_UNKNOWN)
     {
-        g_set_error (error, MOO_EDIT_FILE_ERROR,
+        g_set_error (&error, MOO_EDIT_FILE_ERROR,
                      MOO_EDIT_FILE_ERROR_FAILED,
                      "%s", D_("Not a regular file", "glib20"));
-        retval = FALSE;
+        return false;
     }
 
-    g_object_unref (info);
-    return retval;
+    return true;
 }
 
 static void
-moo_edit_load_text (Edit&          edit,
-                    const g::File& file,
-                    const char*    encoding,
-                    const char*    text)
+moo_edit_load_text (Edit        edit,
+                    g::File     file,
+                    const char* encoding,
+                    const char* text)
 {
     MooEditPrivate& priv = edit.get_priv();
 
@@ -473,7 +449,7 @@ moo_edit_load_text (Edit&          edit,
 }
 
 
-static void do_load_text(Edit& edit, const char* text)
+static void do_load_text(Edit  edit, const char* text)
 {
     MooLineEndType le = MOO_LE_NONE;
 
@@ -550,9 +526,9 @@ static void do_load_text(Edit& edit, const char* text)
 
 
 /* XXX */
-static bool moo_edit_reload_local(Edit&       edit,
+static bool moo_edit_reload_local(Edit        edit,
                                   const char* encoding,
-                                  GError**    error)
+                                  gerrp&      error)
 {
     g::FilePtr file = wrap_new(moo_edit_get_file(&edit));
     moo_return_error_if_fail(file != nullptr);
@@ -568,7 +544,7 @@ static bool moo_edit_reload_local(Edit&       edit,
         priv.status = (MooEditStatus) 0;
         moo_edit_set_modified(&edit, false);
         _moo_edit_start_file_watch(edit);
-        g_clear_error(error);
+        g_clear_error (&error);
     }
 
     return result;
@@ -614,7 +590,7 @@ get_contents_with_fixed_line_end (GtkTextBuffer *buffer, const char *le, gsize l
     return g_string_free (contents, FALSE);
 }
 
-static gstr get_contents(MooEdit& edit)
+static gstr get_contents(MooEdit  edit)
 {
     const char *le = "\n";
     gsize le_len = 1;
@@ -642,13 +618,13 @@ static gstr get_contents(MooEdit& edit)
     return gstr::wrap_new(get_contents_with_fixed_line_end(buffer, le, le_len));
 }
 
-static bool do_write(const g::File&   file,
+static bool do_write(g::File          file,
                      const char*      data1,
                      gsize            len1,
                      const char*      data2,
                      gsize            len2,
                      MooEditSaveFlags flags,
-                     GError**         error)
+                     gerrp&           error)
 {
     MooFileWriter *writer;
     MooFileWriterFlags writer_flags;
@@ -656,7 +632,7 @@ static bool do_write(const g::File&   file,
 
     writer_flags = (flags & MOO_EDIT_SAVE_BACKUP) ? MOO_FILE_WRITER_SAVE_BACKUP : (MooFileWriterFlags) 0;
 
-    if ((writer = moo_file_writer_new_for_file (file.nc_gobj(), writer_flags, error)))
+    if ((writer = moo_file_writer_new_for_file (file, writer_flags, error)))
     {
         success = TRUE;
         if (success && len1 > 0)
@@ -671,15 +647,14 @@ static bool do_write(const g::File&   file,
 }
 
 static bool
-do_save_local(Edit&            edit,
-              const g::File&   file,
+do_save_local(Edit             edit,
+              g::File          file,
               const char*      encoding,
               MooEditSaveFlags flags,
-              GError**         error)
+              gerrp&           error)
 {
     const char *to_save;
     gsize to_save_size;
-    GError *encoding_error = NULL;
     const char *enc_no_bom = NULL;
     const char *bom = NULL;
     gsize bom_len = 0;
@@ -697,6 +672,7 @@ do_save_local(Edit&            edit,
     {
         gsize bytes_read;
         gsize bytes_written;
+        gerrp encoding_error;
         gstr encoded = gstr::wrap_new(g_convert(utf8_contents, -1,
                                                 encoding, "UTF-8",
                                                 &bytes_read, &bytes_written,
@@ -709,8 +685,8 @@ do_save_local(Edit&            edit,
         }
         else
         {
-            g_propagate_error(error, encoding_error);
-            set_encoding_error(error);
+            error = std::move (encoding_error);
+            set_encoding_error (error);
             return false;
         }
     }
@@ -728,11 +704,11 @@ do_save_local(Edit&            edit,
 
 
 static bool
-moo_edit_save_local(Edit&            edit,
-                    const g::File&   file,
+moo_edit_save_local(Edit             edit,
+                    g::File          file,
                     const char*      encoding,
                     MooEditSaveFlags flags,
-                    GError**         error)
+                    gerrp&           error)
 {
     if (!do_save_local(edit, file, encoding, flags, error))
         return FALSE;
@@ -745,11 +721,11 @@ moo_edit_save_local(Edit&            edit,
 }
 
 
-static bool moo_edit_save_copy_local(Edit&            edit,
-                                     const g::File&   file,
+static bool moo_edit_save_copy_local(Edit             edit,
+                                     g::File          file,
                                      const char*      encoding,
                                      MooEditSaveFlags flags,
-                                     GError**         error)
+                                     gerrp&           error)
 {
     return do_save_local(edit, file, encoding, flags, error);
 }
@@ -760,14 +736,14 @@ static bool moo_edit_save_copy_local(Edit&            edit,
  */
 
 static void
-block_buffer_signals(Edit& edit)
+block_buffer_signals(Edit edit)
 {
     g_signal_handler_block (moo_edit_get_buffer (&edit), edit.get_priv().modified_changed_handler_id);
 }
 
 
 static void
-unblock_buffer_signals(Edit& edit)
+unblock_buffer_signals(Edit edit)
 {
     g_signal_handler_unblock(moo_edit_get_buffer(&edit), edit.get_priv().modified_changed_handler_id);
 }
@@ -811,7 +787,7 @@ file_watch_callback(G_GNUC_UNUSED MooFileWatch& watch,
 }
 
 
-static void _moo_edit_start_file_watch(Edit& edit)
+static void _moo_edit_start_file_watch(Edit edit)
 {
     auto& priv = edit.get_priv();
 
@@ -853,7 +829,7 @@ void Edit::_stop_file_watch()
 }
 
 
-static void check_file_status(Edit& edit)
+static void check_file_status(Edit edit)
 {
     auto& priv = edit.get_priv();
 
@@ -867,7 +843,7 @@ static void check_file_status(Edit& edit)
 }
 
 
-static void file_modified_on_disk(Edit& edit)
+static void file_modified_on_disk(Edit edit)
 {
     auto& priv = edit.get_priv();
 
@@ -887,7 +863,7 @@ static void file_modified_on_disk(Edit& edit)
 }
 
 
-static void file_deleted (Edit& edit)
+static void file_deleted (Edit edit)
 {
     auto& priv = edit.get_priv();
 
@@ -907,14 +883,14 @@ static void file_deleted (Edit& edit)
 }
 
 
-static void add_status(Edit& edit, MooEditStatus s)
+static void add_status(Edit edit, MooEditStatus s)
 {
     edit.get_priv().status |= s;
     edit.signal_emit_by_name("doc-status-changed", NULL);
 }
 
 
-void Edit::_remove_untitled(const Edit& doc)
+void Edit::_remove_untitled(Edit doc)
 {
     gpointer n = g_hash_table_lookup (UNTITLED_NO, &doc);
 
@@ -926,7 +902,7 @@ void Edit::_remove_untitled(const Edit& doc)
 }
 
 
-static int add_untitled(Edit& edit)
+static int add_untitled(Edit edit)
 {
     int n;
 
@@ -948,7 +924,7 @@ static int add_untitled(Edit& edit)
 }
 
 
-static gstr moo_file_get_display_basename(const g::File& file)
+static gstr moo_file_get_display_basename(g::File file)
 {
     const char *slash;
 
@@ -984,7 +960,7 @@ static gstr normalize_filename_for_comparison(const char *filename)
 #endif
 }
 
-gstr Edit::_get_normalized_name(const g::File& file)
+gstr Edit::_get_normalized_name(g::File file)
 {
     gstr tmp = file.get_path();
 
@@ -1001,8 +977,8 @@ gstr Edit::_get_normalized_name(const g::File& file)
     }
 }
 
-void Edit::_set_file(gobj_raw_ptr<const GFile> file,
-                     const char*               encoding)
+void Edit::_set_file(g::FileRawPtr file,
+                     const char*   encoding)
 {
     if (!UNTITLED_NO)
         UNTITLED_NO = g_hash_table_new(g_direct_hash, g_direct_equal);

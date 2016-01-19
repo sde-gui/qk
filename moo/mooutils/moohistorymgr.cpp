@@ -33,6 +33,8 @@
 #include <stdarg.h>
 #include <string.h>
 
+using namespace moo;
+
 #define N_MENU_ITEMS 10
 #define MAX_ITEM_NUMBER 5000
 
@@ -794,7 +796,7 @@ static void
 moo_history_mgr_save (MooHistoryMgr *mgr)
 {
     const char *filename;
-    GError *error = NULL;
+    gerrp error;
     MooFileWriter *writer;
 
     g_return_if_fail (MOO_IS_HISTORY_MGR (mgr));
@@ -811,7 +813,7 @@ moo_history_mgr_save (MooHistoryMgr *mgr)
         return;
     }
 
-    if ((writer = moo_config_writer_new (filename, FALSE, &error)))
+    if ((writer = moo_config_writer_new (filename, FALSE, error)))
     {
         GString *string;
         MooHistoryItemList *l;
@@ -833,14 +835,13 @@ moo_history_mgr_save (MooHistoryMgr *mgr)
         g_string_free (string, TRUE);
 
         moo_file_writer_write (writer, "</" ELM_ROOT ">\n", -1);
-        moo_file_writer_close (writer, &error);
+        moo_file_writer_close (writer, error);
     }
 
     if (error)
     {
         g_critical ("could not save file '%s': %s",
                     filename, moo_error_message (error));
-        g_error_free (error);
     }
 }
 

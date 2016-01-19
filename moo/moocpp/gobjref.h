@@ -56,12 +56,9 @@ public:
         return *this;
     }
 
-    GObject* gobj() { return m_gobj; }
-    const GObject* gobj() const { return m_gobj; }
-    operator GObject&() { return *m_gobj; }
-    operator const GObject&() const { return *m_gobj; }
-    operator GTypeInstance&() { return *reinterpret_cast<GTypeInstance*>(m_gobj); }
-    operator const GTypeInstance&() const { return *reinterpret_cast<const GTypeInstance*>(m_gobj); }
+    GObject* gobj() const { return m_gobj; }
+    operator GObject&() const { return *m_gobj; }
+    operator GTypeInstance&() const { return *reinterpret_cast<GTypeInstance*>(m_gobj); }
 
 protected:
     GObject* raw_gobj() const { return const_cast<GObject*>(m_gobj); }
@@ -93,7 +90,6 @@ class gobj_ref<GObject>; // : public gobj_ref_base
 protected:                                                                              \
     friend class gobj_ptr<object_type>;                                                 \
     friend class gobj_raw_ptr<object_type>;                                             \
-    friend class gobj_raw_ptr<const object_type>;                                       \
                                                                                         \
     gobj_ref() {}                                                                       \
                                                                                         \
@@ -103,24 +99,13 @@ public:                                                                         
         _set_gobj(&gobj);                                                               \
     }                                                                                   \
                                                                                         \
-    object_type* gobj()                                                                 \
+    object_type* gobj() const                                                           \
     {                                                                                   \
         return reinterpret_cast<object_type*>(raw_gobj());                              \
     }                                                                                   \
                                                                                         \
-    const object_type* gobj() const                                                     \
-    {                                                                                   \
-        return reinterpret_cast<const object_type*>(raw_gobj());                        \
-    }                                                                                   \
-                                                                                        \
     template<typename X>                                                                \
-    X* gobj()                                                                           \
-    {                                                                                   \
-        return nc_gobj<X>();                                                            \
-    }                                                                                   \
-                                                                                        \
-    template<typename X>                                                                \
-    const X* gobj() const                                                               \
+    X* gobj() const                                                                     \
     {                                                                                   \
         return nc_gobj<X>();                                                            \
     }                                                                                   \
@@ -140,10 +125,8 @@ public:                                                                         
     gobj_ref* self() { return this; }                                                   \
     const gobj_ref* self() const { return this; }                                       \
                                                                                         \
-    operator object_type&() { return *gobj(); }                                         \
-    operator const object_type&() const { return *gobj(); }                             \
-    gobj_raw_ptr<object_type> operator&() { return nc_gobj(); }                         \
-    gobj_raw_ptr<const object_type> operator&() const { return nc_gobj(); }             \
+    operator object_type&() const { return *gobj(); }                                   \
+    gobj_raw_ptr<object_type> operator&() const { return nc_gobj(); }                   \
                                                                                         \
     gobj_ref(const gobj_ref&) = default;                                                \
     gobj_ref& operator=(const gobj_ref&) = default;                                     \

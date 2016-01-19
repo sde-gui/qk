@@ -267,29 +267,66 @@ moo_os_win32 (void)
 #include <moocpp/strutils.h>
 #include <vector>
 
-namespace moo
-{
-
-class gerrp
-{
-public:
-    gerrp();
-    ~gerrp();
-
-    operator bool() const { return m_err != nullptr; }
-    bool operator!() const { return m_err == nullptr; }
-
-    GError* get() const { return m_err; }
-    GError* operator->() const { return m_err; }
-    GError** operator&() { return &m_err; }
-
-private:
-    GError* m_err;
-};
-
-} // namespace moo
-
 std::vector<moo::gstr> moo_get_data_subdirs(const moo::gstr& subdir);
 moo::gstr moo_error_message(const moo::gerrp& err);
 
 #endif // __cplusplus
+
+G_BEGIN_DECLS
+
+GQuark moo_error_quark (void) G_GNUC_CONST;
+
+#define MOO_ERROR (moo_error_quark ())
+
+enum {
+    MOO_ERROR_UNEXPECTED = 1
+};
+
+G_END_DECLS
+
+#ifdef __cplusplus
+
+#define moo_err_false_ret__ false
+#define moo_err_null_ret__ nullptr
+
+inline void moo_err_set_unexpected_error(GError** error)
+{
+    g_set_error (error, MOO_ERROR, MOO_ERROR_UNEXPECTED, "unexpected error");
+}
+
+inline void moo_err_set_unexpected_error(moo::gerrp& error)
+{
+    moo_err_set_unexpected_error(&error);
+}
+
+#else // !__cplusplus
+
+#define moo_err_false_ret__ FALSE
+#define moo_err_null_ret__ NULL
+
+#define moo_err_set_unexpected_error(error)                 \
+    g_set_error (error,                                     \
+                 MOO_ERROR,                                 \
+                 MOO_ERROR_UNEXPECTED,                      \
+                 "unexpected error")
+
+#endif // !__cplusplus
+
+#define moo_return_error_if_fail_val(cond, val)             \
+MOO_STMT_START {                                            \
+    if (cond)                                               \
+    {                                                       \
+    }                                                       \
+    else                                                    \
+    {                                                       \
+        moo_critical("Condition '%s' failed", #cond);       \
+        moo_err_set_unexpected_error(error);                \
+        return val;                                         \
+    }                                                       \
+} MOO_STMT_END
+
+#define moo_return_error_if_fail(cond)                      \
+    moo_return_error_if_fail_val (cond, moo_err_false_ret__)
+
+#define moo_return_error_if_fail_p(cond)                    \
+    moo_return_error_if_fail_val (cond, moo_err_null_ret__)

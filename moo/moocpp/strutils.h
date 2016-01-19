@@ -15,8 +15,14 @@
 
 #pragma once
 
+#ifdef __cplusplus
+
 #include <mooglib/moo-glib.h>
 #include <moocpp/memutils.h>
+#include <moocpp/utils.h>
+#include <algorithm>
+#include <utility>
+#include <functional>
 
 namespace moo {
 
@@ -100,6 +106,47 @@ bool operator!=(const gstr& s1, const char* s2);
 bool operator!=(const char* s1, const gstr& s2);
 bool operator!=(const gstr& s1, const gstr& s2);
 
+
+class gerrp
+{
+public:
+    explicit gerrp(GError** errp = nullptr) : m_errp(errp ? errp : &m_local), m_local(nullptr) {}
+
+    ~gerrp()
+    {
+        if (m_errp != &m_local)
+            clear();
+    }
+
+    operator bool() const { return (*m_errp) != nullptr; }
+    bool operator!() const { return (*m_errp) == nullptr; }
+
+    GError* get() const { return (*m_errp); }
+    GError* operator->() const { return (*m_errp); }
+    GError** operator&() { return m_errp; }
+
+    //void propagate(GError** dest) { g_propagate_error(dest, m_err); m_err = nullptr; }
+    void clear() { if (*m_errp) g_error_free(*m_errp); *m_errp = nullptr; m_local = nullptr; }
+
+    MOO_DISABLE_COPY_OPS(gerrp);
+
+    gerrp(gerrp&& other) = delete;
+
+    gerrp& operator=(gerrp&& other)
+    {
+        clear();
+        g_propagate_error (m_errp, other.get());
+        other.m_errp = &other.m_local;
+        other.m_local = nullptr;
+        return *this;
+    }
+
+private:
+    GError** m_errp;
+    GError* m_local;
+};
+
+
 } // namespace moo
 
 namespace std {
@@ -110,4 +157,6 @@ struct hash<moo::gstr>
     const size_t operator()(const moo::gstr& s) const;
 };
 
-}
+} // namespace std
+
+#endif // __cplusplus

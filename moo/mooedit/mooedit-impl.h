@@ -56,9 +56,9 @@ public:
 
     void                    _closed                             ();
 
-    void                    _set_file                           (g::ConstFilePtr    file,
+    void                    _set_file                           (g::FileRawPtr      file,
                                                                  const char*        encoding);
-    void                    _remove_untitled                    (const Edit&        doc);
+    void                    _remove_untitled                    (Edit               doc);
 
     void                    _ensure_newline                     ();
 
@@ -70,7 +70,7 @@ public:
 
     MooActionCollection&    _get_actions                        ();
 
-    static moo::gstr        _get_normalized_name                (const g::File&     file);
+    static moo::gstr        _get_normalized_name                (g::File            file);
     const moo::gstr&        _get_normalized_name                () const;
 
     MooEditPrivate&         get_priv                            ()                      { return *gobj()->priv; }

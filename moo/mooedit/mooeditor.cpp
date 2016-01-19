@@ -32,7 +32,7 @@
 #include "mooedit/mooedithistoryitem.h"
 #include "mooedit/mooedit-ui.h"
 #include "mooedit/medit-ui.h"
-#include "moocpp/gobjectutils.h"
+#include "moocpp/gobjtypes.h"
 #include "mooutils/moomenuaction.h"
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
@@ -948,13 +948,13 @@ moo_editor_load_file(MooEditor       *editor,
                      GtkWidget       *parent,
                      gboolean         silent,
                      gboolean         add_history,
-                     GError         **error)
+                     gerrp&           error)
 {
     MooEditView *view = NULL;
     gboolean new_doc = FALSE;
     gboolean new_object = FALSE;
     const char *recent_encoding = NULL;
-    GError *error_here = NULL;
+    gerrp error_here;
     gboolean success = TRUE;
 
     moo_return_error_if_fail_p(MOO_IS_EDITOR(editor));
@@ -1023,7 +1023,7 @@ moo_editor_load_file(MooEditor       *editor,
             success = _moo_edit_load_file(*doc, *info->file,
                                           gstr::make_borrowed(info->encoding),
                                           gstr::make_borrowed(recent_encoding),
-                                          &error_here);
+                                          error_here);
         }
     }
 
@@ -1035,22 +1035,20 @@ moo_editor_load_file(MooEditor       *editor,
                 window = moo_editor_get_active_window (editor);
             if (!parent && window)
                 parent = GTK_WIDGET (window);
-            _moo_edit_open_error_dialog(parent, info->file.gobj(), error_here);
+            _moo_edit_open_error_dialog(parent, info->file, error_here.get());
         }
 
-        g_propagate_error (error, error_here);
-        error_here = NULL;
+        error = std::move (error_here);
     }
     else if (!new_doc && (info->flags & MOO_OPEN_FLAG_RELOAD))
     {
-        success = _moo_edit_reload_file(*doc, info->encoding, &error_here);
+        success = _moo_edit_reload_file(*doc, info->encoding, error_here);
 
         if (!success)
         {
             if (!silent && !_moo_is_file_error_cancelled (error_here))
-                _moo_edit_reload_error_dialog (doc.gobj(), error_here);
-            g_propagate_error (error, error_here);
-            error_here = NULL;
+                _moo_edit_reload_error_dialog (doc.gobj(), error_here.get());
+            error = std::move (error_here);
         }
     }
 
@@ -1195,10 +1193,10 @@ moo_editor_load_file(MooEditor       *editor,
 // }
 
 static MooEditArray *
-_moo_editor_open_files (MooEditor         *editor,
-                        MooOpenInfoArray  *files,
-                        GtkWidget         *parent,
-                        GError           **error)
+_moo_editor_open_files (MooEditor*        editor,
+                        MooOpenInfoArray* files,
+                        GtkWidget*        parent,
+                        gerrp&            error)
 {
     guint i;
     MooEdit *bring_to_front = NULL;
@@ -1745,7 +1743,8 @@ load_doc_session (MooEditor     *editor,
     const char *encoding = moo_markup_get_prop (elm, "encoding");
     std::unique_ptr<MooOpenInfo> info(moo_open_info_new_uri(uri, encoding, -1, MOO_OPEN_FLAGS_NONE));
 
-    return moo_editor_load_file(editor, info.get(), window, GTK_WIDGET(window), TRUE, FALSE, NULL);
+    gerrp ignored;
+    return moo_editor_load_file(editor, info.get(), window, GTK_WIDGET(window), TRUE, FALSE, ignored);
 }
 
 static MooMarkupNode *
@@ -1975,7 +1974,9 @@ moo_editor_open_files (MooEditor        *editor,
     moo_return_error_if_fail (MOO_IS_EDITOR (editor));
     moo_return_error_if_fail (!moo_open_info_array_is_empty (files));
 
-    docs = _moo_editor_open_files (editor, files, parent, error);
+    gerrp error_here(error);
+    docs = _moo_editor_open_files (editor, files, parent, error_here);
+
     ret = !moo_edit_array_is_empty (docs);
 
     moo_assert (moo_edit_array_is_empty (docs) ||
@@ -2036,7 +2037,8 @@ moo_editor_open_file (MooEditor   *editor,
     files = moo_open_info_array_new ();
     moo_open_info_array_append (files, info);
 
-    docs = _moo_editor_open_files (editor, files, parent, error);
+    gerrp error_here(error);
+    docs = _moo_editor_open_files (editor, files, parent, error_here);
 
     moo_open_info_array_free (files);
 
@@ -2315,10 +2317,10 @@ gboolean
 moo_editor_reload (MooEditor     *editor,
                    MooEdit       *doc,
                    MooReloadInfo *info,
-                   GError       **error)
+                   GError       **errorp)
 {
     guint i;
-    GError *error_here = NULL;
+    gerrp error(errorp);
     MooEditViewArray *views = NULL;
     gboolean ret = FALSE;
 
@@ -2326,7 +2328,7 @@ moo_editor_reload (MooEditor     *editor,
 
     if (Edit(*doc)._is_busy())
     {
-        g_set_error (error,
+        g_set_error (&error,
                      MOO_EDIT_RELOAD_ERROR,
                      MOO_EDIT_RELOAD_ERROR_BUSY,
                      "document is busy");
@@ -2335,7 +2337,7 @@ moo_editor_reload (MooEditor     *editor,
 
     if (moo_edit_is_untitled (doc))
     {
-        g_set_error (error,
+        g_set_error (&error,
                      MOO_EDIT_RELOAD_ERROR,
                      MOO_EDIT_RELOAD_ERROR_UNTITLED,
                      "document is untitled");
@@ -2346,7 +2348,7 @@ moo_editor_reload (MooEditor     *editor,
         moo_edit_is_modified (doc) &&
         !_moo_edit_reload_modified_dialog (doc))
     {
-        g_set_error (error,
+        g_set_error (&error,
                      MOO_EDIT_RELOAD_ERROR,
                      MOO_EDIT_RELOAD_ERROR_CANCELLED,
                      "cancelled by user");
@@ -2375,12 +2377,10 @@ moo_editor_reload (MooEditor     *editor,
         g_object_set_data (G_OBJECT (view), "moo-reload-cursor-offset", GINT_TO_POINTER (cursor_offset));
     }
 
-    if (!_moo_edit_reload_file(*doc, info ? (const char*) info->encoding : nullptr, &error_here))
+    if (!_moo_edit_reload_file(*doc, info ? (const char*) info->encoding : nullptr, error))
     {
-        if (!_moo_is_file_error_cancelled (error_here))
-            _moo_edit_reload_error_dialog (doc, error_here);
-
-        g_propagate_error (error, error_here);
+        if (!_moo_is_file_error_cancelled (error))
+            _moo_edit_reload_error_dialog (doc, error.get());
 
         g_object_set_data (G_OBJECT (doc), "moo-scroll-to", NULL);
         goto out;
@@ -2438,14 +2438,14 @@ moo_editor_will_save (G_GNUC_UNUSED MooEditor *editor,
 }
 
 static bool
-do_save(MooEditor&     editor,
-        Edit           doc,
-        const g::File& file,
-        const char*    encoding,
-        GError**       error)
+do_save(MooEditor&  editor,
+        Edit        doc,
+        g::File     file,
+        const char* encoding,
+        gerrp&      error)
 {
     int response = MOO_SAVE_RESPONSE_CONTINUE;
-    GError *error_here = NULL;
+    gerrp error_here;
     gboolean result;
 
     g_signal_emit(&editor, signals[BEFORE_SAVE], 0, doc, file, &response);
@@ -2455,7 +2455,7 @@ do_save(MooEditor&     editor,
 
     if (response == MOO_SAVE_RESPONSE_CANCEL)
     {
-        g_set_error(error,
+        g_set_error(&error,
                     MOO_EDIT_SAVE_ERROR,
                     MOO_EDIT_SAVE_ERROR_CANCELLED,
                     "cancelled");
@@ -2467,22 +2467,21 @@ do_save(MooEditor&     editor,
 
     result = _moo_edit_save_file(doc, file, encoding,
                                  moo_editor_get_save_flags(&editor),
-                                 &error_here);
+                                 error_here);
     if (!result && error_here->domain == MOO_EDIT_FILE_ERROR &&
         error_here->code == MOO_EDIT_FILE_ERROR_ENCODING)
     {
-        g_error_free(error_here);
-        error_here = NULL;
+        error_here.clear();
 
         if (_moo_edit_save_error_enc_dialog(doc, file, encoding))
         {
             result = _moo_edit_save_file(doc, file, "UTF-8",
                                          moo_editor_get_save_flags(&editor),
-                                         &error_here);
+                                         error_here);
         }
         else
         {
-            g_set_error(error,
+            g_set_error(&error,
                         MOO_EDIT_SAVE_ERROR,
                         MOO_EDIT_SAVE_ERROR_CANCELLED,
                         "cancelled");
@@ -2492,8 +2491,8 @@ do_save(MooEditor&     editor,
 
     if (!result)
     {
-        _moo_edit_save_error_dialog(doc, file, error_here);
-        g_propagate_error(error, error_here);
+        _moo_edit_save_error_dialog(doc, file, error_here.get());
+        error = std::move(error_here);
         return FALSE;
     }
 
@@ -2513,8 +2512,6 @@ moo_editor_save (MooEditor  *editor,
                  MooEdit    *doc,
                  GError    **error)
 {
-    gboolean result = FALSE;
-
     moo_return_error_if_fail (MOO_IS_EDITOR (editor));
     moo_return_error_if_fail (MOO_IS_EDIT (doc));
 
@@ -2540,14 +2537,11 @@ moo_editor_save (MooEditor  *editor,
                      MOO_EDIT_SAVE_ERROR,
                      MOO_EDIT_SAVE_ERROR_CANCELLED,
                      "cancelled by user");
-        goto out;
+        return false;
     }
 
-    result = do_save(*editor, *doc, *file, encoding, error);
-
-    /* fall through */
-out:
-    return result;
+    gerrp error_here(error);
+    return do_save(*editor, *doc, *file, encoding, error_here);
 }
 
 /**
@@ -2602,7 +2596,8 @@ moo_editor_save_as (MooEditor   *editor,
 
     update_history_item_for_doc(editor, doc, FALSE);
 
-    return do_save(*editor, *doc, *info->file, info->encoding, error);
+    gerrp error_here(error);
+    return do_save(*editor, *doc, *info->file, info->encoding, error_here);
 }
 
 /**
@@ -2614,18 +2609,15 @@ moo_editor_save_copy (MooEditor   *editor,
                       MooSaveInfo *info,
                       GError     **error)
 {
-    gboolean retval;
-
     moo_return_error_if_fail (MOO_IS_EDITOR (editor));
     moo_return_error_if_fail (MOO_IS_EDIT (doc));
     moo_return_error_if_fail (info != nullptr && info->file != nullptr);
 
-    retval = _moo_edit_save_file_copy (*doc, *info->file,
-                                       !info->encoding.empty() ? info->encoding : moo_edit_get_encoding (doc),
-                                       moo_editor_get_save_flags (editor),
-                                       error);
-
-    return retval;
+    gerrp error_here(error);
+    return _moo_edit_save_file_copy (*doc, *info->file,
+                                     !info->encoding.empty() ? info->encoding : moo_edit_get_encoding (doc),
+                                     moo_editor_get_save_flags (editor),
+                                     error_here);
 }
 
 

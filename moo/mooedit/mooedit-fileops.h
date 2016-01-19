@@ -23,6 +23,7 @@
 #include <gio/gio.h>
 #include "moocpp/utils.h"
 #include "moocpp/strutils.h"
+#include "mooutils/mooutils-misc.h"
 
 G_BEGIN_DECLS
 const char *_moo_get_default_encodings (void);
@@ -46,24 +47,24 @@ MOO_DEFINE_FLAGS(MooEditSaveFlags)
 
 GQuark           _moo_edit_file_error_quark     (void) G_GNUC_CONST;
 
-bool             _moo_is_file_error_cancelled   (GError*                error);
+bool             _moo_is_file_error_cancelled   (const moo::gerrp&      error);
 
-bool             _moo_edit_file_is_new          (const moo::g::File&    file);
-bool             _moo_edit_load_file            (Edit&                  edit,
-                                                 const moo::g::File&    file,
+bool             _moo_edit_file_is_new          (moo::g::File           file);
+bool             _moo_edit_load_file            (Edit                   edit,
+                                                 moo::g::File           file,
                                                  const moo::gstr&       init_encoding,
                                                  const moo::gstr&       init_cached_encoding,
-                                                 GError**               error);
+                                                 moo::gerrp&            error);
 bool             _moo_edit_reload_file          (Edit                   edit,
                                                  const char*            encoding,
-                                                 GError**               error);
-bool             _moo_edit_save_file            (Edit&                  edit,
-                                                 const moo::g::File&    floc,
+                                                 moo::gerrp&            error);
+bool             _moo_edit_save_file            (Edit                   edit,
+                                                 moo::g::File           floc,
                                                  const char*            encoding,
                                                  MooEditSaveFlags       flags,
-                                                 GError**               error);
+                                                 moo::gerrp&            error);
 bool             _moo_edit_save_file_copy       (Edit                   edit,
-                                                 const moo::g::File&    file,
+                                                 moo::g::File           file,
                                                  const char*            encoding,
                                                  MooEditSaveFlags       flags,
-                                                 GError**               error);
+                                                 moo::gerrp&            error);

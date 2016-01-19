@@ -130,42 +130,6 @@ MOO_STMT_START {                                        \
 #define moo_return_if_reached() moo_return_val_if_reached(;)
 
 
-GQuark moo_error_quark (void) G_GNUC_CONST;
-
-#define MOO_ERROR (moo_error_quark ())
-
-enum {
-    MOO_ERROR_UNEXPECTED = 1
-};
-
-#define moo_return_error_if_fail_val(cond, val)             \
-MOO_STMT_START {                                            \
-    if (cond)                                               \
-    {                                                       \
-    }                                                       \
-    else                                                    \
-    {                                                       \
-        moo_critical("Condition '%s' failed", #cond);       \
-        g_set_error (error, MOO_ERROR, MOO_ERROR_UNEXPECTED,\
-                     "unexpected error");                   \
-        return val;                                         \
-    }                                                       \
-} MOO_STMT_END
-
-#ifdef __cplusplus
-#define moo_err_false_ret__ false
-#define moo_err_null_ret__ nullptr
-#else
-#define moo_err_false_ret__ FALSE
-#define moo_err_null_ret__ NULL
-#endif
-
-#define moo_return_error_if_fail(cond)                      \
-    moo_return_error_if_fail_val (cond, moo_err_false_ret__)
-
-#define moo_return_error_if_fail_p(cond)                    \
-    moo_return_error_if_fail_val (cond, moo_err_null_ret__)
-
 /*
  * Suppress warnings when GCC is in -pedantic mode and not -std=c99
  */

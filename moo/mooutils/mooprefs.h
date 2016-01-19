@@ -13,27 +13,19 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_PREFS_H
-#define MOO_PREFS_H
+#pragma once
 
 #include <glib-object.h>
 #include <mooutils/moomarkup.h>
 #include <mooutils/mooutils-file.h>
-
-G_BEGIN_DECLS
+#include <moocpp/strutils.h>
 
 typedef enum {
     MOO_PREFS_RC,
     MOO_PREFS_STATE
 } MooPrefsKind;
 
-gboolean        moo_prefs_load          (char          **sys_files,
-                                         const char     *file_rc,
-                                         const char     *file_state,
-                                         GError        **error);
-gboolean        moo_prefs_save          (const char     *file_rc,
-                                         const char     *file_state,
-                                         GError        **error);
+G_BEGIN_DECLS
 
 MooMarkupNode  *moo_prefs_get_markup    (MooPrefsKind    prefs_kind);
 
@@ -91,4 +83,14 @@ void            moo_prefs_set_bool      (const char     *key,
 
 G_END_DECLS
 
-#endif /* MOO_PREFS_H */
+#ifdef __cplusplus
+
+bool            moo_prefs_load          (char**          sys_files,
+                                         const char*     file_rc,
+                                         const char*     file_state,
+                                         moo::gerrp&     error);
+bool            moo_prefs_save          (const char*     file_rc,
+                                         const char*     file_state,
+                                         moo::gerrp&     error);
+
+#endif // __cplusplus
