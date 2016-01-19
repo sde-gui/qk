@@ -69,97 +69,98 @@ using namespace moo;
 
 #define ASK_OPEN_BUG_URL_KEY "Application/ask_open_bug_url"
 
-static struct {
-    MooApp *instance;
-    gboolean atexit_installed;
-} moo_app_data;
+struct App::Private
+{
+    static App *instance;
+    static bool atexit_installed;
+    static volatile int signal_received;
 
-static volatile int signal_received;
+    Private(App& app) : app(app) {}
 
-struct MooAppPrivate {
+    App&                    app;
+
     gobj_ptr<MooEditor>     editor;
     gstr                    rc_files[2];
 
-    bool                    run_input;
+    bool                    run_input = false;
     gstr                    instance_name;
 
-    bool                    running;
-    bool                    in_try_quit;
-    bool                    saved_session_in_try_quit;
-    bool                    in_after_close_window;
-    int                     exit_status;
+    bool                    running = false;
+    bool                    in_try_quit = false;
+    bool                    saved_session_in_try_quit = false;
+    bool                    in_after_close_window = false;
+    int                     exit_status = 0;
 
 #ifndef __WIN32__
-    EggSMClient*            sm_client;
+    EggSMClient*            sm_client = nullptr;
 #endif
 
-    int                     use_session;
+    int                     use_session = 0;
     gstr                    session_file;
     gref_ptr<MooMarkupDoc>  session;
 
     gobj_ptr<MooUiXml>      ui_xml;
 
-    guint                   quit_handler_id;
+    guint                   quit_handler_id = 0;
 
 #ifdef MOO_USE_QUARTZ
-    IgeMacDock *dock;
+    IgeMacDock *dock = nullptr;
 #endif
+
+    MooUiXml*       get_ui_xml                  ();
+
+    bool            try_quit                    ();
+    void            do_quit                     ();
+    static gboolean on_gtk_main_quit            (Private* self);
+    static gboolean check_signal                ();
+#ifndef __WIN32__
+    static void     sm_quit_requested           (Private* self);
+    static void     sm_quit                     (Private* self);
+#endif // __WIN32__
+
+    static void     install_common_actions      ();
+    static void     install_editor_actions      ();
+
+    void            exec_cmd                    (char cmd, const char* data, guint len);
+    void            do_load_session             (MooMarkupNode* xml);
+
+    void            load_prefs                  ();
+    void            save_prefs                  ();
+
+    void            save_session                ();
+    void            write_session               ();
+
+    static void     install_cleanup             ();
+    static void     cleanup                     ();
+
+    void            start_input                 ();
+    static void     input_callback              (char cmd, const char *data, gsize len, gpointer cb_data);
+
+    void            cmd_open_files              (const char* data);
+
+    void            init_ui                     ();
+    void            init_mac                    ();
+    void            init_editor                 ();
+
+    static void     prefs_dialog                (GtkWidget* parent);
+    GtkWidget*      create_prefs_dialog         ();
+
+    static void     open_help                   (GtkWidget* window);
+    static void     report_bug                  (GtkWidget* window);
+    static void     prefs_dialog_apply          ();
+
+    static void     editor_will_close_window    (Private* self);
+    static void     editor_after_close_window   (Private* self);
 };
 
 
-static GObject *moo_app_constructor     (GType               type,
-                                         guint               n_params,
-                                         GObjectConstructParam *params);
-static void     moo_app_finalize        (GObject            *object);
-
-static void     install_common_actions  (void);
-static void     install_editor_actions  (void);
-
-static void     moo_app_help            (GtkWidget          *window);
-static void     moo_app_report_bug      (GtkWidget          *window);
-
-static void     moo_app_set_property    (GObject            *object,
-                                         guint               prop_id,
-                                         const GValue       *value,
-                                         GParamSpec         *pspec);
-static void     moo_app_get_property    (GObject            *object,
-                                         guint               prop_id,
-                                         GValue             *value,
-                                         GParamSpec         *pspec);
-
-static void     moo_app_do_quit         (MooApp             *app);
-static void     moo_app_exec_cmd        (MooApp             *app,
-                                         char                cmd,
-                                         const char         *data,
-                                         guint               len);
-static void     moo_app_do_load_session (MooApp             *app,
-                                         MooMarkupNode      *xml);
-static GtkWidget *moo_app_create_prefs_dialog (MooApp       *app);
-
-static void     moo_app_load_prefs      (MooApp             *app);
-static void     moo_app_save_prefs      (MooApp             *app);
-
-static void     moo_app_save_session    (MooApp             *app);
-static void     moo_app_write_session   (MooApp             *app);
-
-static void     moo_app_install_cleanup (void);
-static void     moo_app_cleanup         (void);
-
-static void     start_input             (MooApp             *app);
-
-static void     moo_app_cmd_open_files  (MooApp             *app,
-                                         const char         *data);
+App* App::Private::instance;
+bool App::Private::atexit_installed;
+volatile int App::Private::signal_received;
 
 
 G_DEFINE_TYPE (MooApp, moo_app, G_TYPE_OBJECT);
 
-
-enum {
-    PROP_0,
-    PROP_RUN_INPUT,
-    PROP_USE_SESSION,
-    PROP_INSTANCE_NAME
-};
 
 enum {
     STARTED,
@@ -177,39 +178,6 @@ static void
 moo_app_class_init (MooAppClass *klass)
 {
     moo::init_gobj_system ();
-
-    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-
-    gobject_class->constructor = moo_app_constructor;
-    gobject_class->finalize = moo_app_finalize;
-    gobject_class->set_property = moo_app_set_property;
-    gobject_class->get_property = moo_app_get_property;
-
-    g_type_class_add_private (klass, sizeof (MooAppPrivate));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_RUN_INPUT,
-                                     g_param_spec_boolean ("run-input",
-                                             "run-input",
-                                             "run-input",
-                                             TRUE,
-                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_USE_SESSION,
-                                     g_param_spec_int ("use-session",
-                                             "use-session",
-                                             "use-session",
-                                             -1, 1, -1,
-                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
-
-    g_object_class_install_property (gobject_class,
-                                     PROP_INSTANCE_NAME,
-                                     g_param_spec_string ("instance-name",
-                                             "instance-name",
-                                             "instance-name",
-                                             NULL,
-                                             (GParamFlags) (G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY)));
 
     /**
      * MooApp::started:
@@ -281,17 +249,39 @@ moo_app_class_init (MooAppClass *klass)
 }
 
 
-static void
-moo_app_init (MooApp *app)
+App::App(gobj_wrapper_data& d, const StartupOptions& opts)
+    : Super(d)
+    , p(nullptr)
 {
-    g_return_if_fail (moo_app_data.instance == NULL);
+    g_return_if_fail (Private::instance == nullptr);
+    Private::instance = this;
 
     _moo_stock_init ();
 
-    moo_app_data.instance = app;
+    p = new Private(*this);
+    p->run_input = opts.run_input;
+    p->use_session = opts.use_session;
+    p->instance_name.copy (opts.instance_name);
 
-    init_cpp_private(app, app->priv);
-    app->priv->use_session = -1;
+#if defined(HAVE_SIGNAL) && defined(SIGINT)
+    setup_signals (sigint_handler);
+#endif
+    Private::install_cleanup ();
+
+    Private::install_common_actions ();
+    Private::install_editor_actions ();
+}
+
+App::~App()
+{
+    p->do_quit ();
+    Private::instance = nullptr;
+    delete p;
+}
+
+static void
+moo_app_init (MooApp *app)
+{
 }
 
 
@@ -314,98 +304,10 @@ sigint_handler (int sig)
 }
 #endif
 
-static GObject*
-moo_app_constructor (GType           type,
-                     guint           n_params,
-                     GObjectConstructParam *params)
+
+App& App::instance()
 {
-    GObject *object;
-
-    if (moo_app_data.instance != NULL)
-    {
-        g_critical ("attempt to create second instance of application class");
-        g_critical ("going to crash now");
-        return NULL;
-    }
-
-    object = G_OBJECT_CLASS (moo_app_parent_class)->constructor (type, n_params, params);
-
-#if defined(HAVE_SIGNAL) && defined(SIGINT)
-    setup_signals (sigint_handler);
-#endif
-    moo_app_install_cleanup ();
-
-    install_common_actions ();
-    install_editor_actions ();
-
-    return object;
-}
-
-
-static void
-moo_app_finalize (GObject *object)
-{
-    MooApp *app = MOO_APP(object);
-
-    moo_app_do_quit (app);
-    moo_app_data.instance = nullptr;
-
-    finalize_cpp_private(app, app->priv);
-
-    G_OBJECT_CLASS (moo_app_parent_class)->finalize (object);
-}
-
-
-static void
-moo_app_set_property (GObject        *object,
-                      guint           prop_id,
-                      const GValue   *value,
-                      GParamSpec     *pspec)
-{
-    MooApp *app = MOO_APP (object);
-
-    switch (prop_id)
-    {
-        case PROP_RUN_INPUT:
-            app->priv->run_input = g_value_get_boolean (value);
-            break;
-
-        case PROP_USE_SESSION:
-            app->priv->use_session = g_value_get_int (value);
-            break;
-
-        case PROP_INSTANCE_NAME:
-            app->priv->instance_name.take (g_value_dup_string (value));
-            break;
-
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-    }
-}
-
-static void
-moo_app_get_property (GObject        *object,
-                      guint           prop_id,
-                      GValue         *value,
-                      GParamSpec     *pspec)
-{
-    MooApp *app = MOO_APP (object);
-
-    switch (prop_id)
-    {
-        case PROP_RUN_INPUT:
-            g_value_set_boolean (value, app->priv->run_input);
-            break;
-        case PROP_USE_SESSION:
-            g_value_set_int (value, app->priv->use_session);
-            break;
-        case PROP_INSTANCE_NAME:
-            g_value_set_string (value, app->priv->instance_name);
-            break;
-
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-    }
+    return *Private::instance;
 }
 
 
@@ -415,7 +317,7 @@ moo_app_get_property (GObject        *object,
 MooApp *
 moo_app_instance (void)
 {
-    return moo_app_data.instance;
+    return App::instance().gobj();
 }
 
 
@@ -424,11 +326,8 @@ moo_app_instance (void)
 #define SCRIPT_PREFIX_PYTHON "py:"
 #define SCRIPT_PREFIX_PYTHON_FILE "pyf:"
 
-void
-moo_app_run_script (MooApp     *app,
-                    const char *script)
+void App::run_script (const char* script)
 {
-    g_return_if_fail (MOO_IS_APP (app));
     g_return_if_fail (script != NULL);
 
     if (g_str_has_prefix (script, SCRIPT_PREFIX_LUA))
@@ -491,76 +390,68 @@ MooEditor *
 moo_app_get_editor (MooApp *app)
 {
     g_return_val_if_fail(MOO_IS_APP(app), nullptr);
-    return app->priv->editor.gobj();
+    return App::get(*app).get_editor();
 }
 
 
-static void
-editor_will_close_window (MooApp *app)
+MooEditor* App::get_editor()
+{
+    return p->editor.gobj();
+}
+
+
+void App::Private::editor_will_close_window (App::Private* self)
 {
     MooEditWindowArray *windows;
 
-    if (!app->priv->running || app->priv->saved_session_in_try_quit)
+    if (!self->running || self->saved_session_in_try_quit)
         return;
 
-    windows = moo_editor_get_windows (app->priv->editor.gobj());
+    windows = moo_editor_get_windows (self->editor.gobj());
 
     if (moo_edit_window_array_get_size (windows) == 1)
-        moo_app_save_session (app);
+        self->save_session ();
 
     moo_edit_window_array_free (windows);
 }
 
-static void
-editor_after_close_window (MooApp *app)
+void App::Private::editor_after_close_window (App::Private* self)
 {
     MooEditWindowArray *windows;
 
-    if (!app->priv->running || app->priv->in_try_quit)
+    if (!self->running || self->in_try_quit)
         return;
 
-    windows = moo_editor_get_windows (app->priv->editor.gobj());
+    windows = moo_editor_get_windows (self->editor.gobj());
 
     if (moo_edit_window_array_get_size (windows) == 0)
     {
-        app->priv->in_after_close_window = TRUE;
-        moo_app_quit (app);
-        app->priv->in_after_close_window = FALSE;
+        self->in_after_close_window = TRUE;
+        self->app.quit ();
+        self->in_after_close_window = FALSE;
     }
 
     moo_edit_window_array_free (windows);
 }
 
-static void
-init_plugins (MooApp *app)
+void App::Private::init_editor ()
 {
-    if (MOO_APP_GET_CLASS (app)->init_plugins)
-        MOO_APP_GET_CLASS (app)->init_plugins (app);
-}
+    editor.take (moo_editor_create_instance ());
 
-static void
-moo_app_init_editor (MooApp *app)
-{
-    app->priv->editor.take (moo_editor_create_instance ());
+    editor->connect_swapped ("will-close-window",
+                             G_CALLBACK(editor_will_close_window),
+                             this);
+    editor->connect_swapped ("after-close-window",
+                             G_CALLBACK(editor_after_close_window),
+                             this);
 
-    app->priv->editor->connect_swapped ("will-close-window",
-                                        G_CALLBACK(editor_will_close_window),
-                                        app);
-    app->priv->editor->connect_swapped ("after-close-window",
-                                        G_CALLBACK(editor_after_close_window),
-                                        app);
+    moo_editor_set_ui_xml (editor.gobj(), get_ui_xml ());
 
-    /* if ui_xml wasn't set yet, then moo_app_get_ui_xml()
-       will get editor's xml */
-    moo_editor_set_ui_xml (app->priv->editor.gobj(),
-                           moo_app_get_ui_xml (app));
-
-    init_plugins (app);
+    app.init_plugins ();
 }
 
 
-static void
-moo_app_init_ui (MooApp *app)
+void App::Private::init_ui ()
 {
     gobj_ptr<MooUiXml> xml;
     char **files, **p;
@@ -591,7 +482,7 @@ moo_app_init_ui (MooApp *app)
     }
 
     if (xml)
-        app->priv->ui_xml = xml;
+        ui_xml = xml;
 
     g_strfreev (files);
 }
@@ -600,88 +491,71 @@ moo_app_init_ui (MooApp *app)
 #ifdef MOO_USE_QUARTZ
 
 static void
-dock_open_documents (MooApp  *app,
-                     char   **files)
+dock_open_documents (App* app, char** files)
 {
-    moo_app_open_files (app, files, 0, 0, 0);
+    app->open_files (files, 0, 0, 0);
 }
 
 static void
-dock_quit_activate (MooApp *app)
+dock_quit_activate (App *app)
 {
-    moo_app_quit (app);
+    app->quit ();
 }
 
-static void
-moo_app_init_mac (MooApp *app)
+void App::Private::init_mac ()
 {
-    app->priv->dock = ige_mac_dock_get_default ();
-    g_signal_connect_swapped (app->priv->dock, "open-documents",
-                              G_CALLBACK (dock_open_documents), app);
-    g_signal_connect_swapped (app->priv->dock, "quit-activate",
-                              G_CALLBACK (dock_quit_activate), app);
+    dock = ige_mac_dock_get_default ();
+    g_signal_connect_swapped (dock, "open-documents",
+                              G_CALLBACK (dock_open_documents), &app);
+    g_signal_connect_swapped (dock, "quit-activate",
+                              G_CALLBACK (dock_quit_activate), &app);
 }
 
 #else /* !MOO_USE_QUARTZ */
-static void
-moo_app_init_mac (G_GNUC_UNUSED MooApp *app)
+void App::Private::init_mac ()
 {
 }
 #endif /* !MOO_USE_QUARTZ */
 
 
-static void
-input_callback (char        cmd,
-                const char *data,
-                gsize       len,
-                gpointer    cb_data)
+void App::Private::input_callback (char        cmd,
+                                   const char *data,
+                                   gsize       len,
+                                   gpointer    cb_data)
 {
-    MooApp *app = MOO_APP (cb_data);
+    App::Private* self = reinterpret_cast<App::Private*> (cb_data);
 
-    g_return_if_fail (MOO_IS_APP (app));
-    g_return_if_fail (data != NULL);
+    g_return_if_fail (self != nullptr);
+    g_return_if_fail (data != nullptr);
 
-    moo_app_exec_cmd (app, cmd, data, len);
+    self->exec_cmd (cmd, data, len);
 }
 
-static void
-start_input (MooApp *app)
+void App::Private::start_input ()
 {
-    if (app->priv->run_input)
-        _moo_app_input_start (app->priv->instance_name,
-                              TRUE, input_callback, app);
-}
-
-gboolean
-moo_app_send_msg (const char *pid,
-                  const char *data,
-                  gssize      len)
-{
-    g_return_val_if_fail (data != NULL, FALSE);
-    return _moo_app_input_send_msg (pid, data, len);
+    if (run_input)
+        _moo_app_input_start (instance_name, TRUE, input_callback, this);
 }
 
 
-static gboolean
-on_gtk_main_quit (MooApp *app)
+gboolean App::Private::on_gtk_main_quit (App::Private* self)
 {
-    app->priv->quit_handler_id = 0;
+    self->quit_handler_id = 0;
 
-    if (!moo_app_quit (app))
-        moo_app_do_quit (app);
+    if (!self->app.quit())
+        self->do_quit ();
 
     return FALSE;
 }
 
 
-static gboolean
-check_signal (void)
+gboolean App::Private::check_signal ()
 {
     if (signal_received)
     {
         g_print ("%s\n", g_strsignal (signal_received));
-        if (moo_app_data.instance)
-            moo_app_do_quit (moo_app_data.instance);
+        if (instance)
+            instance->p->do_quit();
         exit (EXIT_FAILURE);
     }
 
@@ -690,7 +564,7 @@ check_signal (void)
 
 
 static gboolean
-emit_started (MooApp *app)
+emit_started (App *app)
 {
     g_signal_emit_by_name (app, "started");
     return FALSE;
@@ -698,50 +572,43 @@ emit_started (MooApp *app)
 
 #ifndef __WIN32__
 
-static void
-sm_quit_requested (MooApp *app)
+void App::Private::sm_quit_requested (App::Private* self)
 {
     EggSMClient *sm_client;
 
-    sm_client = app->priv->sm_client;
+    sm_client = self->sm_client;
     g_return_if_fail (sm_client != NULL);
 
     g_object_ref (sm_client);
-    egg_sm_client_will_quit (sm_client, moo_app_quit (app));
+    egg_sm_client_will_quit (sm_client, self->app.quit());
     g_object_unref (sm_client);
 }
 
-static void
-sm_quit (MooApp *app)
+void App::Private::sm_quit (App::Private* self)
 {
-    if (!moo_app_quit (app))
-        moo_app_do_quit (app);
+    if (!self->app.quit())
+        self->do_quit (app);
 }
 
 #endif // __WIN32__
 
 
-void
-moo_app_set_exit_status (MooApp *app,
-                         int     value)
+void App::set_exit_status (int value)
 {
-    g_return_if_fail (MOO_IS_APP (app));
-    app->priv->exit_status = value;
+    p->exit_status = value;
 }
 
 
-static void
-moo_app_install_cleanup (void)
+void App::Private::install_cleanup ()
 {
-    if (!moo_app_data.atexit_installed)
+    if (!atexit_installed)
     {
-        moo_app_data.atexit_installed = TRUE;
-        atexit (moo_app_cleanup);
+        atexit_installed = TRUE;
+        atexit (cleanup);
     }
 }
 
-static void
-moo_app_cleanup (void)
+void App::Private::cleanup ()
 {
     _moo_app_input_shutdown ();
     moo_mime_shutdown ();
@@ -749,34 +616,33 @@ moo_app_cleanup (void)
 }
 
 
-static void
-moo_app_do_quit (MooApp *app)
+void App::Private::do_quit ()
 {
     guint i;
 
-    if (!app->priv->running)
+    if (!running)
         return;
-    else
-        app->priv->running = FALSE;
 
-    g_signal_emit (app, signals[QUIT], 0);
+    running = FALSE;
+
+    app.signal_emit (signals[QUIT], 0);
 
 #ifndef __WIN32__
-    g_object_unref (app->priv->sm_client);
-    app->priv->sm_client = NULL;
+    g_object_unref (sm_client);
+    sm_client = NULL;
 #endif
 
-    _moo_editor_close_all (app->priv->editor.gobj());
+    _moo_editor_close_all (editor.gobj());
 
     moo_plugin_shutdown ();
 
-    app->priv->editor.reset ();
+    editor.reset ();
 
-    moo_app_write_session (app);
-    moo_app_save_prefs (app);
+    write_session ();
+    save_prefs ();
 
-    if (app->priv->quit_handler_id)
-        gtk_quit_remove (app->priv->quit_handler_id);
+    if (quit_handler_id)
+        gtk_quit_remove (quit_handler_id);
 
     i = 0;
     while (gtk_main_level () && i < 1000)
@@ -785,99 +651,104 @@ moo_app_do_quit (MooApp *app)
         i++;
     }
 
-    moo_app_cleanup ();
+    cleanup ();
 }
 
 
-gboolean
-moo_app_initialize (MooApp *app)
+bool App::init()
 {
-    g_return_val_if_fail (MOO_IS_APP (app), FALSE);
-
     gdk_set_program_class (MOO_APP_FULL_NAME);
     gtk_window_set_default_icon_name (MOO_APP_SHORT_NAME);
 
     moo_set_display_app_name (MOO_APP_SHORT_NAME);
-    _moo_set_app_instance_name (app->priv->instance_name);
+    _moo_set_app_instance_name (p->instance_name);
 
-    moo_app_load_prefs (app);
-    moo_app_init_ui (app);
-    moo_app_init_mac (app);
+    p->load_prefs ();
+    p->init_ui ();
+    p->init_mac ();
 
-    moo_app_init_editor (app);
+    p->init_editor ();
 
-    if (app->priv->use_session == -1)
-        app->priv->use_session = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SAVE_SESSION));
+    if (p->use_session == -1)
+        p->use_session = moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_SAVE_SESSION));
 
-    if (app->priv->use_session)
-        app->priv->run_input = TRUE;
+    if (p->use_session)
+        p->run_input = true;
 
-    start_input (app);
+    p->start_input ();
 
     return TRUE;
 }
 
 
-int
-moo_app_run (MooApp *app)
+int App::run()
 {
-    g_return_val_if_fail (MOO_IS_APP (app), -1);
-    g_return_val_if_fail (!app->priv->running, 0);
+    g_return_val_if_fail (!p->running, 0);
 
-    app->priv->running = TRUE;
+    p->running = TRUE;
 
-    app->priv->quit_handler_id =
-            gtk_quit_add (1, (GtkFunction) on_gtk_main_quit, app);
+    p->quit_handler_id = gtk_quit_add (1, (GtkFunction) Private::on_gtk_main_quit, p);
 
-    gdk_threads_add_timeout (100, (GSourceFunc) check_signal, NULL);
+    gdk_threads_add_timeout (100, (GSourceFunc) App::Private::check_signal, NULL);
 
 #ifndef __WIN32__
-    app->priv->sm_client = egg_sm_client_get ();
+    p->sm_client = egg_sm_client_get ();
     /* make it install log handler */
     g_option_group_free (egg_sm_client_get_option_group ());
-    g_signal_connect_swapped (app->priv->sm_client, "quit-requested",
-                              G_CALLBACK (sm_quit_requested), app);
-    g_signal_connect_swapped (app->priv->sm_client, "quit",
-                              G_CALLBACK (sm_quit), app);
+    g_signal_connect_swapped (p->sm_client, "quit-requested",
+                              G_CALLBACK (sm_quit_requested), p);
+    g_signal_connect_swapped (p->sm_client, "quit",
+                              G_CALLBACK (sm_quit), p);
 
     gdk_threads_leave ();
-    if (EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup)
-        EGG_SM_CLIENT_GET_CLASS (app->priv->sm_client)->startup (app->priv->sm_client, NULL);
+    if (EGG_SM_CLIENT_GET_CLASS (p->sm_client)->startup)
+        EGG_SM_CLIENT_GET_CLASS (p->sm_client)->startup (p->sm_client, NULL);
     gdk_threads_enter ();
 #endif // __WIN32__
 
-    gdk_threads_add_idle_full (G_PRIORITY_DEFAULT_IDLE + 1, (GSourceFunc) emit_started, app, NULL);
+    gdk_threads_add_idle_full (G_PRIORITY_DEFAULT_IDLE + 1, (GSourceFunc) emit_started, this, NULL);
 
     gtk_main ();
 
-    return app->priv->exit_status;
+    return p->exit_status;
 }
 
 
-static gboolean
-moo_app_try_quit (MooApp *app)
+bool App::Private::try_quit()
 {
     gboolean closed;
 
-    g_return_val_if_fail (MOO_IS_APP (app), FALSE);
-
-    if (!app->priv->running)
+    if (!running)
         return TRUE;
 
-    app->priv->in_try_quit = TRUE;
+    in_try_quit = TRUE;
 
-    if (!app->priv->in_after_close_window)
+    if (!in_after_close_window)
     {
-        app->priv->saved_session_in_try_quit = TRUE;
-        moo_app_save_session (app);
+        saved_session_in_try_quit = TRUE;
+        save_session ();
     }
 
-    closed = _moo_editor_close_all (app->priv->editor.gobj());
+    closed = _moo_editor_close_all (editor.gobj());
 
-    app->priv->saved_session_in_try_quit = FALSE;
-    app->priv->in_try_quit = FALSE;
+    saved_session_in_try_quit = FALSE;
+    in_try_quit = FALSE;
 
     return closed;
+}
+
+bool App::quit()
+{
+    if (p->in_try_quit || !p->running)
+        return TRUE;
+
+    if (p->try_quit())
+    {
+        p->do_quit();
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 /**
@@ -887,24 +758,11 @@ gboolean
 moo_app_quit (MooApp *app)
 {
     g_return_val_if_fail (MOO_IS_APP (app), FALSE);
-
-    if (app->priv->in_try_quit || !app->priv->running)
-        return TRUE;
-
-    if (moo_app_try_quit (app))
-    {
-        moo_app_do_quit (app);
-        return TRUE;
-    }
-    else
-    {
-        return FALSE;
-    }
+    return App::get(*app).quit();
 }
 
 
-static void
-install_common_actions (void)
+void App::Private::install_common_actions()
 {
     MooWindowClass *klass = MOO_WINDOW_CLASS (g_type_class_ref (MOO_TYPE_WINDOW));
 
@@ -915,26 +773,26 @@ install_common_actions (void)
                                  "label", GTK_STOCK_PREFERENCES,
                                  "tooltip", GTK_STOCK_PREFERENCES,
                                  "stock-id", GTK_STOCK_PREFERENCES,
-                                 "closure-callback", moo_app_prefs_dialog,
+                                 "closure-callback", prefs_dialog,
                                  NULL);
 
     moo_window_class_new_action (klass, "About", NULL,
                                  "label", GTK_STOCK_ABOUT,
                                  "no-accel", TRUE,
                                  "stock-id", GTK_STOCK_ABOUT,
-                                 "closure-callback", moo_app_about_dialog,
+                                 "closure-callback", App::about_dialog,
                                  NULL);
 
     moo_window_class_new_action (klass, "Help", NULL,
                                  "label", GTK_STOCK_HELP,
                                  "default-accel", MOO_APP_ACCEL_HELP,
                                  "stock-id", GTK_STOCK_HELP,
-                                 "closure-callback", moo_app_help,
+                                 "closure-callback", open_help,
                                  NULL);
 
     moo_window_class_new_action (klass, "ReportBug", NULL,
                                  "label", _("Report a Bug..."),
-                                 "closure-callback", moo_app_report_bug,
+                                 "closure-callback", report_bug,
                                  NULL);
 
     moo_window_class_new_action (klass, "Quit", NULL,
@@ -951,87 +809,60 @@ install_common_actions (void)
 }
 
 
-static void
-install_editor_actions (void)
+void App::Private::install_editor_actions ()
 {
 }
 
 
-MooUiXml *
-moo_app_get_ui_xml (MooApp *app)
+MooUiXml* App::Private::get_ui_xml ()
 {
-    g_return_val_if_fail (MOO_IS_APP (app), NULL);
-
-    if (!app->priv->ui_xml)
+    if (!ui_xml)
     {
-        if (app->priv->editor)
-            app->priv->ui_xml.ref(moo_editor_get_ui_xml(app->priv->editor.gobj()));
+        if (editor)
+            ui_xml.ref(moo_editor_get_ui_xml(editor.gobj()));
 
-        if (!app->priv->ui_xml)
-            app->priv->ui_xml.take(moo_ui_xml_new());
+        if (!ui_xml)
+            ui_xml.take(moo_ui_xml_new());
     }
 
-    return app->priv->ui_xml.gobj();
+    return ui_xml.gobj();
 }
 
 
-void
-moo_app_set_ui_xml (MooApp     *app,
-                    MooUiXml   *xml)
+void App::Private::do_load_session (MooMarkupNode* xml)
 {
-    g_return_if_fail (MOO_IS_APP (app));
-
-    if (app->priv->ui_xml == xml)
-        return;
-
-    app->priv->ui_xml.ref(xml);
-
-    if (app->priv->editor)
-        moo_editor_set_ui_xml (app->priv->editor.gobj(), xml);
+    _moo_editor_load_session (editor.gobj(), xml);
+    app.signal_emit (signals[LOAD_SESSION], 0);
 }
 
 
-
-static void
-moo_app_do_load_session (MooApp        *app,
-                         MooMarkupNode *xml)
-{
-    MooEditor *editor;
-    editor = moo_app_get_editor (app);
-    g_return_if_fail (editor != NULL);
-    _moo_editor_load_session (editor, xml);
-    g_signal_emit (app, signals[LOAD_SESSION], 0);
-}
-
-static void
-moo_app_save_session (MooApp *app)
+void App::Private::save_session ()
 {
     MooMarkupNode *root;
 
-    if (app->priv->session_file.empty())
+    if (session_file.empty())
         return;
 
-    app->priv->session.take (moo_markup_doc_new ("session"));
-    root = moo_markup_create_root_element (app->priv->session.gobj(), "session");
+    session.take (moo_markup_doc_new ("session"));
+    root = moo_markup_create_root_element (session.gobj(), "session");
     moo_markup_set_prop (root, "version", SESSION_VERSION);
 
-    g_signal_emit (app, signals[SAVE_SESSION], 0);
-    _moo_editor_save_session (moo_app_get_editor (app), root);
+    app.signal_emit (signals[SAVE_SESSION], 0);
+    _moo_editor_save_session (editor.gobj(), root);
 }
 
-static void
-moo_app_write_session (MooApp *app)
+void App::Private::write_session ()
 {
     char *filename;
     GError *error = NULL;
     MooFileWriter *writer;
 
-    if (app->priv->session_file.empty())
+    if (session_file.empty())
         return;
 
-    filename = moo_get_user_cache_file (app->priv->session_file);
+    filename = moo_get_user_cache_file (session_file);
 
-    if (!app->priv->session)
+    if (!session)
     {
         mgw_errno_t err;
         mgw_unlink (filename, &err);
@@ -1041,7 +872,7 @@ moo_app_write_session (MooApp *app)
 
     if ((writer = moo_config_writer_new (filename, FALSE, &error)))
     {
-        moo_markup_write_pretty (app->priv->session.gobj(), writer, 1);
+        moo_markup_write_pretty (session.gobj(), writer, 1);
         moo_file_writer_close (writer, &error);
     }
 
@@ -1054,8 +885,7 @@ moo_app_write_session (MooApp *app)
     g_free (filename);
 }
 
-void
-moo_app_load_session (MooApp *app)
+void App::load_session ()
 {
     MooMarkupDoc *doc;
     MooMarkupNode *root;
@@ -1063,21 +893,19 @@ moo_app_load_session (MooApp *app)
     const char *version;
     char *session_file;
 
-    g_return_if_fail (MOO_IS_APP (app));
-
-    if (!app->priv->use_session)
+    if (!p->use_session)
         return;
 
-    if (app->priv->session_file.empty())
+    if (p->session_file.empty())
     {
-        if (!app->priv->instance_name.empty())
-            app->priv->session_file.take(g_strdup_printf(MOO_NAMED_SESSION_XML_FILE_NAME,
-                                                         app->priv->instance_name.get()));
+        if (!p->instance_name.empty())
+            p->session_file.take(g_strdup_printf(MOO_NAMED_SESSION_XML_FILE_NAME,
+                                                 p->instance_name.get()));
         else
-            app->priv->session_file.literal(MOO_SESSION_XML_FILE_NAME);
+            p->session_file.literal(MOO_SESSION_XML_FILE_NAME);
     }
 
-    session_file = moo_get_user_cache_file (app->priv->session_file);
+    session_file = moo_get_user_cache_file (p->session_file);
 
     if (!g_file_test (session_file, G_FILE_TEST_EXISTS) ||
         !(doc = moo_markup_parse_file (session_file, &error)))
@@ -1101,9 +929,9 @@ moo_app_load_session (MooApp *app)
                    version, session_file);
     else
     {
-        app->priv->session = doc;
-        moo_app_do_load_session (app, root);
-        app->priv->session = NULL;
+        p->session = doc;
+        p->do_load_session (root);
+        p->session = NULL;
     }
 
     moo_markup_doc_unref (doc);
@@ -1195,24 +1023,19 @@ moo_app_load_session (MooApp *app)
 //     g_free (stamp_string);
 // }
 
-void
-moo_app_open_files (MooApp           *app,
-                    MooOpenInfoArray *files,
-                    guint32           stamp)
+void App::open_files (MooOpenInfoArray *files, guint32 stamp)
 {
-    g_return_if_fail (MOO_IS_APP (app));
-
     if (!moo_open_info_array_is_empty (files))
     {
         guint i;
         MooOpenInfoArray *tmp = moo_open_info_array_copy (files);
         for (i = 0; i < tmp->n_elms; ++i)
             moo_open_info_add_flags (tmp->elms[i], MOO_OPEN_FLAG_CREATE_NEW);
-        moo_editor_open_files (app->priv->editor.gobj(), tmp, NULL, NULL);
+        moo_editor_open_files (p->editor.gobj(), tmp, NULL, NULL);
         moo_open_info_array_free (tmp);
     }
 
-    moo_editor_present (app->priv->editor.gobj(), stamp);
+    moo_editor_present (p->editor.gobj(), stamp);
 }
 
 
@@ -1228,26 +1051,20 @@ get_cmd_code (char cmd)
     g_return_val_if_reached (MooAppCmdCode (0));
 }
 
-static void
-moo_app_exec_cmd (MooApp             *app,
-                  char                cmd,
-                  const char         *data,
-                  G_GNUC_UNUSED guint len)
+void App::Private::exec_cmd (char cmd,
+                             const char* data,
+                             G_GNUC_UNUSED guint len)
 {
-    MooAppCmdCode code;
-
-    g_return_if_fail (MOO_IS_APP (app));
-
-    code = get_cmd_code (cmd);
+    MooAppCmdCode code = get_cmd_code (cmd);
 
     switch (code)
     {
         case CMD_SCRIPT:
-            moo_app_run_script (app, data);
+            app.run_script (data);
             break;
 
         case CMD_OPEN_FILES:
-            moo_app_cmd_open_files (app, data);
+            cmd_open_files (data);
             break;
 
         default:
@@ -1256,16 +1073,14 @@ moo_app_exec_cmd (MooApp             *app,
 }
 
 
-static void
-moo_app_help (GtkWidget *window)
+void App::Private::open_help (GtkWidget *window)
 {
     GtkWidget *focus = gtk_window_get_focus (GTK_WINDOW (window));
     moo_help_open_any (focus ? focus : window);
 }
 
 
-static void
-moo_app_report_bug (GtkWidget *window)
+void App::Private::report_bug (GtkWidget *window)
 {
     char *url;
     char *os;
@@ -1305,35 +1120,37 @@ moo_app_report_bug (GtkWidget *window)
 }
 
 
-void
-moo_app_prefs_dialog (GtkWidget *parent)
+void App::Private::save_prefs ()
 {
-    GtkWidget *dialog = moo_app_create_prefs_dialog (moo_app_instance ());
-    g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
-    moo_prefs_dialog_run (MOO_PREFS_DIALOG (dialog), parent);
+    GError *error = NULL;
+
+    if (!moo_prefs_save (rc_files[MOO_PREFS_RC],
+                         rc_files[MOO_PREFS_STATE],
+                         &error))
+    {
+        g_warning ("could not save config files: %s", moo_error_message (error));
+        g_error_free (error);
+    }
+}
+
+void App::Private::prefs_dialog_apply ()
+{
+    instance->p->save_prefs();
 }
 
 
-static void
-prefs_dialog_apply (void)
-{
-    moo_app_save_prefs (moo_app_instance ());
-}
-
-
-static GtkWidget *
-moo_app_create_prefs_dialog (MooApp *app)
+GtkWidget* App::Private::create_prefs_dialog ()
 {
     MooPrefsDialog *dialog;
 
     /* Prefs dialog title */
     dialog = MOO_PREFS_DIALOG (moo_prefs_dialog_new (_("Preferences")));
 
-    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_1 (moo_app_get_editor (app)));
-    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_2 (moo_app_get_editor (app)));
-    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_3 (moo_app_get_editor (app)));
-    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_4 (moo_app_get_editor (app)));
-    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_5 (moo_app_get_editor (app)));
+    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_1 (editor.gobj()));
+    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_2 (editor.gobj()));
+    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_3 (editor.gobj()));
+    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_4 (editor.gobj()));
+    moo_prefs_dialog_append_page (dialog, moo_edit_prefs_page_new_5 (editor.gobj()));
     moo_plugin_attach_prefs (GTK_WIDGET (dialog));
 
     g_signal_connect_after (dialog, "apply",
@@ -1344,20 +1161,28 @@ moo_app_create_prefs_dialog (MooApp *app)
 }
 
 
-static void
-moo_app_load_prefs (MooApp *app)
+void App::Private::prefs_dialog (GtkWidget *parent)
+{
+    g_return_if_fail (instance != nullptr);
+    GtkWidget *dialog = instance->p->create_prefs_dialog ();
+    g_return_if_fail (MOO_IS_PREFS_DIALOG (dialog));
+    moo_prefs_dialog_run (MOO_PREFS_DIALOG (dialog), parent);
+}
+
+
+void App::Private::load_prefs ()
 {
     GError *error = NULL;
     char **sys_files;
 
-    app->priv->rc_files[MOO_PREFS_RC].take(moo_get_user_data_file (MOO_PREFS_XML_FILE_NAME));
-    app->priv->rc_files[MOO_PREFS_STATE].take(moo_get_user_cache_file (MOO_STATE_XML_FILE_NAME));
+    rc_files[MOO_PREFS_RC].take(moo_get_user_data_file (MOO_PREFS_XML_FILE_NAME));
+    rc_files[MOO_PREFS_STATE].take(moo_get_user_cache_file (MOO_STATE_XML_FILE_NAME));
 
     sys_files = moo_get_sys_data_files (MOO_PREFS_XML_FILE_NAME);
 
     if (!moo_prefs_load (sys_files,
-                         app->priv->rc_files[MOO_PREFS_RC],
-                         app->priv->rc_files[MOO_PREFS_STATE],
+                         rc_files[MOO_PREFS_RC],
+                         rc_files[MOO_PREFS_STATE],
                          &error))
     {
         g_warning ("could not read config files: %s", moo_error_message (error));
@@ -1365,21 +1190,6 @@ moo_app_load_prefs (MooApp *app)
     }
 
     g_strfreev (sys_files);
-}
-
-
-static void
-moo_app_save_prefs (MooApp *app)
-{
-    GError *error = NULL;
-
-    if (!moo_prefs_save (app->priv->rc_files[MOO_PREFS_RC],
-                         app->priv->rc_files[MOO_PREFS_STATE],
-                         &error))
-    {
-        g_warning ("could not save config files: %s", moo_error_message (error));
-        g_error_free (error);
-    }
 }
 
 
@@ -1454,14 +1264,12 @@ moo_app_parse_files (const char      *data,
     return files;
 }
 
-static void
-moo_app_cmd_open_files (MooApp     *app,
-                        const char *data)
+void App::Private::cmd_open_files (const char *data)
 {
     MooOpenInfoArray *files;
     guint32 stamp;
     files = moo_app_parse_files (data, &stamp);
-    moo_app_open_files (app, files, stamp);
+    app.open_files (files, stamp);
     moo_open_info_array_free (files);
 }
 
@@ -1480,10 +1288,9 @@ append_escaped (GString *str, const char *format, ...)
     va_end (args);
 }
 
-gboolean
-moo_app_send_files (MooOpenInfoArray *files,
-                    guint32           stamp,
-                    const char       *pid)
+bool App::send_files (MooOpenInfoArray *files,
+                      guint32           stamp,
+                      const char       *pid)
 {
     gboolean result;
     GString *msg;
@@ -1526,8 +1333,13 @@ moo_app_send_files (MooOpenInfoArray *files,
 
     g_string_append (msg, "</moo-app-open-files>");
 
-    result = moo_app_send_msg (pid, msg->str, msg->len);
+    result = _moo_app_input_send_msg (pid, msg->str, msg->len);
 
     g_string_free (msg, TRUE);
     return result;
+}
+
+bool App::send_msg(const char* pid, const char* data, gssize len)
+{
+    return _moo_app_input_send_msg (pid, data, len);
 }

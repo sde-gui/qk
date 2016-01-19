@@ -22,10 +22,7 @@
 namespace moo {
 
 template<typename Object>
-class obj_ref_unref;
-
-template<typename Object>
-struct obj_class_ref_unref
+struct obj_ref_unref
 {
     static void ref(Object* obj)   { obj->ref(); }
     static void unref(Object* obj) { obj->unref(); }

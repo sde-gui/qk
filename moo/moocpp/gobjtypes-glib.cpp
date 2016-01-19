@@ -14,6 +14,7 @@
  */
 
 #include "moocpp/gobjtypes-glib.h"
+#include "moocpp/gobjwrapper.h"
 
 using namespace moo;
 using namespace g;
@@ -31,6 +32,32 @@ void ::extern_g_object_unref(gpointer o)
 void moo::init_gobj_system ()
 {
 }
+
+
+GQuark gobj_wrapper_base::qdata_key = g_quark_from_static_string ("__moo_gobj_wrapper__");
+
+gobj_wrapper_base& gobj_wrapper_base::get(Object g)
+{
+    void* o = g.get_data(qdata_key);
+    g_assert(o != nullptr);
+    return *reinterpret_cast<gobj_wrapper_base*>(o);
+}
+
+gobj_wrapper_base::gobj_wrapper_base(gobj_ref<GObject> g)
+{
+    g.set_data(qdata_key, this, free_qdata);
+}
+
+gobj_wrapper_base::~gobj_wrapper_base()
+{
+}
+
+void gobj_wrapper_base::free_qdata(gpointer d)
+{
+    gobj_wrapper_base* self = reinterpret_cast<gobj_wrapper_base*>(d);
+    delete self;
+}
+
 
 gulong Object::connect(const char *detailed_signal, GCallback c_handler, void *data)
 {
@@ -120,14 +147,24 @@ guint Object::signal_handlers_disconnect_matched(GSignalMatchType mask, guint si
     return g_signal_handlers_disconnect_matched(gobj(), mask, signal_id, detail, closure, func, data);
 }
 
-void Object::set_data(const char* key, gpointer value)
+void Object::set_data(const char* key, gpointer value, GDestroyNotify destroy)
 {
     g_object_set_data(gobj(), key, value);
 }
 
-void Object::set_data_full(const char *key, gpointer data, GDestroyNotify destroy)
+void Object::set_data(GQuark q, gpointer data, GDestroyNotify destroy)
 {
-    g_object_set_data_full(gobj(), key, data, destroy);
+    g_object_set_qdata_full(gobj(), q, data, destroy);
+}
+
+void* Object::get_data(const char* key)
+{
+    return g_object_get_data(gobj(), key);
+}
+
+void* Object::get_data(GQuark q)
+{
+    return g_object_get_qdata(gobj(), q);
 }
 
 void Object::set(const gchar *first_prop, ...)

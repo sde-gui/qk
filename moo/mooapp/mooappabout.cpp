@@ -36,6 +36,8 @@
 #include <string.h>
 #include <libxml/xmlversion.h>
 
+using namespace moo;
+
 static GtkDialog* about_dialog;
 static GtkDialog* credits_dialog;
 
@@ -152,10 +154,9 @@ about_dialog_key_press (GtkWidget   *dialog,
 
     if (event->keyval == GDK_s && (event->state & GDK_CONTROL_MASK))
     {
-        char *info = moo_app_get_system_info (moo_app_instance ());
-        if (info)
+        moo::gstr info = App::get_system_info ();
+        if (!info.empty())
             gtk_clipboard_set_text (gtk_widget_get_clipboard (dialog, GDK_SELECTION_CLIPBOARD), info, -1);
-        g_free (info);
     }
 
     return FALSE;
@@ -208,30 +209,26 @@ create_about_dialog (void)
 }
 
 
-void
-moo_app_about_dialog (GtkWidget *parent)
+void App::about_dialog (GtkWidget *parent)
 {
-    if (!about_dialog)
-        about_dialog = create_about_dialog ();
+    if (!::about_dialog)
+        ::about_dialog = create_about_dialog ();
 
     if (parent)
         parent = gtk_widget_get_toplevel (parent);
 
     if (parent && GTK_IS_WINDOW (parent))
-        moo_window_set_parent (GTK_WIDGET (about_dialog), parent);
+        moo_window_set_parent (GTK_WIDGET (::about_dialog), parent);
 
-    gtk_window_present (GTK_WINDOW (about_dialog));
+    gtk_window_present (GTK_WINDOW (::about_dialog));
 }
 
 
-char *
-moo_app_get_system_info (MooApp *app)
+gstr App::get_system_info ()
 {
     GString *text;
     char **dirs, **p;
     char *string;
-
-    g_return_val_if_fail (MOO_IS_APP (app), NULL);
 
     text = g_string_new (NULL);
 
@@ -270,5 +267,5 @@ moo_app_get_system_info (MooApp *app)
     g_string_append (text, "Broken gtk theme: yes\n");
 #endif
 
-    return g_string_free (text, FALSE);
+    return gstr::wrap_new (g_string_free (text, FALSE));
 }

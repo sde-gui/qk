@@ -1,7 +1,7 @@
 /*
- *   medit-app.c
+ *   main.cpp
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -33,6 +33,8 @@
 #include <windowsx.h>
 #endif
 
+using namespace moo;
+
 static struct MeditOpts {
     int use_session;
     int pid;
@@ -41,8 +43,6 @@ static struct MeditOpts {
     gboolean new_window;
     gboolean new_tab;
     gboolean reload;
-    const char *project;
-    gboolean project_mode;
     int line;
     const char *encoding;
     const char *log_file;
@@ -66,26 +66,20 @@ static struct MeditOpts {
 
 #include "parse.h"
 
-typedef MooApp MeditApp;
-typedef MooAppClass MeditAppClass;
-MOO_DEFINE_TYPE_STATIC (MeditApp, medit_app, MOO_TYPE_APP)
-
-static void
-medit_app_init_plugins (G_GNUC_UNUSED MooApp *app)
+class MeditApp : public App
 {
-    moo_plugin_init ();
-}
+public:
+    MeditApp(gobj_wrapper_data& d, const StartupOptions& opts)
+        : App(d, opts)
+    {
+    }
 
-static void
-medit_app_class_init (MooAppClass *klass)
-{
-    klass->init_plugins = medit_app_init_plugins;
-}
-
-static void
-medit_app_init (G_GNUC_UNUSED MooApp *app)
-{
-}
+protected:
+    void init_plugins() override
+    {
+        moo_plugin_init ();
+    }
+};
 
 static gboolean
 parse_use_session (const char *option_name,
@@ -127,10 +121,6 @@ static GOptionEntry medit_options[] = {
             /* help message for command line option --new-window */ N_("Open file(s) in a new window"), NULL },
     { "new-tab", 't', 0, G_OPTION_ARG_NONE, &medit_opts.new_tab,
             /* help message for command line option --new-tab */ N_("Open file(s) in a new tab"), NULL },
-    { "project", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_FILENAME, (gpointer) &medit_opts.project,
-            "Open project file FILE", "FILE" },
-    { "project-mode", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.project_mode,
-            "IDE mode", NULL },
     { "line", 'l', 0, G_OPTION_ARG_INT, &medit_opts.line,
             /* help message for command line option --line=LINE */ N_("Open file and position cursor on line LINE"),
             /* "LINE" part in --line=LINE */ N_("LINE") },
@@ -181,14 +171,14 @@ check_plus_line_arg (void)
     char **p;
     GRegex *re = NULL;
 
-    re = g_regex_new ("^\\+(?P<line>\\d+)", G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES, 0, NULL);
+    re = g_regex_new ("^\\+(?P<line>\\d+)", G_REGEX_OPTIMIZE | G_REGEX_DUPNAMES, GRegexMatchFlags(0), NULL);
     g_return_if_fail (re != NULL);
 
     for (p = medit_opts.files; !done && p && *p && **p; ++p)
     {
         GMatchInfo *match_info = NULL;
 
-        if (g_regex_match (re, *p, 0, &match_info))
+        if (g_regex_match (re, *p, GRegexMatchFlags(0), &match_info))
         {
             int line = 0;
             char *line_string = g_match_info_fetch_named (match_info, "line");
@@ -258,9 +248,6 @@ post_parse_func (void)
 
     if (medit_opts.debug)
         g_setenv ("MOO_DEBUG", medit_opts.debug, FALSE);
-
-    if (medit_opts.project)
-        medit_opts.project_mode = TRUE;
 
     check_plus_line_arg ();
 
@@ -356,31 +343,6 @@ push_appdir_to_path (void)
 #endif
 }
 
-#ifdef MOO_ENABLE_PROJECT
-static void
-project_mode (const char *file)
-{
-    MooPlugin *plugin;
-
-    plugin = (MooPlugin*) moo_plugin_lookup ("ProjectManager");
-
-    if (!plugin)
-    {
-        fputs ("Could not initialize project manager plugin\n", stderr);
-        exit (EXIT_FAILURE);
-    }
-
-    if (file)
-    {
-        char *project = moo_filename_from_locale (file);
-        g_object_set (plugin, "project", project, NULL);
-        g_free (project);
-    }
-
-    moo_plugin_set_enabled (plugin, TRUE);
-}
-#endif
-
 #undef WANT_SYNAPTICS_FIX
 #if defined(GDK_WINDOWING_WIN32) && !GTK_CHECK_VERSION(2,24,8)
 #define WANT_SYNAPTICS_FIX 1
@@ -409,7 +371,7 @@ _moo_get_toplevel_window_at_pointer (void)
         if (!window)
             continue;
 
-        hwnd = GDK_WINDOW_HWND (window);
+        hwnd = (HWND) GDK_WINDOW_HWND (window);
         GetWindowRect(hwnd, &rect);
         if (IsWindowVisible(hwnd) && PtInRect(&rect, point))
             windows = g_slist_prepend (windows, l->data);
@@ -426,7 +388,7 @@ _moo_get_toplevel_window_at_pointer (void)
 static GdkModifierType
 get_current_mask (void)
 {
-    GdkModifierType mask = 0;
+    GdkModifierType mask = GdkModifierType(0);
     BYTE kbd[256];
 
     GetKeyboardState (kbd);
@@ -460,7 +422,7 @@ get_pointer (GdkWindow *window,
     GdkWindow *retval = window;
     GdkWindow *child = NULL;
 
-    hwnd = GDK_WINDOW_HWND (window);
+    hwnd = (HWND) GDK_WINDOW_HWND (window);
     GetCursorPos (&point);
     ScreenToClient (hwnd, &point);
 
@@ -469,7 +431,7 @@ get_pointer (GdkWindow *window,
 
     hwndc = ChildWindowFromPointEx (hwnd, point, CWP_SKIPINVISIBLE);
     if (hwndc != NULL && hwndc != hwnd)
-        child = gdk_win32_handle_table_lookup ((GdkNativeWindow) hwndc);
+        child = reinterpret_cast<GdkWindow*> (gdk_win32_handle_table_lookup ((GdkNativeWindow) hwndc));
     if (child != NULL)
         retval = child;
 
@@ -583,15 +545,15 @@ hookup_synaptics_touchpad (void)
 static void
 unit_test_func (void)
 {
-    MooTestOptions opts = 0;
+    MooTestOptions opts = MOO_TEST_OPTIONS_NONE;
     int status;
 
     if (!medit_opts.ut_uninstalled)
         opts |= MOO_TEST_INSTALLED;
 
     status = unit_tests_main (opts, medit_opts.ut_tests, medit_opts.ut_dir, medit_opts.ut_coverage_file);
-    moo_app_set_exit_status (moo_app_instance (), status);
-    moo_app_quit (moo_app_instance ());
+    App::instance().set_exit_status (status);
+    App::instance().quit ();
 }
 
 static void
@@ -599,7 +561,7 @@ run_script_func (void)
 {
     char **p;
     for (p = medit_opts.run_script; p && *p; ++p)
-        moo_app_run_script (moo_app_instance(), *p);
+        App::instance().run_script (*p);
 }
 
 static void
@@ -694,7 +656,6 @@ check_portable_mode (void)
 static int
 medit_main (int argc, char *argv[])
 {
-    MooApp *app = NULL;
     MooEditor *editor;
     int retval;
     gboolean new_instance = FALSE;
@@ -731,11 +692,11 @@ medit_main (int argc, char *argv[])
     check_portable_mode ();
 #endif
 
-    if (medit_opts.new_app || medit_opts.project_mode)
+    if (medit_opts.new_app)
         new_instance = TRUE;
 
     run_input = !medit_opts.new_app || medit_opts.instance_name ||
-                 medit_opts.use_session == 1 || medit_opts.project_mode;
+                 medit_opts.use_session == 1;
 
     if (medit_opts.ut)
     {
@@ -764,7 +725,7 @@ medit_main (int argc, char *argv[])
         {
             GString *msg = g_string_new ("e");
             g_string_append (msg, *p);
-            moo_app_send_msg (name, msg->str, msg->len + 1);
+            App::send_msg (name, msg->str, msg->len + 1);
         }
         notify_startup_complete ();
         exit (0);
@@ -774,7 +735,7 @@ medit_main (int argc, char *argv[])
 
     if (name)
     {
-        if (moo_app_send_files (files, stamp, name))
+        if (App::send_files (files, stamp, name))
             exit (0);
 
         if (!medit_opts.instance_name)
@@ -785,7 +746,7 @@ medit_main (int argc, char *argv[])
     }
 
     if (!new_instance && !medit_opts.instance_name &&
-         moo_app_send_files (files, stamp, NULL))
+         App::send_files (files, stamp, NULL))
     {
         notify_startup_complete ();
         exit (0);
@@ -799,53 +760,40 @@ medit_main (int argc, char *argv[])
 
     install_log_handlers ();
 
-    app = MOO_APP (g_object_new (medit_app_get_type (),
-                                 "run-input", run_input,
-                                 "use-session", medit_opts.use_session,
-                                 "instance-name", medit_opts.instance_name,
-                                 (const char*) NULL));
+    MeditApp::StartupOptions sopts;
+    sopts.run_input = run_input;
+    sopts.use_session = medit_opts.use_session;
+    sopts.instance_name.borrow(medit_opts.instance_name);
+    gref_ptr<MeditApp> app = MeditApp::create<MeditApp>(sopts);
 
-    if (!moo_app_initialize (app))
+    if (!app->init())
     {
         gdk_notify_startup_complete ();
-        g_object_unref (app);
-        exit (EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     if (medit_opts.geometry && *medit_opts.geometry)
         moo_window_set_default_geometry (medit_opts.geometry);
 
-    if (medit_opts.project_mode)
-#ifdef MOO_ENABLE_PROJECT
-        project_mode (medit_opts.project);
-#else
-    {
-        fputs ("medit was built without project support\n", stderr);
-	exit (EXIT_FAILURE);
-    }
-#endif
-    else
-        moo_app_load_session (app);
+    app->load_session ();
 
-    editor = moo_app_get_editor (app);
+    editor = app->get_editor ();
     if (!moo_editor_get_active_window (editor))
         moo_editor_new_window (editor);
 
     if (files)
-        moo_app_open_files (app, files, stamp);
+        app->open_files (files, stamp);
 
     moo_open_info_array_free (files);
     g_option_context_free (ctx);
 
     if (medit_opts.ut)
-        g_signal_connect (app, "started", G_CALLBACK (unit_test_func), NULL);
+        app->connect ("started", G_CALLBACK (unit_test_func), NULL);
     if (medit_opts.run_script)
-        g_signal_connect (app, "started", G_CALLBACK (run_script_func), NULL);
+        app->connect ("started", G_CALLBACK (run_script_func), NULL);
 
-    retval = moo_app_run (app);
+    retval = app->run ();
     gdk_threads_leave ();
-
-    g_object_unref (app);
 
     return retval;
 }

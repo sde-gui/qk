@@ -1,7 +1,7 @@
 /*
  *   mooutils-misc.h
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_UTILS_MISC_H
-#define MOO_UTILS_MISC_H
+#pragma once
 
 #include <gtk/gtk.h>
 #include <mooutils/mooutils-messages.h>
@@ -263,4 +262,34 @@ moo_os_win32 (void)
 #endif
 }
 
-#endif /* MOO_UTILS_MISC_H */
+#ifdef __cplusplus
+
+#include <moocpp/strutils.h>
+#include <vector>
+
+namespace moo
+{
+
+class gerrp
+{
+public:
+    gerrp();
+    ~gerrp();
+
+    operator bool() const { return m_err != nullptr; }
+    bool operator!() const { return m_err == nullptr; }
+
+    GError* get() const { return m_err; }
+    GError* operator->() const { return m_err; }
+    GError** operator&() { return &m_err; }
+
+private:
+    GError* m_err;
+};
+
+} // namespace moo
+
+std::vector<moo::gstr> moo_get_data_subdirs(const moo::gstr& subdir);
+moo::gstr moo_error_message(const moo::gerrp& err);
+
+#endif // __cplusplus

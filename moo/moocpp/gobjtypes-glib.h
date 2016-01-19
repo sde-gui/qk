@@ -71,9 +71,10 @@ public:
     guint   signal_handlers_unblock_matched     (GSignalMatchType mask, guint signal_id, GQuark detail, GClosure* closure, gpointer func, gpointer data);
     guint   signal_handlers_disconnect_matched  (GSignalMatchType mask, guint signal_id, GQuark detail, GClosure* closure, gpointer func, gpointer data);
 
-
-    void    set_data                (const char* key, gpointer value);
-    void    set_data_full           (const char* key, gpointer data, GDestroyNotify destroy);
+    void*   get_data                (const char* key);
+    void*   get_data                (GQuark q);
+    void    set_data                (const char* key, gpointer value, GDestroyNotify destroy = nullptr);
+    void    set_data                (GQuark q, gpointer value, GDestroyNotify destroy = nullptr);
 
     void    set                     (const char* first_prop, ...) G_GNUC_NULL_TERMINATED;
     void    set_property            (const char* property_name, const GValue* value);

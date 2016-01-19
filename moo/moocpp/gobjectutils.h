@@ -170,5 +170,6 @@ MOO_DEFINE_FLAGS(GConnectFlags);
 MOO_DEFINE_FLAGS(GSpawnFlags);
 MOO_DEFINE_FLAGS(GIOCondition);
 MOO_DEFINE_FLAGS(GLogLevelFlags);
+MOO_DEFINE_FLAGS(GRegexCompileFlags);
 
 #endif // __cplusplus

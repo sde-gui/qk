@@ -25,6 +25,8 @@ template<typename Object>
 class gobj_ptr;
 template<typename Object>
 class gobj_raw_ptr;
+template<typename CObject, typename CppObject>
+class gobj_wrapper;
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -68,6 +70,7 @@ private:
     template<typename Object> friend class gobj_ptr;
     template<typename Object> friend class gobj_raw_ptr;
     template<typename Object> friend class gobj_ref;
+    template<typename CObject, typename CppObject> friend class gobj_wrapper;
 
     void _set_gobj(gpointer gobj) { m_gobj = reinterpret_cast<GObject*>(gobj); }
 
@@ -85,7 +88,6 @@ class gobj_ref<GObject>; // : public gobj_ref_base
 #define MOO_DEFINE_GOBJREF_METHODS_IMPL(Object, Super)                                  \
     using super = Super;                                                                \
     using object_type = Object;                                                         \
-    using parent_object_type = typename super::object_type;                             \
     using ptrtype = gobj_ptr<object_type>;                                              \
                                                                                         \
 protected:                                                                              \
