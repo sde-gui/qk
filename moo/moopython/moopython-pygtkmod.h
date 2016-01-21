@@ -107,17 +107,3 @@ check_pygtk_version (const char *module,
 
     return TRUE;
 }
-
-
-G_GNUC_UNUSED static void
-reset_log_func (void)
-{
-#ifdef pyg_disable_warning_redirections
-    if (check_pygtk_version ("gobject", 2, 12, 0))
-        pyg_disable_warning_redirections ();
-    else
-        moo_reset_log_func ();
-#else
-    moo_reset_log_func ();
-#endif
-}

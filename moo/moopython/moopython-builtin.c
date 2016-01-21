@@ -69,7 +69,7 @@ _moo_python_builtin_init (void)
             return FALSE;
         }
 
-        reset_log_func ();
+        pyg_disable_warning_redirections ();
 
         if (!create_moo_module ())
         {

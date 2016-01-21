@@ -53,6 +53,9 @@
 #include <shlobj.h>
 #endif
 
+#include <unordered_map>
+#include <memory>
+
 using namespace moo;
 
 MOO_DEFINE_QUARK(moo - error, moo_error_quark)
@@ -697,177 +700,211 @@ moo_log_window_insert (MooLogWindow *log,
 /* Custom g_log and g_print handlers
  */
 
-static GLogFunc moo_log_func;
-static GPrintFunc moo_print_func;
-static GPrintFunc moo_printerr_func;
-static gboolean moo_log_handlers_set;
-
-static void
-set_print_funcs (GLogFunc   log_func,
-                 GPrintFunc print_func,
-                 GPrintFunc printerr_func)
+class ILogWriter
 {
-    moo_log_func = log_func;
-    moo_print_func = print_func;
-    moo_printerr_func = printerr_func;
-    moo_log_handlers_set = TRUE;
+public:
+    virtual ~ILogWriter() {}
 
-    g_set_print_handler (print_func);
-    g_set_printerr_handler (printerr_func);
+    virtual void log        (const gchar   *log_domain,
+                             GLogLevelFlags log_level,
+                             const gchar   *message) = 0;
 
-#define set(domain) \
-    g_log_set_handler (domain, G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log_func, NULL)
+    virtual void print      (const gchar    *string) = 0;
 
-    set ("Glib");
-    set ("Glib-GObject");
-    set ("GModule");
-    set ("GThread");
-    set ("Gtk");
-    set ("Gdk");
-    set ("GdkPixbuf");
-    set ("Pango");
-    set ("Moo");
-    set (NULL);
-#undef set
+    virtual void printerr   (const gchar    *string)
+    {
+        print(string);
+    }
+};
 
-    g_log_set_default_handler (log_func, NULL);
-}
-
-
-/* it doesn't care about encoding, but well, noone cares */
-static void
-default_print (const char *string)
+class LogHandler
 {
-    fputs (string, stdout);
-    fflush (stdout);
-}
+public:
+    static void set_writer(std::unique_ptr<ILogWriter> writer)
+    {
+        g_static_rec_mutex_lock(&m_big_lock);
 
-static void
-default_printerr (const char *string)
-{
-    fputs (string, stderr);
-    fflush (stderr);
-}
+        if (m_writer == writer)
+            return;
 
-void
-moo_reset_log_func (void)
-{
-    if (moo_log_handlers_set)
-        set_print_funcs (moo_log_func, moo_print_func, moo_printerr_func);
-    else
-        set_print_funcs (g_log_default_handler, default_print, default_printerr);
-}
+        if (m_writer && writer)
+            set_writer(nullptr);
 
+        m_writer = std::move(writer);
+
+        if (m_writer)
+        {
+            m_saved_print_func = g_set_print_handler(print);
+            m_saved_printerr_func = g_set_printerr_handler(printerr);
+            g_log_set_default_handler(log, NULL);
+
+            set_log_handler ("Glib");
+            set_log_handler ("Glib-GObject");
+            set_log_handler ("GModule");
+            set_log_handler ("GThread");
+            set_log_handler ("Gtk");
+            set_log_handler ("Gdk");
+            set_log_handler ("GdkPixbuf");
+            set_log_handler ("Pango");
+            set_log_handler ("Moo");
+            set_log_handler (nullptr);
+        }
+        else
+        {
+            g_set_print_handler(m_saved_print_func);
+            g_set_printerr_handler(m_saved_printerr_func);
+            g_log_set_default_handler(g_log_default_handler, nullptr);
+            m_saved_print_func = nullptr;
+            m_saved_printerr_func = nullptr;
+
+            for (const auto& pr: m_log_handlers)
+                g_log_remove_handler(pr.first.empty() ? nullptr : pr.first.c_str(), pr.second);
+            m_log_handlers.clear();
+        }
+
+        g_static_rec_mutex_unlock(&m_big_lock);
+    }
+
+private:
+    static void set_log_handler(const char* domain)
+    {
+        guint handler_id = g_log_set_handler (domain, G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION, log, nullptr);
+        m_log_handlers.emplace(domain ? domain : "", handler_id);
+    }
+
+    static void print (const gchar* string)
+    {
+        g_static_rec_mutex_lock(&m_big_lock);
+
+        if (m_writer)
+            m_writer->print(string);
+        else
+            moo_debug_break();
+
+        g_static_rec_mutex_unlock(&m_big_lock);
+    }
+
+    static void printerr (const gchar* string)
+    {
+        g_static_rec_mutex_lock(&m_big_lock);
+
+        if (m_writer)
+            m_writer->printerr(string);
+        else
+            moo_debug_break();
+
+        g_static_rec_mutex_unlock(&m_big_lock);
+    }
+
+    static void log (const gchar   *log_domain,
+                     GLogLevelFlags log_level,
+                     const gchar   *message,
+                     gpointer)
+    {
+        if (!log_domain || strcmp(log_domain, G_LOG_DOMAIN) != 0)
+            moo_check_break_in_debugger(log_level);
+
+        win32_filter_fatal_errors (log_domain, log_level, message);
+
+        g_static_rec_mutex_lock(&m_big_lock);
+
+        if (m_writer)
+            m_writer->log(log_domain, log_level, message);
+        else
+            moo_debug_break();
+
+        g_static_rec_mutex_unlock(&m_big_lock);
+    }
+
+    #ifdef __WIN32__
+    static void win32_filter_fatal_errors (const gchar    *log_domain,
+                                           GLogLevelFlags  flags,
+                                           const gchar    *message)
+    {
+        if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
+            _moo_win32_show_fatal_error (log_domain, message);
+    }
+    #else /* __WIN32__ */
+    static void win32_filter_fatal_errors (const gchar*, GLogLevelFlags, const gchar*)
+    {
+    }
+    #endif /* __WIN32__ */
+
+private:
+    static GStaticRecMutex m_big_lock;
+    static std::unique_ptr<ILogWriter> m_writer;
+    static GPrintFunc m_saved_print_func;
+    static GPrintFunc m_saved_printerr_func;
+    static std::unordered_map<std::string, guint> m_log_handlers;
+};
+
+GStaticRecMutex LogHandler::m_big_lock = G_STATIC_REC_MUTEX_INIT;
+std::unique_ptr<ILogWriter> LogHandler::m_writer;
+GPrintFunc LogHandler::m_saved_print_func = nullptr;
+GPrintFunc LogHandler::m_saved_printerr_func = nullptr;
+std::unordered_map<std::string, guint> LogHandler::m_log_handlers;
 
 /*
  * Display log messages in a window
  */
 
-#ifdef __WIN32__
-static void
-win32_filter_fatal_errors (const gchar    *log_domain,
-                           GLogLevelFlags  flags,
-                           const gchar    *message)
+class LogWriterWindow : public ILogWriter
 {
-    if (flags & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))
+public:
+    void log(const gchar* log_domain, GLogLevelFlags flags, const gchar* message) override
     {
-        _moo_win32_show_fatal_error (log_domain, message);
-        moo_debug_break();
-        return;
-    }
-}
-#else /* __WIN32__ */
-static void
-win32_filter_fatal_errors (G_GNUC_UNUSED const gchar    *log_domain,
-                           G_GNUC_UNUSED GLogLevelFlags  flags,
-                           G_GNUC_UNUSED const gchar    *message)
-{
-}
-#endif /* __WIN32__ */
-
-static char *
-format_log_message (const char *log_domain,
-                    const char *message)
-{
-    char *text = NULL;
-
-    if (!g_utf8_validate (message, -1, NULL))
-        message = "<corrupted string, invalid UTF8>";
-
-    if (log_domain)
-        text = g_strdup_printf ("%s: %s\n", log_domain, message);
-    else
-        text = g_strdup_printf ("%s\n", message);
-
-    return text;
-}
-
-static void
-log_func_window (const gchar    *log_domain,
-                 GLogLevelFlags  flags,
-                 const gchar    *message,
-                 G_GNUC_UNUSED gpointer dummy)
-{
-    char *text;
-
-    win32_filter_fatal_errors (log_domain, flags, message);
-
-    text = format_log_message (log_domain, message);
-
-    {
-        GtkTextTag *tag;
-        MooLogWindow *log;
+        gstr text = format_log_message (log_domain, message);
 
         gdk_threads_enter ();
 
-        if ((log = moo_log_window ()))
+        if (MooLogWindow *log = moo_log_window ())
         {
-            if (flags >= G_LOG_LEVEL_MESSAGE)
-            {
-                tag = log->message_tag;
-            }
-            else
-            {
-                moo_break_if_in_debugger();
+            GtkTextTag *tag = nullptr;
 
-                if (flags >= G_LOG_LEVEL_WARNING)
-                    tag = log->warning_tag;
-                else
-                    tag = log->critical_tag;
-            }
+            if (flags & (G_LOG_LEVEL_CRITICAL | G_LOG_LEVEL_ERROR))
+                tag = log->critical_tag;
+            else if (flags & G_LOG_LEVEL_WARNING)
+                tag = log->warning_tag;
+            else
+                tag = log->message_tag;
 
             moo_log_window_insert (log, text, tag);
-            if (flags <= G_LOG_LEVEL_WARNING)
+
+            if (flags & (G_LOG_LEVEL_CRITICAL | G_LOG_LEVEL_ERROR | G_LOG_LEVEL_WARNING))
                 gtk_window_present (GTK_WINDOW (log->window));
         }
 
         gdk_threads_leave ();
     }
 
-    g_free (text);
-}
+    void print(const gchar* string) override
+    {
+        gdk_threads_enter ();
+        if (MooLogWindow *log = moo_log_window ())
+            moo_log_window_insert (log, string, NULL);
+        gdk_threads_leave ();
+    }
 
+    void printerr(const gchar* string) override
+    {
+        gdk_threads_enter ();
+        if (MooLogWindow *log = moo_log_window ())
+            moo_log_window_insert (log, string, log->warning_tag);
+        gdk_threads_leave ();
+    }
 
-static void
-print_func_window (const char *string)
-{
-    MooLogWindow *log;
-    gdk_threads_enter ();
-    if ((log = moo_log_window ()))
-        moo_log_window_insert (log, string, NULL);
-    gdk_threads_leave ();
-}
+private:
+    gstr format_log_message (const char *log_domain, const char *message)
+    {
+        if (!g_utf8_validate (message, -1, NULL))
+            message = "<corrupted string, invalid UTF8>";
 
-static void
-printerr_func_window (const char *string)
-{
-    MooLogWindow *log;
-    gdk_threads_enter ();
-    if ((log = moo_log_window ()))
-        moo_log_window_insert (log, string, log->warning_tag);
-    gdk_threads_leave ();
-}
-
+        if (log_domain)
+            return gstr::wrap_new (g_strdup_printf ("%s: %s\n", log_domain, message));
+        else
+            return gstr::wrap_new (g_strdup_printf ("%s\n", message));
+    }
+};
 
 void
 moo_set_log_func_window (gboolean show_now)
@@ -877,7 +914,7 @@ moo_set_log_func_window (gboolean show_now)
     if (show_now)
         gtk_widget_show (GTK_WIDGET (moo_log_window()->window));
 
-    set_print_funcs (log_func_window, print_func_window, printerr_func_window);
+    LogHandler::set_writer(make_unique<LogWriterWindow>());
 }
 
 
@@ -885,101 +922,68 @@ moo_set_log_func_window (gboolean show_now)
  * Write to a file
  */
 
-static char *moo_log_file;
-static gboolean moo_log_file_written;
-#if GLIB_CHECK_VERSION(2,32,0)
-static GRecMutex moo_log_file_mutex;
-
-static void moo_static_rec_mutex_lock (GRecMutex *mutex)
+class LogWriterFile : public ILogWriter
 {
-    g_rec_mutex_lock (mutex);
-}
-
-static void moo_static_rec_mutex_unlock (GRecMutex *mutex)
-{
-    g_rec_mutex_unlock (mutex);
-}
-#else
-static GStaticRecMutex moo_log_file_mutex = G_STATIC_REC_MUTEX_INIT;
-
-static void moo_static_rec_mutex_lock (GStaticRecMutex *mutex)
-{
-    g_static_rec_mutex_lock (mutex);
-}
-
-static void moo_static_rec_mutex_unlock (GStaticRecMutex *mutex)
-{
-    g_static_rec_mutex_unlock (mutex);
-}
-#endif
-
-static void
-print_func_file (const char *string)
-{
-    MGW_FILE *file;
-    mgw_errno_t err;
-
-    moo_static_rec_mutex_lock (&moo_log_file_mutex);
-
-    if (!moo_log_file)
+public:
+    LogWriterFile(gstr file)
+        : m_file(std::move(file))
+        , m_file_written(false)
     {
-        moo_static_rec_mutex_unlock (&moo_log_file_mutex);
-        g_return_if_reached ();
     }
 
-    if (!moo_log_file_written)
+    void print(const char* string) override
     {
-        file = mgw_fopen (moo_log_file, "w+", &err);
-        moo_log_file_written = TRUE;
+        MGW_FILE *file;
+        mgw_errno_t err;
+
+        g_return_if_fail (!m_file.empty());
+
+        if (!m_file_written)
+        {
+            file = mgw_fopen (m_file, "w+", &err);
+            m_file_written = true;
+        }
+        else
+        {
+            file = mgw_fopen (m_file, "a+", &err);
+        }
+
+        if (file)
+        {
+            mgw_fwrite (string, strlen(string), 1, file);
+            mgw_fclose (file);
+        }
+        else
+        {
+            moo_break_if_in_debugger();
+        }
     }
-    else
+
+    void log(const char       *log_domain,
+             GLogLevelFlags    flags,
+             const char       *message) override
     {
-        file = mgw_fopen (moo_log_file, "a+", &err);
+        gstr string;
+
+        if (log_domain)
+            string = gstr::wrap_new (g_strdup_printf ("%s: %s\n", log_domain, message));
+        else
+            string = gstr::wrap_new (g_strdup_printf ("%s\n", message));
+
+        print(string);
+
     }
 
-    if (file)
-    {
-        mgw_fwrite (string, strlen(string), 1, file);
-        mgw_fclose (file);
-    }
-    else
-    {
-        /* TODO ??? */
-    }
-
-    moo_static_rec_mutex_unlock (&moo_log_file_mutex);
-}
-
-
-static void
-log_func_file (const char       *log_domain,
-               GLogLevelFlags    flags,
-               const char       *message,
-               G_GNUC_UNUSED gpointer dummy)
-{
-    char *string;
-
-    if (log_domain)
-        string = g_strdup_printf ("%s: %s\n", log_domain, message);
-    else
-        string = g_strdup_printf ("%s\n", message);
-
-    print_func_file (string);
-
-    win32_filter_fatal_errors (log_domain, flags, message);
-
-    g_free (string);
-}
+private:
+    gstr m_file;
+    bool m_file_written;
+};
 
 
 void
 moo_set_log_func_file (const char *log_file)
 {
-    moo_static_rec_mutex_lock (&moo_log_file_mutex);
-    g_free (moo_log_file);
-    moo_log_file = g_strdup (log_file);
-    set_print_funcs (log_func_file, print_func_file, print_func_file);
-    moo_static_rec_mutex_unlock (&moo_log_file_mutex);
+    LogHandler::set_writer(make_unique<LogWriterFile>(gstr::make_copy(log_file)));
 }
 
 
@@ -987,26 +991,24 @@ moo_set_log_func_file (const char *log_file)
  * Do nothing
  */
 
-static void
-log_func_silent (const gchar    *log_domain,
-                 GLogLevelFlags  flags,
-                 const gchar    *message,
-                 G_GNUC_UNUSED gpointer data_unused)
+class LogWriterSilent : public ILogWriter
 {
-    win32_filter_fatal_errors (log_domain, flags, message);
-}
+public:
+    void print(const char* string) override
+    {
+    }
 
-static void
-print_func_silent (G_GNUC_UNUSED const char *s)
-{
-}
+    void log(const char       *log_domain,
+             GLogLevelFlags    flags,
+             const char       *message) override
+    {
+    }
+};
 
 void
 moo_set_log_func_silent (void)
 {
-    set_print_funcs ((GLogFunc) log_func_silent,
-                      (GPrintFunc) print_func_silent,
-                      (GPrintFunc) print_func_silent);
+    LogHandler::set_writer(make_unique<LogWriterSilent>());
 }
 
 

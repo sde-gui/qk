@@ -21,6 +21,7 @@
 #include <vector>
 #include <functional>
 #include <mooglib/moo-glib.h>
+#include <mooutils/mooutils-messages.h>
 
 namespace moo {
 

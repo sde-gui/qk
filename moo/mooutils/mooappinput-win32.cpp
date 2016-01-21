@@ -86,7 +86,7 @@ listener_main (ListenerInfo *info)
 {
     HANDLE input;
 
-    _moo_message_async ("%s: started input listener", G_STRLOC);
+    _moo_message_async ("%s: started input listener for %s", G_STRLOC, info->pipe_name);
 
 	/* XXX unicode */
     input = CreateNamedPipeA (info->pipe_name,
@@ -110,7 +110,7 @@ listener_main (ListenerInfo *info)
         char c;
 
         DisconnectNamedPipe (input);
-        _moo_message_async ("%s: opening connection", G_STRLOC);
+        _moo_message_async ("%s: opening connection for %s", G_STRLOC, info->pipe_name);
 
         if (!ConnectNamedPipe (input, NULL))
         {
@@ -126,7 +126,7 @@ listener_main (ListenerInfo *info)
             }
         }
 
-        _moo_message_async ("%s: client connected", G_STRLOC);
+        _moo_message_async ("%s: client connected to %s", G_STRLOC, info->pipe_name);
 
         while (ReadFile (input, &c, 1, &bytes_read, NULL))
         {
@@ -136,13 +136,13 @@ listener_main (ListenerInfo *info)
             }
             else
             {
-                _moo_message_async ("%s: client disconnected", G_STRLOC);
+                _moo_message_async ("%s: client disconnected from %s", G_STRLOC, info->pipe_name);
                 break;
             }
         }
     }
 
-    _moo_message_async ("%s: goodbye", G_STRLOC);
+    _moo_message_async ("%s: shutting down %s", G_STRLOC, info->pipe_name);
 
     CloseHandle (input);
     listener_info_free (info);
