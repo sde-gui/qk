@@ -349,6 +349,10 @@ moo_edit_finalize (GObject *object)
 
 void Edit::_closed()
 {
+    // this can be called several times
+    if (!contains(_moo_edit_instances, gobj()))
+        return;
+
     MooEditPrivate& priv = get_priv();
     moo_assert(priv.state == MOO_EDIT_STATE_NORMAL);
 
