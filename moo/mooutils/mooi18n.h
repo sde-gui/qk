@@ -1,7 +1,7 @@
 /*
  *   mooi18n.h
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_I18N_H
-#define MOO_I18N_H
+#pragma once
 
 #include <config.h>
 #include <mooglib/moo-glib.h>
@@ -43,11 +42,19 @@
 #undef bindtextdomain
 #undef bind_textdomain_codeset
 
+// a function to make sure that g_strip_context parameters really
+// point to the same char buffer
+G_INLINE_FUNC const char*
+_moo_strip_context (const char* s)
+{
+    return g_strip_context (s, s);
+}
+
 #define _(String) (String)
 #define N_(String) (String)
-#define Q_(String) g_strip_context ((String), (String))
+#define Q_(String) _moo_strip_context (String)
 #define D_(String,Domain) (String)
-#define QD_(String,Domain) g_strip_context ((String), (String))
+#define QD_(String,Domain) _moo_strip_context (String)
 
 #define C_(Context,String) (String)
 #define NC_(Context,String) (String)
@@ -77,5 +84,3 @@ const char *_moo_gsv_gettext (const char *string) G_GNUC_FORMAT (1);
 char *_moo_gsv_dgettext (const char *domain, const char *string) G_GNUC_FORMAT (2);
 
 G_END_DECLS
-
-#endif /* MOO_I18N_H */
