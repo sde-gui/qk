@@ -143,21 +143,9 @@ public:
         return *this;
     }
 
-    // Note that when T is const Foo, then assign(p) inside will be called with
-    // a const Foo, which can't be converted to non-const Object*, so one can't
-    // steal a reference to a const object with this method.
+    // Pointer assignment is easy to misuse
     template<typename T>
-    gref_ptr& operator=(T* p)
-    {
-        assign(p, ref_transfer::take_ownership);
-        return *this;
-    }
-
-    gref_ptr& operator=(const nullptr_t&)
-    {
-        reset();
-        return *this;
-    }
+    gref_ptr& operator=(T* p) = delete;
 
     gref_ptr& operator=(gref_ptr&& other)
     {

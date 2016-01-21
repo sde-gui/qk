@@ -881,11 +881,8 @@ void App::Private::write_session ()
 
 void App::load_session ()
 {
-    MooMarkupDoc *doc;
     MooMarkupNode *root;
-    GError *error = NULL;
     const char *version;
-    char *session_file;
 
     if (!p->use_session)
         return;
@@ -899,23 +896,22 @@ void App::load_session ()
             p->session_file.literal(MOO_SESSION_XML_FILE_NAME);
     }
 
-    session_file = moo_get_user_cache_file (p->session_file);
+    gstr session_file = gstr::wrap_new (moo_get_user_cache_file (p->session_file));
+
+    gref_ptr<MooMarkupDoc> doc;
+    gerrp error;
 
     if (!g_file_test (session_file, G_FILE_TEST_EXISTS) ||
-        !(doc = moo_markup_parse_file (session_file, &error)))
+        !(doc = gref_ptr<MooMarkupDoc>::wrap_new (moo_markup_parse_file (session_file, &error))))
     {
         if (error)
-        {
             g_warning ("could not open session file %s: %s",
                        session_file, error->message);
-            g_error_free (error);
-        }
 
-        g_free (session_file);
         return;
     }
 
-    if (!(root = moo_markup_get_root_element (doc, "session")) ||
+    if (!(root = moo_markup_get_root_element (doc.gobj(), "session")) ||
         !(version = moo_markup_get_prop (root, "version")))
         g_warning ("malformed session file %s, ignoring", session_file);
     else if (strcmp (version, SESSION_VERSION) != 0)
@@ -925,11 +921,8 @@ void App::load_session ()
     {
         p->session = doc;
         p->do_load_session (root);
-        p->session = NULL;
+        p->session = nullptr;
     }
-
-    moo_markup_doc_unref (doc);
-    g_free (session_file);
 }
 
 
