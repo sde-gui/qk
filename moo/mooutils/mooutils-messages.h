@@ -80,12 +80,21 @@ typedef struct MooCodeLoc
     const char *func;
     int line;
     int counter;
+
+#ifdef __cplusplus
+
+    bool empty() const
+    {
+        return !file;
+    }
+
+#endif // __cplusplus
 } MooCodeLoc;
 
 G_INLINE_FUNC MooCodeLoc
 moo_default_code_loc (void)
 {
-    MooCodeLoc loc = { "<unknown>", "<unknown>", 0, 0 };
+    MooCodeLoc loc = { 0, 0, 0, 0 };
     return loc;
 }
 

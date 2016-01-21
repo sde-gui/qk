@@ -823,11 +823,19 @@ log_func_window (const gchar    *log_domain,
         if ((log = moo_log_window ()))
         {
             if (flags >= G_LOG_LEVEL_MESSAGE)
+            {
                 tag = log->message_tag;
-            else if (flags >= G_LOG_LEVEL_WARNING)
-                tag = log->warning_tag;
+            }
             else
-                tag = log->critical_tag;
+            {
+                if (IsDebuggerPresent())
+                    __debugbreak();
+
+                if (flags >= G_LOG_LEVEL_WARNING)
+                    tag = log->warning_tag;
+                else
+                    tag = log->critical_tag;
+            }
 
             moo_log_window_insert (log, text, tag);
             if (flags <= G_LOG_LEVEL_WARNING)
@@ -1800,7 +1808,10 @@ NORETURN void
 _moo_assert_message (MooCodeLoc loc, const char *message)
 {
     __debugbreak();
-    g_error ("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
+    if (!loc.empty())
+        g_error ("file '%s', function '%s', line %d: %s\n", loc.file, loc.func, loc.line, message);
+    else
+        g_error ("%s", message);
 }
 
 void
@@ -1839,10 +1850,13 @@ void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_lis
 
     message = g_strdup_vprintf (format, args);
 
-    g_log (G_LOG_DOMAIN, flags,
-           /* Translators: remove the part before and including | */
-           Q_("console message|in file %s, line %d, function %s: %s"),
-           loc.file, loc.line, loc.func, message);
+    if (!loc.empty())
+        g_log (G_LOG_DOMAIN, flags,
+               /* Translators: remove the part before and including | */
+               Q_("console message|in file %s, line %d, function %s: %s"),
+               loc.file, loc.line, loc.func, message);
+    else
+        g_log (G_LOG_DOMAIN, flags, "%s", message);
 
     g_free (message);
 }

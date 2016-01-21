@@ -86,7 +86,7 @@ listener_main (ListenerInfo *info)
 {
     HANDLE input;
 
-    _moo_message_async ("%s: hi there", G_STRLOC);
+    _moo_message_async ("%s: started input listener", G_STRLOC);
 
 	/* XXX unicode */
     input = CreateNamedPipeA (info->pipe_name,
