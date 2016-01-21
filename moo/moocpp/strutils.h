@@ -135,7 +135,8 @@ public:
     gerrp& operator=(gerrp&& other)
     {
         clear();
-        g_propagate_error (m_errp, other.get());
+        if (other)
+            g_propagate_error (m_errp, other.get());
         other.m_errp = &other.m_local;
         other.m_local = nullptr;
         return *this;
