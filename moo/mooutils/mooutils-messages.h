@@ -1,7 +1,7 @@
 /*
  *   mooutils-messages.h
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_UTILS_MESSAGES_H
-#define MOO_UTILS_MESSAGES_H
+#pragma once
 
 #include <mooutils/mooutils-macros.h>
 #include <stdarg.h>
@@ -233,6 +232,21 @@ _MOO_DEFINE_LOG_FUNC (debug, DEBUG)
 #define g_return_if_reached moo_return_if_reached
 #define g_return_val_if_reached moo_return_val_if_reached
 
-G_END_DECLS
+G_INLINE_FUNC void
+moo_break_if_in_debugger(void)
+{
+#ifdef __WIN32__
+    if (IsDebuggerPresent())
+        __debugbreak();
+#endif
+}
 
-#endif /* MOO_UTILS_MESSAGES_H */
+G_INLINE_FUNC void
+moo_debug_break(void)
+{
+#ifdef __WIN32__
+    __debugbreak();
+#endif
+}
+
+G_END_DECLS

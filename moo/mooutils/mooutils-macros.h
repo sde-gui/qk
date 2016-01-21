@@ -103,34 +103,4 @@
 #define NORETURN MOO_NORETURN
 #define NOTHROW MOO_NOTHROW
 
-#if defined(MOO_CL_GCC)
-#  define MOO_VA_CLEANUP(func) __attribute__((cleanup(func)))
-#  define _MOO_VA_CLEANUP_DEFINED 1
-#elif defined(MOO_CL_MSVC)
-#  define MOO_VA_CLEANUP(func)
-#  undef _MOO_VA_CLEANUP_DEFINED
-#else /* !MOO_CL_GCC */
-#  define MOO_VA_CLEANUP(func)
-#  undef _MOO_VA_CLEANUP_DEFINED
-#endif /* !MOO_CL_GCC */
-
-#define MOO_VAR_CLEANUP_CHECK(func)
-#define MOO_VAR_CLEANUP_CHECKD(func)
-#undef MOO_VAR_CLEANUP_CHECK_ENABLED
-#undef MOO_VAR_CLEANUP_CHECKD_ENABLED
-
-#if defined(_MOO_VA_CLEANUP_DEFINED)
-#  undef MOO_VAR_CLEANUP_CHECK
-#  define MOO_VAR_CLEANUP_CHECK(func) MOO_VA_CLEANUP(func)
-#  define MOO_VAR_CLEANUP_CHECK_ENABLED 1
-#  ifdef DEBUG
-#    undef MOO_VAR_CLEANUP_CHECKD
-#    define MOO_VAR_CLEANUP_CHECKD(func) MOO_VA_CLEANUP(func)
-#    define MOO_VAR_CLEANUP_CHECKD_ENABLED 1
-#  endif
-#endif
-
-#define _MOO_STATIC_ASSERT_MACRO(cond) enum { MOO_CONCAT(_MooStaticAssert_, __LINE__) = 1 / ((cond) ? 1 : 0) }
-#define MOO_STATIC_ASSERT(cond, message) _MOO_STATIC_ASSERT_MACRO(cond)
-
 #endif /* MOO_UTILS_MACROS_H */
