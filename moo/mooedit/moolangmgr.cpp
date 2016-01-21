@@ -327,7 +327,7 @@ lang_mgr_get_lang_for_bak_filename (MooLangMgr *mgr,
     }
 
     if (base)
-        lang = get_lang_for_filename (mgr, gstr::make_borrowed(base));
+        lang = get_lang_for_filename (mgr, gstr::wrap(base));
 
     g_free (base);
     return lang;

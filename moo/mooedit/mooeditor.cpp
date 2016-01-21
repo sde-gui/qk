@@ -375,7 +375,7 @@ moo_editor_constructor (GType                  type,
 
     _moo_stock_init ();
 
-    editor->priv->doc_ui_xml.take(moo_ui_xml_new());
+    editor->priv->doc_ui_xml.set_new(moo_ui_xml_new());
     moo_ui_xml_add_ui_from_string (editor->priv->doc_ui_xml.gobj(),
                                    mooedit_ui_xml, -1);
 
@@ -384,7 +384,7 @@ moo_editor_constructor (GType                  type,
                               G_CALLBACK (_moo_editor_apply_prefs),
                               editor);
 
-    editor->priv->history.take(MOO_HISTORY_MGR (
+    editor->priv->history.set_new(MOO_HISTORY_MGR (
         g_object_new (MOO_TYPE_HISTORY_MGR,
                         "name", "Editor",
                         (const char*) NULL)));
@@ -622,7 +622,7 @@ moo_editor_get_ui_xml (MooEditor *editor)
 
     if (!editor->priv->ui_xml)
     {
-        editor->priv->ui_xml.take(moo_ui_xml_new ());
+        editor->priv->ui_xml.set_new(moo_ui_xml_new ());
         moo_ui_xml_add_ui_from_string (editor->priv->ui_xml.gobj(), medit_ui_xml, -1);
     }
 
@@ -1021,8 +1021,8 @@ moo_editor_load_file(MooEditor       *editor,
         {
             // XXX
             success = _moo_edit_load_file(*doc, *info->file,
-                                          gstr::make_borrowed(info->encoding),
-                                          gstr::make_borrowed(recent_encoding),
+                                          info->encoding,
+                                          gstr::wrap(recent_encoding),
                                           error_here);
         }
     }
@@ -1728,7 +1728,7 @@ load_doc_session (MooEditor     *editor,
 
     if (file_is_uri)
     {
-        uri = gstr::make_copy(moo_markup_get_content(elm));
+        uri = gstr::wrap(moo_markup_get_content(elm));
     }
     else
     {
@@ -2528,7 +2528,7 @@ moo_editor_save (MooEditor  *editor,
         return moo_editor_save_as (editor, doc, NULL, error);
 
     g::FilePtr file = wrap_new(moo_edit_get_file(doc));
-    gstr encoding = gstr::make_copy(moo_edit_get_encoding(doc));
+    gstr encoding = gstr::wrap(moo_edit_get_encoding(doc));
 
     if ((moo_edit_get_status (doc) & MOO_EDIT_STATUS_MODIFIED_ON_DISK) &&
         !_moo_edit_overwrite_modified_dialog (doc))

@@ -15,10 +15,11 @@
 
 #pragma once
 
-#ifdef __cplusplus
-
 #include <glib-object.h>
 #include <mooglib/moo-glib.h>
+
+#ifdef __cplusplus
+
 #include "moocpp/gobjptr.h"
 #include "moocpp/gobjectutils.h"
 

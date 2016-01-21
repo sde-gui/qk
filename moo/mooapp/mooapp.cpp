@@ -76,6 +76,8 @@ struct App::Private
     static volatile int signal_received;
 
     Private(App& app) : app(app) {}
+    Private(const Private&) = delete;
+    Private& operator=(const Private&) = delete;
 
     App&                    app;
 
@@ -261,7 +263,7 @@ App::App(gobj_wrapper_data& d, const StartupOptions& opts)
     p = new Private(*this);
     p->run_input = opts.run_input;
     p->use_session = opts.use_session;
-    p->instance_name.copy (opts.instance_name);
+    p->instance_name = opts.instance_name;
 
 #if defined(HAVE_SIGNAL) && defined(SIGINT)
     setup_signals (sigint_handler);
@@ -436,7 +438,7 @@ void App::Private::editor_after_close_window (App::Private* self)
 
 void App::Private::init_editor ()
 {
-    editor.take (moo_editor_create_instance ());
+    editor.set_new (moo_editor_create_instance ());
 
     editor->connect_swapped ("will-close-window",
                              G_CALLBACK(editor_will_close_window),
@@ -467,7 +469,7 @@ void App::Private::init_ui ()
 
         if (file)
         {
-            xml.take (moo_ui_xml_new ());
+            xml.set_new (moo_ui_xml_new ());
             moo_ui_xml_add_ui_from_string (xml.gobj(),
                                            g_mapped_file_get_contents (file),
                                            g_mapped_file_get_length (file));
@@ -822,7 +824,7 @@ MooUiXml* App::Private::get_ui_xml ()
             ui_xml.ref(moo_editor_get_ui_xml(editor.gobj()));
 
         if (!ui_xml)
-            ui_xml.take(moo_ui_xml_new());
+            ui_xml.set_new(moo_ui_xml_new());
     }
 
     return ui_xml.gobj();
@@ -843,7 +845,7 @@ void App::Private::save_session ()
     if (session_file.empty())
         return;
 
-    session.take (moo_markup_doc_new ("session"));
+    session.set_new (moo_markup_doc_new ("session"));
     root = moo_markup_create_root_element (session.gobj(), "session");
     moo_markup_set_prop (root, "version", SESSION_VERSION);
 
@@ -890,10 +892,10 @@ void App::load_session ()
     if (p->session_file.empty())
     {
         if (!p->instance_name.empty())
-            p->session_file.take(g_strdup_printf(MOO_NAMED_SESSION_XML_FILE_NAME,
-                                                 p->instance_name.get()));
+            p->session_file.set_new(g_strdup_printf(MOO_NAMED_SESSION_XML_FILE_NAME,
+                                                    p->instance_name.get()));
         else
-            p->session_file.literal(MOO_SESSION_XML_FILE_NAME);
+            p->session_file.set_const(MOO_SESSION_XML_FILE_NAME);
     }
 
     gstr session_file = gstr::wrap_new (moo_get_user_cache_file (p->session_file));
@@ -1161,8 +1163,8 @@ void App::Private::load_prefs ()
     gerrp error;
     char **sys_files;
 
-    rc_files[MOO_PREFS_RC].take(moo_get_user_data_file (MOO_PREFS_XML_FILE_NAME));
-    rc_files[MOO_PREFS_STATE].take(moo_get_user_cache_file (MOO_STATE_XML_FILE_NAME));
+    rc_files[MOO_PREFS_RC].set_new(moo_get_user_data_file (MOO_PREFS_XML_FILE_NAME));
+    rc_files[MOO_PREFS_STATE].set_new(moo_get_user_cache_file (MOO_STATE_XML_FILE_NAME));
 
     sys_files = moo_get_sys_data_files (MOO_PREFS_XML_FILE_NAME);
 

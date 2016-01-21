@@ -116,9 +116,9 @@ normalize_encoding (const gstr& encoding,
                     bool        for_save)
 {
     if (encoding.empty() || encoding == MOO_ENCODING_AUTO)
-        return for_save ? gstr::wrap_literal(MOO_ENCODING_UTF8) : gstr();
+        return for_save ? gstr::wrap_const(MOO_ENCODING_UTF8) : gstr();
     else
-        return encoding.borrow();
+        return encoding;
 }
 
 
@@ -194,8 +194,6 @@ convert_file_data_to_utf8_with_prompt (const char*    data,
         cached_encoding = NULL;
     }
 
-    used_encoding.ensure_not_borrowed();
-
     return text_utf8;
 }
 
@@ -258,7 +256,7 @@ bool _moo_edit_save_file(Edit             edit,
                          MooEditSaveFlags flags,
                          gerrp&           error)
 {
-    gstr encoding_copy = gstr::make_copy(normalize_encoding(encoding, true));
+    gstr encoding_copy = gstr::wrap(normalize_encoding(encoding, true));
     return moo_edit_save_local(edit, file, encoding_copy, flags, error);
 }
 
@@ -269,7 +267,7 @@ bool _moo_edit_save_file_copy(Edit             edit,
                               MooEditSaveFlags flags,
                               gerrp&           error)
 {
-    gstr encoding_copy = gstr::make_copy(normalize_encoding(encoding, true));
+    gstr encoding_copy = gstr::wrap(normalize_encoding(encoding, true));
     return moo_edit_save_copy_local(edit, file, encoding_copy, flags, error);
 }
 
@@ -361,13 +359,13 @@ get_encodings (void)
         }
 
         if (!any_of(result, [enc](const char* s) { return g_ascii_strcasecmp(s, enc) == 0; }))
-            result.emplace_back(gstr::make_copy(enc));
+            result.emplace_back(gstr::wrap(enc));
     }
 
     if (result.empty())
     {
         g_critical ("oops");
-        result.emplace_back(gstr::wrap_literal("UTF-8"));
+        result.emplace_back(gstr::wrap_const("UTF-8"));
     }
 
     g_strfreev (raw);
@@ -535,8 +533,8 @@ static bool moo_edit_reload_local(Edit        edit,
 
     auto& priv = edit.get_priv();
     gboolean result = _moo_edit_load_file(edit, *file,
-                                          encoding ? gstr::make_borrowed(encoding) : priv.encoding.borrow(),
-                                          NULL,
+                                          encoding ? gstr::wrap(encoding) : priv.encoding,
+                                          nullptr,
                                           error);
 
     if (result)
@@ -660,7 +658,7 @@ do_save_local(Edit             edit,
     gsize bom_len = 0;
 
     gstr utf8_contents = get_contents(edit);
-    moo_release_assert(utf8_contents != nullptr);
+    moo_release_assert(!utf8_contents.is_null());
 
     if (encoding_needs_bom_save(encoding, &enc_no_bom, &bom, &bom_len))
         encoding = enc_no_bom;
@@ -994,11 +992,11 @@ void Edit::_set_file(g::FileRawPtr file,
         priv.norm_name = nullptr;
 
         if (n == 1)
-            priv.display_filename.copy(_("Untitled"));
+            priv.display_filename.set(_("Untitled"));
         else
-            priv.display_filename.take(g_strdup_printf(_("Untitled %d"), n));
+            priv.display_filename.set_new(g_strdup_printf(_("Untitled %d"), n));
 
-        priv.display_basename.copy(priv.display_filename);
+        priv.display_basename = priv.display_filename;
     }
     else
     {
@@ -1006,8 +1004,8 @@ void Edit::_set_file(g::FileRawPtr file,
         priv.file = file->dup();
         priv.filename = file->get_path();
         priv.norm_name = _get_normalized_name(*file);
-        priv.display_filename.take(moo_file_get_display_name(*file));
-        priv.display_basename.take(moo_file_get_display_basename(*file));
+        priv.display_filename = moo_file_get_display_name(*file);
+        priv.display_basename = moo_file_get_display_basename(*file);
     }
 
     if (!encoding)
@@ -1292,7 +1290,7 @@ moo_convert_file_data_to_utf8 (const char  *data,
         std::list<gstr> encodings = get_encodings ();
 
         if (cached_encoding)
-            encodings.push_front(gstr::make_borrowed(cached_encoding));
+            encodings.push_front(gstr::wrap(cached_encoding));
 
         for (auto& enc: encodings)
         {
@@ -1308,7 +1306,7 @@ moo_convert_file_data_to_utf8 (const char  *data,
     else
     {
         result = try_convert_to_utf8_from_encoding (data, len, encoding);
-        used_enc = gstr::make_borrowed(encoding);
+        used_enc = gstr::wrap(encoding);
     }
 
     return result;

@@ -983,7 +983,7 @@ private:
 void
 moo_set_log_func_file (const char *log_file)
 {
-    LogHandler::set_writer(make_unique<LogWriterFile>(gstr::make_copy(log_file)));
+    LogHandler::set_writer(make_unique<LogWriterFile>(gstr::wrap(log_file)));
 }
 
 
@@ -1746,9 +1746,9 @@ save_user_data_file (const char     *basename,
     gstr file;
 
     if (cache)
-        file.take (moo_get_user_cache_file (basename));
+        file.set_new (moo_get_user_cache_file (basename));
     else
-        file.take (moo_get_user_data_file (basename));
+        file.set_new (moo_get_user_data_file (basename));
 
     return save_config_file (file, content, len, error);
 }
@@ -2247,7 +2247,7 @@ moo_error_message (GError *error)
 moo::gstr
 moo_error_message(const moo::gerrp& err)
 {
-    return gstr::make_borrowed (moo_error_message (err.get ()));
+    return gstr::wrap (moo_error_message (err.get ()));
 }
 
 

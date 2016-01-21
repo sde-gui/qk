@@ -1,7 +1,7 @@
 /*
  *   moofiledialog.h
  *
- *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
+ *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
  *   This file is part of medit.  medit is free software; you can
  *   redistribute it and/or modify it under the terms of the
@@ -13,11 +13,11 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOO_FILE_DIALOG_H
-#define MOO_FILE_DIALOG_H
+#pragma once
 
 #include <gtk/gtk.h>
 #include <mooutils/mooutils-file.h>
+#include <moocpp/gobjtypes.h>
 
 G_BEGIN_DECLS
 
@@ -69,7 +69,11 @@ void            moo_file_dialog_set_filter_mgr_id       (MooFileDialog  *dialog,
                                                          const char     *id);
 
 gboolean        moo_file_dialog_run                     (MooFileDialog  *dialog);
-GFile          *moo_file_dialog_get_file                (MooFileDialog  *dialog);
+#ifdef __cplusplus
+G_END_DECLS
+moo::g::FilePtr moo_file_dialog_get_file                (MooFileDialog  *dialog);
+G_BEGIN_DECLS
+#endif
 MooFileArray   *moo_file_dialog_get_files               (MooFileDialog  *dialog);
 char           *moo_file_dialog_get_uri                 (MooFileDialog  *dialog);
 char          **moo_file_dialog_get_uris                (MooFileDialog  *dialog);
@@ -109,5 +113,3 @@ const char     *moo_file_dialogp                        (GtkWidget      *parent,
 
 
 G_END_DECLS
-
-#endif /* MOO_FILE_DIALOG_H */

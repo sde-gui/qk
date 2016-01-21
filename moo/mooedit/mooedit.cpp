@@ -277,7 +277,7 @@ moo_edit_class_init (MooEditClass *klass)
 MooEditPrivate::MooEditPrivate()
     : line_end_type(MOO_LE_NONE)
 {
-    buffer.take(GTK_TEXT_BUFFER(g_object_new(MOO_TYPE_TEXT_BUFFER, NULL)));
+    buffer.set_new(GTK_TEXT_BUFFER(g_object_new(MOO_TYPE_TEXT_BUFFER, NULL)));
     actions = wrap_new (moo_action_collection_new ("MooEdit", "MooEdit"));
 }
 
@@ -836,7 +836,7 @@ moo_edit_set_encoding (MooEdit    *edit,
 
     if (edit->priv->encoding != encoding)
     {
-        edit->priv->encoding.copy(encoding);
+        edit->priv->encoding.set(encoding);
         g_object_notify (G_OBJECT (edit), "encoding");
     }
 }

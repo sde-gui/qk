@@ -15,7 +15,7 @@ struct MooOpenInfo
 
     MooOpenInfo(GFile* file, const char* encoding, int line, MooOpenFlags flags)
         : file(wrap_new(g_file_dup(file)))
-        , encoding(gstr::make_copy(encoding))
+        , encoding(gstr::wrap(encoding))
         , line(line)
         , flags(flags)
     {
@@ -23,7 +23,7 @@ struct MooOpenInfo
 
     MooOpenInfo(const MooOpenInfo& other)
         : file(other.file->dup())
-        , encoding(other.encoding.copy())
+        , encoding(other.encoding)
         , line(other.line)
         , flags(other.flags)
     {
@@ -37,13 +37,13 @@ struct MooOpenInfo
 struct MooReloadInfo : public GObject
 {
     MooReloadInfo(const char* encoding, int line)
-        : encoding(gstr::make_copy(encoding))
+        : encoding(gstr::wrap(encoding))
         , line(line)
     {
     }
 
     MooReloadInfo(const MooReloadInfo& other)
-        : encoding(other.encoding.copy())
+        : encoding(other.encoding)
         , line(other.line)
     {
     }
@@ -61,13 +61,13 @@ struct MooSaveInfo : public GObject
 
     MooSaveInfo(GFile* file, const char* encoding)
         : file(wrap_new(g_file_dup(file)))
-        , encoding(gstr::make_copy(encoding))
+        , encoding(gstr::wrap(encoding))
     {
     }
 
     MooSaveInfo(const MooSaveInfo& other)
         : file(other.file->dup())
-        , encoding(other.encoding.copy())
+        , encoding(other.encoding)
     {
     }
 

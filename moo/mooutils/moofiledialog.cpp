@@ -30,6 +30,7 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
+using namespace moo;
 
 struct _MooFileDialogPrivate {
     gboolean multiple;
@@ -335,25 +336,22 @@ moo_file_dialog (GtkWidget  *parent,
                  const char *title,
                  const char *start_dir)
 {
-    static char *filename;
+    static gstr filename;
     MooFileDialog *dialog;
-    GFile *start;
-    GFile *file;
+    g::FilePtr start;
+    g::FilePtr file;
 
-    start = start_dir ? g_file_new_for_path (start_dir) : NULL;
+    start = start_dir ? g::File::new_for_path (start_dir) : NULL;
 
-    dialog = moo_file_dialog_new (type, parent, FALSE, title, start, start_name);
+    dialog = moo_file_dialog_new (type, parent, FALSE, title, start.gobj(), start_name);
     g_return_val_if_fail (dialog != NULL, NULL);
 
     moo_file_dialog_run (dialog);
 
     file = moo_file_dialog_get_file (dialog);
 
-    g_free (filename);
-    filename = file ? g_file_get_path (file) : NULL;
+    filename = file ? file->get_path() : NULL;
 
-    g_object_unref (file);
-    g_object_unref (start);
     g_object_unref (dialog);
     return filename;
 }
@@ -741,11 +739,11 @@ moo_file_dialog_set_extra_widget (MooFileDialog *dialog,
 }
 
 
-GFile *
+g::FilePtr
 moo_file_dialog_get_file (MooFileDialog *dialog)
 {
     g_return_val_if_fail (MOO_IS_FILE_DIALOG (dialog), NULL);
-    return dialog->priv->uri ? g_file_new_for_uri (dialog->priv->uri) : NULL;
+    return dialog->priv->uri ? g::File::new_for_uri (dialog->priv->uri) : NULL;
 }
 
 char *

@@ -54,12 +54,6 @@ private:
     char* m_p;
 };
 
-struct gstr_mem_handler
-{
-    static char* dup(const char* p) { return p ? g_strdup (p) : nullptr; }
-    static void free(char* p) { ::g_free(p); }
-};
-
 template<typename T>
 struct mg_get_string
 {
@@ -78,24 +72,54 @@ public:
     operator bool() const = delete;
     bool operator!() const = delete;
 
-    char* operator*() const = delete;
-
 private:
     Self& self() { return static_cast<Self&>(*this); }
     const Self& self() const { return static_cast<const Self&>(*this); }
     const char* c_str() const { return GetString::get_string(static_cast<const Self&>(*this)); }
 };
 
-class gstr
-    : public mg_mem_holder<char, gstr_mem_handler, gstr>
-    , public gstr_methods_mixin<gstr>
+class gstr : public gstr_methods_mixin<gstr>
 {
-    using super = mg_mem_holder<char, gstr_mem_handler, gstr>;
-
 public:
-    MOO_DECLARE_STANDARD_PTR_METHODS(gstr, super)
+    gstr();
+    ~gstr();
+    gstr(const char* s, mem_transfer mt);
 
-    static const gstr null;
+    gstr(const gstr&);
+    gstr& operator=(const gstr&);
+    gstr(gstr&&);
+    gstr& operator=(gstr&&);
+
+    gstr(nullptr_t) : gstr() {}
+    gstr& operator=(nullptr_t) { clear(); return *this; }
+
+    void set(const gstr& s) = delete;
+    static gstr wrap(const gstr& s) = delete;
+
+    void set(const char *s)                 { assign(s, mem_transfer::make_copy); }
+    void set_new(char *s)                   { assign(s, mem_transfer::take_ownership); }
+    void set_const(const char *s)           { assign(s, mem_transfer::borrow); }
+    static gstr wrap(const char *s)         { return gstr(s, mem_transfer::make_copy); }
+    static gstr wrap_new(char *s)           { return gstr(s, mem_transfer::take_ownership); }
+    static gstr wrap_const(const char *s)   { return gstr(s, mem_transfer::borrow); }
+
+    bool is_null() const;
+
+    operator const char*() const;
+    const char* get() const { return static_cast<const char*>(*this); }
+
+    char* get_mutable();
+    char* release_owned();
+    void clear();
+    void reset() { clear(); }
+
+private:
+    void assign(const char* s, mem_transfer mt);
+
+private:
+    void *m_p; // either char* or Data*
+    bool m_is_inline;
+    bool m_is_const;
 };
 
 

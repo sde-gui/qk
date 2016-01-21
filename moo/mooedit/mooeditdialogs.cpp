@@ -54,7 +54,7 @@ _moo_edit_open_dialog (GtkWidget *widget,
     }
 
     if (!start)
-        start.take(moo_prefs_get_file(moo_edit_setting(MOO_EDIT_PREFS_LAST_DIR)));
+        start.set_new(moo_prefs_get_file(moo_edit_setting(MOO_EDIT_PREFS_LAST_DIR)));
 
     dialog = moo_file_dialog_new (MOO_FILE_DIALOG_OPEN, widget,
                                   TRUE, GTK_STOCK_OPEN, start.gobj(),
@@ -79,7 +79,7 @@ _moo_edit_open_dialog (GtkWidget *widget,
         for (i = 0; i < files->n_elms; ++i)
             moo_open_info_array_take (info_array, moo_open_info_new_file (files->elms[i], encoding, -1, MOO_OPEN_FLAGS_NONE));
 
-        start.take(g_file_get_parent (files->elms[0]));
+        start.set_new(g_file_get_parent (files->elms[0]));
         moo_prefs_set_file (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), start.gobj());
     }
 
@@ -96,8 +96,8 @@ _moo_edit_save_as_dialog (MooEdit    *doc,
     const char *encoding;
     MooFileDialog *dialog;
     MooSaveInfo *info;
-    GFile *start = NULL;
-    GFile *file = NULL;
+    g::FilePtr start;
+    g::FilePtr file;
 
     g_return_val_if_fail (MOO_IS_EDIT (doc), NULL);
 
@@ -106,20 +106,19 @@ _moo_edit_save_as_dialog (MooEdit    *doc,
 
     if (moo_prefs_get_bool (moo_edit_setting (MOO_EDIT_PREFS_DIALOGS_OPEN_FOLLOWS_DOC)))
     {
-        file = moo_edit_get_file (doc);
+        file = wrap_new (moo_edit_get_file (doc));
         if (file)
-            start = g_file_get_parent (file);
-        g_object_unref (file);
+            start = file->get_parent ();
         file = NULL;
     }
 
     if (!start)
-        start = moo_prefs_get_file (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR));
+        start = wrap_new (moo_prefs_get_file (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR)));
 
     dialog = moo_file_dialog_new (MOO_FILE_DIALOG_SAVE,
                                   GTK_WIDGET (moo_edit_get_view (doc)),
                                   FALSE, GTK_STOCK_SAVE_AS,
-                                  start, display_basename);
+                                  start.gobj(), display_basename);
     g_object_set (dialog, "enable-encodings", TRUE, NULL);
     moo_file_dialog_set_encoding (dialog, moo_edit_get_encoding (doc));
     moo_file_dialog_set_help_id (dialog, "dialog-save");
@@ -129,21 +128,17 @@ _moo_edit_save_as_dialog (MooEdit    *doc,
     if (!moo_file_dialog_run (dialog))
     {
         g_object_unref (dialog);
-        g_object_unref (start);
         return NULL;
     }
 
     encoding = moo_file_dialog_get_encoding (dialog);
     file = moo_file_dialog_get_file (dialog);
-    g_return_val_if_fail (file != NULL, NULL);
-    info = moo_save_info_new_file (file, encoding);
+    g_return_val_if_fail (file != nullptr, NULL);
+    info = moo_save_info_new_file (file.gobj(), encoding);
 
-    g_object_unref (start);
-    start = g_file_get_parent (file);
-    moo_prefs_set_file (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), start);
+    start = file->get_parent ();
+    moo_prefs_set_file (moo_edit_setting (MOO_EDIT_PREFS_LAST_DIR), start.gobj());
 
-    g_object_unref (start);
-    g_object_unref (file);
     g_object_unref (dialog);
     return info;
 }
@@ -496,20 +491,20 @@ _moo_edit_try_encoding_dialog (g::File       file,
     {
         /* Could not open file foo.txt */
         gstr tmp = gstr::wrap_new(g_strdup_printf(_("Could not open file\n%s"), filename.get()));
-        msg.take(g_markup_printf_escaped("<b><big>%s</big></b>", tmp.get()));
+        msg.set_new(g_markup_printf_escaped("<b><big>%s</big></b>", tmp.get()));
     }
     else
     {
         const char *tmp = _("Could not open file");
-        msg.take(g_markup_printf_escaped("<b><big>%s</big></b>", tmp));
+        msg.set_new(g_markup_printf_escaped("<b><big>%s</big></b>", tmp));
     }
 
     if (encoding != NULL)
-        secondary.take(g_strdup_printf (_("Could not open file using character encoding %s. "
-                                          "Try to select another encoding below."), encoding));
+        secondary.set_new(g_strdup_printf (_("Could not open file using character encoding %s. "
+                                             "Try to select another encoding below."), encoding));
     else
-        secondary.take(g_strdup_printf (_("Could not detect file character encoding. "
-                                          "Try to select an encoding below.")));
+        secondary.set_new(g_strdup_printf (_("Could not detect file character encoding. "
+                                             "Try to select an encoding below.")));
 
     xml = try_encoding_dialog_xml_new ();
     g_return_val_if_fail (xml && xml->TryEncodingDialog, MOO_EDIT_TRY_ENCODING_RESPONSE_CANCEL);
@@ -537,7 +532,7 @@ _moo_edit_try_encoding_dialog (g::File       file,
 
     dialog_response = gtk_dialog_run (GTK_DIALOG (dialog));
 
-    new_encoding.copy(_moo_encodings_combo_get_enc (GTK_COMBO_BOX (xml->encoding_combo), MOO_ENCODING_COMBO_OPEN));
+    new_encoding.set(_moo_encodings_combo_get_enc (GTK_COMBO_BOX (xml->encoding_combo), MOO_ENCODING_COMBO_OPEN));
 
     gtk_widget_destroy (dialog);
 
@@ -560,12 +555,12 @@ _moo_edit_open_error_dialog (GtkWidget* widget,
 
     if (!filename.empty())
         /* Could not open file foo.txt */
-        msg.take (g_strdup_printf (_("Could not open file\n%s"), filename.get()));
+        msg.set_new (g_strdup_printf (_("Could not open file\n%s"), filename.get()));
     else
-        msg.literal (_("Could not open file"));
+        msg.set_const (_("Could not open file"));
 
     if (error)
-        secondary.borrow (error->message);
+        secondary.set (error->message);
 
     moo_error_dialog (msg, secondary, widget);
 }

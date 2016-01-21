@@ -90,7 +90,7 @@ void
 _moo_edit_progress_set_text (MooEditProgress& progress,
                              const char*      text)
 {
-    progress.text.copy(text);
+    progress.text.set(text);
     progress.update();
 }
 
@@ -147,7 +147,7 @@ _moo_edit_progress_start (MooEditProgress& progress,
 {
     g_return_if_fail(progress.timeout == 0);
 
-    progress.text.take(g_strdup(text));
+    progress.text.set_new(g_strdup(text));
 
     _moo_edit_progress_set_cancel_func(progress, cancel_func, cancel_func_data);
 

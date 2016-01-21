@@ -261,10 +261,10 @@ public:
     }
 
     template<typename Arg>
-    static Self wrap_literal(Arg&& arg)
+    static Self wrap_const(Arg&& arg)
     {
         Self s;
-        s.literal(std::forward<Arg>(arg));
+        s.set_const(std::forward<Arg>(arg));
         return std::move(s);
     }
 
@@ -280,7 +280,7 @@ public:
     static Self wrap_new(Arg&& arg)
     {
         Self s;
-        s.take(std::forward<Arg>(arg));
+        s.set_new(std::forward<Arg>(arg));
         return std::move(s);
     }
 

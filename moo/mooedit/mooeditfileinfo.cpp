@@ -165,7 +165,7 @@ moo_open_info_set_encoding (MooOpenInfo *info,
                             const char  *encoding)
 {
     g_return_if_fail(info != nullptr);
-    info->encoding.copy(encoding);
+    info->encoding.set(encoding);
 }
 
 /**

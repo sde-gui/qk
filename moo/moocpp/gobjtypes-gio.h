@@ -15,10 +15,10 @@
 
 #pragma once
 
-#ifdef __cplusplus
-
 #include <gio/gio.h>
 #include <mooglib/moo-glib.h>
+
+#ifdef __cplusplus
 
 #include "moocpp/gobjtypes-glib.h"
 #include "moocpp/strutils.h"

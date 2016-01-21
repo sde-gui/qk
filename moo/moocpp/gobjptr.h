@@ -66,7 +66,7 @@ public:
         assign(obj, ref_transfer::make_copy);
     }
 
-    void take(Object* obj)
+    void set_new(Object* obj)
     {
         assign(obj, ref_transfer::take_ownership);
     }
@@ -280,6 +280,11 @@ bool operator!=(const X& p1, const moo::gobj_ptr<Y>& p2)
 {
     return !(p1 == p2);
 }
+
+template<typename X> bool operator==(const moo::gobj_ptr<X>& p1, int) = delete;
+template<typename X> bool operator==(int, const moo::gobj_ptr<X>& p2) = delete;
+template<typename X> bool operator!=(const moo::gobj_ptr<X>& p1, int) = delete;
+template<typename X> bool operator!=(int, const moo::gobj_ptr<X>& p2) = delete;
 
 template<typename X>
 void g_object_unref(const moo::gobj_ptr<X>&) = delete;

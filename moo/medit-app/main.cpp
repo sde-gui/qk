@@ -763,7 +763,7 @@ medit_main (int argc, char *argv[])
     MeditApp::StartupOptions sopts;
     sopts.run_input = run_input;
     sopts.use_session = medit_opts.use_session;
-    sopts.instance_name.borrow(medit_opts.instance_name);
+    sopts.instance_name.set(medit_opts.instance_name);
     gref_ptr<MeditApp> app = MeditApp::create<MeditApp>(sopts);
 
     if (!app->init())

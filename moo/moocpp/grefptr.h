@@ -69,7 +69,7 @@ public:
         assign(obj, ref_transfer::make_copy);
     }
 
-    void take(Object* obj)
+    void set_new(Object* obj)
     {
         assign(obj, ref_transfer::take_ownership);
     }
