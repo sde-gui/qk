@@ -151,10 +151,14 @@ target_link_libraries(medit
 install(TARGETS medit RUNTIME DESTINATION bin)
 
 if(MOO_BUILD_FROM_MINGW)
-    install(DIRECTORY ${MOO_GTK_DIST_DIR}/bin DESTINATION ${CMAKE_INSTALL_PREFIX})
-    install(DIRECTORY ${MOO_GTK_DIST_DIR}/etc DESTINATION ${CMAKE_INSTALL_PREFIX})
-    install(DIRECTORY ${MOO_GTK_DIST_DIR}/lib DESTINATION ${CMAKE_INSTALL_PREFIX})
-    install(DIRECTORY ${MOO_GTK_DIST_DIR}/share DESTINATION ${CMAKE_INSTALL_PREFIX})
+    # xxx this is wrong, doing it temporarily so it doesn't install python lib every time
+    if(NOT EXISTS "${MOO_GTK_DIST_DIR}/bin/libglib-2.0-0.dll")
+        install(DIRECTORY ${MOO_GTK_DIST_DIR}/bin DESTINATION ${CMAKE_INSTALL_PREFIX})
+        install(DIRECTORY ${MOO_GTK_DIST_DIR}/etc DESTINATION ${CMAKE_INSTALL_PREFIX})
+        install(DIRECTORY ${MOO_GTK_DIST_DIR}/lib DESTINATION ${CMAKE_INSTALL_PREFIX})
+        install(DIRECTORY ${MOO_GTK_DIST_DIR}/share DESTINATION ${CMAKE_INSTALL_PREFIX})
+    endif()
+
     #install(DIRECTORY ${CMAKE_SOURCE_DIR}/plat/win32/gtk-win/extra/medit-data/bin DESTINATION ${CMAKE_INSTALL_PREFIX})
     #install(DIRECTORY ${CMAKE_SOURCE_DIR}/plat/win32/gtk-win/extra/medit-data/etc DESTINATION ${CMAKE_INSTALL_PREFIX})
 endif()
