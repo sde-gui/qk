@@ -166,23 +166,26 @@ gstr::gstr(const gstr& other)
         m_is_const = true;
         m_is_inline = true;
     }
-    else if (other.m_is_inline)
-    {
-        moo_assert(other.m_p != nullptr);
-        moo_assert(!other.m_is_const);
-
-        StringData* d = new StringData(static_cast<const char*>(other));
-        m_p = d;
-        m_is_inline = false;
-        m_is_const = false;
-    }
     else
     {
         moo_assert(other.m_p != nullptr);
         moo_assert(!other.m_is_const);
-        StringData* d = reinterpret_cast<StringData*>(other.m_p);
+
+        StringData* d;
+
+        if (other.m_is_inline)
+        {
+            d = new StringData(static_cast<const char*>(other));
+        }
+        else
+        {
+            d = reinterpret_cast<StringData*>(other.m_p);
+            d->ref();
+        }
+
         m_p = d;
-        d->ref();
+        m_is_inline = false;
+        m_is_const = false;
     }
 }
 
