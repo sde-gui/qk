@@ -184,7 +184,7 @@ moo_entry_class_init (MooEntryClass *klass)
     klass->redo = moo_entry_redo;
 
     moo_entry_parent_class = g_type_class_peek_parent (klass);
-    parent_editable_iface = GTK_EDITABLE_CLASS (g_type_interface_peek (moo_entry_parent_class, GTK_TYPE_EDITABLE));
+    parent_editable_iface = reinterpret_cast<GtkEditableClass*> (g_type_interface_peek (moo_entry_parent_class, GTK_TYPE_EDITABLE));
 
     g_object_class_install_property (gobject_class,
                                      PROP_ENABLE_UNDO,
@@ -352,7 +352,7 @@ moo_entry_get_property (GObject        *object,
             break;
 
         case PROP_EMPTY:
-            g_value_set_boolean (value, GTK_ENTRY(entry)->text_length == 0);
+            g_value_set_boolean (value, gtk_entry_get_text_length (GTK_ENTRY (entry)) == 0);
             break;
 
         case PROP_USE_SPECIAL_CHARS_MENU:
@@ -382,8 +382,7 @@ static void
 moo_entry_changed (GtkEditable *editable)
 {
     MooEntry *entry = MOO_ENTRY (editable);
-    GtkEntry *gtkentry = GTK_ENTRY (editable);
-    gboolean empty = gtkentry->text_length == 0;
+    gboolean empty = gtk_entry_get_text_length (GTK_ENTRY (editable)) == 0;
 
     if ((empty && !entry->priv->empty) ||
          (!empty && entry->priv->empty))
@@ -633,7 +632,7 @@ moo_entry_do_insert_text (GtkEditable        *editable,
         length = (int) strlen (text);
 
     if (*position < 0)
-        *position = GTK_ENTRY(editable)->text_length;
+        *position = gtk_entry_get_text_length (GTK_ENTRY (editable));
 
     if (length > 0)
     {
@@ -657,7 +656,7 @@ moo_entry_do_delete_text (GtkEditable        *editable,
 
     if (end_pos < 0)
     {
-        end_pos = GTK_ENTRY(editable)->text_length;
+        end_pos = gtk_entry_get_text_length (GTK_ENTRY (editable));
     }
     else if (start_pos > end_pos)
     {
