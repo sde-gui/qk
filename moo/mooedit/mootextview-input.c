@@ -1163,8 +1163,8 @@ drag_scroll_timeout_func (MooTextView *view)
     GtkTextBuffer *buffer;
     GtkTextWindowType win_type;
 
-    g_assert (view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT ||
-              view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT_LINES);
+    g_return_val_if_fail (view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT ||
+                          view->priv->dnd.type == MOO_TEXT_VIEW_DRAG_SELECT_LINES, FALSE);
 
     text_view = GTK_TEXT_VIEW (view);
     buffer = gtk_text_view_get_buffer (text_view);
