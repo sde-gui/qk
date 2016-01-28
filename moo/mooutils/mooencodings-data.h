@@ -89,6 +89,10 @@ static const struct {
     // Label of an encoding menu item, remove the part before and including |
     { "UTF-8-BOM",      NULL, N_("encoding label|UTF-8-BOM"),                             ENCODING_GROUP_UNICODE },
     // Label of an encoding menu item, remove the part before and including |
+    { "UTF-32-BOM",     NULL, N_("encoding label|UTF-32-BOM"),                            ENCODING_GROUP_UNICODE },
+    // Label of an encoding menu item, remove the part before and including |
+    { "UTF-16-BOM",     NULL, N_("encoding label|UTF-16-BOM"),                            ENCODING_GROUP_UNICODE },
+    // Label of an encoding menu item, remove the part before and including |
     { "UTF-32",         NULL, N_("encoding label|UTF-32"),                                ENCODING_GROUP_UNICODE },
     // Label of an encoding menu item, remove the part before and including |
     { "UTF-16",         NULL, N_("encoding label|UTF-16"),                                ENCODING_GROUP_UNICODE },
@@ -173,6 +177,8 @@ static const struct {
     const char *name;
 } moo_encoding_aliases[] = {
     {"UTF8",        "UTF-8"},
+    {"UTF16",       "UTF-16"},
+    {"UTF32",       "UTF-32"},
 
     {"646",         "ASCII"},
     {"C",           "ASCII"},

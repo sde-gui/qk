@@ -25,12 +25,14 @@ G_BEGIN_DECLS
 #define MOO_ENCODING_UTF8           "UTF-8"
 
 #define MOO_ENCODING_UTF16          "UTF-16"
+#define MOO_ENCODING_UTF16_BOM      "UTF-16-BOM"
 #define MOO_ENCODING_UTF16LE        "UTF-16LE"
 #define MOO_ENCODING_UTF16BE        "UTF-16BE"
 #define MOO_ENCODING_UTF16LE_BOM    "UTF-16LE-BOM"
 #define MOO_ENCODING_UTF16BE_BOM    "UTF-16BE-BOM"
 
 #define MOO_ENCODING_UTF32          "UTF-32"
+#define MOO_ENCODING_UTF32_BOM      "UTF-32-BOM"
 #define MOO_ENCODING_UTF32LE        "UTF-32LE"
 #define MOO_ENCODING_UTF32BE        "UTF-32BE"
 #define MOO_ENCODING_UTF32LE_BOM    "UTF-32LE-BOM"
@@ -43,7 +45,7 @@ typedef enum {
 
 void         _moo_encodings_combo_init      (GtkComboBox            *combo,
                                              MooEncodingComboType    type,
-					     gboolean		     use_separators);
+					                         gboolean		         use_separators);
 void         _moo_encodings_combo_set_enc   (GtkComboBox            *combo,
                                              const char             *enc,
                                              MooEncodingComboType    type);

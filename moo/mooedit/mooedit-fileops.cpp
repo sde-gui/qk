@@ -156,8 +156,8 @@ static char *
 convert_file_data_to_utf8_with_prompt (const char*    data,
                                        gsize          data_len,
                                        g::File        file,
-                                       const char*    encoding,
-                                       const char*    cached_encoding,
+                                       gstr           encoding,
+                                       gstr           cached_encoding,
                                        /*out*/ gstr&  used_encoding)
 {
     char *text_utf8 = NULL;
@@ -1098,9 +1098,11 @@ encoding_needs_bom_load (const char  *enc,
     } encs[] = {
         { "UTF-8-BOM",    "UTF-8",    BOM_UTF8,     BOM_UTF8_LEN,  FALSE },
         { "UTF-16",       "UTF-16",   BOM_UTF16,    BOM_UTF16_LEN, TRUE },
+        { "UTF-16-BOM",   "UTF-16",   BOM_UTF16,    BOM_UTF16_LEN, FALSE },
         { "UTF-16LE-BOM", "UTF-16LE", BOM_UTF16_LE, BOM_UTF16_LEN, FALSE },
         { "UTF-16BE-BOM", "UTF-16BE", BOM_UTF16_BE, BOM_UTF16_LEN, FALSE },
         { "UTF-32",       "UTF-32",   BOM_UTF32,    BOM_UTF32_LEN, TRUE },
+        { "UTF-32-BOM",   "UTF-32",   BOM_UTF32,    BOM_UTF32_LEN, FALSE },
         { "UTF-32LE-BOM", "UTF-32LE", BOM_UTF32_LE, BOM_UTF32_LEN, FALSE },
         { "UTF-32BE-BOM", "UTF-32BE", BOM_UTF32_BE, BOM_UTF32_LEN, FALSE },
     };
@@ -1284,6 +1286,7 @@ moo_convert_file_data_to_utf8 (const char  *data,
     {
         encoding = bom_enc;
         result = try_convert_to_utf8_from_encoding (data, len, encoding);
+        used_enc.set(bom_enc);
     }
     else if (!encoding)
     {
@@ -1306,7 +1309,7 @@ moo_convert_file_data_to_utf8 (const char  *data,
     else
     {
         result = try_convert_to_utf8_from_encoding (data, len, encoding);
-        used_enc = gstr::wrap(encoding);
+        used_enc.set(encoding);
     }
 
     return result;
