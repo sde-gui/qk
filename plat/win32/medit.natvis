@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+    <Type Name="moo::gstr">
+        <DisplayString Condition="m_p == 0">(null)</DisplayString>
+        <DisplayString Condition="m_is_inline &amp;&amp; m_p != 0">{(char*)m_p}</DisplayString>
+        <DisplayString Condition="!m_is_inline">{((StringData*)m_p)->m_p}</DisplayString>
+        <StringView Condition="m_is_inline &amp;&amp; m_p != 0">(char*)m_p</StringView>
+        <StringView Condition="!m_is_inline">((StringData*)m_p)->m_p</StringView>
+        <Expand>
+            <Item Condition="m_is_inline" Name="m_p">(char*)m_p</Item>
+            <Item Condition="!m_is_inline" Name="m_p">(StringData*)m_p</Item>
+            <Item Name="m_is_inline">m_is_inline</Item>
+            <Item Name="m_is_const">m_is_const</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="moo::gref_ptr&lt;*,*&gt;">
+        <AlternativeType Name="moo::gref_ptr&lt;*&gt;" />
+        <DisplayString>{m_p}</DisplayString>
+    </Type>
+
+    <Type Name="moo::gobj_ptr&lt;*&gt;">
+        <DisplayString>{m_ref.m_gobj}</DisplayString>
+        <Expand>
+            <Item Name="gobj">m_ref.m_gobj</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="moo::gobj_ref&lt;*&gt;">
+        <DisplayString>{m_gobj}</DisplayString>
+        <Expand>
+            <Item Name="gobj">m_gobj</Item>
+        </Expand>
+    </Type>
+
+</AutoVisualizer>
