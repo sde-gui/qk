@@ -197,6 +197,7 @@ if(WIN32)
     set(MOO_NEED_GETTIMEOFDAY TRUE)
     set(HAVE_UNISTD_H TRUE)
     set(HAVE_BIND_TEXTDOMAIN_CODESET TRUE)
+    list(APPEND MEDIT_LIBS Shlwapi.lib)
 endif(WIN32)
 
 # zzz SUBDIRS = po po-gsv api doc moo

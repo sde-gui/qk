@@ -23,6 +23,9 @@
 #include <algorithm>
 #include <utility>
 #include <functional>
+#include <vector>
+#include <unordered_set>
+#include <unordered_map>
 
 namespace moo {
 
@@ -122,6 +125,9 @@ private:
     bool m_is_const;
 };
 
+using gstrvec = std::vector<gstr>;
+using gstrset = std::unordered_set<gstr>;
+using gstrmap = std::unordered_map<gstr, gstr>;
 
 bool operator==(const gstr& s1, const char* s2);
 bool operator==(const char* s1, const gstr& s2);

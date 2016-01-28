@@ -21,13 +21,6 @@
 
 G_BEGIN_DECLS
 
-#define MOO_STMT_START do
-
-#define MOO_STMT_END                    \
-    MOO_MSVC_WARNING_PUSH_DISABLE(4127) \
-    while (0)                           \
-    MOO_MSVC_WARNING_POP
-
 #undef G_STMT_START
 #undef G_STMT_END
 #define G_STMT_START MOO_STMT_START
@@ -143,6 +136,7 @@ MOO_STMT_START {                                        \
 
 #define _moo_on_error moo_debug_break
 #define _moo_on_critical moo_break_if_in_debugger
+#define _moo_on_warning moo_break_if_in_debugger
 
 #ifdef __WIN32__
 
@@ -165,8 +159,10 @@ MOO_STMT_START {                                        \
     MOO_STMT_START {                                                                            \
         if ((log_level_flags) & (G_LOG_LEVEL_ERROR | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION))  \
             _moo_on_error();                                                                    \
-        else if ((log_level_flags) & (G_LOG_LEVEL_CRITICAL))                                    \
+        else if ((log_level_flags) & G_LOG_LEVEL_CRITICAL)                                      \
             _moo_on_critical();                                                                 \
+        else if ((log_level_flags) & G_LOG_LEVEL_WARNING)                                       \
+            _moo_on_warning();                                                                  \
     } MOO_STMT_END
 
 /*
@@ -181,12 +177,12 @@ MOO_STMT_START {                                        \
 #  define moo_error(...)                MOO_STMT_START { _moo_on_error(); _moo_error (MOO_CODE_LOC, __VA_ARGS__); } MOO_STMT_END
 #  define moo_message(...)              _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_MESSAGE, __VA_ARGS__)
 #  define moo_critical(...)             MOO_STMT_START { _moo_on_critical(); _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_CRITICAL, __VA_ARGS__); } MOO_STMT_END
-#  define moo_warning(...)              _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_WARNING, __VA_ARGS__)
+#  define moo_warning(...)              MOO_STMT_START { _moo_on_warning(); _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_WARNING, __VA_ARGS__); } MOO_STMT_END
 #  define moo_debug(...)                _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_DEBUG, __VA_ARGS__)
 #  define moo_error_noloc(...)          MOO_STMT_START { _moo_on_error(); _moo_error (MOO_CODE_LOC_UNKNOWN, __VA_ARGS__); } MOO_STMT_END
 #  define moo_message_noloc(...)        _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_MESSAGE, __VA_ARGS__)
 #  define moo_critical_noloc(...)       MOO_STMT_START { _moo_on_critical(); _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_CRITICAL, __VA_ARGS__); } MOO_STMT_END
-#  define moo_warning_noloc(...)        _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_WARNING, __VA_ARGS__)
+#  define moo_warning_noloc(...)        MOO_STMT_START { _moo_on_warning(); _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_WARNING, __VA_ARGS__); } MOO_STMT_END
 #  define moo_debug_noloc(...)          _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_DEBUG, __VA_ARGS__)
 
 #elif defined(G_HAVE_GNUC_VARARGS)
@@ -194,12 +190,12 @@ MOO_STMT_START {                                        \
 #  define moo_error(format...)          MOO_STMT_START { _moo_on_error(); _moo_error (MOO_CODE_LOC, format); } MOO_STMT_END
 #  define moo_message(format...)        _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_MESSAGE, format)
 #  define moo_critical(format...)       MOO_STMT_START { _moo_on_critical(); _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_CRITICAL, format); } MOO_STMT_END
-#  define moo_warning(format...)        _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_WARNING, format)
+#  define moo_warning(format...)        MOO_STMT_START { _moo_on_warning(); _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_WARNING, format); } MOO_STMT_END
 #  define moo_debug(format...)          _moo_log (MOO_CODE_LOC, G_LOG_LEVEL_DEBUG, format)
 #  define moo_error_noloc(format...)    MOO_STMT_START { _moo_on_error(); _moo_error (MOO_CODE_LOC_UNKNOWN, format); } MOO_STMT_END
 #  define moo_message_noloc(format...)  _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_MESSAGE, format)
 #  define moo_critical_noloc(format...) MOO_STMT_START { _moo_on_critical(); _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_CRITICAL, format); } MOO_STMT_END
-#  define moo_warning_noloc(format...)  _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_WARNING, format)
+#  define moo_warning_noloc(format...)  MOO_STMT_START { _moo_on_warning(); _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_WARNING, format); } MOO_STMT_END
 #  define moo_debug_noloc(format...)    _moo_log (MOO_CODE_LOC_UNKNOWN, G_LOG_LEVEL_DEBUG, format)
 
 #else /* no varargs macros */

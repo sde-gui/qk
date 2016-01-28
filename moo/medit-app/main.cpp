@@ -30,6 +30,7 @@
 #include "run-tests.h"
 #ifdef GDK_WINDOWING_WIN32
 #include <gdk/gdkwin32.h>
+#include <windows.h>
 #include <windowsx.h>
 #endif
 
@@ -666,6 +667,10 @@ medit_main (int argc, char *argv[])
     GOptionContext *ctx;
     MooOpenInfoArray *files;
 
+#ifdef __WIN32__
+    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+#endif // __WIN32__
+
     init_mem_stuff ();
 #if !GLIB_CHECK_VERSION(2,32,0)
     g_thread_init (NULL);
@@ -794,6 +799,10 @@ medit_main (int argc, char *argv[])
 
     retval = app->run ();
     gdk_threads_leave ();
+
+#ifdef __WIN32__
+    CoUninitialize();
+#endif // __WIN32__
 
     return retval;
 }

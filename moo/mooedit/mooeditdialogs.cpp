@@ -29,8 +29,14 @@
 #include <gtk/gtk.h>
 #include <mooglib/moo-glib.h>
 #include <string.h>
+#ifdef __WIN32__
+#include <mooutils/moofiledialog-win32.h>
+#include <gdk/gdkwin32.h>
+#endif // __WIN32__
 
 using namespace moo;
+
+#ifndef __WIN32__
 
 MooOpenInfoArray *
 _moo_edit_open_dialog (GtkWidget *widget,
@@ -142,6 +148,61 @@ _moo_edit_save_as_dialog (MooEdit    *doc,
     g_object_unref (dialog);
     return info;
 }
+
+#else // __WIN32__
+
+MooOpenInfoArray *
+_moo_edit_open_dialog(GtkWidget* parent,
+                      MooEdit*   current_doc)
+{
+    gstr start_folder;
+
+    if (current_doc && moo_prefs_get_bool(moo_edit_setting(MOO_EDIT_PREFS_DIALOGS_OPEN_FOLLOWS_DOC)))
+    {
+        g::FilePtr file(moo_edit_get_file(current_doc), ref_transfer::take_ownership);
+
+        if (file)
+            start_folder = file->get_parent()->get_path();
+    }
+
+    GtkWidget* toplevel = parent ? gtk_widget_get_toplevel(parent) : nullptr;
+    HWND hwnd = toplevel ? reinterpret_cast<HWND> (GDK_WINDOW_HWND(toplevel->window)) : nullptr;
+    moo::gstrvec files = moo_show_win32_file_open_dialog(hwnd, start_folder);
+    if (files.empty())
+        return nullptr;
+
+    MooOpenInfoArray *result = moo_open_info_array_new();
+    for (const gstr& path : files)
+        moo_open_info_array_take(result, moo_open_info_new(path, MOO_ENCODING_AUTO, -1, MOO_OPEN_FLAGS_NONE));
+    return result;
+}
+
+
+MooSaveInfo*
+_moo_edit_save_as_dialog(MooEdit*    doc,
+                         const char* display_basename)
+{
+    MooEditView* view = moo_edit_get_view (doc);
+    GtkWidget* toplevel = view ? gtk_widget_get_toplevel(GTK_WIDGET(view)) : nullptr;
+    HWND hwnd = toplevel ? reinterpret_cast<HWND> (GDK_WINDOW_HWND(toplevel->window)) : nullptr;
+
+    gstr start_folder;
+
+    if (moo_prefs_get_bool(moo_edit_setting(MOO_EDIT_PREFS_DIALOGS_OPEN_FOLLOWS_DOC)))
+    {
+        g::FilePtr file = wrap_new(moo_edit_get_file(doc));
+        if (file)
+            start_folder = file->get_parent()->get_path();
+    }
+
+    gstr save_as = moo_show_win32_file_save_as_dialog(hwnd, start_folder, gstr::wrap(display_basename));
+    if (save_as.empty())
+        return nullptr;
+
+    return moo_save_info_new(save_as, nullptr);
+}
+
+#endif // __WIN32__
 
 
 MooSaveChangesResponse

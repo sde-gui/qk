@@ -171,6 +171,10 @@ LIST(APPEND built_mooutils_sources marshals.c)
 # endif
 
 SET(mooutils_win32_sources
+	mooutils/moofiledialog-win32.cpp
+	mooutils/moofiledialog-win32.h
+	mooutils/mooutils-dialog-win32.cpp
+	mooutils/mooutils-dialog-win32.h
     mooutils/mooutils-win32.cpp
 )
 SET(mooutils_unittest_sources
