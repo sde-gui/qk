@@ -50,6 +50,8 @@
 #include <io.h>
 #include <stdarg.h>
 
+using namespace moo;
+
 #if 0
 #ifdef _MSC_VER
 /* This is stuff from newer Microsoft C runtime, but we want msvcrt.dll
@@ -96,7 +98,7 @@ get_moo_dll_name (void)
 #endif
 }
 
-const char *
+gstr
 _moo_win32_get_locale_dir (void)
 {
     G_LOCK_DEFINE_STATIC (moo_locale_dir);
@@ -106,73 +108,56 @@ _moo_win32_get_locale_dir (void)
 
     if (!moo_locale_dir)
     {
-        char *dir, *subdir;
-
-        dir = g_win32_get_package_installation_directory_of_module (_moo_hinst);
-        subdir = g_build_filename (dir, "share", "locale", NULL);
-
+        gstrp dir = g_win32_get_package_installation_directory_of_module (_moo_hinst);
+        gstrp subdir = g_build_filename (dir, "share", "locale", NULL);
         moo_locale_dir = g_win32_locale_filename_from_utf8 (subdir);
-
-        g_free (subdir);
-        g_free (dir);
     }
 
     G_UNLOCK (moo_locale_dir);
 
-    return moo_locale_dir;
+    return gstr::wrap_const (moo_locale_dir);
 }
 
 
 static void
-add_win32_data_dirs_for_dll (GPtrArray  *list,
-                             const char *subdir_name,
-                             const char *dllname)
+add_win32_data_dirs_for_dll (gstrvec&    list,
+                             const char* subdir_name,
+                             const char* dllname)
 {
-    char *dlldir, *datadir;
-
-    dlldir = moo_win32_get_dll_dir (dllname);
+    gstr dlldir = moo_win32_get_dll_dir (dllname);
 
     if (g_str_has_suffix (dlldir, "\\"))
     {
-        char *tmp = g_strndup (dlldir, strlen(dlldir) - 1);
-        g_free (dlldir);
-        dlldir = tmp;
+        char* p = dlldir.get_mutable();
+        p[strlen(p) - 1] = 0;
     }
 
     if (g_str_has_suffix (dlldir, "bin") ||
         g_str_has_suffix (dlldir, "lib"))
     {
-        char *tmp = g_path_get_dirname (dlldir);
-        datadir = g_build_filename (tmp, subdir_name, NULL);
-        g_free (tmp);
+        gstr tmp = gstr::wrap_new (g_path_get_dirname (dlldir));
+        gstr datadir = gstr::wrap_new (g_build_filename (tmp, subdir_name, nullptr));
+        list.emplace_back (std::move (datadir));
     }
     else
     {
-        datadir = g_strdup (dlldir);
+        list.emplace_back (std::move (dlldir));
     }
-
-    g_free (dlldir);
-    g_ptr_array_add (list, datadir);
 }
 
 void
-_moo_win32_add_data_dirs (GPtrArray  *list,
-                          const char *prefix)
+_moo_win32_add_data_dirs (moo::gstrvec& list,
+                          const char*   prefix)
 {
-    char *subdir;
-    const char *dll_name;
-
-    subdir = g_strdup_printf ("%s\\" MOO_PACKAGE_NAME, prefix);
+    gstr subdir = gstr::wrap_new (g_strdup_printf ("%s\\" MOO_PACKAGE_NAME, prefix));
     add_win32_data_dirs_for_dll (list, subdir, NULL);
 
-    if ((dll_name = get_moo_dll_name ()))
+    if (const char *dll_name = get_moo_dll_name ())
         add_win32_data_dirs_for_dll (list, subdir, dll_name);
-
-    g_free (subdir);
 }
 
 
-char *
+gstr
 moo_win32_get_app_dir (void)
 {
     static char *moo_app_dir;
@@ -181,19 +166,17 @@ moo_win32_get_app_dir (void)
     G_LOCK (moo_app_dir);
 
     if (!moo_app_dir)
-        moo_app_dir = moo_win32_get_dll_dir (NULL);
+        moo_app_dir = moo_win32_get_dll_dir (NULL).release_owned ();
 
     G_UNLOCK (moo_app_dir);
 
-    return g_strdup (moo_app_dir);
+    return gstr::wrap_const (moo_app_dir);
 }
 
-char *
+gstr
 moo_win32_get_dll_dir (const char *dll)
 {
-    wchar_t *dll_utf16 = NULL;
-    char *dir;
-    char *dllname = NULL;
+    gbuf<wchar_t> dll_utf16;
     HMODULE handle;
     wchar_t buf[MAX_PATH+1];
 
@@ -208,24 +191,20 @@ moo_win32_get_dll_dir (const char *dll)
             g_critical ("could not convert name '%s' to UTF16: %s",
                         dll, moo_error_message (error));
             g_error_free (error);
-            return g_strdup (".");
+            return gstr::wrap_const (".");
     	}
     }
 
     handle = GetModuleHandleW (dll_utf16);
-    g_return_val_if_fail (handle != NULL, g_strdup ("."));
+    g_return_val_if_fail (handle != NULL, gstr::wrap_const ("."));
 
     if (GetModuleFileNameW (handle, buf, G_N_ELEMENTS (buf)) > 0)
-        dllname = g_utf16_to_utf8 (reinterpret_cast<gunichar2*> (buf), -1, NULL, NULL, NULL);
+    {
+        gstr dllname = gstr::wrap_new(g_utf16_to_utf8(reinterpret_cast<gunichar2*> (buf), -1, NULL, NULL, NULL));
+        return gstr::wrap_new (g_path_get_dirname (dllname));
+    }
 
-    if (dllname)
-        dir = g_path_get_dirname (dllname);
-    else
-        dir = g_strdup (".");
-
-    g_free (dllname);
-    g_free (dll_utf16);
-    return dir;
+    return gstr::wrap_const (".");
 }
 
 
@@ -276,17 +255,14 @@ _moo_win32_message_box(GtkWidget      *parent,
                        const char     *format,
                        ...)
 {
-    int ret;
-    char *text = NULL;
+    gstr text;
     HWND parenthwnd = NULL;
-    wchar_t *wtitle = NULL;
-    wchar_t *wtext = NULL;
 
     if (format)
     {
         va_list args;
         va_start (args, format);
-        text = g_strdup_vprintf (format, args);
+        text.set_new (g_strdup_vprintf (format, args));
         va_end (args);
     }
 
@@ -295,18 +271,15 @@ _moo_win32_message_box(GtkWidget      *parent,
     if (parent)
         parenthwnd = (HWND) GDK_WINDOW_HWND (parent->window);
 
+    gbuf<wchar_t> wtitle;
+    gbuf<wchar_t> wtext;
+
     if (title)
         wtitle = reinterpret_cast<wchar_t*> (g_utf8_to_utf16 (title, -1, NULL, NULL, NULL));
-    if (text)
+    if (!text.empty())
         wtext = reinterpret_cast<wchar_t*> (g_utf8_to_utf16 (text, -1, NULL, NULL, NULL));
 
-    ret = MessageBox(parenthwnd, wtext, wtitle, type);
-
-    g_free (wtext);
-    g_free (wtitle);
-    g_free (text);
-
-    return ret;
+    return MessageBox (parenthwnd, wtext, wtitle, type);
 }
 
 

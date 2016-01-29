@@ -15,6 +15,7 @@
 
 #include "moocpp/gobjtypes-glib.h"
 #include "moocpp/gobjwrapper.h"
+#include "moocpp/memutils.h"
 
 using namespace moo;
 using namespace g;
@@ -28,6 +29,13 @@ void ::extern_g_object_unref(gpointer o)
 {
     g_object_unref(o);
 }
+
+void extern_g_strfreev(char** p)
+{
+    if (p)
+        g_strfreev (p);
+}
+
 
 void moo::init_gobj_system ()
 {

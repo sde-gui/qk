@@ -165,6 +165,3 @@ template<typename X>
 void g_object_unref(const moo::gobj_ref<X>*) = delete;
 template<typename X>
 void g_free(const moo::gobj_ref<X>*) = delete;
-
-void extern_g_free(gpointer);
-void extern_g_object_unref(gpointer);

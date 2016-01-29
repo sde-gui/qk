@@ -333,3 +333,209 @@ char* gstr::release_owned()
     m_is_inline = true;
     return p;
 }
+
+
+gstrvec moo::convert(gstrv v)
+{
+    char** pv = v.release();
+
+    gstrvec ret;
+    ret.reserve(g_strv_length(pv));
+
+    for (gsize i = 0, c = ret.size(); i < c; ++i)
+        ret.emplace_back(gstr::wrap_new(pv[i]));
+
+    g_free(pv);
+    return ret;
+}
+
+
+gstrv gstrv::convert(gstrvec v)
+{
+    const gsize c = v.size();
+    char **p = g_new (char*, c + 1);
+    for (gsize i = 0; i < c; ++i)
+        p[i] = v[i].release_owned();
+    p[c] = nullptr;
+    return p;
+}
+
+
+strbuilder::strbuilder(const char *init, gssize len)
+    : m_buf(nullptr)
+    , m_result(nullptr)
+{
+    if (init != nullptr)
+        m_buf = g_string_new_len(init, len);
+    else if (len > 0)
+        m_buf = g_string_sized_new(len);
+    else
+        m_buf = g_string_new(nullptr);
+}
+
+strbuilder::strbuilder(gsize reserve)
+    : strbuilder(nullptr, reserve)
+{
+}
+
+strbuilder::~strbuilder()
+{
+    if (m_buf)
+        g_string_free (m_buf, true);
+}
+
+gstrp strbuilder::release()
+{
+    if (m_result)
+    {
+        return m_result.release();
+    }
+    else if (m_buf)
+    {
+        gstrp p = g_string_free(m_buf, false);
+        m_buf = nullptr;
+        return p;
+    }
+    else
+    {
+        g_return_val_if_reached(nullptr);
+    }
+}
+
+const char* strbuilder::get() const
+{
+    if (m_buf)
+    {
+        m_result = g_string_free(m_buf, false);
+        m_buf = nullptr;
+    }
+
+    g_return_val_if_fail(m_result, nullptr);
+    return m_result;
+}
+
+void strbuilder::truncate(gsize len)
+{
+    g_return_if_fail(m_buf);
+    g_string_truncate(m_buf, len);
+}
+
+void strbuilder::set_size(gsize len)
+{
+    g_return_if_fail(m_buf);
+    g_string_set_size(m_buf, len);
+}
+
+void strbuilder::append(const char* val, gssize len)
+{
+    g_return_if_fail(m_buf);
+    g_string_append_len(m_buf, val, len);
+}
+
+void strbuilder::append(char c)
+{
+    g_return_if_fail(m_buf);
+    g_string_append_c(m_buf, c);
+}
+
+void strbuilder::append(gunichar wc)
+{
+    g_return_if_fail(m_buf);
+    g_string_append_unichar(m_buf, wc);
+}
+
+void strbuilder::prepend(const char* val, gssize len)
+{
+    g_return_if_fail(m_buf);
+    g_string_prepend_len(m_buf, val, len);
+}
+
+void strbuilder::prepend(char c)
+{
+    g_return_if_fail(m_buf);
+    g_string_prepend_c(m_buf, c);
+}
+
+void strbuilder::prepend(gunichar wc)
+{
+    g_return_if_fail(m_buf);
+    g_string_prepend_unichar(m_buf, wc);
+}
+
+void strbuilder::insert(gssize pos, const char* val, gssize len)
+{
+    g_return_if_fail(m_buf);
+    g_string_insert_len(m_buf, pos, val, len);
+}
+
+void strbuilder::insert(gssize pos, char c)
+{
+    g_return_if_fail(m_buf);
+    g_string_insert_c(m_buf, pos, c);
+}
+
+void strbuilder::insert(gssize pos, gunichar wc)
+{
+    g_return_if_fail(m_buf);
+    g_string_insert_c(m_buf, pos, wc);
+}
+
+void strbuilder::overwrite(gsize pos, const char* val, gssize len)
+{
+    g_return_if_fail(m_buf);
+    g_string_overwrite_len(m_buf, pos, val, len);
+}
+
+void strbuilder::erase(gssize pos, gssize len)
+{
+    g_return_if_fail(m_buf);
+    g_string_erase(m_buf, pos, len);
+}
+
+void strbuilder::ascii_down()
+{
+    g_return_if_fail(m_buf);
+    g_string_ascii_down(m_buf);
+}
+
+void strbuilder::ascii_up()
+{
+    g_return_if_fail(m_buf);
+    g_string_ascii_up(m_buf);
+}
+
+void strbuilder::vprintf(const char* format, va_list args)
+{
+    g_return_if_fail(m_buf);
+    g_string_vprintf(m_buf, format, args);
+}
+
+void strbuilder::printf(const char* format, ...)
+{
+    g_return_if_fail(m_buf);
+    va_list args;
+    va_start(args, format);
+    g_string_vprintf(m_buf, format, args);
+    va_end(args);
+}
+
+void strbuilder::append_vprintf(const char* format, va_list args)
+{
+    g_return_if_fail(m_buf);
+    g_string_append_vprintf(m_buf, format, args);
+}
+
+void strbuilder::append_printf(const char* format, ...)
+{
+    g_return_if_fail(m_buf);
+    va_list args;
+    va_start(args, format);
+    g_string_append_vprintf(m_buf, format, args);
+    va_end(args);
+}
+
+void strbuilder::append_uri_escaped(const char* unescaped, const char* reserved_chars_allowed, bool allow_utf8)
+{
+    g_return_if_fail(m_buf);
+    g_string_append_uri_escaped(m_buf, unescaped, reserved_chars_allowed, allow_utf8);
+}

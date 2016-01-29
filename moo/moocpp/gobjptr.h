@@ -218,8 +218,12 @@ inline gobj_ptr<T> create_gobj()
     return create_gobj<T>(gobjinfo<T>::object_g_type(), nullptr);
 }
 
-
 } // namespace moo
+
+template<typename X>
+void g_object_unref(const moo::gobj_ptr<X>&) = delete;
+template<typename X>
+void g_free(const moo::gobj_ptr<X>&) = delete;
 
 template<typename X>
 inline bool operator==(const moo::gobj_ptr<X>& p, const nullptr_t&)
@@ -285,8 +289,3 @@ template<typename X> bool operator==(const moo::gobj_ptr<X>& p1, int) = delete;
 template<typename X> bool operator==(int, const moo::gobj_ptr<X>& p2) = delete;
 template<typename X> bool operator!=(const moo::gobj_ptr<X>& p1, int) = delete;
 template<typename X> bool operator!=(int, const moo::gobj_ptr<X>& p2) = delete;
-
-template<typename X>
-void g_object_unref(const moo::gobj_ptr<X>&) = delete;
-template<typename X>
-void g_free(const moo::gobj_ptr<X>&) = delete;

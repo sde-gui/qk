@@ -19,7 +19,12 @@
 #include <memory>
 #include <vector>
 #include <utility>
+#include <moocpp/utils.h>
 #include <mooglib/moo-glib.h>
+
+void extern_g_free(gpointer);
+void extern_g_object_unref(gpointer);
+void extern_g_strfreev(char**);
 
 namespace moo {
 
@@ -30,283 +35,37 @@ enum class mem_transfer
     make_copy
 };
 
-template<typename Buf, typename MemHandler, typename Self>
-class mg_mem_holder
+template<typename T>
+class gbuf
 {
 public:
-    enum class memory_type
-    {
-        literal,
-        allocated,
-    };
+    gbuf(T* p = nullptr) : m_p(p) {}
+    ~gbuf() { ::g_free(m_p); }
 
-    mg_mem_holder() : m_p(nullptr), m_ot(ownership_type::literal) {}
-    mg_mem_holder(const nullptr_t&) : mg_mem_holder() {}
+    void set(T* p) { if (m_p != p) { ::g_free(m_p); m_p = p; } }
+    void reset(T* p = nullptr) { set(p); }
+    operator const T*() const { return m_p; }
+    T* get() const { return m_p; }
+    T*& _get() { return m_p; }
 
-    ~mg_mem_holder()
-    {
-        reset();
-    }
+    operator T*() const = delete;
+    T** operator&() = delete;
 
-    // There is nothing wrong with copying, but it's not clear whether it should borrow
-    // or duplicate the object: borrowing is cheap but dangerous, copying is safe but
-    // expensive. Let the caller decide instead.
-    mg_mem_holder(const mg_mem_holder& other) = delete;
-    mg_mem_holder& operator=(const mg_mem_holder& other) = delete;
+    T* release() { T* p = m_p; m_p = nullptr; return p; }
 
-    mg_mem_holder(mg_mem_holder&& other)
-        : mg_mem_holder()
-    {
-        *this = std::move(other);
-    }
+    MOO_DISABLE_COPY_OPS(gbuf);
 
-    mg_mem_holder& operator=(mg_mem_holder&& other)
-    {
-        swap(*this, other);
-        return *this;
-    }
+    gbuf(gbuf&& other) : gbuf() { std::swap(m_p, other.m_p); }
+    gbuf& operator=(gbuf&& other) { std::swap(m_p, other.m_p); return *this; }
 
-    mg_mem_holder(const Buf* p, memory_type mt, mem_transfer tt)
-        : mg_mem_holder()
-    {
-        assign(p, mt, tt);
-    }
+    gbuf& operator=(T* p) { set(p); return *this; }
 
-    void assign(const Buf* p, memory_type mt, mem_transfer tt)
-    {
-        // Make sure old data is freed only after we are done, to handle self-assignment and self-mutation
-        mg_mem_holder tmp;
-        swap(*this, tmp);
-
-        if (p == nullptr)
-            return;
-
-        switch (tt)
-        {
-        case mem_transfer::take_ownership:
-            {
-                switch (mt)
-                {
-                case memory_type::literal:
-                    m_p = const_cast<Buf*>(p);
-                    m_ot = ownership_type::literal;
-                    break;
-                case memory_type::allocated:
-                    m_p = const_cast<Buf*>(p);
-                    m_ot = ownership_type::owned;
-                    break;
-                default:
-                    g_assert_not_reached();
-                    break;
-                }
-            }
-            break;
-
-        case mem_transfer::borrow:
-            {
-                switch (mt)
-                {
-                case memory_type::literal:
-                    m_p = const_cast<Buf*>(p);
-                    m_ot = ownership_type::literal;
-                    break;
-                case memory_type::allocated:
-                    m_p = const_cast<Buf*>(p);
-                    m_ot = ownership_type::borrowed;
-                    break;
-                default:
-                    g_assert_not_reached();
-                    break;
-                }
-            }
-            break;
-
-        case mem_transfer::make_copy:
-            {
-                switch (mt)
-                {
-                case memory_type::literal:
-                    m_p = const_cast<Buf*>(p);
-                    m_ot = ownership_type::literal;
-                    break;
-                case memory_type::allocated:
-                    m_p = MemHandler::dup(p);
-                    m_ot = ownership_type::owned;
-                    break;
-                default:
-                    g_assert_not_reached();
-                    break;
-                }
-            }
-            break;
-
-        default:
-            g_assert_not_reached();
-            break;
-        }
-    }
-
-    void reset()
-    {
-        if (m_p != nullptr && m_ot == ownership_type::owned)
-        {
-            MemHandler::free(m_p);
-        }
-    }
-
-    mg_mem_holder& operator=(const nullptr_t&)
-    {
-        reset();
-        return *this;
-    }
-
-    operator const Buf* () const { return m_p; }
-    const Buf* get() const { return m_p; }
-
-    Buf* get_mutable()
-    {
-        ensure_owned();
-        return m_p;
-    }
-
-    bool is_null() const { return m_p == nullptr; }
-
-    Self& ensure_not_borrowed()
-    {
-        if (m_p != nullptr && m_ot == ownership_type::borrowed)
-            assign(m_p, memory_type::allocated, mem_transfer::make_copy);
-        return static_cast<Self&>(*this);
-    }
-
-    void ensure_owned()
-    {
-        if (m_p != nullptr && m_ot != ownership_type::owned)
-            assign(m_p, memory_type::allocated, mem_transfer::make_copy);
-    }
-
-    Buf* release_owned()
-    {
-        ensure_owned();
-        Buf* ret = m_p;
-        m_p = nullptr;
-        m_ot = ownership_type::literal;
-        return ret;
-    }
-
-    Self borrow() const
-    {
-        return make_borrowed(*this);
-    }
-
-    void borrow(const Buf* p)
-    {
-        assign(p, memory_type::allocated, mem_transfer::borrow);
-    }
-
-    // Borrowing a temporary is not a good idea
-    void borrow(Buf*&& p) = delete;
-
-    void borrow(const mg_mem_holder& other)
-    {
-        if (other.m_ot == ownership_type::literal)
-            literal(static_cast<const Buf*>(other));
-        else
-            borrow(static_cast<const Buf*>(other));
-    }
-
-    void literal(const Buf* p)
-    {
-        assign(p, memory_type::literal, mem_transfer::borrow);
-    }
-
-    Self copy() const
-    {
-        return make_copy(*this);
-    }
-
-    void copy(const Buf* p)
-    {
-        assign(p, memory_type::allocated, mem_transfer::make_copy);
-    }
-
-    void copy(const mg_mem_holder& other)
-    {
-        if (other.m_ot == ownership_type::literal)
-            literal(static_cast<const Buf*>(other));
-        else
-            copy(static_cast<const Buf*>(other));
-    }
-
-    void take(Buf* p)
-    {
-        assign(p, memory_type::allocated, mem_transfer::take_ownership);
-    }
-
-    void take(mg_mem_holder&& other)
-    {
-        *this = std::move(other);
-    }
-
-    template<typename Arg>
-    static Self make_borrowed(Self&& arg) = delete;
-
-    static Self make_borrowed(Buf*&& p) = delete;
-
-    template<typename Arg>
-    static Self make_borrowed(const Arg& arg)
-    {
-        Self s;
-        s.borrow(arg);
-        return std::move(s);
-    }
-
-    template<typename Arg>
-    static Self wrap_const(Arg&& arg)
-    {
-        Self s;
-        s.set_const(std::forward<Arg>(arg));
-        return std::move(s);
-    }
-
-    template<typename Arg>
-    static Self make_copy(Arg&& arg)
-    {
-        Self s;
-        s.copy(std::forward<Arg>(arg));
-        return std::move(s);
-    }
-
-    template<typename Arg>
-    static Self wrap_new(Arg&& arg)
-    {
-        Self s;
-        s.set_new(std::forward<Arg>(arg));
-        return std::move(s);
-    }
-
-    static void swap(mg_mem_holder& p1, mg_mem_holder& p2)
-    {
-        std::swap(p1.m_p, p2.m_p);
-        std::swap(p1.m_ot, p2.m_ot);
-    }
+    operator bool() const { return m_p != nullptr; }
+    bool operator !() const { return m_p == nullptr; }
 
 private:
-    enum class ownership_type
-    {
-        borrowed,
-        owned,
-        literal,
-    };
-
-    Buf*           m_p;
-    ownership_type m_ot;
+    T* m_p;
 };
-
-template<typename Buf, typename MemHandler, typename Self>
-inline void swap(mg_mem_holder<Buf, MemHandler, Self>& p1, mg_mem_holder<Buf, MemHandler, Self>& p2)
-{
-    mg_mem_holder<Buf, MemHandler, Self>::swap(p1, p2);
-}
 
 #define MOO_DEFINE_STANDARD_PTR_METHODS_INLINE(Self, Super)                     \
     Self() : Super() {}                                                         \
@@ -355,3 +114,6 @@ inline void swap(mg_mem_holder<Buf, MemHandler, Self>& p1, mg_mem_holder<Buf, Me
     }
 
 } // namespace moo
+
+template<typename T>
+void g_free(const moo::gbuf<T>&) = delete;

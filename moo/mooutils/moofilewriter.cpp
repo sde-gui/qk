@@ -406,7 +406,7 @@ bool MooStringWriter::write (const char* data, gsize len)
 
 bool MooStringWriter::printf (const char* fmt, va_list args)
 {
-    strp buf;
+    gstrp buf;
     gint len = g_vasprintf (buf.pp(), fmt, args);
 
     if (len >= 0)

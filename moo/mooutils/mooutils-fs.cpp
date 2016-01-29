@@ -50,6 +50,8 @@
 #include <unistd.h>
 #endif
 
+using namespace moo;
+
 #define BROKEN_NAME "<" "????" ">"
 
 MOO_DEFINE_QUARK (moo-file-error-quark, _moo_file_error_quark)
@@ -477,61 +479,50 @@ _moo_file_error_from_errno (mgw_errno_t code)
 }
 
 
-char **
-moo_filenames_from_locale (char **files)
+static gstr
+moo_filename_from_locale (const gstr& file)
 {
-    guint i;
-    char **conv;
-
-    if (!files)
-        return NULL;
-
-    conv = g_new0 (char*, g_strv_length (files) + 1);
-
-    for (i = 0; files && *files; ++files)
-    {
-        conv[i] = moo_filename_from_locale (*files);
-
-        if (!conv[i])
-            g_warning ("could not convert '%s' to UTF8", *files);
-        else
-            ++i;
-    }
-
-    return conv;
-}
-
-char *
-moo_filename_from_locale (const char *file)
-{
-    g_return_val_if_fail (file != NULL, NULL);
+    g_return_val_if_fail (!file.empty (), gstr ());
 #ifdef __WIN32__
-    return g_locale_to_utf8 (file, -1, NULL, NULL, NULL);
+    return gstr::wrap_new (g_locale_to_utf8 (file, -1, NULL, NULL, NULL));
 #else
-    return g_strdup (file);
+    return file;
 #endif
 }
 
-char *
-_moo_filename_to_uri (const char *file,
-                      GError    **error)
+gstrvec
+moo_filenames_from_locale (gstrvec files)
 {
-    char *uri;
-    char *freeme = NULL;
+    gstrvec ret;
+    ret.reserve(files.size());
+
+    for (gstr& file: files)
+    {
+        ret.emplace_back (moo_filename_from_locale (std::move (file)));
+
+        if (ret.back().empty())
+            ret.erase (ret.end() - 1);
+    }
+
+    return ret;
+}
+
+gstr
+_moo_filename_to_uri (const char* file,
+                      gerrp&      error)
+{
+    gstr tmp;
 
     g_return_val_if_fail (file != NULL, NULL);
 
     if (!_moo_path_is_absolute (file))
     {
-        char *cd = g_get_current_dir ();
-        file = freeme = g_build_filename (cd, file, NULL);
-        g_free (cd);
+        gstr cd = gstr::wrap_new (g_get_current_dir ());
+        tmp = gstr::wrap_new (g_build_filename (cd, file, NULL));
+        file = tmp;
     }
 
-    uri = g_filename_to_uri (file, NULL, error);
-
-    g_free (freeme);
-    return uri;
+    return gstr::wrap_new (g_filename_to_uri (file, NULL, &error));
 }
 
 
@@ -620,46 +611,46 @@ normalize_path_string (const char *path)
     return normpath;
 }
 
-static char *
+static gstr
 normalize_full_path_unix (const char *path)
 {
-    guint len;
-    char *normpath;
-
     g_return_val_if_fail (path != NULL, NULL);
 
-    normpath = normalize_path_string (path);
+    gstr normpath = gstr::wrap_new (normalize_path_string (path));
     g_return_val_if_fail (normpath != NULL, NULL);
 
-    len = strlen (normpath);
+    guint len = strlen (normpath);
     g_return_val_if_fail (len > 0, normpath);
 
-    if (len > 1 && normpath[len-1] == G_DIR_SEPARATOR)
-        normpath[len-1] = 0;
+    if (len > 1 && normpath[len - 1] == G_DIR_SEPARATOR)
+    {
+        char* p = normpath.get_mutable ();
+        p[len - 1] = 0;
+    }
 
     return normpath;
 }
 
 #endif /* !__WIN32__ */
 
-static char *
-normalize_full_path_win32 (const char *fullpath)
+static gstr
+normalize_full_path_win32 (const gstr& fullpath)
 {
     char *prefix;
     char *path;
     guint slashes;
 
-    g_return_val_if_fail (fullpath && fullpath[0], g_strdup (fullpath));
+    g_return_val_if_fail (!fullpath.empty(), fullpath);
 
-    if (fullpath[0] && fullpath[1] == ':')
+    if (fullpath[1] == ':')
     {
         prefix = g_strndup (fullpath, 3);
         prefix[2] = '\\';
 
         if (fullpath[2] == '\\')
-            path = g_strdup (fullpath + 3);
+            path = g_strdup (&fullpath[3]);
         else
-            path = g_strdup (fullpath + 2);
+            path = g_strdup (&fullpath[2]);
     }
     else
     {
@@ -747,34 +738,26 @@ normalize_full_path_win32 (const char *fullpath)
     }
 
     g_free (prefix);
-    return path;
+    return gstr::wrap_new (path);
 }
 
-static char *
-normalize_path (const char *filename)
+static gstr
+normalize_path (gstr filename)
 {
-    char *freeme = NULL;
-    char *norm_filename;
-
-    g_assert (filename && filename[0]);
+    g_return_val_if_fail (!filename.empty(), gstr());
 
     if (!_moo_path_is_absolute (filename))
     {
-        char *working_dir = g_get_current_dir ();
-        g_return_val_if_fail (working_dir != NULL, g_strdup (filename));
-        freeme = g_build_filename (working_dir, filename, NULL);
-        filename = freeme;
-        g_free (working_dir);
+        gstr working_dir = gstr::wrap_new (g_get_current_dir ());
+        g_return_val_if_fail (!working_dir.empty(), filename);
+        filename.set_new (g_build_filename (working_dir, filename, nullptr));
     }
 
 #ifdef __WIN32__
-    norm_filename = normalize_full_path_win32 (filename);
+    return normalize_full_path_win32 (filename);
 #else
-    norm_filename = normalize_full_path_unix (filename);
+    return normalize_full_path_unix (filename);
 #endif
-
-    g_free (freeme);
-    return norm_filename;
 }
 
 char *
@@ -783,7 +766,7 @@ _moo_normalize_file_path (const char *filename)
     g_return_val_if_fail (filename != NULL, NULL);
     /* empty filename is an error, but we don't want to crash here */
     g_return_val_if_fail (filename[0] != 0, g_strdup (""));
-    return normalize_path (filename);
+    return normalize_path (gstr::wrap_const (filename)).release_owned ();
 }
 
 gboolean

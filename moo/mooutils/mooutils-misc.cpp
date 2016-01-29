@@ -102,12 +102,11 @@ static gboolean
 open_uri (const char *uri,
           G_GNUC_UNUSED gboolean email)
 {
-    GError *error = NULL;
+    gerrp error;
 
     if (!gtk_show_uri (NULL, uri, gtk_get_current_event_time (), &error))
     {
         g_warning ("Unable to show '%s': %s", uri, error->message);
-        g_error_free (error);
         return FALSE;
     }
 
@@ -122,22 +121,18 @@ moo_open_email (const char *address,
                 const char *subject,
                 const char *body)
 {
-    GString *uri;
-    gboolean res;
-
     g_return_val_if_fail (address != NULL, FALSE);
-    uri = g_string_new ("mailto:");
-    g_string_append_printf (uri, "%s%s", address,
-                            subject || body ? "?" : "");
-    if (subject)
-        g_string_append_printf (uri, "subject=%s%s", subject,
-                                body ? "&" : "");
-    if (body)
-        g_string_append_printf (uri, "body=%s", body);
 
-    res = open_uri (uri->str, TRUE);
-    g_string_free (uri, TRUE);
-    return res;
+    strbuilder uri ("mailto:");
+    uri.append_printf("%s%s", address, subject || body ? "?" : "");
+
+    if (subject)
+        uri.append_printf ("subject=%s%s", subject, body ? "&" : "");
+
+    if (body)
+        uri.append_printf ("body=%s", body);
+
+    return open_uri (uri.get(), TRUE);
 }
 
 
@@ -152,18 +147,13 @@ moo_open_url (const char *url)
 gboolean
 moo_open_file (const char *path)
 {
-    char *uri;
-    gboolean ret;
-
     g_return_val_if_fail (path != NULL, FALSE);
 
-    uri = _moo_filename_to_uri (path, NULL);
-    g_return_val_if_fail (uri != NULL, FALSE);
+    gerrp error;
+    gstr uri = _moo_filename_to_uri (path, error);
+    g_return_val_if_fail (!uri.empty(), FALSE);
 
-    ret = open_uri (uri, FALSE);
-
-    g_free (uri);
-    return ret;
+    return open_uri (uri, FALSE);
 }
 
 
@@ -1375,29 +1365,23 @@ cmp_dirs (const char *dir1,
 }
 
 static void
-add_dir_list_from_env (GPtrArray  *list,
+add_dir_list_from_env (gstrvec&    list,
                        const char *var)
 {
-    char **dirs, **p;
-
 #ifdef __WIN32__
-    dirs = g_strsplit (var, ";", 0);
-    p = moo_filenames_from_locale (dirs);
-    g_strfreev (dirs);
-    dirs = p;
+    gstrvec dirs = convert (g_strsplit (var, ";", 0));
+    dirs = moo_filenames_from_locale (std::move (dirs));
 #else
-    dirs = g_strsplit (var, ":", 0);
+    gstrvec dirs = convert (g_strsplit (var, ":", 0));
 #endif
 
-    for (p = dirs; p && *p; ++p)
-        g_ptr_array_add (list, *p);
-
-    g_free (dirs);
+    for (auto &f : dirs)
+        list.emplace_back (std::move (f));
 }
 
 static void
-enumerate_data_dirs (MooDataDirType  type,
-                     GPtrArray      *dirs)
+enumerate_data_dirs (MooDataDirType type,
+                     gstrvec&       dirs)
 {
     const char *env[2];
 
@@ -1408,7 +1392,7 @@ enumerate_data_dirs (MooDataDirType  type,
         return;
     }
 
-    g_ptr_array_add (dirs, moo_get_user_data_dir ());
+    dirs.emplace_back (gstr::wrap_new (moo_get_user_data_dir ()));
 
     env[0] = g_getenv ("MOO_APP_DIRS");
     env[1] = type == MOO_DATA_SHARE ? g_getenv ("MOO_DATA_DIRS") : g_getenv ("MOO_LIB_DIRS");
@@ -1443,37 +1427,24 @@ enumerate_data_dirs (MooDataDirType  type,
     }
 }
 
-static char **
-do_get_data_dirs (MooDataDirType  type,
-                  guint          *n_dirs)
+static gstrvec
+do_get_data_dirs (MooDataDirType type)
 {
-    GPtrArray *dirs;
-    GPtrArray *all_dirs;
-    char **ptr;
-    guint i;
-
-    all_dirs = g_ptr_array_new ();
+    gstrvec all_dirs;
     enumerate_data_dirs (type, all_dirs);
-    g_ptr_array_add (all_dirs, NULL);
 
-    dirs = g_ptr_array_new ();
+    gstrvec dirs;
 
-    for (ptr = (char**) all_dirs->pdata; *ptr; ++ptr)
+    for (gstr& path: all_dirs)
     {
         gboolean found = FALSE;
-        char *path;
 
-        path = *ptr;
-
-        if (!path || !path[0])
-        {
-            g_free (path);
+        if (path.empty())
             continue;
-        }
 
-        for (i = 0; i < dirs->len; ++i)
+        for (const auto& d: dirs)
         {
-            if (cmp_dirs (path, reinterpret_cast<char*> (dirs->pdata[i])))
+            if (cmp_dirs (path, d))
             {
                 found = TRUE;
                 break;
@@ -1481,15 +1452,10 @@ do_get_data_dirs (MooDataDirType  type,
         }
 
         if (!found)
-            g_ptr_array_add (dirs, path);
-        else
-            g_free (path);
+            dirs.emplace_back (std::move (path));
     }
 
-    g_ptr_array_add (dirs, NULL);
-    *n_dirs = dirs->len - 1;
-    g_ptr_array_free (all_dirs, TRUE);
-    return (char**) g_ptr_array_free (dirs, FALSE);
+    return dirs;
 }
 
 static char **
@@ -1509,7 +1475,10 @@ moo_get_data_dirs_real (MooDataDirType   type_requested,
     {
         int type;
         for (type = 0; type < 3; ++type)
-            moo_data_dirs[type] = do_get_data_dirs (MooDataDirType (type), &n_data_dirs[type]);
+        {
+            moo_data_dirs[type] = gstrv::convert(do_get_data_dirs(MooDataDirType(type))).release();
+            n_data_dirs[type] = g_strv_length(moo_data_dirs[type]);
+        }
     }
 
     G_UNLOCK (moo_data_dirs);
@@ -1568,20 +1537,19 @@ moo_get_stuff_subdirs (const char    *subdir,
                        MooDataDirType type,
                        gboolean       include_user)
 {
-    char **data_dirs, **dirs;
+    char **dirs;
     guint n_dirs, i;
 
     g_return_val_if_fail (subdir != NULL, NULL);
 
-    data_dirs = moo_get_data_dirs_real (type, include_user, &n_dirs);
-    g_return_val_if_fail (data_dirs != NULL, NULL);
+    gstrv data_dirs = moo_get_data_dirs_real (type, include_user, &n_dirs);
+    g_return_val_if_fail (data_dirs != nullptr, NULL);
 
     dirs = g_new0 (char*, n_dirs + 1);
 
     for (i = 0; i < n_dirs; ++i)
         dirs[i] = g_build_filename (data_dirs[i], subdir, NULL);
 
-    g_strfreev (data_dirs);
     return dirs;
 }
 

@@ -15,8 +15,6 @@
 
 #pragma once
 
-#ifdef __cplusplus
-
 #include <mooglib/moo-glib.h>
 #include <moocpp/memutils.h>
 #include <moocpp/utils.h>
@@ -26,62 +24,29 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
+#include <stdarg.h>
 
 namespace moo {
 
 // Replacement for raw char*
-class strp
+class gstrp : public gbuf<char>
 {
 public:
-    strp() : m_p(nullptr) {}
-    ~strp() { ::g_free(m_p); }
+    gstrp(char* p = nullptr) : gbuf(p) {}
 
-    strp(strp&& s) : strp() { std::swap(m_p, s.m_p); }
-    strp& operator=(strp&& s) { std::swap(m_p, s.m_p); }
+    gstrp(gstrp&& s) : gbuf(std::move(s)) {}
+    gstrp& operator=(gstrp&& s) { static_cast<gbuf<char>&>(*this) = std::move(s); return *this; }
 
-    strp(const strp&) = delete;
-    strp& operator=(const strp&) = delete;
+    char*& p() { return _get(); }
+    char** pp() { return &_get(); }
 
-    char* release() { char *p = m_p; m_p = nullptr; return p; }
-    const char* get() { return m_p; }
-
-    char*& p() { return m_p; }
-    char** pp() { return &m_p; }
-    operator char*() = delete;
-    char** operator&() = delete;
-
-    operator bool() const { return m_p != nullptr; }
-    bool operator !() const { return m_p == nullptr; }
+    MOO_DISABLE_COPY_OPS(gstrp);
 
 private:
     char* m_p;
 };
 
-template<typename T>
-struct mg_get_string
-{
-    static const char* get_string(const T& obj) { return static_cast<const char*>(obj); }
-};
-
-template<typename Self, typename GetString = mg_get_string<Self>>
-class gstr_methods_mixin
-{
-public:
-    char *strdup() const { return g_strdup(c_str()); }
-
-    bool empty() const { const char* s = c_str(); return !s || !*s; }
-
-    // These must not be called, to avoid ambiguity between an empty string and null
-    operator bool() const = delete;
-    bool operator!() const = delete;
-
-private:
-    Self& self() { return static_cast<Self&>(*this); }
-    const Self& self() const { return static_cast<const Self&>(*this); }
-    const char* c_str() const { return GetString::get_string(static_cast<const Self&>(*this)); }
-};
-
-class gstr : public gstr_methods_mixin<gstr>
+class gstr
 {
 public:
     gstr();
@@ -97,7 +62,11 @@ public:
     gstr& operator=(nullptr_t) { clear(); return *this; }
 
     void set(const gstr& s) = delete;
+    void set_const(const gstr& s) = delete;
+    void set_new(const gstr& s) = delete;
     static gstr wrap(const gstr& s) = delete;
+    static gstr wrap_const(const gstr& s) = delete;
+    static gstr wrap_new(const gstr& s) = delete;
 
     void set(const char *s)                 { assign(s, mem_transfer::make_copy); }
     void set_new(char *s)                   { assign(s, mem_transfer::take_ownership); }
@@ -115,6 +84,13 @@ public:
     char* release_owned();
     void clear();
     void reset() { clear(); }
+
+    char *strdup() const { return g_strdup(*this); }
+    bool empty() const { const char* s = *this; return !s || !*s; }
+
+    // These must not be called, to avoid ambiguity between an empty string and null
+    operator bool() const = delete;
+    bool operator!() const = delete;
 
 private:
     void assign(const char* s, mem_transfer mt);
@@ -136,6 +112,45 @@ bool operator!=(const gstr& s1, const char* s2);
 bool operator!=(const char* s1, const gstr& s2);
 bool operator!=(const gstr& s1, const gstr& s2);
 
+
+class gstrv
+{
+public:
+    gstrv(char** p = nullptr) : m_p(p) {}
+    ~gstrv() { ::g_strfreev(m_p); }
+
+    void set(char** p) { if (m_p != p) { ::g_strfreev(m_p); m_p = p; } }
+    void reset(char** p = nullptr) { set(p); }
+    char** get() const { return m_p; }
+
+    static gstrv convert(gstrvec v);
+
+    gsize size() const { return m_p ? g_strv_length (m_p) : 0; }
+
+    operator char**() const = delete;
+    char*** operator&() = delete;
+
+    char** release() { char** p = m_p; m_p = nullptr; return p; }
+
+    const char* operator[] (gsize i) const { return m_p[i]; }
+
+    MOO_DISABLE_COPY_OPS(gstrv);
+
+    gstrv(gstrv&& other) : gstrv() { *this = std::move(other); }
+    gstrv& operator=(gstrv&& other) { std::swap(m_p, other.m_p); return *this; }
+
+    gstrv& operator=(char** p) { set(p); return *this; }
+
+    bool operator==(nullptr_t) const { return m_p == nullptr; }
+    bool operator!=(nullptr_t) const { return m_p != nullptr; }
+    operator bool() const { return m_p != nullptr; }
+    bool operator !() const { return m_p == nullptr; }
+
+private:
+    char** m_p;
+};
+
+gstrvec convert(gstrv v);
 
 class gerrp
 {
@@ -178,7 +193,52 @@ private:
 };
 
 
+class strbuilder
+{
+public:
+    strbuilder(const char *init = nullptr, gssize len = -1);
+    strbuilder(gsize reserve);
+    ~strbuilder();
+
+    gstrp release();
+    const char* get() const;
+
+    MOO_DISABLE_COPY_OPS(strbuilder);
+
+    void truncate(gsize len);
+    void set_size(gsize len);
+    void append(const char* val, gssize len = -1);
+    void append(char c);
+    void append(gunichar wc);
+    void prepend(const char* val, gssize len = -1);
+    void prepend(char c);
+    void prepend(gunichar wc);
+    void insert(gssize pos, const char* val, gssize len = -1);
+    void insert(gssize pos, char c);
+    void insert(gssize pos, gunichar wc);
+    void overwrite(gsize pos, const char* val, gssize len = -1);
+    void erase(gssize pos = 0, gssize len = -1);
+    void ascii_down();
+    void ascii_up();
+    void vprintf(const char* format, va_list args);
+    void printf(const char* format, ...) G_GNUC_PRINTF(1, 2);
+    void append_vprintf(const char* format, va_list args);
+    void append_printf(const char* format, ...) G_GNUC_PRINTF(1, 2);
+    void append_uri_escaped(const char* unescaped, const char* reserved_chars_allowed = nullptr, bool allow_utf8 = false);
+
+private:
+    mutable GString* m_buf;
+    mutable gstrp m_result;
+};
+
+//gstrvec convert(gstrv v);
+
 } // namespace moo
+
+void g_free(const moo::gstr&) = delete;
+void g_free(const moo::gstrp&) = delete;
+void g_free(const moo::gstrv&) = delete;
+void g_strfreev(const moo::gstrv&) = delete;
 
 namespace std {
 
@@ -189,5 +249,3 @@ struct hash<moo::gstr>
 };
 
 } // namespace std
-
-#endif // __cplusplus

@@ -5029,7 +5029,7 @@ icon_drag_begin (MooFileView    *fileview,
     }
 
     g_object_set_data_full (G_OBJECT (fileview), "moo-file-view-source-uris",
-                            uris, (GDestroyNotify) g_strfreev);
+                            uris, (GDestroyNotify) extern_g_strfreev);
     g_object_set_data_full (G_OBJECT (fileview), "moo-file-view-source-dir",
                             g_object_ref (folder), g_object_unref);
 

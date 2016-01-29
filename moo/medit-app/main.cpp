@@ -319,30 +319,24 @@ get_time_stamp (void)
 #endif
 }
 
+#ifdef __WIN32__
 static void
 push_appdir_to_path (void)
 {
-#ifdef __WIN32__
-    char *appdir;
-    const char *path;
-    char *new_path;
+    gstr appdir = moo_win32_get_app_dir ();
+    g_return_if_fail (!appdir.empty());
 
-    appdir = moo_win32_get_app_dir ();
-    g_return_if_fail (appdir != NULL);
-
-    path = g_getenv ("Path");
+    const char *path = g_getenv ("Path");
+    gstr new_path;
 
     if (path)
-        new_path = g_strdup_printf ("%s;%s", appdir, path);
+        new_path.set_new (g_strdup_printf ("%s;%s", appdir.get(), path));
     else
-        new_path = g_strdup (appdir);
+        new_path = std::move (appdir);
 
     g_setenv ("Path", new_path, TRUE);
-
-    g_free (new_path);
-    g_free (appdir);
-#endif
 }
+#endif
 
 #undef WANT_SYNAPTICS_FIX
 #if defined(GDK_WINDOWING_WIN32) && !GTK_CHECK_VERSION(2,24,8)
@@ -585,72 +579,52 @@ install_log_handlers (void)
 static void
 setup_portable_mode (void)
 {
-    char *appdir = NULL;
-    char *share = NULL;
-    char *datadir = NULL;
-    char *cachedir = NULL;
-    char *tmp = NULL;
+    gstr appdir = moo_win32_get_app_dir ();
+    g_return_if_fail (!appdir.empty());
 
-    appdir = moo_win32_get_app_dir ();
-    g_return_if_fail (appdir != NULL);
+    gstr share = gstr::wrap_new (g_build_filename (appdir, "..", "share", nullptr));
+    g_return_if_fail (!share.empty());
 
-    share = g_build_filename (appdir, "..", "share", NULL);
-    g_return_if_fail (share != NULL);
+    gstr datadir;
+    gstr cachedir;
 
     if (g_file_test (share, G_FILE_TEST_IS_DIR))
     {
-        datadir = g_build_filename (share, MEDIT_PORTABLE_DATA_DIR, NULL);
-        cachedir = g_build_filename (share, MEDIT_PORTABLE_CACHE_DIR, NULL);
+        datadir = gstr::wrap_new (g_build_filename (share, MEDIT_PORTABLE_DATA_DIR, nullptr));
+        cachedir = gstr::wrap_new (g_build_filename (share, MEDIT_PORTABLE_CACHE_DIR, nullptr));
     }
     else
     {
-        datadir = g_build_filename (appdir, MEDIT_PORTABLE_DATA_DIR, NULL);
-        cachedir = g_build_filename (appdir, MEDIT_PORTABLE_CACHE_DIR, NULL);
+        datadir = gstr::wrap_new (g_build_filename (appdir, MEDIT_PORTABLE_DATA_DIR, NULL));
+        cachedir = gstr::wrap_new (g_build_filename (appdir, MEDIT_PORTABLE_CACHE_DIR, NULL));
     }
 
-    g_return_if_fail (datadir != NULL && cachedir != NULL);
-    
-    tmp = _moo_normalize_file_path (datadir);
+    g_return_if_fail (!datadir.empty() && !cachedir.empty());
+
+    gstr tmp = gstr::wrap_new (_moo_normalize_file_path (datadir));
     moo_set_user_data_dir (tmp);
-    g_free (tmp);
-    tmp = NULL;
 
-    tmp = _moo_normalize_file_path (cachedir);
+    tmp.set_new (_moo_normalize_file_path (cachedir));
     moo_set_user_cache_dir (tmp);
-    g_free (tmp);
-    tmp = NULL;
-
-    g_free (cachedir);
-    g_free (datadir);
-    g_free (share);
-    g_free (appdir);
 }
 
 static void
 check_portable_mode (void)
 {
-    gboolean portable = FALSE;
-    char *appdir = NULL;
-    char *magic_file = NULL;
-
-    if (medit_opts.portable)
-        portable = TRUE;
+    bool portable = medit_opts.portable;
 
     if (!portable)
     {
-        appdir = moo_win32_get_app_dir ();
-        g_return_if_fail (appdir != NULL);
-        magic_file = g_build_filename (appdir, MEDIT_PORTABLE_MAGIC_FILE_NAME, NULL);
-        g_return_if_fail (magic_file != NULL);
+        gstr appdir = moo_win32_get_app_dir ();
+        g_return_if_fail (!appdir.empty());
+        gstr magic_file = gstr::wrap_new (g_build_filename (appdir, MEDIT_PORTABLE_MAGIC_FILE_NAME, nullptr));
+        g_return_if_fail (!magic_file.empty());
         if (g_file_test (magic_file, G_FILE_TEST_EXISTS))
             portable = TRUE;
     }
 
     if (portable)
         setup_portable_mode ();
-
-    g_free (magic_file);
-    g_free (appdir);
 }
 #endif // __WIN32__
 
@@ -757,7 +731,9 @@ medit_main (int argc, char *argv[])
         exit (0);
     }
 
+#ifdef __WIN32__
     push_appdir_to_path ();
+#endif
 
     gtk_init (NULL, NULL);
     gdk_threads_init ();

@@ -1619,7 +1619,7 @@ config_free (MooBigPanedConfig *config)
 
         for (pos = 0; pos < 4; pos++)
         {
-            g_slist_foreach (config->paned[pos].order, (GFunc) g_free, NULL);
+            g_slist_foreach (config->paned[pos].order, (GFunc) extern_g_free, NULL);
             g_slist_free (config->paned[pos].order);
             g_free (config->paned[pos].active);
         }
