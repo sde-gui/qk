@@ -28,13 +28,16 @@
 #include <windows.h>
 #endif
 
+#include <moocpp/gutil.h>
 #include <mooglib/moo-glib.h>
 #include <errno.h>
 #include <gtk/gtk.h>
 
+using namespace moo;
+
 #ifdef __WIN32__
 
-static char *
+static gstr
 get_system_name (void)
 {
     OSVERSIONINFOEXW ver;
@@ -43,7 +46,7 @@ get_system_name (void)
     ver.dwOSVersionInfoSize = sizeof (OSVERSIONINFOW);
 
     if (!GetVersionExW ((OSVERSIONINFOW*) &ver))
-        return g_strdup ("Windows");
+        return gstr::wrap_const ("Windows");
 
     switch (ver.dwMajorVersion)
     {
@@ -52,15 +55,15 @@ get_system_name (void)
             {
                 case 0: /* Windows NT 4.0 or Windows95 */
                     if (ver.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-                        return g_strdup ("Windows 95");
+                        return gstr::wrap_const ("Windows 95");
                     else
-                        return g_strdup ("Windows NT 4.0");
+                        return gstr::wrap_const ("Windows NT 4.0");
 
                 case 10:
-                    return g_strdup ("Windows 98");
+                    return gstr::wrap_const ("Windows 98");
 
                 case 90:
-                    return g_strdup ("Windows 98");
+                    return gstr::wrap_const ("Windows 98");
             }
 
             break;
@@ -69,11 +72,11 @@ get_system_name (void)
             switch (ver.dwMinorVersion)
             {
                 case 0:
-                    return g_strdup ("Windows 2000");
+                    return gstr::wrap_const ("Windows 2000");
                 case 1:
-                    return g_strdup ("Windows XP");
+                    return gstr::wrap_const ("Windows XP");
                 case 2:
-                    return g_strdup ("Windows Server 2003");
+                    return gstr::wrap_const ("Windows Server 2003");
             }
 
             break;
@@ -87,11 +90,11 @@ get_system_name (void)
                 switch (ver.dwMinorVersion)
                 {
                     case 0:
-                        return g_strdup ("Windows Vista");
+                        return gstr::wrap_const ("Windows Vista");
                     case 1:
-                        return g_strdup ("Windows 7");
+                        return gstr::wrap_const ("Windows 7");
                     case 2:
-                        return g_strdup ("Windows 8");
+                        return gstr::wrap_const ("Windows 8");
                 }
             }
             else
@@ -99,18 +102,18 @@ get_system_name (void)
                 switch (ver.dwMinorVersion)
                 {
                     case 0:
-                        return g_strdup ("Windows Server 2008");
+                        return gstr::wrap_const ("Windows Server 2008");
                     case 1:
-                        return g_strdup ("Windows Server 2008 R2");
+                        return gstr::wrap_const ("Windows Server 2008 R2");
                     case 2:
-                        return g_strdup ("Windows Server 2012");
+                        return gstr::wrap_const ("Windows Server 2012");
                 }
             }
 
             break;
     }
 
-    return g_strdup ("Windows");
+    return gstr::wrap_const ("Windows");
 }
 
 #elif defined(HAVE_SYS_UTSNAME_H)

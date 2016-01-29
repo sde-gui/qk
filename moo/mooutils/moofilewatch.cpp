@@ -41,7 +41,7 @@
 #include "mooutils/moolist.h"
 
 #include <memory>
-#include <moocpp/strutils.h>
+#include <moocpp/gutil.h>
 
 using namespace moo;
 
@@ -760,8 +760,8 @@ fam_thread_check_dir (FAMThread *thr,
 
         if (!FindNextChangeNotification (thr->events[idx]))
         {
-            gstr win_msg = gstr::wrap_new(g_win32_error_message(GetLastError()));
-            gstr msg = gstr::wrap_new(g_strdup_printf("Error in FindNextChangeNotification: %s", win_msg.get()));
+            gstr win_msg = g::win32_error_message(GetLastError());
+            gstr msg = gstr::printf("Error in FindNextChangeNotification: %s", win_msg.get());
 
             fam_thread_event (MOO_FILE_WATCH_ERROR_FAILED, TRUE, msg,
                               thr->watches[idx].watch_id,

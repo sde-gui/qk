@@ -15,8 +15,9 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
 #include <mooutils/mooutils-messages.h>
+#include <moocpp/strutils.h>
+#include <gtk/gtk.h>
 #include <string.h>
 
 G_BEGIN_DECLS
@@ -73,8 +74,13 @@ gboolean    moo_save_user_data_file         (const char     *basename,
                                              const char     *content,
                                              gssize          len,
                                              GError        **error);
-char       *moo_get_user_cache_dir          (void);
+
 char       *moo_get_user_cache_file         (const char     *basename);
+MOO_CPP_DECLS(
+moo::gstr   moo_get_user_cache_dir          ();
+moo::gstr   moo_get_user_cache_file         (const moo::gstr& basename);
+)
+
 gboolean    moo_save_user_cache_file        (const char     *basename,
                                              const char     *content,
                                              gssize          len,
@@ -267,10 +273,7 @@ moo_os_win32 (void)
 
 #ifdef __cplusplus
 
-#include <moocpp/strutils.h>
-#include <vector>
-
-std::vector<moo::gstr> moo_get_data_subdirs(const moo::gstr& subdir);
+moo::gstrvec moo_get_data_subdirs(const moo::gstr& subdir);
 moo::gstr moo_error_message(const moo::gerrp& err);
 
 #endif // __cplusplus

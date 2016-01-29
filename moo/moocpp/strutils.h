@@ -15,9 +15,12 @@
 
 #pragma once
 
+#include <moocpp/utils.h>
+
+#ifdef __cplusplus
+
 #include <mooglib/moo-glib.h>
 #include <moocpp/memutils.h>
-#include <moocpp/utils.h>
 #include <algorithm>
 #include <utility>
 #include <functional>
@@ -42,8 +45,8 @@ public:
 
     MOO_DISABLE_COPY_OPS(gstrp);
 
-private:
-    char* m_p;
+    bool operator==(const char* p) const { return get() == p; }
+    bool operator!=(const char* p) const { return get() != p; }
 };
 
 class gstr
@@ -52,6 +55,8 @@ public:
     gstr();
     ~gstr();
     gstr(const char* s, mem_transfer mt);
+
+    static const gstr null;
 
     gstr(const gstr&);
     gstr& operator=(const gstr&);
@@ -91,6 +96,9 @@ public:
     // These must not be called, to avoid ambiguity between an empty string and null
     operator bool() const = delete;
     bool operator!() const = delete;
+
+    static gstr printf(const char* format, ...) G_GNUC_PRINTF(1, 2);
+    static gstr vprintf(const char* format, va_list args);
 
 private:
     void assign(const char* s, mem_transfer mt);
@@ -200,7 +208,7 @@ public:
     strbuilder(gsize reserve);
     ~strbuilder();
 
-    gstrp release();
+    gstr release();
     const char* get() const;
 
     MOO_DISABLE_COPY_OPS(strbuilder);
@@ -249,3 +257,5 @@ struct hash<moo::gstr>
 };
 
 } // namespace std
+
+#endif // __cplusplus

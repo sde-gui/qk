@@ -860,7 +860,7 @@ void App::Private::write_session ()
     if (session_file.empty())
         return;
 
-    gstr filename = gstr::wrap_new (moo_get_user_cache_file (session_file));
+    gstr filename = moo_get_user_cache_file (session_file);
 
     if (!session)
     {
@@ -898,7 +898,7 @@ void App::load_session ()
             p->session_file.set_const(MOO_SESSION_XML_FILE_NAME);
     }
 
-    gstr session_file = gstr::wrap_new (moo_get_user_cache_file (p->session_file));
+    gstr session_file = moo_get_user_cache_file (p->session_file);
 
     gref_ptr<MooMarkupDoc> doc;
     gerrp error;
@@ -1071,26 +1071,23 @@ void App::Private::open_help (GtkWidget *window)
 
 void App::Private::report_bug (GtkWidget *window)
 {
-    char *url;
-    char *os;
-    char *version_escaped, *os_escaped;
-    char *message;
-    const char *prefs_val;
     gboolean do_open = TRUE;
 
     moo_prefs_create_key (ASK_OPEN_BUG_URL_KEY, MOO_PREFS_STATE, G_TYPE_STRING, NULL);
 
-    version_escaped = g_uri_escape_string (MOO_DISPLAY_VERSION, NULL, FALSE);
-    os = get_system_name ();
-    os_escaped = os ? g_uri_escape_string (os, NULL, FALSE) : g_strdup ("");
+    gstr version_escaped = g::uri_escape_string (MOO_DISPLAY_VERSION);
 
-    url = g_strdup_printf ("http://mooedit.sourceforge.net/cgi-bin/report_bug.cgi?version=%s&os=%s",
-                           version_escaped, os_escaped);
-    message = g_strdup_printf (_("The following URL will be opened:\n\n%s\n\n"
+    gstr os = get_system_name ();
+    if (!os.empty())
+        os = g::uri_escape_string (os);
+
+    gstr url = gstr::printf ("http://mooedit.sourceforge.net/cgi-bin/report_bug.cgi?version=%s&os=%s",
+                             version_escaped.get(), os.get());
+    gstr message = gstr::printf (_("The following URL will be opened:\n\n%s\n\n"
                                  "It contains medit version and your operating system name (%s)"),
-                               url, os);
+                                 url.get(), os.get());
 
-    prefs_val = moo_prefs_get_string (ASK_OPEN_BUG_URL_KEY);
+    const char *prefs_val = moo_prefs_get_string (ASK_OPEN_BUG_URL_KEY);
     if (!prefs_val || strcmp (prefs_val, url) != 0)
     {
         do_open = moo_question_dialog (_("Open URL?"), message, window, GTK_RESPONSE_OK);
@@ -1100,12 +1097,6 @@ void App::Private::report_bug (GtkWidget *window)
 
     if (do_open)
         moo_open_url (url);
-
-    g_free (message);
-    g_free (url);
-    g_free (os_escaped);
-    g_free (os);
-    g_free (version_escaped);
 }
 
 

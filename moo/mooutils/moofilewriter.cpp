@@ -21,6 +21,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moocompat.h"
 #include <mooutils/mooutils-tests.h>
+#include <moocpp/gutil.h>
 #include <stdio.h>
 #include <string.h>
 #include <mooglib/moo-glib.h>
@@ -185,7 +186,7 @@ moo_file_writer_printf_markup (MooFileWriter  *writer,
 
     va_list args;
     va_start (args, fmt);
-    gstr string = gstr::wrap_new (g_markup_vprintf_escaped (fmt, args));
+    gstr string = g::markup_vprintf_escaped (fmt, args);
     va_end (args);
 
     g_return_val_if_fail (!string.is_null(), FALSE);
@@ -240,11 +241,11 @@ moo_local_file_writer_new (g::File            file,
         mgw_errno_t err;
 
         gstr filename = file.get_path ();
-        gstr dirname = !filename.empty() ? gstr::wrap_new (g_path_get_dirname (filename)) : gstr();
+        gstr dirname = !filename.empty() ? g::path_get_dirname (filename) : gstr();
 
         if (!dirname.empty() && _moo_mkdir_with_parents (dirname, &err) != 0)
         {
-            gstr display_name = gstr::wrap_new (g_filename_display_name (dirname));
+            gstr display_name = g::filename_display_name (dirname);
             g_set_error (&error, G_FILE_ERROR,
                          mgw_file_error_from_errno (err),
                          _("Could not create folder %s: %s"),
@@ -372,7 +373,7 @@ bool MooLocalFileWriter::printf (const char* fmt, va_list args)
     if (error)
         return FALSE;
 
-    gstr text = gstr::wrap_new (g_strdup_vprintf (fmt, args));
+    gstr text = gstr::vprintf (fmt, args);
     return write (text, strlen (text));
 }
 

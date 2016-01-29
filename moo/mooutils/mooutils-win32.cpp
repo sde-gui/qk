@@ -41,6 +41,7 @@
 #include "mooutils/moowin32/mingw/fnmatch.h"
 #include <mooutils/mooutils-tests.h>
 #include <mooglib/moo-stat.h>
+#include "moocpp/gutil.h"
 
 #include <gdk/gdkwin32.h>
 #include <windows.h>
@@ -135,8 +136,8 @@ add_win32_data_dirs_for_dll (gstrvec&    list,
     if (g_str_has_suffix (dlldir, "bin") ||
         g_str_has_suffix (dlldir, "lib"))
     {
-        gstr tmp = gstr::wrap_new (g_path_get_dirname (dlldir));
-        gstr datadir = gstr::wrap_new (g_build_filename (tmp, subdir_name, nullptr));
+        gstr tmp = g::path_get_dirname (dlldir);
+        gstr datadir = g::build_filename (tmp, subdir_name);
         list.emplace_back (std::move (datadir));
     }
     else
@@ -149,7 +150,7 @@ void
 _moo_win32_add_data_dirs (moo::gstrvec& list,
                           const char*   prefix)
 {
-    gstr subdir = gstr::wrap_new (g_strdup_printf ("%s\\" MOO_PACKAGE_NAME, prefix));
+    gstr subdir = gstr::printf ("%s\\" MOO_PACKAGE_NAME, prefix);
     add_win32_data_dirs_for_dll (list, subdir, NULL);
 
     if (const char *dll_name = get_moo_dll_name ())
@@ -200,8 +201,8 @@ moo_win32_get_dll_dir (const char *dll)
 
     if (GetModuleFileNameW (handle, buf, G_N_ELEMENTS (buf)) > 0)
     {
-        gstr dllname = gstr::wrap_new(g_utf16_to_utf8(reinterpret_cast<gunichar2*> (buf), -1, NULL, NULL, NULL));
-        return gstr::wrap_new (g_path_get_dirname (dllname));
+        gstr dllname = g::utf16_to_utf8 (buf);
+        return g::path_get_dirname (dllname);
     }
 
     return gstr::wrap_const (".");

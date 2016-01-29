@@ -28,6 +28,7 @@
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooarray.h"
 #include "mooutils/moologwindow-gxml.h"
+#include "moocpp/gutil.h"
 #include <gtk/gtk.h>
 #include <mooglib/moo-glib.h>
 #ifdef HAVE_UNISTD_H
@@ -149,8 +150,7 @@ moo_open_file (const char *path)
 {
     g_return_val_if_fail (path != NULL, FALSE);
 
-    gerrp error;
-    gstr uri = _moo_filename_to_uri (path, error);
+    gstr uri = _moo_filename_to_uri (path);
     g_return_val_if_fail (!uri.empty(), FALSE);
 
     return open_uri (uri, FALSE);
@@ -890,9 +890,9 @@ private:
             message = "<corrupted string, invalid UTF8>";
 
         if (log_domain)
-            return gstr::wrap_new (g_strdup_printf ("%s: %s\n", log_domain, message));
+            return gstr::printf ("%s: %s\n", log_domain, message);
         else
-            return gstr::wrap_new (g_strdup_printf ("%s\n", message));
+            return gstr::printf ("%s\n", message);
     }
 };
 
@@ -956,9 +956,9 @@ public:
         gstr string;
 
         if (log_domain)
-            string = gstr::wrap_new (g_strdup_printf ("%s: %s\n", log_domain, message));
+            string = gstr::printf ("%s: %s\n", log_domain, message);
         else
-            string = gstr::wrap_new (g_strdup_printf ("%s\n", message));
+            string = gstr::printf ("%s\n", message);
 
         print(string);
 
@@ -1176,7 +1176,7 @@ moo_getenv_bool (const char *var)
 }
 
 
-char *
+gstr
 moo_get_user_cache_dir (void)
 {
     G_LOCK (moo_user_cache_dir);
@@ -1186,7 +1186,7 @@ moo_get_user_cache_dir (void)
 
     G_UNLOCK (moo_user_cache_dir);
 
-    return g_strdup (moo_user_cache_dir);
+    return gstr::wrap_const (moo_user_cache_dir);
 }
 
 void
@@ -1606,25 +1606,22 @@ moo_get_data_and_lib_subdirs (const char *subdir)
 }
 
 
-static char *
+static gstr
 get_user_data_file (const char *basename,
                     gboolean    cache)
 {
-    char *dir, *file;
-
     g_return_val_if_fail (basename && basename[0], NULL);
+
+    gstr dir;
 
     if (cache)
         dir = moo_get_user_cache_dir ();
     else
-        dir = moo_get_user_data_dir ();
+        dir = gstr::wrap_new (moo_get_user_data_dir ());
 
-    g_return_val_if_fail (dir != NULL, NULL);
+    g_return_val_if_fail (!dir.empty(), NULL);
 
-    file = g_build_filename (dir, basename, NULL);
-
-    g_free (dir);
-    return file;
+    return g::build_filename (dir, basename);
 }
 
 /**
@@ -1637,21 +1634,17 @@ get_user_data_file (const char *basename,
 char *
 moo_get_named_user_data_file (const char *basename)
 {
-    char *freeme = NULL;
-    char *file;
-
     g_return_val_if_fail (basename && basename[0], NULL);
+
+    gstr tmp;
 
     if (moo_app_instance_name)
     {
-        freeme = g_strdup_printf ("%s-%s", moo_app_instance_name, basename);
-        basename = freeme;
+        tmp = gstr::printf ("%s-%s", moo_app_instance_name, basename);
+        basename = tmp;
     }
 
-    file = moo_get_user_data_file (basename);
-
-    g_free (freeme);
-    return file;
+    return moo_get_user_data_file (basename);
 }
 
 /**
@@ -1664,7 +1657,7 @@ moo_get_named_user_data_file (const char *basename)
 char *
 moo_get_user_data_file (const char *basename)
 {
-    return get_user_data_file (basename, FALSE);
+    return get_user_data_file (basename, FALSE).release_owned ();
 }
 
 /**
@@ -1676,6 +1669,12 @@ moo_get_user_data_file (const char *basename)
  */
 char *
 moo_get_user_cache_file (const char *basename)
+{
+    return get_user_data_file (basename, TRUE).release_owned ();
+}
+
+moo::gstr
+moo_get_user_cache_file(const moo::gstr& basename)
 {
     return get_user_data_file (basename, TRUE);
 }

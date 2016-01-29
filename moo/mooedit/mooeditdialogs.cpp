@@ -26,6 +26,7 @@
 #include "mooedit/mootextfind-prompt-gxml.h"
 #include "mooedit/mooeditsavemult-gxml.h"
 #include "mooedit/mootryencoding-gxml.h"
+#include "moocpp/gutil.h"
 #include <gtk/gtk.h>
 #include <mooglib/moo-glib.h>
 #include <string.h>
@@ -471,7 +472,7 @@ _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
 void _moo_edit_save_error_dialog(Edit& doc, g::File file, GError *error)
 {
     gstr filename = moo_file_get_display_name (file);
-    gstr msg = gstr::wrap_new(g_strdup_printf(_("Could not save file\n%s"), filename));
+    gstr msg = gstr::printf(_("Could not save file\n%s"), filename);
 
     moo_error_dialog(msg, moo_error_message(error),
                      GTK_WIDGET(moo_edit_get_view(doc.gobj())));
@@ -524,10 +525,10 @@ bool _moo_edit_save_error_enc_dialog(Edit&       doc,
 
     gstr filename = moo_file_get_display_name (file);
 
-    auto secondary = gstr::wrap_new (
-        g_strdup_printf (_("Could not save file %s in encoding %s. "
-                           "Do you want to save it in UTF-8 encoding instead?"),
-                         filename, encoding));
+    auto secondary = gstr::printf (
+        _("Could not save file %s in encoding %s. "
+          "Do you want to save it in UTF-8 encoding instead?"),
+          filename, encoding);
 
     return moo_edit_question_dialog (&doc, _("Save file in UTF-8 encoding?"),
                                      secondary, GTK_STOCK_OK, GTK_RESPONSE_YES);
@@ -551,21 +552,21 @@ _moo_edit_try_encoding_dialog (g::File       file,
     if (!filename.empty())
     {
         /* Could not open file foo.txt */
-        gstr tmp = gstr::wrap_new(g_strdup_printf(_("Could not open file\n%s"), filename.get()));
-        msg.set_new(g_markup_printf_escaped("<b><big>%s</big></b>", tmp.get()));
+        gstr tmp = gstr::printf(_("Could not open file\n%s"), filename.get());
+        msg = g::markup_printf_escaped("<b><big>%s</big></b>", tmp.get());
     }
     else
     {
         const char *tmp = _("Could not open file");
-        msg.set_new(g_markup_printf_escaped("<b><big>%s</big></b>", tmp));
+        msg = g::markup_printf_escaped("<b><big>%s</big></b>", tmp);
     }
 
     if (encoding != NULL)
-        secondary.set_new(g_strdup_printf (_("Could not open file using character encoding %s. "
-                                             "Try to select another encoding below."), encoding));
+        secondary = gstr::printf (_("Could not open file using character encoding %s. "
+                                    "Try to select another encoding below."), encoding);
     else
-        secondary.set_new(g_strdup_printf (_("Could not detect file character encoding. "
-                                             "Try to select an encoding below.")));
+        secondary = gstr::printf (_("Could not detect file character encoding. "
+                                    "Try to select an encoding below."));
 
     xml = try_encoding_dialog_xml_new ();
     g_return_val_if_fail (xml && xml->TryEncodingDialog, MOO_EDIT_TRY_ENCODING_RESPONSE_CANCEL);

@@ -21,6 +21,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
 #include "plugins/mooplugin-builtin.h"
+#include "moocpp/gutil.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>
@@ -582,7 +583,7 @@ setup_portable_mode (void)
     gstr appdir = moo_win32_get_app_dir ();
     g_return_if_fail (!appdir.empty());
 
-    gstr share = gstr::wrap_new (g_build_filename (appdir, "..", "share", nullptr));
+    gstr share = g::build_filename (appdir, "..", "share");
     g_return_if_fail (!share.empty());
 
     gstr datadir;
@@ -590,21 +591,21 @@ setup_portable_mode (void)
 
     if (g_file_test (share, G_FILE_TEST_IS_DIR))
     {
-        datadir = gstr::wrap_new (g_build_filename (share, MEDIT_PORTABLE_DATA_DIR, nullptr));
-        cachedir = gstr::wrap_new (g_build_filename (share, MEDIT_PORTABLE_CACHE_DIR, nullptr));
+        datadir = g::build_filename (share, MEDIT_PORTABLE_DATA_DIR);
+        cachedir = g::build_filename (share, MEDIT_PORTABLE_CACHE_DIR);
     }
     else
     {
-        datadir = gstr::wrap_new (g_build_filename (appdir, MEDIT_PORTABLE_DATA_DIR, NULL));
-        cachedir = gstr::wrap_new (g_build_filename (appdir, MEDIT_PORTABLE_CACHE_DIR, NULL));
+        datadir = g::build_filename (appdir, MEDIT_PORTABLE_DATA_DIR);
+        cachedir = g::build_filename (appdir, MEDIT_PORTABLE_CACHE_DIR);
     }
 
     g_return_if_fail (!datadir.empty() && !cachedir.empty());
 
-    gstr tmp = gstr::wrap_new (_moo_normalize_file_path (datadir));
+    gstr tmp = _moo_normalize_file_path (datadir);
     moo_set_user_data_dir (tmp);
 
-    tmp.set_new (_moo_normalize_file_path (cachedir));
+    tmp = _moo_normalize_file_path (cachedir);
     moo_set_user_cache_dir (tmp);
 }
 
@@ -617,7 +618,7 @@ check_portable_mode (void)
     {
         gstr appdir = moo_win32_get_app_dir ();
         g_return_if_fail (!appdir.empty());
-        gstr magic_file = gstr::wrap_new (g_build_filename (appdir, MEDIT_PORTABLE_MAGIC_FILE_NAME, nullptr));
+        gstr magic_file = g::build_filename (appdir, MEDIT_PORTABLE_MAGIC_FILE_NAME);
         g_return_if_fail (!magic_file.empty());
         if (g_file_test (magic_file, G_FILE_TEST_EXISTS))
             portable = TRUE;

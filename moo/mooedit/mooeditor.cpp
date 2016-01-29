@@ -33,6 +33,7 @@
 #include "mooedit/mooedit-ui.h"
 #include "mooedit/medit-ui.h"
 #include "moocpp/gobjtypes.h"
+#include "moocpp/gutil.h"
 #include "mooutils/moomenuaction.h"
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
@@ -1734,7 +1735,7 @@ load_doc_session (MooEditor     *editor,
     {
         const char *filename = moo_markup_get_content (elm);
         if (filename)
-            uri = gstr::wrap_new(g_filename_to_uri(filename, NULL, NULL));
+            uri = g::filename_to_uri(filename);
     }
 
     if (uri.empty())

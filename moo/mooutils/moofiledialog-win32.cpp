@@ -17,8 +17,7 @@
 #include <mooutils/moofiledialog-win32.h>
 #include <mooutils/mooutils-dialog-win32.h>
 #include <mooutils/mooutils-macros.h>
-#include <moocpp/strutils.h>
-#include <moocpp/utils.h>
+#include <moocpp/gutil.h>
 #include <gdk/gdkwin32.h>
 #include <gtk/gtk.h>
 
@@ -319,8 +318,7 @@ public:
             CHECK(pResults->GetItemAt(i, &psi));
             CHECK(psi->GetDisplayName(SIGDN_FILESYSPATH, &pszPath));
 
-            gerrp err;
-            gstr utf8_path = gstr::wrap_new(g_utf16_to_utf8(reinterpret_cast<const gunichar2*>(pszPath), -1, nullptr, nullptr, &err));
+            gstr utf8_path = g::utf16_to_utf8(pszPath);
             filenames.emplace_back(std::move(utf8_path));
 
             CoTaskMemFree(pszPath);
@@ -383,7 +381,6 @@ public:
         LPWSTR pszPath = nullptr;
         IShellItem* psi = nullptr;
         gstr path;
-        gerrp err;
 
         CHECK(show_dialog(CLSID_FileSaveDialog, &pDlg));
 
@@ -391,7 +388,7 @@ public:
 
         CHECK(psi->GetDisplayName(SIGDN_FILESYSPATH, &pszPath));
 
-        path = gstr::wrap_new(g_utf16_to_utf8(reinterpret_cast<const gunichar2*>(pszPath), -1, nullptr, nullptr, &err));
+        path = g::utf16_to_utf8(pszPath);
 
         goto out;
 

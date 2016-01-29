@@ -15,6 +15,14 @@
 
 #pragma once
 
+#ifndef __cplusplus
+
+#define MOO_CPP_DECLS(code)
+
+#else // __cplusplus
+
+#define MOO_CPP_DECLS(code) G_END_DECLS code G_BEGIN_DECLS
+
 #include <algorithm>
 #include <memory>
 #include <list>
@@ -102,3 +110,5 @@ private:
 };
 
 } // namespace moo
+
+#endif // __cplusplus

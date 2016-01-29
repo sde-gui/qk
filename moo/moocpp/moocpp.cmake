@@ -16,6 +16,8 @@ SET(moocpp_sources
 	moocpp/gobjwrapper.h
 	moocpp/gparam.h
 	moocpp/grefptr.h
+	moocpp/gutil.h
+	moocpp/gutil.cpp
 	moocpp/memutils.h
 	moocpp/strutils.h
 	moocpp/strutils.cpp

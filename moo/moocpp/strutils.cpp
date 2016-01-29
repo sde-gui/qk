@@ -109,6 +109,8 @@ private:
     int m_ref;
 };
 
+const gstr gstr::null;
+
 gstr::gstr()
     : m_p(nullptr)
     , m_is_inline(true)
@@ -334,6 +336,20 @@ char* gstr::release_owned()
     return p;
 }
 
+gstr gstr::printf(const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    gstr result = vprintf(format, args);
+    va_end(args);
+    return result;
+}
+
+gstr gstr::vprintf(const char* format, va_list args)
+{
+    return gstr::wrap_new(g_strdup_vprintf(format, args));
+}
+
 
 gstrvec moo::convert(gstrv v)
 {
@@ -384,21 +400,21 @@ strbuilder::~strbuilder()
         g_string_free (m_buf, true);
 }
 
-gstrp strbuilder::release()
+gstr strbuilder::release()
 {
     if (m_result)
     {
-        return m_result.release();
+        return gstr::wrap_new(m_result.release());
     }
     else if (m_buf)
     {
-        gstrp p = g_string_free(m_buf, false);
+        gstr s = gstr::wrap_new(g_string_free(m_buf, false));
         m_buf = nullptr;
-        return p;
+        return s;
     }
     else
     {
-        g_return_val_if_reached(nullptr);
+        g_return_val_if_reached(gstr::null);
     }
 }
 

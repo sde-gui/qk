@@ -23,6 +23,7 @@
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooi18n.h"
 #include <mooutils/mooutils-tests.h>
+#include <moocpp/gutil.h>
 #include <mooglib/moo-stat.h>
 #include <mooglib/moo-glib.h>
 
@@ -482,9 +483,9 @@ _moo_file_error_from_errno (mgw_errno_t code)
 static gstr
 moo_filename_from_locale (const gstr& file)
 {
-    g_return_val_if_fail (!file.empty (), gstr ());
+    g_return_val_if_fail (!file.empty (), gstr::null);
 #ifdef __WIN32__
-    return gstr::wrap_new (g_locale_to_utf8 (file, -1, NULL, NULL, NULL));
+    return g::locale_to_utf8 (file);
 #else
     return file;
 #endif
@@ -508,8 +509,7 @@ moo_filenames_from_locale (gstrvec files)
 }
 
 gstr
-_moo_filename_to_uri (const char* file,
-                      gerrp&      error)
+_moo_filename_to_uri (const char* file)
 {
     gstr tmp;
 
@@ -517,18 +517,18 @@ _moo_filename_to_uri (const char* file,
 
     if (!_moo_path_is_absolute (file))
     {
-        gstr cd = gstr::wrap_new (g_get_current_dir ());
-        tmp = gstr::wrap_new (g_build_filename (cd, file, NULL));
+        gstr cd = g::get_current_dir ();
+        tmp = g::build_filename (cd, file);
         file = tmp;
     }
 
-    return gstr::wrap_new (g_filename_to_uri (file, NULL, &error));
+    return g::filename_to_uri (file);
 }
 
 
 #ifndef __WIN32__
 
-static char *
+static gstr
 normalize_path_string (const char *path)
 {
     GPtrArray *comps;
@@ -608,7 +608,7 @@ normalize_path_string (const char *path)
     g_strfreev ((char**) comps->pdata);
     g_ptr_array_free (comps, FALSE);
 
-    return normpath;
+    return gstr::wrap_new (normpath);
 }
 
 static gstr
@@ -616,11 +616,10 @@ normalize_full_path_unix (const char *path)
 {
     g_return_val_if_fail (path != NULL, NULL);
 
-    gstr normpath = gstr::wrap_new (normalize_path_string (path));
-    g_return_val_if_fail (normpath != NULL, NULL);
+    gstr normpath = normalize_path_string (path);
+    g_return_val_if_fail (!normpath.empty(), NULL);
 
     guint len = strlen (normpath);
-    g_return_val_if_fail (len > 0, normpath);
 
     if (len > 1 && normpath[len - 1] == G_DIR_SEPARATOR)
     {
@@ -741,32 +740,33 @@ normalize_full_path_win32 (const gstr& fullpath)
     return gstr::wrap_new (path);
 }
 
-static gstr
-normalize_path (gstr filename)
+gstr
+_moo_normalize_file_path (const gstr& filename)
 {
-    g_return_val_if_fail (!filename.empty(), gstr());
+    g_return_val_if_fail (!filename.empty(), gstr::null);
+
+    gstr tmp;
+    const gstr* to_normalize = &filename;
 
     if (!_moo_path_is_absolute (filename))
     {
-        gstr working_dir = gstr::wrap_new (g_get_current_dir ());
+        gstr working_dir = g::get_current_dir ();
         g_return_val_if_fail (!working_dir.empty(), filename);
-        filename.set_new (g_build_filename (working_dir, filename, nullptr));
+        tmp = g::build_filename (working_dir, filename);
+        to_normalize = &tmp;
     }
 
 #ifdef __WIN32__
-    return normalize_full_path_win32 (filename);
+    return normalize_full_path_win32 (*to_normalize);
 #else
-    return normalize_full_path_unix (filename);
+    return normalize_full_path_unix (*to_normalize);
 #endif
 }
 
 char *
 _moo_normalize_file_path (const char *filename)
 {
-    g_return_val_if_fail (filename != NULL, NULL);
-    /* empty filename is an error, but we don't want to crash here */
-    g_return_val_if_fail (filename[0] != 0, g_strdup (""));
-    return normalize_path (gstr::wrap_const (filename)).release_owned ();
+    return _moo_normalize_file_path (gstr::wrap_const (filename)).release_owned ();
 }
 
 gboolean

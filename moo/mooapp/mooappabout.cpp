@@ -226,46 +226,40 @@ void App::about_dialog (GtkWidget *parent)
 
 gstr App::get_system_info ()
 {
-    GString *text;
     char **dirs, **p;
-    char *string;
 
-    text = g_string_new (NULL);
+    strbuilder text;
 
-    g_string_append_printf (text, "%s-%s\n", MOO_APP_FULL_NAME, MOO_DISPLAY_VERSION);
+    text.append_printf ("%s-%s\n", MOO_APP_FULL_NAME, MOO_DISPLAY_VERSION);
+    text.append_printf ("OS: %s\n", get_system_name ().get ());
+    text.append_printf ("GTK version: %u.%u.%u\n",
+                        gtk_major_version,
+                        gtk_minor_version,
+                        gtk_micro_version);
+    text.append_printf ("Built with GTK %d.%d.%d\n",
+                        GTK_MAJOR_VERSION,
+                        GTK_MINOR_VERSION,
+                        GTK_MICRO_VERSION);
 
-    string = get_system_name ();
-    g_string_append_printf (text, "OS: %s\n", string);
-    g_free (string);
+    text.append_printf ("libxml2: %s\n", LIBXML_DOTTED_VERSION);
 
-    g_string_append_printf (text, "GTK version: %u.%u.%u\n",
-                            gtk_major_version,
-                            gtk_minor_version,
-                            gtk_micro_version);
-    g_string_append_printf (text, "Built with GTK %d.%d.%d\n",
-                            GTK_MAJOR_VERSION,
-                            GTK_MINOR_VERSION,
-                            GTK_MICRO_VERSION);
-
-    g_string_append_printf (text, "libxml2: %s\n", LIBXML_DOTTED_VERSION);
-
-    g_string_append (text, "Data dirs: ");
+    text.append ("Data dirs: ");
     dirs = moo_get_data_dirs ();
     for (p = dirs; p && *p; ++p)
-        g_string_append_printf (text, "%s'%s'", p == dirs ? "" : ", ", *p);
-    g_string_append (text, "\n");
+        text.append_printf ("%s'%s'", p == dirs ? "" : ", ", *p);
+    text.append ("\n");
     g_strfreev (dirs);
 
-    g_string_append (text, "Lib dirs: ");
+    text.append ("Lib dirs: ");
     dirs = moo_get_lib_dirs ();
     for (p = dirs; p && *p; ++p)
-        g_string_append_printf (text, "%s'%s'", p == dirs ? "" : ", ", *p);
-    g_string_append (text, "\n");
+        text.append_printf ("%s'%s'", p == dirs ? "" : ", ", *p);
+    text.append ("\n");
     g_strfreev (dirs);
 
 #ifdef MOO_BROKEN_GTK_THEME
-    g_string_append (text, "Broken gtk theme: yes\n");
+    text.append ("Broken gtk theme: yes\n");
 #endif
 
-    return gstr::wrap_new (g_string_free (text, FALSE));
+    return text.release();
 }

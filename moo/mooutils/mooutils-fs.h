@@ -62,16 +62,14 @@ gboolean        _moo_rename_file            (const char *path,
                                              const char *new_path,
                                              GError    **error);
 
-G_END_DECLS
-#ifdef __cplusplus
+MOO_CPP_DECLS(
 
 moo::gstrvec    moo_filenames_from_locale   (moo::gstrvec files);
 
-moo::gstr       _moo_filename_to_uri        (const char* file,
-                                             moo::gerrp& error);
+moo::gstr       _moo_filename_to_uri        (const char* file);
+moo::gstr       _moo_normalize_file_path    (const moo::gstr& filename);
 
-#endif // __cplusplus
-G_BEGIN_DECLS
+)
 
 char           *_moo_normalize_file_path    (const char *filename);
 gboolean        _moo_path_is_absolute       (const char *path);

@@ -43,7 +43,7 @@
 #include <mooglib/moo-glib.h>
 
 #include <list>
-#include <moocpp/strutils.h>
+#include <moocpp/gutil.h>
 using namespace moo;
 
 #define ENCODING_LOCALE "LOCALE"
@@ -132,8 +132,8 @@ bool _moo_edit_file_is_new(g::File file)
 
 static gboolean
 load_file_contents (g::File file,
-                    char**  data,
-                    gsize*  data_len,
+                    gstr&   data,
+                    gsize&  data_len,
                     gerrp&  error)
 {
     if (!check_regular (file, error))
@@ -149,10 +149,10 @@ load_file_contents (g::File file,
         return FALSE;
     }
 
-    return g_file_get_contents (path, data, data_len, &error);
+    return g::file_get_contents (path, data, data_len, error);
 }
 
-static char *
+static gstrp
 convert_file_data_to_utf8_with_prompt (const char*    data,
                                        gsize          data_len,
                                        g::File        file,
@@ -160,7 +160,7 @@ convert_file_data_to_utf8_with_prompt (const char*    data,
                                        gstr           cached_encoding,
                                        /*out*/ gstr&  used_encoding)
 {
-    char *text_utf8 = NULL;
+    gstrp text_utf8;
 
     used_encoding.reset();
 
@@ -205,9 +205,7 @@ _moo_edit_load_file (Edit        edit,
                      gerrp&      error)
 {
     bool result = false;
-    char *data = NULL;
-    gsize data_len = 0;
-    char *data_utf8 = NULL;
+    gstrp data_utf8;
     gstr used_encoding;
 
     moo_return_error_if_fail(!edit._is_busy());
@@ -217,12 +215,15 @@ _moo_edit_load_file (Edit        edit,
     if (!init_cached_encoding.empty())
         cached_encoding = normalize_encoding(init_cached_encoding, false);
 
-    if (!load_file_contents(file, &data, &data_len, error))
+    gstr data;
+    gsize data_len = 0;
+
+    if (!load_file_contents(file, /*out*/ data, /*out*/ data_len, error))
         goto done;
 
     data_utf8 = convert_file_data_to_utf8_with_prompt(data, data_len, file, encoding, cached_encoding, /*out*/ used_encoding);
 
-    if (data_utf8 == NULL)
+    if (data_utf8 == nullptr)
     {
         g_set_error (&error, MOO_EDIT_FILE_ERROR, MOO_EDIT_FILE_ERROR_CANCELLED, "Cancelled");
         goto done;
@@ -235,8 +236,6 @@ done:
     if (!result)
         edit._stop_file_watch();
 
-    g_free(data_utf8);
-    g_free(data);
     return result;
 }
 
@@ -553,13 +552,12 @@ static bool moo_edit_reload_local(Edit        edit,
 /* File saving
  */
 
-static char *
+static gstr
 get_contents_with_fixed_line_end (GtkTextBuffer *buffer, const char *le, gsize le_len)
 {
     GtkTextIter line_start;
-    GString *contents;
+    strbuilder contents;
 
-    contents = g_string_new (NULL);
     gtk_text_buffer_get_start_iter (buffer, &line_start);
 
     do
@@ -568,24 +566,17 @@ get_contents_with_fixed_line_end (GtkTextBuffer *buffer, const char *le, gsize l
 
         if (!gtk_text_iter_ends_line (&line_start))
         {
-            char *line;
-            gsize len;
-
             gtk_text_iter_forward_to_line_end (&line_end);
-            line = gtk_text_buffer_get_text (buffer, &line_start, &line_end, TRUE);
-            len = strlen (line);
-
-            g_string_append_len (contents, line, len);
-
-            g_free (line);
+            gstrp line = gtk_text_buffer_get_text (buffer, &line_start, &line_end, TRUE);
+            contents.append (line);
         }
 
         if (!gtk_text_iter_is_end (&line_end))
-            g_string_append_len (contents, le, le_len);
+            contents.append(le, le_len);
     }
     while (gtk_text_iter_forward_line (&line_start));
 
-    return g_string_free (contents, FALSE);
+    return contents.release();
 }
 
 static gstr get_contents(MooEdit  edit)
@@ -613,7 +604,7 @@ static gstr get_contents(MooEdit  edit)
     }
 
     buffer = moo_edit_get_buffer(&edit);
-    return gstr::wrap_new(get_contents_with_fixed_line_end(buffer, le, le_len));
+    return get_contents_with_fixed_line_end(buffer, le, le_len);
 }
 
 static bool do_write(g::File          file,
@@ -671,10 +662,9 @@ do_save_local(Edit             edit,
         gsize bytes_read;
         gsize bytes_written;
         gerrp encoding_error;
-        gstr encoded = gstr::wrap_new(g_convert(utf8_contents, -1,
-                                                encoding, "UTF-8",
-                                                &bytes_read, &bytes_written,
-                                                &encoding_error));
+        gstr encoded = g::convert(utf8_contents, -1, encoding, "UTF-8",
+                                  /*out*/ bytes_read, /*out*/ bytes_written,
+                                  encoding_error);
 
         if (!encoded.is_null())
         {
@@ -947,14 +937,14 @@ static gstr moo_file_get_display_basename(g::File file)
 
 static gstr normalize_filename_for_comparison(const char *filename)
 {
-    g_return_val_if_fail(filename != NULL, NULL);
+    g_return_val_if_fail(filename != NULL, gstr::null);
 
 #ifdef __WIN32__
     /* XXX */
-    gstr tmp = gstr::wrap_new(g_utf8_normalize(filename, -1, G_NORMALIZE_ALL_COMPOSE));
-    return gstr::wrap_new(g_utf8_strdown(tmp, -1));
+    gstr tmp = g::utf8_normalize (filename, G_NORMALIZE_ALL_COMPOSE);
+    return g::utf8_strdown (tmp);
 #else
-    return gstr::wrap_new(g_strdup(filename));
+    return gstr::wrap (filename);
 #endif
 }
 
@@ -964,7 +954,7 @@ gstr Edit::_get_normalized_name(g::File file)
 
     if (!tmp.empty())
     {
-        const auto& tmp2 = gstr::wrap_new(_moo_normalize_file_path(tmp));
+        gstr tmp2 = _moo_normalize_file_path(tmp);
         return normalize_filename_for_comparison(tmp2);
     }
     else
