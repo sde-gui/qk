@@ -208,6 +208,13 @@ public:
     static CObject* apply (const gobj_raw_ptr<CObject>& val) { return val.gobj (); }
 };
 
+template<typename T>
+class cpp_vararg_value_fixer<objp<T>>
+{
+public:
+    static T* apply (objp<T> val) { return val.release (); }
+};
+
 
 template<typename T>
 class cpp_vararg_dest_fixer;

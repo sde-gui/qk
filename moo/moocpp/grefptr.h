@@ -66,6 +66,11 @@ public:
 
     void ref(Object* obj)
     {
+        set(obj);
+    }
+
+    void set(Object* obj)
+    {
         assign(obj, ref_transfer::make_copy);
     }
 
@@ -173,6 +178,7 @@ private:
     }
 
 private:
+    // This must be a raw pointer, so that zero-initialized gref_ptr is a valid null pointer
     Object* m_p;
 };
 

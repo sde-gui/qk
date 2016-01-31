@@ -74,6 +74,8 @@ public:
         return static_cast<CppObject&>(b);
     }
 
+    CppObject* operator&() { return static_cast<CppObject*>(this); }
+
     void ref()
     {
         g_object_ref (gobj());

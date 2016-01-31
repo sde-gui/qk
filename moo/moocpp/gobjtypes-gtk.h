@@ -183,15 +183,15 @@ public:
     static gtk::ListStorePtr create (size_t n_columns, const GType* types);
 
     template<typename T>
-    void set (GtkTreeIter* iter, int column, const T& value)
+    void set (GtkTreeIter* iter, int column, T&& value)
     {
-        gtk_list_store_set (gobj (), iter, column, cpp_vararg_value_fixer<T>::apply(value), -1);
+        gtk_list_store_set (gobj (), iter, column, cpp_vararg_value_fixer<T>::apply (std::forward<T> (value)), -1);
     }
 
     template<typename T, typename... Args>
-    void set (GtkTreeIter* iter, int column, const T& value, Args&&... args)
+    void set (GtkTreeIter* iter, int column, T&& value, Args&&... args)
     {
-        set (iter, column, value);
+        set (iter, column, std::forward<T> (value));
         set (iter, std::forward<Args> (args)...);
     }
 

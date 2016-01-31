@@ -76,6 +76,7 @@ public:
     guint   signal_handlers_block_matched       (GSignalMatchType mask, guint signal_id, GQuark detail, GClosure* closure, gpointer func, gpointer data);
     guint   signal_handlers_unblock_matched     (GSignalMatchType mask, guint signal_id, GQuark detail, GClosure* closure, gpointer func, gpointer data);
     guint   signal_handlers_disconnect_matched  (GSignalMatchType mask, guint signal_id, GQuark detail, GClosure* closure, gpointer func, gpointer data);
+    guint   signal_handlers_disconnect_by_func  (GCallback c_handler, void* data);
 
     void*   get_data                (const char* key);
     void*   get_data                (GQuark q);

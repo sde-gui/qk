@@ -30,7 +30,8 @@ gstr build_filename(const char* c1, const char* c2, const char* c3 = nullptr, co
 gstr filename_to_uri(const char* filename);
 gstr filename_from_uri(const char *uri);
 gstr path_get_dirname (const char* filename);
-gstr filename_display_name(const char* filename);
+gstr path_get_basename (const char* filename);
+gstr filename_display_name (const char* filename);
 gstr filename_display_basename (const char* filename);
 bool file_get_contents (const char* path, gstr& data, gsize& data_len, gerrp& error);
 gstr uri_escape_string(const char* unescaped, const char* reserved_chars_allowed = nullptr, bool allow_utf8 = false);
