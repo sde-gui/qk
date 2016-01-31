@@ -21,7 +21,7 @@
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/mootype-macros.h"
 #include "plugins/mooplugin-builtin.h"
-#include "moocpp/gutil.h"
+#include "moocpp/moocpp.h"
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>
@@ -629,6 +629,14 @@ check_portable_mode (void)
 }
 #endif // __WIN32__
 
+namespace moo
+{
+namespace _test
+{
+void test();
+}
+}
+
 static int
 medit_main (int argc, char *argv[])
 {
@@ -753,6 +761,8 @@ medit_main (int argc, char *argv[])
         gdk_notify_startup_complete ();
         return EXIT_FAILURE;
     }
+
+    //moo::_test::test ();
 
     if (medit_opts.geometry && *medit_opts.geometry)
         moo_window_set_default_geometry (medit_opts.geometry);

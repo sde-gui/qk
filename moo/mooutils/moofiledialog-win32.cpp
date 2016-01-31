@@ -17,7 +17,7 @@
 #include <mooutils/moofiledialog-win32.h>
 #include <mooutils/mooutils-dialog-win32.h>
 #include <mooutils/mooutils-macros.h>
-#include <moocpp/gutil.h>
+#include <moocpp/moocpp.h>
 #include <gdk/gdkwin32.h>
 #include <gtk/gtk.h>
 

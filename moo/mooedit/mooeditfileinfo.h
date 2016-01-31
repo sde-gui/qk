@@ -16,7 +16,7 @@
 #pragma once
 
 #include <mooedit/mooedittypes.h>
-#include <moocpp/gobjtypes.h>
+#include <moocpp/moocpp.h>
 
 G_BEGIN_DECLS
 

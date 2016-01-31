@@ -24,7 +24,7 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooeditops.h"
 #include "mooutils/mooi18n.h"
-#include <moocpp/gobjtypes.h>
+#include <moocpp/moocpp.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <string.h>

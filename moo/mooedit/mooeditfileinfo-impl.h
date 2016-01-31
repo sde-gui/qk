@@ -1,8 +1,7 @@
 #pragma once
 
 #include "mooeditfileinfo.h"
-#include "moocpp/strutils.h"
-#include "moocpp/gobjtypes.h"
+#include "moocpp/moocpp.h"
 
 using namespace moo;
 

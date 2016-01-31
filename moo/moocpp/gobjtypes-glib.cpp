@@ -13,9 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "moocpp/gobjtypes-glib.h"
-#include "moocpp/gobjwrapper.h"
-#include "moocpp/memutils.h"
+#include "moocpp/moocpp.h"
 
 using namespace moo;
 using namespace g;

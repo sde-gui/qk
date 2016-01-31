@@ -14,9 +14,12 @@
  */
 
 #include "moofileview/moobookmarkview.h"
+#include "moocpp/moocpp.h"
 #include "marshals.h"
 #include <gtk/gtk.h>
 #include <string.h>
+
+using namespace moo;
 
 #define COLUMN_BOOKMARK MOO_BOOKMARK_MGR_COLUMN_BOOKMARK
 
@@ -207,18 +210,18 @@ _moo_bookmark_view_set_mgr (MooBookmarkView    *view,
     view->mgr = mgr;
 
     gtk_tree_view_set_model (GTK_TREE_VIEW (view),
-                             mgr ? _moo_bookmark_mgr_get_model (mgr) : NULL);
+                             mgr ? _moo_bookmark_mgr_get_model (mgr).gobj () : NULL);
 
     g_object_notify (G_OBJECT (view), "mgr");
 }
 
 
-static MooBookmark *
+objp<MooBookmark>
 get_bookmark (GtkTreeModel *model,
               GtkTreeIter  *iter)
 {
-    MooBookmark *bookmark = NULL;
-    gtk_tree_model_get (model, iter, COLUMN_BOOKMARK, &bookmark, -1);
+    objp<MooBookmark> bookmark;
+    gtk_tree_model_get (model, iter, COLUMN_BOOKMARK, bookmark.pp (), -1);
     return bookmark;
 }
 
@@ -240,7 +243,7 @@ icon_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
                 GtkTreeModel       *model,
                 GtkTreeIter        *iter)
 {
-    MooBookmark *bookmark = get_bookmark (model, iter);
+    objp<MooBookmark> bookmark = get_bookmark (model, iter);
 
     if (!bookmark)
         g_object_set (cell,
@@ -253,8 +256,6 @@ icon_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
                       "stock-id", bookmark->icon_stock_id,
                       "stock-size", GTK_ICON_SIZE_LARGE_TOOLBAR,
                       NULL);
-
-    _moo_bookmark_free (bookmark);
 }
 
 
@@ -264,7 +265,7 @@ label_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
                  GtkTreeModel       *model,
                  GtkTreeIter        *iter)
 {
-    MooBookmark *bookmark = get_bookmark (model, iter);
+    objp<MooBookmark> bookmark = get_bookmark (model, iter);
 
     if (!bookmark)
         g_object_set (cell,
@@ -274,12 +275,10 @@ label_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
         g_object_set (cell,
                       "text", bookmark->label,
                       NULL);
-
-    _moo_bookmark_free (bookmark);
 }
 
 
-static MooBookmark *
+static objp<MooBookmark>
 _moo_bookmark_view_get_bookmark (MooBookmarkView    *view,
                                  GtkTreePath        *path)
 {
@@ -304,8 +303,7 @@ row_activated (GtkTreeView        *treeview,
                GtkTreePath        *path,
                G_GNUC_UNUSED GtkTreeViewColumn *column)
 {
-    MooBookmark *bookmark;
+    objp<MooBookmark> bookmark;
     bookmark = _moo_bookmark_view_get_bookmark (MOO_BOOKMARK_VIEW (treeview), path);
-    g_signal_emit (treeview, signals[BOOKMARK_ACTIVATED], 0, bookmark);
-    _moo_bookmark_free (bookmark);
+    g_signal_emit (treeview, signals[BOOKMARK_ACTIVATED], 0, bookmark.get ());
 }

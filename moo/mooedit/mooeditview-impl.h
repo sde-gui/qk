@@ -6,7 +6,7 @@
 #ifdef __cplusplus
 
 template<>
-class moo::gobj_ref<MooEditView> : public moo::gobj_ref_parent<MooEditView>
+class moo::gobj_ref<MooEditView> : public virtual moo::gobj_ref_parent<MooEditView>
 {
 public:
     MOO_DEFINE_GOBJREF_METHODS(MooEditView);
@@ -23,8 +23,6 @@ public:
     MooEditViewPrivate&         get_priv()          { return *gobj()->priv; }
     const MooEditViewPrivate&   get_priv() const    { return *gobj()->priv; }
 };
-
-MOO_REGISTER_CUSTOM_GOBJ_TYPE(MooEditView);
 
 #endif // __cplusplus
 

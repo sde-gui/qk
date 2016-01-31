@@ -158,6 +158,21 @@ struct class_helper
     }
 };
 
+template<typename CObject>
+std::vector<gobj_ptr<CObject>> object_list_to_vector (GList* list)
+{
+    std::vector<gobj_ptr<CObject>> ret;
+
+    for (GList* l = list; l != nullptr; l = l->next)
+    {
+        CObject* o = reinterpret_cast<CObject*>(l->data);
+        g_assert (!o || G_TYPE_CHECK_INSTANCE_TYPE ((o), gobjinfo<CObject>::object_g_type ()));
+        ret.emplace_back (wrap (o));
+    }
+
+    return ret;
+}
+
 } // namespace moo
 
 #endif // __cplusplus

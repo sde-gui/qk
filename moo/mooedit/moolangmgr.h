@@ -19,10 +19,7 @@
 #include <mooedit/moolang.h>
 #include <mooedit/mootextstylescheme.h>
 #include <mooedit/mooeditconfig.h>
-
-#ifdef __cplusplus
-#include <moocpp/gobjtypes-gio.h>
-#endif // __cplusplus
+#include <moocpp/moocpp.h>
 
 G_BEGIN_DECLS
 

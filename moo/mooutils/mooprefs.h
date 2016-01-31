@@ -18,9 +18,7 @@
 #include <glib-object.h>
 #include <mooutils/moomarkup.h>
 #include <mooutils/mooutils-file.h>
-#ifdef __cplusplus
-#include <moocpp/strutils.h>
-#endif // __cplusplus
+#include <moocpp/moocpp.h>
 
 typedef enum {
     MOO_PREFS_RC,

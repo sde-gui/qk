@@ -22,13 +22,9 @@
 #pragma once
 
 #include "moofileview/moofolder.h"
-#include <gtk/gtk.h>
-
-#ifdef __cplusplus
-#include "moocpp/grefptr.h"
-#include "moocpp/gobjtypes.h"
 #include "mooutils/moofilewatch.h"
-#endif // __cplusplus
+#include <gtk/gtk.h>
+#include "moocpp/moocpp.h"
 
 G_BEGIN_DECLS
 

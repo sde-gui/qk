@@ -15,6 +15,10 @@
 
 #pragma once
 
+#ifndef __cplusplus
+#error "This is a C++ header"
+#endif
+
 #include <memory>
 #include <utility>
 #include <mooutils/mootype-macros.h>

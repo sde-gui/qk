@@ -28,7 +28,7 @@
 #include <windows.h>
 #endif
 
-#include <moocpp/gutil.h>
+#include <moocpp/moocpp.h>
 #include <mooglib/moo-glib.h>
 #include <errno.h>
 #include <gtk/gtk.h>

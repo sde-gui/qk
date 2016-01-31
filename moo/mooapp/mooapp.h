@@ -65,7 +65,7 @@ G_END_DECLS
 
 #ifdef __cplusplus
 
-#include <moocpp/gobjwrapper.h>
+#include <moocpp/moocpp.h>
 
 MOO_DEFINE_GOBJ_TYPE(MooApp, GObject, MOO_TYPE_APP)
 

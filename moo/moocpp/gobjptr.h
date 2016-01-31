@@ -66,6 +66,11 @@ public:
         assign(obj, ref_transfer::make_copy);
     }
 
+    void set(Object* obj)
+    {
+        assign(obj, ref_transfer::make_copy);
+    }
+
     void set_new(Object* obj)
     {
         assign(obj, ref_transfer::take_ownership);
@@ -96,7 +101,8 @@ public:
     operator const Object* () const { return gobj(); }
     operator ref_type*() const { return m_ref.self(); }
     ref_type* operator->() const { return m_ref.self(); }
-    ref_type operator*() const { return m_ref; }
+    ref_type& operator*() { return m_ref; }
+    const ref_type& operator*() const { return m_ref; }
 
     // These are nasty. Because of ref_type* conversion this can be converted to void*,
     // which in turn can be passed to g_object_ref or g_free, etc.
@@ -104,6 +110,7 @@ public:
     operator const void*() const = delete;
 
     Object* gobj() const { return m_ref.gobj(); }
+    Object** pp() { return m_ref._pp(); }
 
     template<typename Super>
     Super* gobj() const
@@ -113,6 +120,9 @@ public:
 
     template<typename Super>
     operator const Super* () const { return gobj<Super>(); }
+
+    template<typename Super>
+    operator gobj_ptr<Super> () const { return gobj_ptr<Super>::wrap (gobj<Super> ()); }
 
     operator bool() const { return gobj() != nullptr; }
     bool operator!() const { return gobj() == nullptr; }
@@ -198,6 +208,12 @@ inline gobj_ptr<Object> wrap(const gobj_raw_ptr<Object>& obj)
     return gobj_ptr<Object>::wrap(obj);
 }
 
+template<typename Object>
+inline gobj_ref<Object> wrap (Object& obj)
+{
+    return *wrap (&obj);
+}
+
 template<typename T, typename ...Args>
 inline gobj_ptr<T> create_gobj(GType obj_type, Args&& ...args)
 {
@@ -216,6 +232,12 @@ inline gobj_ptr<T> create_gobj()
 {
     // object_g_type() will produce a compiler error if the type wasn't registered
     return create_gobj<T>(gobjinfo<T>::object_g_type(), nullptr);
+}
+
+template<typename Object, typename Super>
+Object* up_cast (Super* o)
+{
+    return G_TYPE_CHECK_INSTANCE_CAST ((o), gobjinfo<Object>::object_g_type(), Object);
 }
 
 } // namespace moo

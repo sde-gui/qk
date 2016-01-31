@@ -30,16 +30,13 @@
     using CppObject##Ptr        = ::moo::gobj_ptr<CObject>;                 \
     using CppObject##RawPtr     = ::moo::gobj_raw_ptr<CObject>;             \
 
+#define MOO_GIFACE_TYPEDEFS(CppObject, CObject)                             \
+    MOO_GOBJ_TYPEDEFS(CppObject, CObject)
 
 #define MOO_DECLARE_CUSTOM_GOBJ_TYPE(CObject)                               \
 namespace moo {                                                             \
 template<> class gobj_ref<CObject>;                                         \
 }
-
-#define MOO_REGISTER_CUSTOM_GOBJ_TYPE(CObject)                              \
-    static_assert(sizeof(moo::gobj_ref<CObject>) == sizeof(void*),          \
-                  "gobj_ref must be bit-compatible with a raw pointer, "    \
-                      "otherwise operator& will break");                    \
 
 MOO_DEFINE_FLAGS(GSignalFlags);
 MOO_DEFINE_FLAGS(GConnectFlags);

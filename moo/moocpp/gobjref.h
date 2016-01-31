@@ -63,6 +63,12 @@ public:
 protected:
     GObject* raw_gobj() const { return const_cast<GObject*>(m_gobj); }
 
+    void** _pp ()
+    {
+        g_return_val_if_fail(m_gobj == nullptr, nullptr);
+        return reinterpret_cast<void**>(&m_gobj);
+    }
+
 private:
     template<typename Object> friend class gobj_ptr;
     template<typename Object> friend class gobj_raw_ptr;
@@ -72,12 +78,8 @@ private:
     void _set_gobj(gpointer gobj) { m_gobj = reinterpret_cast<GObject*>(gobj); }
 
 private:
-    // MUST be bit-compatible with a raw pointer
     GObject* m_gobj;
 };
-
-static_assert(sizeof(gobj_ref_base) == sizeof(void*),
-              "gobj_ref must be bit-compatible with a raw pointer, otherwise operator& will break");
 
 template<>
 class gobj_ref<GObject>; // : public gobj_ref_base
@@ -92,6 +94,11 @@ protected:                                                                      
     friend class gobj_raw_ptr<object_type>;                                             \
                                                                                         \
     gobj_ref() {}                                                                       \
+                                                                                        \
+    object_type** _pp ()                                                                \
+    {                                                                                   \
+        return reinterpret_cast<object_type**>(gobj_ref_base::_pp());                   \
+    }                                                                                   \
                                                                                         \
 public:                                                                                 \
     gobj_ref(object_type& gobj)                                                         \
@@ -152,7 +159,7 @@ using gobj_ref_parent = gobj_ref<gobj_parent_type<Object>>;
 // Generic implementation, falls back to the parent type's gobj_ref implementation
 // if that's known, or to GObject's one, coming from the generic gobjinfo.
 template<typename Object>
-class gobj_ref : public gobj_ref_parent<Object>
+class gobj_ref : public virtual gobj_ref_parent<Object>
 {
 public:
     MOO_DEFINE_GOBJREF_METHODS(Object)

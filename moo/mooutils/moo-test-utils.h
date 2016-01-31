@@ -92,7 +92,7 @@ G_END_DECLS
 
 #ifdef __cplusplus
 
-#include <moocpp/utils.h>
+#include <moocpp/moocpp.h>
 
 MOO_DEFINE_FLAGS(MooTestOptions);
 

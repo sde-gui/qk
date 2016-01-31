@@ -24,7 +24,7 @@
 #include "mooutils/mooprefs.h"
 #include "marshals.h"
 #include "mooutils/moo-mime.h"
-#include "moocpp/gobjtypes.h"
+#include "moocpp/moocpp.h"
 #include <string.h>
 
 using namespace moo;

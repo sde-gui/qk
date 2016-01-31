@@ -37,7 +37,7 @@
 #include <gtk/gtk.h>
 
 #include "mooutils-misc.h"
-#include "moocpp/gobjtypes.h"
+#include "moocpp/moocpp.h"
 #include "moocompat.h"
 
 

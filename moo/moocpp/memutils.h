@@ -15,6 +15,10 @@
 
 #pragma once
 
+#ifndef __cplusplus
+#error "This is a C++ file"
+#endif
+
 #include <algorithm>
 #include <memory>
 #include <vector>
@@ -47,6 +51,7 @@ public:
     operator const T*() const { return m_p; }
     T* get() const { return m_p; }
     T*& _get() { return m_p; }
+    T* operator->() const { return m_p; }
 
     operator T*() const = delete;
     T** operator&() = delete;
@@ -113,7 +118,51 @@ private:
         return *this;                                                           \
     }
 
+
+template<typename T>
+class objp
+{
+public:
+    objp (T* p = nullptr) : m_p(p) {}
+    ~objp () { delete m_p; }
+
+    template<class... Args>
+    static objp make (Args&&... args)
+    {
+        return objp (new T (std::forward<Args> (args)...));
+    }
+
+    objp (objp&& other) : objp () { *this = std::move (other); }
+    objp& operator=(objp&& other) { std::swap (m_p, other.m_p); return *this; }
+
+    T* get() const { return m_p; }
+    T** pp () { g_return_val_if_fail (m_p == nullptr, nullptr); return &m_p; }
+    T* operator->() const { return m_p; }
+    operator const T*() const { return m_p; }
+
+    operator T*() const = delete;
+    T** operator&() = delete;
+
+    MOO_DISABLE_COPY_OPS (objp);
+
+    void set (T* p) { if (m_p != p) { delete m_p; m_p = p; } }
+    void reset (T* p = nullptr) { set (p); }
+    T* release () { T* p = m_p; m_p = nullptr; return p; }
+
+    bool operator==(const T* p) const { return m_p == p; }
+    bool operator!=(const T* p) const { return m_p != p; }
+
+    operator bool () const { return m_p != nullptr; }
+    bool operator !() const { return m_p == nullptr; }
+
+private:
+    T* m_p;
+};
+
+
 } // namespace moo
 
 template<typename T>
 void g_free(const moo::gbuf<T>&) = delete;
+template<typename T>
+void g_free (const moo::objp<T>&) = delete;

@@ -19,6 +19,7 @@
 
 #include <glib-object.h>
 #include <type_traits>
+#include <moocpp/strutils.h>
 
 namespace moo {
 
@@ -101,6 +102,24 @@ namespace moo {                                                                 
         }                                                                                       \
     };                                                                                          \
 }                                                                                               \
+
+#define MOO_DEFINE_GIFACE_TYPE(Iface, g_type)                                                   \
+    MOO_DEFINE_GOBJ_TYPE(Iface, GObject, g_type)
+
+#define MOO_GOBJ_IMPLEMENTS_IFACE(Object, Iface)                                                \
+namespace moo {                                                                                 \
+                                                                                                \
+    template<>                                                                                  \
+    struct gobj_is_subclass<Object, Iface>                                                      \
+    {                                                                                           \
+        static const bool value = true;                                                         \
+        static Iface* down_cast(Object *o)                                                      \
+        {                                                                                       \
+            return reinterpret_cast<Iface*>(o);                                                 \
+        }                                                                                       \
+    };                                                                                          \
+}                                                                                               \
+
 
 #define MOO_DEFINE_NON_GOBJ_TYPE(Object)                                                        \
 namespace moo {                                                                                 \

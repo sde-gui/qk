@@ -55,6 +55,7 @@ public:
     gstr();
     ~gstr();
     gstr(const char* s, mem_transfer mt);
+    gstr(gstrp&& s);
 
     static const gstr null;
 
@@ -62,11 +63,13 @@ public:
     gstr& operator=(const gstr&);
     gstr(gstr&&);
     gstr& operator=(gstr&&);
+    gstr& operator=(gstrp&&);
 
     gstr(nullptr_t) : gstr() {}
     gstr& operator=(nullptr_t) { clear(); return *this; }
 
-    void set(const gstr& s) = delete;
+    gstr (const gstr&, mem_transfer) = delete;
+    void set (const gstr& s) = delete;
     void set_const(const gstr& s) = delete;
     void set_new(const gstr& s) = delete;
     static gstr wrap(const gstr& s) = delete;
@@ -109,9 +112,16 @@ private:
     bool m_is_const;
 };
 
+
+inline gstr wrap (const char *s) { return gstr::wrap (s); }
+inline gstr wrap_new (char *s) { return gstr::wrap_new (s); }
+inline gstr wrap_const (const char *s) { return gstr::wrap_const (s); }
+
+
 using gstrvec = std::vector<gstr>;
 using gstrset = std::unordered_set<gstr>;
 using gstrmap = std::unordered_map<gstr, gstr>;
+
 
 bool operator==(const gstr& s1, const char* s2);
 bool operator==(const char* s1, const gstr& s2);

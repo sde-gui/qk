@@ -43,7 +43,7 @@ G_END_DECLS
 
 #ifdef __cplusplus
 
-#include <moocpp/gobjtypes.h>
+#include <moocpp/moocpp.h>
 
 MOO_DEFINE_GOBJ_TYPE(MooTextView, GtkTextView, moo_text_view_get_type())
 MOO_DEFINE_GOBJ_TYPE(MooEditTab, GtkWidget, moo_edit_tab_get_type());

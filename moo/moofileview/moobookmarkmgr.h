@@ -17,10 +17,17 @@
 
 #include <gtk/gtk.h>
 #include <mooutils/moouixml.h>
-#include <moocpp/gobjtypes.h>
+#include <moocpp/moocpp.h>
 
 G_BEGIN_DECLS
 
+typedef struct MooBookmarkMgr MooBookmarkMgr;
+
+MooBookmarkMgr *_moo_bookmark_mgr_new (void);
+
+G_END_DECLS
+
+#ifdef __cplusplus
 
 #define MOO_TYPE_BOOKMARK_MGR                (_moo_bookmark_mgr_get_type ())
 #define MOO_BOOKMARK_MGR(object)             (G_TYPE_CHECK_INSTANCE_CAST ((object), MOO_TYPE_BOOKMARK_MGR, MooBookmarkMgr))
@@ -37,26 +44,34 @@ typedef enum {
     MOO_BOOKMARK_MGR_NUM_COLUMNS
 } MooBookmarkMgrModelColumn;
 
-typedef struct _MooBookmark             MooBookmark;
-typedef struct _MooBookmarkMgr          MooBookmarkMgr;
-typedef struct _MooBookmarkMgrPrivate   MooBookmarkMgrPrivate;
-typedef struct _MooBookmarkMgrClass     MooBookmarkMgrClass;
+struct MooBookmark
+{
+    MooBookmark (const char* label,
+                 const char* path,
+                 const char* icon);
+    ~MooBookmark ();
 
-struct _MooBookmark {
-    char *path;
-    char *display_path;
-    char *label;
-    char *icon_stock_id;
-    GdkPixbuf *pixbuf;
+    MooBookmark (const MooBookmark&) = default;
+    MooBookmark& operator=(const MooBookmark&) = delete;
+    MooBookmark (MooBookmark&&);
+    MooBookmark& operator=(MooBookmark&&);
+
+    moo::gstr path;
+    moo::gstr display_path;
+    moo::gstr label;
+    moo::gstr icon_stock_id;
+    moo::gobj_ptr<GdkPixbuf> pixbuf;
 };
 
-struct _MooBookmarkMgr
+struct MooBookmarkMgrPrivate;
+
+struct MooBookmarkMgr
 {
     GObject parent;
     MooBookmarkMgrPrivate *priv;
 };
 
-struct _MooBookmarkMgrClass
+struct MooBookmarkMgrClass
 {
     GObjectClass parent_class;
 
@@ -71,16 +86,10 @@ struct _MooBookmarkMgrClass
 GType           _moo_bookmark_get_type      (void) G_GNUC_CONST;
 GType           _moo_bookmark_mgr_get_type  (void) G_GNUC_CONST;
 
-MooBookmark    *_moo_bookmark_new           (const char     *name,
-                                             const char     *path,
-                                             const char     *icon);
-void            _moo_bookmark_free          (MooBookmark    *bookmark);
-
-MooBookmarkMgr *_moo_bookmark_mgr_new       (void);
-GtkTreeModel   *_moo_bookmark_mgr_get_model (MooBookmarkMgr *mgr);
+moo::gtk::TreeModelPtr _moo_bookmark_mgr_get_model (MooBookmarkMgr *mgr);
 
 void            _moo_bookmark_mgr_add       (MooBookmarkMgr *mgr,
-                                             MooBookmark    *bookmark);
+                                             moo::objp<MooBookmark> bookmark);
 
 GtkWidget      *_moo_bookmark_mgr_get_editor(MooBookmarkMgr *mgr);
 
@@ -92,9 +101,6 @@ void            _moo_bookmark_mgr_add_user  (MooBookmarkMgr *mgr,
 void            _moo_bookmark_mgr_remove_user(MooBookmarkMgr *mgr,
                                              gpointer        user); /* GObject* */
 
+MOO_DEFINE_GOBJ_TYPE (MooBookmarkMgr, GObject, MOO_TYPE_BOOKMARK_MGR)
 
-G_END_DECLS
-
-#ifdef __cplusplus
-MOO_DEFINE_GOBJ_TYPE(MooBookmarkMgr, GObject, MOO_TYPE_BOOKMARK_MGR)
 #endif // __cplusplus

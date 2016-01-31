@@ -52,7 +52,7 @@ MOO_GOBJ_TYPEDEFS(FileIOStream, GFileIOStream);
 } // namespace g
 
 template<>
-class gobj_ref<GFile> : public gobj_ref_parent<GFile>
+class gobj_ref<GFile> : public virtual gobj_ref_parent<GFile>
 {
 public:
     MOO_DEFINE_GOBJREF_METHODS(GFile)
@@ -161,7 +161,7 @@ public:
 
 
 template<>
-class gobj_ref<GOutputStream> : public gobj_ref_parent<GOutputStream>
+class gobj_ref<GOutputStream> : public virtual gobj_ref_parent<GOutputStream>
 {
 public:
     MOO_DEFINE_GOBJREF_METHODS(GOutputStream)
@@ -221,8 +221,5 @@ public:
 
 
 } // namespace moo
-
-MOO_REGISTER_CUSTOM_GOBJ_TYPE(GFile)
-MOO_REGISTER_CUSTOM_GOBJ_TYPE(GOutputStream)
 
 #endif // __cplusplus

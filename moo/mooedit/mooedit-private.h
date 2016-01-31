@@ -19,9 +19,7 @@
 #include "mooedit/mooeditprogress.h"
 #include "mooedit/mooeditbookmark.h"
 #include "mooedit/mooeditview-impl.h"
-#include "moocpp/strutils.h"
-#include "moocpp/utils.h"
-#include "moocpp/gobjtypes.h"
+#include "moocpp/moocpp.h"
 
 struct MooEditPrivate {
     MooEditPrivate();

@@ -19,7 +19,7 @@
 #include "moofileview/moofile-private.h"
 #include "moofileview/moofilesystem.h"
 #include "mooutils/moofilewatch.h"
-#include "moocpp/gobjptr.h"
+#include "moocpp/moocpp.h"
 
 using namespace moo;
 

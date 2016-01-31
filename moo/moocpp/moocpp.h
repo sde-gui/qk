@@ -1,5 +1,5 @@
 /*
- *   moofiledialog-win32.h
+ *   moocpp/moocpp.h
  *
  *   Copyright (C) 2004-2016 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
@@ -15,8 +15,21 @@
 
 #pragma once
 
-#include <moocpp/moocpp.h>
-#include <windows.h>
+#include <gtk/gtk.h>
+#include <mooglib/moo-glib.h>
 
-moo::gstrvec moo_show_win32_file_open_dialog(HWND hwnd_parent, const moo::gstr& start_folder);
-moo::gstr moo_show_win32_file_save_as_dialog(HWND hwnd_parent, const moo::gstr& start_folder, const moo::gstr& basename);
+#ifdef __cplusplus
+
+#include <moocpp/gboxed.h>
+#include <moocpp/gparam.h>
+#include <moocpp/memutils.h>
+#include <moocpp/gobjtypes.h>
+
+#endif // __cplusplus
+
+#include <moocpp/grefptr.h>
+#include <moocpp/gobjwrapper.h>
+#include <moocpp/gutil.h>
+#include <moocpp/strutils.h>
+#include <moocpp/utils.h>
+#include <moocpp/gobjectutils.h>

@@ -22,12 +22,11 @@
 #include "mooutils/moohistorymgr.h"
 
 #ifdef __cplusplus
-#include <moocpp/strutils.h>
-#include <moocpp/gobjtypes-gio.h>
+#include <moocpp/moocpp.h>
 #include <vector>
 
 template<>
-class moo::gobj_ref<MooEdit> : public moo::gobj_ref_parent<MooEdit>
+class moo::gobj_ref<MooEdit> : public virtual moo::gobj_ref_parent<MooEdit>
 {
 public:
     MOO_DEFINE_GOBJREF_METHODS(MooEdit)
@@ -78,8 +77,6 @@ public:
     MooEditConfig*          get_config                          () const                { return gobj()->config; }
     void                    set_config                          (MooEditConfig* cfg)    { gobj()->config = cfg; }
 };
-
-MOO_REGISTER_CUSTOM_GOBJ_TYPE(MooEdit);
 
 #endif // __cplusplus
 

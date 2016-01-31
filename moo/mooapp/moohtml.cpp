@@ -18,7 +18,7 @@
 #include "marshals.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
-#include "moocpp/gobjtypes.h"
+#include "moocpp/moocpp.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <mooglib/moo-glib.h>
@@ -27,7 +27,7 @@
 
 #include <libxml/HTMLtree.h>
 
-#include <moocpp/utils.h>
+#include <moocpp/moocpp.h>
 
 #define DEFAULT_PAR_SPACING 6
 

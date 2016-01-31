@@ -216,6 +216,17 @@ gstr& gstr::operator=(gstr&& other)
     return *this;
 }
 
+gstr::gstr(gstrp&& s)
+    : gstr(s.release(), mem_transfer::take_ownership)
+{
+}
+
+gstr& gstr::operator= (gstrp&& s)
+{
+    set_new (s.release ());
+    return *this;
+}
+
 gstr::~gstr()
 {
     clear();

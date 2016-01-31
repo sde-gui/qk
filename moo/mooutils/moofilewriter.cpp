@@ -21,7 +21,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/moocompat.h"
 #include <mooutils/mooutils-tests.h>
-#include <moocpp/gutil.h>
+#include <moocpp/moocpp.h>
 #include <stdio.h>
 #include <string.h>
 #include <mooglib/moo-glib.h>

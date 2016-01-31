@@ -16,7 +16,7 @@
 #pragma once
 
 #include <mooutils/moofilewriter.h>
-#include <moocpp/grefptr.h>
+#include <moocpp/moocpp.h>
 
 G_BEGIN_DECLS
 

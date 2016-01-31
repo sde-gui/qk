@@ -42,12 +42,13 @@
 #include "mooutils/mooatom.h"
 #include "mooutils/moolist.h"
 #include "mooutils/moocompat.h"
-#include "moocpp/gobjectutils.h"
+#include "moocpp/moocpp.h"
 #include "marshals.h"
 #include "mooutils/mooi18n.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
+using namespace moo;
 
 #ifndef __WIN32__
 #define TYPEAHEAD_CASE_SENSITIVE_DEFAULT    FALSE
@@ -3725,21 +3726,13 @@ view_files (MooFileView *fileview)
 static void
 add_bookmark (MooFileView *fileview)
 {
-    const char *path;
-    char *display_path;
-    MooBookmark *bookmark;
-
     g_return_if_fail (fileview->priv->current_dir != NULL);
 
-    path = _moo_folder_get_path (fileview->priv->current_dir);
-    display_path = g_filename_display_name (path);
-    bookmark = _moo_bookmark_new (display_path, path, MOO_STOCK_FOLDER);
+    const char *path = _moo_folder_get_path (fileview->priv->current_dir);
+    gstr display_path = g::filename_display_name (path);
 
-    _moo_bookmark_mgr_add (fileview->priv->bookmark_mgr,
-                           bookmark);
-
-    _moo_bookmark_free (bookmark);
-    g_free (display_path);
+    auto bookmark = objp<MooBookmark>::make (display_path, path, MOO_STOCK_FOLDER);
+    _moo_bookmark_mgr_add (fileview->priv->bookmark_mgr, std::move(bookmark));
 }
 
 
@@ -3784,7 +3777,7 @@ static void
 bookmark_activated (MooFileView    *fileview,
                     MooBookmark    *bookmark)
 {
-    g_return_if_fail (bookmark != NULL && bookmark->path != NULL);
+    g_return_if_fail (bookmark != nullptr && !bookmark->path.empty());
     moo_file_view_chdir_path (fileview, bookmark->path, NULL);
 }
 

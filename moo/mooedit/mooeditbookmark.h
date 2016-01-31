@@ -18,10 +18,7 @@
 
 #include <mooedit/mooedit.h>
 #include <mooedit/moolinemark.h>
-
-#ifdef __cplusplus
-#include <moocpp/gobjtypes.h>
-#endif
+#include <moocpp/moocpp.h>
 
 G_BEGIN_DECLS
 

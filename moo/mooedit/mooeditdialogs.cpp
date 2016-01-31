@@ -26,7 +26,7 @@
 #include "mooedit/mootextfind-prompt-gxml.h"
 #include "mooedit/mooeditsavemult-gxml.h"
 #include "mooedit/mootryencoding-gxml.h"
-#include "moocpp/gutil.h"
+#include "moocpp/moocpp.h"
 #include <gtk/gtk.h>
 #include <mooglib/moo-glib.h>
 #include <string.h>
@@ -225,26 +225,11 @@ enum {
     NUM_COLUMNS
 };
 
-static void
-name_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
-                GtkCellRenderer   *cell,
-                GtkTreeModel      *model,
-                GtkTreeIter       *iter)
-{
-    MooEdit *doc = NULL;
-
-    gtk_tree_model_get (model, iter, COLUMN_EDIT, &doc, -1);
-    g_return_if_fail (MOO_IS_EDIT (doc));
-
-    g_object_set (cell, "text", moo_edit_get_display_basename (doc), NULL);
-    g_object_unref (doc);
-}
-
 
 static void
-save_toggled (GtkCellRendererToggle *cell,
+save_toggled (GtkCellRendererToggle *pcell,
               gchar                 *path,
-              GtkTreeModel          *model)
+              GtkListStore          *pmodel)
 {
     GtkTreePath *tree_path;
     GtkTreeIter iter;
@@ -253,22 +238,25 @@ save_toggled (GtkCellRendererToggle *cell,
     gboolean sensitive;
     GtkDialog *dialog;
 
-    g_return_if_fail (GTK_IS_LIST_STORE (model));
+    g_return_if_fail (GTK_IS_LIST_STORE (pmodel));
+
+    gtk::ListStore model (*pmodel);
+    gtk::CellRendererToggle cell (*pcell);
 
     tree_path = gtk_tree_path_new_from_string (path);
     g_return_if_fail (tree_path != NULL);
 
-    gtk_tree_model_get_iter (model, &iter, tree_path);
-    gtk_tree_model_get (model, &iter, COLUMN_SAVE, &save, -1);
+    model.get_iter (&iter, tree_path);
+    model.get (&iter, COLUMN_SAVE, &save);
 
-    active = gtk_cell_renderer_toggle_get_active (cell);
+    active = cell.get_active ();
 
     if (active == save)
-        gtk_list_store_set (GTK_LIST_STORE (model), &iter, COLUMN_SAVE, !save, -1);
+        model.set (&iter, COLUMN_SAVE, !save, -1);
 
     gtk_tree_path_free (tree_path);
 
-    dialog = GTK_DIALOG (g_object_get_data (G_OBJECT (model), "moo-dialog"));
+    dialog = GTK_DIALOG (model.get_data ("moo-dialog"));
     g_return_if_fail (dialog != NULL);
 
     if (!save)
@@ -278,64 +266,66 @@ save_toggled (GtkCellRendererToggle *cell,
     else
     {
         sensitive = FALSE;
-        gtk_tree_model_get_iter_first (model, &iter);
+        model.get_iter_first (&iter);
 
         do
         {
-            gtk_tree_model_get (model, &iter, COLUMN_SAVE, &save, -1);
+            model.get (&iter, COLUMN_SAVE, &save, -1);
             if (save)
             {
                 sensitive = TRUE;
                 break;
             }
         }
-        while (gtk_tree_model_iter_next (model, &iter));
+        while (model.iter_next (&iter));
     }
 
     gtk_dialog_set_response_sensitive (dialog, GTK_RESPONSE_YES, sensitive);
 }
 
 static void
-files_treeview_init (GtkTreeView *treeview, GtkWidget *dialog, MooEditArray *docs)
+files_treeview_init (gtk::TreeView treeview, GtkWidget *dialog, MooEditArray *docs)
 {
-    GtkListStore *store;
-    GtkTreeViewColumn *column;
-    GtkCellRenderer *cell;
-    guint i;
+    gtk::ListStorePtr store = gtk::ListStore::create ({ G_TYPE_BOOLEAN, MOO_TYPE_EDIT });
 
-    store = gtk_list_store_new (NUM_COLUMNS, G_TYPE_BOOLEAN, MOO_TYPE_EDIT);
-
-    for (i = 0; i < docs->n_elms; ++i)
+    for (guint i = 0; i < docs->n_elms; ++i)
     {
         GtkTreeIter iter;
-        gtk_list_store_append (store, &iter);
-        gtk_list_store_set (store, &iter,
-                            COLUMN_SAVE, TRUE,
-                            COLUMN_EDIT, docs->elms[i],
-                            -1);
+        store->append (&iter);
+        store->set (&iter,
+                    COLUMN_SAVE, TRUE,
+                    COLUMN_EDIT, docs->elms[i],
+                    -1);
     }
 
-    gtk_tree_view_set_model (treeview, GTK_TREE_MODEL (store));
+    treeview.set_model (store);
 
-    column = gtk_tree_view_column_new ();
-    gtk_tree_view_append_column (treeview, column);
-    cell = gtk_cell_renderer_toggle_new ();
-    gtk_tree_view_column_pack_start (column, cell, FALSE);
-    g_object_set (cell, "activatable", TRUE, NULL);
-    gtk_tree_view_column_add_attribute (column, cell, "active", COLUMN_SAVE);
-    g_signal_connect (cell, "toggled", G_CALLBACK (save_toggled), store);
+    gtk::TreeViewColumnPtr column = gtk::TreeViewColumn::create ();
+    treeview.append_column (*column);
+    gtk::CellRendererPtr cell = gtk::CellRendererToggle::create ();
+    column->pack_start (*cell, FALSE);
+    cell->set ("activatable", TRUE, nullptr);
+    column->add_attribute (*cell, "active", COLUMN_SAVE);
+    cell->connect ("toggled", G_CALLBACK (save_toggled), store.gobj());
 
-    column = gtk_tree_view_column_new ();
-    gtk_tree_view_append_column (treeview, column);
-    cell = gtk_cell_renderer_text_new ();
-    gtk_tree_view_column_pack_start (column, cell, TRUE);
-    gtk_tree_view_column_set_cell_data_func (column, cell,
-                                             (GtkTreeCellDataFunc) name_data_func,
-                                             NULL, NULL);
+    column = gtk::TreeViewColumn::create ();
+    treeview.append_column (*column);
+    cell = gtk::CellRendererText::create ();
+    column->pack_start (*cell, TRUE);
 
-    g_object_set_data (G_OBJECT (store), "moo-dialog", dialog);
+    column->set_cell_data_func (*cell,
+        [] (gtk::TreeViewColumn,
+            gtk::CellRenderer cell,
+            gtk::TreeModel model,
+            GtkTreeIter* iter)
+    {
+        gobj_ptr<MooEdit> doc;
+        model.get (iter, COLUMN_EDIT, doc.pp ());
+        g_return_if_fail (MOO_IS_EDIT (doc.gobj ()));
+        cell.set ("text", moo_edit_get_display_basename (doc.gobj ()), nullptr);
+    });
 
-    g_object_unref (store);
+    store->set_data ("moo-dialog", dialog);
 }
 
 
@@ -395,17 +385,11 @@ MooSaveChangesResponse
 _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
                                         MooEditArray *to_save)
 {
-    GtkWidget *dialog;
-    char *msg, *question;
-    int response;
-    MooSaveChangesResponse retval;
-    SaveMultDialogXml *xml;
-
     g_return_val_if_fail (docs != NULL && docs->n_elms > 1, MOO_SAVE_CHANGES_RESPONSE_CANCEL);
     g_return_val_if_fail (to_save != NULL, MOO_SAVE_CHANGES_RESPONSE_CANCEL);
 
-    xml = save_mult_dialog_xml_new ();
-    dialog = GTK_WIDGET (xml->SaveMultDialog);
+    SaveMultDialogXml *xml = save_mult_dialog_xml_new ();
+    GtkWidget *dialog = GTK_WIDGET (xml->SaveMultDialog);
 
     moo_window_set_parent (dialog, GTK_WIDGET (moo_edit_get_view (docs->elms[0])));
 
@@ -422,20 +406,19 @@ _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
                                              GTK_RESPONSE_NO,
                                              GTK_RESPONSE_CANCEL, -1);
 
-    question = g_strdup_printf (dngettext (GETTEXT_PACKAGE,
-                                           /* Translators: number of documents here is always greater than one, so
-                                              ignore singular form (which is simply copy of the plural here) */
-                                           "There are %u documents with unsaved changes. "
-                                            "Save changes before closing?",
-                                           "There are %u documents with unsaved changes. "
-                                            "Save changes before closing?",
-                                           docs->n_elms),
-                                (guint) docs->n_elms);
-    msg = g_markup_printf_escaped ("<span weight=\"bold\" size=\"larger\">%s</span>",
-                                   question);
+    gstr question = gstr::printf (dngettext (GETTEXT_PACKAGE,
+                                             /* Translators: number of documents here is always greater than one, so
+                                              * ignore singular form (which is simply copy of the plural here) */
+                                             "There are %u documents with unsaved changes. "
+                                             "Save changes before closing?",
+                                             "There are %u documents with unsaved changes. "
+                                             "Save changes before closing?",
+                                             docs->n_elms),
+                                  (guint) docs->n_elms);
+    gstr msg = g::markup_printf_escaped ("<span weight=\"bold\" size=\"larger\">%s</span>", question);
     gtk_label_set_markup (xml->label, msg);
 
-    files_treeview_init (xml->treeview, dialog, docs);
+    files_treeview_init (wrap (*xml->treeview), dialog, docs);
 
     {
         GtkWidget *button;
@@ -443,7 +426,8 @@ _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
         gtk_widget_grab_focus (button);
     }
 
-    response = gtk_dialog_run (GTK_DIALOG (dialog));
+    MooSaveChangesResponse retval;
+    int response = gtk_dialog_run (GTK_DIALOG (dialog));
 
     switch (response)
     {
@@ -456,10 +440,9 @@ _moo_edit_save_multiple_changes_dialog (MooEditArray *docs,
             break;
         default:
             retval = MOO_SAVE_CHANGES_RESPONSE_CANCEL;
+            break;
     }
 
-    g_free (question);
-    g_free (msg);
     gtk_widget_destroy (dialog);
     return retval;
 }

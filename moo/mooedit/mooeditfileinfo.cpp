@@ -21,7 +21,7 @@
 
 #include "mooeditfileinfo-impl.h"
 #include <mooutils/mooutils-misc.h>
-#include <moocpp/gboxed.h>
+#include <moocpp/moocpp.h>
 
 using namespace moo;
 

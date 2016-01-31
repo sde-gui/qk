@@ -17,7 +17,7 @@
 
 #include <gtk/gtk.h>
 #include <mooutils/mooutils-file.h>
-#include <moocpp/gobjtypes.h>
+#include <moocpp/moocpp.h>
 
 G_BEGIN_DECLS
 

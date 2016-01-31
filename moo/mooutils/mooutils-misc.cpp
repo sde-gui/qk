@@ -28,7 +28,7 @@
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooarray.h"
 #include "mooutils/moologwindow-gxml.h"
-#include "moocpp/gutil.h"
+#include "moocpp/moocpp.h"
 #include <gtk/gtk.h>
 #include <mooglib/moo-glib.h>
 #ifdef HAVE_UNISTD_H

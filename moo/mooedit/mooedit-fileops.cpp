@@ -43,7 +43,7 @@
 #include <mooglib/moo-glib.h>
 
 #include <list>
-#include <moocpp/gutil.h>
+#include <moocpp/moocpp.h>
 using namespace moo;
 
 #define ENCODING_LOCALE "LOCALE"

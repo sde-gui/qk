@@ -19,7 +19,7 @@
 
 #ifdef __cplusplus
 
-#include <moocpp/gobjtypes-gio.h>
+#include <moocpp/moocpp.h>
 
 struct MooFileReader;
 struct MooFileWriter;

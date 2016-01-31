@@ -19,6 +19,7 @@ SET(moocpp_sources
 	moocpp/gutil.h
 	moocpp/gutil.cpp
 	moocpp/memutils.h
+	moocpp/moocpp.h
 	moocpp/strutils.h
 	moocpp/strutils.cpp
 	moocpp/utils.h

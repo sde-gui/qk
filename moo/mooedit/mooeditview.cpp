@@ -12,9 +12,12 @@
 #include "mooutils/mooutils.h"
 #include "mooutils/moocompat.h"
 
+using namespace moo;
+
 MOO_DEFINE_OBJECT_ARRAY (MooEditView, moo_edit_view)
 
 static void     moo_edit_view_dispose               (GObject            *object);
+static void     moo_edit_view_finalize              (GObject            *object);
 
 static gboolean moo_edit_view_focus_in              (GtkWidget          *widget,
                                                      GdkEventFocus      *event);
@@ -44,6 +47,7 @@ moo_edit_view_class_init (MooEditViewClass *klass)
     MooTextViewClass *textview_class = MOO_TEXT_VIEW_CLASS (klass);
 
     gobject_class->dispose = moo_edit_view_dispose;
+    gobject_class->finalize = moo_edit_view_finalize;
 
     widget_class->popup_menu = moo_edit_view_popup_menu;
     widget_class->drag_motion = moo_edit_view_drag_motion;
@@ -60,7 +64,7 @@ moo_edit_view_class_init (MooEditViewClass *klass)
 static void
 moo_edit_view_init (MooEditView *view)
 {
-    view->priv = G_TYPE_INSTANCE_GET_PRIVATE (view, MOO_TYPE_EDIT_VIEW, MooEditViewPrivate);
+    init_cpp_private (view, view->priv);
 }
 
 void EditView::_unset_doc()
@@ -90,12 +94,21 @@ moo_edit_view_dispose (GObject *object)
     G_OBJECT_CLASS (moo_edit_view_parent_class)->dispose (object);
 }
 
+static void
+moo_edit_view_finalize (GObject *object)
+{
+    MooEditView *view = MOO_EDIT_VIEW (object);
+    finalize_cpp_private (view, view->priv);
+    G_OBJECT_CLASS (moo_edit_view_parent_class)->finalize (object);
+}
+
 
 EditViewPtr EditView::_create(Edit doc)
 {
     MooEditView *view = MOO_EDIT_VIEW (g_object_new (MOO_TYPE_EDIT_VIEW,
                                                      "buffer", moo_edit_get_buffer (doc.gobj()),
                                                      nullptr));
+
     view->priv->doc = doc.gobj();
     view->priv->editor = moo_edit_get_editor (&doc);
 

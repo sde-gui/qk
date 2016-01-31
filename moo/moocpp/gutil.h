@@ -28,10 +28,14 @@ namespace g {
 
 gstr build_filename(const char* c1, const char* c2, const char* c3 = nullptr, const char* c4 = nullptr, const char* c5 = nullptr);
 gstr filename_to_uri(const char* filename);
-gstr path_get_dirname(const char* filename);
+gstr filename_from_uri(const char *uri);
+gstr path_get_dirname (const char* filename);
 gstr filename_display_name(const char* filename);
-bool file_get_contents(const char* path, gstr& data, gsize& data_len, gerrp& error);
+gstr filename_display_basename (const char* filename);
+bool file_get_contents (const char* path, gstr& data, gsize& data_len, gerrp& error);
 gstr uri_escape_string(const char* unescaped, const char* reserved_chars_allowed = nullptr, bool allow_utf8 = false);
+gstr filename_to_utf8 (const char* opsysstring);
+gstr filename_from_utf8(const gchar* utf8string);
 
 gstr get_current_dir();
 

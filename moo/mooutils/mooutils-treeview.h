@@ -16,7 +16,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
-#include "moocpp/gobjinfo.h"
+#include "moocpp/moocpp.h"
 
 G_BEGIN_DECLS
 

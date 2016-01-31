@@ -54,7 +54,7 @@ G_END_DECLS
 
 #ifdef __cplusplus
 
-#include <moocpp/strutils.h>
+#include <moocpp/moocpp.h>
 
 MooEditTryEncodingResponse      _moo_edit_try_encoding_dialog           (moo::g::File        file,
                                                                          const char*         encoding,

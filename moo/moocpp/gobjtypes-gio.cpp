@@ -13,8 +13,7 @@
  *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "moocpp/gobjtypes-gio.h"
-#include "moocpp/strutils.h"
+#include "moocpp/moocpp.h"
 
 using namespace moo;
 using namespace moo::g;

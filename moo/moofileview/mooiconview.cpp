@@ -19,7 +19,7 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/mooutils-misc.h"
 #include "mooutils/moocompat.h"
-#include "moocpp/gobjtypes.h"
+#include "moocpp/moocpp.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <string.h>

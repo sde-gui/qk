@@ -23,7 +23,7 @@
 #endif // __cplusplus
 
 #include <glib-object.h>
-#include <moocpp/grefptr.h>
+#include <moocpp/moocpp.h>
 #include <memory>
 
 enum MooFileEventCode {

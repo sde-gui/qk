@@ -18,7 +18,7 @@
 #include "mooutils/mooutils-gobject.h"
 #include "mooutils/moocompat.h"
 #include "mooutils/mootype-macros.h"
-#include "moocpp/gobjtypes.h"
+#include "moocpp/moocpp.h"
 #include "marshals.h"
 #include <string.h>
 #include <gobject/gvaluecollector.h>

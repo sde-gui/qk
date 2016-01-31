@@ -41,7 +41,7 @@
 #include "mooutils/moowin32/mingw/fnmatch.h"
 #include <mooutils/mooutils-tests.h>
 #include <mooglib/moo-stat.h>
-#include "moocpp/gutil.h"
+#include "moocpp/moocpp.h"
 
 #include <gdk/gdkwin32.h>
 #include <windows.h>

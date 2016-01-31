@@ -1,6 +1,6 @@
 #include <errno.h>
 #include <mooedit/mooeditfileinfo.h>
-#include "moocpp/gobjtypes.h"
+#include "moocpp/moocpp.h"
 
 static MooOpenInfo *
 parse_filename (const char *filename)

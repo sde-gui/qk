@@ -16,7 +16,7 @@
 #include "config.h"
 
 #include "mooutils/mooutils-dialog-win32.h"
-#include "moocpp/utils.h"
+#include "moocpp/moocpp.h"
 
 #include <gdk/gdkwin32.h>
 #include <gtk/gtk.h>

@@ -23,7 +23,7 @@
 #include "mooutils/mootype-macros.h"
 #include "mooutils/mooi18n.h"
 #include <mooutils/mooutils-tests.h>
-#include <moocpp/gutil.h>
+#include <moocpp/moocpp.h>
 #include <mooglib/moo-stat.h>
 #include <mooglib/moo-glib.h>
 

@@ -17,7 +17,7 @@
 
 #include <mooutils/moomarkup.h>
 #include <mooutils/mooactioncollection.h>
-#include <moocpp/gobjinfo.h>
+#include <moocpp/moocpp.h>
 
 G_BEGIN_DECLS
 

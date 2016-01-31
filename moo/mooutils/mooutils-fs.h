@@ -18,10 +18,7 @@
 
 #include <mooglib/moo-glib.h>
 #include <gtk/gtk.h>
-
-#ifdef __cplusplus
-#include <moocpp/strutils.h>
-#endif // __cplusplus
+#include <moocpp/moocpp.h>
 
 G_BEGIN_DECLS
 
