@@ -18,6 +18,8 @@
 using namespace moo;
 using namespace moo::gtk;
 
+#if 0
+
 namespace moo {
 
 namespace _test {
@@ -86,6 +88,8 @@ void test()
 
 } // namespace _test
 } // namespace moo
+
+#endif // 0
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
