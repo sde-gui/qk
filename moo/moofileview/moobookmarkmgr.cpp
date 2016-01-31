@@ -177,7 +177,7 @@ _moo_bookmark_mgr_add (MooBookmarkMgr *mgr, objp<MooBookmark> bookmark)
 
     GtkTreeIter iter;
     mgr->priv->store->append (&iter);
-    mgr->priv->store->set (&iter, COLUMN_BOOKMARK, bookmark.release(), -1);
+    mgr->priv->store->set (&iter, COLUMN_BOOKMARK, bookmark.release());
 }
 
 
@@ -367,7 +367,7 @@ moo_bookmark_mgr_save (MooBookmarkMgr *mgr)
         MooBookmark *bookmark = NULL;
         MooMarkupNode *elm;
 
-        model.get (&iter, COLUMN_BOOKMARK, &bookmark, -1);
+        model.get (&iter, COLUMN_BOOKMARK, &bookmark);
 
         if (!bookmark)
         {
@@ -481,7 +481,7 @@ make_menu (MooBookmarkMgr *mgr,
         GtkAction *action;
         char *action_id;
 
-        model.get (&iter, COLUMN_BOOKMARK, &bookmark, -1);
+        model.get (&iter, COLUMN_BOOKMARK, &bookmark);
 
         if (!bookmark)
         {
@@ -816,9 +816,9 @@ copy_value (gtk::TreeModel& src,
     GtkTreeIter dest_iter;
     MooBookmark *bookmark;
 
-    src.get (iter, COLUMN_BOOKMARK, &bookmark, -1);
+    src.get (iter, COLUMN_BOOKMARK, &bookmark);
     dest.append (&dest_iter);
-    dest.set (&dest_iter, COLUMN_BOOKMARK, bookmark, -1);
+    dest.set (&dest_iter, COLUMN_BOOKMARK, bookmark);
     _moo_bookmark_free (bookmark);
 
     return false;

@@ -173,14 +173,6 @@ void* Object::get_data(GQuark q)
     return g_object_get_qdata(gobj(), q);
 }
 
-void Object::set(const gchar *first_prop, ...)
-{
-    va_list args;
-    va_start(args, first_prop);
-    g_object_set_valist(gobj(), first_prop, args);
-    va_end(args);
-}
-
 void Object::set_property(const gchar *property_name, const GValue *value)
 {
     g_object_set_property(gobj(), property_name, value);

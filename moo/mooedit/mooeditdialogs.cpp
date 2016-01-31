@@ -252,7 +252,7 @@ save_toggled (GtkCellRendererToggle *pcell,
     active = cell.get_active ();
 
     if (active == save)
-        model.set (&iter, COLUMN_SAVE, !save, -1);
+        model.set (&iter, COLUMN_SAVE, !save);
 
     gtk_tree_path_free (tree_path);
 
@@ -270,7 +270,7 @@ save_toggled (GtkCellRendererToggle *pcell,
 
         do
         {
-            model.get (&iter, COLUMN_SAVE, &save, -1);
+            model.get (&iter, COLUMN_SAVE, &save);
             if (save)
             {
                 sensitive = TRUE;
@@ -294,8 +294,7 @@ files_treeview_init (gtk::TreeView treeview, GtkWidget *dialog, MooEditArray *do
         store->append (&iter);
         store->set (&iter,
                     COLUMN_SAVE, TRUE,
-                    COLUMN_EDIT, docs->elms[i],
-                    -1);
+                    COLUMN_EDIT, docs->elms[i]);
     }
 
     treeview.set_model (store);
@@ -304,7 +303,7 @@ files_treeview_init (gtk::TreeView treeview, GtkWidget *dialog, MooEditArray *do
     treeview.append_column (*column);
     gtk::CellRendererPtr cell = gtk::CellRendererToggle::create ();
     column->pack_start (*cell, FALSE);
-    cell->set ("activatable", TRUE, nullptr);
+    cell->set ("activatable", TRUE);
     column->add_attribute (*cell, "active", COLUMN_SAVE);
     cell->connect ("toggled", G_CALLBACK (save_toggled), store.gobj());
 
@@ -322,7 +321,7 @@ files_treeview_init (gtk::TreeView treeview, GtkWidget *dialog, MooEditArray *do
         gobj_ptr<MooEdit> doc;
         model.get (iter, COLUMN_EDIT, doc.pp ());
         g_return_if_fail (MOO_IS_EDIT (doc.gobj ()));
-        cell.set ("text", moo_edit_get_display_basename (doc.gobj ()), nullptr);
+        cell.set ("text", moo_edit_get_display_basename (doc.gobj ()));
     });
 
     store->set_data ("moo-dialog", dialog);

@@ -82,8 +82,20 @@ public:
     void    set_data                (const char* key, gpointer value, GDestroyNotify destroy = nullptr);
     void    set_data                (GQuark q, gpointer value, GDestroyNotify destroy = nullptr);
 
-    void    set                     (const char* first_prop, ...) G_GNUC_NULL_TERMINATED;
     void    set_property            (const char* property_name, const GValue* value);
+
+    template<typename T>
+    void set (const char* prop, T&& value)
+    {
+        g_object_set (gobj (), prop, std::forward<T> (value), nullptr);
+    }
+
+    template<typename T, typename... Args>
+    void set (const char* prop, T&& value, Args... args)
+    {
+        set (prop, std::forward<T> (value));
+        set (std::forward<Args> (args)...);
+    }
 
     void    notify                  (const char* property_name);
     void    freeze_notify           ();

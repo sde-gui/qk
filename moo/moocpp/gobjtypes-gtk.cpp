@@ -208,21 +208,6 @@ TreeModel::unref_node (GtkTreeIter* iter)
 }
 
 void
-TreeModel::get (GtkTreeIter* iter, ...)
-{
-    va_list args;
-    va_start (args, iter);
-    gtk_tree_model_get_valist (gobj (), iter, args);
-    va_end (args);
-}
-
-void
-TreeModel::get_valist (GtkTreeIter* iter, va_list var_args)
-{
-    gtk_tree_model_get_valist (gobj (), iter, var_args);
-}
-
-void
 TreeModel::row_changed (GtkTreePath* path, GtkTreeIter* iter)
 {
     gtk_tree_model_row_changed (gobj (), path, iter);
@@ -275,28 +260,12 @@ ListStore::set_value (GtkTreeIter* iter,
 }
 
 void
-ListStore::set (GtkTreeIter* iter, ...)
-{
-    va_list args;
-    va_start (args, iter);
-    gtk_list_store_set_valist (gobj (), iter, args);
-    va_end (args);
-}
-
-void
 ListStore::set_valuesv (GtkTreeIter* iter,
                         int* columns,
                         GValue* values,
                         int n_values)
 {
     gtk_list_store_set_valuesv (gobj (), iter, columns, values, n_values);
-}
-
-void
-ListStore::set_valist (GtkTreeIter* iter,
-                       va_list var_args)
-{
-    gtk_list_store_set_valist (gobj (), iter, var_args);
 }
 
 bool
@@ -1106,20 +1075,11 @@ TreeViewColumn::add_attribute (CellRenderer& cell,
     gtk_tree_view_column_add_attribute (gobj (), cell.gobj (), attribute, column);
 }
 
-//void
-//TreeViewColumn::set_attributes (CellRenderer& cell_renderer, ...)
-//{
-//    gtk_tree_view_column_set_attributes (gobj (), cell_renderer.gobj (), ...);
-//}
-
-//void
-//TreeViewColumn::set_cell_data_func (CellRenderer& cell_renderer,
-//                                    GtkTreeCellDataFunc func,
-//                                    gpointer func_data,
-//                                    GDestroyNotify destroy)
-//{
-//    gtk_tree_view_column_set_cell_data_func (gobj (), cell_renderer.gobj (), func, func_data, destroy);
-//}
+void
+TreeViewColumn::set_attributes (gtk::CellRenderer& cell_renderer, const char* prop, int column)
+{
+    gtk_tree_view_column_set_attributes (gobj (), cell_renderer.gobj (), prop, column, nullptr);
+}
 
 void
 TreeViewColumn::clear_attributes (CellRenderer& cell_renderer)

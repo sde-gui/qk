@@ -121,11 +121,18 @@ public:
     void ref_node (GtkTreeIter* iter);
     void unref_node (GtkTreeIter* iter);
 
-    void get (GtkTreeIter* iter, ...);
-    void get_valist (GtkTreeIter* iter, va_list var_args);
-
     template<typename T>
-    void get (GtkTreeIter* iter, int column, T&& dest) { get (iter, column, std::forward<T>(dest), -1); }
+    void get (GtkTreeIter* iter, int column, T&& dest)
+    {
+        gtk_tree_model_get (gobj (), iter, column, std::forward<T> (dest), -1);
+    }
+
+    template<typename T, typename... Args>
+    void get (GtkTreeIter* iter, int column, T&& dest, Args... args)
+    {
+        get (iter, column, std::forward<T> (dest));
+        get (iter, std::forward<Args> (args)...);
+    }
 
     // bool TFunc (GtkTreePath*, GtkTreeIter*)
     template<typename TFunc>
@@ -174,16 +181,26 @@ public:
 
     static gtk::ListStorePtr create (size_t n_columns, const GType* types);
 
+    template<typename T>
+    void set (GtkTreeIter* iter, int column, T&& value)
+    {
+        gtk_list_store_set (gobj (), iter, column, std::forward<T> (value), -1);
+    }
+
+    template<typename T, typename... Args>
+    void set (GtkTreeIter* iter, int column, T&& value, Args... args)
+    {
+        set (iter, column, std::forward<T> (value));
+        set (iter, std::forward<Args> (args)...);
+    }
+
     void    set_value (GtkTreeIter* iter,
                        int column,
                        GValue* value);
-    void    set (GtkTreeIter* iter, ...);
     void    set_valuesv (GtkTreeIter* iter,
                          int* columns,
                          GValue* values,
                          int n_values);
-    void    set_valist (GtkTreeIter* iter,
-                        va_list var_args);
     bool    remove (GtkTreeIter* iter);
     void    insert (GtkTreeIter* iter,
                     int position);
@@ -479,8 +496,15 @@ public:
     void    add_attribute (gtk::CellRenderer& cell,
                            const char* attribute,
                            int column);
-    void    set_attributes (gtk::CellRenderer& cell_renderer,
-                            ...) G_GNUC_NULL_TERMINATED;
+
+    void set_attributes (gtk::CellRenderer& cell_renderer, const char* prop, int column);
+
+    template<typename... Args>
+    void set_attributes (gtk::CellRenderer& cell_renderer, const char* prop, int column, Args... args)
+    {
+        set_attributes (cell_renderer, prop, column);
+        set_attributes (cell_renderer, std::forward<Args> (args)...);
+    }
 
     // void TFunc(gtk::TreeViewColumn, gtk::CellRenderer, gtk::TreeModel, GtkTreeIter*)
     template<typename TFunc>
