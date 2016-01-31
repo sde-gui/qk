@@ -85,16 +85,29 @@ public:
     void    set_property            (const char* property_name, const GValue* value);
 
     template<typename T>
-    void set (const char* prop, T&& value)
+    void set (const char* prop, const T& value)
     {
-        g_object_set (gobj (), prop, std::forward<T> (value), nullptr);
+        g_object_set (gobj (), prop, cpp_vararg_value_fixer<T>::apply (value), nullptr);
     }
 
     template<typename T, typename... Args>
-    void set (const char* prop, T&& value, Args... args)
+    void set (const char* prop, const T& value, Args&&... args)
     {
-        set (prop, std::forward<T> (value));
+        set (prop, value);
         set (std::forward<Args> (args)...);
+    }
+
+    template<typename T>
+    void get (const char* prop, T&& dest)
+    {
+        g_object_get (gobj (), prop, cpp_vararg_dest_fixer<T>::apply (std::forward<T> (dest)), nullptr);
+    }
+
+    template<typename T, typename... Args>
+    void get (const char* prop, T&& dest, Args&&... args)
+    {
+        get (prop, std::forward<T> (dest));
+        get (std::forward<Args> (args)...);
     }
 
     void    notify                  (const char* property_name);

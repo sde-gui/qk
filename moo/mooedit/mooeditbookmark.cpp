@@ -260,7 +260,11 @@ moo_edit_add_bookmark (MooEdit *edit,
     g_return_if_fail (moo_edit_get_bookmark_at_line (edit, line) == NULL);
 
     for (const auto& view: edit->priv->views)
-        view->set("show-line-marks", TRUE);
+    {
+        view->set ("show-line-marks", TRUE);
+        view->set ("show-line-marks", true);
+        view->set ("show-line-marks", TRUE, "show-line-marks", TRUE);
+    }
 
     bk = MOO_EDIT_BOOKMARK (g_object_new (MOO_TYPE_EDIT_BOOKMARK, "background", get_bookmark_color (edit), (char*) 0));
     moo_text_buffer_add_line_mark (get_moo_buffer (edit), MOO_LINE_MARK (bk), line);

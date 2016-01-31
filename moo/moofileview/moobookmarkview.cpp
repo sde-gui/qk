@@ -39,14 +39,14 @@ static void row_activated                   (GtkTreeView        *treeview,
                                              GtkTreePath        *path,
                                              GtkTreeViewColumn  *column);
 
-static void icon_data_func                  (GtkTreeViewColumn  *column,
-                                             GtkCellRenderer    *cell,
-                                             GtkTreeModel       *model,
-                                             GtkTreeIter        *iter);
-static void label_data_func                 (GtkTreeViewColumn  *column,
-                                             GtkCellRenderer    *cell,
-                                             GtkTreeModel       *model,
-                                             GtkTreeIter        *iter);
+static void icon_data_func                  (gtk::TreeViewColumn column,
+                                             gtk::CellRenderer   cell,
+                                             gtk::TreeModel      model,
+                                             GtkTreeIter*        iter);
+static void label_data_func                 (gtk::TreeViewColumn column,
+                                             gtk::CellRenderer   cell,
+                                             gtk::TreeModel      model,
+                                             GtkTreeIter*        iter);
 
 
 /* MOO_TYPE_BOOKMARK_VIEW */
@@ -99,33 +99,26 @@ _moo_bookmark_view_class_init (MooBookmarkViewClass *klass)
 static void
 _moo_bookmark_view_init (MooBookmarkView *view)
 {
-    GtkTreeView *treeview = GTK_TREE_VIEW (view);
-    GtkTreeViewColumn *column;
-    GtkCellRenderer *cell;
-    GtkTreeSelection *selection;
+    gtk::TreeView treeview = *GTK_TREE_VIEW (view);
 
-    gtk_tree_view_set_headers_visible (GTK_TREE_VIEW (view), FALSE);
+    treeview.set_headers_visible (FALSE);
 
-    selection = gtk_tree_view_get_selection (treeview);
+    GtkTreeSelection *selection = treeview.get_selection ();
     gtk_tree_selection_set_mode (selection, GTK_SELECTION_MULTIPLE);
 
-    column = gtk_tree_view_column_new ();
-    gtk_tree_view_append_column (treeview, column);
+    gtk::TreeViewColumnPtr column = gtk::TreeViewColumn::create ();
+    treeview.append_column (*column);
 
     /* Icon */
-    cell = gtk_cell_renderer_pixbuf_new ();
-    gtk_tree_view_column_pack_start (column, cell, FALSE);
-    gtk_tree_view_column_set_cell_data_func (column, cell,
-                                             (GtkTreeCellDataFunc) icon_data_func,
-                                             NULL, NULL);
+    gtk::CellRendererPtr cell = gtk::CellRendererPixbuf::create ();
+    column->pack_start (*cell, FALSE);
+    column->set_cell_data_func (*cell, icon_data_func);
 
     /* Label */
-    cell = gtk_cell_renderer_text_new ();
-    g_object_set (cell, "xpad", 6, NULL);
-    gtk_tree_view_column_pack_start (column, cell, FALSE);
-    gtk_tree_view_column_set_cell_data_func (column, cell,
-                                             (GtkTreeCellDataFunc) label_data_func,
-                                             NULL, NULL);
+    cell = gtk::CellRendererText::create ();
+    cell->set ("xpad", 6);
+    column->pack_start (*cell, FALSE);
+    column->set_cell_data_func (*cell, label_data_func);
 }
 
 
@@ -225,6 +218,12 @@ get_bookmark (GtkTreeModel *model,
     return bookmark;
 }
 
+objp<MooBookmark>
+get_bookmark (gtk::TreeModel model,
+              GtkTreeIter*   iter)
+{
+    return get_bookmark (model.gobj(), iter);
+}
 
 #if 0
 static void
@@ -238,43 +237,35 @@ set_bookmark (GtkListStore *store,
 
 
 static void
-icon_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
-                GtkCellRenderer    *cell,
-                GtkTreeModel       *model,
-                GtkTreeIter        *iter)
+icon_data_func (gtk::TreeViewColumn,
+                gtk::CellRenderer   cell,
+                gtk::TreeModel      model,
+                GtkTreeIter*        iter)
 {
     objp<MooBookmark> bookmark = get_bookmark (model, iter);
 
     if (!bookmark)
-        g_object_set (cell,
-                      "pixbuf", NULL,
-                      "stock-id", NULL,
-                      NULL);
+        cell.set ("pixbuf", nullptr,
+                  "stock-id", nullptr);
     else
-        g_object_set (cell,
-                      "pixbuf", bookmark->pixbuf,
-                      "stock-id", bookmark->icon_stock_id,
-                      "stock-size", GTK_ICON_SIZE_LARGE_TOOLBAR,
-                      NULL);
+        cell.set ("pixbuf", bookmark->pixbuf,
+                  "stock-id", bookmark->icon_stock_id,
+                  "stock-size", GTK_ICON_SIZE_LARGE_TOOLBAR);
 }
 
 
 static void
-label_data_func (G_GNUC_UNUSED GtkTreeViewColumn *column,
-                 GtkCellRenderer    *cell,
-                 GtkTreeModel       *model,
-                 GtkTreeIter        *iter)
+label_data_func (gtk::TreeViewColumn,
+                 gtk::CellRenderer   cell,
+                 gtk::TreeModel      model,
+                 GtkTreeIter*        iter)
 {
     objp<MooBookmark> bookmark = get_bookmark (model, iter);
 
     if (!bookmark)
-        g_object_set (cell,
-                      "text", "-------",
-                      NULL);
+        cell.set ("text", "-------");
     else
-        g_object_set (cell,
-                      "text", bookmark->label,
-                      NULL);
+        cell.set ("text", bookmark->label);
 }
 
 

@@ -52,6 +52,7 @@ MOO_DECLARE_CUSTOM_GOBJ_TYPE (GtkTreeViewColumn)
 MOO_DECLARE_CUSTOM_GOBJ_TYPE (GtkCellRenderer)
 MOO_DECLARE_CUSTOM_GOBJ_TYPE (GtkCellRendererText)
 MOO_DECLARE_CUSTOM_GOBJ_TYPE (GtkCellRendererToggle)
+MOO_DECLARE_CUSTOM_GOBJ_TYPE (GtkCellRendererPixbuf)
 
 
 MOO_DEFINE_GTK_TYPE (Object, GObject, GTK_TYPE_OBJECT)
@@ -128,7 +129,7 @@ public:
     }
 
     template<typename T, typename... Args>
-    void get (GtkTreeIter* iter, int column, T&& dest, Args... args)
+    void get (GtkTreeIter* iter, int column, T&& dest, Args&&... args)
     {
         get (iter, column, std::forward<T> (dest));
         get (iter, std::forward<Args> (args)...);
@@ -182,15 +183,15 @@ public:
     static gtk::ListStorePtr create (size_t n_columns, const GType* types);
 
     template<typename T>
-    void set (GtkTreeIter* iter, int column, T&& value)
+    void set (GtkTreeIter* iter, int column, const T& value)
     {
-        gtk_list_store_set (gobj (), iter, column, std::forward<T> (value), -1);
+        gtk_list_store_set (gobj (), iter, column, cpp_vararg_value_fixer<T>::apply(value), -1);
     }
 
     template<typename T, typename... Args>
-    void set (GtkTreeIter* iter, int column, T&& value, Args... args)
+    void set (GtkTreeIter* iter, int column, const T& value, Args&&... args)
     {
-        set (iter, column, std::forward<T> (value));
+        set (iter, column, value);
         set (iter, std::forward<Args> (args)...);
     }
 
@@ -245,6 +246,7 @@ MOO_DEFINE_GTK_TYPE (TreeView, GtkContainer, GTK_TYPE_TREE_VIEW)
 MOO_DEFINE_GTK_TYPE (TreeViewColumn, GtkObject, GTK_TYPE_TREE_VIEW_COLUMN)
 MOO_DEFINE_GTK_TYPE (CellRenderer, GtkObject, GTK_TYPE_CELL_RENDERER)
 MOO_DEFINE_GTK_TYPE (CellRendererText, GtkCellRenderer, GTK_TYPE_CELL_RENDERER_TEXT)
+MOO_DEFINE_GTK_TYPE (CellRendererPixbuf, GtkCellRenderer, GTK_TYPE_CELL_RENDERER_PIXBUF)
 MOO_DEFINE_GTK_TYPE (CellRendererToggle, GtkCellRenderer, GTK_TYPE_CELL_RENDERER_TOGGLE)
 
 
@@ -500,7 +502,7 @@ public:
     void set_attributes (gtk::CellRenderer& cell_renderer, const char* prop, int column);
 
     template<typename... Args>
-    void set_attributes (gtk::CellRenderer& cell_renderer, const char* prop, int column, Args... args)
+    void set_attributes (gtk::CellRenderer& cell_renderer, const char* prop, int column, Args&&... args)
     {
         set_attributes (cell_renderer, prop, column);
         set_attributes (cell_renderer, std::forward<Args> (args)...);
@@ -609,6 +611,15 @@ public:
     void set_radio (bool radio);
     bool get_active ();
     void set_active (bool active);
+};
+
+template<>
+class ::moo::gobj_ref<GtkCellRendererPixbuf> : public virtual ::moo::gobj_ref_parent<GtkCellRendererPixbuf>
+{
+public:
+    MOO_DEFINE_GOBJREF_METHODS (GtkCellRendererPixbuf);
+
+    static gtk::CellRendererPixbufPtr create ();
 };
 
 

@@ -173,6 +173,62 @@ std::vector<gobj_ptr<CObject>> object_list_to_vector (GList* list)
     return ret;
 }
 
+template<typename T>
+class cpp_vararg_value_fixer;
+
+template<typename T>
+class cpp_vararg_value_fixer
+{
+public:
+    static const T& apply (const T& val) { return val; }
+};
+
+template<typename TSrc, typename TDest>
+class cpp_vararg_value_fixer_convert
+{
+public:
+    static TDest apply (const TSrc& val) { return val; }
+};
+
+template<> class cpp_vararg_value_fixer<bool> : public cpp_vararg_value_fixer_convert<bool, gboolean>{};
+template<> class cpp_vararg_value_fixer<gstr> : public cpp_vararg_value_fixer_convert<gstr, const char*>{};
+template<> class cpp_vararg_value_fixer<gstrp> : public cpp_vararg_value_fixer_convert<gstrp, const char*>{};
+
+template<typename CObject>
+class cpp_vararg_value_fixer<gobj_ptr<CObject>>
+{
+public:
+    static CObject* apply (const gobj_ptr<CObject>& val) { return val.gobj(); }
+};
+
+template<typename CObject>
+class cpp_vararg_value_fixer<gobj_raw_ptr<CObject>>
+{
+public:
+    static CObject* apply (const gobj_raw_ptr<CObject>& val) { return val.gobj (); }
+};
+
+
+template<typename T>
+class cpp_vararg_dest_fixer;
+
+template<typename T>
+class cpp_vararg_dest_fixer_passthrough
+{
+public:
+    static T* apply (T* p) { return p; }
+};
+
+template<> class cpp_vararg_dest_fixer<int*> : public cpp_vararg_dest_fixer_passthrough<int> {};
+template<> class cpp_vararg_dest_fixer<guint*> : public cpp_vararg_dest_fixer_passthrough<guint>{};
+template<> class cpp_vararg_dest_fixer<char**> : public cpp_vararg_dest_fixer_passthrough<char*>{};
+
+template<> class cpp_vararg_dest_fixer<gstrp&>
+{
+public:
+    static char** apply (gstrp& s) { return s.pp (); }
+};
+
 } // namespace moo
 
 #endif // __cplusplus

@@ -16,6 +16,15 @@
         </Expand>
     </Type>
 
+    <Type Name="moo::gbuf&lt;*&gt;">
+        <DisplayString>{m_p}</DisplayString>
+    </Type>
+
+    <Type Name="moo::gstrp">
+        <DisplayString>{m_p}</DisplayString>
+        <StringView>m_p</StringView>
+    </Type>
+
     <Type Name="moo::gref_ptr&lt;*,*&gt;">
         <AlternativeType Name="moo::gref_ptr&lt;*&gt;" />
         <DisplayString>{m_p}</DisplayString>
