@@ -2449,10 +2449,10 @@ do_save(MooEditor&  editor,
     gerrp error_here;
     gboolean result;
 
-    g_signal_emit(&editor, signals[BEFORE_SAVE], 0, doc, file, &response);
+    g_signal_emit (&editor, signals[BEFORE_SAVE], 0, doc.gobj (), file.gobj (), &response);
 
     if (response != MOO_SAVE_RESPONSE_CANCEL)
-        doc.signal_emit_by_name("before-save", file, &response);
+        doc.signal_emit_by_name ("before-save", file.gobj (), &response);
 
     if (response == MOO_SAVE_RESPONSE_CANCEL)
     {
@@ -2463,8 +2463,8 @@ do_save(MooEditor&  editor,
         return FALSE;
     }
 
-    g_signal_emit(&editor, signals[WILL_SAVE], 0, doc, file);
-    doc.signal_emit_by_name("will-save", file);
+    g_signal_emit (&editor, signals[WILL_SAVE], 0, doc.gobj (), file.gobj ());
+    doc.signal_emit_by_name ("will-save", file.gobj ());
 
     result = _moo_edit_save_file(doc, file, encoding,
                                  moo_editor_get_save_flags(&editor),
@@ -2500,7 +2500,7 @@ do_save(MooEditor&  editor,
     update_history_item_for_doc(&editor, &doc, TRUE);
 
     doc.signal_emit_by_name("after-save");
-    g_signal_emit(&editor, signals[AFTER_SAVE], 0, doc);
+    g_signal_emit (&editor, signals[AFTER_SAVE], 0, doc.gobj ());
 
     return true;
 }
