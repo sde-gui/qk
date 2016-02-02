@@ -177,6 +177,16 @@ SET(mooutils_win32_sources
 	mooutils/mooutils-dialog-win32.h
     mooutils/mooutils-win32.cpp
 )
+
+if(MOO_BUILD_FROM_MSVC)
+    LIST(APPEND mooutils_sources
+        mooglib/moo-stat.h
+        mooglib/moo-time.h
+        mooglib/moo-glib.c
+        mooglib/moo-glib.h
+    )
+endif()
+
 SET(mooutils_unittest_sources
     mooutils/moo-test-utils.cpp
     mooutils/moo-test-utils.h

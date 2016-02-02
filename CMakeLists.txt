@@ -93,9 +93,10 @@ else()
     set(MOO_OS_UNIX TRUE)
 endif()
 
+set(MOO_BUILD_FROM_MSVC FALSE CACHE BOOL "Create a win32 build from MSVC gtk build")
 set(MOO_BUILD_FROM_MINGW ${MOO_OS_WIN32} CACHE BOOL "Create a win32 build from mingw gtk build")
 
-if(NOT MOO_BUILD_FROM_MINGW)
+if(NOT MOO_BUILD_FROM_MINGW AND NOT MOO_BUILD_FROM_MSVC)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(GTK REQUIRED gtk+-2.0)
     pkg_check_modules(GMODULE REQUIRED gmodule-2.0)
@@ -119,8 +120,23 @@ if(NOT MOO_BUILD_FROM_MINGW)
     pkg_check_modules(XLIB x11 xext xrender ice sm)
     pkg_check_modules(LIBXML2 REQUIRED libxml-2.0)
 else()
-    set(MOO_GTK_DIR "C:/Projects/gtk/release/target" CACHE PATH "Gtk root dir")
-    set(MOO_GTK_DIST_DIR "C:/Projects/gtk/release/bdist" CACHE PATH "Gtk binary dir")
+
+    if(MOO_BUILD_FROM_MINGW)
+        set(MOO_GTK_DIR "C:/Projects/gtk/release/target" CACHE PATH "Gtk root dir")
+        set(MOO_GTK_DIST_DIR "C:/Projects/gtk/release/bdist" CACHE PATH "Gtk binary dir")
+
+        set(GTK_LIBRARIES libgtk-win32-2.0-0 libatk-1.0-0 libgdk-win32-2.0-0 libgdk_pixbuf-2.0-0
+		    libpango-1.0-0 libpangocairo-1.0-0 libcairo-2
+		    libgio-2.0-0 libgobject-2.0-0 libgmodule-2.0-0 libgthread-2.0-0 libglib-2.0-0 libintl-8)
+        set(LIBXML2_LIBRARIES "libxml2-2")
+    else()
+        set(MOO_GTK_DIR "C:/gtk-build/gtk/Win32" CACHE PATH "Gtk root dir")
+        set(MOO_GTK_DIST_DIR "C:/gtk-build/gtk/bdist" CACHE PATH "Gtk binary dir")
+
+        set(GTK_LIBRARIES atk-1.0 cairo gdk_pixbuf-2.0 gdk-win32-2.0 gio-2.0 glib-2.0 gmodule-2.0 gobject-2.0
+            gthread-2.0 gtk-win32-2.0 iconv intl libffi libpng16 pango-1.0 pangocairo-1.0 pixman-1 zlib1)
+        set(LIBXML2_LIBRARIES libxml2)
+    endif()
 
     set(CMAKE_INSTALL_PREFIX ${MOO_GTK_DIR} CACHE PATH "CMake install prefix" FORCE)
 
@@ -136,10 +152,6 @@ else()
     include_directories(SYSTEM "${MOO_GTK_DIR}/include/libxml2")
 
     set(GTK_LIBRARY_DIRS "${MOO_GTK_DIR}/lib")
-    set(GTK_LIBRARIES libgtk-win32-2.0-0 libatk-1.0-0 libgdk-win32-2.0-0 libgdk_pixbuf-2.0-0
-		libpango-1.0-0 libpangocairo-1.0-0 libcairo-2
-		libgio-2.0-0 libgobject-2.0-0 libgmodule-2.0-0 libgthread-2.0-0 libglib-2.0-0 libintl-8)
-    set(LIBXML2_LIBRARIES "libxml2-2")
 
     set(ENV{PATH} "ENV{PATH};${MOO_GTK_DIR}/bin")
 
@@ -175,6 +187,7 @@ else()
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /INCREMENTAL")
     set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} /DEBUG /INCREMENTAL")
     set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /INCREMENTAL")
+
 endif()
 
 find_program(GLIB_GENMARSHAL glib-genmarshal)

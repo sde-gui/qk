@@ -5,17 +5,19 @@
 
 G_BEGIN_DECLS
 
+#define MOO_BUILTIN_MOO_GLIB 1
+
+typedef struct mgw_errno_t mgw_errno_t;
+typedef struct MGW_FILE MGW_FILE;
+typedef struct MgwFd MgwFd;
+typedef struct mgw_access_mode_t mgw_access_mode_t;
+
 #ifndef __WIN32__
 #define MGW_ERROR_IF_NOT_SHARED_LIBC
 #else
 #define MGW_ERROR_IF_NOT_SHARED_LIBC \
     #error "C libraries may not be shared between medit and glib"
 #endif
-
-typedef struct mgw_errno_t mgw_errno_t;
-typedef struct MGW_FILE MGW_FILE;
-typedef struct MgwFd MgwFd;
-typedef struct mgw_access_mode_t mgw_access_mode_t;
 
 enum mgw_errno_value_t
 {
@@ -43,7 +45,7 @@ struct MgwFd
     int value;
 };
 
-#ifdef __WIN32__
+#if defined(__WIN32__) && !MOO_BUILTIN_MOO_GLIB
 #  ifdef MOO_GLIB_LIBRARY
 #    define MOO_GLIB_VAR __declspec(dllexport)
 #  else

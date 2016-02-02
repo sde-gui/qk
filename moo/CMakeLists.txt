@@ -136,8 +136,11 @@ if(MOO_USE_PCH)
         SOURCE_CXX moo-pch.cpp)
 endif()
 
+if(MOO_BUILD_FROM_MINGW)
+    LIST(APPEND MEDIT_LIBS libmooglib-0)
+endif()
+
 target_link_libraries(medit
-    libmooglib-0
     ${GTK_LIBRARIES}
     ${GMODULE_LIBRARIES}
     ${LIBXML2_LIBRARIES}
