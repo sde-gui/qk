@@ -231,7 +231,7 @@ gstr App::get_system_info ()
     strbuilder text;
 
     text.append_printf ("%s-%s\n", MOO_APP_FULL_NAME, MOO_DISPLAY_VERSION);
-    text.append_printf ("OS: %s\n", get_system_name ().get ());
+    text.append_printf ("OS: %s\n", get_system_name ());
     text.append_printf ("GTK version: %u.%u.%u\n",
                         gtk_major_version,
                         gtk_minor_version,

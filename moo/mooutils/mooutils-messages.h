@@ -17,6 +17,7 @@
 
 #include <mooutils/mooutils-macros.h>
 #include <stdarg.h>
+#include <moocpp/strutils.h>
 #include <mooglib/moo-glib.h>
 
 G_BEGIN_DECLS
@@ -105,10 +106,38 @@ moo_make_code_loc (const char *file, const char *func, int line, int counter)
     return loc;
 }
 
-void _moo_log (MooCodeLoc loc, GLogLevelFlags flags, const char *format, ...) G_GNUC_PRINTF (3, 4);
-void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_list args) G_GNUC_PRINTF(3, 0);
-void MOO_NORETURN _moo_error (MooCodeLoc loc, const char *format, ...) G_GNUC_PRINTF (2, 3);
-void MOO_NORETURN _moo_errorv (MooCodeLoc loc, const char *format, va_list args) G_GNUC_PRINTF(2, 0);
+void _moo_log_c (MooCodeLoc loc, GLogLevelFlags flags, const char *format, ...) G_GNUC_PRINTF (3, 4);
+void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_list args) G_GNUC_PRINTF (3, 0);
+void MOO_NORETURN _moo_error_c (MooCodeLoc loc, const char *format, ...) G_GNUC_PRINTF (2, 3);
+void MOO_NORETURN _moo_errorv (MooCodeLoc loc, const char *format, va_list args) G_GNUC_PRINTF (2, 0);
+
+#ifndef __cplusplus
+#define _moo_log _moo_log_c
+#define _moo_error _moo_error_c
+#else // __cplusplus
+
+G_END_DECLS
+
+void _moo_log_impl (MooCodeLoc loc, GLogLevelFlags flags, moo::gstr message);
+void MOO_NORETURN _moo_error_impl (MooCodeLoc loc, moo::gstr message);
+
+template<typename ...Args>
+inline void _moo_log (MooCodeLoc loc, GLogLevelFlags flags, const char *format, Args&& ...args) G_GNUC_PRINTF (3, 4)
+{
+    moo::gstr message = moo::gstr::printf (format, std::forward<Args> (args)...);
+    _moo_log_impl (loc, flags, std::move (message));
+}
+
+template<typename ...Args>
+inline void MOO_NORETURN _moo_error (MooCodeLoc loc, const char *format, Args&& ...args) G_GNUC_PRINTF (2, 3)
+{
+    moo::gstr message = moo::gstr::printf (format, std::forward<Args> (args)...);
+    _moo_error_impl (loc, std::move (message));
+}
+
+G_BEGIN_DECLS
+
+#endif // __cplusplus
 
 void MOO_NORETURN _moo_assert_message (MooCodeLoc loc, const char *message);
 
@@ -262,3 +291,17 @@ _MOO_DEFINE_LOG_FUNC (debug, DEBUG)
 #define g_return_val_if_reached moo_return_val_if_reached
 
 G_END_DECLS
+
+#ifdef __cplusplus
+
+template<typename ...Args>
+inline void moo_g_log_checked (const char* domain, GLogLevelFlags flags, const char* format, Args&& ...args) G_GNUC_PRINTF (3, 4)
+{
+    static_assert(moo::printf_helper::is_valid_arg<Args...>::value, "Passed an object to g_log");
+    g_log (domain, flags, format, std::forward<Args> (args)...);
+}
+
+#undef g_log
+#define g_log moo_g_log_checked
+
+#endif // __cplusplus

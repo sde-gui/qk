@@ -107,15 +107,6 @@ gstr utf8_strdown (const char* str)
     return wrap_new (g_utf8_strdown (str, -1));
 }
 
-gstr markup_printf_escaped (const char* fmt, ...)
-{
-    va_list args;
-    va_start (args, fmt);
-    gstr result = markup_vprintf_escaped (fmt, args);
-    va_end (args);
-    return result;
-}
-
 gstr markup_vprintf_escaped (const char* fmt, va_list args)
 {
     return wrap_new (g_markup_vprintf_escaped (fmt, args));

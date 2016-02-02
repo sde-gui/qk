@@ -27,9 +27,13 @@
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
+#include <type_traits>
 #include <stdarg.h>
 
 namespace moo {
+
+class gstr;
+class gstrp;
 
 // Replacement for raw char*
 class gstrp : public gbuf<char>
@@ -47,6 +51,77 @@ public:
 
     bool operator==(const char* p) const { return get() == p; }
     bool operator!=(const char* p) const { return get() != p; }
+};
+
+struct printf_helper
+{
+    template<typename ...Args>
+    struct is_valid_arg
+    {
+        static const bool value = true;
+    };
+
+    template<typename T, class... Args>
+    struct is_valid_arg<T, Args...>
+    {
+        static_assert(std::is_trivial<std::remove_reference_t<T>>::value, "An object passed to a printf-like function");
+        static const bool value =
+            std::is_trivial<std::remove_reference_t<T>>::value
+            && is_valid_arg<Args...>::value;
+    };
+
+    template<typename T>
+    static const T& transform_printf_arg (const T& arg);
+    static const char* transform_printf_arg (const gstr& s);
+    static const char* transform_printf_arg (const gstrp& s);
+
+    template<typename Func, typename ...Args>
+    static auto call (const Func& func, const char* format, Args&& ...args) G_GNUC_PRINTF (1, 2)-> decltype(func(""))
+    {
+        g_assert (printf_helper::is_valid_arg<decltype(printf_helper::transform_printf_arg (std::forward<Args> (args)))...>::value);
+        return func(format, printf_helper::transform_printf_arg (std::forward<Args> (args))...);
+    }
+
+    template<typename Func, typename ...Args>
+    static auto callv (const Func& func, const char* format, Args&& ...args) G_GNUC_PRINTF (1, 2)-> decltype(func("", va_list()))
+    {
+        g_assert (printf_helper::is_valid_arg<decltype(printf_helper::transform_printf_arg (std::forward<Args> (args)))...>::value);
+        return call_helper (func, format, printf_helper::transform_printf_arg (std::forward<Args> (args))...);
+    }
+
+    template<typename Func, typename ...Args>
+    static void call_void (const Func& func, const char* format, Args&& ...args) G_GNUC_PRINTF (1, 2)
+    {
+        g_assert (printf_helper::is_valid_arg<decltype(printf_helper::transform_printf_arg (std::forward<Args> (args)))...>::value);
+        func (format, printf_helper::transform_printf_arg (std::forward<Args> (args))...);
+    }
+
+    template<typename Func, typename ...Args>
+    static void callv_void (const Func& func, const char* format, Args&& ...args) G_GNUC_PRINTF (1, 2)
+    {
+        g_assert (printf_helper::is_valid_arg<decltype(printf_helper::transform_printf_arg (std::forward<Args> (args)))...>::value);
+        call_helper_void (func, format, printf_helper::transform_printf_arg (std::forward<Args> (args))...);
+    }
+
+private:
+    template<typename Func>
+    static auto call_helper (const Func& func, const char* format, ...) G_GNUC_PRINTF (1, 2) -> decltype(func("", va_list()))
+    {
+        va_list args;
+        va_start(args, format);
+        auto ret = func(format, args);
+        va_end(args);
+        return ret;
+    }
+
+    template<typename Func>
+    static void call_helper_void (const Func& func, const char* format, ...) G_GNUC_PRINTF (1, 2)
+    {
+        va_list args;
+        va_start (args, format);
+        func (format, args);
+        va_end (args);
+    }
 };
 
 class gstr
@@ -87,6 +162,7 @@ public:
 
     operator const char*() const;
     const char* get() const { return static_cast<const char*>(*this); }
+    const char* get_non_null() const { return is_null() ? "" : get(); }
 
     char* get_mutable();
     char* release_owned();
@@ -100,8 +176,19 @@ public:
     operator bool() const = delete;
     bool operator!() const = delete;
 
-    static gstr printf(const char* format, ...) G_GNUC_PRINTF(1, 2);
-    static gstr vprintf(const char* format, va_list args);
+    static gstr vprintf(const char* format, va_list args) G_GNUC_PRINTF (1, 0);
+
+    template<typename ...Args>
+    static gstr printf(const char* format, Args&& ...args) G_GNUC_PRINTF (1, 2)
+    {
+        return printf_helper::callv(g_strdup_vprintf, format, std::forward<Args>(args)...);
+    }
+
+    template<typename ...Args>
+    void set_printf (const char* format, Args&& ...args) G_GNUC_PRINTF (1, 2)
+    {
+        set_new (printf_helper::callv (g_strdup_vprintf, format, std::forward<Args> (args)...));
+    }
 
 private:
     void assign(const char* s, mem_transfer mt);
@@ -111,6 +198,24 @@ private:
     bool m_is_inline;
     bool m_is_const;
 };
+
+
+template<typename T>
+inline const T& printf_helper::transform_printf_arg (const T& arg)
+{
+    g_assert (is_valid_arg<T>::value);
+    return arg;
+}
+
+inline const char* printf_helper::transform_printf_arg (const gstr& s)
+{
+    return s.get ();
+}
+
+inline const char* printf_helper::transform_printf_arg (const gstrp& s)
+{
+    return s.get ();
+}
 
 
 inline gstr wrap (const char *s) { return gstr::wrap (s); }
@@ -238,11 +343,25 @@ public:
     void erase(gssize pos = 0, gssize len = -1);
     void ascii_down();
     void ascii_up();
-    void vprintf(const char* format, va_list args);
-    void printf(const char* format, ...) G_GNUC_PRINTF(1, 2);
-    void append_vprintf(const char* format, va_list args);
-    void append_printf(const char* format, ...) G_GNUC_PRINTF(1, 2);
+    void vprintf(const char* format, va_list args) G_GNUC_PRINTF (1, 0);
+    void append_vprintf(const char* format, va_list args) G_GNUC_PRINTF (1, 0);
     void append_uri_escaped(const char* unescaped, const char* reserved_chars_allowed = nullptr, bool allow_utf8 = false);
+
+    template<typename ...Args>
+    void printf (const char* format, Args&& ...args) G_GNUC_PRINTF (1, 2)
+    {
+        g_return_if_fail (m_buf);
+        printf_helper::callv_void ([&] (const char* format, va_list args) { g_string_vprintf (m_buf, format, args); },
+                                   format, std::forward<Args> (args)...);
+    }
+
+    template<typename ...Args>
+    void append_printf (const char* format, Args&& ...args) G_GNUC_PRINTF (1, 2)
+    {
+        g_return_if_fail (m_buf);
+        printf_helper::callv_void ([&] (const char* format, va_list args) { g_string_append_vprintf (m_buf, format, args); },
+                                   format, std::forward<Args>(args)...);
+    }
 
 private:
     mutable GString* m_buf;
@@ -251,21 +370,40 @@ private:
 
 //gstrvec convert(gstrv v);
 
-} // namespace moo
+void g_free(const gstr&) = delete;
+void g_free(const gstrp&) = delete;
+void g_free(const gstrv&) = delete;
+void g_strfreev(const gstrv&) = delete;
 
-void g_free(const moo::gstr&) = delete;
-void g_free(const moo::gstrp&) = delete;
-void g_free(const moo::gstrv&) = delete;
-void g_strfreev(const moo::gstrv&) = delete;
+} // namespace moo
 
 namespace std {
 
 template<>
-struct hash<moo::gstr>
+struct hash<::moo::gstr>
 {
-    const size_t operator()(const moo::gstr& s) const;
+    const size_t operator()(const ::moo::gstr& s) const;
 };
 
 } // namespace std
+
+template<typename ...Args>
+inline void moo_g_print(const char* format, Args&& ...args)
+{
+    static_assert(moo::printf_helper::is_valid_arg<Args...>::value, "Passed an object to g_strdup_printf");
+    g_print (format, std::forward<Args> (args)...);
+}
+
+template<typename ...Args>
+inline char* moo_g_strdup_printf (const char* format, Args&& ...args)
+{
+    static_assert(moo::printf_helper::is_valid_arg<Args...>::value, "Passed an object to g_strdup_printf");
+    return g_strdup_printf (format, std::forward<Args> (args)...);
+}
+
+#undef g_strdup_printf
+#undef g_print
+#define g_strdup_printf moo_g_strdup_printf
+#define g_print moo_g_print
 
 #endif // __cplusplus

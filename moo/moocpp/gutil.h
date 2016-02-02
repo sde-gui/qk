@@ -47,8 +47,13 @@ gstr utf8_normalize(const char* str, GNormalizeMode mode);
 gstr utf8_strup(const char* str);
 gstr utf8_strdown(const char* str);
 
-gstr markup_printf_escaped(const char* fmt, ...) G_GNUC_PRINTF(1, 2);
-gstr markup_vprintf_escaped(const char* fmt, va_list args);
+gstr markup_vprintf_escaped(const char* fmt, va_list args) G_GNUC_PRINTF (1, 0);
+
+template<typename ...Args>
+inline gstr markup_printf_escaped (const char* format, Args&& ...args) G_GNUC_PRINTF (1, 2)
+{
+    return wrap_new (printf_helper::callv (g_markup_printf_escaped, format, std::forward<Args> (args)...));
+}
 
 #ifdef __WIN32__
 gstr win32_error_message(DWORD code);

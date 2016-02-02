@@ -14,6 +14,7 @@
  */
 
 #include "moocpp/strutils.h"
+#include "mooutils/mooutils-messages.h"
 #include <string.h>
 
 using namespace moo;
@@ -70,7 +71,7 @@ public:
 
     ~StringData()
     {
-        g_free(m_p);
+        ::g_free(m_p);
     }
 
     StringData(const StringData&) = delete;
@@ -127,7 +128,7 @@ gstr::gstr(const char* s, mem_transfer mt)
     if (*s == 0)
     {
         if (mt == mem_transfer::take_ownership)
-            g_free(const_cast<char*>(s));
+            ::g_free(const_cast<char*>(s));
 
         mt = mem_transfer::borrow;
         s = "";
@@ -264,7 +265,7 @@ void gstr::clear()
         moo_assert(m_p != nullptr);
 
         if (m_is_inline)
-            g_free(m_p);
+            ::g_free(m_p);
         else
             reinterpret_cast<StringData*>(m_p)->unref();
 
@@ -347,18 +348,15 @@ char* gstr::release_owned()
     return p;
 }
 
-gstr gstr::printf(const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    gstr result = vprintf(format, args);
-    va_end(args);
-    return result;
-}
-
 gstr gstr::vprintf(const char* format, va_list args)
 {
     return gstr::wrap_new(g_strdup_vprintf(format, args));
+}
+
+
+const size_t std::hash<moo::gstr>::operator()(const moo::gstr& s) const
+{
+    return g_str_hash (s.is_null () ? "" : s.get ());
 }
 
 
@@ -372,7 +370,7 @@ gstrvec moo::convert(gstrv v)
     for (gsize i = 0, c = ret.size(); i < c; ++i)
         ret.emplace_back(gstr::wrap_new(pv[i]));
 
-    g_free(pv);
+    ::g_free(pv);
     return ret;
 }
 
@@ -537,28 +535,10 @@ void strbuilder::vprintf(const char* format, va_list args)
     g_string_vprintf(m_buf, format, args);
 }
 
-void strbuilder::printf(const char* format, ...)
-{
-    g_return_if_fail(m_buf);
-    va_list args;
-    va_start(args, format);
-    g_string_vprintf(m_buf, format, args);
-    va_end(args);
-}
-
 void strbuilder::append_vprintf(const char* format, va_list args)
 {
     g_return_if_fail(m_buf);
     g_string_append_vprintf(m_buf, format, args);
-}
-
-void strbuilder::append_printf(const char* format, ...)
-{
-    g_return_if_fail(m_buf);
-    va_list args;
-    va_start(args, format);
-    g_string_append_vprintf(m_buf, format, args);
-    va_end(args);
 }
 
 void strbuilder::append_uri_escaped(const char* unescaped, const char* reserved_chars_allowed, bool allow_utf8)

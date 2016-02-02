@@ -534,8 +534,8 @@ _moo_edit_try_encoding_dialog (g::File       file,
     if (!filename.empty())
     {
         /* Could not open file foo.txt */
-        gstr tmp = gstr::printf(_("Could not open file\n%s"), filename.get());
-        msg = g::markup_printf_escaped("<b><big>%s</big></b>", tmp.get());
+        gstr tmp = gstr::printf(_("Could not open file\n%s"), filename);
+        msg = g::markup_printf_escaped("<b><big>%s</big></b>", tmp);
     }
     else
     {
@@ -599,7 +599,7 @@ _moo_edit_open_error_dialog (GtkWidget* widget,
 
     if (!filename.empty())
         /* Could not open file foo.txt */
-        msg.set_new (g_strdup_printf (_("Could not open file\n%s"), filename.get()));
+        msg.set_printf (_("Could not open file\n%s"), filename);
     else
         msg.set_const (_("Could not open file"));
 

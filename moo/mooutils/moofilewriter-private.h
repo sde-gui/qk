@@ -34,9 +34,7 @@ struct MooFileWriter
     virtual ~MooFileWriter() {}
 
     virtual bool write  (const char*    data,
-                         gsize          len) = 0;
-    virtual bool printf (const char*    fmt,
-                         va_list        args) G_GNUC_PRINTF (2, 0) = 0;
+                         gssize         len = -1) = 0;
     virtual bool close  (moo::gerrp&    error) = 0;
 };
 
@@ -46,9 +44,7 @@ struct MooLocalFileWriter : public MooFileWriter
     ~MooLocalFileWriter();
 
     bool write  (const char*    data,
-                 gsize          len) override;
-    bool printf (const char*    fmt,
-                 va_list        args) G_GNUC_PRINTF (2, 0) override;
+                 gssize         len = -1) override;
     bool close  (moo::gerrp&    error) override;
 
     MOO_DISABLE_COPY_OPS(MooLocalFileWriter);
@@ -65,9 +61,7 @@ struct MooStringWriter : public MooFileWriter
     ~MooStringWriter();
 
     bool write  (const char*    data,
-                 gsize          len) override;
-    bool printf (const char*    fmt,
-                 va_list        args) G_GNUC_PRINTF (2, 0) override;
+                 gssize         len = -1) override;
     bool close  (moo::gerrp&    error) override;
 
     MOO_DISABLE_COPY_OPS(MooStringWriter);

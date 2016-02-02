@@ -76,14 +76,41 @@ MooFileWriter  *moo_config_writer_new           (const char     *filename,
                                                  GError        **error);
 gboolean        moo_file_writer_write           (MooFileWriter  *writer,
                                                  const char     *data,
-                                                 gssize          len);
-gboolean        moo_file_writer_printf          (MooFileWriter  *writer,
+                                                 gssize          len MOO_CPP_DFLT_PARAM(-1));
+gboolean        moo_file_writer_printf_c        (MooFileWriter  *writer,
                                                  const char     *fmt,
                                                  ...) G_GNUC_PRINTF (2, 3);
-gboolean        moo_file_writer_printf_markup   (MooFileWriter  *writer,
+gboolean        moo_file_writer_printf_markup_c (MooFileWriter  *writer,
                                                  const char     *fmt,
                                                  ...) G_GNUC_PRINTF (2, 3);
 gboolean        moo_file_writer_close           (MooFileWriter  *writer,
                                                  GError        **error);
 
+#ifndef __cplusplus
+
+#define moo_file_writer_printf moo_file_writer_printf_c
+#define moo_file_writer_printf_markup moo_file_writer_printf_markup_c
+
+#endif // !__cplusplus
+
 G_END_DECLS
+
+#ifdef __cplusplus
+
+template<typename ...Args>
+inline bool moo_file_writer_printf (MooFileWriter *writer, const char* fmt, Args&& ...args) G_GNUC_PRINTF (2, 3)
+{
+    gstr s = gstr::printf (fmt, std::forward<Args> (args)...);
+    return moo_file_writer_write (writer, s);
+}
+
+template<typename ...Args>
+inline bool moo_file_writer_printf_markup (MooFileWriter  *writer,
+                                           const char     *fmt,
+                                           Args&&... args) G_GNUC_PRINTF (2, 3)
+{
+    gstr s = g::markup_printf_escaped (fmt, std::forward<Args> (args)...);
+    return moo_file_writer_write (writer, s);
+}
+
+#endif // __cplusplus

@@ -159,27 +159,26 @@ moo_file_writer_write (MooFileWriter *writer,
 }
 
 gboolean
-moo_file_writer_printf (MooFileWriter  *writer,
-                        const char     *fmt,
-                        ...)
+moo_file_writer_printf_c (MooFileWriter  *writer,
+                          const char     *fmt,
+                          ...)
 {
     va_list args;
-    gboolean ret;
 
     g_return_val_if_fail (writer != nullptr, FALSE);
     g_return_val_if_fail (fmt != NULL, FALSE);
 
     va_start (args, fmt);
-    ret = writer->printf (fmt, args);
+    gstr s = gstr::vprintf (fmt, args);
     va_end (args);
 
-    return ret;
+    return writer->write (s);
 }
 
 gboolean
-moo_file_writer_printf_markup (MooFileWriter  *writer,
-                               const char     *fmt,
-                               ...)
+moo_file_writer_printf_markup_c (MooFileWriter  *writer,
+                                 const char     *fmt,
+                                 ...)
 {
     g_return_val_if_fail (writer != nullptr, FALSE);
     g_return_val_if_fail (fmt != NULL, FALSE);
@@ -322,10 +321,13 @@ moo_config_writer_new (const char  *filename,
 }
 
 
-bool MooLocalFileWriter::write (const char* data, gsize len)
+bool MooLocalFileWriter::write (const char* data, gssize len)
 {
     if (error)
         return FALSE;
+
+    if (len < 0)
+        len = strlen(data);
 
     while (len > 0)
     {
@@ -368,15 +370,6 @@ bool MooLocalFileWriter::write (const char* data, gsize len)
     return TRUE;
 }
 
-bool MooLocalFileWriter::printf (const char* fmt, va_list args)
-{
-    if (error)
-        return FALSE;
-
-    gstr text = gstr::vprintf (fmt, args);
-    return write (text, strlen (text));
-}
-
 bool MooLocalFileWriter::close (gerrp& out_error)
 {
     g_return_val_if_fail (stream != nullptr, FALSE);
@@ -399,20 +392,9 @@ bool MooLocalFileWriter::close (gerrp& out_error)
 /* MooStringWriter
  */
 
-bool MooStringWriter::write (const char* data, gsize len)
+bool MooStringWriter::write (const char* data, gssize len)
 {
     g_string_append_len (string, data, len);
-    return TRUE;
-}
-
-bool MooStringWriter::printf (const char* fmt, va_list args)
-{
-    gstrp buf;
-    gint len = g_vasprintf (buf.pp(), fmt, args);
-
-    if (len >= 0)
-        g_string_append_len (string, buf.get(), len);
-
     return TRUE;
 }
 

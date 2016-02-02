@@ -59,7 +59,7 @@
 
 using namespace moo;
 
-MOO_DEFINE_QUARK(moo - error, moo_error_quark)
+MOO_DEFINE_QUARK(moo-error, moo_error_quark)
 
 static gpointer copy_pointer(gpointer p)
 {
@@ -1810,27 +1810,46 @@ moo_log_debug_enabled (void)
     return enabled;
 }
 
-void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_list args)
+void _moo_log_impl (MooCodeLoc loc, GLogLevelFlags flags, moo::gstr message)
 {
-    char *message;
-
     if (flags >= G_LOG_LEVEL_DEBUG && !moo_log_debug_enabled ())
         return;
-
-    message = g_strdup_vprintf (format, args);
 
     if (!loc.empty())
         g_log (G_LOG_DOMAIN, flags,
                /* Translators: remove the part before and including | */
                Q_("console message|in file %s, line %d, function %s: %s"),
-               loc.file, loc.line, loc.func, message);
+               loc.file, loc.line, loc.func, message.get ());
     else
-        g_log (G_LOG_DOMAIN, flags, "%s", message);
-
-    g_free (message);
+        g_log (G_LOG_DOMAIN, flags, "%s", message.get ());
 }
 
-void MOO_NORETURN _moo_error (MooCodeLoc loc, const char *format, ...)
+void _moo_log_c (MooCodeLoc loc, GLogLevelFlags flags, const char *format, ...)
+{
+    if (flags >= G_LOG_LEVEL_DEBUG && !moo_log_debug_enabled ())
+        return;
+
+    va_list args;
+    va_start (args, format);
+    _moo_log_impl (loc, flags, gstr::vprintf (format, args));
+    va_end (args);
+}
+
+void _moo_logv (MooCodeLoc loc, GLogLevelFlags flags, const char *format, va_list args)
+{
+    if (flags >= G_LOG_LEVEL_DEBUG && !moo_log_debug_enabled ())
+        return;
+
+    _moo_log_impl (loc, flags, gstr::vprintf (format, args));
+}
+
+void MOO_NORETURN _moo_error_impl (MooCodeLoc, moo::gstr message)
+{
+    g_log (G_LOG_DOMAIN, G_LOG_LEVEL_ERROR, "%s", message.get_non_null ());
+    moo_abort ();
+}
+
+void MOO_NORETURN _moo_error_c (MooCodeLoc loc, const char *format, ...)
 {
     va_list args;
     va_start (args, format);

@@ -331,7 +331,7 @@ push_appdir_to_path (void)
     gstr new_path;
 
     if (path)
-        new_path.set_new (g_strdup_printf ("%s;%s", appdir.get(), path));
+        new_path.set_printf ("%s;%s", appdir, path);
     else
         new_path = std::move (appdir);
 
