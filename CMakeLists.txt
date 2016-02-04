@@ -127,7 +127,8 @@ else()
 
         set(GTK_LIBRARIES libgtk-win32-2.0-0 libatk-1.0-0 libgdk-win32-2.0-0 libgdk_pixbuf-2.0-0
 		    libpango-1.0-0 libpangocairo-1.0-0 libcairo-2
-		    libgio-2.0-0 libgobject-2.0-0 libgmodule-2.0-0 libgthread-2.0-0 libglib-2.0-0 libintl-8)
+		    libgio-2.0-0 libgobject-2.0-0 libgmodule-2.0-0 libgthread-2.0-0 libglib-2.0-0 libintl-8
+            libmooglib-0)
         set(LIBXML2_LIBRARIES "libxml2-2")
     else()
         set(MOO_GTK_DIR "C:/gtk-build/gtk/Win32" CACHE PATH "Gtk root dir")
