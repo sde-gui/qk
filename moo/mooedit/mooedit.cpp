@@ -519,7 +519,7 @@ changed_cb (G_GNUC_UNUSED GtkTextBuffer *buffer,
         g_source_remove(edit->priv->sync_timeout_id);
 
     // start timer
-    edit->priv->sync_timeout_id = gdk_threads_add_timeout (500, autosync_callback, edit);
+    edit->priv->sync_timeout_id = g_timeout_add (500, autosync_callback, edit);
 }
 
 static void
@@ -1223,7 +1223,7 @@ _moo_edit_queue_recheck_config_all (void)
 {
     if (!moo_edit_apply_config_all_idle)
         moo_edit_apply_config_all_idle =
-            gdk_threads_add_idle ((GSourceFunc) moo_edit_apply_config_all_in_idle, NULL);
+            g_idle_add ((GSourceFunc) moo_edit_apply_config_all_in_idle, NULL);
 }
 
 
@@ -1334,9 +1334,9 @@ void Edit::_queue_recheck_config()
     g_return_if_fail(!priv.in_recheck_config);
     if (!priv.apply_config_idle)
         priv.apply_config_idle =
-        gdk_threads_add_idle_full(G_PRIORITY_HIGH,
-                                  (GSourceFunc) moo_edit_recheck_config_in_idle,
-                                  gobj(), NULL);
+            g_idle_add_full (G_PRIORITY_HIGH,
+                             (GSourceFunc) moo_edit_recheck_config_in_idle,
+                             gobj(), NULL);
 }
 
 static void

@@ -198,28 +198,19 @@ moo_assign_obj (void** dest, void* src)
 
 const char *_moo_get_pid_string             (void);
 
-guint       _moo_io_add_watch               (GIOChannel     *channel,
-                                             GIOCondition    condition,
-                                             GIOFunc         func,
-                                             gpointer        data);
-guint       _moo_io_add_watch_full          (GIOChannel     *channel,
-                                             int             priority,
-                                             GIOCondition    condition,
-                                             GIOFunc         func,
-                                             gpointer        data,
-                                             GDestroyNotify  notify);
-
-
 gboolean    _moo_regex_escape               (const char *string,
                                              gssize      bytes,
                                              GString    *dest);
 
 const char  *moo_error_message              (GError *error);
 
-gboolean    moo_signal_accumulator_continue_cancel (GSignalInvocationHint *ihint,
-                                                    GValue                *return_accu,
-                                                    const GValue          *handler_return,
-                                                    gpointer               val_continue);
+gboolean     moo_signal_accumulator_continue_cancel (GSignalInvocationHint *ihint,
+                                                     GValue                *return_accu,
+                                                     const GValue          *handler_return,
+                                                     gpointer               val_continue);
+
+void         moo_thread_init                (void);
+gboolean     moo_is_main_thread             (void);
 
 G_END_DECLS
 

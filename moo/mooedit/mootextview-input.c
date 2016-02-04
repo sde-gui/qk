@@ -1136,9 +1136,9 @@ start_drag_scroll (MooTextView *view)
 {
     if (!view->priv->dnd.scroll_timeout)
         view->priv->dnd.scroll_timeout =
-            gdk_threads_add_timeout (SCROLL_TIMEOUT,
-                                     (GSourceFunc)drag_scroll_timeout_func,
-                                     view);
+            g_timeout_add (SCROLL_TIMEOUT,
+                           (GSourceFunc)drag_scroll_timeout_func,
+                           view);
     drag_scroll_timeout_func (view);
 }
 

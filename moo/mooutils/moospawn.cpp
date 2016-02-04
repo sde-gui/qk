@@ -598,11 +598,11 @@ moo_cmd_run_command (MooCmd     *cmd,
         g_io_channel_set_flags (cmd->priv->stdout_io, G_IO_FLAG_NONBLOCK, NULL);
         g_io_channel_set_close_on_unref (cmd->priv->stdout_io, TRUE);
         cmd->priv->stdout_watch =
-                _moo_io_add_watch_full (cmd->priv->stdout_io,
-                                        G_PRIORITY_DEFAULT_IDLE,
-                                        G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
-                                        (GIOFunc) command_out, cmd,
-                                        (GDestroyNotify) stdout_watch_removed);
+            g_io_add_watch_full (cmd->priv->stdout_io,
+                                 G_PRIORITY_DEFAULT_IDLE,
+                                 G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
+                                 (GIOFunc) command_out, cmd,
+                                 (GDestroyNotify) stdout_watch_removed);
     }
 
     if (errp)
@@ -613,11 +613,11 @@ moo_cmd_run_command (MooCmd     *cmd,
         g_io_channel_set_flags (cmd->priv->stderr_io, G_IO_FLAG_NONBLOCK, NULL);
         g_io_channel_set_close_on_unref (cmd->priv->stderr_io, TRUE);
         cmd->priv->stderr_watch =
-                _moo_io_add_watch_full (cmd->priv->stderr_io,
-                                        G_PRIORITY_DEFAULT_IDLE,
-                                        G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
-                                        (GIOFunc) command_err, cmd,
-                                        (GDestroyNotify) stderr_watch_removed);
+            g_io_add_watch_full (cmd->priv->stderr_io,
+                                 G_PRIORITY_DEFAULT_IDLE,
+                                 G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
+                                 (GIOFunc) command_err, cmd,
+                                 (GDestroyNotify) stderr_watch_removed);
     }
 
     return TRUE;

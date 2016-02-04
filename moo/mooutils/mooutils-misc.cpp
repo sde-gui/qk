@@ -88,6 +88,25 @@ static char *moo_display_app_name;
 static char *moo_user_data_dir;
 static char *moo_user_cache_dir;
 
+static GThread* main_thread = nullptr;
+
+void
+moo_thread_init ()
+{
+#if !GLIB_CHECK_VERSION(2,32,0)
+    g_thread_init (NULL);
+#endif
+
+    g_assert (main_thread == nullptr);
+    main_thread = g_thread_self ();
+}
+
+gboolean
+moo_is_main_thread ()
+{
+    return main_thread == g_thread_self ();
+}
+
 #ifdef __WIN32__
 
 static gboolean
@@ -843,9 +862,13 @@ class LogWriterWindow : public ILogWriter
 public:
     void log(const gchar* log_domain, GLogLevelFlags flags, const gchar* message) override
     {
-        gstr text = format_log_message (log_domain, message);
+        if (!moo_is_main_thread ())
+        {
+            moo_break_if_in_debugger ();
+            return;
+        }
 
-        gdk_threads_enter ();
+        gstr text = format_log_message (log_domain, message);
 
         if (MooLogWindow *log = moo_log_window ())
         {
@@ -863,24 +886,30 @@ public:
             if (flags & (G_LOG_LEVEL_CRITICAL | G_LOG_LEVEL_ERROR | G_LOG_LEVEL_WARNING))
                 gtk_window_present (GTK_WINDOW (log->window));
         }
-
-        gdk_threads_leave ();
     }
 
     void print(const gchar* string) override
     {
-        gdk_threads_enter ();
+        if (!moo_is_main_thread ())
+        {
+            moo_break_if_in_debugger ();
+            return;
+        }
+
         if (MooLogWindow *log = moo_log_window ())
             moo_log_window_insert (log, string, NULL);
-        gdk_threads_leave ();
     }
 
     void printerr(const gchar* string) override
     {
-        gdk_threads_enter ();
+        if (!moo_is_main_thread ())
+        {
+            moo_break_if_in_debugger ();
+            return;
+        }
+
         if (MooLogWindow *log = moo_log_window ())
             moo_log_window_insert (log, string, log->warning_tag);
-        gdk_threads_leave ();
     }
 
 private:
@@ -2163,53 +2192,6 @@ source_data_free (gpointer data)
     if (sd && sd->notify)
         sd->notify (sd->data);
     g_free (sd);
-}
-
-static gboolean
-thread_io_func (GIOChannel  *source,
-                GIOCondition condition,
-                gpointer     data)
-{
-    SourceData *sd = reinterpret_cast<SourceData*> (data);
-    gboolean ret = FALSE;
-
-    gdk_threads_enter ();
-
-    if (!g_source_is_destroyed (g_main_current_source ()))
-        ret = ((GIOFunc) sd->func) (source, condition, sd->data);
-
-    gdk_threads_leave ();
-    return ret;
-}
-
-guint
-_moo_io_add_watch (GIOChannel   *channel,
-                   GIOCondition  condition,
-                   GIOFunc       func,
-                   gpointer      data)
-{
-    return _moo_io_add_watch_full (channel, G_PRIORITY_DEFAULT,
-                                   condition, func, data, NULL);
-}
-
-
-guint
-_moo_io_add_watch_full (GIOChannel    *channel,
-                        int            priority,
-                        GIOCondition   condition,
-                        GIOFunc        func,
-                        gpointer       data,
-                        GDestroyNotify notify)
-{
-    SourceData *sd;
-
-    sd = g_new (SourceData, 1);
-    sd->func = (GSourceFunc) func;
-    sd->data = data;
-    sd->notify = notify;
-
-    return g_io_add_watch_full (channel, priority, condition,
-                                thread_io_func, sd, source_data_free);
 }
 
 

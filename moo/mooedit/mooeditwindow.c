@@ -1067,7 +1067,7 @@ queue_save_window_config (MooEditWindow *window)
 {
     if (!window->priv->save_params_idle)
         window->priv->save_params_idle =
-            gdk_threads_add_idle ((GSourceFunc) save_window_config, window);
+            g_idle_add ((GSourceFunc) save_window_config, window);
 }
 
 

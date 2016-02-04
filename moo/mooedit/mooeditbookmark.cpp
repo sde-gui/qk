@@ -311,7 +311,7 @@ void Edit::_line_mark_moved(MooEdit* edit, MooLineMark* mark)
         !edit->priv->update_bookmarks_idle)
     {
         edit->priv->update_bookmarks_idle =
-                gdk_threads_add_idle ((GSourceFunc) update_bookmarks, edit);
+            g_idle_add ((GSourceFunc) update_bookmarks, edit);
         bookmarks_changed (edit);
     }
 }

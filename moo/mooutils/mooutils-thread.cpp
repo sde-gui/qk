@@ -386,11 +386,11 @@ static volatile int print_event_id = 0;
 static void
 message_callback (GList *events, G_GNUC_UNUSED gpointer data)
 {
+    g_assert (moo_is_main_thread ());
+
     while (events)
     {
-        gdk_threads_enter ();
         _moo_message ("%s", (char*) events->data);
-        gdk_threads_leave ();
         events = events->next;
     }
 }
@@ -398,11 +398,11 @@ message_callback (GList *events, G_GNUC_UNUSED gpointer data)
 static void
 print_callback (GList *events, G_GNUC_UNUSED gpointer data)
 {
+    g_assert (moo_is_main_thread ());
+
     while (events)
     {
-        gdk_threads_enter ();
         g_print ("%s", (char*) events->data);
-        gdk_threads_leave ();
         events = events->next;
     }
 }

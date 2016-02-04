@@ -691,7 +691,7 @@ int App::run()
 
     p->quit_handler_id = gtk_quit_add (1, (GtkFunction) Private::on_gtk_main_quit, p);
 
-    gdk_threads_add_timeout (100, (GSourceFunc) App::Private::check_signal, NULL);
+    g_timeout_add (100, (GSourceFunc) App::Private::check_signal, NULL);
 
 #ifndef __WIN32__
     p->sm_client = egg_sm_client_get ();
@@ -702,13 +702,11 @@ int App::run()
     g_signal_connect_swapped (p->sm_client, "quit",
                               G_CALLBACK (sm_quit), p);
 
-    gdk_threads_leave ();
     if (EGG_SM_CLIENT_GET_CLASS (p->sm_client)->startup)
         EGG_SM_CLIENT_GET_CLASS (p->sm_client)->startup (p->sm_client, NULL);
-    gdk_threads_enter ();
 #endif // __WIN32__
 
-    gdk_threads_add_idle_full (G_PRIORITY_DEFAULT_IDLE + 1, (GSourceFunc) emit_started, this, NULL);
+    g_idle_add_full (G_PRIORITY_DEFAULT_IDLE + 1, (GSourceFunc) emit_started, this, NULL);
 
     gtk_main ();
 

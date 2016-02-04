@@ -394,10 +394,10 @@ watch_stat_start(MooFileWatch&          watch,
 {
     watch.ref();
     watch.impl().stat_timeout =
-            gdk_threads_add_timeout_full (MOO_STAT_PRIORITY,
-                                          MOO_STAT_TIMEOUT,
-                                          (GSourceFunc) do_stat,
-                                          &watch, NULL);
+        g_timeout_add_full (MOO_STAT_PRIORITY,
+                            MOO_STAT_TIMEOUT,
+                            (GSourceFunc) do_stat,
+                            &watch, NULL);
     return TRUE;
 }
 

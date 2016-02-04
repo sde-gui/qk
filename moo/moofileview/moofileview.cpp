@@ -3927,7 +3927,7 @@ file_added (MooFileView *fileview)
 {
     if (fileview->priv->select_file && !fileview->priv->select_file_idle)
         fileview->priv->select_file_idle =
-                gdk_threads_add_idle ((GSourceFunc) do_select_name, fileview);
+            g_idle_add ((GSourceFunc) do_select_name, fileview);
 }
 
 
@@ -5159,9 +5159,9 @@ drop_open_timeout_func (MooFileView *fileview)
 
             if (++fileview->priv->drop_to.n_blinks > 1)
                 fileview->priv->drop_to.timeout =
-                        gdk_threads_add_timeout (DROP_OPEN_BLINK_TIME,
-                                                 (GSourceFunc) drop_open_timeout_func2,
-                                                 fileview);
+                    g_timeout_add (DROP_OPEN_BLINK_TIME,
+                                   (GSourceFunc) drop_open_timeout_func2,
+                                   fileview);
         }
         else
         {
@@ -5178,9 +5178,9 @@ drop_open_timeout_func (MooFileView *fileview)
 
             if (++fileview->priv->drop_to.n_blinks > 1)
                 fileview->priv->drop_to.timeout =
-                        gdk_threads_add_timeout (DROP_OPEN_BLINK_TIME,
-                                                 (GSourceFunc) drop_open_timeout_func2,
-                                                 fileview);
+                    g_timeout_add (DROP_OPEN_BLINK_TIME,
+                                   (GSourceFunc) drop_open_timeout_func2,
+                                   fileview);
         }
         else
         {
@@ -5195,9 +5195,9 @@ drop_open_timeout_func (MooFileView *fileview)
 
     if (!fileview->priv->drop_to.timeout)
         fileview->priv->drop_to.timeout =
-                gdk_threads_add_timeout (DROP_OPEN_BLINK_TIME,
-                                         (GSourceFunc) drop_open_timeout_func,
-                                         fileview);
+            g_timeout_add (DROP_OPEN_BLINK_TIME,
+                           (GSourceFunc) drop_open_timeout_func,
+                           fileview);
 
     return FALSE;
 }
@@ -5544,9 +5544,9 @@ drag_motion (GtkWidget      *widget,
                     gtk_tree_row_reference_new (_moo_tree_view_get_model (widget), path);
 
             fileview->priv->drop_to.timeout =
-                    gdk_threads_add_timeout (DROP_OPEN_TIMEOUT,
-                                             (GSourceFunc) drop_open_timeout_func,
-                                             fileview);
+                g_timeout_add (DROP_OPEN_TIMEOUT,
+                               (GSourceFunc) drop_open_timeout_func,
+                               fileview);
 
             fileview->priv->drop_to.x = abs_x;
             fileview->priv->drop_to.y = abs_y;
@@ -5608,9 +5608,9 @@ button_drag_motion (MooFileView    *fileview,
 
         fileview->priv->drop_to.button = button;
         fileview->priv->drop_to.timeout =
-                gdk_threads_add_timeout (DROP_OPEN_TIMEOUT,
-                                         (GSourceFunc) drop_open_timeout_func,
-                                         fileview);
+            g_timeout_add (DROP_OPEN_TIMEOUT,
+                           (GSourceFunc) drop_open_timeout_func,
+                           fileview);
     }
 
     gdk_drag_status (context, context->suggested_action, time);
@@ -6202,11 +6202,11 @@ bookmark_drag_motion (MooBookmarkView *bkview,
         cancel_drop_open (fileview);
 
         fileview->priv->drop_to.row =
-                gtk_tree_row_reference_new (_moo_tree_view_get_model (bkview), path);
+            gtk_tree_row_reference_new (_moo_tree_view_get_model (bkview), path);
         fileview->priv->drop_to.timeout =
-                gdk_threads_add_timeout (DROP_OPEN_TIMEOUT,
-                                         (GSourceFunc) drop_open_timeout_func,
-                                         fileview);
+            g_timeout_add (DROP_OPEN_TIMEOUT,
+                           (GSourceFunc) drop_open_timeout_func,
+                           fileview);
         fileview->priv->drop_to.x = cell_x;
         fileview->priv->drop_to.y = cell_y;
         fileview->priv->drop_to.cell = cell;
