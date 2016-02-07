@@ -42,11 +42,11 @@ static void row_activated                   (GtkTreeView        *treeview,
 static void icon_data_func                  (gtk::TreeViewColumn column,
                                              gtk::CellRenderer   cell,
                                              gtk::TreeModel      model,
-                                             GtkTreeIter*        iter);
+                                             const GtkTreeIter&  iter);
 static void label_data_func                 (gtk::TreeViewColumn column,
                                              gtk::CellRenderer   cell,
                                              gtk::TreeModel      model,
-                                             GtkTreeIter*        iter);
+                                             const GtkTreeIter&  iter);
 
 
 /* MOO_TYPE_BOOKMARK_VIEW */
@@ -210,19 +210,21 @@ _moo_bookmark_view_set_mgr (MooBookmarkView    *view,
 
 
 objp<MooBookmark>
-get_bookmark (GtkTreeModel *model,
-              GtkTreeIter  *iter)
+get_bookmark (gtk::TreeModel     model,
+              const GtkTreeIter& iter)
 {
     objp<MooBookmark> bookmark;
-    gtk_tree_model_get (model, iter, COLUMN_BOOKMARK, bookmark.pp (), -1);
+    model.get (iter, COLUMN_BOOKMARK, bookmark);
     return bookmark;
 }
 
 objp<MooBookmark>
-get_bookmark (gtk::TreeModel model,
-              GtkTreeIter*   iter)
+get_bookmark (GtkTreeModel *model,
+              GtkTreeIter  *iter)
 {
-    return get_bookmark (model.gobj(), iter);
+    g_return_val_if_fail (GTK_IS_TREE_MODEL (model), nullptr);
+    g_return_val_if_fail (iter != nullptr, nullptr);
+    return get_bookmark (*wrap (model), *iter);
 }
 
 #if 0
@@ -240,7 +242,7 @@ static void
 icon_data_func (gtk::TreeViewColumn,
                 gtk::CellRenderer   cell,
                 gtk::TreeModel      model,
-                GtkTreeIter*        iter)
+                const GtkTreeIter&  iter)
 {
     objp<MooBookmark> bookmark = get_bookmark (model, iter);
 
@@ -258,7 +260,7 @@ static void
 label_data_func (gtk::TreeViewColumn,
                  gtk::CellRenderer   cell,
                  gtk::TreeModel      model,
-                 GtkTreeIter*        iter)
+                 const GtkTreeIter&  iter)
 {
     objp<MooBookmark> bookmark = get_bookmark (model, iter);
 

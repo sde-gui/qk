@@ -482,7 +482,7 @@ moo_window_constructor (GType                  type,
 
     klass = MOO_WINDOW_CLASS (g_type_class_ref (type));
     moo_window_set_id (window, moo_window_class_get_id (klass));
-    window->priv->name = g_strdup (moo_window_class_get_name (klass));
+    window->priv->name.set_new (g_strdup (moo_window_class_get_name (klass)));
 
     init_prefs (window);
 

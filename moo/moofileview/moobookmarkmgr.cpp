@@ -38,17 +38,28 @@ using namespace moo;
 
 #define COLUMN_BOOKMARK MOO_BOOKMARK_MGR_COLUMN_BOOKMARK
 
+struct UserInfo
+{
+    g::ObjectRawPtr user;
+    gobj_raw_ptr<MooUiXml> xml;
+    gobj_raw_ptr<MooActionCollection> actions;
+    gstr path;
+    guint user_id = 0;
+    guint merge_id = 0;
+    std::vector<gtk::ActionPtr> bm_actions;
+};
+
+typedef std::shared_ptr<UserInfo> UserInfoPtr;
+
 struct MooBookmarkMgrPrivate
 {
     gtk::ListStorePtr store;
-    GSList *users = nullptr;
+    std::vector<UserInfoPtr> users;
     gtk::WidgetPtr editor;
     bool loading = false;
     guint last_user_id = 0;
     guint update_idle = 0;
 };
-
-typedef struct _UserInfo UserInfo;
 
 
 static void moo_bookmark_mgr_finalize       (GObject        *object);
@@ -60,7 +71,7 @@ static void moo_bookmark_mgr_load           (MooBookmarkMgr *mgr);
 static void moo_bookmark_mgr_save           (MooBookmarkMgr *mgr);
 
 static void mgr_remove_user                 (MooBookmarkMgr *mgr,
-                                             UserInfo       *info);
+                                             UserInfo       &info);
 static gboolean mgr_update_menus            (MooBookmarkMgr *mgr);
 
 static MooBookmark *_moo_bookmark_copy      (MooBookmark    *bookmark);
@@ -125,7 +136,6 @@ _moo_bookmark_mgr_init (MooBookmarkMgr *mgr)
 static void
 moo_bookmark_mgr_finalize (GObject *object)
 {
-    GSList *l, *users;
     MooBookmarkMgr *mgr = MOO_BOOKMARK_MGR (object);
 
     if (mgr->priv->update_idle)
@@ -137,11 +147,11 @@ moo_bookmark_mgr_finalize (GObject *object)
         mgr->priv->editor = nullptr;
     }
 
-    users = g_slist_copy (mgr->priv->users);
-    for (l = users; l != NULL; l = l->next)
-        mgr_remove_user (mgr, reinterpret_cast<UserInfo*> (l->data));
-    g_assert (mgr->priv->users == NULL);
-    g_slist_free (users);
+    std::vector<UserInfoPtr> users = mgr->priv->users;
+    for (const auto& u: users)
+        mgr_remove_user (mgr, *u);
+    g_assert (mgr->priv->users.empty());
+    users.clear ();
 
     delete mgr->priv;
     mgr->priv = nullptr;
@@ -176,8 +186,8 @@ _moo_bookmark_mgr_add (MooBookmarkMgr *mgr, objp<MooBookmark> bookmark)
     /* XXX validate bookmark */
 
     GtkTreeIter iter;
-    mgr->priv->store->append (&iter);
-    mgr->priv->store->set (&iter, COLUMN_BOOKMARK, bookmark.release());
+    mgr->priv->store->append (iter);
+    mgr->priv->store->set (iter, COLUMN_BOOKMARK, bookmark.release());
 }
 
 
@@ -186,7 +196,7 @@ moo_bookmark_mgr_add_separator (MooBookmarkMgr *mgr)
 {
     GtkTreeIter iter;
     g_return_if_fail (MOO_IS_BOOKMARK_MGR (mgr));
-    mgr->priv->store->append (&iter);
+    mgr->priv->store->append (iter);
 }
 
 
@@ -344,7 +354,6 @@ moo_bookmark_mgr_save (MooBookmarkMgr *mgr)
 {
     MooMarkupNode *xml;
     MooMarkupNode *root;
-    GtkTreeIter iter;
 
     xml = moo_prefs_get_markup (MOO_PREFS_RC);
     g_return_if_fail (xml != NULL);
@@ -356,7 +365,8 @@ moo_bookmark_mgr_save (MooBookmarkMgr *mgr)
 
     gtk::ListStore& model = *mgr->priv->store;
 
-    if (!model.get_iter_first (&iter))
+    GtkTreeIter iter;
+    if (!model.get_iter_first (iter))
         return;
 
     root = moo_markup_create_element (xml, BOOKMARKS_ROOT);
@@ -364,10 +374,10 @@ moo_bookmark_mgr_save (MooBookmarkMgr *mgr)
 
     do
     {
-        MooBookmark *bookmark = NULL;
+        objp<MooBookmark> bookmark;
         MooMarkupNode *elm;
 
-        model.get (&iter, COLUMN_BOOKMARK, &bookmark);
+        model.get (iter, COLUMN_BOOKMARK, bookmark);
 
         if (!bookmark)
         {
@@ -381,10 +391,8 @@ moo_bookmark_mgr_save (MooBookmarkMgr *mgr)
         moo_markup_set_prop (elm, PROP_LABEL, bookmark->label);
         if (!bookmark->icon_stock_id.empty())
             moo_markup_set_prop (elm, PROP_ICON, bookmark->icon_stock_id);
-
-        _moo_bookmark_free (bookmark);
     }
-    while (model.iter_next (&iter));
+    while (model.iter_next (iter));
 }
 
 
@@ -392,50 +400,28 @@ moo_bookmark_mgr_save (MooBookmarkMgr *mgr)
 /* Bookmarks menu
  */
 
-struct _UserInfo {
-    GObject *user;
-    MooUiXml *xml;
-    MooActionCollection *actions;
-    char *path;
-    guint user_id;
-    guint merge_id;
-    GSList *bm_actions;
-};
-
-static UserInfo*
+static UserInfoPtr
 user_info_new (GObject             *user,
                MooActionCollection *actions,
                MooUiXml            *xml,
                const char          *path,
                guint                user_id)
 {
-    UserInfo *info;
-
     g_return_val_if_fail (G_IS_OBJECT (user), NULL);
     g_return_val_if_fail (MOO_IS_ACTION_COLLECTION (actions), NULL);
     g_return_val_if_fail (MOO_IS_UI_XML (xml), NULL);
     g_return_val_if_fail (path, NULL);
     g_return_val_if_fail (user_id > 0, NULL);
 
-    info = g_new0 (UserInfo, 1);
+    UserInfoPtr info = std::make_shared<UserInfo> ();
+
     info->user = user;
     info->actions = actions;
     info->xml = xml;
-    info->path = g_strdup (path);
+    info->path.set (path);
     info->user_id = user_id;
 
     return info;
-}
-
-
-static void
-user_info_free (UserInfo *info)
-{
-    if (info)
-    {
-        g_free (info->path);
-        g_free (info);
-    }
 }
 
 
@@ -460,82 +446,71 @@ item_activated (GtkAction      *action,
 
 static void
 make_menu (MooBookmarkMgr *mgr,
-           UserInfo       *info)
+           UserInfo       &info)
 {
     gtk::TreeModel& model = *mgr->priv->store;
     GtkTreeIter iter;
-    GString *markup;
     GtkActionGroup *group;
 
-    if (!model.get_iter_first (&iter))
+    if (!model.get_iter_first (iter))
         return;
 
-    info->merge_id = moo_ui_xml_new_merge_id (info->xml);
-    markup = g_string_new (NULL);
+    info.merge_id = moo_ui_xml_new_merge_id (info.xml);
+    
+    strbuilder markup;
 
-    group = moo_action_collection_get_group (info->actions, NULL);
+    group = moo_action_collection_get_group (info.actions, NULL);
 
     do
     {
-        MooBookmark *bookmark = NULL;
-        GtkAction *action;
-        char *action_id;
+        objp<MooBookmark> bookmark;
 
-        model.get (&iter, COLUMN_BOOKMARK, &bookmark);
+        model.get (iter, COLUMN_BOOKMARK, bookmark);
 
         if (!bookmark)
         {
-            g_string_append (markup, "<separator/>");
+            markup.append ("<separator/>");
             continue;
         }
 
-        action_id = g_strdup_printf ("MooBookmarkAction-%p", (gpointer) bookmark);
+        gstr action_id = gstr::printf ("MooBookmarkAction-%p", bookmark.get ());
 
-        action = moo_action_group_add_action (group, action_id,
-                                              "label", bookmark->label.empty () ? bookmark->label.get () : bookmark->display_path.get (),
-                                              "stock-id", bookmark->icon_stock_id.get (),
-                                              "tooltip", bookmark->display_path.get (),
-                                              "no-accel", TRUE,
-                                              NULL);
-        g_object_ref (action);
-        g_object_set_data_full (G_OBJECT (action), "moo-bookmark",
-                                bookmark, (GDestroyNotify) _moo_bookmark_free);
-        g_object_set_data (G_OBJECT (action), "moo-bookmark-user", info->user);
-        g_signal_connect (action, "activate", G_CALLBACK (item_activated), mgr);
+        gtk::ActionPtr action = wrap(
+            moo_action_group_add_action (group, action_id,
+                                         "label", bookmark->label.empty () ? bookmark->label.get () : bookmark->display_path.get (),
+                                         "stock-id", bookmark->icon_stock_id.get (),
+                                         "tooltip", bookmark->display_path.get (),
+                                         "no-accel", TRUE,
+                                         nullptr));
+        action->set_data ("moo-bookmark",
+                          bookmark.release (),
+                          (GDestroyNotify) _moo_bookmark_free);
+        action->set_data ("moo-bookmark-user", info.user);
+        action->connect ("activate", G_CALLBACK (item_activated), mgr);
 
-        info->bm_actions = g_slist_prepend (info->bm_actions, action);
+        info.bm_actions.push_back (action);
 
-        g_string_append_printf (markup, "<item action=\"%s\"/>", action_id);
-
-        g_free (action_id);
+        markup.append_printf ("<item action=\"%s\"/>", action_id);
     }
-    while (model.iter_next (&iter));
+    while (model.iter_next (iter));
 
-    moo_ui_xml_insert_markup (info->xml, info->merge_id,
-                              info->path, -1, markup->str);
-    g_string_free (markup, TRUE);
+    moo_ui_xml_insert_markup (info.xml, info.merge_id,
+                              info.path, -1, markup.get ());
 }
 
 
 static void
-destroy_menu (UserInfo *info)
+destroy_menu (UserInfo& info)
 {
-    GSList *l;
+    for (const auto& action : info.bm_actions)
+        moo_action_collection_remove_action (info.actions, action.gobj ());
 
-    for (l = info->bm_actions; l != NULL; l = l->next)
+    info.bm_actions.clear ();
+
+    if (info.merge_id > 0)
     {
-        GtkAction *action = GTK_ACTION (l->data);
-        moo_action_collection_remove_action (info->actions, action);
-        g_object_unref (action);
-    }
-
-    g_slist_free (info->bm_actions);
-    info->bm_actions = NULL;
-
-    if (info->merge_id > 0)
-    {
-        moo_ui_xml_remove_ui (info->xml, info->merge_id);
-        info->merge_id = 0;
+        moo_ui_xml_remove_ui (info.xml, info.merge_id);
+        info.merge_id = 0;
     }
 }
 
@@ -543,22 +518,17 @@ destroy_menu (UserInfo *info)
 static gboolean
 mgr_update_menus (MooBookmarkMgr *mgr)
 {
-    GSList *l;
-    GtkTreeIter first;
-    gboolean empty;
-
     mgr->priv->update_idle = 0;
 
-    empty = !mgr->priv->store->get_iter_first (&first);
+    GtkTreeIter first;
+    bool empty = !mgr->priv->store->get_iter_first (first);
 
-    for (l = mgr->priv->users; l != NULL; l = l->next)
+    for (const auto& u : mgr->priv->users)
     {
-        UserInfo *info = reinterpret_cast<UserInfo*> (l->data);
-
-        destroy_menu (info);
+        destroy_menu (*u);
 
         if (!empty)
-            make_menu (mgr, info);
+            make_menu (mgr, *u);
     }
 
     return FALSE;
@@ -572,29 +542,27 @@ _moo_bookmark_mgr_add_user (MooBookmarkMgr *mgr,
                             MooUiXml       *xml,
                             const char     *path)
 {
-    UserInfo *info;
-
     g_return_if_fail (MOO_IS_BOOKMARK_MGR (mgr));
     g_return_if_fail (G_IS_OBJECT (user));
     g_return_if_fail (MOO_IS_ACTION_COLLECTION (actions));
     g_return_if_fail (MOO_IS_UI_XML (xml));
     g_return_if_fail (path != NULL);
 
-    info = user_info_new (G_OBJECT (user), actions, xml, path,
-                          ++mgr->priv->last_user_id);
-    mgr->priv->users = g_slist_prepend (mgr->priv->users, info);
+    UserInfoPtr info = user_info_new (G_OBJECT (user), actions, xml, path,
+                                      ++mgr->priv->last_user_id);
+    g_return_if_fail (info != nullptr);
+    mgr->priv->users.push_back (info);
 
-    make_menu (mgr, info);
+    make_menu (mgr, *info);
 }
 
 
 static void
 mgr_remove_user (MooBookmarkMgr *mgr,
-                 UserInfo       *info)
+                 UserInfo       &info)
 {
     destroy_menu (info);
-    user_info_free (info);
-    mgr->priv->users = g_slist_remove (mgr->priv->users, info);
+    remove_if (mgr->priv->users, [&info] (const UserInfoPtr& p) { return p.get () == &info; });
 }
 
 
@@ -602,25 +570,20 @@ void
 _moo_bookmark_mgr_remove_user (MooBookmarkMgr *mgr,
                                gpointer        user)
 {
-    GSList *l, *infos = NULL;
-
     g_return_if_fail (MOO_IS_BOOKMARK_MGR (mgr));
 
-    for (l = mgr->priv->users; l != NULL; l = l->next)
-    {
-        UserInfo *info = reinterpret_cast<UserInfo*> (l->data);
+    std::vector<UserInfoPtr> to_remove;
 
-        if (info->user == user)
-            infos = g_slist_prepend (infos, info);
+    for (const auto& u : mgr->priv->users)
+    {
+        if (u->user == user)
+            to_remove.push_back (u);
     }
 
-    for (l = infos; l != NULL; l = l->next)
+    for (const auto& u : to_remove)
     {
-        UserInfo *info = reinterpret_cast<UserInfo*> (l->data);
-        mgr_remove_user (mgr, info);
+        mgr_remove_user (mgr, *u);
     }
-
-    g_slist_free (infos);
 }
 
 
@@ -810,16 +773,15 @@ dialog_response (GtkWidget      *dialog,
 
 static bool
 copy_value (gtk::TreeModel& src,
-            GtkTreeIter* iter,
+            const GtkTreeIter& iter,
             gtk::ListStore& dest)
 {
-    GtkTreeIter dest_iter;
-    MooBookmark *bookmark;
+    objp<MooBookmark> bookmark;
+    src.get (iter, COLUMN_BOOKMARK, bookmark);
 
-    src.get (iter, COLUMN_BOOKMARK, &bookmark);
-    dest.append (&dest_iter);
-    dest.set (&dest_iter, COLUMN_BOOKMARK, bookmark);
-    _moo_bookmark_free (bookmark);
+    GtkTreeIter dest_iter;
+    dest.append (dest_iter);
+    dest.set (dest_iter, COLUMN_BOOKMARK, bookmark);
 
     return false;
 }
@@ -829,7 +791,7 @@ copy_bookmarks (gtk::ListStore& store)
 {
     auto copy = gtk::ListStore::create ({ MOO_TYPE_BOOKMARK });
 
-    store.foreach ([&] (GtkTreePath *path, GtkTreeIter *iter)
+    store.foreach ([&] (const GtkTreePath&, const GtkTreeIter& iter)
     {
         return copy_value (store, iter, *copy);
     });
@@ -841,7 +803,7 @@ static void
 copy_bookmarks_back (gtk::ListStore store, gtk::TreeModel model)
 {
     store.clear ();
-    model.foreach ([&] (GtkTreePath *path, GtkTreeIter *iter)
+    model.foreach ([&] (const GtkTreePath&, const GtkTreeIter& iter)
     {
         return copy_value (model, iter, store);
     });

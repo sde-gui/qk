@@ -232,9 +232,6 @@ save_toggled (GtkCellRendererToggle *pcell,
               GtkListStore          *pmodel)
 {
     GtkTreePath *tree_path;
-    GtkTreeIter iter;
-    gboolean save = TRUE;
-    gboolean active;
     gboolean sensitive;
     GtkDialog *dialog;
 
@@ -246,13 +243,15 @@ save_toggled (GtkCellRendererToggle *pcell,
     tree_path = gtk_tree_path_new_from_string (path);
     g_return_if_fail (tree_path != NULL);
 
-    model.get_iter (&iter, tree_path);
-    model.get (&iter, COLUMN_SAVE, &save);
+    GtkTreeIter iter;
+    model.get_iter (iter, *tree_path);
+    bool save = true;
+    model.get (iter, COLUMN_SAVE, save);
 
-    active = cell.get_active ();
+    bool active = cell.get_active ();
 
     if (active == save)
-        model.set (&iter, COLUMN_SAVE, !save);
+        model.set (iter, COLUMN_SAVE, !save);
 
     gtk_tree_path_free (tree_path);
 
@@ -266,18 +265,18 @@ save_toggled (GtkCellRendererToggle *pcell,
     else
     {
         sensitive = FALSE;
-        model.get_iter_first (&iter);
+        model.get_iter_first (iter);
 
         do
         {
-            model.get (&iter, COLUMN_SAVE, &save);
+            model.get (iter, COLUMN_SAVE, save);
             if (save)
             {
                 sensitive = TRUE;
                 break;
             }
         }
-        while (model.iter_next (&iter));
+        while (model.iter_next (iter));
     }
 
     gtk_dialog_set_response_sensitive (dialog, GTK_RESPONSE_YES, sensitive);
@@ -291,8 +290,8 @@ files_treeview_init (gtk::TreeView treeview, GtkWidget *dialog, MooEditArray *do
     for (guint i = 0; i < docs->n_elms; ++i)
     {
         GtkTreeIter iter;
-        store->append (&iter);
-        store->set (&iter,
+        store->append (iter);
+        store->set (iter,
                     COLUMN_SAVE, TRUE,
                     COLUMN_EDIT, docs->elms[i]);
     }
@@ -316,10 +315,10 @@ files_treeview_init (gtk::TreeView treeview, GtkWidget *dialog, MooEditArray *do
         [] (gtk::TreeViewColumn,
             gtk::CellRenderer cell,
             gtk::TreeModel model,
-            GtkTreeIter* iter)
+            const GtkTreeIter& iter)
     {
         gobj_ptr<MooEdit> doc;
-        model.get (iter, COLUMN_EDIT, doc.pp ());
+        model.get (iter, COLUMN_EDIT, doc);
         g_return_if_fail (MOO_IS_EDIT (doc.gobj ()));
         cell.set ("text", moo_edit_get_display_basename (doc.gobj ()));
     });

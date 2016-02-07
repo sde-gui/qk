@@ -89,11 +89,19 @@ void remove(Container& vec, const U& elm)
     vec.erase(itr);
 }
 
+template<typename Container, typename UnPr>
+void remove_if (Container& vec, const UnPr& pr)
+{
+    auto itr = find_if (vec, pr);
+    g_return_if_fail (itr != vec.end ());
+    vec.erase (itr);
+}
+
 // C++14
 template<class T, class... Args>
 std::unique_ptr<T> make_unique(Args&&... args)
 {
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    return std::unique_ptr<T> (new T (std::forward<Args> (args)...));
 }
 
 class raii

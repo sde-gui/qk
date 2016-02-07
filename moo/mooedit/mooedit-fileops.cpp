@@ -80,7 +80,7 @@ static bool     moo_edit_save_copy_local    (Edit               edit,
                                              gerrp&             error);
 static void     _moo_edit_start_file_watch  (Edit               edit);
 
-static char    *moo_convert_file_data_to_utf8   (const char     *data,
+static gstr     moo_convert_file_data_to_utf8   (const char     *data,
                                                  gsize           len,
                                                  const char     *encoding,
                                                  const char     *cached_encoding,
@@ -152,7 +152,7 @@ load_file_contents (g::File file,
     return g::file_get_contents (path, data, data_len, error);
 }
 
-static gstrp
+static gstr
 convert_file_data_to_utf8_with_prompt (const char*    data,
                                        gsize          data_len,
                                        g::File        file,
@@ -160,7 +160,7 @@ convert_file_data_to_utf8_with_prompt (const char*    data,
                                        gstr           cached_encoding,
                                        /*out*/ gstr&  used_encoding)
 {
-    gstrp text_utf8;
+    gstr text_utf8;
 
     used_encoding.reset();
 
@@ -170,7 +170,7 @@ convert_file_data_to_utf8_with_prompt (const char*    data,
 
         text_utf8 = moo_convert_file_data_to_utf8 (data, data_len, encoding, cached_encoding, /*out*/ used_encoding);
 
-        if (text_utf8)
+        if (!text_utf8.is_null())
             break;
 
         used_encoding.reset();
@@ -205,8 +205,8 @@ _moo_edit_load_file (Edit        edit,
                      gerrp&      error)
 {
     bool result = false;
-    gstrp data_utf8;
     gstr used_encoding;
+    gstr data_utf8;
 
     moo_return_error_if_fail(!edit._is_busy());
 
@@ -221,9 +221,9 @@ _moo_edit_load_file (Edit        edit,
     if (!load_file_contents(file, /*out*/ data, /*out*/ data_len, error))
         goto done;
 
-    data_utf8 = convert_file_data_to_utf8_with_prompt(data, data_len, file, encoding, cached_encoding, /*out*/ used_encoding);
+    data_utf8 = convert_file_data_to_utf8_with_prompt (data, data_len, file, encoding, cached_encoding, /*out*/ used_encoding);
 
-    if (data_utf8 == nullptr)
+    if (data_utf8.is_null())
     {
         g_set_error (&error, MOO_EDIT_FILE_ERROR, MOO_EDIT_FILE_ERROR_CANCELLED, "Cancelled");
         goto done;
@@ -567,7 +567,7 @@ get_contents_with_fixed_line_end (GtkTextBuffer *buffer, const char *le, gsize l
         if (!gtk_text_iter_ends_line (&line_start))
         {
             gtk_text_iter_forward_to_line_end (&line_end);
-            gstrp line = gtk_text_buffer_get_text (buffer, &line_start, &line_end, TRUE);
+            gstrp line (gtk_text_buffer_get_text (buffer, &line_start, &line_end, TRUE));
             contents.append (line);
         }
 
@@ -1046,7 +1046,7 @@ _moo_edit_get_icon (MooEdit     *doc,
 #define BOM_UTF32 BOM_UTF32_BE
 #endif
 
-static char *
+static gstr
 try_convert_to_utf8_from_utf8 (const char *data,
                                gsize       len)
 {
@@ -1067,7 +1067,7 @@ try_convert_to_utf8_from_utf8 (const char *data,
     if (!valid_utf8 && invalid + 1 == data + len && *invalid == 0)
         valid_utf8 = TRUE;
 
-    return valid_utf8 ? g_strdup (data) : NULL;
+    return valid_utf8 ? gstr::wrap_const (data) : NULL;
 }
 
 static gboolean
@@ -1147,7 +1147,7 @@ encoding_needs_bom_save (const char  *enc,
     return FALSE;
 }
 
-static char *
+static gstr
 try_convert_to_utf8_from_non_utf8_encoding (const char *data,
                                             gsize       len,
                                             const char *enc)
@@ -1157,7 +1157,6 @@ try_convert_to_utf8_from_non_utf8_encoding (const char *data,
     gsize bom_len = 0;
     gsize bytes_read = 0;
     gsize bytes_written = 0;
-    char *result = NULL;
     gsize result_len = 0;
     gboolean bom_optional = FALSE;
 
@@ -1182,16 +1181,13 @@ try_convert_to_utf8_from_non_utf8_encoding (const char *data,
     if (encoding_is_utf8 (enc))
         return try_convert_to_utf8_from_utf8 (data, len);
 
-    result = g_convert (data, len, "UTF-8", enc, &bytes_read, &bytes_written, NULL);
+    gstr result = wrap_new (g_convert (data, len, "UTF-8", enc, &bytes_read, &bytes_written, NULL));
 
-    if (!result)
-        return NULL;
+    if (result.is_null ())
+        return gstr::null;
 
     if (bytes_read < len)
-    {
-        g_free (result);
-        return NULL;
-    }
+        return gstr::null;
 
     result_len = strlen (result);
 
@@ -1200,15 +1196,12 @@ try_convert_to_utf8_from_non_utf8_encoding (const char *data,
         bytes_written -= 1;
 
     if (result_len < bytes_written)
-    {
-        g_free (result);
-        return NULL;
-    }
+        return gstr::null;
 
     return result;
 }
 
-static char *
+static gstr
 try_convert_to_utf8_from_encoding (const char *data,
                                    gsize       len,
                                    const char *enc)
@@ -1258,14 +1251,14 @@ data_has_bom (const char  *data,
     return FALSE;
 }
 
-static char *
+static gstr
 moo_convert_file_data_to_utf8 (const char  *data,
                                gsize        len,
                                const char  *encoding,
                                const char  *cached_encoding,
                                gstr&        used_enc)
 {
-    char *result = NULL;
+    gstr result;
     const char *bom_enc = NULL;
 
 //     g_print ("moo_convert_file_data_to_utf8(%s, %s)\n",
@@ -1289,7 +1282,7 @@ moo_convert_file_data_to_utf8 (const char  *data,
         {
             result = try_convert_to_utf8_from_encoding (data, len, enc);
 
-            if (result != NULL)
+            if (!result.is_null ())
             {
                 used_enc = std::move(enc);
                 break;

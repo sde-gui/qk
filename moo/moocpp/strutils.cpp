@@ -431,7 +431,7 @@ const char* strbuilder::get() const
 {
     if (m_buf)
     {
-        m_result = g_string_free(m_buf, false);
+        m_result.set_new (g_string_free (m_buf, false));
         m_buf = nullptr;
     }
 

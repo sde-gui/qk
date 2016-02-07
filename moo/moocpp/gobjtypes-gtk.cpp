@@ -128,117 +128,75 @@ TreeModel::get_column_type (int index_)
 }
 
 bool
-TreeModel::get_iter (GtkTreeIter* iter, GtkTreePath* path)
+TreeModel::get_iter (GtkTreeIter& iter, const GtkTreePath& path)
 {
-    return gtk_tree_model_get_iter (gobj (), iter, path);
+    return gtk_tree_model_get_iter (gobj (), &iter, const_cast<GtkTreePath*>(&path));
 }
 
 bool
-TreeModel::get_iter_from_string (GtkTreeIter* iter, const char* path_string)
+TreeModel::get_iter_from_string (GtkTreeIter& iter, const char* path_string)
 {
-    return gtk_tree_model_get_iter_from_string (gobj (), iter, path_string);
+    return gtk_tree_model_get_iter_from_string (gobj (), &iter, path_string);
 }
 
 gstr
-TreeModel::get_string_from_iter (GtkTreeIter* iter)
+TreeModel::get_string_from_iter (const GtkTreeIter& iter)
 {
-    return gtk_tree_model_get_string_from_iter (gobj (), iter);
+    return wrap_new (gtk_tree_model_get_string_from_iter (gobj (), const_cast<GtkTreeIter*>(&iter)));
 }
 
 bool
-TreeModel::get_iter_first (GtkTreeIter* iter)
+TreeModel::get_iter_first (GtkTreeIter& iter)
 {
-    return gtk_tree_model_get_iter_first (gobj (), iter);
+    return gtk_tree_model_get_iter_first (gobj (), &iter);
 }
 
 GtkTreePath*
-TreeModel::get_path (GtkTreeIter* iter)
+TreeModel::get_path (const GtkTreeIter& iter)
 {
-    return gtk_tree_model_get_path (gobj (), iter);
+    return gtk_tree_model_get_path (gobj (), const_cast<GtkTreeIter*>(&iter));
 }
 
 void
-TreeModel::get_value (GtkTreeIter* iter, int column, GValue* value)
+TreeModel::get_value (const GtkTreeIter& iter, int column, GValue* value)
 {
-    gtk_tree_model_get_value (gobj (), iter, column, value);
+    gtk_tree_model_get_value (gobj (), const_cast<GtkTreeIter*>(&iter), column, value);
 }
 
 bool
-TreeModel::iter_next (GtkTreeIter* iter)
+TreeModel::iter_next (GtkTreeIter& iter)
 {
-    return gtk_tree_model_iter_next (gobj (), iter);
+    return gtk_tree_model_iter_next (gobj (), &iter);
 }
 
 bool
-TreeModel::iter_children (GtkTreeIter* iter, GtkTreeIter* parent)
+TreeModel::iter_children (GtkTreeIter& iter, const GtkTreeIter& parent)
 {
-    return gtk_tree_model_iter_children (gobj (), iter, parent);
+    return gtk_tree_model_iter_children (gobj (), &iter, const_cast<GtkTreeIter*>(&parent));
 }
 
 bool
-TreeModel::iter_has_child (GtkTreeIter* iter)
+TreeModel::iter_has_child (const GtkTreeIter& iter)
 {
-    return gtk_tree_model_iter_has_child (gobj (), iter);
+    return gtk_tree_model_iter_has_child (gobj (), const_cast<GtkTreeIter*>(&iter));
 }
 
 int
-TreeModel::iter_n_children (GtkTreeIter* iter)
+TreeModel::iter_n_children (const GtkTreeIter& iter)
 {
-    return gtk_tree_model_iter_n_children (gobj (), iter);
+    return gtk_tree_model_iter_n_children (gobj (), const_cast<GtkTreeIter*>(&iter));
 }
 
 bool
-TreeModel::iter_nth_child (GtkTreeIter* iter, GtkTreeIter* parent, int n)
+TreeModel::iter_nth_child (GtkTreeIter& iter, const GtkTreeIter& parent, int n)
 {
-    return gtk_tree_model_iter_nth_child (gobj (), iter, parent, n);
+    return gtk_tree_model_iter_nth_child (gobj (), &iter, const_cast<GtkTreeIter*>(&parent), n);
 }
 
 bool
-TreeModel::iter_parent (GtkTreeIter* iter, GtkTreeIter* child)
+TreeModel::iter_parent (GtkTreeIter& iter, const GtkTreeIter& child)
 {
-    return gtk_tree_model_iter_parent (gobj (), iter, child);
-}
-
-void
-TreeModel::ref_node (GtkTreeIter* iter)
-{
-    gtk_tree_model_ref_node (gobj (), iter);
-}
-
-void
-TreeModel::unref_node (GtkTreeIter* iter)
-{
-    gtk_tree_model_unref_node (gobj (), iter);
-}
-
-void
-TreeModel::row_changed (GtkTreePath* path, GtkTreeIter* iter)
-{
-    gtk_tree_model_row_changed (gobj (), path, iter);
-}
-
-void
-TreeModel::row_inserted (GtkTreePath* path, GtkTreeIter* iter)
-{
-    gtk_tree_model_row_inserted (gobj (), path, iter);
-}
-
-void
-TreeModel::row_has_child_toggled (GtkTreePath* path, GtkTreeIter* iter)
-{
-    gtk_tree_model_row_has_child_toggled (gobj (), path, iter);
-}
-
-void
-TreeModel::row_deleted (GtkTreePath* path)
-{
-    gtk_tree_model_row_deleted (gobj (), path);
-}
-
-void
-TreeModel::rows_reordered (GtkTreePath* path, GtkTreeIter* iter, gint* new_order)
-{
-    gtk_tree_model_rows_reordered (gobj (), path, iter, new_order);
+    return gtk_tree_model_iter_parent (gobj (), &iter, const_cast<GtkTreeIter*>(&child));
 }
 
 
@@ -256,47 +214,47 @@ ListStore::create (size_t n_types, const GType* types)
 }
 
 void
-ListStore::set_value (GtkTreeIter* iter,
+ListStore::set_value (const GtkTreeIter& iter,
                       int column,
                       GValue* value)
 {
-    gtk_list_store_set_value (gobj (), iter, column, value);
+    gtk_list_store_set_value (gobj (), const_cast<GtkTreeIter*>(&iter), column, value);
 }
 
 void
-ListStore::set_valuesv (GtkTreeIter* iter,
+ListStore::set_valuesv (const GtkTreeIter& iter,
                         int* columns,
                         GValue* values,
                         int n_values)
 {
-    gtk_list_store_set_valuesv (gobj (), iter, columns, values, n_values);
+    gtk_list_store_set_valuesv (gobj (), const_cast<GtkTreeIter*>(&iter), columns, values, n_values);
 }
 
 bool
-ListStore::remove (GtkTreeIter* iter)
+ListStore::remove (GtkTreeIter& iter)
 {
-    return gtk_list_store_remove (gobj (), iter);
+    return gtk_list_store_remove (gobj (), &iter);
 }
 
 void
-ListStore::insert (GtkTreeIter* iter,
+ListStore::insert (GtkTreeIter& iter,
                    int position)
 {
-    gtk_list_store_insert (gobj (), iter, position);
+    gtk_list_store_insert (gobj (), &iter, position);
 }
 
 void
-ListStore::insert_before (GtkTreeIter* iter,
-                          GtkTreeIter* sibling)
+ListStore::insert_before (GtkTreeIter& iter,
+                          GtkTreeIter& sibling)
 {
-    gtk_list_store_insert_before (gobj (), iter, sibling);
+    gtk_list_store_insert_before (gobj (), &iter, &sibling);
 }
 
 void
-ListStore::insert_after (GtkTreeIter* iter,
-                         GtkTreeIter* sibling)
+ListStore::insert_after (GtkTreeIter& iter,
+                         GtkTreeIter& sibling)
 {
-    gtk_list_store_insert_after (gobj (), iter, sibling);
+    gtk_list_store_insert_after (gobj (), &iter, &sibling);
 }
 
 //void
@@ -304,7 +262,7 @@ ListStore::insert_after (GtkTreeIter* iter,
 //                               int position,
 //                               ...)
 //{
-//    gtk_list_store_insert_with_values (gobj (), iter, position, ...);
+//    gtk_list_store_insert_with_values (gobj (), &iter, position, ...);
 //}
 //
 //void
@@ -314,19 +272,19 @@ ListStore::insert_after (GtkTreeIter* iter,
 //                               GValue* values,
 //                               int n_values)
 //{
-//    gtk_list_store_insert_with_values (gobj (), iter, position, columns, values, n_values);
+//    gtk_list_store_insert_with_values (gobj (), &iter, position, columns, values, n_values);
 //}
 
 void
-ListStore::prepend (GtkTreeIter* iter)
+ListStore::prepend (GtkTreeIter& iter)
 {
-    gtk_list_store_prepend (gobj (), iter);
+    gtk_list_store_prepend (gobj (), &iter);
 }
 
 void
-ListStore::append (GtkTreeIter* iter)
+ListStore::append (GtkTreeIter& iter)
 {
-    gtk_list_store_append (gobj (), iter);
+    gtk_list_store_append (gobj (), &iter);
 }
 
 void
@@ -336,9 +294,9 @@ ListStore::clear ()
 }
 
 bool
-ListStore::iter_is_valid (GtkTreeIter* iter)
+ListStore::iter_is_valid (const GtkTreeIter& iter)
 {
-    return gtk_list_store_iter_is_valid (gobj (), iter);
+    return gtk_list_store_iter_is_valid (gobj (), const_cast<GtkTreeIter*>(&iter));
 }
 
 void
@@ -348,24 +306,24 @@ ListStore::reorder (int* new_order)
 }
 
 void
-ListStore::swap (GtkTreeIter* a,
-                 GtkTreeIter* b)
+ListStore::swap (GtkTreeIter& a,
+                 GtkTreeIter& b)
 {
-    gtk_list_store_swap (gobj (), a, b);
+    gtk_list_store_swap (gobj (), &a, &b);
 }
 
 void
-ListStore::move_after (GtkTreeIter* iter,
-                       GtkTreeIter* position)
+ListStore::move_after (GtkTreeIter& iter,
+                       GtkTreeIter& position)
 {
-    gtk_list_store_move_after (gobj (), iter, position);
+    gtk_list_store_move_after (gobj (), &iter, &position);
 }
 
 void
-ListStore::move_before (GtkTreeIter* iter,
-                        GtkTreeIter* position)
+ListStore::move_before (GtkTreeIter& iter,
+                        GtkTreeIter& position)
 {
-    gtk_list_store_move_before (gobj (), iter, position);
+    gtk_list_store_move_before (gobj (), &iter, &position);
 }
 
 
@@ -1293,51 +1251,6 @@ GtkSortType
 TreeViewColumn::get_sort_order ()
 {
     return gtk_tree_view_column_get_sort_order (gobj ());
-}
-
-void
-TreeViewColumn::cell_set_cell_data (TreeModel& tree_model,
-                                    GtkTreeIter* iter,
-                                    bool is_expander,
-                                    bool is_expanded)
-{
-    gtk_tree_view_column_cell_set_cell_data (gobj (), tree_model.gobj (), iter, is_expander, is_expanded);
-}
-
-void
-TreeViewColumn::cell_get_size (const GdkRectangle* cell_area,
-                               int* x_offset,
-                               int* y_offset,
-                               int* width,
-                               int* height)
-{
-    gtk_tree_view_column_cell_get_size (gobj (), cell_area, x_offset, y_offset, width, height);
-}
-
-bool
-TreeViewColumn::cell_is_visible ()
-{
-    return gtk_tree_view_column_cell_is_visible (gobj ());
-}
-
-void
-TreeViewColumn::focus_cell (CellRenderer& cell)
-{
-    gtk_tree_view_column_focus_cell (gobj (), cell.gobj ());
-}
-
-bool
-TreeViewColumn::cell_get_position (CellRenderer& cell_renderer,
-                                   int* start_pos,
-                                   int* width)
-{
-    return gtk_tree_view_column_cell_get_position (gobj (), cell_renderer.gobj (), start_pos, width);
-}
-
-void
-TreeViewColumn::queue_resize ()
-{
-    gtk_tree_view_column_queue_resize (gobj ());
 }
 
 TreeViewPtr

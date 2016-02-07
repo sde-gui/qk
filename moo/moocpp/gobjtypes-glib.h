@@ -98,6 +98,13 @@ public:
         set (std::forward<Args> (args)...);
     }
 
+    void get (const char* prop, bool& dest)
+    {
+        gboolean val;
+        g_object_get (gobj (), prop, &val, nullptr);
+        dest = val;
+    }
+
     template<typename T>
     void get (const char* prop, T&& dest)
     {

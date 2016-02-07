@@ -43,11 +43,10 @@ template<typename T>
 class gbuf
 {
 public:
-    gbuf(T* p = nullptr) : m_p(p) {}
+    explicit gbuf(T* p = nullptr) : m_p(p) {}
     ~gbuf() { ::g_free(m_p); }
 
-    void set(T* p) { if (m_p != p) { ::g_free(m_p); m_p = p; } }
-    void reset(T* p = nullptr) { set(p); }
+    void set_new(T* p) { if (m_p != p) { ::g_free(m_p); m_p = p; } }
     operator const T*() const { return m_p; }
     T* get() const { return m_p; }
     T*& _get() { return m_p; }
@@ -62,8 +61,6 @@ public:
 
     gbuf(gbuf&& other) : gbuf() { std::swap(m_p, other.m_p); }
     gbuf& operator=(gbuf&& other) { std::swap(m_p, other.m_p); return *this; }
-
-    gbuf& operator=(T* p) { set(p); return *this; }
 
     operator bool() const { return m_p != nullptr; }
     bool operator !() const { return m_p == nullptr; }

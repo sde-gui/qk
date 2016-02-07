@@ -107,35 +107,40 @@ public:
     int get_n_columns ();
     GType get_column_type (int index_);
 
-    bool get_iter (GtkTreeIter* iter, GtkTreePath* path);
-    bool get_iter_from_string (GtkTreeIter* iter, const char* path_string);
-    gstr get_string_from_iter (GtkTreeIter* iter);
-    bool get_iter_first (GtkTreeIter* iter);
-    GtkTreePath* get_path (GtkTreeIter* iter);
-    void get_value (GtkTreeIter* iter, int column, GValue* value);
-    bool iter_next (GtkTreeIter* iter);
-    bool iter_children (GtkTreeIter* iter, GtkTreeIter* parent);
-    bool iter_has_child (GtkTreeIter* iter);
-    int iter_n_children (GtkTreeIter* iter);
-    bool iter_nth_child (GtkTreeIter* iter, GtkTreeIter* parent, int n);
-    bool iter_parent (GtkTreeIter* iter, GtkTreeIter* child);
-    void ref_node (GtkTreeIter* iter);
-    void unref_node (GtkTreeIter* iter);
+    bool get_iter (GtkTreeIter& iter, const GtkTreePath& path);
+    bool get_iter_from_string (GtkTreeIter& iter, const char* path_string);
+    gstr get_string_from_iter (const GtkTreeIter& iter);
+    bool get_iter_first (GtkTreeIter& iter);
+    GtkTreePath* get_path (const GtkTreeIter& iter);
+    void get_value (const GtkTreeIter& iter, int column, GValue* value);
+    bool iter_next (GtkTreeIter& iter);
+    bool iter_children (GtkTreeIter& iter, const GtkTreeIter& parent);
+    bool iter_has_child (const GtkTreeIter& iter);
+    int iter_n_children (const GtkTreeIter& iter);
+    bool iter_nth_child (GtkTreeIter& iter, const GtkTreeIter& parent, int n);
+    bool iter_parent (GtkTreeIter& iter, const GtkTreeIter& child);
+
+    void get (const GtkTreeIter& iter, int column, bool& dest)
+    {
+        gboolean val;
+        gtk_tree_model_get (gobj (), const_cast<GtkTreeIter*>(&iter), column, &val, -1);
+        dest = val;
+    }
 
     template<typename T>
-    void get (GtkTreeIter* iter, int column, T&& dest)
+    void get (const GtkTreeIter& iter, int column, T&& dest)
     {
-        gtk_tree_model_get (gobj (), iter, column, std::forward<T> (dest), -1);
+        gtk_tree_model_get (gobj (), const_cast<GtkTreeIter*>(&iter), column, cpp_vararg_dest_fixer<T>::apply (std::forward<T> (dest)), -1);
     }
 
     template<typename T, typename... Args>
-    void get (GtkTreeIter* iter, int column, T&& dest, Args&&... args)
+    void get (const GtkTreeIter& iter, int column, T&& dest, Args&&... args)
     {
         get (iter, column, std::forward<T> (dest));
         get (iter, std::forward<Args> (args)...);
     }
 
-    // bool TFunc (GtkTreePath*, GtkTreeIter*)
+    // bool TFunc (const GtkTreePath&, const GtkTreeIter&)
     template<typename TFunc>
     void foreach (const TFunc& func)
     {
@@ -143,18 +148,12 @@ public:
         gtk_tree_model_foreach (gobj (), foreach_func<TFunc>, const_cast<void*>(p));
     }
 
-    void row_changed (GtkTreePath* path, GtkTreeIter* iter);
-    void row_inserted (GtkTreePath* path, GtkTreeIter* iter);
-    void row_has_child_toggled (GtkTreePath* path, GtkTreeIter* iter);
-    void row_deleted (GtkTreePath* path);
-    void rows_reordered (GtkTreePath* path, GtkTreeIter* iter, gint* new_order);
-
 private:
     template<typename TFunc>
     static gboolean foreach_func (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
     {
         const TFunc& func = *reinterpret_cast<const TFunc*>(data);
-        return func (path, iter);
+        return func (const_cast<const GtkTreePath&>(*path), const_cast<const GtkTreeIter&>(*iter));
     }
 };
 
@@ -183,32 +182,32 @@ public:
     static gtk::ListStorePtr create (size_t n_columns, const GType* types);
 
     template<typename T>
-    void set (GtkTreeIter* iter, int column, T&& value)
+    void set (const GtkTreeIter& iter, int column, T&& value)
     {
-        gtk_list_store_set (gobj (), iter, column, cpp_vararg_value_fixer<T>::apply (std::forward<T> (value)), -1);
+        gtk_list_store_set (gobj (), const_cast<GtkTreeIter*>(&iter), column, cpp_vararg_value_fixer<T>::apply (std::forward<T> (value)), -1);
     }
 
     template<typename T, typename... Args>
-    void set (GtkTreeIter* iter, int column, T&& value, Args&&... args)
+    void set (const GtkTreeIter& iter, int column, T&& value, Args&&... args)
     {
         set (iter, column, std::forward<T> (value));
         set (iter, std::forward<Args> (args)...);
     }
 
-    void    set_value (GtkTreeIter* iter,
+    void    set_value (const GtkTreeIter& iter,
                        int column,
                        GValue* value);
-    void    set_valuesv (GtkTreeIter* iter,
+    void    set_valuesv (const GtkTreeIter& iter,
                          int* columns,
                          GValue* values,
                          int n_values);
-    bool    remove (GtkTreeIter* iter);
-    void    insert (GtkTreeIter* iter,
+    bool    remove (GtkTreeIter& iter);
+    void    insert (GtkTreeIter& iter,
                     int position);
-    void    insert_before (GtkTreeIter* iter,
-                           GtkTreeIter* sibling);
-    void    insert_after (GtkTreeIter* iter,
-                          GtkTreeIter* sibling);
+    void    insert_before (GtkTreeIter& iter,
+                           GtkTreeIter& sibling);
+    void    insert_after (GtkTreeIter& iter,
+                          GtkTreeIter& sibling);
     //void    insert_with_values (GtkTreeIter* iter,
     //                            int position,
     //                            ...);
@@ -217,17 +216,17 @@ public:
     //                            int* columns,
     //                            GValue* values,
     //                            int n_values);
-    void    prepend (GtkTreeIter* iter);
-    void    append (GtkTreeIter* iter);
+    void    prepend (GtkTreeIter& iter);
+    void    append (GtkTreeIter& iter);
     void    clear ();
-    bool    iter_is_valid (GtkTreeIter* iter);
+    bool    iter_is_valid (const GtkTreeIter& iter);
     void    reorder (int* new_order);
-    void    swap (GtkTreeIter* a,
-                  GtkTreeIter* b);
-    void    move_after (GtkTreeIter* iter,
-                        GtkTreeIter* position);
-    void    move_before (GtkTreeIter* iter,
-                         GtkTreeIter* position);
+    void    swap (GtkTreeIter& a,
+                  GtkTreeIter& b);
+    void    move_after (GtkTreeIter& iter,
+                        GtkTreeIter& position);
+    void    move_before (GtkTreeIter& iter,
+                         GtkTreeIter& position);
 };
 
 MOO_DEFINE_GTK_TYPE (TreeStore, GObject, GTK_TYPE_TREE_STORE)
@@ -508,7 +507,7 @@ public:
         set_attributes (cell_renderer, std::forward<Args> (args)...);
     }
 
-    // void TFunc(gtk::TreeViewColumn, gtk::CellRenderer, gtk::TreeModel, GtkTreeIter*)
+    // void TFunc(gtk::TreeViewColumn, gtk::CellRenderer, gtk::TreeModel, const GtkTreeIter&)
     template<typename TFunc>
     void set_cell_data_func (gtk::CellRenderer& cell_renderer, TFunc func)
     {
@@ -561,23 +560,6 @@ public:
     void    set_sort_order (GtkSortType order);
     GtkSortType get_sort_order ();
 
-    /* These functions are meant primarily for interaction between the GtkTreeView and the column.
-     */
-    void    cell_set_cell_data (gtk::TreeModel& tree_model,
-                                GtkTreeIter* iter,
-                                bool is_expander,
-                                bool is_expanded);
-    void    cell_get_size (const GdkRectangle* cell_area,
-                           int* x_offset,
-                           int* y_offset,
-                           int* width,
-                           int* height);
-    bool    cell_is_visible ();
-    void    focus_cell (gtk::CellRenderer& cell);
-    bool    cell_get_position (gtk::CellRenderer& cell_renderer,
-                               int* start_pos,
-                               int* width);
-    void    queue_resize ();
     gtk::TreeViewPtr get_tree_view ();
 };
 
@@ -637,7 +619,8 @@ TreeCellDataFunc<TFunc>::cell_data_func (GtkTreeViewColumn *tree_column,
     g_return_if_fail (iter != nullptr);
     g_return_if_fail (p != nullptr);
     TreeCellDataFunc& data = *reinterpret_cast<TreeCellDataFunc*>(p);
-    data.m_func (gtk::TreeViewColumn (*tree_column), gtk::CellRenderer (*cell), gtk::TreeModel (*tree_model), iter);
+    data.m_func (wrap (*tree_column), wrap (*cell), wrap (*tree_model),
+                 const_cast<const GtkTreeIter&>(*iter));
 }
 
 

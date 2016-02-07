@@ -109,8 +109,8 @@ _moo_win32_get_locale_dir (void)
 
     if (!moo_locale_dir)
     {
-        gstrp dir = g_win32_get_package_installation_directory_of_module (_moo_hinst);
-        gstrp subdir = g_build_filename (dir, "share", "locale", NULL);
+        gstrp dir (g_win32_get_package_installation_directory_of_module (_moo_hinst));
+        gstrp subdir (g_build_filename (dir, "share", "locale", NULL));
         moo_locale_dir = g_win32_locale_filename_from_utf8 (subdir);
     }
 
@@ -185,7 +185,7 @@ moo_win32_get_dll_dir (const char *dll)
     {
     	GError *error = NULL;
 
-    	dll_utf16 = reinterpret_cast<wchar_t*> (g_utf8_to_utf16 (dll, -1, NULL, NULL, &error));
+        dll_utf16.set_new (reinterpret_cast<wchar_t*> (g_utf8_to_utf16 (dll, -1, NULL, NULL, &error)));
 
     	if (!dll_utf16)
     	{
@@ -276,9 +276,9 @@ _moo_win32_message_box(GtkWidget      *parent,
     gbuf<wchar_t> wtext;
 
     if (title)
-        wtitle = reinterpret_cast<wchar_t*> (g_utf8_to_utf16 (title, -1, NULL, NULL, NULL));
-    if (!text.empty())
-        wtext = reinterpret_cast<wchar_t*> (g_utf8_to_utf16 (text, -1, NULL, NULL, NULL));
+        wtitle.set_new (reinterpret_cast<wchar_t*> (g_utf8_to_utf16 (title, -1, NULL, NULL, NULL)));
+    if (!text.empty ())
+        wtext.set_new (reinterpret_cast<wchar_t*> (g_utf8_to_utf16 (text, -1, NULL, NULL, NULL)));
 
     return MessageBox (parenthwnd, wtext, wtitle, type);
 }

@@ -217,23 +217,43 @@ public:
 
 
 template<typename T>
-class cpp_vararg_dest_fixer;
+struct cpp_vararg_dest_fixer
+{
+    template<typename T>
+    static void* apply (T) = delete;
+};
 
 template<typename T>
-class cpp_vararg_dest_fixer_passthrough
+struct cpp_vararg_dest_fixer_passthrough
 {
-public:
     static T* apply (T* p) { return p; }
 };
 
-template<> class cpp_vararg_dest_fixer<int*> : public cpp_vararg_dest_fixer_passthrough<int> {};
-template<> class cpp_vararg_dest_fixer<guint*> : public cpp_vararg_dest_fixer_passthrough<guint>{};
-template<> class cpp_vararg_dest_fixer<char**> : public cpp_vararg_dest_fixer_passthrough<char*>{};
-
-template<> class cpp_vararg_dest_fixer<gstrp&>
+template<typename T>
+struct cpp_vararg_dest_fixer_passthrough_ref
 {
-public:
+    static T* apply (T& p) { return &p; }
+};
+
+template<> struct cpp_vararg_dest_fixer<int&> : public cpp_vararg_dest_fixer_passthrough_ref<int>{};
+template<> struct cpp_vararg_dest_fixer<guint&> : public cpp_vararg_dest_fixer_passthrough_ref<guint>{};
+
+template<>
+struct cpp_vararg_dest_fixer<gstrp&>
+{
     static char** apply (gstrp& s) { return s.pp (); }
+};
+
+template<typename T>
+struct cpp_vararg_dest_fixer<objp<T>&>
+{
+    static void** apply (objp<T>& o) { return reinterpret_cast<void**>(o.pp ()); }
+};
+
+template<typename T>
+struct cpp_vararg_dest_fixer<gobj_ptr<T>&>
+{
+    static void** apply (gobj_ptr<T>& o) { return reinterpret_cast<void**>(o.pp ()); }
 };
 
 } // namespace moo

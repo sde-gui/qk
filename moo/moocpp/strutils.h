@@ -39,7 +39,7 @@ class gstrp;
 class gstrp : public gbuf<char>
 {
 public:
-    gstrp(char* p = nullptr) : gbuf(p) {}
+    explicit gstrp(char* p = nullptr) : gbuf(p) {}
 
     gstrp(gstrp&& s) : gbuf(std::move(s)) {}
     gstrp& operator=(gstrp&& s) { static_cast<gbuf<char>&>(*this) = std::move(s); return *this; }
@@ -181,7 +181,7 @@ public:
     template<typename ...Args>
     static gstr printf(const char* format, Args&& ...args) G_GNUC_PRINTF (1, 2)
     {
-        return printf_helper::callv(g_strdup_vprintf, format, std::forward<Args>(args)...);
+        return wrap_new (printf_helper::callv (g_strdup_vprintf, format, std::forward<Args> (args)...));
     }
 
     template<typename ...Args>
@@ -234,6 +234,8 @@ bool operator==(const gstr& s1, const gstr& s2);
 bool operator!=(const gstr& s1, const char* s2);
 bool operator!=(const char* s1, const gstr& s2);
 bool operator!=(const gstr& s1, const gstr& s2);
+bool operator==(const gstr&, nullptr_t) = delete;
+bool operator==(nullptr_t, const gstr&) = delete;
 
 
 class gstrv
