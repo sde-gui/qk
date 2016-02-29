@@ -52,6 +52,15 @@ file(MAKE_DIRECTORY
     ${CMAKE_CURRENT_BINARY_DIR}/medit-app
 )
 
+include_directories(${PROJECT_SOURCE_DIR}/moo/mooutils/moowin32/ms)
+
+include_directories(
+    ${PROJECT_BINARY_DIR}
+    ${GTK_INCLUDE_DIRS}
+    ${LIBXML2_INCLUDE_DIRS}
+)
+link_directories(${GTK_LIBRARY_DIRS} ${GMODULE_LIBRARY_DIRS})
+
 include(xdgmime/xdgmime.cmake)
 include(mooutils/mooutils.cmake)
 include(moocpp/moocpp.cmake)
@@ -100,15 +109,6 @@ if(MOO_ENABLE_PYTHON)
 endif()
 ADD_MODULE(medit-app)
 
-include_directories(${PROJECT_SOURCE_DIR}/moo/mooutils/moowin32/ms)
-
-include_directories(
-    ${PROJECT_BINARY_DIR}
-    ${GTK_INCLUDE_DIRS}
-    ${LIBXML2_INCLUDE_DIRS}
-)
-link_directories(${GTK_LIBRARY_DIRS} ${GMODULE_LIBRARY_DIRS})
-
 source_group(moo REGULAR_EXPRESSION .*)
 source_group("generated\\sources" REGULAR_EXPRESSION ".*\\.c(pp)?$")
 source_group("generated\\headers" REGULAR_EXPRESSION ".*\\.h$")
@@ -146,7 +146,7 @@ target_link_libraries(medit
     ${LIBXML2_LIBRARIES}
     ${XLIB_LIBRARIES}
     #${LIBM}
-    ${PYTHON_LIBRARIES}
+    ${PYTHON_LIBRARY}
     ${moo_libadd}
     ${MEDIT_LIBS}
 )

@@ -468,7 +468,7 @@ _read_func (void *closure, unsigned char *data, unsigned int length) {
     goto end;
   }
   int ret = PyString_AsStringAndSize(pystr, &buffer, &str_length);
-  if (ret == -1 || str_length < length) {
+  if (ret == -1 || str_length < (Py_ssize_t)length) {
     goto end;
   }
   /* don't use strncpy() since png data may contain NUL bytes */

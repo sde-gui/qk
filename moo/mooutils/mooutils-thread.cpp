@@ -390,7 +390,7 @@ message_callback (GList *events, G_GNUC_UNUSED gpointer data)
 
     while (events)
     {
-        _moo_message ("%s", (char*) events->data);
+        moo_message_noloc ("%s", (char*) events->data);
         events = events->next;
     }
 }
@@ -609,18 +609,4 @@ moo_async_job_cancel (MooAsyncJob *job)
     g_mutex_lock (job->mutex);
     job->cancelled = TRUE;
     g_mutex_unlock (job->mutex);
-}
-
-void
-moo_async_job_ref (MooAsyncJob *job)
-{
-    g_return_if_fail (job != NULL);
-    g_object_ref (job);
-}
-
-void
-moo_async_job_unref (MooAsyncJob *job)
-{
-    g_return_if_fail (job != NULL);
-    g_object_unref (job);
 }

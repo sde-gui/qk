@@ -32,8 +32,6 @@ MooAsyncJob *moo_async_job_new          (MooAsyncJobCallback    callback,
                                          GDestroyNotify         data_notify);
 void         moo_async_job_start        (MooAsyncJob           *job);
 void         moo_async_job_cancel       (MooAsyncJob           *job);
-void         moo_async_job_ref          (MooAsyncJob           *job);
-void         moo_async_job_unref        (MooAsyncJob           *job);
 
 guint       _moo_event_queue_connect    (MooEventQueueCallback  callback,
                                          gpointer               data,

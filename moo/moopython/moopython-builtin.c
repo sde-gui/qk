@@ -20,7 +20,9 @@
 #define NO_IMPORT_PYGOBJECT
 #define NO_IMPORT_PYGTK
 #include <pygobject.h>
+G_BEGIN_DECLS
 #include <pygtk/pygtk.h>
+G_END_DECLS
 #include "mooedit/mooplugin-loader.h"
 #include "moopython/moopython-builtin.h"
 #include "moopython/moopython-api.h"

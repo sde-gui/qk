@@ -22,7 +22,9 @@
 #include "moopython/pygtk/moo-pygtk.h"
 #include "moopython/moopython-utils.h"
 #include <pygobject.h>  /* _PyGObjectAPI lives here */
+G_BEGIN_DECLS
 #include <pygtk/pygtk.h>
+G_END_DECLS
 #include <mooglib/moo-glib.h>
 #include "moopython/moopython-pygtkmod.h"
 #include <mooutils/moostock.h>

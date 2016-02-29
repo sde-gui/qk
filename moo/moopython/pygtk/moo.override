@@ -19,7 +19,9 @@ headers
 #define NO_IMPORT_PYGOBJECT
 #define NO_IMPORT_PYGTK
 #include <pygobject.h>
+G_BEGIN_DECLS
 #include <pygtk/pygtk.h>
+G_END_DECLS
 #include "moopython/moopython-utils.h"
 #include "moopython/pygtk/moo-pygtk.h"
 

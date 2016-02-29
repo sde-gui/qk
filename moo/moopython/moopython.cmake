@@ -3,7 +3,15 @@ set(PythonLibs_FIND_VERSION_MAJOR 2)
 find_package(PythonLibs REQUIRED)
 
 add_definitions(-DMOO_ENABLE_PYTHON=1)
-include_directories(${PYTHON_INCLUDE_DIRS})
+
+include_directories(${PYTHON_INCLUDE_DIR})
+
+set(MOO_PYTHON_LIB_DIR ${CMAKE_INSTALL_PREFIX}/bin/Lib)
+
+set(PYGOBJECT_DEFS_DIR ${MOO_GTK_DIR}/share/pygobject/2.0/defs)
+set(PYGTK_DEFS_DIR ${MOO_GTK_DIR}/share/pygtk/2.0/defs)
+set(PYGTK_INCLUDE_DIR "${MOO_GTK_DIR}/include/pygtk-2.0")
+include_directories(SYSTEM "${PYGTK_INCLUDE_DIR}")
 
 SET(moopython_sources
     moopython/pygtk/moo-pygtk.c

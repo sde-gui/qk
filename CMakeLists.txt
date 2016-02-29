@@ -158,12 +158,6 @@ else()
 
     include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/moo/mooutils/moowin32/ms")
 
-    set(PYGTK_DEFS_DIR ${MOO_GTK_DIR}/share/pygtk/2.0/defs)
-    set(PYGOBJECT_DEFS_DIR ${MOO_GTK_DIR}/share/pygobject/2.0/defs)
-
-    set(PYGTK_INCLUDE_DIR "${MOO_GTK_DIR}/include/pygtk-2.0")
-    include_directories(SYSTEM "${PYGTK_INCLUDE_DIR}")
-
     foreach(var CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
         set(${var} "${${var}} /MP /Zo /wd4996")
 
