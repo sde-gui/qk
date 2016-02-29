@@ -223,3 +223,7 @@ add_subdirectory(api)
 add_subdirectory(moo)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config-cmake.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+
+if(WIN32)
+    install(DIRECTORY plat/win32/medit-data/bin plat/win32/medit-data/etc DESTINATION "${CMAKE_INSTALL_PREFIX}")
+endif(WIN32)
