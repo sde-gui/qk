@@ -56,7 +56,7 @@ inline gstr markup_printf_escaped (const char* format, Args&& ...args) G_GNUC_PR
 }
 
 #ifdef __WIN32__
-gstr win32_error_message(DWORD code);
+gstr win32_error_message(guint32 code);
 gstr utf16_to_utf8(const wchar_t* str);
 #endif // __WIN32__
 

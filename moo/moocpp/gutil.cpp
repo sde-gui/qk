@@ -114,7 +114,7 @@ gstr markup_vprintf_escaped (const char* fmt, va_list args)
 
 #ifdef __WIN32__
 
-gstr win32_error_message (DWORD code)
+gstr win32_error_message (guint32 code)
 {
     return wrap_new (g_win32_error_message (code));
 }
