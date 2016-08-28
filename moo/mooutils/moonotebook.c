@@ -2817,7 +2817,7 @@ static void
 tab_drag_motion (MooNotebook    *nb,
                  GdkEventMotion *event)
 {
-    int x, new_index, width, offset, num, i;
+    int x, new_index, width, num, i;
     GSList *visible, *l;
     Page *drag_page;
     int event_x, event_y;
@@ -2866,17 +2866,19 @@ tab_drag_motion (MooNotebook    *nb,
 
     new_index = nb->priv->drag_page_index;
 
-    for (l = visible, i = 0, offset = 0; l != NULL; l = l->next, ++i)
+    for (l = visible, i = 0; l != NULL; l = l->next, ++i)
     {
         Page *page;
         int min_width;
+        int offset;
 
         page = l->data;
         min_width = MIN (page->label->width, width);
 
+        offset = page->label->offset;
+
         if (i == new_index)
         {
-            offset += page->label->width;
             continue;
         }
 
@@ -2902,8 +2904,6 @@ tab_drag_motion (MooNotebook    *nb,
             new_index = i;
             break;
         }
-
-        offset += page->label->width;
     }
 
     nb->priv->drag_page_index = new_index;
