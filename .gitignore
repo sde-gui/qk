@@ -1,13 +1,19 @@
-syntax: glob
+.deps
+.dirstamp
+Makefile
 Makefile.in
-depcomp
-compile
-config.guess
-config.sub
-configure
+/depcomp
+/compile
+/config.h
+/config.log
+/config.guess
+/config.sub
+/config.status
+/configure
+/libtool
 doc/help.stamp
-install-sh
-ltmain.sh
+/install-sh
+/ltmain.sh
 test-driver
 m4/intltool.m4
 m4/libtool.m4
@@ -27,6 +33,8 @@ aclocal.m4
 *.tmp
 *.rej
 *.pyc
+*.gmo
+*.o
 .goutputstream-*
 po*/dist
 po*/pot
