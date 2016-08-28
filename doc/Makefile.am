@@ -15,16 +15,8 @@ gendocbook_files =				\
 
 script_docbook_sources =			\
 	built/medit-defines.ent			\
-	built/script-python.docbook		\
 	built/script-lua.docbook		\
 	built/script-lua-gtk.docbook
-
-$(srcdir)/built/script-python.docbook: $(gendocbook_files) script-python.tmpl.docbook $(top_srcdir)/api/moo.xml
-	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
-	$(AM_V_GEN)$(MOO_PYTHON) $(top_srcdir)/api/gendocbook.py \
-		--python --template $(srcdir)/script-python.tmpl.docbook \
-		$(top_srcdir)/api/moo.xml > script-python.docbook.tmp && \
-		mv script-python.docbook.tmp $(srcdir)/built/script-python.docbook
 
 $(srcdir)/built/script-lua.docbook: $(gendocbook_files) script-lua.tmpl.docbook $(top_srcdir)/api/moo.xml $(top_srcdir)/api/gtk.xml
 	$(AM_V_at)$(MKDIR_P) $(srcdir)/built
@@ -41,12 +33,6 @@ $(srcdir)/built/script-lua-gtk.docbook: $(gendocbook_files) script-lua-gtk.tmpl.
 		$(top_srcdir)/api/gtk.xml > script-lua-gtk.docbook.tmp && \
 		mv script-lua-gtk.docbook.tmp $(srcdir)/built/script-lua-gtk.docbook
 
-# $(srcdir)/help/script-python.html: built/script-python.docbook built/medit-defines.ent script.xsl
-# 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
-# 	$(AM_V_GEN)$(XSLTPROC) --output script-python.html.tmp \
-# 		$(srcdir)/script.xsl $(srcdir)/built/script-python.docbook \
-# 		&& mv script-python.html.tmp $(srcdir)/help/script-python.html
-#
 # $(srcdir)/help/script-lua.html: built/script-lua.docbook built/medit-defines.ent script.xsl
 # 	$(AM_V_at)$(MKDIR_P) $(srcdir)/help/
 # 	$(AM_V_GEN)$(XSLTPROC) --output script-lua.html.tmp \

@@ -1,6 +1,5 @@
 #include <mooedit/mooeditor-tests.h>
 #include <moolua/moolua-tests.h>
-#include <moopython/moopython-tests.h>
 #include <mooutils/mooutils-tests.h>
 #include <gtk/gtk.h>
 #include <stdio.h>
