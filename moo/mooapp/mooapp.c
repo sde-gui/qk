@@ -854,7 +854,7 @@ moo_app_init (MooApp *app)
     g_return_val_if_fail (MOO_IS_APP (app), FALSE);
 
     gdk_set_program_class (MOO_APP_FULL_NAME);
-    gtk_window_set_default_icon_name (MOO_APP_SHORT_NAME);
+    gtk_window_set_default_icon_name (MOO_APP_LOGO);
 
     moo_set_display_app_name (MOO_APP_SHORT_NAME);
     _moo_set_app_instance_name (app->priv->instance_name);

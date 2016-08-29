@@ -196,8 +196,8 @@ _moo_stock_init (void)
 
     add_icon (factory, MOO_STOCK_TERMINAL, "terminal", 24, MOO_GNOME_TERMINAL_ICON);
 
-    add_default_image (24, MEDIT_ICON, "medit", NULL);
-    add_default_image (48, MEDIT_ICON, "medit", NULL);
+    add_default_image (24, QK_ICON, "qk", NULL);
+    add_default_image (48, QK_ICON, "qk", NULL);
 
     gtk_stock_add_static (stock_items, G_N_ELEMENTS (stock_items));
 
