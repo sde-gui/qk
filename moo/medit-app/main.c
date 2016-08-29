@@ -3,14 +3,14 @@
  *
  *   Copyright (C) 2004-2010 by Yevgen Muntyan <emuntyan@users.sourceforge.net>
  *
- *   This file is part of medit.  medit is free software; you can
+ *   This file is part of Quark.  Quark is free software; you can
  *   redistribute it and/or modify it under the terms of the
  *   GNU Lesser General Public License as published by the
  *   Free Software Foundation; either version 2.1 of the License,
  *   or (at your option) any later version.
  *
  *   You should have received a copy of the GNU Lesser General Public
- *   License along with medit.  If not, see <http://www.gnu.org/licenses/>.
+ *   License along with Quark.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <config.h>
@@ -157,7 +157,7 @@ static GOptionEntry medit_options[] = {
     { "ut", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.ut,
             "Run unit tests", NULL },
     { "ut-uninstalled", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &medit_opts.ut_uninstalled,
-            "Run unit tests in uninstalled medit", NULL },
+            "Run unit tests in uninstalled qk", NULL },
     { "ut-dir", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING, &medit_opts.ut_dir,
             "Data dir for unit tests", NULL },
     { "ut-coverage", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_FILENAME, &medit_opts.ut_coverage_file,
@@ -166,7 +166,7 @@ static GOptionEntry medit_options[] = {
             "List unit tests", NULL },
 #ifdef __WIN32__
     { "portable", 0, G_OPTION_ARG_NONE, G_OPTION_ARG_NONE, &medit_opts.portable,
-            "Run medit in portable mode", NULL },
+            "Run qk in portable mode", NULL },
 #endif
     { G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &medit_opts.files,
             NULL, /* "FILES" part in "medit [OPTION...] [FILES]" */ N_("FILES") },
@@ -232,7 +232,7 @@ post_parse_func (void)
 {
     if (medit_opts.show_version)
     {
-        g_print ("medit " MOO_DISPLAY_VERSION "\n");
+        g_print ("qk " MOO_DISPLAY_VERSION "\n");
         exit (0);
     }
 
@@ -274,7 +274,7 @@ parse_args (int argc, char *argv[])
     GOptionGroup *grp;
     GError *error = NULL;
 
-    grp = g_option_group_new ("medit", "medit", "medit", NULL, NULL);
+    grp = g_option_group_new ("qk", "qk", "qk", NULL, NULL);
     g_option_group_add_entries (grp, medit_options);
     g_option_group_set_parse_hooks (grp, NULL, (GOptionParseFunc) post_parse_func);
     g_option_group_set_translation_domain (grp, GETTEXT_PACKAGE);
@@ -707,7 +707,7 @@ medit_main (int argc, char *argv[])
 
     init_mem_stuff ();
     g_thread_init (NULL);
-    g_set_prgname ("medit");
+    g_set_prgname ("Quark");
 
     ctx = parse_args (argc, argv);
 

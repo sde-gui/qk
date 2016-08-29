@@ -190,7 +190,7 @@ PIXMAPS =					\
 	mooutils/pixmaps/detach.png		\
 	mooutils/pixmaps/attach.png		\
 	mooutils/pixmaps/keepontop.png		\
-	mooutils/pixmaps/medit.png
+	mooutils/pixmaps/qk.png
 EXTRA_DIST += $(PIXMAPS)
 stock-moo.h: $(PIXMAPS)
 	$(AM_V_GEN)$(GDK_PIXBUF_CSOURCE) --static --build-list \
@@ -200,7 +200,7 @@ stock-moo.h: $(PIXMAPS)
 		MOO_DETACH_ICON $(moo_srcdir)/mooutils/pixmaps/detach.png \
 		MOO_ATTACH_ICON $(moo_srcdir)/mooutils/pixmaps/attach.png \
 		MOO_KEEP_ON_TOP_ICON $(moo_srcdir)/mooutils/pixmaps/keepontop.png \
-		MEDIT_ICON $(moo_srcdir)/mooutils/pixmaps/medit.png \
+		MEDIT_ICON $(moo_srcdir)/mooutils/pixmaps/qk.png \
 			> $@.tmp && mv $@.tmp $@
 
 EXTRA_DIST += mooutils/pixmaps/symlink.png mooutils/pixmaps/symlink-small.png

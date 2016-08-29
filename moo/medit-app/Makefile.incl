@@ -10,11 +10,11 @@ EXTRA_DIST +=					\
 	medit-app/run-tests-uninstalled.sh
 
 EXTRA_DIST += medit-app/medit.rc.in
-EXTRA_DIST += medit-app/medit.desktop.in
+EXTRA_DIST += medit-app/qk.desktop.in
 
 if MOO_BUILD_APP
 
-bin_PROGRAMS += medit
+bin_PROGRAMS += qk
 
 TESTS = medit-app/run-tests-uninstalled.sh
 TESTS_ENVIRONMENT = EXEEXT=$(EXEEXT) top_srcdir=$(top_srcdir) bindir=$(bindir) PYTHON=$(MOO_PYTHON) print_functions=$(srcdir)/medit-app/print-functions.py
@@ -35,7 +35,7 @@ if MOO_OS_UNIX
 AM_CFLAGS += -DMOO_UNIT_TEST_DATA_DIR=\"${MOO_TOP_SRCDIR}/moo/medit-app/data\"
 endif
 
-medit_SOURCES =				\
+qk_SOURCES =				\
 	medit-app/mem-debug.h		\
 	medit-app/run-tests.h		\
 	medit-app/parse.h		\
@@ -43,18 +43,18 @@ medit_SOURCES =				\
 	$(moo_sources)			\
 	$(plugins_sources)
 
-nodist_EXTRA_medit_SOURCES =		\
+nodist_EXTRA_qk_SOURCES =		\
 	dummy.cpp
 
-medit_LDADD = $(MOO_LIBS) $(moo_libadd)
+qk_LDADD = $(MOO_LIBS) $(moo_libadd)
 
-nodist_medit_SOURCES =			\
+nodist_qk_SOURCES =			\
 	$(built_moo_sources)		\
 	$(built_plugins_sources)
 
-medit_LDFLAGS =
+qk_LDFLAGS =
 if MOO_OS_WIN32
-medit_LDFLAGS += -mwindows
+qk_LDFLAGS += -mwindows
 endif
 
 if MOO_OS_WIN32
@@ -64,20 +64,20 @@ medit-app/medit.rc: medit-app/medit.rc.in $(top_builddir)/config.status
 	$(AM_V_GEN)cd $(top_builddir) && ./config.status --silent --file=moo/medit-app/medit.rc
 medit-app/medit.res: medit-app/medit.rc
 	$(AM_V_GEN)$(WINDRES) -i medit-app/medit.rc --input-format=rc -o medit-app/medit.res -O coff
-medit_LDADD += medit-app/medit.res
+qk_LDADD += medit-app/medit.res
 endif
 
 if MOO_OS_UNIX
 desktopdir = $(datadir)/applications
-desktop_DATA = medit-app/medit.desktop
-medit-app/medit.desktop: medit-app/medit.desktop.in @MOO_INTLTOOL_INI_DEPS@
+desktop_DATA = medit-app/qk.desktop
+medit-app/qk.desktop: medit-app/qk.desktop.in @MOO_INTLTOOL_INI_DEPS@
 	$(AM_V_at)$(MKDIR_P) medit-app
 	@MOO_INTLTOOL_INI_CMD@
-CLEANFILES += medit-app/medit.desktop
+CLEANFILES += medit-app/qk.desktop
 endif MOO_OS_UNIX
 
 iconthemedir = $(datadir)/icons/hicolor/48x48/apps
-icontheme_DATA = mooutils/pixmaps/medit.png
+icontheme_DATA = mooutils/pixmaps/qk.png
 if MOO_ENABLE_INSTALL_HOOKS
 update_icon_cache = gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor
 install-data-hook: install-data-hook-gtk-icon-cache
@@ -108,12 +108,12 @@ CPPCHECK_CONFIGURATION_FLAGS_FAST = $(CPPCHECK_EXTRA_CONFIGURATION_FLAGS_FAST) $
 CPPCHECK_CONFIGURATION_FLAGS = $(CPPCHECK_CONFIGURATION_FLAGS_$(CPPCHECK_CONFIGURATION))
 
 cppcheck:
-	$(CPPCHECK) $(CPPCHECK_FLAGS) $(CPPCHECK_CONFIGURATION_FLAGS) $(medit_SOURCES)
+	$(CPPCHECK) $(CPPCHECK_FLAGS) $(CPPCHECK_CONFIGURATION_FLAGS) $(qk_SOURCES)
 
 cppcheck-check-config:
-	$(CPPCHECK) $(CPPCHECK_FLAGS) $(CPPCHECK_CONFIGURATION_FLAGS) --check-config $(medit_SOURCES)
+	$(CPPCHECK) $(CPPCHECK_FLAGS) $(CPPCHECK_CONFIGURATION_FLAGS) --check-config $(qk_SOURCES)
 
 cppcheck-inconclusive:
-	$(CPPCHECK) $(CPPCHECK_FLAGS) $(CPPCHECK_CONFIGURATION_FLAGS) --inconclusive $(medit_SOURCES)
+	$(CPPCHECK) $(CPPCHECK_FLAGS) $(CPPCHECK_CONFIGURATION_FLAGS) --inconclusive $(qk_SOURCES)
 
 endif MOO_BUILD_APP

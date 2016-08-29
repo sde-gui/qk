@@ -1,11 +1,11 @@
 [Desktop Entry]
-Name=medit
+Name=Quark
 _Comment=Text editor
-Exec=medit %F
+Exec=qk %F
 Terminal=false
 Type=Application
 StartupNotify=true
 MimeType=text/plain;
-Icon=medit
+Icon=qk
 Categories=Utility;TextEditor;
 _Keywords=editor;texteditor;text

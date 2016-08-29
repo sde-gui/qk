@@ -306,15 +306,15 @@ EOFEOF
 cat > $dir/file.desktop <<EOFEOF
 [Desktop Entry]
 Encoding=UTF-8
-_Name=medit
+_Name=Quark
 _Comment=Text editor
-Exec=medit %F
+Exec=qk %F
 # blah blah blah
 Terminal=false
 Type=Application
 StartupNotify=true
 MimeType=text/plain;
-Icon=medit.png
+Icon=qk.png
 Categories=Application;Utility;TextEditor;
 EOFEOF
 

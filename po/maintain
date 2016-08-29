@@ -1,10 +1,10 @@
 #!/bin/sh
 
-GETTEXT_PACKAGE=medit-1
+GETTEXT_PACKAGE=qk-1
 
 case `pwd` in
   */po-gsv)
-    GETTEXT_PACKAGE=medit-1-gsv
+    GETTEXT_PACKAGE=qk-1-gsv
     ;;
 esac
 

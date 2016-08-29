@@ -10,13 +10,13 @@ m4_if(_moo_version_suffix_,[],
   [m4_define([_moo_display_version_],[_moo_version_])],
   [m4_define([_moo_display_version_],[_moo_version_-_moo_version_suffix_])])
 
-m4_define([_moo_website_],[http://mooedit.sourceforge.net/])
-m4_define([_moo_web_contact_],[http://mooedit.sourceforge.net/contact.html])
-m4_define([_moo_email_],[emuntyan@users.sourceforge.net])
-m4_define([_moo_copyright_],[2004-2014 Yevgen Muntyan <_moo_email_>])
+m4_define([_moo_website_],[http://FIXME:link/])
+m4_define([_moo_web_contact_],[http://FIXME:link/])
+m4_define([_moo_email_],[vadim.ush@gmail.com])
+m4_define([_moo_copyright_],[2016 Vadim Ushakov <_moo_email_>; 2004-2014 Yevgen Muntyan <emuntyan@users.sourceforge.net>])
 
 AC_PREREQ([2.69])
-AC_INIT([medit],[_moo_display_version_],[_moo_email_])
+AC_INIT([quark],[_moo_display_version_],[_moo_email_])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CONFIG_MACRO_DIR([m4])
 AC_SUBST(ACLOCAL_FLAGS)
@@ -39,7 +39,7 @@ AC_SUBST(MOO_WEB_CONTACT,"_moo_web_contact_")
 AC_SUBST(MOO_COPYRIGHT,"_moo_copyright_")
 
 # keep in sync with po/maintain
-AC_SUBST(MOO_PACKAGE_NAME,"medit-1")
+AC_SUBST(MOO_PACKAGE_NAME,"qk-1")
 
 MOO_PREFS_XML_FILE_NAME="prefs.xml"
 MOO_STATE_XML_FILE_NAME="state.xml"
@@ -111,7 +111,7 @@ MOO_AC_CHECK_OS
 MOO_BUILD_APP=true
 
 if $MOO_BUILD_APP; then
-  AC_DEFINE(MOO_BUILD_APP, 1, [build medit application])
+  AC_DEFINE(MOO_BUILD_APP, 1, [build Quark application])
 fi
 
 AM_CONDITIONAL(MOO_BUILD_APP, [$MOO_BUILD_APP])
