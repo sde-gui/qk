@@ -989,7 +989,7 @@ init_filter_combo (GtkComboBox *combo)
     while (ids)
     {
         const char *name;
-        char *id = ids->data;
+        char *id;
 
         id = ids->data;
         ids = g_slist_delete_link (ids, ids);
