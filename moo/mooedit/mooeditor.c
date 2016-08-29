@@ -1844,20 +1844,23 @@ load_doc_session (MooEditor     *editor,
     MooEdit *doc = NULL;
     MooOpenInfo *info;
 
-    if (file_is_uri)
+    if (elm)
     {
-        uri = moo_markup_get_content (elm);
-    }
-    else
-    {
-        const char *filename_utf8 = moo_markup_get_content (elm);
-        char *filename = filename_from_utf8 (filename_utf8);
-        if (filename)
+        if (file_is_uri)
         {
-            freeme = g_filename_to_uri (filename, NULL, NULL);
-            uri = freeme;
+            uri = moo_markup_get_content (elm);
         }
-        g_free (filename);
+        else
+        {
+            const char *filename_utf8 = moo_markup_get_content (elm);
+            char *filename = filename_from_utf8 (filename_utf8);
+            if (filename)
+            {
+                freeme = g_filename_to_uri (filename, NULL, NULL);
+                uri = freeme;
+            }
+            g_free (filename);
+        }
     }
 
     if (!uri || !uri[0])
@@ -1911,6 +1914,7 @@ load_window_session (MooEditor     *editor,
     MooEditWindow *window;
     MooEdit *active_doc = NULL;
     MooMarkupNode *node;
+    gboolean empty = TRUE;
 
     window = create_window (editor);
 
@@ -1921,10 +1925,19 @@ load_window_session (MooEditor     *editor,
             MooEdit *doc;
 
             doc = load_doc_session (editor, window, node, file_is_uri);
+            if (doc)
+                empty = FALSE;
 
             if (doc && moo_markup_bool_prop (node, "active", FALSE))
                 active_doc = doc;
         }
+    }
+
+    if (empty)
+    {
+        MooEdit *doc;
+        doc = load_doc_session (editor, window, NULL, file_is_uri);
+        active_doc = doc;
     }
 
     if (active_doc)
