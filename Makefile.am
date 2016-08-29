@@ -56,4 +56,7 @@ fullcheck:
 cppcheck cppcheck-inconclusive cppcheck-check-config:
 	$(MAKE) -C moo $@
 
+XXX:
+	grep -n '[^A-Za-z_]\([X]XX\|[T]ODO\|[F]IXME\|[H]ACK\|[B]UG\|[M]OO_TODO\)' `git ls-files`
+
 @MOO_PO_SUBDIRS_RULE@
