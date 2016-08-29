@@ -14,10 +14,7 @@ exposed through <code>gtk</code> package in addition to functions in
 <link linkend="chapter-script-lua"><code>moo</code> package</link>.
 It is not a goal to provide complete Lua bindings for Gtk,
 and it is not a goal to enable creating UI in Lua scripts.
-If there is a demand, &medit; might bind more Gtk functionality,
-but so far Lua in &medit; is supposed to be lean and mean
-scripting language which is always available. Use Python if
-you need more functionality.</para>
+</para>
 <para>
 Notations used in this manual are described
 <link linkend="section-script-lua-notations">here</link>.

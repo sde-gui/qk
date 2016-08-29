@@ -8,8 +8,7 @@
 
 <para>
 &medit; allows extending its functionality with user-defined
-<parameter>tools</parameter>. It can be a Lua script or a Python script (if &medit; has been
-built with Python support) which are executed inside &medit;,
+<parameter>tools</parameter>. It can be a Lua script which are executed inside &medit;,
 or a shell script which can use the text of the open document as
 its input and/or output.
 </para>
@@ -96,13 +95,13 @@ The following controls are available to modify tools:
     </variablelist>
   </listitem>
   <listitem>
-    <parameter><guilabel>Type</guilabel></parameter> combo specifies the type of the tool: a Python script, a
-    Lua script, or a shell script.
+    <parameter><guilabel>Type</guilabel></parameter> combo specifies the type of the tool: a Lua script,
+    or a shell script.
   </listitem>
   <listitem>
     <guilabel>Code</guilabel> text field contains script or shell command text. See
-    <xref linkend="section-user-tools-shell"/>, <xref linkend="section-user-tools-lua"/>,
-    <xref linkend="section-user-tools-python"/> for details on what can be here.
+    <xref linkend="section-user-tools-shell"/>, <xref linkend="section-user-tools-lua"/>
+    for details on what can be here.
   </listitem>
 </itemizedlist>
 </para>
@@ -124,10 +123,8 @@ Names of the files in the <filename>tools</filename> folder are used as their me
 labels, after stripping first three characters, so you can use trhee-character
 prefix to affect the order of the menu items, e.g. you can have <filename>00-Do Something</filename>,
 <filename>01-Another tool</filename> files to have them in that order in the menu. The files
-may be of three types:
+may be of two types:
 <itemizedlist>
-<listitem>files with extension "<filename>.py</filename>", they will be used
-as Python scripts;</listitem>
 <listitem>files with extension "<filename>.lua</filename>", they will be used
 as Lua scripts;</listitem>
 <listitem>executable files, they will be executed in the same way
@@ -135,7 +132,7 @@ as shell commands.</listitem>
 </itemizedlist>
 </para>
 <para>
-Note that files with <filename>.py</filename> and <filename>.lua</filename> extensions will be
+Note that files with <filename>.lua</filename> extension will be
 executed inside &medit; process; if you want to use them as regular scripts, then just remove the
 extension.
 </para>
@@ -388,16 +385,6 @@ or scripts into <filename><envar>DATA_DIR</envar>/scripts/</filename> to be used
 </para>
 <para>
 <ulink url="script/lua-gtk.html">Gtk API for Lua scripts</ulink>.
-</para>
-
-</sect1>
-
-
-<sect1 id="section-user-tools-python">
-<title>Python scripts</title>
-
-<para>
-<ulink url="script/python-moo.html">Medit API for Python scripts</ulink>.
 </para>
 
 </sect1>
