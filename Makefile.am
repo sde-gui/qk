@@ -53,4 +53,7 @@ fullcheck:
 	$(MAKE) $(AM_MAKEFLAGS) test
 	$(MAKE) $(AM_MAKEFLAGS) distcheck
 
+cppcheck cppcheck-inconclusive cppcheck-check-config:
+	$(MAKE) -C moo $@
+
 @MOO_PO_SUBDIRS_RULE@
