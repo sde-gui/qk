@@ -39,6 +39,7 @@
 #include "mooutils/mooi18n.h"
 #include "mooutils/mootype-macros.h"
 #include "mooutils/moolist.h"
+#include "mooedit/mootextview.h"
 #include <gtk/gtk.h>
 #include <string.h>
 #include <errno.h>
@@ -2640,6 +2641,7 @@ get_type_by_name (const char *name)
         add_type ("MooEntry", moo_entry_get_type);
         add_type ("MooPrefsPage", moo_prefs_page_get_type);
         add_type ("MooAccelButton", _moo_accel_button_get_type);
+        add_type ("MooTextView", moo_text_view_get_type);
 
         add_type ("GtkAboutDialog", gtk_about_dialog_get_type);
         add_type ("GtkCellRendererCombo", gtk_cell_renderer_combo_get_type);
