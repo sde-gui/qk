@@ -39,7 +39,7 @@
 #include "gtksourcelanguage.h"
 #include "gtksourceview-marshal.h"
 
-#define DEFAULT_SECTION _("Others")
+#define DEFAULT_SECTION _("Other")
 
 /* Properties */
 enum {
