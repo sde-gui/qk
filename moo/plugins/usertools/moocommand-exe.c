@@ -512,7 +512,7 @@ create_environment (MooCommandExe     *cmd,
     }
 
     g_ptr_array_add (array, g_strdup_printf ("APP_PID=%s", _moo_get_pid_string ()));
-    g_ptr_array_add (array, g_strdup_printf ("MEDIT_PID=%s", _moo_get_pid_string ()));
+    g_ptr_array_add (array, g_strdup_printf ("QK_PID=%s", _moo_get_pid_string ()));
 
     if (cmd->priv->input == MOO_COMMAND_EXE_INPUT_DOC_COPY)
     {

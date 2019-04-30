@@ -750,7 +750,7 @@ medit_main (int argc, char *argv[])
     else if (medit_opts.instance_name)
         name = medit_opts.instance_name;
     else if (!medit_opts.new_app)
-        name = g_getenv ("MEDIT_PID");
+        name = g_getenv ("QK_PID");
 
     if (name && !name[0])
         name = NULL;
