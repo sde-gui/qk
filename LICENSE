@@ -56,9 +56,7 @@ moo/mooedit/language-specs/*:
     Written over many years by many people, see the files.
 
     Among those, GPL'ed files:
-        moo/mooedit/langs/mediawiki.lang
         moo/mooedit/langs/msil.lang
-        moo/mooedit/langs/pascal.lang
         moo/mooedit/langs/php.lang
 
 moo/mooutils/xdgmime/*: xdgmime library
