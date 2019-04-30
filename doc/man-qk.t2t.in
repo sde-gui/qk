@@ -22,13 +22,13 @@ Quark - text editor
 = OPTIONS =
 
 : **-n**, **--new-app**
-run new instance of **medit**. By default **medit** opens //FILES//
+run new instance of **Quark**. By default **Quark** opens //FILES//
 (or creates a new document if none are given) in an existing instance
 of application
 
 : **-s**, **--use-session**[=//yes|no//]
-load and save session. By default **medit** does it when **-n** is not used.
-If this option is not given on command line then medit uses the corresponding
+load and save session. By default **Quark** does it when **-n** is not used.
+If this option is not given on command line then Quark uses the corresponding
 preferences setting.
 
 : **--pid** //PID//
@@ -82,9 +82,9 @@ e.g. /tmp/file.txt:200. Trailing colon is ignored.
 
 = ENVIRONMENT VARIABLES =
 
-: MEDIT_PID
+: QK_PID
 if set, it is used as --pid argument. When qk spawns a process (e.g. a DVI viewer) it sets
-MEDIT_PID to its own process id, so the child process may in turn simply use 'medit filename'
+QK_PID to its own process id, so the child process may in turn simply use 'qk filename'
 to open a file (e.g. for inverse DVI search).
 
 
