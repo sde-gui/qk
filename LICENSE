@@ -57,7 +57,6 @@ moo/mooedit/language-specs/*:
 
     Among those, GPL'ed files:
         moo/mooedit/langs/msil.lang
-        moo/mooedit/langs/php.lang
 
 moo/mooutils/xdgmime/*: xdgmime library
     (C) 2003,2004  Red Hat, Inc.
