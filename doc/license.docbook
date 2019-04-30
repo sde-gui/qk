@@ -7,20 +7,9 @@
 <title>License</title>
 
 <para>
-&medit; as a whole is distributed under the terms of the GNU General
-Public License, version 2, but most of its code is released under the
-GNU Lesser General Public License. Full text of these licenses, as well
-as licenses and acknowledgements for third-party software incorporated
-in &medit;, can be found in this section.
+&medit; as a whole is distributed under the terms of the GNU Lesser General Public License.
+Full text of the license, as well as licenses and acknowledgements for third-party software incorporated in &medit;, can be found in this section.
 </para>
-
-
-<sect1 id="section-license-gpl">
-<title>GNU General Public License</title>
-<literallayout>
-<xi:include href="../COPYING.GPL" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-</literallayout>
-</sect1>
 
 
 <sect1 id="section-license-lgpl">
