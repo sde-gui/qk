@@ -64,7 +64,6 @@ lang_files =				\
 	mooedit/langs/matlab.lang	\
 	mooedit/langs/mediawiki.lang	\
 	mooedit/langs/modelica.lang	\
-	mooedit/langs/msil.lang		\
 	mooedit/langs/mxml.lang		\
 	mooedit/langs/nemerle.lang	\
 	mooedit/langs/netrexx.lang	\
