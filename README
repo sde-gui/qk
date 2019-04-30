@@ -31,10 +31,10 @@ Sources
 =======
 
 Quark sources are tracked using Git. You can browse Quark source
-repository online at {FIXME: link}. To check out a
+repository online at https://github.com/sde-gui/qk. To check out a
 copy of Quark repository, install Git, and do
-    git clone {FIXME: link}
-This will create a new directory named 'quark' with Quark sources inside.
+    git clone https://github.com/sde-gui/qk.git
+This will create a new directory named 'qk' with Quark sources inside.
 To update them later on, do
     git pull
 in this directory.
