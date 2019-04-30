@@ -103,7 +103,7 @@ doc:						\
 	$(srcdir)/help/help.html		\
 	$(srcdir)/help/script/index.html	\
 	$(srcdir)/help/medit.css		\
-	$(srcdir)/built/medit.1			\
+	$(srcdir)/built/qk.1			\
 	$(dest_png_files)			\
 	moo-help-sections.h.stamp
 
