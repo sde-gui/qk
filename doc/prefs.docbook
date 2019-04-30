@@ -426,7 +426,7 @@ The following "hidden" settings are available:
         <listitem>the percent character</listitem>
       </varlistentry>
     </variablelist>
-    Default value is "<code>%a - %f%s</code>" which produces something like "<code>medit - /home/user/file [modified]</code>".
+    Default value is "<code>%a - %f%s</code>" which produces something like "<code>Quark - /home/user/file [modified]</code>".
     </para></listitem>
   </varlistentry>
   <varlistentry>

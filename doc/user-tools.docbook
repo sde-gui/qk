@@ -310,13 +310,17 @@ Its input and output are specified by the following controls:
 </para>
 <para>
 Shell script user tools have a number of environment variables set.
-<envar>APP_PID</envar> variable is set so that opening a file in the same instance
-of &medit; is as simple as <code>medit filename</code> (on the other hand, you will
+<envar>QK_PID</envar> variable is set so that opening a file in the same instance
+of &medit; is as simple as <code>qk filename</code> (on the other hand, you will
 have to use command line options if you need to run a new &medit; instance). The
 following environment variables are set when scripts are executed:
 <variablelist>
   <?dbhtml list-presentation="table"?>
 <!--  <?dbhtml term-separator=" : "?>-->
+  <varlistentry>
+    <term><envar>QK_PID</envar></term>
+    <listitem>current process id.</listitem>
+  </varlistentry>
   <varlistentry>
     <term><envar>APP_PID</envar></term>
     <listitem>current process id.</listitem>
@@ -381,7 +385,7 @@ or scripts into <filename><envar>DATA_DIR</envar>/scripts/</filename> to be used
 <title>Lua scripts</title>
 
 <para>
-<ulink url="script/lua-moo.html">Medit API for Lua scripts</ulink>.
+<ulink url="script/lua-moo.html">Quark API for Lua scripts</ulink>.
 </para>
 <para>
 <ulink url="script/lua-gtk.html">Gtk API for Lua scripts</ulink>.
