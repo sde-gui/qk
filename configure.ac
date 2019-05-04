@@ -17,6 +17,7 @@ m4_define([_moo_copyright_],[2016 Vadim Ushakov <_moo_email_>; 2004-2014 Yevgen 
 
 AC_PREREQ([2.69])
 AC_INIT([quark],[_moo_display_version_],[_moo_email_])
+AC_CONFIG_AUX_DIR([build-aux])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CONFIG_MACRO_DIR([m4])
 AC_SUBST(ACLOCAL_FLAGS)
