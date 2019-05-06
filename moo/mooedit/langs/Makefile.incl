@@ -107,7 +107,8 @@ lang_files =				\
 	mooedit/langs/vhdl.lang		\
 	mooedit/langs/xml.lang		\
 	mooedit/langs/xslt.lang		\
-	mooedit/langs/yacc.lang
+	mooedit/langs/yacc.lang		\
+	mooedit/langs/yaml.lang
 
 scheme_files =				\
 	mooedit/langs/kate.xml		\
