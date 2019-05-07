@@ -10,8 +10,8 @@ m4_if(_moo_version_suffix_,[],
   [m4_define([_moo_display_version_],[_moo_version_])],
   [m4_define([_moo_display_version_],[_moo_version_-_moo_version_suffix_])])
 
-m4_define([_moo_website_],[http://FIXME:link/])
-m4_define([_moo_web_contact_],[http://FIXME:link/])
+m4_define([_moo_website_],[https://github.com/sde-gui/qk])
+m4_define([_moo_web_contact_],[https://github.com/sde-gui/qk/issues])
 m4_define([_moo_email_],[vadim.ush@gmail.com])
 m4_define([_moo_copyright_],[2016 Vadim Ushakov <_moo_email_>; 2004-2014 Yevgen Muntyan <emuntyan@users.sourceforge.net>])
 
