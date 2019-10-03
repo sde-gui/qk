@@ -225,7 +225,9 @@
       <keyword>double</keyword>
       <keyword>float</keyword>
       <keyword>int</keyword>
-      <keyword>(u)?int(8|16|32|64)_t</keyword>
+      <keyword>(u)?int(_least|_fast)?(8|16|32|64)_t</keyword>
+      <keyword>(u)?intmax_t</keyword>
+      <keyword>(u)?intptr_t</keyword>
       <keyword>long</keyword>
       <keyword>ptrdiff_t</keyword>
       <keyword>off(64)?_t</keyword>
