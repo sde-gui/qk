@@ -20,7 +20,7 @@
  along with this library; if not, see <http://www.gnu.org/licenses/>.
 
 -->
-<language id="awk" name="awk" version="2.0" _section="Scripts">
+<language id="awk" name="awk" version="2.0" _section="Script">
   <metadata>
     <property name="mimetypes">application/x-awk</property>
     <property name="globs">*.awk</property>

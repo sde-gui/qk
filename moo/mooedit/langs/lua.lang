@@ -20,7 +20,7 @@
  along with this library; if not, see <http://www.gnu.org/licenses/>.
 
 -->
-<language id="lua" name="Lua" version="2.0" _section="Scripts">
+<language id="lua" name="Lua" version="2.0" _section="Script">
   <metadata>
     <property name="mimetypes">text/x-lua</property>
     <property name="globs">*.lua</property>
