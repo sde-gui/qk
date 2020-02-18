@@ -21,7 +21,7 @@
  along with this library; if not, see <http://www.gnu.org/licenses/>.
 
 -->
-<language id="java" name="Java" version="2.0" _section="Sources">
+<language id="java" name="Java" version="2.0" _section="Source">
   <metadata>
     <property name="mimetypes">text/x-java</property>
     <property name="globs">*.java</property>

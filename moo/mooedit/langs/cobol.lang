@@ -22,7 +22,7 @@
  along with this library; if not, see <http://www.gnu.org/licenses/>.
 
 -->
-<language id="cobol" name="Cobol" version="2.0" _section="Sources">
+<language id="cobol" name="Cobol" version="2.0" _section="Source">
   <metadata>
     <property name="mimetype">text/x-cobol</property>
     <property name="globs">*.cbl;*.cob</property>

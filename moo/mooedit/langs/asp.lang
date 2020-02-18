@@ -20,7 +20,7 @@
  along with this library; if not, see <http://www.gnu.org/licenses/>.
 
 -->
-<language id="asp" name="ASP" version="2.0" _section="Sources">
+<language id="asp" name="ASP" version="2.0" _section="Source">
   <metadata>
     <property name="mimetypes">text/x-asp;application/x-asp;application/x-asap</property>
     <property name="globs">*.asp</property>

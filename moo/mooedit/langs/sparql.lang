@@ -20,7 +20,7 @@
  along with this library; if not, see <http://www.gnu.org/licenses/>.
 
 -->
-<language id="sparql" name="SPARQL" version="2.0" _section="Sources">
+<language id="sparql" name="SPARQL" version="2.0" _section="Source">
 
   <metadata>
     <property name="mimetypes">application/sparql-query</property>

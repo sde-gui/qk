@@ -20,7 +20,7 @@
  along with this library; if not, see <http://www.gnu.org/licenses/>.
 
 -->
-<language id="vbnet" name="VB.NET" version="2.0" _section="Sources">
+<language id="vbnet" name="VB.NET" version="2.0" _section="Source">
   <metadata>
     <property name="mimetypes">text/x-vbnet;text/x-vb</property>
     <property name="globs">*.vb</property>
