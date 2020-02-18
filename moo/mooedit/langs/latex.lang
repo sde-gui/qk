@@ -20,7 +20,7 @@
  along with this library; if not, see <http://www.gnu.org/licenses/>.
 
 -->
-<language id="latex" _name="LaTeX" version="2.0" _section="Markup">
+<language id="latex" name="LaTeX" version="2.0" _section="Markup">
   <metadata>
     <property name="mimetypes">text/x-tex</property>
     <property name="globs">*.tex;*.ltx;*.sty;*.cls;*.dtx;*.ins;*.bbl</property>
@@ -28,20 +28,20 @@
   </metadata>
 
   <styles>
-    <style id="comment"            _name="Comment"    map-to="def:comment"/>
-    <style id="documentclass"      _name="Comment"    map-to="def:keyword"/>
-    <style id="usepackage"         _name="Comment"    map-to="def:keyword"/>
-    <style id="newcommand"         _name="Comment"    map-to="def:keyword"/>
-    <style id="display-math"       _name="Math Mode"/>
-    <style id="inline-math"        _name="Inline Math Mode" map-to="latex:display-math"/>
-    <style id="structure"          _name="Inline Math Mode"/>
-    <style id="section"            _name="Inline Math Mode"/>
-    <style id="math"               _name="Math Mode"  map-to="latex:display-math"/>
-    <style id="math-bound"         _name="math-bound" map-to="latex:display-math"/>
-    <style id="include"            _name="Include"    map-to="def:keyword"/>
-    <style id="common-commands"    _name="Command"    map-to="def:keyword"/>
-    <style id="command"            _name="Command"    map-to="def:keyword"/>
-    <style id="verbatim"           _name="Verbatim"   map-to="def:comment"/>
+    <style id="comment"            name="Comment"    map-to="def:comment"/>
+    <style id="documentclass"      name="Comment"    map-to="def:keyword"/>
+    <style id="usepackage"         name="Comment"    map-to="def:keyword"/>
+    <style id="newcommand"         name="Comment"    map-to="def:keyword"/>
+    <style id="display-math"       name="Math Mode"/>
+    <style id="inline-math"        name="Inline Math Mode" map-to="latex:display-math"/>
+    <style id="structure"          name="Inline Math Mode"/>
+    <style id="section"            name="Inline Math Mode"/>
+    <style id="math"               name="Math Mode"  map-to="latex:display-math"/>
+    <style id="math-bound"         name="math-bound" map-to="latex:display-math"/>
+    <style id="include"            name="Include"    map-to="def:keyword"/>
+    <style id="common-commands"    name="Command"    map-to="def:keyword"/>
+    <style id="command"            name="Command"    map-to="def:keyword"/>
+    <style id="verbatim"           name="Verbatim"   map-to="def:comment"/>
   </styles>
 
   <definitions>
