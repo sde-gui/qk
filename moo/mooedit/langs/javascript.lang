@@ -104,9 +104,12 @@
     </context>
 
     <context id="keywords" style-ref="keyword">
+      <keyword>async</keyword>
+      <keyword>await</keyword>
       <keyword>break</keyword>
       <keyword>case</keyword>
       <keyword>catch</keyword>
+      <keyword>const</keyword>
       <keyword>continue</keyword>
       <keyword>debugger</keyword>
       <keyword>default</keyword>
@@ -119,8 +122,9 @@
       <keyword>function</keyword>
       <keyword>if</keyword>
       <keyword>import</keyword>
-      <keyword>instanceof</keyword>
       <keyword>in</keyword>
+      <keyword>instanceof</keyword>
+      <keyword>let</keyword>
       <keyword>new</keyword>
       <keyword>return</keyword>
       <keyword>switch</keyword>
@@ -132,12 +136,10 @@
       <keyword>void</keyword>
       <keyword>while</keyword>
       <keyword>with</keyword>
+      <keyword>yield</keyword>
     </context>
 
     <context id="unofficial-keywords" style-ref="keyword">
-      <keyword>const</keyword>
-      <keyword>let</keyword>
-      <keyword>yield</keyword>
     </context>
 
     <context id="types" style-ref="type">
