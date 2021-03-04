@@ -139,9 +139,6 @@
       <keyword>yield</keyword>
     </context>
 
-    <context id="unofficial-keywords" style-ref="keyword">
-    </context>
-
     <context id="types" style-ref="type">
       <keyword>Infinity</keyword>
       <keyword>NaN</keyword>
@@ -300,14 +297,14 @@
       <keyword>Int32Array</keyword>
       <keyword>Int8Array</keyword>
       <keyword>InternalError</keyword>
+      <keyword>Intl\.Collator</keyword>
+      <keyword>Intl\.DateTimeFormat</keyword>
+      <keyword>Intl\.ListFormat</keyword>
+      <keyword>Intl\.Locale</keyword>
+      <keyword>Intl\.NumberFormat</keyword>
+      <keyword>Intl\.PluralRules</keyword>
+      <keyword>Intl\.RelativeTimeFormat</keyword>
       <keyword>Intl</keyword>
-      <keyword>Intl.Collator</keyword>
-      <keyword>Intl.DateTimeFormat</keyword>
-      <keyword>Intl.ListFormat</keyword>
-      <keyword>Intl.Locale</keyword>
-      <keyword>Intl.NumberFormat</keyword>
-      <keyword>Intl.PluralRules</keyword>
-      <keyword>Intl.RelativeTimeFormat</keyword>
       <keyword>JSON</keyword>
       <keyword>Map</keyword>
       <keyword>Math</keyword>
@@ -332,14 +329,14 @@
       <keyword>URIError</keyword>
       <keyword>WeakMap</keyword>
       <keyword>WeakSet</keyword>
+      <keyword>WebAssembly\.CompileError</keyword>
+      <keyword>WebAssembly\.Instance</keyword>
+      <keyword>WebAssembly\.LinkError</keyword>
+      <keyword>WebAssembly\.Memory</keyword>
+      <keyword>WebAssembly\.Module</keyword>
+      <keyword>WebAssembly\.RuntimeError</keyword>
+      <keyword>WebAssembly\.Table</keyword>
       <keyword>WebAssembly</keyword>
-      <keyword>WebAssembly.CompileError</keyword>
-      <keyword>WebAssembly.Instance</keyword>
-      <keyword>WebAssembly.LinkError</keyword>
-      <keyword>WebAssembly.Memory</keyword>
-      <keyword>WebAssembly.Module</keyword>
-      <keyword>WebAssembly.RuntimeError</keyword>
-      <keyword>WebAssembly.Table</keyword>
     </context>
 
     <context id="future-words" style-ref="future-words">
@@ -374,7 +371,6 @@
         <context ref="null-value"/>
         <context ref="boolean"/>
         <context ref="keywords"/>
-        <context ref="unofficial-keywords"/>
         <context ref="types"/>
         <context ref="functions"/>
         <context ref="properties"/>
