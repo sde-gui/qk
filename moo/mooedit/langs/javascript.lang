@@ -276,21 +276,70 @@
     </context>
 
     <context id="constructors" style-ref="constructors">
+      <keyword>AggregateError</keyword>
       <keyword>Array</keyword>
+      <keyword>ArrayBuffer</keyword>
+      <keyword>AsyncFunction</keyword>
+      <keyword>AsyncGenerator</keyword>
+      <keyword>AsyncGeneratorFunction</keyword>
+      <keyword>Atomics</keyword>
+      <keyword>BigInt</keyword>
+      <keyword>BigInt64Array</keyword>
+      <keyword>BigUint64Array</keyword>
       <keyword>Boolean</keyword>
+      <keyword>DataView</keyword>
       <keyword>Date</keyword>
       <keyword>Error</keyword>
       <keyword>EvalError</keyword>
+      <keyword>Float32Array</keyword>
+      <keyword>Float64Array</keyword>
       <keyword>Function</keyword>
+      <keyword>Generator</keyword>
+      <keyword>GeneratorFunction</keyword>
+      <keyword>Int16Array</keyword>
+      <keyword>Int32Array</keyword>
+      <keyword>Int8Array</keyword>
+      <keyword>InternalError</keyword>
+      <keyword>Intl</keyword>
+      <keyword>Intl.Collator</keyword>
+      <keyword>Intl.DateTimeFormat</keyword>
+      <keyword>Intl.ListFormat</keyword>
+      <keyword>Intl.Locale</keyword>
+      <keyword>Intl.NumberFormat</keyword>
+      <keyword>Intl.PluralRules</keyword>
+      <keyword>Intl.RelativeTimeFormat</keyword>
+      <keyword>JSON</keyword>
+      <keyword>Map</keyword>
       <keyword>Math</keyword>
       <keyword>Number</keyword>
       <keyword>Object</keyword>
+      <keyword>Promise</keyword>
+      <keyword>Proxy</keyword>
       <keyword>RangeError</keyword>
+      <keyword>ReferenceError</keyword>
+      <keyword>Reflect</keyword>
       <keyword>RegExp</keyword>
+      <keyword>Set</keyword>
+      <keyword>SharedArrayBuffer</keyword>
       <keyword>String</keyword>
+      <keyword>Symbol</keyword>
       <keyword>SyntaxError</keyword>
       <keyword>TypeError</keyword>
+      <keyword>Uint16Array</keyword>
+      <keyword>Uint32Array</keyword>
+      <keyword>Uint8Array</keyword>
+      <keyword>Uint8ClampedArray</keyword>
       <keyword>URIError</keyword>
+      <keyword>WeakMap</keyword>
+      <keyword>WeakSet</keyword>
+      <keyword>WebAssembly</keyword>
+      <keyword>WebAssembly.CompileError</keyword>
+      <keyword>WebAssembly.Instance</keyword>
+      <keyword>WebAssembly.LinkError</keyword>
+      <keyword>WebAssembly.Memory</keyword>
+      <keyword>WebAssembly.Module</keyword>
+      <keyword>WebAssembly.RuntimeError</keyword>
+      <keyword>WebAssembly.Table</keyword>
     </context>
 
     <context id="future-words" style-ref="future-words">
