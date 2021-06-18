@@ -50,9 +50,10 @@
   <definitions>
 
     <!--regex-->
-    <define-regex id="regex-opts">[iomx]*[neus]?[iomx]*</define-regex>
+    <define-regex id="regex-opts">[giomx]*[neus]?[giomx]*</define-regex>
 
     <!--contexts NOT used in the main context-->
+
     <context id="escape" style-ref="escape">
       <match>\\((0-7){3}|(x[a-fA-F0-9]{2})|(c\S)|([CM]-\S)|(M-C-\S)|.)</match>
     </context>
@@ -63,6 +64,29 @@
     </context>
 
     <!--contexts used in the main context-->
+
+    <context id="string" style-ref="string" end-at-line-end="true" class="string">
+      <start>"</start>
+      <end>"</end>
+      <include>
+        <context ref="escape"/>
+        <context ref="xml:entity"/>
+        <context ref="xml:character-reference"/>
+        <context ref="def:line-continue"/>
+      </include>
+    </context>
+
+    <context id="single-quoted-string" style-ref="string" end-at-line-end="true" class="string">
+      <start>'</start>
+      <end>'</end>
+      <include>
+        <context ref="escape"/>
+        <context ref="xml:entity"/>
+        <context ref="xml:character-reference"/>
+        <context ref="def:line-continue"/>
+      </include>
+    </context>
+
     <context id="regex-simple" style-ref="regex">
       <start extended="true">
         ((?&lt;=([(]|\s))|^)
@@ -126,6 +150,7 @@
       <keyword>instanceof</keyword>
       <keyword>let</keyword>
       <keyword>new</keyword>
+      <keyword>of</keyword>
       <keyword>return</keyword>
       <keyword>switch</keyword>
       <keyword>this</keyword>
@@ -161,11 +186,17 @@
       <keyword>decodeURI</keyword>
       <keyword>encodeURIComponent</keyword>
       <keyword>encodeURI</keyword>
+      <keyword>endsWith</keyword>
+      <keyword>entries</keyword>
       <keyword>escape</keyword>
       <keyword>eval</keyword>
+      <keyword>every</keyword>
       <keyword>exec</keyword>
       <keyword>exp</keyword>
+      <keyword>filter</keyword>
+      <keyword>find</keyword>
       <keyword>floor</keyword>
+      <keyword>forEach</keyword>
       <keyword>fromCharCode</keyword>
       <keyword>getDate</keyword>
       <keyword>getDay</keyword>
@@ -187,6 +218,7 @@
       <keyword>getUTCSeconds</keyword>
       <keyword>getYear</keyword>
       <keyword>hasOwnProperty</keyword>
+      <keyword>includes</keyword>
       <keyword>indexOf</keyword>
       <keyword>isFinite</keyword>
       <keyword>isNaN</keyword>
@@ -195,9 +227,11 @@
       <keyword>lastIndexOf</keyword>
       <keyword>localeCompare</keyword>
       <keyword>log</keyword>
+      <keyword>map</keyword>
       <keyword>match</keyword>
       <keyword>max</keyword>
       <keyword>min</keyword>
+      <keyword>normalize</keyword>
       <keyword>parseFloat</keyword>
       <keyword>parseInt</keyword>
       <keyword>parse</keyword>
@@ -206,6 +240,8 @@
       <keyword>propertyIsEnumerable</keyword>
       <keyword>push</keyword>
       <keyword>random</keyword>
+      <keyword>reduce</keyword>
+      <keyword>repeat</keyword>
       <keyword>replace</keyword>
       <keyword>reverse</keyword>
       <keyword>round</keyword>
@@ -229,9 +265,11 @@
       <keyword>shift</keyword>
       <keyword>sin</keyword>
       <keyword>slice</keyword>
+      <keyword>some</keyword>
       <keyword>sort</keyword>
       <keyword>split</keyword>
       <keyword>sqrt</keyword>
+      <keyword>startsWith</keyword>
       <keyword>substring</keyword>
       <keyword>substr</keyword>
       <keyword>tan</keyword>
@@ -250,6 +288,9 @@
       <keyword>toTimeString</keyword>
       <keyword>toUpperCase</keyword>
       <keyword>toUTCString</keyword>
+      <keyword>trim</keyword>
+      <keyword>trimLeft</keyword>
+      <keyword>trimRight</keyword>
       <keyword>unescape</keyword>
       <keyword>unshift</keyword>
       <keyword>UTC</keyword>
@@ -361,8 +402,8 @@
         <context ref="def:c-like-comment"/>
         <context ref="def:c-like-comment-multiline"/>
         <context ref="def:c-like-close-comment-outside-comment"/>
-        <context ref="def:string" style-ref="string"/>
-        <context ref="def:single-quoted-string" style-ref="string"/>
+        <context ref="string" style-ref="string"/>
+        <context ref="single-quoted-string" style-ref="string"/>
         <context ref="def:float"/>
         <context ref="def:decimal"/>
         <context ref="def:octal"/>
