@@ -196,9 +196,14 @@ create_about_dialog (void)
 
     gtk_label_set_text (gxml->description, MOO_APP_DESCRIPTION);
 
-    markup = g_markup_printf_escaped ("<small>\302\251 %s</small>", MOO_COPYRIGHT);
-    gtk_label_set_markup (gxml->copyright, markup);
-    g_free (markup);
+    {
+        GString * copyright = g_string_new (MOO_COPYRIGHT);
+        g_string_replace (copyright, "; ", "\n(c) ", 0);
+        g_string_prepend (copyright, "(c) ");
+        gchar * markup = g_markup_printf_escaped ("<small>%s</small>", g_string_free(copyright, FALSE));
+        gtk_label_set_markup (gxml->copyright, markup);
+        g_free (markup);
+    }
 
     _moo_link_label_set_url (gxml->url, MOO_APP_WEBSITE);
     _moo_link_label_set_text (gxml->url, MOO_APP_WEBSITE_LABEL);
