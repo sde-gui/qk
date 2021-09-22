@@ -962,16 +962,61 @@ set_kate_var (MooEdit    *edit,
     if (!g_ascii_strcasecmp (name, "space-indent"))
     {
         gboolean spaces = FALSE;
-
         if (moo_edit_config_parse_bool (val, &spaces))
             moo_edit_config_parse_one (edit->config, "indent-use-tabs",
                                        spaces ? "false" : "true",
                                        MOO_EDIT_CONFIG_SOURCE_FILE);
     }
+    else if (!g_ascii_strcasecmp (name, "replace-tabs"))
+    {
+        gboolean replace_tabs = FALSE;
+        if (moo_edit_config_parse_bool (val, &replace_tabs))
+            moo_edit_config_parse_one (edit->config, "indent-use-tabs",
+                                       replace_tabs ? "false" : "true",
+                                       MOO_EDIT_CONFIG_SOURCE_FILE);
+    }
+    else if (!g_ascii_strcasecmp (name, "remove-trailing-spaces"))
+    {
+        /*
+            Kate docs:
+            none, - or 0:
+                never remove trailing spaces.
+            modified, mod, + or 1:
+                remove trailing spaces only in modified lines.
+            all, * or 2:
+                remove trailing spaces in the entire document.
+        */
+        gboolean strip = FALSE;
+        if (!g_ascii_strcasecmp (val, "all") ||
+            !g_ascii_strcasecmp (val, "*") ||
+            !g_ascii_strcasecmp (val, "2")) {
+            strip = TRUE;
+        }
+        moo_edit_config_parse_one (edit->config, "strip",
+                                   strip ? "true" : "false",
+                                   MOO_EDIT_CONFIG_SOURCE_FILE);
+    }
+    else if (!g_ascii_strcasecmp (name, "hl"))
+    {
+        moo_edit_config_parse_one (edit->config, "lang", val,
+                                   MOO_EDIT_CONFIG_SOURCE_FILE);
+    }
+    else if (!g_ascii_strcasecmp (name, "newline-at-eof"))
+    {
+        moo_edit_config_parse_one (edit->config, "add-newline", val,
+                                   MOO_EDIT_CONFIG_SOURCE_FILE);
+    }
     else
     {
-        moo_edit_config_parse_one (edit->config, name, val,
-                                   MOO_EDIT_CONFIG_SOURCE_FILE);
+        const char * identical_names[] = {"tab-width", "indent-width", 0};
+        int i;
+        for (i = 0; identical_names[i]; i++) {
+            if (!g_ascii_strcasecmp (name, identical_names[i])) {
+                moo_edit_config_parse_one (edit->config, name, val,
+                                           MOO_EDIT_CONFIG_SOURCE_FILE);
+                break;
+            }
+        }
     }
 }
 

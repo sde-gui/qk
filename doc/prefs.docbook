@@ -362,6 +362,11 @@ turn off syntax highlighting in this document.</para></listitem>
 <term><code>use-tabs</code></term>
 <listitem><para>whether tab character should be used for indentation.</para></listitem>
 </varlistentry>
+<varlistentry>
+<term><code>indent-use-tabs</code></term>
+<listitem><para>alias for <code>use-tabs</code></para></listitem>
+</varlistentry>
+
 </variablelist>
 </para>
 <para>
@@ -383,7 +388,7 @@ The modeline options are reread whenever a document is saved, and they overwrite
 <tbody>
 <row>
   <entry>mode</entry>
-  <entry></entry>
+  <entry>hl</entry>
   <entry>lang</entry>
   <entry>lang</entry>
 </row>
@@ -395,15 +400,27 @@ The modeline options are reread whenever a document is saved, and they overwrite
 </row>
 <row>
   <entry>c-basic-offset</entry>
-  <entry></entry>
+  <entry>indent-width</entry>
   <entry>indent-width</entry>
   <entry>indent-width</entry>
 </row>
 <row>
   <entry>indent-tabs-mode</entry>
-  <entry>space-indent</entry>
-  <entry>indent-use-tabs</entry>
-  <entry>indent-use-tabs</entry>
+  <entry>space-indent, replace-tabs</entry>
+  <entry>use-tabs, indent-use-tabs</entry>
+  <entry>use-tabs, indent-use-tabs</entry>
+</row>
+<row>
+  <entry></entry>
+  <entry>newline-at-eof</entry>
+  <entry>add-newline</entry>
+  <entry>add-newline</entry>
+</row>
+<row>
+  <entry></entry>
+  <entry>remove-trailing-spaces</entry>
+  <entry>strip</entry>
+  <entry>strip</entry>
 </row>
 </tbody>
 </tgroup>
