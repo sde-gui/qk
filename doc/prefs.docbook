@@ -299,12 +299,9 @@ The following entries set the command properties:
 
 
 <sect1 id="section-editing-options">
-<title>Options for editing text</title>
+<title>Per-file preferences (Modelines)</title>
 <para>
-&medit; has some editing options which can be set in the document text,
-or in the <guilabel>Preferences</guilabel> dialog for sets of files or for given syntax
-highlighting language.
-</para>
+&medit;'s modelines can be used to set &medit; settings local to a file, in which case those settings take the precedence over ones set in the <guilabel>Preferences</guilabel> dialog.</para>
 <para>
 To set the options in the document text, place the following on the first,
 second or the last line of the document:
@@ -368,9 +365,66 @@ turn off syntax highlighting in this document.</para></listitem>
 </variablelist>
 </para>
 <para>
-&medit; tries to understand modelines of Vim, Emacs, and Kate text editors, so chances are it will correctly
-pick up the conventional settings from source files.
+The modeline options are reread whenever a document is saved, and they overwrite changes made using menu items or the <guilabel>Preferences</guilabel> dialog.</para>
+<para>
+&medit; has a limited support of Emacs and Kate modelines. The modeline options are also backward compatible with ones used in <ulink url="http://mooedit.sourceforge.net/">Medit 1.2.0</ulink>. The following options are recognized:
 </para>
+
+<table frame='all'>
+<tgroup cols='4' align='left' colsep='1' rowsep='1'>
+<thead>
+<row>
+  <entry>Emacs</entry>
+  <entry>Kate</entry>
+  <entry>Medit</entry>
+  <entry>Quark</entry>
+</row>
+</thead>
+<tbody>
+<row>
+  <entry>mode</entry>
+  <entry></entry>
+  <entry>lang</entry>
+  <entry>lang</entry>
+</row>
+<row>
+  <entry>tab-width</entry>
+  <entry>tab-width</entry>
+  <entry>tab-width</entry>
+  <entry>tab-width</entry>
+</row>
+<row>
+  <entry>c-basic-offset</entry>
+  <entry></entry>
+  <entry>indent-width</entry>
+  <entry>indent-width</entry>
+</row>
+<row>
+  <entry>indent-tabs-mode</entry>
+  <entry>space-indent</entry>
+  <entry>indent-use-tabs</entry>
+  <entry>indent-use-tabs</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<para>External references:</para>
+<itemizedlist>
+  <listitem>
+    <para><ulink url="https://www.gnu.org/software/emacs/manual/html_node/emacs/Specifying-File-Variables.html">Emacs File Variables</ulink></para>
+  </listitem>
+  <listitem>
+    <para><ulink url="https://docs.kde.org/stable5/en/kate/katepart/config-variables.html">Kate Modelines</ulink></para>
+  </listitem>
+  <listitem>
+    <para><ulink url="https://vim.fandom.com/wiki/Modeline_magic">Vim Modeline</ulink></para>
+  </listitem>
+  <listitem>
+    <para><ulink url="https://help.gnome.org/users/gedit/stable/gedit-plugins-modelines.html.en">Gedit Modelines Plugin</ulink></para>
+  </listitem>
+
+</itemizedlist>
+
 </sect1>
 
 
