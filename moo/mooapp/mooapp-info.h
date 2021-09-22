@@ -18,7 +18,7 @@
 
 #define MOO_APP_SHORT_NAME      "Quark"
 #define MOO_APP_FULL_NAME       "Quark"
-#define MOO_APP_DESCRIPTION     _("Quark is a text editor")
+#define MOO_APP_DESCRIPTION     _("Quark is a programmer's text editor")
 #define MOO_APP_LOGO            "qk"
 #define MOO_APP_WEBSITE         MOO_WEBSITE
 #define MOO_APP_WEBSITE_LABEL   MOO_WEBSITE
