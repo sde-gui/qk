@@ -14,7 +14,7 @@ Full text of the license, as well as licenses and acknowledgements for third-par
 
 <sect1 id="section-license-lgpl">
 <title>GNU Lesser General Public License</title>
-<literallayout>
+<literallayout class="monospaced">
 <xi:include href="built/lgpl.no-fancy-chars" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </literallayout>
 </sect1>
@@ -22,7 +22,7 @@ Full text of the license, as well as licenses and acknowledgements for third-par
 
 <sect1 id="section-license-lua">
 <title>Lua License</title>
-<literallayout>
+<literallayout class="monospaced">
 <xi:include href="../moo/moolua/lua/COPYRIGHT" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </literallayout>
 </sect1>
@@ -30,7 +30,7 @@ Full text of the license, as well as licenses and acknowledgements for third-par
 
 <sect1 id="section-license-lfs">
 <title>LuaFileSystem License</title>
-<literallayout>
+<literallayout class="monospaced">
 LuaFileSystem - File System Library for Lua
 Copyright 2003-2007 PUC-Rio
 http://www.keplerproject.org/luafilesystem
@@ -46,7 +46,7 @@ Current version is 1.2.1.
 
 <sect1 id="section-license-xdg-utils">
 <title>xdg-utils License</title>
-<literallayout>
+<literallayout class="monospaced">
 Copyright 2006, Kevin Krammer &lt;kevin.krammer@gmx.at&gt;
 Copyright 2006, Jeremy White &lt;jwhite@codeweavers.com&gt;
 
