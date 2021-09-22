@@ -85,6 +85,24 @@ show_credits (void)
     CreditsDialogXml *gxml;
     GtkTextBuffer *buffer;
 
+    #define YEVGEN_MUNTYAN_EMAIL "emuntyan@users.sourceforge.net"
+
+#ifdef MOO_USE_HTML
+    const char * html_written_by = (
+        "Quark " MOO_DISPLAY_VERSION " (c) 2016-" MOO_APP_LATEST_COPYRIGHT_YEAR "<br>"
+        " * Vadim Ushakov <a href=\"mailto://" MOO_EMAIL "\">&lt;" MOO_EMAIL "&gt;</a><br>"
+        "Medit 1.2.0 (c) 2004-2014<br>"
+        " * Yevgen Muntyan <a href=\"mailto://" YEVGEN_MUNTYAN_EMAIL "\">&lt;" YEVGEN_MUNTYAN_EMAIL "&gt;</a>"
+    );
+#else
+    const char * plaintext_written_by = (
+        "Quark " MOO_DISPLAY_VERSION " (c) 2016-" MOO_APP_LATEST_COPYRIGHT_YEAR "\n"
+        " * Vadim Ushakov <" MOO_EMAIL ">\n"
+        "Medit 1.2.0 (c) 2004-2014\n"
+        " * Yevgen Muntyan <" YEVGEN_MUNTYAN_EMAIL ">"
+    );
+#endif
+
     if (credits_dialog)
     {
         if (about_dialog)
@@ -108,14 +126,10 @@ show_credits (void)
     g_signal_connect (credits_dialog, "response", G_CALLBACK (gtk_widget_destroy), NULL);
 
 #ifdef MOO_USE_HTML
-    _moo_html_load_memory (GTK_TEXT_VIEW (gxml->written_by),
-                           "Yevgen Muntyan <a href=\"mailto://" MOO_EMAIL
-                                    "\">&lt;" MOO_EMAIL "&gt;</a>",
-                           -1, NULL, NULL);
+    _moo_html_load_memory (GTK_TEXT_VIEW (gxml->written_by), html_written_by, -1, NULL, NULL);
 #else
     buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (gxml->written_by));
-    gtk_text_buffer_insert_at_cursor (buffer,
-                                      "Yevgen Muntyan <" MOO_EMAIL ">", -1);
+    gtk_text_buffer_insert_at_cursor (buffer, plaintext_written_by, -1);
 #endif
 
     set_translator_credits (gxml);

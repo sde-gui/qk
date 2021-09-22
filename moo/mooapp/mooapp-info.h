@@ -22,5 +22,6 @@
 #define MOO_APP_LOGO            "qk"
 #define MOO_APP_WEBSITE         MOO_WEBSITE
 #define MOO_APP_WEBSITE_LABEL   MOO_WEBSITE
+#define MOO_APP_LATEST_COPYRIGHT_YEAR "2021"
 
 #endif /* MOO_APP_INFO_H */
