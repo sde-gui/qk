@@ -74,7 +74,7 @@ doc.replace_selected_lines(lines)
     <exe:input>doc-copy</exe:input>
     <exe:code><![CDATA[
 diff -pu "$DOC_PATH" "$INPUT_FILE" > "$TEMP_DIR/m.diff"
-"$QK" -r "$TEMP_DIR/m.diff
+"$QK" -r "$TEMP_DIR/m.diff"
 ]]></exe:code>
   </command>
   <command id="Yacc"><!-- ###unix### -->
