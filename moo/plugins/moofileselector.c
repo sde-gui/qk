@@ -44,6 +44,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <glib/gstdio.h>
+#include <limits.h>
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
@@ -470,11 +471,77 @@ out:
     return fullname;
 }
 
+static void
+get_extension (const char *string,
+               char      **base,
+               char      **ext)
+{
+    char *dot;
+
+    g_return_if_fail (string != NULL);
+
+    dot = strrchr (string, '.');
+
+    if (dot)
+    {
+        *base = g_strndup (string, dot - string);
+        *ext = g_strdup (dot);
+    }
+    else
+    {
+        *base = g_strdup (string);
+        *ext = g_strdup ("");
+    }
+}
+
+static char *
+lookup_unused_file_name (const char *dirname,
+                         const char *start_name)
+{
+    char *fullname = NULL;
+    char *filename = NULL;
+    char *base = NULL, *extension = NULL;
+    int index = 1;
+
+    get_extension (start_name, &base, &extension);
+
+    while (TRUE)
+    {
+        if (index == INT_MAX)
+            break;
+
+        if (filename)
+            g_free (filename);
+        if (fullname)
+            g_free (fullname);
+
+        if (index == 1)
+        {
+            filename = g_strdup (start_name);
+        }
+        else
+        {
+            filename = g_strdup_printf ("%s (%i)%s", base, index, extension);
+        }
+        fullname = g_build_filename (dirname, filename, NULL);
+
+        if (!g_file_test (fullname, G_FILE_TEST_EXISTS))
+            break;
+
+        index++;
+    }
+
+    g_free (fullname);
+    g_free (base);
+    g_free (extension);
+
+    return filename;
+}
 
 static void
 file_selector_create_file (MooFileSelector *filesel)
 {
-    char *path = NULL, *dir = NULL;
+    char *path = NULL, *dir = NULL, *filename = NULL;
     MooEdit *doc;
     GList *selected = NULL;
     MooOpenInfo *info;
@@ -508,7 +575,11 @@ file_selector_create_file (MooFileSelector *filesel)
             goto out;
     }
 
-    path = new_file_dialog (GTK_WIDGET (filesel), dir, _("Untitled"));
+    filename = lookup_unused_file_name (dir, _("Untitled"));
+
+    path = new_file_dialog (GTK_WIDGET (filesel), dir, filename);
+
+    g_free (filename);
 
     if (!path)
         goto out;
