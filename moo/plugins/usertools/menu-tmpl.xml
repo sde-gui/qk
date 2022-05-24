@@ -1,4 +1,26 @@
 <moo-user-tools version="1.0"><!-- -%- indent-width:2 -%- -->
+  <command id="CalculateLuaExpression">
+    <name>Calculate Lua Expression</name>
+    <options>need-doc</options>
+    <type>lua</type>
+    <accel>&lt;ctrl&gt;E</accel>
+    <lua:code><![CDATA[
+line_nr = doc.get_line_at_cursor()
+cur_line_end = doc.get_pos_at_line_end(line_nr)
+doc.set_cursor_pos(cur_line_end)
+doc.insert_text("\n = ")
+
+text = doc.get_line_text(line_nr)
+f = loadstring("return (" .. text .. ")")
+result = f()
+
+if type(result) == "number" then
+  result = string.gsub(tostring(result), ",", ".", 1)
+end
+
+doc.insert_text(result)
+]]></lua:code>
+  </command>
   <command id="SortLines">
     <name>Sort Lines</name>
     <options>need-doc</options>
