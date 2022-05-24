@@ -1,5 +1,5 @@
 moo/medit-app/main.c
-moo/medit-app/medit.desktop.in
+moo/medit-app/qk.desktop.in
 moo/mooapp/glade/mooappabout-credits.glade
 moo/mooapp/glade/mooappabout-dialog.glade
 moo/mooapp/glade/mooappabout-license.glade
@@ -36,12 +36,10 @@ moo/moofileview/glade/moofileprops.glade
 moo/moofileview/glade/moofileview-drop.glade
 moo/moofileview/moobookmarkmgr.c
 moo/moofileview/moofileview.c
+moo/moofileview/moofileview-dialogs.c
 moo/moofileview/moofileview-tools.c
 moo/moofileview/moofileview.xml
 moo/moolua/mooluaplugin.cpp
-moo/moopython/plugins/medit/runpython.py
-moo/moopython/plugins/python.py
-moo/moopython/plugins/terminal.py
 moo/mooutils/glade/mooaccelprefs.glade
 moo/mooutils/mooaccelprefs.c
 moo/mooutils/moodialogs.c
