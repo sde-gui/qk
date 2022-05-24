@@ -1,11 +1,12 @@
 [Desktop Entry]
 Name=Quark
-_Comment=Text editor
+_GenericName=Text editor
+_Comment=A GTK-based text editor designed for programmers
+TryExec=qk
 Exec=qk %F
 Terminal=false
 Type=Application
 StartupNotify=true
 MimeType=text/plain;
 Icon=qk
-Categories=Utility;TextEditor;
-_Keywords=editor;texteditor;text
+Categories=Utility;TextEditor;GTK;
