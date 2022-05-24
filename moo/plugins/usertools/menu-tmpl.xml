@@ -77,6 +77,76 @@ diff -pu "$DOC_PATH" "$INPUT_FILE" > "$TEMP_DIR/m.diff"
 "$QK" -r "$TEMP_DIR/m.diff"
 ]]></exe:code>
   </command>
+  <command id="GitkDirectoryHistory"><!-- ###unix### -->
+    <name>Gitk - Directory History</name>
+    <options>need-file</options>
+    <type>exe</type>
+    <exe:input>doc</exe:input>
+    <exe:output>async</exe:output>
+    <exe:code><![CDATA[
+gitk "$DOC_DIR"
+]]></exe:code>
+  </command>
+  <command id="GitkFileHistory"><!-- ###unix### -->
+    <name>Gitk - File History</name>
+    <options>need-file</options>
+    <type>exe</type>
+    <exe:input>doc</exe:input>
+    <exe:output>async</exe:output>
+    <exe:code><![CDATA[
+gitk "$DOC_PATH"
+]]></exe:code>
+  </command>
+  <command id="GitGui"><!-- ###unix### -->
+    <name>Git GUI</name>
+    <options>need-file</options>
+    <type>exe</type>
+    <exe:input>doc</exe:input>
+    <exe:output>async</exe:output>
+    <exe:code><![CDATA[
+cd "$DOC_DIR" && git gui
+]]></exe:code>
+  </command>
+  <command id="GitGuiBlame"><!-- ###unix### -->
+    <name>Git GUI - Blame</name>
+    <options>need-file</options>
+    <type>exe</type>
+    <exe:input>doc</exe:input>
+    <exe:output>async</exe:output>
+    <exe:code><![CDATA[
+git gui blame "$DOC_PATH"
+]]></exe:code>
+  </command>
+  <command id="GitHubLocateFile"><!-- ###unix### -->
+    <name>GitHub - Locate File</name>
+    <options>need-file</options>
+    <type>exe</type>
+    <exe:input>doc</exe:input>
+    <exe:output>async</exe:output>
+    <exe:code><![CDATA[
+cd "$DOC_DIR" || exit 1
+
+branch="`git branch --show-current`"
+test -z "$branch" && exit 1
+
+in_tree_path="`git ls-files --full-name "$DOC_PATH"`"
+test -z "$in_tree_path" && exit 1
+
+enum_github_repos() {
+    (for remote in `git remote show` ; do
+        git remote get-url "$remote"
+    done) | grep -o 'github[.]com[:/][^/]\+/[^/ ]\+' | sed -e 's/:/\//' -e 's/[.]git$//'
+}
+
+repos="`enum_github_repos`"
+test -z "$in_tree_path" && exit 1
+
+for repo in $repos ; do
+    url="https://$repo/tree/$branch/$in_tree_path"
+    xdg-open "$url"
+done
+]]></exe:code>
+  </command>
   <command id="Yacc"><!-- ###unix### -->
     <name>Bison</name>
     <langs>yacc</langs>
