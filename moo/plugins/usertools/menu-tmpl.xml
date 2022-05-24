@@ -198,19 +198,4 @@ else
 end
 ]]></lua:code>
   </command>
-  <command id="InsertDateAndTime"><!-- ###python### -->
-    <name>Insert Date and Time</name>
-    <options>need-doc</options>
-    <type>python</type>
-    <python:code><![CDATA[
-# insert_date_and_time.py is installed in
-# $prefix/share/medit-1/python
-from insert_date_and_time import get_format
-import time
-
-fmt = get_format(window)
-if fmt is not None:
-    doc.replace_selected_text(time.strftime(fmt))
-]]></python:code>
-  </command>
 </moo-user-tools>
