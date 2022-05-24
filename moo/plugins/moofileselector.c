@@ -541,7 +541,9 @@ lookup_unused_file_name (const char *dirname,
 static void
 file_selector_create_file (MooFileSelector *filesel)
 {
-    char *path = NULL, *dir = NULL, *filename = NULL;
+    char *path = NULL, *dirname = NULL, *filename = NULL;
+    char *start_filename = NULL;
+    char *selected_filename = NULL;
     MooEdit *doc;
     GList *selected = NULL;
     MooOpenInfo *info;
@@ -556,30 +558,46 @@ file_selector_create_file (MooFileSelector *filesel)
             goto out;
         }
 
-        dir = selected->data;
+        selected_filename = selected->data;
+
+        if (g_file_test (selected_filename, G_FILE_TEST_IS_DIR))
+        {
+            dirname = selected_filename;
+            selected_filename = NULL;
+        }
+        else
+        {
+            start_filename = g_path_get_basename (selected_filename);
+            g_free (selected_filename);
+            selected_filename = NULL;
+        }
+
         g_list_free (selected);
         selected = NULL;
-
-        if (!g_file_test (dir, G_FILE_TEST_IS_DIR))
-        {
-            g_free (dir);
-            dir = NULL;
-        }
     }
 
-    if (!dir)
+    if (!dirname)
     {
-        g_object_get (filesel, "current-directory", &dir, NULL);
+        g_object_get (filesel, "current-directory", &dirname, NULL);
 
-        if (!dir)
+        if (!dirname)
             goto out;
     }
 
-    filename = lookup_unused_file_name (dir, _("Untitled"));
+    if (!start_filename)
+    {
+        start_filename = g_strdup(_("Untitled"));
 
-    path = new_file_dialog (GTK_WIDGET (filesel), dir, filename);
+        if (!start_filename)
+            goto out;
+    }
 
-    g_free (filename);
+    filename = lookup_unused_file_name (dirname, start_filename);
+
+    if (!filename)
+        goto out;
+
+    path = new_file_dialog (GTK_WIDGET (filesel), dirname, filename);
 
     if (!path)
         goto out;
@@ -593,8 +611,10 @@ file_selector_create_file (MooFileSelector *filesel)
         moo_edit_save (doc, NULL);
 
 out:
+    g_free (start_filename);
+    g_free (filename);
+    g_free (dirname);
     g_free (path);
-    g_free (dir);
     g_list_foreach (selected, (GFunc) g_free, NULL);
     g_list_free (selected);
 }
