@@ -67,6 +67,7 @@
         <context ref="def:line-continue"/>
         <context ref="variable"/>
         <context ref="backtick-subshell"/>
+        <context ref="command-substitution"/>
       </include>
     </context>
 
@@ -77,6 +78,16 @@
 
     <context id="subshell">
       <start>\(</start>
+      <end>\)</end>
+      <include>
+        <context sub-pattern="0" where="start" style-ref="keyword"/>
+        <context sub-pattern="0" where="end" style-ref="keyword"/>
+        <context ref="sh"/>
+      </include>
+    </context>
+
+    <context id="command-substitution" style-ref="subshell">
+      <start>\$\(</start>
       <end>\)</end>
       <include>
         <context sub-pattern="0" where="start" style-ref="keyword"/>
