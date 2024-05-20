@@ -526,7 +526,7 @@ read_langs (MooLangMgr *mgr)
         lang = gtk_source_language_manager_get_language (mgr->lang_mgr, id);
 
         info = get_lang_info (mgr, id, TRUE);
-        info->lang = g_object_ref (lang);
+        info->lang = (MooLang *) g_object_ref (lang);
 
         if (!info->globs_modified)
             info->globs = _moo_lang_get_globs (info->lang);
