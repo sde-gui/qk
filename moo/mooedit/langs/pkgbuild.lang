@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2022 Vadim Ushakov
+
+    This file is part of Quark.  Quark is free software; you can
+    redistribute it and/or modify it under the terms of the
+    GNU Lesser General Public License as published by the
+    Free Software Foundation; either version 2.1 of the License,
+    or (at your option) any later version.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with Quark.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<language id="pkgbuild" name="PKGBUILD" version="2.0" _section="Script">
+    <metadata>
+        <property name="globs">PKGBUILD;PKGBUILD.*</property>
+        <property name="line-comment-start">#</property>
+        <property name="block-comment-start">/*</property>
+        <property name="block-comment-end">*/</property>
+    </metadata>
+
+    <styles>
+        <style id="keyword" name="PKGBUILD variables" map-to="def:keyword"/>
+    </styles>
+
+    <definitions>
+        <context id="pkgbuild-defs">
+            <include>
+                <context id="keywords" style-ref="keyword">
+                    <keyword>pkgbase</keyword>
+                    <keyword>pkgname</keyword>
+                    <keyword>pkgver</keyword>
+                    <keyword>pkgrel</keyword>
+                    <keyword>epoch</keyword>
+                    <keyword>pkgdesc</keyword>
+                    <keyword>arch</keyword>
+                    <keyword>url</keyword>
+                    <keyword>license</keyword>
+                    <keyword>groups</keyword>
+                    <keyword>depends</keyword>
+                    <keyword>makedepends</keyword>
+                    <keyword>checkdepends</keyword>
+                    <keyword>optdepends</keyword>
+                    <keyword>provides</keyword>
+                    <keyword>conflicts</keyword>
+                    <keyword>replaces</keyword>
+                    <keyword>backup</keyword>
+                    <keyword>options</keyword>
+                    <keyword>install</keyword>
+                    <keyword>changelog</keyword>
+                    <keyword>source</keyword>
+                    <keyword>noextract</keyword>
+                    <keyword>validpgpkeys</keyword>
+                    <keyword>md5sums</keyword>
+                    <keyword>sha1sums</keyword>
+                    <keyword>sha256sums</keyword>
+                    <keyword>sha224sums</keyword>
+                    <keyword>sha384sums</keyword>
+                    <keyword>sha512sums</keyword>
+                    <keyword>b2sums</keyword>
+                </context>
+            </include>
+        </context>
+
+        <context id="pkgbuild">
+            <include>
+                <context ref="pkgbuild-defs"/>
+                <context ref="sh:sh"/>
+            </include>
+        </context>
+    </definitions>
+</language>
+<!--   -->

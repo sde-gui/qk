@@ -80,6 +80,7 @@ lang_files =				\
 	mooedit/langs/perl.lang		\
 	mooedit/langs/php.lang		\
 	mooedit/langs/pkgconfig.lang	\
+	mooedit/langs/pkgbuild.lang	\
 	mooedit/langs/po.lang		\
 	mooedit/langs/prolog.lang	\
 	mooedit/langs/protobuf.lang	\
