@@ -482,7 +482,7 @@ get_extension (const char *string,
 
     dot = strrchr (string, '.');
 
-    if (dot)
+    if (dot && dot != string)
     {
         *base = g_strndup (string, dot - string);
         *ext = g_strdup (dot);
