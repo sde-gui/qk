@@ -495,13 +495,23 @@ get_extension (const char *string,
 }
 
 static char *
-lookup_unused_file_name (const char *dirname,
+lookup_unused_filename (const char *dirname,
                          const char *start_name)
 {
-    char *fullname = NULL;
-    char *filename = NULL;
-    char *base = NULL, *extension = NULL;
+    char *filename = NULL; /* returned value */
+    char *fullname = NULL; /* should be freed */
+    char *base = NULL, *extension = NULL; /* should be freed */
     int index = 1;
+
+    /*  Avoid potential UI freezes while probing for an unused name, e.g.
+        when many candidate files already exist on a slow network filesystem.
+        In some cases the slowdown may be caused by heavy swapping, in which
+        case the entire OS is already sluggish. Therefore, do not abort too
+        early: always try at least `max_tries` candidates.
+    */
+    int max_tries = 5;
+    gint64 max_delay = 2 * 1000 * 1000;
+    gint64 start_time = g_get_monotonic_time();
 
     const char * extension_pairs[][2] = {
         {".c", ".h"},
@@ -513,6 +523,9 @@ lookup_unused_file_name (const char *dirname,
     };
 
     get_extension (start_name, &base, &extension);
+    /* get_extension should always return non-NULL values, if start_name is not NULL*/
+    if (!base || !extension)
+        goto end;
 
     const char * (*extension_pair)[2] = extension_pairs;
     if (extension[0]) {
@@ -538,8 +551,16 @@ lookup_unused_file_name (const char *dirname,
 
     while (TRUE)
     {
+        if ((index > max_tries) && (g_get_monotonic_time() - start_time > max_delay))
+            index = INT_MAX;
+
         if (index == INT_MAX)
+        {
+            if (filename)
+                g_free (filename);
+            filename = g_strdup (start_name);
             break;
+        }
 
         if (filename)
             g_free (filename);
@@ -624,10 +645,10 @@ file_selector_create_file (MooFileSelector *filesel)
             goto out;
     }
 
-    filename = lookup_unused_file_name (dirname, start_filename);
+    filename = lookup_unused_filename (dirname, start_filename);
 
     if (!filename)
-        goto out;
+        filename = g_strdup("");
 
     path = new_file_dialog (GTK_WIDGET (filesel), dirname, filename);
 
