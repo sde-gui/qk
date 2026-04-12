@@ -503,7 +503,38 @@ lookup_unused_file_name (const char *dirname,
     char *base = NULL, *extension = NULL;
     int index = 1;
 
+    const char * extension_pairs[][2] = {
+        {".c", ".h"},
+        {".cc", ".hh"},
+        {".cpp", ".hpp"},
+        {".c++", ".h++"},
+        {".cxx", ".hxx"},
+        {0, 0}
+    };
+
     get_extension (start_name, &base, &extension);
+
+    const char * (*extension_pair)[2] = extension_pairs;
+    if (extension[0]) {
+        while (extension_pair[0][0]) {
+            int x;
+            for (x = 0; x < 2; x++) {
+                int y = !x;
+                if (strcmp (extension_pair[0][x], extension) == 0) {
+                    if (filename)
+                        g_free (filename);
+                    if (fullname)
+                        g_free (fullname);
+                    filename = g_strdup_printf ("%s%s", base, extension_pair[0][y]);
+                    fullname = g_build_filename (dirname, filename, NULL);
+                    if (!g_file_test (fullname, G_FILE_TEST_EXISTS))
+                        goto end;
+                    break;
+                }
+            }
+            extension_pair++;
+        }
+    }
 
     while (TRUE)
     {
@@ -531,6 +562,7 @@ lookup_unused_file_name (const char *dirname,
         index++;
     }
 
+end:
     g_free (fullname);
     g_free (base);
     g_free (extension);
